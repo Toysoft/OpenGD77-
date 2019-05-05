@@ -1,6 +1,0 @@
-D:\projects\rogerclark\DMR\Radioddity_GD-77\tools\bin2sgl\bin2sgl\bin\Debug\bin2sgl.exe.config
-D:\projects\rogerclark\DMR\Radioddity_GD-77\tools\bin2sgl\bin2sgl\bin\Debug\bin2sgl.exe
-D:\projects\rogerclark\DMR\Radioddity_GD-77\tools\bin2sgl\bin2sgl\bin\Debug\bin2sgl.pdb
-D:\projects\rogerclark\DMR\Radioddity_GD-77\tools\bin2sgl\bin2sgl\obj\Debug\bin2sgl.csproj.CoreCompileInputs.cache
-D:\projects\rogerclark\DMR\Radioddity_GD-77\tools\bin2sgl\bin2sgl\obj\Debug\bin2sgl.exe
-D:\projects\rogerclark\DMR\Radioddity_GD-77\tools\bin2sgl\bin2sgl\obj\Debug\bin2sgl.pdb
