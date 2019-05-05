@@ -58,7 +58,7 @@ namespace GD77_FirmwareLoader
 			}
 
 			byte[] fileBuf = File.ReadAllBytes(fileName);
-			if (Path.GetExtension(fileName) == ".sgl")
+			if (Path.GetExtension(fileName).ToLower() == ".sgl")
 			{
 				// Couls be a SGL file !
 				fileBuf = checkForSGLAndReturnEncryptedData(fileBuf, encodeKey);
