@@ -1,4 +1,5 @@
-﻿/*
+﻿#define EXTENDED_DEBUG
+/*
  * 
  * Copyright (C)2019 Roger Clark. VK3KYY
  * 
@@ -186,7 +187,7 @@ namespace GD77_FirmwareLoader
 					address = address + dataTransferSize;
 					if ((address % 0x400) == 0)
 					{
-#if ENDED_DEBUG
+#if EXTENDED_DEBUG
 						Console.WriteLine("Sent block " + (address / BLOCK_LENGTH) + " of " + totalBlocks);
 #else
 						Console.Write(".");
@@ -200,7 +201,7 @@ namespace GD77_FirmwareLoader
 				}
 				else
 				{
-#if ENDED_DEBUG
+#if EXTENDED_DEBUG
 					Console.WriteLine("Sending last block");
 #else
 					Console.Write(".");
@@ -247,7 +248,7 @@ namespace GD77_FirmwareLoader
 			// Send the commands which the GD-77 expects before the start of the data
 			while (commandNumber < commands.Length)
 			{
-#if ENDED_DEBUG
+#if EXTENDED_DEBUG
 				Console.WriteLine("Sending command " + commandNumber);
 #else
 				Console.Write(".");
