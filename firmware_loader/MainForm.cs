@@ -55,7 +55,12 @@ namespace GD77_FirmwareLoader
 			{
 				try
 				{
-					FirmwareLoader.UploadFirmare(openFileDialog1.FileName);
+					FrmProgress frmProgress = new FrmProgress();
+					frmProgress.SetLabel("");
+					frmProgress.SetProgressPercentage(0);
+					frmProgress.Show();
+					FirmwareLoader.UploadFirmare(openFileDialog1.FileName, frmProgress);
+					frmProgress.Close();
 				}
 				catch (Exception)
 				{

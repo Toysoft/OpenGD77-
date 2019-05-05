@@ -14,6 +14,11 @@ namespace GD77_FirmwareLoader
 		[STAThread]
 		static void Main(string[] args)
 		{
+			/* Testing only
+			args = new string[2];
+			args[0] = "test.bin";
+			args[1] = "GUI";
+			 */
 			if (args.Length == 0)
 			{
 				Application.EnableVisualStyles();
@@ -22,7 +27,19 @@ namespace GD77_FirmwareLoader
 			}
 			else
 			{
-				FirmwareLoader.UploadFirmare(args[0]);
+				if (args.Length > 1 && args[1]=="GUI")
+				{
+					FrmProgress frmProgress = new FrmProgress();
+					frmProgress.SetLabel("");
+					frmProgress.SetProgressPercentage(0);
+					frmProgress.Show();
+					FirmwareLoader.UploadFirmare(args[0], frmProgress);
+					frmProgress.Close();
+				}
+				else
+				{
+					FirmwareLoader.UploadFirmare(args[0]);
+				}
 			}
 			//	Console.WriteLine("Usage GD77_FirmwareLoader filename");
 		}

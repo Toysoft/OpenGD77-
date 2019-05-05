@@ -1,4 +1,4 @@
-﻿#define EXTENDED_DEBUG
+﻿//#define EXTENDED_DEBUG
 /*
  * 
  * Copyright (C)2019 Roger Clark. VK3KYY
@@ -43,10 +43,12 @@ namespace GD77_FirmwareLoader
 	{
 		private static readonly byte[] responseOK = { 0x41 };
 
-		static SpecifiedDevice _specifiedDevice = null;
+		private static SpecifiedDevice _specifiedDevice = null;
+		private static FrmProgress _progessForm;
 
-		public static int UploadFirmare(string fileName)
+		public static int UploadFirmare(string fileName,FrmProgress progessForm=null)
 		{
+			_progessForm = progessForm;
 			_specifiedDevice = SpecifiedDevice.FindSpecifiedDevice(0x15A2, 0x0073);
 			if (_specifiedDevice == null)
 			{
@@ -157,6 +159,11 @@ namespace GD77_FirmwareLoader
 			int checksumStartAddress = 0;
 			int address = 0;
 
+			if (_progessForm != null)
+			{
+				_progessForm.SetLabel("Programming data");
+			}
+
 
 
 			int fileLength = fileBuf.Length;
@@ -187,6 +194,10 @@ namespace GD77_FirmwareLoader
 					address = address + dataTransferSize;
 					if ((address % 0x400) == 0)
 					{
+						if (_progessForm != null)
+						{
+							_progessForm.SetProgressPercentage((address * 100 / BLOCK_LENGTH) / totalBlocks);
+						}
 #if EXTENDED_DEBUG
 						Console.WriteLine("Sent block " + (address / BLOCK_LENGTH) + " of " + totalBlocks);
 #else
@@ -248,6 +259,10 @@ namespace GD77_FirmwareLoader
 			// Send the commands which the GD-77 expects before the start of the data
 			while (commandNumber < commands.Length)
 			{
+				if (_progessForm != null)
+				{
+					_progessForm.SetLabel("Sending command " + commandNumber);
+				}
 #if EXTENDED_DEBUG
 				Console.WriteLine("Sending command " + commandNumber);
 #else
