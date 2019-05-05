@@ -48,6 +48,7 @@ namespace GD77_FirmwareLoader
 
 		public static int UploadFirmare(string fileName,FrmProgress progessForm=null)
 		{
+			byte[] encodeKey = new Byte[4] {(0x61 + 0x00), (0x61 + 0x0C), (0x61 + 0x0D), (0x61 + 0x01)};
 			_progessForm = progessForm;
 			_specifiedDevice = SpecifiedDevice.FindSpecifiedDevice(0x15A2, 0x0073);
 			if (_specifiedDevice == null)
@@ -56,14 +57,32 @@ namespace GD77_FirmwareLoader
 				return -1;
 			}
 
-			byte[] fileBuf = encrypt(File.ReadAllBytes(fileName));
+			byte[] fileBuf = File.ReadAllBytes(fileName);
+			if (Path.GetExtension(fileName) == ".sgl")
+			{
+				// Couls be a SGL file !
+				fileBuf = checkForSGLAndReturnEncryptedData(fileBuf, encodeKey);
+				if (fileBuf == null)
+				{
+					Console.WriteLine("Error. Missing SGL! in .sgl file header");
+					return -5;
+				}
+				Console.WriteLine("Firmware file confirmed as SGL");
+			}
+			else
+			{
+				Console.WriteLine("Firmware file is unencrypted binary");
+				fileBuf = encrypt(fileBuf);
+			}
+
+
 			if (fileBuf.Length > 0x7b000)
 			{
 				Console.WriteLine("\nError. Firmware file too large.");
 				return -2;
 			}
 
-			if (sendInitialCommands() == true)
+			if (sendInitialCommands(encodeKey) == true)
 			{
 				int respCode = sendFileData(fileBuf);
 				if (respCode == 0)
@@ -240,7 +259,7 @@ namespace GD77_FirmwareLoader
 			return 0;
 		}
 
-		static private bool sendInitialCommands()
+		static private bool sendInitialCommands(byte [] encodeKey)
 		{
 			byte[] commandLetterA = new byte[] { 0x41 }; //A
 			byte[][] command0 = new byte[][] { new byte[] { 0x44, 0x4f, 0x57, 0x4e, 0x4c, 0x4f, 0x41, 0x44 }, new byte[] { 0x23, 0x55, 0x50, 0x44, 0x41, 0x54, 0x45, 0x3f } }; // DOWNLOAD
@@ -255,6 +274,8 @@ namespace GD77_FirmwareLoader
 			byte[][] commandProgram = { new byte[] { 0x50, 0x52, 0x4f, 0x47, 0x52, 0x41, 0x4d, 0xf }, responseOK };//PROGRAM
 			byte[][][] commands = { command0, command1, command2, command3, command4, command5, command6, commandErase, commandPostErase, commandProgram };
 			int commandNumber = 0;
+
+			Buffer.BlockCopy(encodeKey, 0, command2[0], 4, 4);
 
 			// Send the commands which the GD-77 expects before the start of the data
 			while (commandNumber < commands.Length)
@@ -302,5 +323,119 @@ namespace GD77_FirmwareLoader
                 }
 				return encrypted;
         }
+
+
+
+		static byte[] checkForSGLAndReturnEncryptedData(byte[] fileBuf, byte[] encodeKey)
+		{
+			byte[] header_tag = new byte[] { (byte)'S', (byte)'G', (byte)'L', (byte)'!' };
+
+			// read header tag
+			byte[] buf_in_4 = new byte[4];
+			Buffer.BlockCopy(fileBuf, 0, buf_in_4, 0, buf_in_4.Length);
+
+			if (buf_in_4.SequenceEqual(header_tag))
+			{
+				// read and decode offset and xor tag
+				//stream_in.Seek(0x000C, SeekOrigin.Begin);
+				//stream_in.Read(buf_in_4, 0, buf_in_4.Length);
+				Buffer.BlockCopy(fileBuf, 0x000C, buf_in_4, 0, buf_in_4.Length);
+				for (int i = 0; i < buf_in_4.Length; i++)
+				{
+					buf_in_4[i] = (byte)(buf_in_4[i] ^ header_tag[i]);
+				}
+				int offset = buf_in_4[0] + 256 * buf_in_4[1];
+				byte[] xor_data = new byte[] { buf_in_4[2], buf_in_4[3] };
+
+				// read and decode part of the header
+				byte[] buf_in_512 = new byte[512];
+				//stream_in.Seek(offset + 0x0006, SeekOrigin.Begin);
+				//stream_in.Read(buf_in_512, 0, buf_in_512.Length);
+				Buffer.BlockCopy(fileBuf, offset + 0x0006, buf_in_512, 0, buf_in_512.Length);
+				int xor_idx = 0;
+				for (int i = 0; i < buf_in_512.Length; i++)
+				{
+					buf_in_512[i] = (byte)(buf_in_512[i] ^ xor_data[xor_idx]);
+					xor_idx++;
+					if (xor_idx == 2)
+					{
+						xor_idx = 0;
+					}
+				}
+
+				// dump decoded part of the header
+				/*
+				Console.WriteLine(String.Format("Offset  : {0:X4}", offset));
+				Console.WriteLine(String.Format("XOR-Data: {0:X2}{1:X2}", xor_data[0], xor_data[1]));
+				int pos = 0;
+				int idx = 0;
+				string line1 = "";
+				string line2 = "";
+				for (int i = 0; i < buf_in_512.Length; i++)
+				{
+					if (line1 == "")
+					{
+						line1 = String.Format("{0:X6}: ", i);
+					}
+					line1 = line1 + String.Format(" {0:X2}", buf_in_512[idx]);
+					if ((buf_in_512[idx] >= 0x20) && (buf_in_512[idx] < 0x7f))
+					{
+						line2 = line2 + (char)buf_in_512[idx];
+					}
+					else
+					{
+						line2 = line2 + ".";
+					}
+					idx++;
+					pos++;
+
+					if (pos == 16)
+					{
+						Console.WriteLine(line1 + " " + line2);
+						line1 = "";
+						line2 = "";
+						pos = 0;
+					}
+				}
+				*/
+
+				// extract encoding key
+				
+				byte key1 = (byte)(buf_in_512[0x005D] - 'a');
+				byte key2 = (byte)(buf_in_512[0x005E] - 'a');
+				byte key3 = (byte)(buf_in_512[0x005F] - 'a');
+				byte key4 = (byte)(buf_in_512[0x0060] - 'a');
+				int encoding_key = (key1 << 12) + (key2 << 8) + (key3 << 4) + key4;
+				
+				Buffer.BlockCopy(buf_in_512, 0x005D, encodeKey, 0, 4);
+
+
+				// extract length
+				byte length1 = (byte)buf_in_512[0x0000];
+				byte length2 = (byte)buf_in_512[0x0001];
+				byte length3 = (byte)buf_in_512[0x0002];
+				byte length4 = (byte)buf_in_512[0x0003];
+				int length = (length4 << 24) + (length3 << 16) + (length2 << 8) + length1;
+
+				// extract encoded raw firmware
+				/*FileStream stream_out = new FileStream(args[0] + "_" + String.Format("{0:X4}", encoding_key) + "_" + String.Format("{0:X6}", length) + ".raw", FileMode.Create, FileAccess.Write, FileShare.ReadWrite);
+				stream_in.Seek(stream_in.Length - length, SeekOrigin.Begin);
+				int c;
+				while ((c = stream_in.ReadByte())>=0)
+				{
+					stream_out.WriteByte((byte)c);
+				}*/
+
+				byte[] retBuf = new byte[length];
+				Buffer.BlockCopy(fileBuf, fileBuf.Length - length, retBuf, 0, retBuf.Length);
+				return retBuf;
+			}
+			else
+			{
+				Console.WriteLine("ERROR: SGL! header missing.");
+				return null;
+			}
+		}
+	
 	}
 }
