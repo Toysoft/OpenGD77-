@@ -56,7 +56,7 @@ void trxSetMode(int theMode)
 		currentMode=theMode;
 
 		I2C_AT1846_SetMode(currentMode);
-		trxUpdateAT1846SCalibration();
+		trxUpdateC6000Calibration();
 		trxUpdateAT1846SCalibration();
 		if (currentMode == RADIO_MODE_ANALOG)
 		{
