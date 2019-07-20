@@ -64,11 +64,17 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 		trxSetDMRColourCode(currentChannelData->rxColor);
 		trxSetPower(nonVolatileSettings.txPower);
 
+		//Need to load the Rx group if specificed even if TG is currently overridden as we may need it later when the left or right button is pressed
+		if (currentChannelData->rxGroupList != 0)
+		{
+			codeplugRxGroupGetDataForIndex(currentChannelData->rxGroupList,&rxGroupData);
+		}
+
+
 		if (nonVolatileSettings.overrideTG == 0)
 		{
 			if (currentChannelData->rxGroupList != 0)
 			{
-				codeplugRxGroupGetDataForIndex(currentChannelData->rxGroupList,&rxGroupData);
 				codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
 
 				// Check whether the contact data seems valid
