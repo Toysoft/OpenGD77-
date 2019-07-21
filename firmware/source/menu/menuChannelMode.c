@@ -77,11 +77,7 @@ static void loadChannelData(bool useChannelDataInMemory)
 		codeplugChannelGetDataForIndex(currentZone.channels[nonVolatileSettings.currentChannelIndexInZone],&channelScreenChannelData);
 	}
 	trxSetFrequency(channelScreenChannelData.rxFreq);
-	trxSetMode(channelScreenChannelData.chMode);
-	if (channelScreenChannelData.chMode == RADIO_MODE_ANALOG)
-	{
-		trxSetBandWidth((channelScreenChannelData.flag4 & 0x02)  == 0x02);// set the bandwidth after the mode, because mode probably sets it back to 12.5kHz (note this needs to be tidied up ;-) )
-	}
+	trxSetModeAndBandwidth(channelScreenChannelData.chMode, ((channelScreenChannelData.flag4 & 0x02) == 0x02));
 	trxSetDMRColourCode(channelScreenChannelData.rxColor);
 	trxSetPower(nonVolatileSettings.txPower);
 	trxSetTxCTCSS(channelScreenChannelData.txTone);
@@ -210,12 +206,12 @@ static void handleEvent(int buttons, int keys, int events)
 		if (trxGetMode() == RADIO_MODE_ANALOG)
 		{
 			channelScreenChannelData.chMode = RADIO_MODE_DIGITAL;
-			trxSetMode(RADIO_MODE_DIGITAL);
+			trxSetModeAndBandwidth(RADIO_MODE_DIGITAL, false);
 		}
 		else
 		{
 			channelScreenChannelData.chMode = RADIO_MODE_ANALOG;
-			trxSetMode(RADIO_MODE_ANALOG);
+			trxSetModeAndBandwidth(RADIO_MODE_ANALOG, ((channelScreenChannelData.flag4 & 0x02) == 0x02));
 			trxSetTxCTCSS(currentChannelData->rxTone);
 		}
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;

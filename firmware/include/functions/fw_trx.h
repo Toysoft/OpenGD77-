@@ -42,8 +42,9 @@ extern int txstopdelay;
 
 void trx_check_analog_squelch();
 int	trxGetMode();
+int	trxGetBandwidthIs25kHz();
 int	trxGetFrequency();
-void trxSetMode(int mode);
+void trxSetModeAndBandwidth(int mode, bool bandwidthIs25kHz);
 void trxSetFrequency(int frequency);
 void trx_setRX();
 void trx_setTX();
@@ -51,7 +52,6 @@ void trx_deactivateTX();
 void trx_activateTX();
 void trxSetPower(uint32_t powerVal);
 uint16_t trxGetPower();
-void trxSetBandWidth(bool bandWidthis25kHz);
 void trxUpdateC6000Calibration();
 void trxUpdateAT1846SCalibration();
 void trxSetDMRColourCode(int colourCode);

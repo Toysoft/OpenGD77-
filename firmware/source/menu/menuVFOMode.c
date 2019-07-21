@@ -52,12 +52,7 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 		nonVolatileSettings.initialMenuNumber=MENU_VFO_MODE;
 		currentChannelData = &nonVolatileSettings.vfoChannel;
 
-		trxSetMode(currentChannelData->chMode);
-		if (currentChannelData->chMode == RADIO_MODE_ANALOG)
-		{
-			trxSetBandWidth((currentChannelData->flag4 & 0x02)  == 0x02);// set the bandwidth after the mode, because mode probably sets it back to 12.5kHz (note this needs to be tidied up ;-) )
-		}
-
+		trxSetModeAndBandwidth(currentChannelData->chMode, ((currentChannelData->flag4 & 0x02) == 0x02));
 		trxSetTxCTCSS(currentChannelData->txTone);
 		trxSetRxCTCSS(currentChannelData->rxTone);
 		trxSetFrequency(currentChannelData->rxFreq);
@@ -268,12 +263,12 @@ static void handleEvent(int buttons, int keys, int events)
 			if (trxGetMode() == RADIO_MODE_ANALOG)
 			{
 				channelScreenChannelData.chMode = RADIO_MODE_DIGITAL;
-				trxSetMode(RADIO_MODE_DIGITAL);
+				trxSetModeAndBandwidth(RADIO_MODE_DIGITAL, false);
 			}
 			else
 			{
 				channelScreenChannelData.chMode = RADIO_MODE_ANALOG;
-				trxSetMode(RADIO_MODE_ANALOG);
+				trxSetModeAndBandwidth(RADIO_MODE_ANALOG, ((currentChannelData->flag4 & 0x02) == 0x02));
 				trxSetTxCTCSS(currentChannelData->rxTone);
 			}
 			currentChannelData->chMode = trxGetMode();

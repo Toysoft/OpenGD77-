@@ -191,7 +191,7 @@ void I2C_AT1846S_init()
 	// Calibration end
 	// --- end of AT1846_init()
 
-	trxSetBandWidth(125);// initially set the bandwidth for 12.5 kHz
+	I2C_AT1846S_send_Settings(AT1846FM12P5kHzSettings, sizeof(AT1846FM12P5kHzSettings)/AT1846_BYTES_PER_COMMAND);// initially set the bandwidth for 12.5 kHz
 
 	set_clear_I2C_reg_2byte_with_mask(0x4e, 0xff, 0x3f, 0x00, 0x80); // Select cdcss mode for tx
 	vTaskDelay(portTICK_PERIOD_MS * 200);
@@ -202,9 +202,9 @@ void I2C_AT1846_Postinit()
 	I2C_AT1846S_send_Settings(AT1846PostinitSettings,sizeof(AT1846PostinitSettings)/AT1846_BYTES_PER_COMMAND);
 }
 
-void I2C_AT1846_SetBandwidth(bool bandWidthIs25kHz)
+void I2C_AT1846_SetBandwidth()
 {
-	if (bandWidthIs25kHz)
+	if (trxGetBandwidthIs25kHz())
 	{
 		// 25 kHz settings
 		I2C_AT1846S_send_Settings(AT1846FM25kHzSettings,sizeof(AT1846FM25kHzSettings)/AT1846_BYTES_PER_COMMAND);
@@ -216,9 +216,9 @@ void I2C_AT1846_SetBandwidth(bool bandWidthIs25kHz)
 	}
 }
 
-void I2C_AT1846_SetMode(int theMode)
+void I2C_AT1846_SetMode()
 {
-	if (theMode == RADIO_MODE_ANALOG)
+	if (trxGetMode() == RADIO_MODE_ANALOG)
 	{
 		I2C_AT1846S_send_Settings(AT1846FMSettings, sizeof(AT1846FMSettings)/AT1846_BYTES_PER_COMMAND);
 	}
