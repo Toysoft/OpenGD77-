@@ -460,6 +460,8 @@ void trxUpdateAT1846SCalibration()
 		read_val_noise1_th_wideband(band_offset, &noise1_th);
 		read_val_noise2_th_wideband(band_offset, &noise2_th);
 		read_val_rssi3_th_wideband(band_offset, &rssi3_th);
+
+		read_val_squelch_th(band_offset+freq_offset, 0, &squelch_th);
 	}
 	else
 	{
@@ -467,9 +469,9 @@ void trxUpdateAT1846SCalibration()
 		read_val_noise1_th_narrowband(band_offset, &noise1_th);
 		read_val_noise2_th_narrowband(band_offset, &noise2_th);
 		read_val_rssi3_th_narrowband(band_offset, &rssi3_th);
-	}
 
-	read_val_squelch_th(band_offset+freq_offset, &squelch_th);
+		read_val_squelch_th(band_offset+freq_offset, 3, &squelch_th);
+	}
 
 	I2C_AT1846_set_register_with_mask(0x0A, 0xF83F, val_pga_gain, 6);
 	I2C_AT1846_set_register_with_mask(0x41, 0xFF80, voice_gain_tx, 0);
