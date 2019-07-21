@@ -1,6 +1,9 @@
 Changelog
 =========
 
+V0.3.2 (OpenGD77 Phase 1 - Update 2):
+<work in progress>
+
 V0.3.1 (OpenGD77 Phase 1 - Update 1):
 - Cleanup / comments / refactoring.
 - VFO screen should have the same initialization order as channel screen.
