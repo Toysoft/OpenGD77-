@@ -76,12 +76,14 @@ static void loadChannelData(bool useChannelDataInMemory)
 	{
 		codeplugChannelGetDataForIndex(currentZone.channels[nonVolatileSettings.currentChannelIndexInZone],&channelScreenChannelData);
 	}
+
 	trxSetFrequency(channelScreenChannelData.rxFreq);
 	trxSetModeAndBandwidth(channelScreenChannelData.chMode, ((channelScreenChannelData.flag4 & 0x02) == 0x02));
 	trxSetDMRColourCode(channelScreenChannelData.rxColor);
 	trxSetPower(nonVolatileSettings.txPower);
 	trxSetTxCTCSS(channelScreenChannelData.txTone);
 	trxSetRxCTCSS(channelScreenChannelData.rxTone);
+
 	codeplugRxGroupGetDataForIndex(channelScreenChannelData.rxGroupList,&rxGroupData);
 	codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
 	if (nonVolatileSettings.overrideTG == 0)

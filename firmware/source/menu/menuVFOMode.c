@@ -52,12 +52,12 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 		nonVolatileSettings.initialMenuNumber=MENU_VFO_MODE;
 		currentChannelData = &nonVolatileSettings.vfoChannel;
 
-		trxSetModeAndBandwidth(currentChannelData->chMode, ((currentChannelData->flag4 & 0x02) == 0x02));
-		trxSetTxCTCSS(currentChannelData->txTone);
-		trxSetRxCTCSS(currentChannelData->rxTone);
 		trxSetFrequency(currentChannelData->rxFreq);
+		trxSetModeAndBandwidth(currentChannelData->chMode, ((currentChannelData->flag4 & 0x02) == 0x02));
 		trxSetDMRColourCode(currentChannelData->rxColor);
 		trxSetPower(nonVolatileSettings.txPower);
+		trxSetTxCTCSS(currentChannelData->txTone);
+		trxSetRxCTCSS(currentChannelData->rxTone);
 
 		if (nonVolatileSettings.overrideTG == 0)
 		{
