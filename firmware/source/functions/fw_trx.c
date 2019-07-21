@@ -28,7 +28,7 @@ bool HR_C6000_datalogging=false;
 
 int trx_measure_count = 0;
 bool trxIsTransmitting = false;
-uint32_t trxTalkGroup=9;// Set to local TG just in case there is some problem with it not being loaded
+uint32_t trxTalkGroup = 9;// Set to local TG just in case there is some problem with it not being loaded
 uint32_t trxDMRID = 0;// Set ID to 0. Not sure if its valid. This value needs to be loaded from the codeplug.
 int txstopdelay = 0;
 
@@ -39,8 +39,8 @@ const int RADIO_UHF_MAX			=	5200000;
 
 static int currentMode = RADIO_MODE_NONE;
 static bool currentBandWidthIs25kHz = BANDWIDTH_12P5KHZ;
-static int currentFrequency =1440000;
-static int currentCC =1;
+static int currentFrequency = 1440000;
+static int currentCC = 1;
 static uint8_t squelch = 0x00;
 static bool rxCTCSSactive = false;
 
@@ -94,7 +94,6 @@ bool trxCheckFrequency(int tmp_frequency)
 {
 	return ((tmp_frequency>=BAND_VHF_MIN) && (tmp_frequency<=BAND_VHF_MAX)) || ((tmp_frequency>=BAND_UHF_MIN) && (tmp_frequency<=BAND_UHF_MAX));
 }
-
 
 void trx_check_analog_squelch()
 {
@@ -494,6 +493,5 @@ bool trxCheckCTCSSFlag()
 	read_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x1c,&FlagsH,&FlagsL);
 
 	return (FlagsH & 0x01);
-
 }
 
