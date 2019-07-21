@@ -223,6 +223,16 @@ void I2C_AT1846_SetMode()
 	if (trxGetMode() == RADIO_MODE_ANALOG)
 	{
 		I2C_AT1846S_send_Settings(AT1846FMSettings, sizeof(AT1846FMSettings)/AT1846_BYTES_PER_COMMAND);
+		if (trxGetBandwidthIs25kHz())
+		{
+			// 25 kHz settings
+			write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x3A, 0x40, 0xCB);
+		}
+		else
+		{
+			// 12.5 kHz settings
+			write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x3A, 0x44, 0xCB);
+		}
 	}
 	else
 	{
