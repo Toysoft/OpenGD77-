@@ -125,45 +125,23 @@ const uint8_t AT1846FM25kHzSettings[][AT1846_BYTES_PER_COMMAND] = {
 		};
 
 const uint8_t AT1846FMSettings[][AT1846_BYTES_PER_COMMAND] = {
-		// Settings from the official firmware
-		{0x30,0x40,0x06},
-		{0x05,0x87,0x63},
-		{0x30,0x40,0x26},
-		{0x0a,0x7b,0xa0},
-		{0x41,0x47,0x31},
-		{0x44,0x05,0xcc},
-		{0x59,0x09,0xd2},
-		{0x48,0x1a,0x32},
-		{0x60,0x1a,0x32},
-		{0x3f,0x29,0xd1},
-		{0x0a,0x7b,0xa0},
-		{0x33,0x44,0xa5},
-		{0x41,0x44,0x31},
-		{0x42,0x10,0xf0},
-		{0x43,0x00,0xa9},
-		{0x4a,0x34,0x80},
-		{0x4b,0x00,0x00},
-		{0x4c,0x0a,0xe3},
-		{0x4e,0x20,0x82},
-		{0x4a,0x00,0x00},
-		{0x4d,0x15,0x5e},
-		{0x4e,0x20,0x82},
-		{0x3a,0x40,0xca},
-		{0x05,0x87,0x63},
-		{0x30,0x40,0x06},
-		{0x30,0x40,0x26},
-
-		// Settings that seem to be captured incorrectly from the official firmware
-		{0x58, 0xBC, 0x05},// Enable some filters for FM e.g. de-emphasis / pre-emphasis / High and Low Pass Filters
-		{0x44, 0x06, 0xFF} // set internal volume to 100% . Details from Colin G4EML
+		{0x33, 0x44, 0xA5}, // agc number (recommended value)
+		{0x41, 0x44, 0x31}, // Digital voice gain, (bits 6:0) however default value is supposed to be 0x4006 hence some bits are being set outside the documented range
+		{0x42, 0x10, 0xF0}, // RDA1846 lists this as Vox Shut threshold
+		{0x43, 0x00, 0xA9}, // FM deviation
+		{0x58, 0xBC, 0x05}, // Enable some filters for FM e.g. de-emphasis / pre-emphasis / High and Low Pass Filters
+		{0x44, 0x06, 0xFF}, // set internal volume to 100% . Details from Colin G4EML
+		{0x3A, 0x40, 0xCB}  // modu_det_sel (SQ setting)
 		};
 
 const uint8_t AT1846DMRSettings[][AT1846_BYTES_PER_COMMAND] = {
 		{0x33, 0x45, 0xF5}, // agc number (recommended value)
 		{0x41, 0x47, 0x31}, // Digital voice gain, (bits 6:0) however default value is supposed to be 0x4006 hence some bits are being set outside the documented range
 		{0x42, 0x10, 0x36}, // RDA1846 lists this as Vox Shut threshold
+		{0x43, 0x00, 0xBB}, // FM deviation
 		{0x58, 0xBC, 0xFD}, // Disable all filters in DMR mode
-		{0x44, 0x06, 0xCC} // set internal volume to 80%
+		{0x44, 0x06, 0xCC}, // set internal volume to 80%
+		{0x3A, 0x40, 0xC2}  // modu_det_sel (SQ setting)
 		};
 
 void I2C_AT1846S_send_Settings(const uint8_t settings[][3],int numSettings)
@@ -191,7 +169,7 @@ void I2C_AT1846S_init()
 	// Calibration end
 	// --- end of AT1846_init()
 
-	trxSetBandWidth(125);// initially set the bandwidth for 12.5 kHz
+	I2C_AT1846S_send_Settings(AT1846FM12P5kHzSettings, sizeof(AT1846FM12P5kHzSettings)/AT1846_BYTES_PER_COMMAND);// initially set the bandwidth for 12.5 kHz
 
 	set_clear_I2C_reg_2byte_with_mask(0x4e, 0xff, 0x3f, 0x00, 0x80); // Select cdcss mode for tx
 	vTaskDelay(portTICK_PERIOD_MS * 200);
@@ -202,9 +180,9 @@ void I2C_AT1846_Postinit()
 	I2C_AT1846S_send_Settings(AT1846PostinitSettings,sizeof(AT1846PostinitSettings)/AT1846_BYTES_PER_COMMAND);
 }
 
-void I2C_AT1846_SetBandwidth(bool bandWidthIs25kHz)
+void I2C_AT1846_SetBandwidth()
 {
-	if (bandWidthIs25kHz)
+	if (trxGetBandwidthIs25kHz())
 	{
 		// 25 kHz settings
 		I2C_AT1846S_send_Settings(AT1846FM25kHzSettings,sizeof(AT1846FM25kHzSettings)/AT1846_BYTES_PER_COMMAND);
@@ -216,11 +194,21 @@ void I2C_AT1846_SetBandwidth(bool bandWidthIs25kHz)
 	}
 }
 
-void I2C_AT1846_SetMode(int theMode)
+void I2C_AT1846_SetMode()
 {
-	if (theMode == RADIO_MODE_ANALOG)
+	if (trxGetMode() == RADIO_MODE_ANALOG)
 	{
 		I2C_AT1846S_send_Settings(AT1846FMSettings, sizeof(AT1846FMSettings)/AT1846_BYTES_PER_COMMAND);
+		if (trxGetBandwidthIs25kHz())
+		{
+			// 25 kHz settings
+			write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x3A, 0x40, 0xCB);
+		}
+		else
+		{
+			// 12.5 kHz settings
+			write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x3A, 0x44, 0xCB);
+		}
 	}
 	else
 	{

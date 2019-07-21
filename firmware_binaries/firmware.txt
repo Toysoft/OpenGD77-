@@ -2,7 +2,21 @@ Changelog
 =========
 
 V0.3.1 (OpenGD77 Phase 1 - Update 1):
-<work in progress>
+- Cleanup / comments / refactoring.
+- VFO screen should have the same initialization order as channel screen.
+- Fixed some AT1846S settings.
+- Take care of bandwidth for filter_band_sel + band_mode_sel in trxSetFrequency.
+- Take care of bandwidth for modu_det_sel (SQ setting) in FM mode.
+- Take care of mode for dac_vgain_analog and volume_analog.
+- Take care of bandwidth for xmitter_dev, noise1_th, noise2_th, rssi3_th and squelch_th.
+- Cleanup AT1846FMSettings from values that get set elsewhere, reordered remaining AT1846FMSettings and AT1846DMRSettings.
+- Added DMR mode specific modu_det_sel (SQ setting) to AT1846DMRSettings.
+- Added DMR mode specific FM deviation to AT1846DMRSettings.
+- Additional stuff by Roger Clark, VK3KYY / G4KYF:
+  - More improvements to Green key on menu screens.
+  - Fix for bug #29.
+  - Update name in comm port driver, to OpenGD77.
+  - Changed frequency range checking, so that Rx freq is only limited to the radio hardware limits, but Tx is limited to Amateur bands (in menuTxScreen.c).
 
 V0.3 (OpenGD77 Phase 1):
 - Additional stuff by Roger Clark, VK3KYY / G4KYF:
