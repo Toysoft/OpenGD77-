@@ -179,6 +179,7 @@ static void handleEvent(int buttons, int keys, int events)
 		nonVolatileSettings.displayContrast = contrast;
 		nonVolatileSettings.backLightTimeout = backLightTimeout;
 		menuSystemPopAllAndDisplayRootMenu();
+		return;
 	}
 	else if ((keys & KEY_RED)!=0)
 	{

@@ -79,6 +79,6 @@ void read_val_noise1_th_narrowband(int offset, uint16_t* value);
 void read_val_noise2_th_narrowband(int offset, uint16_t* value);
 void read_val_rssi3_th_narrowband(int offset, uint16_t* value);
 
-void read_val_squelch_th(int offset, uint16_t* value);
+void read_val_squelch_th(int offset, int mod, uint16_t* value);
 
 #endif

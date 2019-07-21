@@ -85,12 +85,12 @@ void initVFOChannel()
 		trxTalkGroup = nonVolatileSettings.overrideTG;
 	}
 
-	if (!trxCheckFrequency(nonVolatileSettings.vfoChannel.rxFreq))
+	if (!trxCheckFrequencyInAmateurBand(nonVolatileSettings.vfoChannel.rxFreq))
 	{
 		nonVolatileSettings.vfoChannel.rxFreq = BAND_UHF_MIN;
 	}
 
-	if (!trxCheckFrequency(nonVolatileSettings.vfoChannel.txFreq))
+	if (!trxCheckFrequencyInAmateurBand(nonVolatileSettings.vfoChannel.txFreq))
 	{
 		nonVolatileSettings.vfoChannel.txFreq = BAND_UHF_MIN;
 	}

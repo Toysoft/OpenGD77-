@@ -42,8 +42,9 @@ extern int txstopdelay;
 
 void trx_check_analog_squelch();
 int	trxGetMode();
+int	trxGetBandwidthIs25kHz();
 int	trxGetFrequency();
-void trxSetMode(int mode);
+void trxSetModeAndBandwidth(int mode, bool bandwidthIs25kHz);
 void trxSetFrequency(int frequency);
 void trx_setRX();
 void trx_setTX();
@@ -51,7 +52,6 @@ void trx_deactivateTX();
 void trx_activateTX();
 void trxSetPower(uint32_t powerVal);
 uint16_t trxGetPower();
-void trxSetBandWidth(bool bandWidthis25kHz);
 void trxUpdateC6000Calibration();
 void trxUpdateAT1846SCalibration();
 void trxSetDMRColourCode(int colourCode);
@@ -62,5 +62,7 @@ bool trxCheckFrequency(int tmp_frequency);
 void trxSetTxCTCSS(int toneFreqX10);
 void trxSetRxCTCSS(int toneFreqX10);
 bool trxCheckCTCSSFlag();
+bool trxCheckFrequencyInAmateurBand(int tmp_frequency);
+bool trxCheckFrequencyIsSupportedByTheRadioHardware(int frequency);
 
 #endif /* _FW_TRX_H_ */

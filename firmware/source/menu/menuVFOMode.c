@@ -52,23 +52,24 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 		nonVolatileSettings.initialMenuNumber=MENU_VFO_MODE;
 		currentChannelData = &nonVolatileSettings.vfoChannel;
 
-		trxSetMode(currentChannelData->chMode);
-		if (currentChannelData->chMode == RADIO_MODE_ANALOG)
-		{
-			trxSetBandWidth((currentChannelData->flag4 & 0x02)  == 0x02);// set the bandwidth after the mode, because mode probably sets it back to 12.5kHz (note this needs to be tidied up ;-) )
-		}
-
-		trxSetTxCTCSS(currentChannelData->txTone);
-		trxSetRxCTCSS(currentChannelData->rxTone);
 		trxSetFrequency(currentChannelData->rxFreq);
+		trxSetModeAndBandwidth(currentChannelData->chMode, ((currentChannelData->flag4 & 0x02) == 0x02));
 		trxSetDMRColourCode(currentChannelData->rxColor);
 		trxSetPower(nonVolatileSettings.txPower);
+		trxSetTxCTCSS(currentChannelData->txTone);
+		trxSetRxCTCSS(currentChannelData->rxTone);
+
+		//Need to load the Rx group if specificed even if TG is currently overridden as we may need it later when the left or right button is pressed
+		if (currentChannelData->rxGroupList != 0)
+		{
+			codeplugRxGroupGetDataForIndex(currentChannelData->rxGroupList,&rxGroupData);
+		}
+
 
 		if (nonVolatileSettings.overrideTG == 0)
 		{
 			if (currentChannelData->rxGroupList != 0)
 			{
-				codeplugRxGroupGetDataForIndex(currentChannelData->rxGroupList,&rxGroupData);
 				codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
 
 				// Check whether the contact data seems valid
@@ -208,7 +209,7 @@ static void update_frequency(int frequency)
 {
 	if (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX)
 	{
-		if (trxCheckFrequency(frequency))
+		if (trxCheckFrequencyIsSupportedByTheRadioHardware(frequency))
 		{
 			currentChannelData->txFreq = frequency;
 			set_melody(melody_ACK_beep);
@@ -217,7 +218,7 @@ static void update_frequency(int frequency)
 	else
 	{
 		int deltaFrequency = frequency - currentChannelData->rxFreq;
-		if (trxCheckFrequency(frequency) && trxCheckFrequency(currentChannelData->txFreq + deltaFrequency))
+		if (trxCheckFrequencyIsSupportedByTheRadioHardware(frequency))
 		{
 			currentChannelData->rxFreq = frequency;
 			currentChannelData->txFreq = currentChannelData->txFreq + deltaFrequency;
@@ -268,12 +269,12 @@ static void handleEvent(int buttons, int keys, int events)
 			if (trxGetMode() == RADIO_MODE_ANALOG)
 			{
 				channelScreenChannelData.chMode = RADIO_MODE_DIGITAL;
-				trxSetMode(RADIO_MODE_DIGITAL);
+				trxSetModeAndBandwidth(RADIO_MODE_DIGITAL, false);
 			}
 			else
 			{
 				channelScreenChannelData.chMode = RADIO_MODE_ANALOG;
-				trxSetMode(RADIO_MODE_ANALOG);
+				trxSetModeAndBandwidth(RADIO_MODE_ANALOG, ((currentChannelData->flag4 & 0x02) == 0x02));
 				trxSetTxCTCSS(currentChannelData->rxTone);
 			}
 			currentChannelData->chMode = trxGetMode();
@@ -406,7 +407,7 @@ static void handleEvent(int buttons, int keys, int events)
 			if (freq_enter_idx==7)
 			{
 				int tmp_frequency=read_freq_enter_digits();
-				if (trxCheckFrequency(tmp_frequency))
+				if (trxCheckFrequencyIsSupportedByTheRadioHardware(tmp_frequency))
 				{
 					update_frequency(tmp_frequency);
 					reset_freq_enter_digits();
@@ -439,7 +440,7 @@ int tmp_frequencyRx;
 		tmp_frequencyRx  = currentChannelData->rxFreq + increment;
 		tmp_frequencyTx  = currentChannelData->txFreq + increment;
 	}
-	if (trxCheckFrequency(tmp_frequencyRx) && trxCheckFrequency(tmp_frequencyTx))
+	if (trxCheckFrequencyIsSupportedByTheRadioHardware(tmp_frequencyRx))
 	{
 		currentChannelData->txFreq = tmp_frequencyTx;
 		currentChannelData->rxFreq =  tmp_frequencyRx;
