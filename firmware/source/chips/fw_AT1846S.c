@@ -162,6 +162,7 @@ const uint8_t AT1846DMRSettings[][AT1846_BYTES_PER_COMMAND] = {
 		{0x33, 0x45, 0xF5}, // agc number (recommended value)
 		{0x41, 0x47, 0x31}, // Digital voice gain, (bits 6:0) however default value is supposed to be 0x4006 hence some bits are being set outside the documented range
 		{0x42, 0x10, 0x36}, // RDA1846 lists this as Vox Shut threshold
+		{0x43 ,0x00, 0xBB}, // FM deviation
 		{0x58, 0xBC, 0xFD}, // Disable all filters in DMR mode
 		{0x44, 0x06, 0xCC}, // set internal volume to 80%
 		{0x3a, 0x40, 0xC2}// modu_det_sel (SQ setting)
