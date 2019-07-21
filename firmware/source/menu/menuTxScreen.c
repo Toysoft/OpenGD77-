@@ -30,30 +30,44 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		nextSecondPIT = PITCounter + PIT_COUNTS_PER_SECOND;
-		timeInSeconds=0;
-		updateScreen();
-	    GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
-	    GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 1);
-	    trxSetFrequency(currentChannelData->txFreq);
-	    txstopdelay=0;
-		trxIsTransmitting=true;
-
-	    trx_setTX();
-		if (trxGetMode() == RADIO_MODE_ANALOG)
+		if (trxCheckFrequencyInAmateurBand(currentChannelData->txFreq))
 		{
-		    trx_activateTX();
+			nextSecondPIT = PITCounter + PIT_COUNTS_PER_SECOND;
+			timeInSeconds=0;
+			updateScreen();
+			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
+			GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 1);
+			trxSetFrequency(currentChannelData->txFreq);
+			txstopdelay=0;
+			trxIsTransmitting=true;
+
+			trx_setTX();
+			if (trxGetMode() == RADIO_MODE_ANALOG)
+			{
+				trx_activateTX();
+			}
+		}
+		else
+		{
+			UC1701_clearBuf();
+			UC1701_printCentered(4, "ERROR",UC1701_FONT_16x32);
+			UC1701_printCentered(40, "OUT OF BAND",UC1701_FONT_GD77_8x16);
+			UC1701_render();
+			displayLightOverrideTimeout(-1);
+			set_melody(melody_ERROR_beep);
 		}
 	}
 	else
 	{
-		if (PITCounter >= nextSecondPIT )
+		if (trxIsTransmitting)
 		{
-			timeInSeconds++;
-			updateScreen();
-			nextSecondPIT = PITCounter + PIT_COUNTS_PER_SECOND;
+			if (PITCounter >= nextSecondPIT )
+			{
+				timeInSeconds++;
+				updateScreen();
+				nextSecondPIT = PITCounter + PIT_COUNTS_PER_SECOND;
+			}
 		}
-
 		handleEvent(buttons, keys, events);
 	}
 	return 0;
