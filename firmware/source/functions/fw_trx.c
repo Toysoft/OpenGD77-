@@ -80,6 +80,11 @@ void trxSetModeAndBandwidth(int mode, bool bandwidthIs25kHz)
 	}
 }
 
+bool trxCheckFrequencyIsSupportedByTheRadioHardware(int frequency)
+{
+	return (((frequency >= RADIO_VHF_MIN) && (frequency < RADIO_VHF_MAX)) || ((frequency >= RADIO_UHF_MIN) && (frequency < RADIO_UHF_MAX)));
+}
+
 bool trxCheckFrequencyIsVHF(int frequency)
 {
 	return ((frequency >= RADIO_VHF_MIN) && (frequency < RADIO_VHF_MAX));
@@ -90,7 +95,7 @@ bool trxCheckFrequencyIsUHF(int frequency)
 	return ((frequency >= RADIO_UHF_MIN) && (frequency < RADIO_UHF_MAX));
 }
 
-bool trxCheckFrequency(int tmp_frequency)
+bool trxCheckFrequencyInAmateurBand(int tmp_frequency)
 {
 	return ((tmp_frequency>=BAND_VHF_MIN) && (tmp_frequency<=BAND_VHF_MAX)) || ((tmp_frequency>=BAND_UHF_MIN) && (tmp_frequency<=BAND_UHF_MAX));
 }

@@ -62,5 +62,7 @@ bool trxCheckFrequency(int tmp_frequency);
 void trxSetTxCTCSS(int toneFreqX10);
 void trxSetRxCTCSS(int toneFreqX10);
 bool trxCheckCTCSSFlag();
+bool trxCheckFrequencyInAmateurBand(int tmp_frequency);
+bool trxCheckFrequencyIsSupportedByTheRadioHardware(int frequency);
 
 #endif /* _FW_TRX_H_ */
