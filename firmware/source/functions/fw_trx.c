@@ -418,8 +418,8 @@ void trxUpdateAT1846SCalibration()
 
 	uint16_t xmitter_dev_narrowband;
 
-	uint8_t dac_vgain_analog = 0x0C;
-	uint8_t volume_analog = 0x0C;
+	uint8_t dac_vgain_analog;
+	uint8_t volume_analog;
 
 	uint16_t noise1_th_narrowband;
 	uint16_t noise2_th_narrowband;
@@ -433,6 +433,17 @@ void trxUpdateAT1846SCalibration()
 	read_val_padrv_ibit(band_offset, &padrv_ibit);
 
 	read_val_xmitter_dev_narrowband(band_offset, &xmitter_dev_narrowband);
+
+	if (currentMode == RADIO_MODE_ANALOG)
+	{
+		read_val_dac_vgain_analog(band_offset, &dac_vgain_analog);
+		read_val_volume_analog(band_offset, &volume_analog);
+	}
+	else
+	{
+		dac_vgain_analog = 0x0C;
+		volume_analog = 0x0C;
+	}
 
 	read_val_noise1_th_narrowband(band_offset, &noise1_th_narrowband);
 	read_val_noise2_th_narrowband(band_offset, &noise2_th_narrowband);
