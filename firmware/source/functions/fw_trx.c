@@ -416,14 +416,14 @@ void trxUpdateAT1846SCalibration()
 	uint8_t gain_tx;
 	uint8_t padrv_ibit;
 
-	uint16_t xmitter_dev_narrowband;
+	uint16_t xmitter_dev;
 
 	uint8_t dac_vgain_analog;
 	uint8_t volume_analog;
 
-	uint16_t noise1_th_narrowband;
-	uint16_t noise2_th_narrowband;
-	uint16_t rssi3_th_narrowband;
+	uint16_t noise1_th;
+	uint16_t noise2_th;
+	uint16_t rssi3_th;
 
 	uint16_t squelch_th;
 
@@ -432,7 +432,16 @@ void trxUpdateAT1846SCalibration()
 	read_val_gain_tx(band_offset, &gain_tx);
 	read_val_padrv_ibit(band_offset, &padrv_ibit);
 
-	read_val_xmitter_dev_narrowband(band_offset, &xmitter_dev_narrowband);
+	if (currentBandWidthIs25kHz)
+	{
+		// 25 kHz settings
+		read_val_xmitter_dev_wideband(band_offset, &xmitter_dev);
+	}
+	else
+	{
+		// 12.5 kHz settings
+		read_val_xmitter_dev_narrowband(band_offset, &xmitter_dev);
+	}
 
 	if (currentMode == RADIO_MODE_ANALOG)
 	{
@@ -445,9 +454,20 @@ void trxUpdateAT1846SCalibration()
 		volume_analog = 0x0C;
 	}
 
-	read_val_noise1_th_narrowband(band_offset, &noise1_th_narrowband);
-	read_val_noise2_th_narrowband(band_offset, &noise2_th_narrowband);
-	read_val_rssi3_th_narrowband(band_offset, &rssi3_th_narrowband);
+	if (currentBandWidthIs25kHz)
+	{
+		// 25 kHz settings
+		read_val_noise1_th_wideband(band_offset, &noise1_th);
+		read_val_noise2_th_wideband(band_offset, &noise2_th);
+		read_val_rssi3_th_wideband(band_offset, &rssi3_th);
+	}
+	else
+	{
+		// 12.5 kHz settings
+		read_val_noise1_th_narrowband(band_offset, &noise1_th);
+		read_val_noise2_th_narrowband(band_offset, &noise2_th);
+		read_val_rssi3_th_narrowband(band_offset, &rssi3_th);
+	}
 
 	read_val_squelch_th(band_offset+freq_offset, &squelch_th);
 
@@ -455,13 +475,13 @@ void trxUpdateAT1846SCalibration()
 	I2C_AT1846_set_register_with_mask(0x41, 0xFF80, voice_gain_tx, 0);
 	I2C_AT1846_set_register_with_mask(0x44, 0xF0FF, gain_tx, 8);
 
-	I2C_AT1846_set_register_with_mask(0x59, 0x003f, xmitter_dev_narrowband, 6);
+	I2C_AT1846_set_register_with_mask(0x59, 0x003f, xmitter_dev, 6);
 	I2C_AT1846_set_register_with_mask(0x44, 0xFF0F, dac_vgain_analog, 4);
 	I2C_AT1846_set_register_with_mask(0x44, 0xFFF0, volume_analog, 0);
 
-	I2C_AT1846_set_register_with_mask(0x48, 0x0000, noise1_th_narrowband, 0);
-	I2C_AT1846_set_register_with_mask(0x60, 0x0000, noise2_th_narrowband, 0);
-	I2C_AT1846_set_register_with_mask(0x3f, 0x0000, rssi3_th_narrowband, 0);
+	I2C_AT1846_set_register_with_mask(0x48, 0x0000, noise1_th, 0);
+	I2C_AT1846_set_register_with_mask(0x60, 0x0000, noise2_th, 0);
+	I2C_AT1846_set_register_with_mask(0x3f, 0x0000, rssi3_th, 0);
 
 	I2C_AT1846_set_register_with_mask(0x0A, 0x87FF, padrv_ibit, 11);
 
