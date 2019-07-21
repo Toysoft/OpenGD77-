@@ -125,26 +125,23 @@ const uint8_t AT1846FM25kHzSettings[][AT1846_BYTES_PER_COMMAND] = {
 		};
 
 const uint8_t AT1846FMSettings[][AT1846_BYTES_PER_COMMAND] = {
-		// Settings from the official firmware
-		{0x33,0x44,0xa5}, // agc number (recommended value)
-		{0x41,0x44,0x31}, // Digital voice gain, (bits 6:0) however default value is supposed to be 0x4006 hence some bits are being set outside the documented range
-		{0x42,0x10,0xf0}, // RDA1846 lists this as Vox Shut threshold
-		{0x43,0x00,0xa9}, // FM deviation
-		{0x3a,0x40,0xcb}, // modu_det_sel (SQ setting)
-
-		// Settings that seem to be captured incorrectly from the official firmware
-		{0x58, 0xBC, 0x05},// Enable some filters for FM e.g. de-emphasis / pre-emphasis / High and Low Pass Filters
-		{0x44, 0x06, 0xFF} // set internal volume to 100% . Details from Colin G4EML
+		{0x33, 0x44, 0xA5}, // agc number (recommended value)
+		{0x41, 0x44, 0x31}, // Digital voice gain, (bits 6:0) however default value is supposed to be 0x4006 hence some bits are being set outside the documented range
+		{0x42, 0x10, 0xF0}, // RDA1846 lists this as Vox Shut threshold
+		{0x43, 0x00, 0xA9}, // FM deviation
+		{0x58, 0xBC, 0x05}, // Enable some filters for FM e.g. de-emphasis / pre-emphasis / High and Low Pass Filters
+		{0x44, 0x06, 0xFF}, // set internal volume to 100% . Details from Colin G4EML
+		{0x3A, 0x40, 0xCB}  // modu_det_sel (SQ setting)
 		};
 
 const uint8_t AT1846DMRSettings[][AT1846_BYTES_PER_COMMAND] = {
 		{0x33, 0x45, 0xF5}, // agc number (recommended value)
 		{0x41, 0x47, 0x31}, // Digital voice gain, (bits 6:0) however default value is supposed to be 0x4006 hence some bits are being set outside the documented range
 		{0x42, 0x10, 0x36}, // RDA1846 lists this as Vox Shut threshold
-		{0x43 ,0x00, 0xBB}, // FM deviation
+		{0x43, 0x00, 0xBB}, // FM deviation
 		{0x58, 0xBC, 0xFD}, // Disable all filters in DMR mode
 		{0x44, 0x06, 0xCC}, // set internal volume to 80%
-		{0x3a, 0x40, 0xC2}// modu_det_sel (SQ setting)
+		{0x3A, 0x40, 0xC2}  // modu_det_sel (SQ setting)
 		};
 
 void I2C_AT1846S_send_Settings(const uint8_t settings[][3],int numSettings)
