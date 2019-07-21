@@ -144,12 +144,30 @@ void trxSetFrequency(int frequency)
 		uint8_t fh_l = (f & 0x00ff0000) >> 16;
 		uint8_t fh_h = (f & 0xff000000) >> 24;
 
-		write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x30, 0x40, 0x06 | squelch); // RX off
+		if (currentBandWidthIs25kHz)
+		{
+			// 25 kHz settings
+			write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x30, 0x70, 0x06 | squelch); // RX off
+		}
+		else
+		{
+			// 12.5 kHz settings
+			write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x30, 0x40, 0x06 | squelch); // RX off
+		}
 		write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x05, 0x87, 0x63); // select 'normal' frequency mode
 		write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x29, fh_h, fh_l);
 		write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x2a, fl_h, fl_l);
 		write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x49, 0x0C, 0x15); // setting SQ open and shut threshold
-		write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x30, 0x40, 0x26 | squelch); // RX on
+		if (currentBandWidthIs25kHz)
+		{
+			// 25 kHz settings
+			write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x30, 0x70, 0x26 | squelch); // RX on
+		}
+		else
+		{
+			// 12.5 kHz settings
+			write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x30, 0x40, 0x26 | squelch); // RX on
+		}
 
 		trxUpdateC6000Calibration();
 		trxUpdateAT1846SCalibration();
