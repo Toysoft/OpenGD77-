@@ -78,7 +78,14 @@ static void loadChannelData(bool useChannelDataInMemory)
 	}
 
 	trxSetFrequency(channelScreenChannelData.rxFreq);
-	trxSetModeAndBandwidth(channelScreenChannelData.chMode, ((channelScreenChannelData.flag4 & 0x02) == 0x02));
+	if (channelScreenChannelData.chMode == RADIO_MODE_ANALOG)
+	{
+		trxSetModeAndBandwidth(channelScreenChannelData.chMode, ((channelScreenChannelData.flag4 & 0x02) == 0x02));
+	}
+	else
+	{
+		trxSetModeAndBandwidth(channelScreenChannelData.chMode, false);
+	}
 	trxSetDMRColourCode(channelScreenChannelData.rxColor);
 	trxSetPower(nonVolatileSettings.txPower);
 	trxSetTxCTCSS(channelScreenChannelData.txTone);

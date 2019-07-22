@@ -380,6 +380,8 @@ void trxUpdateC6000Calibration()
 
 	trxCalcBandAndFrequencyOffset(&band_offset, &freq_offset);
 
+	write_SPI_page_reg_byte_SPI0(0x04, 0x00, 0x3F); // Reset HR-C6000 state
+
 	uint8_t val_shift;
 	read_val_DACDATA_shift(band_offset,&val_shift);
 	write_SPI_page_reg_byte_SPI0(0x04, 0x37, val_shift); // DACDATA shift (LIN_VOL)
