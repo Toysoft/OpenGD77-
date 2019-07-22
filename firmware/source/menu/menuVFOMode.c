@@ -53,7 +53,14 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 		currentChannelData = &nonVolatileSettings.vfoChannel;
 
 		trxSetFrequency(currentChannelData->rxFreq);
-		trxSetModeAndBandwidth(currentChannelData->chMode, ((currentChannelData->flag4 & 0x02) == 0x02));
+		if (currentChannelData->chMode == RADIO_MODE_ANALOG)
+		{
+			trxSetModeAndBandwidth(currentChannelData->chMode, ((currentChannelData->flag4 & 0x02) == 0x02));
+		}
+		else
+		{
+			trxSetModeAndBandwidth(currentChannelData->chMode, false);
+		}
 		trxSetDMRColourCode(currentChannelData->rxColor);
 		trxSetPower(nonVolatileSettings.txPower);
 		trxSetTxCTCSS(currentChannelData->txTone);
