@@ -2,6 +2,8 @@ Changelog
 =========
 
 V0.3.2 (OpenGD77 Phase 1 - Update 2):
+- Fixed a bug where DMR RX stopped working due to internally incorrect bandwidth handling.
+- Reset HR-C6000 state every time when calibration is done (this avoids affected FM mode after DMR TX).
 <work in progress>
 
 V0.3.1 (OpenGD77 Phase 1 - Update 1):
