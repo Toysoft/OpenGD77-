@@ -30,7 +30,7 @@ const int BAND_UHF_MAX 	= 4500000;
 
 static const int STORAGE_BASE_ADDRESS 		= 0x6000;
 static const int STORAGE_BASE_ADDRESS_OLD 	= 0xFF00;
-static const int STORAGE_MAGIC_NUMBER 		= 0x471C;
+static const int STORAGE_MAGIC_NUMBER 		= 0x471D;
 
 settingsStruct_t nonVolatileSettings;
 struct_codeplugChannel_t *currentChannelData;
@@ -114,6 +114,7 @@ void settingsRestoreDefaultSettings()
 	nonVolatileSettings.overrideTG=0;// 0 = No override
 	nonVolatileSettings.useCalibration = 0x01;// enable the new calibration system
 	nonVolatileSettings.squelch = 45;// default reasonable value for FM
+	nonVolatileSettings.usbMode = USB_MODE_CPS;
 	initVFOChannel();
 	currentChannelData = &nonVolatileSettings.vfoChannel;// Set the current channel data to point to the VFO data since the default screen will be the VFO
 
