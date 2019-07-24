@@ -33,7 +33,7 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 		if (trxCheckFrequencyInAmateurBand(currentChannelData->txFreq))
 		{
 			nextSecondPIT = PITCounter + PIT_COUNTS_PER_SECOND;
-			timeInSeconds=0;
+			timeInSeconds = currentChannelData->tot*15;
 			updateScreen();
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 			GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 1);
@@ -63,8 +63,25 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 		{
 			if (PITCounter >= nextSecondPIT )
 			{
-				timeInSeconds++;
-				updateScreen();
+				if (currentChannelData->tot==0)
+				{
+					timeInSeconds++;
+				}
+				else
+				{
+					timeInSeconds--;
+				}
+				if (currentChannelData->tot!=0 && timeInSeconds == 0)
+				{
+					set_melody(melody_tx_timeout_beep);
+					UC1701_clearBuf();
+					UC1701_printCentered(20, "TIMEOUT",UC1701_FONT_16x32);
+					UC1701_render();
+				}
+				else
+				{
+					updateScreen();
+				}
 				nextSecondPIT = PITCounter + PIT_COUNTS_PER_SECOND;
 			}
 		}
@@ -87,7 +104,7 @@ static void updateScreen()
 
 static void handleEvent(int buttons, int keys, int events)
 {
-	if ((buttons & BUTTON_PTT)==0)
+	if ((buttons & BUTTON_PTT)==0 || (currentChannelData->tot!=0 && timeInSeconds == 0))
 	{
 		trxIsTransmitting=false;
 		if (txstopdelay>0)

@@ -45,6 +45,7 @@ const int melody_orange_beep[] = { 440, 60, 494, 60, 440, 60, 494, 60, -1, -1 };
 const int melody_ACK_beep[] = { 440, 120, 660, 120, 880, 120, -1, -1 };
 const int melody_NACK_beep[] = { 494, 120, 466, 120, -1, -1 };
 const int melody_ERROR_beep[] = { 440, 30, 0, 30, 440, 30, 0, 30, 440, 30, -1, -1 };
+const int melody_tx_timeout_beep[] = { 440, 60, 494, 60, 440, 60, 494, 60, 440, 60, 494, 60, 440, 60, 494, 60, -1, -1 };
 volatile int *melody_play = NULL;
 volatile int melody_idx = 0;
 /*
