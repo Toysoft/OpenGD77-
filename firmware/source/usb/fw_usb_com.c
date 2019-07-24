@@ -30,7 +30,6 @@ uint8_t tmp_ram1[256];
 uint8_t tmp_ram2[256];
 
 static void handleCPSRequest();
-static void handleHotspotRequest();
 
 volatile uint8_t com_buffer[COM_BUFFER_SIZE];
 int com_buffer_write_idx = 0;
@@ -63,13 +62,6 @@ void tick_com_request()
 		com_request=0;
 	}
 	taskEXIT_CRITICAL();
-}
-
-static void handleHotspotRequest()
-{
-//	if (com_requestbuffer[0]=='R')
-	s_ComBuf[0] = '-';
-	USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, s_ComBuf, 1);
 }
 
 static void handleCPSRequest()
