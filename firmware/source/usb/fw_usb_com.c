@@ -16,6 +16,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <menu/menuHotspot.h>
 #include "fw_usb_com.h"
 #include "fw_settings.h"
 
@@ -54,7 +55,7 @@ void tick_com_request()
 				handleCPSRequest();
 				break;
 			case USB_MODE_HOTSPOT:
-				handleHotspotRequest();
+				handleHotspotRequest(com_requestbuffer,com_buffer);
 				break;
 		}
 

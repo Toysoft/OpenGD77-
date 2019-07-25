@@ -18,6 +18,6 @@
 #ifndef _FW_HOTSPOT_H_
 #define _FW_HOTSPOT_H_
 #include "fw_main.h"
-void handleHotspotRequest(uint8_t com_requestbuffer[],uint8_t s_ComBuf[]);
+void handleHotspotRequest(volatile uint8_t com_requestbuffer[],volatile uint8_t s_ComBuf[]);
 
 #endif
