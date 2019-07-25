@@ -1,6 +1,9 @@
 Changelog
 =========
 
+V0.3.4 (OpenGD77 Phase 1 - Update 4):
+<work in progress>
+
 V0.3.3 (OpenGD77 Phase 1 - Update 3):
 - Additional stuff by Roger Clark, VK3KYY / G4KYF:
   - Fix issue with incorrect maximum number of channels per zone.
