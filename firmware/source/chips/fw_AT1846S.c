@@ -95,7 +95,6 @@ const uint8_t AT1846FM12P5kHzSettings[][AT1846_BYTES_PER_COMMAND] = {
 		{0x0F, 0x3F, 0x44}, // AGC Table (recommended value for 12.5kHz bandwidth operation)
 		{0x12, 0xE0, 0xEB}, // AGC Table (recommended value for 12.5kHz bandwidth operation)
 		{0x7F, 0x00, 0x00}, // Go back to page 0 registers
-		{0x30, 0x40, 0x26}, // filter_band_sel + band_mode_sel = 12.5KHz
 		};
 
 const uint8_t AT1846FM25kHzSettings[][AT1846_BYTES_PER_COMMAND] = {
@@ -121,7 +120,6 @@ const uint8_t AT1846FM25kHzSettings[][AT1846_BYTES_PER_COMMAND] = {
 		{0x0F, 0x3F, 0x84}, // AGC Table (recommended value for 25kHz bandwidth operation)
 		{0x12, 0xE0, 0xEB}, // AGC Table (recommended value for 25kHz bandwidth operation)
 		{0x7F, 0x00, 0x00}, // Go back to page 0 registers
-		{0x30, 0x70, 0x26}, // filter_band_sel + band_mode_sel = 25kHz
 		};
 
 const uint8_t AT1846FMSettings[][AT1846_BYTES_PER_COMMAND] = {
@@ -186,11 +184,15 @@ void I2C_AT1846_SetBandwidth()
 	{
 		// 25 kHz settings
 		I2C_AT1846S_send_Settings(AT1846FM25kHzSettings,sizeof(AT1846FM25kHzSettings)/AT1846_BYTES_PER_COMMAND);
+		set_clear_I2C_reg_2byte_with_mask(0x30,0xCF,0x9F,0x30,0x00); // Set the 25Khz Bits and turn off the Rx and Tx
+		set_clear_I2C_reg_2byte_with_mask(0x30,0xFF,0x9F,0x00,0x20); // Turn the Rx On
 	}
 	else
 	{
 		// 12.5 kHz settings
 		I2C_AT1846S_send_Settings(AT1846FM12P5kHzSettings, sizeof(AT1846FM12P5kHzSettings)/AT1846_BYTES_PER_COMMAND);
+		set_clear_I2C_reg_2byte_with_mask(0x30,0xCF,0x9F,0x00,0x00); // Clear the 25Khz Bits and turn off the Rx and Tx
+		set_clear_I2C_reg_2byte_with_mask(0x30,0xFF,0x9F,0x00,0x20); // Turn the Rx On
 	}
 }
 

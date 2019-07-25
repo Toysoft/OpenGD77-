@@ -49,8 +49,12 @@ static void updateScreen()
 	struct_codeplugZone_t zoneBuf;
 	UC1701_clearBuf();
 	UC1701_printCentered(0, "Zones",UC1701_FONT_GD77_8x16);
-	for(int i=-1; i <= 1 ;i++)
+	for(int i=-1; i <= 1;i++)
 	{
+		if (gMenusEndIndex <= (i+1))
+		{
+			break;
+		}
 		rPos= i + gMenusCurrentItemIndex;
 		if (rPos >= gMenusEndIndex)
 		{
