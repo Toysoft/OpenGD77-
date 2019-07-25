@@ -7,7 +7,6 @@ V0.3.3 (OpenGD77 Phase 1 - Update 3):
   - Improvement for bug when number of Zones is less than 3 (which is the number of lines on the screen). Note this is not the ideal fix in terms of GUI design, but is better than it was before.
   - Bug fix from Colin G4ELM for the FM green Rx led permanently on, sometimes when switching from DMR to FM.
   - Add Tx timeout, from value in the codeplug. Tx timer now counts up if TOT is not defined or down from the TOT value is it is defined, and Tx is terminated after the timeout period.
-<work in progress>
 
 V0.3.2 (OpenGD77 Phase 1 - Update 2):
 - Fixed a bug where DMR RX stopped working due to internally incorrect bandwidth handling.
