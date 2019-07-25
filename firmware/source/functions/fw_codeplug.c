@@ -42,6 +42,8 @@ const int CODEPLUG_ADDR_BOOT_LINE1 = 0x7540;
 const int CODEPLUG_ADDR_BOOT_LINE2 = 0x7550;
 const int CODEPLUG_ADDR_VFO_A_CHANNEL = 0x7590;
 
+const int MAX_CHANNELS_PER_ZONE = 16;
+
 uint32_t byteSwap32(uint32_t n)
 {
     return ((((n)&0x000000FFU) << 24U) | (((n)&0x0000FF00U) << 8U) | (((n)&0x00FF0000U) >> 8U) | (((n)&0xFF000000U) >> 24U));// from usb_misc.h
@@ -92,7 +94,7 @@ void codeplugZoneGetDataForIndex(int index,struct_codeplugZone_t *returnBuf)
 {
 	// IMPORTANT. read size is different from the size of the data, because I added a extra property to the struct to hold the number of channels in the zone.
 	EEPROM_Read(CODEPLUG_ADDR_EX_ZONE_LIST + (index * CODEPLUG_ZONE_DATA_SIZE), (uint8_t*)returnBuf, sizeof(struct_codeplugZone_t));
-	for(int i=0;i<32;i++)
+	for(int i=0;i<MAX_CHANNELS_PER_ZONE;i++)
 	{
 		// Empty channels seem to be filled with zeros
 		if (returnBuf->channels[i] == 0)
@@ -101,7 +103,7 @@ void codeplugZoneGetDataForIndex(int index,struct_codeplugZone_t *returnBuf)
 			return;
 		}
 	}
-	returnBuf->NOT_IN_MEMORY_numChannelsInZone=32;
+	returnBuf->NOT_IN_MEMORY_numChannelsInZone=MAX_CHANNELS_PER_ZONE;
 }
 
 void codeplugChannelGetDataForIndex(int index, struct_codeplugChannel_t *channelBuf)
