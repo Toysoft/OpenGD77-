@@ -41,6 +41,7 @@ int menuUtilities(int buttons, int keys, int events, bool isFirstRun);
 int menuDisplayOptions(int buttons, int keys, int events, bool isFirstRun);
 int menuCredits(int buttons, int keys, int events, bool isFirstRun);
 int menuChannelDetails(int buttons, int keys, int events, bool isFirstRun);
+int menuHotspotMode(int buttons, int keys, int events, bool isFirstRun);
 
 
 /*
@@ -65,7 +66,10 @@ const menuItemNew_t * menusData[] = { 	NULL,// splash
 										NULL,// Tx
 										NULL,// RSSI
 										NULL,// LastHeard
-										NULL,// Debug
+										NULL,// Display options
+										NULL,// Credits
+										NULL,// Channel Details
+										NULL,// hotspot mode
 								};
 
 const MenuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
@@ -84,7 +88,8 @@ const MenuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
 												menuUtilities,
 												menuDisplayOptions,
 												menuCredits,
-												menuChannelDetails};
+												menuChannelDetails,
+												menuHotspotMode};
 
 void menuSystemPushNewMenu(int menuNumber)
 {
@@ -176,11 +181,12 @@ const char menuStringTable[32][16] = { "",//0
 										 "Display options",//20
 										 "Credits",//21
 										 "Channel details",//22
+										 "Hotspot mode",//23
 };
 
 
 const menuItemNew_t menuDataMainMenu[] = {
-	{9,9},// number of menus
+	{10,10},// number of menus
 	{ 21, MENU_CREDITS },
 	{ 6, MENU_ZONE_LIST },
 	{ 17, MENU_RSSI_SCREEN },
@@ -190,6 +196,7 @@ const menuItemNew_t menuDataMainMenu[] = {
 	{ 19, MENU_UTILITIES },
 	{ 20, MENU_DISPLAY},
 	{ 22, MENU_CHANNEL_DETAILS},
+	{ 23, MENU_HOTSPOT_MODE},
 };
 const menuItemNew_t menuDataContact[] = {
 	{ 3, 3 } ,// length
