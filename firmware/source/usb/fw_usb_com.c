@@ -49,7 +49,7 @@ void tick_com_request()
 	taskENTER_CRITICAL();
 	if (com_request==1)
 	{
-		switch (nonVolatileSettings.usbMode)
+		switch (settingsUsbMode)
 		{
 			case USB_MODE_CPS:
 				handleCPSRequest();

@@ -1,6 +1,8 @@
 /*
  * Copyright (C)2019 Roger Clark. VK3KYY / G4KYF
  *
+ * Using some code ported from MMDVM_HS by Andy CA6JAU
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -36,7 +38,7 @@ int menuHotspotMode(int buttons, int keys, int events, bool isFirstRun)
 	{
 		freq_rx = currentChannelData->rxFreq;
 		freq_tx = currentChannelData->txFreq;
-		nonVolatileSettings.usbMode = USB_MODE_HOTSPOT;
+		settingsUsbMode = USB_MODE_HOTSPOT;
 		updateScreen();
 	}
 	else
@@ -75,7 +77,7 @@ static void handleEvent(int buttons, int keys, int events)
 {
 	if ((keys & KEY_RED)!=0)
 	{
-		nonVolatileSettings.usbMode = USB_MODE_CPS;
+		settingsUsbMode = USB_MODE_CPS;
 		menuSystemPopAllAndDisplayRootMenu();
 		return;
 	}
@@ -114,7 +116,7 @@ static void handleEvent(int buttons, int keys, int events)
 
 static void sendACK(uint8_t* s_ComBuf)
 {
-	SEGGER_RTT_printf(0, "sendACK\r\n");
+  SEGGER_RTT_printf(0, "sendACK\r\n");
   s_ComBuf[0U] = MMDVM_FRAME_START;
   s_ComBuf[1U] = 4U;
   s_ComBuf[2U] = MMDVM_ACK;
@@ -135,58 +137,54 @@ static void sendNAK(uint8_t* s_ComBuf,uint8_t err)
 
 static uint8_t setFreq(const uint8_t* data, uint8_t length)
 {
+// satellite frequencies banned frequency ranges
+const int BAN1_MIN  = 14580000;
+const int BAN1_MAX  = 14600000;
+const int BAN2_MIN  = 43500000;
+const int BAN2_MAX  = 43800000;
+
 	SEGGER_RTT_printf(0, "setConfig\r\n");
 
-	  // Current MMDVMHost, set power from MMDVM.ini
-	  if (length >= 10U)
-	  {
-	    rf_power = data[9U];
-	  }
+	// Very old MMDVMHost, set full power
+	if (length == 9U)
+	{
+		rf_power = 255U;
+	}
+	// Current MMDVMHost, set power from MMDVM.ini
+	if (length >= 10U)
+	{
+		rf_power = data[9U];// 255 = max power
+	}
 
-	  freq_rx  = data[1U] << 0;
-	  freq_rx |= data[2U] << 8;
-	  freq_rx |= data[3U] << 16;
-	  freq_rx |= data[4U] << 24;
-	  freq_rx= freq_rx / 100;
+	freq_rx  = data[1U] << 0;
+	freq_rx |= data[2U] << 8;
+	freq_rx |= data[3U] << 16;
+	freq_rx |= data[4U] << 24;
+	freq_rx= freq_rx / 100;
 
-	  freq_tx  = data[5U] << 0;
-	  freq_tx |= data[6U] << 8;
-	  freq_tx |= data[7U] << 16;
-	  freq_tx |= data[8U] << 24;
-	  freq_tx=freq_tx / 100;
+	freq_tx  = data[5U] << 0;
+	freq_tx |= data[6U] << 8;
+	freq_tx |= data[7U] << 16;
+	freq_tx |= data[8U] << 24;
+	freq_tx=freq_tx / 100;
 
-	  SEGGER_RTT_printf(0, "Tx freq = %d, Rx freq = %d, Power = %d\n",freq_tx,freq_rx,rf_power);
+	SEGGER_RTT_printf(0, "Tx freq = %d, Rx freq = %d, Power = %d\n",freq_tx,freq_rx,rf_power);
 
-/*
+	if ((freq_tx>= BAN1_MIN && freq_tx <= BAN1_MAX) || (freq_tx>= BAN2_MIN && freq_tx <= BAN2_MAX))
+	{
+		return 4U;// invalid frequency
+	}
 
-  if (length < 9U)
-  {
-    return 4U;
-  }
+	if (trxCheckFrequencyInAmateurBand(freq_rx) && trxCheckFrequencyInAmateurBand(freq_tx))
+	{
+		trxSetFrequency(freq_rx);
+	}
+	else
+	{
+		return 4U;// invalid frequency
+	}
 
-  // Very old MMDVMHost, set full power
-  if (length == 9U)
-  {
-    rf_power = 255U;
-  }
-
-  // Current MMDVMHost, set power from MMDVM.ini
-  if (length >= 10U)
-  {
-    rf_power = data[9U];
-  }
-
-  freq_rx  = data[1U] << 0;
-  freq_rx |= data[2U] << 8;
-  freq_rx |= data[3U] << 16;
-  freq_rx |= data[4U] << 24;
-
-  freq_tx  = data[5U] << 0;
-  freq_tx |= data[6U] << 8;
-  freq_tx |= data[7U] << 16;
-  freq_tx |= data[8U] << 24;
-*/
-  return 0x00;//io.setFreq(freq_rx, freq_tx, rf_power, pocsag_freq_tx);
+  return 0x00;
 }
 
 static bool hasRXOverflow()
@@ -206,7 +204,7 @@ static int dmrDMOTX_getSpace()
 
 static void getStatus(uint8_t* s_ComBuf)
 {
-	SEGGER_RTT_printf(0, "getStatus\r\n");
+//	SEGGER_RTT_printf(0, "getStatus\r\n");
 
  // io.resetWatchdog();
 
@@ -236,10 +234,10 @@ static void getStatus(uint8_t* s_ComBuf)
 	{
 		s_ComBuf[5U] |= 0x08U;
 	}
-	s_ComBuf[6U] = 0U;// No DSTAR
-	s_ComBuf[7U] = 10U;
-	s_ComBuf[8U] = dmrDMOTX_getSpace();
-	s_ComBuf[9U] = 0U;// No YSF
+	s_ComBuf[6U] = 	0U;// No DSTAR
+	s_ComBuf[7U] = 	10U;
+	s_ComBuf[8U] = 	dmrDMOTX_getSpace();
+	s_ComBuf[9U] = 	0U;// No YSF
 	s_ComBuf[10U] = 0U;// No P25
 	s_ComBuf[11U] = 0U;// no NXDN
 	s_ComBuf[12U] = 0U;// no POCSAG
@@ -453,7 +451,7 @@ static void getVersion(uint8_t s_ComBuf[])
 
 	const char HOTSPOT_NAME[] = "OpenGD77";
 	s_ComBuf[1]= 4 + strlen(HOTSPOT_NAME) - 1;// minus 1 because there is no terminator
-	s_ComBuf[3]= 0x01;// protocol version number
+	s_ComBuf[3]= PROTOCOL_VERSION;
 	strcpy((char *)&s_ComBuf[4],HOTSPOT_NAME);
 	USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, s_ComBuf, s_ComBuf[1]);
 }
@@ -512,43 +510,79 @@ void handleHotspotRequest(uint8_t com_requestbuffer[],uint8_t s_ComBuf[])
 	            }
 	        	updateScreen();
 				break;
-				/*
+
 			case MMDVM_CAL_DATA:
+				SEGGER_RTT_printf(0, "MMDVM_CAL_DATA\r\n");
+				sendACK(s_ComBuf);
 				break;
 			case MMDVM_RSSI_DATA:
+				SEGGER_RTT_printf(0, "MMDVM_RSSI_DATA\r\n");
+				sendACK(s_ComBuf);
 				break;
 			case MMDVM_SEND_CWID:
+				SEGGER_RTT_printf(0, "MMDVM_SEND_CWID\r\n");
+				sendACK(s_ComBuf);
 				break;
 			case MMDVM_DMR_DATA1:
+				SEGGER_RTT_printf(0, "MMDVM_DMR_DATA1\r\n");
+				sendACK(s_ComBuf);
 				break;
 			case MMDVM_DMR_LOST1:
+				SEGGER_RTT_printf(0, "MMDVM_DMR_LOST1\r\n");
+				sendACK(s_ComBuf);
 				break;
 			case MMDVM_DMR_DATA2:
+				SEGGER_RTT_printf(0, "MMDVM_DMR_DATA2\r\n");
+				sendACK(s_ComBuf);
 				break;
 			case MMDVM_DMR_LOST2:
+				SEGGER_RTT_printf(0, "MMDVM_DMR_LOST2\r\n");
+				sendACK(s_ComBuf);
 				break;
 			case MMDVM_DMR_SHORTLC:
+				SEGGER_RTT_printf(0, "MMDVM_DMR_SHORTLC\r\n");
+				sendACK(s_ComBuf);
 				break;
 			case MMDVM_DMR_START:
+				SEGGER_RTT_printf(0, "MMDVM_DMR_START\r\n");
+				sendACK(s_ComBuf);
 				break;
 			case MMDVM_DMR_ABORT:
+				SEGGER_RTT_printf(0, "MMDVM_DMR_ABORT\r\n");
+				sendACK(s_ComBuf);
 				break;
 			case MMDVM_SERIAL:
+				SEGGER_RTT_printf(0, "MMDVM_SERIAL\r\n");
+				sendACK(s_ComBuf);
 				break;
 			case MMDVM_TRANSPARENT:
+				SEGGER_RTT_printf(0, "MMDVM_TRANSPARENT\r\n");
+				sendACK(s_ComBuf);
 				break;
 			case MMDVM_QSO_INFO:
+				SEGGER_RTT_printf(0, "MMDVM_QSO_INFO\r\n");
+				sendACK(s_ComBuf);
 				break;
 			case MMDVM_DEBUG1:
+				SEGGER_RTT_printf(0, "MMDVM_DEBUG1\r\n");
+				sendACK(s_ComBuf);
 				break;
 			case MMDVM_DEBUG2:
+				SEGGER_RTT_printf(0, "MMDVM_DEBUG2\r\n");
+				sendACK(s_ComBuf);
 				break;
 			case MMDVM_DEBUG3:
+				SEGGER_RTT_printf(0, "MMDVM_DEBUG3\r\n");
+				sendACK(s_ComBuf);
 				break;
 			case MMDVM_DEBUG4:
-
+				SEGGER_RTT_printf(0, "MMDVM_DEBUG4\r\n");
+				sendACK(s_ComBuf);
+				break;
 			case MMDVM_DEBUG5:
-				break;*/
+				SEGGER_RTT_printf(0, "MMDVM_DEBUG5\r\n");
+				sendACK(s_ComBuf);
+				break;
 			default:
 				sendACK(s_ComBuf);
 				break;
