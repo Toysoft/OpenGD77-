@@ -77,7 +77,6 @@ static void updateScreen()
 	UC1701_render();
 	displayLightTrigger();
 	sprintf(buffer,"Battery voltage %d.%dV\n", val1,val2);
-	USB_DEBUG_PRINT(buffer);
 }
 
 
