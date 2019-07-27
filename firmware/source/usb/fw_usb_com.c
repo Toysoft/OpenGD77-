@@ -151,7 +151,7 @@ void tick_com_request()
 				taskEXIT_CRITICAL();
 				ok = EEPROM_Write(address, (uint8_t*)com_requestbuffer+8, length);
 				taskENTER_CRITICAL();
-			    vTaskDelay(portTICK_PERIOD_MS * 5);
+			    //vTaskDelay(portTICK_PERIOD_MS * 5);
 			}
 
 			if (ok)
