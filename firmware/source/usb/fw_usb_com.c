@@ -252,3 +252,9 @@ void add_to_commbuffer(uint8_t value)
 		com_buffer_write_idx=0;
 	}
 }
+
+void USB_DEBUG_PRINT(char *str)
+{
+	strcpy(s_ComBuf,str);
+	USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, s_ComBuf, strlen(str));
+}
