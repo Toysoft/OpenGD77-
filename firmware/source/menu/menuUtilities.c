@@ -163,6 +163,7 @@ static void handleEvent(int buttons, int keys, int events)
 			case 4:
 				nonVolatileSettings.useCalibration=0x01;
 				break;
+
 		}
 	}
 	else if ((keys & KEY_LEFT)!=0)
