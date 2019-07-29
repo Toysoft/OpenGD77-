@@ -2,6 +2,12 @@ Changelog
 =========
 
 V0.3.4 (OpenGD77 Phase 1 - Update 4):
+- Cleanup.
+- Additional stuff by Roger Clark, VK3KYY / G4KYF:
+  - Fix for EEPROM write delay problem, from Colin G4EML. Removed the 5ms delay after EEPROM write in fw_usb_com.c as that should now also be redundant.
+  - Fix for menu system data inconsistency.
+  - Added hotspot mode (work in progress), currently disabled.
+  - Added USB_DEBUG_PRINT.
 <work in progress>
 
 V0.3.3 (OpenGD77 Phase 1 - Update 3):
