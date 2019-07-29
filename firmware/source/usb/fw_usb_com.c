@@ -58,8 +58,6 @@ void tick_com_request()
 				handleHotspotRequest(com_requestbuffer,com_buffer);
 				break;
 		}
-
-
 		com_request=0;
 	}
 	taskEXIT_CRITICAL();
@@ -173,7 +171,6 @@ static void handleCPSRequest()
 			taskEXIT_CRITICAL();
 			ok = EEPROM_Write(address, (uint8_t*)com_requestbuffer+8, length);
 			taskENTER_CRITICAL();
-//		    vTaskDelay(portTICK_PERIOD_MS * 5);
 		}
 
 		if (ok)
@@ -255,6 +252,6 @@ void add_to_commbuffer(uint8_t value)
 
 void USB_DEBUG_PRINT(char *str)
 {
-	strcpy(s_ComBuf,str);
+	strcpy((char*)s_ComBuf,str);
 	USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, s_ComBuf, strlen(str));
 }
