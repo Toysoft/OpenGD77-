@@ -16,6 +16,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 #include "menu/menuSystem.h"
+#include "fw_usb_com.h"
 
 static void updateScreen();
 static void handleEvent(int buttons, int keys, int events);
@@ -75,6 +76,7 @@ static void updateScreen()
 
 	UC1701_render();
 	displayLightTrigger();
+	sprintf(buffer,"Battery voltage %d.%dV\n", val1,val2);
 }
 
 

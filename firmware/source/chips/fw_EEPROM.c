@@ -46,7 +46,23 @@ bool EEPROM_Write(int address,uint8_t *buf, int size)
 		masterXfer.dataSize = COMMAND_SIZE;
 		masterXfer.flags = kI2C_TransferNoStopFlag;//kI2C_TransferDefaultFlag;
 
+		// EEPROM Will not respond if it is busy completing the previous write.
+		// So repeat the write command until it responds or timeout after 20
+		// attempts 1mS apart
+
+		int timoutCount=20;
+		status=kStatus_Success;
+		do
+		{
+			if(status!=kStatus_Success)
+			{
+				vTaskDelay(portTICK_PERIOD_MS * 1);
+			}
+
 		status = I2C_MasterTransferBlocking(I2C0, &masterXfer);
+
+		}while((status!=kStatus_Success)& (timoutCount-- >0));
+
 		if (status != kStatus_Success)
 		{
 	    	taskEXIT_CRITICAL();
@@ -70,10 +86,6 @@ bool EEPROM_Write(int address,uint8_t *buf, int size)
 		}
 		address += transferSize;
 		size -= transferSize;
-		if (size!=0)
-		{
-		    vTaskDelay(portTICK_PERIOD_MS * 5);
-		}
     }
 	taskEXIT_CRITICAL();
 	return true;
