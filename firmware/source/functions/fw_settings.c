@@ -30,11 +30,12 @@ const int BAND_UHF_MAX 	= 4500000;
 
 static const int STORAGE_BASE_ADDRESS 		= 0x6000;
 static const int STORAGE_BASE_ADDRESS_OLD 	= 0xFF00;
-static const int STORAGE_MAGIC_NUMBER 		= 0x471C;
+static const int STORAGE_MAGIC_NUMBER 		= 0x471D;
 
 settingsStruct_t nonVolatileSettings;
 struct_codeplugChannel_t *currentChannelData;
 struct_codeplugChannel_t channelScreenChannelData={.rxFreq=0};
+int settingsUsbMode = USB_MODE_CPS;
 
 void settingsSaveSettings()
 {
