@@ -29,6 +29,8 @@ static struct_codeplugZone_t currentZone;
 static struct_codeplugRxGroup_t rxGroupData;
 static struct_codeplugContact_t contactData;
 static int currentIndexInTRxGroup=0;
+static char currentZoneName[17];
+static int directChannelNumber=0;
 
 int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 {
@@ -36,6 +38,7 @@ int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 	{
 		nonVolatileSettings.initialMenuNumber = MENU_CHANNEL_MODE;// This menu.
 		codeplugZoneGetDataForIndex(nonVolatileSettings.currentZone,&currentZone);
+		codeplugUtilConvertBufToString(currentZone.name,currentZoneName,16);// need to convert to zero terminated string
 		if (channelScreenChannelData.rxFreq != 0)
 		{
 			loadChannelData(true);
@@ -74,7 +77,14 @@ static void loadChannelData(bool useChannelDataInMemory)
 {
 	if (!useChannelDataInMemory)
 	{
-		codeplugChannelGetDataForIndex(currentZone.channels[nonVolatileSettings.currentChannelIndexInZone],&channelScreenChannelData);
+		if (strcmp(currentZoneName,"All Channels")==0)
+		{
+			codeplugChannelGetDataForIndex(nonVolatileSettings.currentChannelIndexInAllZone,&channelScreenChannelData);
+		}
+		else
+		{
+			codeplugChannelGetDataForIndex(currentZone.channels[nonVolatileSettings.currentChannelIndexInZone],&channelScreenChannelData);
+		}
 	}
 
 	trxSetFrequency(channelScreenChannelData.rxFreq);
@@ -106,6 +116,7 @@ static void loadChannelData(bool useChannelDataInMemory)
 static void updateScreen()
 {
 	char nameBuf[17];
+	int channelNumber;
 
 	UC1701_clearBuf();
 
@@ -116,6 +127,25 @@ static void updateScreen()
 		case QSO_DISPLAY_DEFAULT_SCREEN:
 			codeplugUtilConvertBufToString(channelScreenChannelData.name,nameBuf,16);
 			UC1701_printCentered(32, (char *)nameBuf,UC1701_FONT_GD77_8x16);
+
+			if (strcmp(currentZoneName,"All Channels") == 0)
+			{
+				channelNumber=nonVolatileSettings.currentChannelIndexInAllZone;
+				if (directChannelNumber>0)
+				{
+					sprintf(nameBuf,"Goto %d",directChannelNumber);
+				}
+				else
+				{
+					sprintf(nameBuf,"CH %d",channelNumber);
+				}
+				UC1701_printCentered(50, (char *)nameBuf,UC1701_FONT_6X8);
+			}
+			else
+			{
+				sprintf(nameBuf,"%s",currentZoneName);
+				UC1701_printCentered(50, (char *)nameBuf,UC1701_FONT_6X8);
+			}
 
 			if (trxGetMode() == RADIO_MODE_DIGITAL)
 			{
@@ -157,7 +187,22 @@ static void handleEvent(int buttons, int keys, int events)
 
 	if ((keys & KEY_GREEN)!=0)
 	{
-		if (buttons & BUTTON_SK2 )
+		if (directChannelNumber>0)
+		{
+			if (codeplugChannelIndexIsValid(directChannelNumber))
+			{
+				nonVolatileSettings.currentChannelIndexInAllZone=directChannelNumber;
+				loadChannelData(false);
+			}
+			else
+			{
+				set_melody(melody_ERROR_beep);
+			}
+			directChannelNumber=0;
+			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+			updateScreen();
+		}
+		else if (buttons & BUTTON_SK2 )
 		{
 			menuSystemPushNewMenu(MENU_CHANNEL_DETAILS);
 		}
@@ -169,13 +214,25 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_HASH)!=0)
 	{
-		menuSystemPushNewMenu(MENU_NUMERICAL_ENTRY);
-		return;
+		if (trxGetMode() == RADIO_MODE_DIGITAL)
+		{
+			menuSystemPushNewMenu(MENU_NUMERICAL_ENTRY);
+			return;
+		}
 	}
 	else if ((keys & KEY_RED)!=0)
 	{
-		menuSystemSetCurrentMenu(MENU_VFO_MODE);
-		return;
+		if(directChannelNumber>0)
+		{
+			directChannelNumber=0;
+			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+			updateScreen();
+		}
+		else
+		{
+			menuSystemSetCurrentMenu(MENU_VFO_MODE);
+			return;
+		}
 	}
 
 
@@ -228,10 +285,24 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_DOWN)!=0)
 	{
-		nonVolatileSettings.currentChannelIndexInZone--;
-		if (nonVolatileSettings.currentChannelIndexInZone < 0)
+		if (strcmp(currentZoneName,"All Channels")==0)
 		{
-			nonVolatileSettings.currentChannelIndexInZone =  currentZone.NOT_IN_MEMORY_numChannelsInZone - 1;
+			do
+			{
+				nonVolatileSettings.currentChannelIndexInAllZone--;
+				if (nonVolatileSettings.currentChannelIndexInAllZone<1)
+				{
+					nonVolatileSettings.currentChannelIndexInAllZone=1024;
+				}
+			} while(!codeplugChannelIndexIsValid(nonVolatileSettings.currentChannelIndexInAllZone));
+		}
+		else
+		{
+			nonVolatileSettings.currentChannelIndexInZone--;
+			if (nonVolatileSettings.currentChannelIndexInZone < 0)
+			{
+				nonVolatileSettings.currentChannelIndexInZone =  currentZone.NOT_IN_MEMORY_numChannelsInZone - 1;
+			}
 		}
 		loadChannelData(false);
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
@@ -239,13 +310,79 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_UP)!=0)
 	{
-		nonVolatileSettings.currentChannelIndexInZone++;
-		if (nonVolatileSettings.currentChannelIndexInZone > currentZone.NOT_IN_MEMORY_numChannelsInZone - 1)
+		if (strcmp(currentZoneName,"All Channels")==0)
 		{
-			nonVolatileSettings.currentChannelIndexInZone = 0;
+			do
+			{
+				nonVolatileSettings.currentChannelIndexInAllZone++;
+				if (nonVolatileSettings.currentChannelIndexInAllZone>1024)
+				{
+					nonVolatileSettings.currentChannelIndexInAllZone=1;
+				}
+			} while(!codeplugChannelIndexIsValid(nonVolatileSettings.currentChannelIndexInAllZone));
+		}
+		else
+		{
+			nonVolatileSettings.currentChannelIndexInZone++;
+			if (nonVolatileSettings.currentChannelIndexInZone > currentZone.NOT_IN_MEMORY_numChannelsInZone - 1)
+			{
+				nonVolatileSettings.currentChannelIndexInZone = 0;
+			}
 		}
 		loadChannelData(false);
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		updateScreen();
+	}
+	else if (strcmp(currentZoneName,"All Channels")==0)
+	{
+		int keyval=99;
+		if ((keys& KEY_1)!=0)
+		{
+			keyval=1;
+		}
+		if ((keys& KEY_2)!=0)
+		{
+			keyval=2;
+		}
+		if ((keys& KEY_3)!=0)
+		{
+			keyval=3;
+		}
+		if ((keys& KEY_4)!=0)
+		{
+			keyval=4;
+		}
+		if ((keys& KEY_5)!=0)
+		{
+			keyval=5;
+		}
+		if ((keys& KEY_6)!=0)
+		{
+			keyval=6;
+		}
+		if ((keys& KEY_7)!=0)
+		{
+			keyval=7;
+		}
+		if ((keys& KEY_8)!=0)
+		{
+			keyval=8;
+		}
+		if ((keys& KEY_9)!=0)
+		{
+			keyval=9;
+		}
+		if ((keys& KEY_0)!=0)
+		{
+			keyval=0;
+		}
+
+		if (keyval<10)
+		{
+			directChannelNumber=(directChannelNumber*10) + keyval;
+			if(directChannelNumber>1024) directChannelNumber=0;
+			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+			updateScreen();
+		}
 	}
 }
