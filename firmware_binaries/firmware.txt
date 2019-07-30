@@ -3,7 +3,9 @@ Changelog
 
 V0.3.4 (OpenGD77 Phase 1 - Update 4):
 - Cleanup.
-- Additional stuff by Roger Clark, VK3KYY / G4KYF:
+- Additional stuff by Roger Clark, VK3KYY / G4KYF and Colin Durbridge, G4EML:
+  - Changes for All Channels Zone and Direct Channel Access. (Colin Durbridge, G4EML)
+  - Change CTCSS Selection Method: Select CTCSS Tones from a list of valid tones. (Colin Durbridge, G4EML)
   - Fix for EEPROM write delay problem, from Colin G4EML. Removed the 5ms delay after EEPROM write in fw_usb_com.c as that should now also be redundant.
   - Fix for menu system data inconsistency.
   - Added hotspot mode (work in progress), currently disabled.
