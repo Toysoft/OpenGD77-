@@ -30,11 +30,12 @@ const int BAND_UHF_MAX 	= 4500000;
 
 static const int STORAGE_BASE_ADDRESS 		= 0x6000;
 static const int STORAGE_BASE_ADDRESS_OLD 	= 0xFF00;
-static const int STORAGE_MAGIC_NUMBER 		= 0x471C;
+static const int STORAGE_MAGIC_NUMBER 		= 0x471E;
 
 settingsStruct_t nonVolatileSettings;
 struct_codeplugChannel_t *currentChannelData;
 struct_codeplugChannel_t channelScreenChannelData={.rxFreq=0};
+int settingsUsbMode = USB_MODE_CPS;
 
 void settingsSaveSettings()
 {
@@ -101,6 +102,7 @@ void settingsRestoreDefaultSettings()
 {
 	nonVolatileSettings.magicNumber=STORAGE_MAGIC_NUMBER;
 	nonVolatileSettings.currentChannelIndexInZone = 0;
+	nonVolatileSettings.currentChannelIndexInAllZone = 1;
 	nonVolatileSettings.currentZone = 0;
 	nonVolatileSettings.backLightTimeout = 5;//0 = never timeout. 1 - 255 time in seconds
 	nonVolatileSettings.displayContrast = 0x0E;

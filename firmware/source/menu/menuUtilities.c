@@ -107,7 +107,6 @@ static void updateScreen()
 			{
 				strcpy(buf,"Calibration:OFF");
 			}
-
 			break;
 		}
 		if (gMenusCurrentItemIndex==mNum)

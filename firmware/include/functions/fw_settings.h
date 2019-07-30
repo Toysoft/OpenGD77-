@@ -28,11 +28,13 @@ extern const int BAND_VHF_MAX;
 extern const int BAND_UHF_MIN;
 extern const int BAND_UHF_MAX;
 #define VFO_COUNT 4
+enum USB_MODE { USB_MODE_CPS, USB_MODE_HOTSPOT, USB_MODE_DEBUG};
 
 typedef struct settingsStruct
 {
 	int 			magicNumber;
 	int16_t			currentChannelIndexInZone;
+	int16_t			currentChannelIndexInAllZone;
 	int16_t			currentZone;
 	uint8_t			backLightTimeout;//0 = never timeout. 1 - 255 time in seconds
 	int8_t			displayContrast;
@@ -49,6 +51,7 @@ typedef struct settingsStruct
 extern settingsStruct_t nonVolatileSettings;
 extern struct_codeplugChannel_t *currentChannelData;
 extern struct_codeplugChannel_t channelScreenChannelData;
+extern int settingsUsbMode;
 
 void settingsSaveSettings();
 void settingsLoadSettings();

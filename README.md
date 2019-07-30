@@ -14,7 +14,6 @@ If you want to contribute coding please get in touch first, so we can coordinate
 - Stabilize / refactor.
 - Implement TX tier 2.
 - Implement hotspot mode.
-- Review and integrate "zone all" and "CTSS list" feature.
 
 # Long term goals
 - Rework the core system and its architecture.

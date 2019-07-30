@@ -1,5 +1,6 @@
 /*
  * Copyright (C)2019 Roger Clark. VK3KYY / G4KYF
+ * 				and	 Colin Durbridge, G4EML
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,6 +16,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
+
 #include "menu/menuSystem.h"
 #include "menu/menuUtilityQSOData.h"
 #include "fw_trx.h"
@@ -24,19 +26,35 @@
 static void updateScreen();
 static void handleEvent(int buttons, int keys, int events);
 static const int CTCSS_TONE_NONE = 65535;
-static char digits[69];// For CTCSS entry
+static const unsigned int CTCSSTones[]={65535,625,670,693,719,744,770,797,825,854,
+										885,915,948,974,1000,1035,1072,1109,1148,
+										1188,1230,1273,1318,1365,1413,1462,1514,
+										1567,1598,1622,1655,1679,1713,1738,1773,
+										1799,1835,1862,1899,1928,1966,1995,2035,
+										2065,2107,2181,2257,2291,2336,2418,2503,2541};
+static int NUM_CTCSS=52;
+static int CTCSSRxIndex=0;
+static int CTCSSTxIndex=0;
 static int NUM_MENUS=4;
 static struct_codeplugChannel_t tmpChannel;// update a temporary copy of the channel and only write back if green menu is pressed
-static enum {DISPLAY_MODE_NORMAL,CTCSS_NUMBER_INPUT} displayMode;
 
 int menuChannelDetails(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
 		memcpy(&tmpChannel,currentChannelData,sizeof(struct_codeplugChannel_t));
-		digits[0]=0x00;// clear CTCSS input digits string
-		displayMode=DISPLAY_MODE_NORMAL;
 		gMenusCurrentItemIndex=0;
+		for(int i=0;i<NUM_CTCSS;i++)
+		{
+			if (tmpChannel.txTone==CTCSSTones[i])
+			{
+				CTCSSTxIndex=i;
+			}
+			if (tmpChannel.rxTone==CTCSSTones[i])
+			{
+				CTCSSRxIndex=i;
+			}
+		}
 		updateScreen();
 	}
 	else
@@ -56,35 +74,21 @@ static void updateScreen()
 	UC1701_clearBuf();
 	UC1701_printCentered(0, "Channel info",UC1701_FONT_GD77_8x16);
 
-	switch (displayMode)
+	// Can only display 3 of the options at a time menu at -1, 0 and +1
+	for(int i=-1;i<=1;i++)
 	{
-		case CTCSS_NUMBER_INPUT:
-			if(gMenusCurrentItemIndex==2)
-			{
-			UC1701_printCentered(16, "Tx CTCSS freq",UC1701_FONT_GD77_8x16);
-			}
-			else
-			{
-			UC1701_printCentered(16, "Rx CTCSS freq",UC1701_FONT_GD77_8x16);
-			}
-			UC1701_printCentered(48, (char *)digits,UC1701_FONT_GD77_8x16);
-			break;
-		default:
-		// Can only display 3 of the options at a time menu at -1, 0 and +1
-		for(int i=-1;i<=1;i++)
+		mNum = gMenusCurrentItemIndex+i;
+		if (mNum<0)
 		{
-			mNum = gMenusCurrentItemIndex+i;
-			if (mNum<0)
-			{
-				mNum = NUM_MENUS + mNum;
-			}
-			if (mNum >= NUM_MENUS)
-			{
-				mNum = mNum - NUM_MENUS;
-			}
+			mNum = NUM_MENUS + mNum;
+		}
+		if (mNum >= NUM_MENUS)
+		{
+			mNum = mNum - NUM_MENUS;
+		}
 
-			switch(mNum)
-			{
+		switch(mNum)
+		{
 			case 0:
 				if (trxGetMode()==RADIO_MODE_ANALOG)
 				{
@@ -139,186 +143,129 @@ static void updateScreen()
 					strcpy(buf,"Rx CTCSS:N/A");
 				}
 				break;
-			}
-
-			if (gMenusCurrentItemIndex==mNum)
-			{
-				UC1701_fillRect(0,(i+2)*16,128,16,false);
-			}
-
-			UC1701_printCore(0,(i+2)*16,buf,UC1701_FONT_GD77_8x16,0,(gMenusCurrentItemIndex==mNum));
 		}
-		break;
+
+		if (gMenusCurrentItemIndex==mNum)
+		{
+			UC1701_fillRect(0,(i+2)*16,128,16,false);
+		}
+
+		UC1701_printCore(0,(i+2)*16,buf,UC1701_FONT_GD77_8x16,0,(gMenusCurrentItemIndex==mNum));
 	}
+
 	UC1701_render();
 	displayLightTrigger();
 }
 
 static void handleEvent(int buttons, int keys, int events)
 {
-	switch (displayMode)
+	if ((keys & KEY_DOWN)!=0)
 	{
-		case CTCSS_NUMBER_INPUT:
-			if (strlen(digits)<7)
-			{
-				char c[2]={0,0};
-				if ((keys & KEY_0)!=0)
+		gMenusCurrentItemIndex++;
+		if (gMenusCurrentItemIndex>=NUM_MENUS)
+		{
+			gMenusCurrentItemIndex=0;
+		}
+	}
+	else if ((keys & KEY_UP)!=0)
+	{
+		gMenusCurrentItemIndex--;
+		if (gMenusCurrentItemIndex<0)
+		{
+			gMenusCurrentItemIndex=NUM_MENUS-1;
+		}
+	}
+	else if ((keys & KEY_RIGHT)!=0)
+	{
+		switch(gMenusCurrentItemIndex)
+		{
+			case 0:
+				if (tmpChannel.rxColor<15)
 				{
-					c[0]='0';
+					tmpChannel.rxColor++;
+					trxSetDMRColourCode(tmpChannel.rxColor);
 				}
-				else if ((keys & KEY_1)!=0)
+				break;
+			case 1:
+				tmpChannel.flag2 |= 0x40;// set TS 2 bit
+				break;
+			case 2:
+				if (trxGetMode()==RADIO_MODE_ANALOG)
 				{
-					c[0]='1';
-				}
-				else if ((keys & KEY_2)!=0)
-				{
-					c[0]='2';
-				}
-				else if ((keys & KEY_3)!=0)
-				{
-					c[0]='3';
-				}
-				else if ((keys & KEY_4)!=0)
-				{
-					c[0]='4';
-				}
-				else if ((keys & KEY_5)!=0)
-				{
-					c[0]='5';
-				}
-				else if ((keys & KEY_6)!=0)
-				{
-					c[0]='6';
-				}
-				else if ((keys & KEY_7)!=0)
-				{
-					c[0]='7';
-				}
-				else if ((keys & KEY_8)!=0)
-				{
-					c[0]='8';
-				}
-				else if ((keys & KEY_9)!=0)
-				{
-					c[0]='9';
-				}
-				else if ((keys & KEY_HASH)!=0)
-				{
-					c[0]='.';
-				}
-				else if ((keys & KEY_LEFT)!=0 && strlen(digits)>0)
-				{
-					digits[strlen(digits)-1]=0;
-				}
-				if (c[0]!=0)
-				{
-					strcat(digits,c);
-				}
-			}
-
-			if ((keys & KEY_GREEN)!=0)
-			{
-				if(gMenusCurrentItemIndex==2)
-				{
-					tmpChannel.txTone=atof(digits)*10;
+					CTCSSTxIndex++;
+					if (CTCSSTxIndex>=NUM_CTCSS)
+					{
+						CTCSSTxIndex=NUM_CTCSS-1;
+					}
+					tmpChannel.txTone=CTCSSTones[CTCSSTxIndex];
 					trxSetTxCTCSS(tmpChannel.txTone);
 				}
-				else
+				break;
+			case 3:
+				if (trxGetMode()==RADIO_MODE_ANALOG)
 				{
-					tmpChannel.rxTone=atof(digits)*10;
+					CTCSSRxIndex++;
+					if (CTCSSRxIndex>=NUM_CTCSS)
+					{
+						CTCSSRxIndex=NUM_CTCSS-1;
+					}
+					tmpChannel.rxTone=CTCSSTones[CTCSSRxIndex];
 					trxSetRxCTCSS(tmpChannel.rxTone);
 				}
-				digits[0]=0x00;
-				displayMode = DISPLAY_MODE_NORMAL;
-			}
-			else if ((keys & KEY_RED)!=0)
-			{
-				digits[0]=0x00;
-				displayMode = DISPLAY_MODE_NORMAL;
-			}
-			break;
-		default:
-			if ((keys & KEY_DOWN)!=0)
-			{
-				gMenusCurrentItemIndex++;
-				if (gMenusCurrentItemIndex>=NUM_MENUS)
-				{
-					gMenusCurrentItemIndex=0;
-				}
-			}
-			else if ((keys & KEY_UP)!=0)
-			{
-				gMenusCurrentItemIndex--;
-				if (gMenusCurrentItemIndex<0)
-				{
-					gMenusCurrentItemIndex=NUM_MENUS-1;
-				}
-			}
-			else if ((keys & KEY_RIGHT)!=0)
-			{
-				switch(gMenusCurrentItemIndex)
-				{
-					case 0:
-						if (tmpChannel.rxColor<15)
-						{
-							tmpChannel.rxColor++;
-						}
-						break;
-					case 1:
-						tmpChannel.flag2 |= 0x40;// set TS 2 bit
-						break;
-					case 2:
-					case 3:
-						if (trxGetMode()==RADIO_MODE_ANALOG)
-						{
-							displayMode = CTCSS_NUMBER_INPUT;
-						}
-						break;
-				}
-			}
-			else if ((keys & KEY_LEFT)!=0)
-			{
-				switch(gMenusCurrentItemIndex)
-				{
-					case 0:
-						if (tmpChannel.rxColor>0)
-						{
-							tmpChannel.rxColor--;
-							trxSetDMRColourCode(tmpChannel.rxColor);
-						}
-						break;
-					case 1:
-						tmpChannel.flag2 &= 0xBF;// Clear TS 2 bit
-						break;
-					case 2:
-						if (trxGetMode()==RADIO_MODE_ANALOG)
-						{
-							tmpChannel.txTone=CTCSS_TONE_NONE;// Set CTCSS to none
-							trxSetTxCTCSS(tmpChannel.txTone);
-						}
-						break;
-					case 3:
-						if (trxGetMode()==RADIO_MODE_ANALOG)
-						{
-							tmpChannel.rxTone=CTCSS_TONE_NONE;// Set Rx CTCSS to none
-							trxSetRxCTCSS(tmpChannel.rxTone);
-						}
-						break;
-				}
-			}
-			else if ((keys & KEY_GREEN)!=0)
-			{
-				memcpy(currentChannelData,&tmpChannel,sizeof(struct_codeplugChannel_t));
-				menuSystemPopAllAndDisplayRootMenu();
-				return;
-			}
-			else if ((keys & KEY_RED)!=0)
-			{
-				menuSystemPopPreviousMenu();
-				return;
-			}
-			break;
+				break;
+		}
 	}
+	else if ((keys & KEY_LEFT)!=0)
+	{
+		switch(gMenusCurrentItemIndex)
+		{
+			case 0:
+				if (tmpChannel.rxColor>0)
+				{
+					tmpChannel.rxColor--;
+					trxSetDMRColourCode(tmpChannel.rxColor);
+				}
+				break;
+			case 1:
+				tmpChannel.flag2 &= 0xBF;// Clear TS 2 bit
+				break;
+			case 2:
+				if (trxGetMode()==RADIO_MODE_ANALOG)
+				{
+					CTCSSTxIndex--;
+					if (CTCSSTxIndex < 0)
+					{
+						CTCSSTxIndex=0;
+					}
+					tmpChannel.txTone=CTCSSTones[CTCSSTxIndex];
+					trxSetTxCTCSS(tmpChannel.txTone);
+				}
+				break;
+			case 3:
+				if (trxGetMode()==RADIO_MODE_ANALOG)
+				{
+					CTCSSRxIndex--;
+					if (CTCSSRxIndex < 0)
+					{
+						CTCSSRxIndex=0;
+					}
+					tmpChannel.rxTone=CTCSSTones[CTCSSRxIndex];
+					trxSetRxCTCSS(tmpChannel.rxTone);
+				}
+				break;
+		}
+	}
+	else if ((keys & KEY_GREEN)!=0)
+	{
+		memcpy(currentChannelData,&tmpChannel,sizeof(struct_codeplugChannel_t));
+		menuSystemPopAllAndDisplayRootMenu();
+		return;
+	}
+	else if ((keys & KEY_RED)!=0)
+	{
+		menuSystemPopPreviousMenu();
+		return;
+	}
+
 	updateScreen();
 }
-
