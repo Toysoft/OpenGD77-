@@ -265,8 +265,11 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_HASH)!=0)
 	{
-		menuSystemPushNewMenu(MENU_NUMERICAL_ENTRY);
-		return;
+		if (trxGetMode() == RADIO_MODE_DIGITAL)
+		{
+			menuSystemPushNewMenu(MENU_NUMERICAL_ENTRY);
+			return;
+		}
 	}
 
 	if (freq_enter_idx==0)

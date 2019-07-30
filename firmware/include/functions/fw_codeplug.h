@@ -98,5 +98,6 @@ int codeplugGetUserDMRID();
 void codeplugGetRadioName(char *buf);
 void codeplugGetBootItemTexts(char *line1, char *line2);
 void codeplugVFO_A_ChannelData(struct_codeplugChannel_t *vfoBuf);
+bool codeplugChannelIndexIsValid(int index);
 
 #endif

@@ -87,23 +87,64 @@ int codeplugZonesGetCount()
 	{
 		numZones += __builtin_popcount(buf[i]);
 	}
-	return numZones;
+	return numZones+1; // Add one extra zone to allow for the special 'All Channels' Zone
 }
 
 void codeplugZoneGetDataForIndex(int index,struct_codeplugZone_t *returnBuf)
 {
-	// IMPORTANT. read size is different from the size of the data, because I added a extra property to the struct to hold the number of channels in the zone.
-	EEPROM_Read(CODEPLUG_ADDR_EX_ZONE_LIST + (index * CODEPLUG_ZONE_DATA_SIZE), (uint8_t*)returnBuf, sizeof(struct_codeplugZone_t));
-	for(int i=0;i<MAX_CHANNELS_PER_ZONE;i++)
+	if (index==codeplugZonesGetCount()-1) //special case: return a special Zone called 'All Channels'
 	{
-		// Empty channels seem to be filled with zeros
-		if (returnBuf->channels[i] == 0)
+		sprintf(returnBuf->name,"All Channels");
+		for(int i=0;i<MAX_CHANNELS_PER_ZONE;i++)
 		{
-			returnBuf->NOT_IN_MEMORY_numChannelsInZone = i;
-			return;
+			returnBuf->channels[i]=0;
 		}
+		returnBuf->NOT_IN_MEMORY_numChannelsInZone=0;
 	}
-	returnBuf->NOT_IN_MEMORY_numChannelsInZone=MAX_CHANNELS_PER_ZONE;
+	else
+	{
+		// IMPORTANT. read size is different from the size of the data, because I added a extra property to the struct to hold the number of channels in the zone.
+		EEPROM_Read(CODEPLUG_ADDR_EX_ZONE_LIST + (index * CODEPLUG_ZONE_DATA_SIZE), (uint8_t*)returnBuf, sizeof(struct_codeplugZone_t));
+		for(int i=0;i<MAX_CHANNELS_PER_ZONE;i++)
+		{
+			// Empty channels seem to be filled with zeros
+			if (returnBuf->channels[i] == 0)
+			{
+				returnBuf->NOT_IN_MEMORY_numChannelsInZone = i;
+				return;
+			}
+		}
+		returnBuf->NOT_IN_MEMORY_numChannelsInZone=MAX_CHANNELS_PER_ZONE;
+	}
+}
+
+bool codeplugChannelIndexIsValid(int index)
+{
+	uint8_t bitarray[16];
+
+	index--;
+	int channelbank=index/128;
+	int channeloffset=index%128;
+
+	if(channelbank==0)
+	{
+		EEPROM_Read(CODEPLUG_ADDR_CHANNEL_EEPROM-16,(uint8_t *)bitarray,16);
+	}
+	else
+	{
+		SPI_Flash_read(CODEPLUG_ADDR_CHANNEL_FLASH-16+(channelbank-1)*(128*CODEPLUG_CHANNEL_DATA_SIZE+16),(uint8_t *)bitarray,16);
+	}
+
+	int byteno=channeloffset/8;
+	int bitno=channeloffset%8;
+	if (((bitarray[byteno] >> bitno) & 0x01) == 0)
+	{
+		return false;
+	}
+	else
+	{
+		return true;
+	}
 }
 
 void codeplugChannelGetDataForIndex(int index, struct_codeplugChannel_t *channelBuf)

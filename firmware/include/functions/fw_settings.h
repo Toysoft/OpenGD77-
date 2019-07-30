@@ -34,6 +34,7 @@ typedef struct settingsStruct
 {
 	int 			magicNumber;
 	int16_t			currentChannelIndexInZone;
+	int16_t			currentChannelIndexInAllZone;
 	int16_t			currentZone;
 	uint8_t			backLightTimeout;//0 = never timeout. 1 - 255 time in seconds
 	int8_t			displayContrast;
