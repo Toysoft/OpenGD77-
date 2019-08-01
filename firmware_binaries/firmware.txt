@@ -2,6 +2,7 @@ Changelog
 =========
 
 V0.3.5 (OpenGD77 Phase 1 - Update 5):
+- Updated the timing of the RX/TX switching to exactly match the start of timeslot window.
 <work in progress>
 
 V0.3.4 (OpenGD77 Phase 1 - Update 4):
