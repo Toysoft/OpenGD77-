@@ -26,15 +26,13 @@ static void sampleRSSIAndNoise();
 static const int NUM_SAMPLES = 256;
 static int sampleCount;
 static int RSSI_totalVal;
-static int Noise_totalVal;
+
 int menuRSSIScreen(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
 		sampleCount=0;
 		RSSI_totalVal=0;
-		Noise_totalVal=0;
-		//updateScreen(); // Don't draw screen until we've collected enough samples
 	}
 	else
 	{
@@ -54,7 +52,6 @@ int menuRSSIScreen(int buttons, int keys, int events, bool isFirstRun)
 			updateScreen();
 			sampleCount=0;
 			RSSI_totalVal=0;
-			Noise_totalVal=0;
 		}
 	}
 	return 0;
@@ -63,34 +60,45 @@ int menuRSSIScreen(int buttons, int keys, int events, bool isFirstRun)
 
 static void updateScreen()
 {
-
+	int dBm;
+	int barGraphLength;
 	char buffer[17];
+	int sMeterVal=1;
 
 		RSSI_totalVal /= NUM_SAMPLES;
-		Noise_totalVal /= NUM_SAMPLES;
+
+		if (trxCheckFrequencyIsVHF(trxGetFrequency()))
+		{
+			// VHF
+			// Use fixed point maths to scale the RSSI value to dBm, based on data from VK4JWT and VK7ZJA
+			dBm = -165 + ((RSSI_totalVal * 32) / 27);
+		}
+		else
+		{
+			// Use fixed point maths to scale the RSSI value to dBm, based on data from VK4JWT and VK7ZJA
+			dBm = -154 + RSSI_totalVal;// Note no the RSSI value on UHF does not need to be scaled like it does on VHF
+		}
+
+
 
 		UC1701_clearBuf();
 		UC1701_printCentered(0, "RSSI",UC1701_FONT_GD77_8x16);
 
-		sprintf(buffer,"Noise %d", Noise_totalVal);
-		UC1701_printAt(10,16, buffer,UC1701_FONT_GD77_8x16);
-		Noise_totalVal *= 2;
-		if (Noise_totalVal>128)
+		sprintf(buffer,"%ddBm", dBm);
+		UC1701_printCentered(20, buffer,UC1701_FONT_GD77_8x16);
+
+		barGraphLength = ((dBm + 130) * 24)/10;
+		if (barGraphLength<0)
 		{
-			Noise_totalVal=128;
+			barGraphLength=0;
 		}
-		UC1701_fillRect(0, 32,Noise_totalVal,8,false);
-
-		sprintf(buffer,"RSSI %d", RSSI_totalVal);
-		UC1701_printAt(10,40, buffer,UC1701_FONT_GD77_8x16);
-
-		RSSI_totalVal *= 1.8;
-		if (RSSI_totalVal>128)
+		if (barGraphLength>128)
 		{
-			RSSI_totalVal=128;
+			barGraphLength=128;
 		}
-		UC1701_fillRect(0, 56,RSSI_totalVal,8,false);
+		UC1701_fillRect(4, 40,barGraphLength+4,8,false);
 
+		UC1701_printCore(5,50,"S1  S3  S5  S7  S9",UC1701_FONT_6X8,0,false);
 		UC1701_render();
 		displayLightTrigger();
 
@@ -117,6 +125,5 @@ static void sampleRSSIAndNoise()
     uint8_t RX_noise;
 
     read_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x1b, &RX_signal, &RX_noise);
-    Noise_totalVal += RX_noise;
     RSSI_totalVal += RX_signal;
 }
