@@ -29,6 +29,8 @@ TaskHandle_t fwhrc6000TaskHandle;
 
 volatile bool int_sys;
 volatile bool int_ts;
+volatile bool tx_required;
+volatile bool int_rxtx;
 volatile int int_timeout;
 
 int slot_state;
@@ -238,21 +240,25 @@ void PORTC_IRQHandler(void)
     if ((1U << Pin_INT_C6000_SYS) & PORT_GetPinsInterruptFlags(Port_INT_C6000_SYS))
     {
     	int_sys=true;
+    	timer_hrc6000task=0;
         PORT_ClearPinsInterruptFlags(Port_INT_C6000_SYS, (1U << Pin_INT_C6000_SYS));
     }
     if ((1U << Pin_INT_C6000_TS) & PORT_GetPinsInterruptFlags(Port_INT_C6000_TS))
     {
     	int_ts=true;
+    	timer_hrc6000task=0;
         PORT_ClearPinsInterruptFlags(Port_INT_C6000_TS, (1U << Pin_INT_C6000_TS));
     }
     if ((1U << Pin_INT_C6000_RF_RX) & PORT_GetPinsInterruptFlags(Port_INT_C6000_RF_RX))
     {
-    	trx_deactivateTX();
+    	tx_required=false;
+    	int_rxtx=true;
         PORT_ClearPinsInterruptFlags(Port_INT_C6000_RF_RX, (1U << Pin_INT_C6000_RF_RX));
     }
     if ((1U << Pin_INT_C6000_RF_TX) & PORT_GetPinsInterruptFlags(Port_INT_C6000_RF_TX))
     {
-    	trx_activateTX();
+    	tx_required=true;
+    	int_rxtx=true;
         PORT_ClearPinsInterruptFlags(Port_INT_C6000_RF_TX, (1U << Pin_INT_C6000_RF_TX));
     }
 
@@ -280,6 +286,8 @@ void init_digital_state()
 	taskENTER_CRITICAL();
 	int_sys=false;
 	int_ts=false;
+	tx_required=false;
+	int_rxtx=false;
 	int_timeout=0;
 	taskEXIT_CRITICAL();
 	slot_state = DMR_STATE_IDLE;
@@ -430,6 +438,28 @@ void tick_HR_C6000()
 
 	if (tmp_int_ts)
 	{
+		// Enable RX or TX
+		bool tmp_int_rxtx=false;
+		taskENTER_CRITICAL();
+		if (int_rxtx)
+		{
+			tmp_int_rxtx=true;
+			int_rxtx=false;
+		}
+		bool tmp_tx_required=tx_required;
+		taskEXIT_CRITICAL();
+		if (tmp_int_rxtx)
+		{
+			if (tmp_tx_required)
+			{
+				trx_activateTX();
+			}
+			else
+			{
+				trx_deactivateTX();
+			}
+		}
+
 		// RX/TX state machine
 		switch (slot_state)
 		{
