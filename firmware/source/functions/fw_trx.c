@@ -136,7 +136,8 @@ void trxSetFrequency(int frequency)
 
 		if ((currentMode == RADIO_MODE_ANALOG) && (!open_squelch))
 		{
-			squelch = 0x08;
+//			squelch = 0x08;
+			squelch= 0x00;				//don't use internal squelch.
 		}
 		else
 		{
