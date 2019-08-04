@@ -19,6 +19,7 @@
 #include "menu/menuUtilityQSOData.h"
 #include "fw_trx.h"
 #include "fw_settings.h"
+#include "fw_codeplug.h"
 
 
 
@@ -31,7 +32,6 @@ static int selectedFreq = VFO_SELECTED_FREQUENCY_INPUT_RX;
 static struct_codeplugRxGroup_t rxGroupData;
 static struct_codeplugContact_t contactData;
 
-static int FREQ_STEP =	125;// will load from settings
 static int currentIndexInTRxGroup=0;
 
 // internal prototypes
@@ -42,7 +42,6 @@ static void reset_freq_enter_digits();
 static int read_freq_enter_digits();
 static void update_frequency(int tmp_frequency);
 static void stepFrequency(int increment);
-
 
 // public interface
 int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
@@ -298,7 +297,7 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 			else
 			{
-				stepFrequency(FREQ_STEP * -1);
+				stepFrequency(VFO_FREQ_STEP_TABLE[(currentChannelData->VFOflag5 >> 4)] * -1);
 			}
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		}
@@ -310,7 +309,7 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 			else
 			{
-				stepFrequency(FREQ_STEP);
+				stepFrequency(VFO_FREQ_STEP_TABLE[(currentChannelData->VFOflag5 >> 4)]);
 			}
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 
