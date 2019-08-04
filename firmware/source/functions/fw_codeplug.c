@@ -44,6 +44,8 @@ const int CODEPLUG_ADDR_VFO_A_CHANNEL = 0x7590;
 
 const int MAX_CHANNELS_PER_ZONE = 16;
 
+const int VFO_FREQ_STEP_TABLE[8] = {25,50,65,100,125,250,300,500};
+
 uint32_t byteSwap32(uint32_t n)
 {
     return ((((n)&0x000000FFU) << 24U) | (((n)&0x0000FF00U) << 8U) | (((n)&0x00FF0000U) >> 8U) | (((n)&0xFF000000U) >> 24U));// from usb_misc.h
