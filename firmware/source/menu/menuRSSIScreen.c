@@ -78,12 +78,8 @@ static void updateScreen()
 			dBm = -151 + RSSI_totalVal;// Note no the RSSI value on UHF does not need to be scaled like it does on VHF
 		}
 
-
-
 		UC1701_clearBuf();
 		UC1701_printCentered(0, "RSSI",UC1701_FONT_GD77_8x16);
-		sprintf(buffer,"%d", RSSI_totalVal);
-		UC1701_printCore(0,0,buffer,UC1701_FONT_6X8,2,false);
 
 		sprintf(buffer,"%ddBm", dBm);
 		UC1701_printCentered(20, buffer,UC1701_FONT_GD77_8x16);
