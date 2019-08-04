@@ -63,7 +63,6 @@ static void updateScreen()
 	int dBm;
 	int barGraphLength;
 	char buffer[17];
-	int sMeterVal=1;
 
 		RSSI_totalVal /= NUM_SAMPLES;
 
@@ -71,15 +70,13 @@ static void updateScreen()
 		{
 			// VHF
 			// Use fixed point maths to scale the RSSI value to dBm, based on data from VK4JWT and VK7ZJA
-			dBm = -158 + ((RSSI_totalVal * 32) / 27);
+			dBm = -159 + ((RSSI_totalVal * 32) / 27);
 		}
 		else
 		{
 			// Use fixed point maths to scale the RSSI value to dBm, based on data from VK4JWT and VK7ZJA
 			dBm = -147 + RSSI_totalVal;// Note no the RSSI value on UHF does not need to be scaled like it does on VHF
 		}
-
-
 
 		UC1701_clearBuf();
 		UC1701_printCentered(0, "RSSI",UC1701_FONT_GD77_8x16);
