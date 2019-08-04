@@ -35,7 +35,7 @@ static const unsigned int CTCSSTones[]={65535,625,670,693,719,744,770,797,825,85
 static int NUM_CTCSS=52;
 static int CTCSSRxIndex=0;
 static int CTCSSTxIndex=0;
-static int NUM_MENUS=4;
+static int NUM_MENUS=5;
 static struct_codeplugChannel_t tmpChannel;// update a temporary copy of the channel and only write back if green menu is pressed
 
 int menuChannelDetails(int buttons, int keys, int events, bool isFirstRun)
@@ -143,6 +143,17 @@ static void updateScreen()
 					strcpy(buf,"Rx CTCSS:N/A");
 				}
 				break;
+			case 4:
+				// Bandwidth
+				if (trxGetMode()==RADIO_MODE_DIGITAL)
+				{
+					strcpy(buf,"Bandwidth:N/A");
+				}
+				else
+				{
+					sprintf(buf,"Bandwidth:%s",((tmpChannel.flag4 & 0x02) == 0x02)?"25kHz":"12.5kHz");
+				}
+				break;
 		}
 
 		if (gMenusCurrentItemIndex==mNum)
@@ -213,6 +224,9 @@ static void handleEvent(int buttons, int keys, int events)
 					trxSetRxCTCSS(tmpChannel.rxTone);
 				}
 				break;
+			case 4:
+				tmpChannel.flag4 |= 0x02;// set 25kHz bit
+				break;
 		}
 	}
 	else if ((keys & KEY_LEFT)!=0)
@@ -252,6 +266,9 @@ static void handleEvent(int buttons, int keys, int events)
 					tmpChannel.rxTone=CTCSSTones[CTCSSRxIndex];
 					trxSetRxCTCSS(tmpChannel.rxTone);
 				}
+				break;
+			case 4:
+				tmpChannel.flag4 &= ~0x02;// clear 25kHz bit
 				break;
 		}
 	}
