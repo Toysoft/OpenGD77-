@@ -120,12 +120,12 @@ void trx_check_analog_squelch()
 			}
 			else
 			{
-				squelch =  20 + (((currentChannelData->sql-1)*5)>>1);
+				squelch =  70 - (((currentChannelData->sql-1)*5)>>1);
 				open_squelch = false;
 			}
 		}
 
-		if ((RX_signal > squelch) || (open_squelch))
+		if ((RX_noise < squelch) || (open_squelch))
 		{
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
 			if(!rxCTCSSactive || (rxCTCSSactive & trxCheckCTCSSFlag())|| open_squelch)
