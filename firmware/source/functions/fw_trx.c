@@ -120,7 +120,7 @@ void trx_check_analog_squelch()
 			}
 			else
 			{
-				squelch =  70 - (((currentChannelData->sql-1)*5)>>1);
+				squelch =  70 - (((currentChannelData->sql-1)*11)>>2);
 				open_squelch = false;
 			}
 		}
