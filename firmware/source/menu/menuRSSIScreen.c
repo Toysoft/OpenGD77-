@@ -81,6 +81,9 @@ static void updateScreen()
 		UC1701_clearBuf();
 		UC1701_printCentered(0, "RSSI",UC1701_FONT_GD77_8x16);
 
+		sprintf(buffer,"%d", RSSI_totalVal);
+		UC1701_printCore(0,0,buffer,UC1701_FONT_GD77_8x16,2,false);
+
 		sprintf(buffer,"%ddBm", dBm);
 		UC1701_printCentered(20, buffer,UC1701_FONT_GD77_8x16);
 
@@ -89,11 +92,12 @@ static void updateScreen()
 		{
 			barGraphLength=0;
 		}
+
 		if (barGraphLength>123)
 		{
 			barGraphLength=123;
 		}
-		UC1701_fillRect(4, 40,barGraphLength+4,8,false);
+		UC1701_fillRect(4, 40,barGraphLength,8,false);
 
 		UC1701_printCore(5,50,"S1  S3  S5  S7  S9",UC1701_FONT_6X8,0,false);
 		UC1701_render();
