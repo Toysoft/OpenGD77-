@@ -35,7 +35,7 @@ static const unsigned int CTCSSTones[]={65535,625,670,693,719,744,770,797,825,85
 static int NUM_CTCSS=52;
 static int CTCSSRxIndex=0;
 static int CTCSSTxIndex=0;
-static int NUM_MENUS=4;
+static int NUM_MENUS=6;
 static struct_codeplugChannel_t tmpChannel;// update a temporary copy of the channel and only write back if green menu is pressed
 
 int menuChannelDetails(int buttons, int keys, int events, bool isFirstRun)
@@ -71,6 +71,8 @@ static void updateScreen()
 {
 	int mNum=0;
 	char buf[17];
+	int tmpVal;
+
 	UC1701_clearBuf();
 	UC1701_printCentered(0, "Channel info",UC1701_FONT_GD77_8x16);
 
@@ -143,6 +145,23 @@ static void updateScreen()
 					strcpy(buf,"Rx CTCSS:N/A");
 				}
 				break;
+			case 4:
+				// Bandwidth
+				if (trxGetMode()==RADIO_MODE_DIGITAL)
+				{
+					strcpy(buf,"Bandwidth:N/A");
+				}
+				else
+				{
+					sprintf(buf,"Bandwidth:%s",((tmpChannel.flag4 & 0x02) == 0x02)?"25kHz":"12.5kHz");
+				}
+				break;
+			case 5:
+				tmpVal = VFO_FREQ_STEP_TABLE[(tmpChannel.VFOflag5 >> 4)]/10;
+				sprintf(buf,"Step:%d.%dkHz",tmpVal, VFO_FREQ_STEP_TABLE[(tmpChannel.VFOflag5 >> 4)] - (tmpVal*10));
+				break;
+
+
 		}
 
 		if (gMenusCurrentItemIndex==mNum)
@@ -159,6 +178,8 @@ static void updateScreen()
 
 static void handleEvent(int buttons, int keys, int events)
 {
+	int tmpVal;
+
 	if ((keys & KEY_DOWN)!=0)
 	{
 		gMenusCurrentItemIndex++;
@@ -213,6 +234,18 @@ static void handleEvent(int buttons, int keys, int events)
 					trxSetRxCTCSS(tmpChannel.rxTone);
 				}
 				break;
+			case 4:
+				tmpChannel.flag4 |= 0x02;// set 25kHz bit
+				break;
+			case 5:
+				tmpVal = (tmpChannel.VFOflag5>>4)+1;
+				if (tmpVal>15)
+				{
+					tmpVal=15;
+				}
+				tmpChannel.VFOflag5 &= 0x0F;
+				tmpChannel.VFOflag5 |= tmpVal<<4;
+				break;
 		}
 	}
 	else if ((keys & KEY_LEFT)!=0)
@@ -252,6 +285,18 @@ static void handleEvent(int buttons, int keys, int events)
 					tmpChannel.rxTone=CTCSSTones[CTCSSRxIndex];
 					trxSetRxCTCSS(tmpChannel.rxTone);
 				}
+				break;
+			case 4:
+				tmpChannel.flag4 &= ~0x02;// clear 25kHz bit
+				break;
+			case 5:
+				tmpVal = (tmpChannel.VFOflag5>>4)-1;
+				if (tmpVal<0)
+				{
+					tmpVal=0;
+				}
+				tmpChannel.VFOflag5 &= 0x0F;
+				tmpChannel.VFOflag5 |= tmpVal<<4;
 				break;
 		}
 	}

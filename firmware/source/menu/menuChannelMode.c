@@ -31,6 +31,10 @@ static struct_codeplugContact_t contactData;
 static int currentIndexInTRxGroup=0;
 static char currentZoneName[17];
 static int directChannelNumber=0;
+static bool displaySquelch=false;
+
+static const int MinSquelch=1;
+static const int MaxSquelch=21;
 
 int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 {
@@ -117,7 +121,7 @@ static void updateScreen()
 {
 	char nameBuf[17];
 	int channelNumber;
-
+	char buffer[32];
 	UC1701_clearBuf();
 
 	menuUtilityRenderHeader();
@@ -158,6 +162,14 @@ static void updateScreen()
 					codeplugUtilConvertBufToString(contactData.name,nameBuf,16);
 				}
 				UC1701_printCentered(16, (char *)nameBuf,UC1701_FONT_GD77_8x16);
+			}
+			else if(displaySquelch)
+			{
+				sprintf(buffer,"Squelch");
+				UC1701_printAt(0,16,buffer,UC1701_FONT_GD77_8x16);
+				int bargraph= 1 + ((currentChannelData->sql-1)*5)/2 ;
+				UC1701_fillRect(62,21,bargraph,8,false);
+				displaySquelch=false;
 			}
 
 			displayLightTrigger();
@@ -238,34 +250,66 @@ static void handleEvent(int buttons, int keys, int events)
 
 	if ((keys & KEY_RIGHT)!=0)
 	{
-		currentIndexInTRxGroup++;
-		if (currentIndexInTRxGroup > (rxGroupData.NOT_IN_MEMORY_numTGsInGroup -1))
+		if (trxGetMode() == RADIO_MODE_DIGITAL)
 		{
-			currentIndexInTRxGroup =  0;
+			currentIndexInTRxGroup++;
+			if (currentIndexInTRxGroup > (rxGroupData.NOT_IN_MEMORY_numTGsInGroup -1))
+			{
+				currentIndexInTRxGroup =  0;
+			}
+			codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
+
+			nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
+			trxTalkGroup = contactData.tgNumber;
+
+			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+			updateScreen();
 		}
-		codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
+		else
+		{
 
-		nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
-		trxTalkGroup = contactData.tgNumber;
+			if (currentChannelData->sql < MaxSquelch)
+			{
+				currentChannelData->sql++;
+			}
 
-		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-		updateScreen();
+			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+			displaySquelch=true;
+			updateScreen();
+		}
+
 	}
 	else if ((keys & KEY_LEFT)!=0)
 	{
-		// To Do change TG in on same channel freq
-		currentIndexInTRxGroup--;
-		if (currentIndexInTRxGroup < 0)
+		if (trxGetMode() == RADIO_MODE_DIGITAL)
 		{
-			currentIndexInTRxGroup =  rxGroupData.NOT_IN_MEMORY_numTGsInGroup - 1;
+			// To Do change TG in on same channel freq
+			currentIndexInTRxGroup--;
+			if (currentIndexInTRxGroup < 0)
+			{
+				currentIndexInTRxGroup =  rxGroupData.NOT_IN_MEMORY_numTGsInGroup - 1;
+			}
+
+			codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
+			nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
+			trxTalkGroup = contactData.tgNumber;
+
+			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+			updateScreen();
+		}
+		else
+		{
+
+			if (currentChannelData->sql > MinSquelch)
+			{
+				currentChannelData->sql--;
+			}
+
+			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+			displaySquelch=true;
+			updateScreen();
 		}
 
-		codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
-		nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
-		trxTalkGroup = contactData.tgNumber;
-
-		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-		updateScreen();
 	}
 	else if ((keys & KEY_STAR)!=0)
 	{

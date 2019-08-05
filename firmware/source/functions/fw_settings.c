@@ -23,10 +23,10 @@
 #include "menu/menuSystem.h"
 #include "fw_codeplug.h"
 
-const int BAND_VHF_MIN 	= 1440000;
-const int BAND_VHF_MAX 	= 1480000;
-const int BAND_UHF_MIN 	= 4300000;
-const int BAND_UHF_MAX 	= 4500000;
+const int BAND_VHF_MIN 	= 1340000;
+const int BAND_VHF_MAX 	= 1740000;
+const int BAND_UHF_MIN 	= 4000000;
+const int BAND_UHF_MAX 	= 5120000;
 
 static const int STORAGE_BASE_ADDRESS 		= 0x6000;
 static const int STORAGE_BASE_ADDRESS_OLD 	= 0xFF00;
@@ -115,7 +115,7 @@ void settingsRestoreDefaultSettings()
 	nonVolatileSettings.txPower=1600;// intialized to about original firmware LOW
 	nonVolatileSettings.overrideTG=0;// 0 = No override
 	nonVolatileSettings.useCalibration = 0x01;// enable the new calibration system
-	nonVolatileSettings.squelch = 45;// default reasonable value for FM
+//	nonVolatileSettings.squelch = 45;// default reasonable value for FM
 	initVFOChannel();
 	currentChannelData = &nonVolatileSettings.vfoChannel;// Set the current channel data to point to the VFO data since the default screen will be the VFO
 
