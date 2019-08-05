@@ -267,8 +267,11 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 		else
 		{
-
-			if (currentChannelData->sql < MaxSquelch)
+			if(currentChannelData->sql==0)			//If we were using default squelch level
+			{
+				currentChannelData->sql=10;			//start the adjustment from that point.
+			}
+			else if (currentChannelData->sql < MaxSquelch)
 			{
 				currentChannelData->sql++;
 			}
@@ -299,8 +302,12 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 		else
 		{
+			if(currentChannelData->sql==0)			//If we were using default squelch level
+			{
+				currentChannelData->sql=10;			//start the adjustment from that point.
+			}
 
-			if (currentChannelData->sql > MinSquelch)
+			else if (currentChannelData->sql > MinSquelch)
 			{
 				currentChannelData->sql--;
 			}
