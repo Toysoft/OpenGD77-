@@ -107,9 +107,25 @@ void trx_check_analog_squelch()
 	{
 		uint8_t RX_signal;
 		uint8_t RX_noise;
+		uint8_t squelch=45;
+
 		read_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x1b,&RX_signal,&RX_noise);
 
-		if ((RX_noise < nonVolatileSettings.squelch) || (open_squelch))
+		// check for variable squelch control
+		if (currentChannelData->sql!=0)
+		{
+			if (currentChannelData->sql==1)
+			{
+				open_squelch = true;
+			}
+			else
+			{
+				squelch =  20 + (((currentChannelData->sql-1)*5)>>1);
+				open_squelch = false;
+			}
+		}
+
+		if ((RX_signal > squelch) || (open_squelch))
 		{
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
 			if(!rxCTCSSactive || (rxCTCSSactive & trxCheckCTCSSFlag())|| open_squelch)
