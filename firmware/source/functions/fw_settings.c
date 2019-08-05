@@ -115,7 +115,7 @@ void settingsRestoreDefaultSettings()
 	nonVolatileSettings.txPower=1600;// intialized to about original firmware LOW
 	nonVolatileSettings.overrideTG=0;// 0 = No override
 	nonVolatileSettings.useCalibration = 0x01;// enable the new calibration system
-	nonVolatileSettings.squelch = 45;// default reasonable value for FM
+//	nonVolatileSettings.squelch = 45;// default reasonable value for FM
 	initVFOChannel();
 	currentChannelData = &nonVolatileSettings.vfoChannel;// Set the current channel data to point to the VFO data since the default screen will be the VFO
 

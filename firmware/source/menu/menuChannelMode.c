@@ -33,8 +33,8 @@ static char currentZoneName[17];
 static int directChannelNumber=0;
 static bool displaySquelch=false;
 
-static const int MinSquelch=15;
-static const int MaxSquelch=70;
+static const int MinSquelch=1;
+static const int MaxSquelch=21;
 
 int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 {
@@ -165,9 +165,9 @@ static void updateScreen()
 			}
 			else if(displaySquelch)
 			{
-				sprintf(buffer,"Squelch ");
+				sprintf(buffer,"Squelch");
 				UC1701_printAt(0,16,buffer,UC1701_FONT_GD77_8x16);
-				int bargraph=MaxSquelch-nonVolatileSettings.squelch+1;
+				int bargraph= 1 + ((currentChannelData->sql-1)*5)/2 ;
 				UC1701_fillRect(62,21,bargraph,8,false);
 				displaySquelch=false;
 			}
@@ -267,11 +267,15 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 		else
 		{
+			if(currentChannelData->sql==0)			//If we were using default squelch level
+			{
+				currentChannelData->sql=10;			//start the adjustment from that point.
+			}
+			else if (currentChannelData->sql < MaxSquelch)
+			{
+				currentChannelData->sql++;
+			}
 
-			if (nonVolatileSettings.squelch>MinSquelch)
-				{
-					nonVolatileSettings.squelch-=1;
-				}
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 			displaySquelch=true;
 			updateScreen();
@@ -298,10 +302,16 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 		else
 		{
-			if (nonVolatileSettings.squelch<MaxSquelch)
-				{
-					nonVolatileSettings.squelch+=1;
-				}
+			if(currentChannelData->sql==0)			//If we were using default squelch level
+			{
+				currentChannelData->sql=10;			//start the adjustment from that point.
+			}
+
+			else if (currentChannelData->sql > MinSquelch)
+			{
+				currentChannelData->sql--;
+			}
+
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 			displaySquelch=true;
 			updateScreen();
