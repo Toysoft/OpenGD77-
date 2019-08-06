@@ -19,7 +19,10 @@
 #define _FW_MENU_LEGACY_CODEPLUG_UTILS_H_
 #include "fw_main.h"
 
+extern const int CODEPLUG_MAX_VARIABLE_SQUELCH;
+extern const int CODEPLUG_MIN_VARIABLE_SQUELCH;
 extern const int CODEPLUG_ZONE_DATA_SIZE;
+extern const int VFO_FREQ_STEP_TABLE[8];
 
 typedef struct struct_codeplugZone
 {
@@ -59,9 +62,9 @@ typedef struct struct_codeplugChannel
 	uint8_t flag2;
 	uint8_t flag3;
 	uint8_t flag4;// bits... 0x80 = Power, 0x40 = Vox, 0x20 = AutoScan, 0x10 = LoneWoker, 0x08 = AllowTalkaround, 0x04 = OnlyRx, 0x02 = Channel width, 0x01 = Squelch
-	uint16_t reserve2;
-	uint8_t reserve;
-	uint8_t sql;
+	uint16_t VFOoffsetFreq;
+	uint8_t VFOflag5;// upper 4 bits are the step frequency 2.5,5,6.25,10,12.5,25,30,50kHz
+	uint8_t sql;// Does not seem to be used in the official firmware and seems to be always set to 0
 } struct_codeplugChannel_t;
 
 typedef struct struct_codeplugRxGroup
@@ -91,6 +94,7 @@ void codeplugChannelGetDataForIndex(int index, struct_codeplugChannel_t *channel
 void codeplugUtilConvertBufToString(char *inBuf,char *outBuf,int len);
 uint32_t byteSwap32(uint32_t n);
 uint32_t bcd2int(uint32_t in);
+int int2bcd(int i);
 
 void codeplugRxGroupGetDataForIndex(int index, struct_codeplugRxGroup_t *rxGroupBuf);
 void codeplugContactGetDataForIndex(int index, struct_codeplugContact_t *contact);
@@ -99,5 +103,6 @@ void codeplugGetRadioName(char *buf);
 void codeplugGetBootItemTexts(char *line1, char *line2);
 void codeplugVFO_A_ChannelData(struct_codeplugChannel_t *vfoBuf);
 bool codeplugChannelIndexIsValid(int index);
+bool codeplugChannelSaveDataForIndex(int index, struct_codeplugChannel_t *channelBuf);
 
 #endif

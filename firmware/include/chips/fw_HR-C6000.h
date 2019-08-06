@@ -59,6 +59,8 @@
 
 extern volatile bool int_sys;
 extern volatile bool int_ts;
+extern volatile bool tx_required;
+extern volatile bool int_rxtx;
 extern volatile int int_timeout;
 
 extern int slot_state;

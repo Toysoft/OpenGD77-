@@ -19,8 +19,7 @@
 #include "menu/menuUtilityQSOData.h"
 #include "fw_trx.h"
 #include "fw_settings.h"
-
-
+#include "fw_codeplug.h"
 
 enum VFO_SELECTED_FREQUENCY_INPUT  {VFO_SELECTED_FREQUENCY_INPUT_RX , VFO_SELECTED_FREQUENCY_INPUT_TX};
 
@@ -31,8 +30,8 @@ static int selectedFreq = VFO_SELECTED_FREQUENCY_INPUT_RX;
 static struct_codeplugRxGroup_t rxGroupData;
 static struct_codeplugContact_t contactData;
 
-static int FREQ_STEP =	125;// will load from settings
 static int currentIndexInTRxGroup=0;
+static bool displaySquelch=false;
 
 // internal prototypes
 static void updateScreen();
@@ -43,7 +42,6 @@ static int read_freq_enter_digits();
 static void update_frequency(int tmp_frequency);
 static void stepFrequency(int increment);
 
-
 // public interface
 int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 {
@@ -51,6 +49,7 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 	{
 		nonVolatileSettings.initialMenuNumber=MENU_VFO_MODE;
 		currentChannelData = &nonVolatileSettings.vfoChannel;
+		settingsCurrentChannelNumber = -1;// This is not a regular channel. Its the special VFO channel!
 
 		trxSetFrequency(currentChannelData->rxFreq);
 		if (currentChannelData->chMode == RADIO_MODE_ANALOG)
@@ -148,6 +147,14 @@ static void updateScreen()
 					codeplugUtilConvertBufToString(contactData.name,buffer,16);
 				}
 				UC1701_printCentered(16,buffer,UC1701_FONT_GD77_8x16);
+			}
+			else if(displaySquelch)
+			{
+				sprintf(buffer,"Squelch");
+				UC1701_printAt(0,16,buffer,UC1701_FONT_GD77_8x16);
+				int bargraph= 1 + ((currentChannelData->sql-1)*5)/2 ;
+				UC1701_fillRect(62,21,bargraph,8,false);
+				displaySquelch=false;
 			}
 
 			if (freq_enter_idx==0)
@@ -298,7 +305,7 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 			else
 			{
-				stepFrequency(FREQ_STEP * -1);
+				stepFrequency(VFO_FREQ_STEP_TABLE[(currentChannelData->VFOflag5 >> 4)] * -1);
 			}
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		}
@@ -310,7 +317,7 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 			else
 			{
-				stepFrequency(FREQ_STEP);
+				stepFrequency(VFO_FREQ_STEP_TABLE[(currentChannelData->VFOflag5 >> 4)]);
 			}
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 
@@ -322,34 +329,76 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 		else if ((keys & KEY_RIGHT)!=0)
 		{
-			currentIndexInTRxGroup++;
-			if (currentIndexInTRxGroup > (rxGroupData.NOT_IN_MEMORY_numTGsInGroup -1))
+			if (trxGetMode() == RADIO_MODE_DIGITAL)
 			{
-				currentIndexInTRxGroup =  0;
+				currentIndexInTRxGroup++;
+				if (currentIndexInTRxGroup > (rxGroupData.NOT_IN_MEMORY_numTGsInGroup -1))
+				{
+					currentIndexInTRxGroup =  0;
+				}
+				codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
+
+				nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
+				trxTalkGroup = contactData.tgNumber;
+
+				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+				updateScreen();
 			}
-			codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
+			else
+			{
+				if(currentChannelData->sql==0)			//If we were using default squelch level
+				{
+					currentChannelData->sql=10;			//start the adjustment from that point.
+				}
+				else
+				{
+					if (currentChannelData->sql < CODEPLUG_MAX_VARIABLE_SQUELCH)
 
-			nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
-			trxTalkGroup = contactData.tgNumber;
+					{
+						currentChannelData->sql++;
+					}
+				}
 
-			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-			updateScreen();
+				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+				displaySquelch=true;
+				updateScreen();
+			}
 		}
 		else if ((keys & KEY_LEFT)!=0)
 		{
-			// To Do change TG in on same channel freq
-			currentIndexInTRxGroup--;
-			if (currentIndexInTRxGroup < 0)
+			if (trxGetMode() == RADIO_MODE_DIGITAL)
 			{
-				currentIndexInTRxGroup =  rxGroupData.NOT_IN_MEMORY_numTGsInGroup - 1;
+				// To Do change TG in on same channel freq
+				currentIndexInTRxGroup--;
+				if (currentIndexInTRxGroup < 0)
+				{
+					currentIndexInTRxGroup =  rxGroupData.NOT_IN_MEMORY_numTGsInGroup - 1;
+				}
+
+				codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
+				nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
+				trxTalkGroup = contactData.tgNumber;
+
+				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+				updateScreen();
 			}
-
-			codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
-			nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
-			trxTalkGroup = contactData.tgNumber;
-
-			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-			updateScreen();
+			else
+			{
+				if(currentChannelData->sql==0)			//If we were using default squelch level
+				{
+					currentChannelData->sql=10;			//start the adjustment from that point.
+				}
+				else
+				{
+					if (currentChannelData->sql > CODEPLUG_MIN_VARIABLE_SQUELCH)
+					{
+						currentChannelData->sql--;
+					}
+				}
+				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+				displaySquelch=true;
+				updateScreen();
+			}
 		}
 	}
 	else
