@@ -31,6 +31,7 @@ static int currentIndexInTRxGroup=0;
 static char currentZoneName[17];
 static int directChannelNumber=0;
 static bool displaySquelch=false;
+int currentChannelNumber=0;
 
 int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 {
@@ -79,10 +80,12 @@ static void loadChannelData(bool useChannelDataInMemory)
 	{
 		if (strcmp(currentZoneName,"All Channels")==0)
 		{
+			settingsCurrentChannelNumber = nonVolatileSettings.currentChannelIndexInAllZone;
 			codeplugChannelGetDataForIndex(nonVolatileSettings.currentChannelIndexInAllZone,&channelScreenChannelData);
 		}
 		else
 		{
+			settingsCurrentChannelNumber = currentZone.channels[nonVolatileSettings.currentChannelIndexInZone];
 			codeplugChannelGetDataForIndex(currentZone.channels[nonVolatileSettings.currentChannelIndexInZone],&channelScreenChannelData);
 		}
 	}

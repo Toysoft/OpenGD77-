@@ -49,6 +49,7 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 	{
 		nonVolatileSettings.initialMenuNumber=MENU_VFO_MODE;
 		currentChannelData = &nonVolatileSettings.vfoChannel;
+		settingsCurrentChannelNumber = -1;// This is not a regular channel. Its the special VFO channel!
 
 		trxSetFrequency(currentChannelData->rxFreq);
 		if (currentChannelData->chMode == RADIO_MODE_ANALOG)

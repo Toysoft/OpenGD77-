@@ -214,21 +214,6 @@ void lastHeardListUpdate(uint8_t *dmrDataBuffer)
 	}
 }
 
-// Needed to convert the legacy DMR ID data which uses BCD encoding for the DMR ID numbers
-int int2bcd(int i)
-{
-    int result = 0;
-    int shift = 0;
-
-    while (i)
-    {
-        result +=  (i % 10) << shift;
-        i = i / 10;
-        shift += 4;
-    }
-    return result;
-}
-
 bool dmrIDLookup( int targetId,dmrIdDataStruct_t *foundRecord)
 {
 	uint32_t l = 0;

@@ -41,7 +41,7 @@ volatile int com_request = 0;
 volatile uint8_t com_requestbuffer[COM_REQUESTBUFFER_SIZE];
 USB_DMA_NONINIT_DATA_ALIGN(USB_DATA_ALIGN_SIZE) static uint8_t s_ComBuf[DATA_BUFF_SIZE];
 
-static uint8_t sectorbuffer[4096];
+
 int sector = -1;
 
 void tick_com_request()
@@ -110,7 +110,7 @@ static void handleCPSRequest()
 			{
 				sector=(com_requestbuffer[2]<<16)+(com_requestbuffer[3]<<8)+(com_requestbuffer[4]<<0);
 				taskEXIT_CRITICAL();
-				ok = SPI_Flash_read(sector*4096,sectorbuffer,4096);
+				ok = SPI_Flash_read(sector*4096,SPI_Flash_sectorbuffer,4096);
 				taskENTER_CRITICAL();
 			}
 		}
@@ -129,7 +129,7 @@ static void handleCPSRequest()
 				{
 					if (sector==(address+i)/4096)
 					{
-						sectorbuffer[(address+i) % 4096]=com_requestbuffer[i+8];
+						SPI_Flash_sectorbuffer[(address+i) % 4096]=com_requestbuffer[i+8];
 					}
 				}
 
@@ -148,7 +148,7 @@ static void handleCPSRequest()
 					for (int i=0;i<16;i++)
 					{
 						taskEXIT_CRITICAL();
-						ok = SPI_Flash_writePage(sector*4096+i*256,sectorbuffer+i*256);
+						ok = SPI_Flash_writePage(sector*4096+i*256,SPI_Flash_sectorbuffer+i*256);
 						taskENTER_CRITICAL();
 						if (!ok)
 						{

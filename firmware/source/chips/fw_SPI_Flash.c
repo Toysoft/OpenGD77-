@@ -25,6 +25,8 @@ static uint8_t spi_flash_transfer(uint8_t c);
 static void spi_flash_setWriteEnable(bool cmd);
 static void spi_flash_enable();
 static void spi_flash_disable();
+uint8_t SPI_Flash_sectorbuffer[4096];
+
 
 //COMMANDS. Not all implemented or used
 #define W_EN 			0x06	//write enable
