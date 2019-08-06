@@ -19,6 +19,8 @@
 #define _FW_MENU_LEGACY_CODEPLUG_UTILS_H_
 #include "fw_main.h"
 
+extern const int CODEPLUG_MAX_VARIABLE_SQUELCH;
+extern const int CODEPLUG_MIN_VARIABLE_SQUELCH;
 extern const int CODEPLUG_ZONE_DATA_SIZE;
 extern const int VFO_FREQ_STEP_TABLE[8];
 
