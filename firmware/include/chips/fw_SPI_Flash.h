@@ -40,6 +40,8 @@
 #define GPIO_SPI_FLASH_DO_U  	GPIOE
 #define Pin_SPI_FLASH_DO_U   	4
 
+extern uint8_t SPI_Flash_sectorbuffer[4096];
+
 // Public functions
 bool SPI_Flash_init();
 bool SPI_Flash_read(uint32_t addrress,uint8_t *buf,int size);

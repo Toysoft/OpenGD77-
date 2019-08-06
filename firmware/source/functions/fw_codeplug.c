@@ -46,6 +46,9 @@ const int MAX_CHANNELS_PER_ZONE = 16;
 
 const int VFO_FREQ_STEP_TABLE[8] = {25,50,65,100,125,250,300,500};
 
+const int CODEPLUG_MAX_VARIABLE_SQUELCH = 21;
+const int CODEPLUG_MIN_VARIABLE_SQUELCH = 1;
+
 uint32_t byteSwap32(uint32_t n)
 {
     return ((((n)&0x000000FFU) << 24U) | (((n)&0x0000FF00U) << 8U) | (((n)&0x00FF0000U) >> 8U) | (((n)&0xFF000000U) >> 24U));// from usb_misc.h
@@ -61,6 +64,21 @@ uint32_t bcd2int(uint32_t i)
         result +=  (i &0x0f)* multiplier;
         multiplier *=10;
         i = i >> 4;
+    }
+    return result;
+}
+
+// Needed to convert the legacy DMR ID data which uses BCD encoding for the DMR ID numbers
+int int2bcd(int i)
+{
+    int result = 0;
+    int shift = 0;
+
+    while (i)
+    {
+        result +=  (i % 10) << shift;
+        i = i / 10;
+        shift += 4;
     }
     return result;
 }
@@ -183,6 +201,119 @@ void codeplugChannelGetDataForIndex(int index, struct_codeplugChannel_t *channel
 	}
 }
 
+
+bool codeplugChannelSaveDataForIndex(int index, struct_codeplugChannel_t *channelBuf)
+{
+	bool retVal=true;
+
+	channelBuf->chMode = (channelBuf->chMode==RADIO_MODE_ANALOG)?0:1;
+	// Convert the the legacy codeplug tx and rx freq values into normal integers
+	channelBuf->txFreq = int2bcd(channelBuf->txFreq*10);
+	channelBuf->rxFreq = int2bcd(channelBuf->rxFreq*10);
+	if (channelBuf->rxTone != 0xffff)
+	{
+		channelBuf->rxTone = int2bcd(channelBuf->rxTone);
+	}
+
+	if (channelBuf->txTone != 0xffff)
+	{
+		channelBuf->txTone = int2bcd(channelBuf->txTone);
+	}
+
+	// lower 128 channels are in EEPROM. Remaining channels are in Flash ! (What a mess...)
+	index--; // I think the channel index numbers start from 1 not zero.
+	if (index<128)
+	{
+		EEPROM_Write(CODEPLUG_ADDR_CHANNEL_EEPROM + index*sizeof(struct_codeplugChannel_t),(uint8_t *)channelBuf,sizeof(struct_codeplugChannel_t));
+	}
+	else
+	{
+		int flashWritePos = CODEPLUG_ADDR_CHANNEL_FLASH;
+		int flashSector;
+		int flashEndSector;
+		int bytesToWriteInCurrentSector = sizeof(struct_codeplugChannel_t);
+
+		index -= 128;// First 128 channels are in the EEPOM, so subtract 128 from the number when looking in the Flash
+
+		// Every 128 bytes there seem to be 16 bytes gaps. I don't know why,bits since 16*8 = 128 bits, its likely they are flag bytes to indicate which channel in the next block are in use
+		flashWritePos += 16 * (index/128);// we just need to skip over that these flag bits when calculating the position of the channel data in memory
+		flashWritePos += index*sizeof(struct_codeplugChannel_t);// go to the position of the specific index
+
+		flashSector 	= flashWritePos/4096;
+		flashEndSector 	= (flashWritePos+sizeof(struct_codeplugChannel_t))/4096;
+
+		if (flashSector!=flashEndSector)
+		{
+			bytesToWriteInCurrentSector = (flashEndSector*4096) - flashWritePos;
+		}
+
+		SPI_Flash_read(flashSector*4096,SPI_Flash_sectorbuffer,4096);
+		uint8_t *writePos = SPI_Flash_sectorbuffer + flashWritePos - (flashSector *4096);
+		memcpy( writePos,
+				channelBuf,
+				bytesToWriteInCurrentSector);
+
+		retVal = SPI_Flash_eraseSector(flashSector*4096);
+		if (!retVal)
+		{
+			return false;
+		}
+
+		for (int i=0;i<16;i++)
+		{
+			retVal = SPI_Flash_writePage(flashSector*4096+i*256,SPI_Flash_sectorbuffer+i*256);
+			if (!retVal)
+			{
+				return false;
+			}
+		}
+
+		if (flashSector!=flashEndSector)
+		{
+			uint8_t *channelBufPusOffset = (uint8_t *)channelBuf + bytesToWriteInCurrentSector;
+			bytesToWriteInCurrentSector = sizeof(struct_codeplugChannel_t) - bytesToWriteInCurrentSector;
+
+			SPI_Flash_read(flashEndSector*4096,SPI_Flash_sectorbuffer,4096);
+			memcpy(SPI_Flash_sectorbuffer,
+					(uint8_t *)channelBufPusOffset,
+					bytesToWriteInCurrentSector);
+
+			retVal = SPI_Flash_eraseSector(flashEndSector*4096);
+
+			if (!retVal)
+			{
+				return false;
+			}
+			for (int i=0;i<16;i++)
+			{
+				retVal = SPI_Flash_writePage(flashEndSector*4096+i*256,SPI_Flash_sectorbuffer+i*256);
+
+				if (!retVal)
+				{
+					return false;
+				}
+			}
+
+		}
+	}
+
+	// Need to restore the values back to what we need for the operation of the firmware rather than the BCD values the codeplug uses
+
+	channelBuf->chMode = (channelBuf->chMode==0)?RADIO_MODE_ANALOG:RADIO_MODE_DIGITAL;
+	// Convert the the legacy codeplug tx and rx freq values into normal integers
+	channelBuf->txFreq = bcd2int(channelBuf->txFreq)/10;
+	channelBuf->rxFreq = bcd2int(channelBuf->rxFreq)/10;
+	if (channelBuf->rxTone != 0xffff)
+	{
+		channelBuf->rxTone = bcd2int(channelBuf->rxTone);
+	}
+	if (channelBuf->txTone != 0xffff)
+	{
+		channelBuf->txTone = bcd2int(channelBuf->txTone);
+	}
+
+	return retVal;
+}
 
 void codeplugRxGroupGetDataForIndex(int index, struct_codeplugRxGroup_t *rxGroupBuf)
 {

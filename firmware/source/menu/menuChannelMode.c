@@ -21,7 +21,6 @@
 #include "fw_codeplug.h"
 #include "fw_settings.h"
 
-
 static void updateScreen();
 static void handleEvent(int buttons, int keys, int events);
 static void loadChannelData(bool useChannelDataInMemory);
@@ -32,9 +31,7 @@ static int currentIndexInTRxGroup=0;
 static char currentZoneName[17];
 static int directChannelNumber=0;
 static bool displaySquelch=false;
-
-static const int MinSquelch=1;
-static const int MaxSquelch=21;
+int currentChannelNumber=0;
 
 int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 {
@@ -83,10 +80,12 @@ static void loadChannelData(bool useChannelDataInMemory)
 	{
 		if (strcmp(currentZoneName,"All Channels")==0)
 		{
+			settingsCurrentChannelNumber = nonVolatileSettings.currentChannelIndexInAllZone;
 			codeplugChannelGetDataForIndex(nonVolatileSettings.currentChannelIndexInAllZone,&channelScreenChannelData);
 		}
 		else
 		{
+			settingsCurrentChannelNumber = currentZone.channels[nonVolatileSettings.currentChannelIndexInZone];
 			codeplugChannelGetDataForIndex(currentZone.channels[nonVolatileSettings.currentChannelIndexInZone],&channelScreenChannelData);
 		}
 	}
@@ -271,9 +270,13 @@ static void handleEvent(int buttons, int keys, int events)
 			{
 				currentChannelData->sql=10;			//start the adjustment from that point.
 			}
-			else if (currentChannelData->sql < MaxSquelch)
+			else
 			{
-				currentChannelData->sql++;
+				if (currentChannelData->sql < CODEPLUG_MAX_VARIABLE_SQUELCH)
+
+				{
+					currentChannelData->sql++;
+				}
 			}
 
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
@@ -306,10 +309,12 @@ static void handleEvent(int buttons, int keys, int events)
 			{
 				currentChannelData->sql=10;			//start the adjustment from that point.
 			}
-
-			else if (currentChannelData->sql > MinSquelch)
+			else
 			{
-				currentChannelData->sql--;
+				if (currentChannelData->sql > CODEPLUG_MIN_VARIABLE_SQUELCH)
+				{
+					currentChannelData->sql--;
+				}
 			}
 
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;

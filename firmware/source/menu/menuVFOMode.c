@@ -42,9 +42,6 @@ static int read_freq_enter_digits();
 static void update_frequency(int tmp_frequency);
 static void stepFrequency(int increment);
 
-static const int MinSquelch=1;
-static const int MaxSquelch=21;
-
 // public interface
 int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 {
@@ -52,6 +49,7 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 	{
 		nonVolatileSettings.initialMenuNumber=MENU_VFO_MODE;
 		currentChannelData = &nonVolatileSettings.vfoChannel;
+		settingsCurrentChannelNumber = -1;// This is not a regular channel. Its the special VFO channel!
 
 		trxSetFrequency(currentChannelData->rxFreq);
 		if (currentChannelData->chMode == RADIO_MODE_ANALOG)
@@ -348,10 +346,19 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 			else
 			{
-				if (currentChannelData->sql < MaxSquelch)
+				if(currentChannelData->sql==0)			//If we were using default squelch level
 				{
-					currentChannelData->sql++;
+					currentChannelData->sql=10;			//start the adjustment from that point.
 				}
+				else
+				{
+					if (currentChannelData->sql < CODEPLUG_MAX_VARIABLE_SQUELCH)
+
+					{
+						currentChannelData->sql++;
+					}
+				}
+
 				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 				displaySquelch=true;
 				updateScreen();
@@ -377,9 +384,16 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 			else
 			{
-				if (currentChannelData->sql > MinSquelch)
+				if(currentChannelData->sql==0)			//If we were using default squelch level
 				{
-					currentChannelData->sql--;
+					currentChannelData->sql=10;			//start the adjustment from that point.
+				}
+				else
+				{
+					if (currentChannelData->sql > CODEPLUG_MIN_VARIABLE_SQUELCH)
+					{
+						currentChannelData->sql--;
+					}
 				}
 				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 				displaySquelch=true;

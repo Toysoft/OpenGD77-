@@ -30,7 +30,7 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		if (trxCheckFrequencyInAmateurBand(currentChannelData->txFreq))
+		if (trxCheckFrequencyInAmateurBand(currentChannelData->txFreq) || nonVolatileSettings.txFreqLimited == 0x00)
 		{
 			nextSecondPIT = PITCounter + PIT_COUNTS_PER_SECOND;
 			timeInSeconds = currentChannelData->tot*15;
