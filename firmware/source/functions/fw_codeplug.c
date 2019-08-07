@@ -199,6 +199,12 @@ void codeplugChannelGetDataForIndex(int index, struct_codeplugChannel_t *channel
 	{
 		channelBuf->txTone = bcd2int(channelBuf->txTone);
 	}
+
+	// Sanity check the sql value, because its not used by the official firmware and may contain random value e.g. 255
+	if (channelBuf->sql>21)
+	{
+		channelBuf->sql = 10;
+	}
 }
 
 
