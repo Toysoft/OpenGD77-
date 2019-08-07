@@ -110,9 +110,11 @@ int codeplugZonesGetCount()
 	return numZones+1; // Add one extra zone to allow for the special 'All Channels' Zone
 }
 
-void codeplugZoneGetDataForIndex(int index,struct_codeplugZone_t *returnBuf)
+void codeplugZoneGetDataForNumber(int zoneNum,struct_codeplugZone_t *returnBuf)
 {
-	if (index==codeplugZonesGetCount()-1) //special case: return a special Zone called 'All Channels'
+
+
+	if (zoneNum==codeplugZonesGetCount()-1) //special case: return a special Zone called 'All Channels'
 	{
 		sprintf(returnBuf->name,"All Channels");
 		for(int i=0;i<MAX_CHANNELS_PER_ZONE;i++)
@@ -123,8 +125,39 @@ void codeplugZoneGetDataForIndex(int index,struct_codeplugZone_t *returnBuf)
 	}
 	else
 	{
+		// Need to find the index into the Zones data for the specific Zone number.
+		// Because the Zones data is not guaranteed to be packed by the CPS (though we should attempt to make the CPS always pack the Zones)
+
+		// Read the In Use data which is the first 32 byes of the Zones data
+		uint8_t inUseBuf[CODEPLUG_ADDR_EX_ZONE_INUSE_PACKED_DATA_SIZE];
+		EEPROM_Read(CODEPLUG_ADDR_EX_ZONE_INUSE_PACKED_DATA, (uint8_t*)&inUseBuf, CODEPLUG_ADDR_EX_ZONE_INUSE_PACKED_DATA_SIZE);
+
+		int count=-1;// Need to start counting at -1 because the Zone number is zero indexed
+		int foundIndex=-1;
+
+		// Go though each byte in the In Use table
+		for(int i=0;(i<32 && foundIndex==-1);i++)
+		{
+			// Go though each binary bit, counting them one by one
+			for(int j=0;j<8;j++)
+			{
+				if ((inUseBuf[i] & 0x01 )==0x01)
+				{
+					count++;
+					if (count == zoneNum)
+					{
+						// found it. So save the index before we exit the "for" loops
+						foundIndex = (i * 8) + j;
+						break;// Will break out of this loop, but the outer loop breaks becuase it also checks for foundIndex
+					}
+				}
+				inUseBuf[i] = inUseBuf[i]>>1;
+			}
+		}
+
 		// IMPORTANT. read size is different from the size of the data, because I added a extra property to the struct to hold the number of channels in the zone.
-		EEPROM_Read(CODEPLUG_ADDR_EX_ZONE_LIST + (index * CODEPLUG_ZONE_DATA_SIZE), (uint8_t*)returnBuf, sizeof(struct_codeplugZone_t));
+		EEPROM_Read(CODEPLUG_ADDR_EX_ZONE_LIST + (foundIndex  * CODEPLUG_ZONE_DATA_SIZE), (uint8_t*)returnBuf, sizeof(struct_codeplugZone_t));
+
 		for(int i=0;i<MAX_CHANNELS_PER_ZONE;i++)
 		{
 			// Empty channels seem to be filled with zeros

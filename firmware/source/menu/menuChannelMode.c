@@ -38,7 +38,7 @@ int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 	if (isFirstRun)
 	{
 		nonVolatileSettings.initialMenuNumber = MENU_CHANNEL_MODE;// This menu.
-		codeplugZoneGetDataForIndex(nonVolatileSettings.currentZone,&currentZone);
+		codeplugZoneGetDataForNumber(nonVolatileSettings.currentZone,&currentZone);
 		codeplugUtilConvertBufToString(currentZone.name,currentZoneName,16);// need to convert to zero terminated string
 		if (channelScreenChannelData.rxFreq != 0)
 		{
