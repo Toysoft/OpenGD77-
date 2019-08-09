@@ -23,7 +23,7 @@ static char digits[9];
 static void updateScreen();
 static void handleEvent(int buttons, int keys, int events);
 
-static const char *menuName[2]={"TG entry","Manual dial"};
+static const char *menuName[2]={"TG entry","PC entry"};
 
 // public interface
 int menuNumericalEntry(int buttons, int keys, int events, bool isFirstRun)
@@ -74,7 +74,7 @@ static void handleEvent(int buttons, int keys, int events)
 		nonVolatileSettings.overrideTG = trxTalkGroupOrPcId;
 		if (gMenusCurrentItemIndex == 1)
 		{
-			// manual dial
+			// Private Call
 			nonVolatileSettings.overrideTG |= (PC_CALL_FLAG << 24);
 		}
 		menuSystemPopAllAndDisplayRootMenu();

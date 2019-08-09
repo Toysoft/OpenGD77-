@@ -156,11 +156,11 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				{
 					if((trxTalkGroupOrPcId>>24) == TG_CALL_FLAG)
 					{
-						sprintf(buffer,"TG %d",(trxTalkGroupOrPcId & 0x00FFFFFF));
+						sprintf(nameBuf,"TG %d",(trxTalkGroupOrPcId & 0x00FFFFFF));
 					}
 					else
 					{
-						sprintf(buffer,"PC %d",(trxTalkGroupOrPcId & 0x00FFFFFF));
+						sprintf(nameBuf,"PC %d",(trxTalkGroupOrPcId & 0x00FFFFFF));
 					}
 				}
 				else
