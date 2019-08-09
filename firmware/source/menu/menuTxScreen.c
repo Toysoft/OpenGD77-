@@ -16,6 +16,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 #include "menu/menuSystem.h"
+#include "menu/menuUtilityQSOData.h"
 #include "fw_settings.h"
 
 
@@ -34,7 +35,7 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 		{
 			nextSecondPIT = PITCounter + PIT_COUNTS_PER_SECOND;
 			timeInSeconds = currentChannelData->tot*15;
-			updateScreen();
+
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 			GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 1);
 			trxSetFrequency(currentChannelData->txFreq);
@@ -46,6 +47,7 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 			{
 				trx_activateTX();
 			}
+			updateScreen();
 		}
 		else
 		{
@@ -92,13 +94,23 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 
 static void updateScreen()
 {
-	char buf[8];
-	UC1701_clearBuf();
-	sprintf(buf,"%d",timeInSeconds);
-	UC1701_printCentered(20, buf,UC1701_FONT_16x32);
 
-	UC1701_render();
-	displayLightOverrideTimeout(-1);
+	menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+	if (menuControlData.stack[0]==MENU_VFO_MODE)
+	{
+		menuVFOModeUpdateScreen(timeInSeconds);
+		displayLightOverrideTimeout(-1);
+	}
+	else
+	{
+		char buf[8];
+		UC1701_clearBuf();
+		sprintf(buf,"%d",timeInSeconds);
+		UC1701_printCentered(20, buf,UC1701_FONT_16x32);
+		UC1701_render();
+		displayLightOverrideTimeout(-1);
+//		menuChannelModeUpdateScreen(timeInSeconds);// To Do
+	}
 }
 
 

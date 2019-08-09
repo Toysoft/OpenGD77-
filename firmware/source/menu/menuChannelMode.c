@@ -50,7 +50,7 @@ int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 		}
 		currentChannelData = &channelScreenChannelData;
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-		menuChannelModeUpdateScreen();
+		menuChannelModeUpdateScreen(0);
 	}
 	else
 	{
@@ -59,7 +59,7 @@ int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 			// is there an incoming DMR signal
 			if (menuDisplayQSODataState != QSO_DISPLAY_IDLE)
 			{
-				menuChannelModeUpdateScreen();
+				menuChannelModeUpdateScreen(0);
 			}
 		}
 		else
@@ -116,7 +116,7 @@ static void loadChannelData(bool useChannelDataInMemory)
 	}
 }
 
-void menuChannelModeUpdateScreen()
+void menuChannelModeUpdateScreen(int txTimeSecs)
 {
 	char nameBuf[17];
 	int channelNumber;
@@ -218,7 +218,7 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 			directChannelNumber=0;
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-			menuChannelModeUpdateScreen();
+			menuChannelModeUpdateScreen(0);
 		}
 		else if (buttons & BUTTON_SK2 )
 		{
@@ -244,7 +244,7 @@ static void handleEvent(int buttons, int keys, int events)
 		{
 			directChannelNumber=0;
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-			menuChannelModeUpdateScreen();
+			menuChannelModeUpdateScreen(0);
 		}
 		else
 		{
@@ -269,7 +269,7 @@ static void handleEvent(int buttons, int keys, int events)
 			trxTalkGroupOrPcId = contactData.tgNumber;
 
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-			menuChannelModeUpdateScreen();
+			menuChannelModeUpdateScreen(0);
 		}
 		else
 		{
@@ -288,7 +288,7 @@ static void handleEvent(int buttons, int keys, int events)
 
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 			displaySquelch=true;
-			menuChannelModeUpdateScreen();
+			menuChannelModeUpdateScreen(0);
 		}
 
 	}
@@ -308,7 +308,7 @@ static void handleEvent(int buttons, int keys, int events)
 			trxTalkGroupOrPcId = contactData.tgNumber;
 
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-			menuChannelModeUpdateScreen();
+			menuChannelModeUpdateScreen(0);
 		}
 		else
 		{
@@ -326,7 +326,7 @@ static void handleEvent(int buttons, int keys, int events)
 
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 			displaySquelch=true;
-			menuChannelModeUpdateScreen();
+			menuChannelModeUpdateScreen(0);
 		}
 
 	}
@@ -344,7 +344,7 @@ static void handleEvent(int buttons, int keys, int events)
 			trxSetTxCTCSS(currentChannelData->rxTone);
 		}
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-		menuChannelModeUpdateScreen();
+		menuChannelModeUpdateScreen(0);
 	}
 	else if ((keys & KEY_DOWN)!=0)
 	{
@@ -369,7 +369,7 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 		loadChannelData(false);
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-		menuChannelModeUpdateScreen();
+		menuChannelModeUpdateScreen(0);
 	}
 	else if ((keys & KEY_UP)!=0)
 	{
@@ -394,7 +394,7 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 		loadChannelData(false);
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-		menuChannelModeUpdateScreen();
+		menuChannelModeUpdateScreen(0);
 	}
 	else if (strcmp(currentZoneName,"All Channels")==0)
 	{
@@ -445,7 +445,7 @@ static void handleEvent(int buttons, int keys, int events)
 			directChannelNumber=(directChannelNumber*10) + keyval;
 			if(directChannelNumber>1024) directChannelNumber=0;
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-			menuChannelModeUpdateScreen();
+			menuChannelModeUpdateScreen(0);
 		}
 	}
 }
