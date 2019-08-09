@@ -156,9 +156,10 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 
 				if (trxIsTransmitting)
 				{
+//					sprintf(buffer,"%dmW",((nonVolatileSettings.txPower-790)*50)/23);// Approximate calculation.
+//					UC1701_printCentered(0, buffer,UC1701_FONT_6X8);
+
 					UC1701_printAt(0,32,buffer,UC1701_FONT_GD77_8x16);
-					sprintf(buffer,"%dmW",((nonVolatileSettings.txPower-790)*50)/23);// Approximate calculation.
-					UC1701_printCore(0, 32, buffer, UC1701_FONT_GD77_8x16, 2, false);
 				}
 				else
 				{
