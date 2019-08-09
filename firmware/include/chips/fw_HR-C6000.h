@@ -57,6 +57,9 @@
 #define GPIO_INT_C6000_PWD   GPIOE
 #define Pin_INT_C6000_PWD    1
 
+extern const uint8_t TG_CALL_FLAG;
+extern const uint8_t PC_CALL_FLAG;
+
 extern volatile bool int_sys;
 extern volatile bool int_ts;
 extern volatile bool tx_required;
@@ -68,6 +71,17 @@ extern int tick_cnt;
 extern int skip_count;
 
 extern int tx_sequence;
+
+extern uint8_t tmp_val_0x82;
+extern uint8_t tmp_val_0x86;
+extern uint8_t tmp_val_0x51;
+extern uint8_t tmp_val_0x52;
+extern uint8_t tmp_val_0x57;
+extern uint8_t tmp_val_0x5f;
+extern uint8_t tmp_ram[256];
+extern uint8_t tmp_ram1[256];
+extern uint8_t tmp_ram2[256];
+
 
 enum DMR_SLOT_STATE { DMR_STATE_IDLE, DMR_STATE_RX_1, DMR_STATE_RX_2, DMR_STATE_RX_END,
 					  DMR_STATE_TX_START_1, DMR_STATE_TX_START_2, DMR_STATE_TX_START_3, DMR_STATE_TX_START_4, DMR_STATE_TX_START_5, DMR_STATE_TX_1, DMR_STATE_TX_2, DMR_STATE_TX_END_1, DMR_STATE_TX_END_2 };

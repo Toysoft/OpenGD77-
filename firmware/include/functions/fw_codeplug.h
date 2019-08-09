@@ -88,8 +88,7 @@ void codeplugZoneGetSelected(int *selectedZone,int *selectedChannel);
 void codeplugZoneSetSelected(int selectedZone,int selectedChannel);
  */
 int codeplugZonesGetCount();
-void codeplugZoneGetDataForIndex(int indexNum,struct_codeplugZone_t *returnBuf);
-
+void codeplugZoneGetDataForNumber(int indexNum,struct_codeplugZone_t *returnBuf);
 void codeplugChannelGetDataForIndex(int index, struct_codeplugChannel_t *channelBuf);
 void codeplugUtilConvertBufToString(char *inBuf,char *outBuf,int len);
 uint32_t byteSwap32(uint32_t n);

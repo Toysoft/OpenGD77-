@@ -31,8 +31,8 @@ typedef struct dmrIdDataStruct
 typedef struct LinkItem
 {
     struct LinkItem *prev;
-    int id;
-    int talkGroup;
+    uint32_t id;
+    uint32_t talkGroupOrPcId;
     char talkerAlias[32];// 4 blocks of data. 6 bytes + 6 bytes + 7 bytes + 7 bytes . plus 1 for termination some more for safety
     struct LinkItem *next;
 } LinkItem_t;

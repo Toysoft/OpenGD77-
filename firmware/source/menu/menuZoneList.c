@@ -69,7 +69,7 @@ static void updateScreen()
 			UC1701_fillRect(0,2+headerOffset + ((i+1)*16),128,16,false);
 		}
 
-		codeplugZoneGetDataForIndex(rPos,&zoneBuf);
+		codeplugZoneGetDataForNumber(rPos,&zoneBuf);
 		codeplugUtilConvertBufToString(zoneBuf.name,nameBuf,16);// need to convert to zero terminated string
 
 		UC1701_printCore(5,(i+1)*16 + (headerOffset) ,(char *)nameBuf, UC1701_FONT_GD77_8x16,0,(rPos==gMenusCurrentItemIndex));

@@ -17,6 +17,7 @@
  */
 #include "menu/menuSystem.h"
 #include "fw_settings.h"
+#include "fw_HR-C6000.h"
 
 static char digits[9];
 static void updateScreen();
@@ -69,8 +70,13 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_GREEN)!=0)
 	{
-		trxTalkGroup = atoi(digits);
-		nonVolatileSettings.overrideTG = trxTalkGroup;
+		trxTalkGroupOrPcId = atoi(digits);
+		nonVolatileSettings.overrideTG = trxTalkGroupOrPcId;
+		if (gMenusCurrentItemIndex == 1)
+		{
+			// manual dial
+			nonVolatileSettings.overrideTG |= (PC_CALL_FLAG << 24);
+		}
 		menuSystemPopAllAndDisplayRootMenu();
 	}
 	else if ((keys & KEY_HASH)!=0)
