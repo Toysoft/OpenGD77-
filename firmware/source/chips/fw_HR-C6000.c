@@ -27,6 +27,10 @@
 
 TaskHandle_t fwhrc6000TaskHandle;
 
+const uint8_t TG_CALL_FLAG = 0x00;
+const uint8_t PC_CALL_FLAG = 0x03;
+
+
 volatile bool int_sys;
 volatile bool int_ts;
 volatile bool tx_required;
@@ -38,6 +42,7 @@ int tick_cnt;
 int skip_count;
 int qsodata_timer;
 int tx_sequence;
+uint8_t spi_tx[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
 void SPI_HR_C6000_init()
 {
@@ -331,7 +336,7 @@ void store_qsodata()
 	}
 	// check if this is a valid data frame, including Talker Alias data frames (0x04 - 0x07)
 	// Not sure if its necessary to check byte [1] for 0x00 but I'm doing this
-	if (tmp_ram[1] == 0x00  && (tmp_ram[0]==0x00 || (tmp_ram[0]>=0x04 && tmp_ram[0]<=0x7)))
+	if (tmp_ram[1] == 0x00  && (tmp_ram[0]==TG_CALL_FLAG || tmp_ram[0]==PC_CALL_FLAG  || (tmp_ram[0]>=0x04 && tmp_ram[0]<=0x7)))
 	{
 		lastHeardListUpdate(tmp_ram);
 		qsodata_timer=2400;
@@ -380,6 +385,23 @@ void fw_hrc6000_task()
     }
 }
 
+void setupPcOrTGHeader()
+{
+	spi_tx[0] = (trxTalkGroupOrPcId >> 24) & 0xFF;
+	spi_tx[1] = 0x00;
+	spi_tx[2] = 0x00;
+	spi_tx[3] = (trxTalkGroupOrPcId >> 16) & 0xFF;
+	spi_tx[4] = (trxTalkGroupOrPcId >> 8) & 0xFF;
+	spi_tx[5] = (trxTalkGroupOrPcId >> 0) & 0xFF;
+	spi_tx[6] = (trxDMRID >> 16) & 0xFF;
+	spi_tx[7] = (trxDMRID >> 8) & 0xFF;
+	spi_tx[8] = (trxDMRID >> 0) & 0xFF;
+	spi_tx[9] = 0x00;
+	spi_tx[10] = 0x00;
+	spi_tx[11] = 0x00;
+	write_SPI_page_reg_bytearray_SPI0(0x02, 0x00, spi_tx, 0x0c);
+}
+
 void tick_HR_C6000()
 {
 	bool tmp_int_sys=false;
@@ -400,14 +422,9 @@ void tick_HR_C6000()
 	if (trxIsTransmitting==true && (slot_state == DMR_STATE_IDLE)) // Start TX (first step)
 	{
 		init_codec();
-		uint8_t spi_tx[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-		spi_tx[3] = (trxTalkGroup >> 16) & 0xFF;
-		spi_tx[4] = (trxTalkGroup >> 8) & 0xFF;
-		spi_tx[5] = (trxTalkGroup >> 0) & 0xFF;
-		spi_tx[6] = (trxDMRID >> 16) & 0xFF;
-		spi_tx[7] = (trxDMRID >> 8) & 0xFF;
-		spi_tx[8] = (trxDMRID >> 0) & 0xFF;
-		write_SPI_page_reg_bytearray_SPI0(0x02, 0x00, spi_tx, 0x0c);
+
+		setupPcOrTGHeader();
+
 		write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xE3); // TX and RX enable
 		write_SPI_page_reg_byte_SPI0(0x04, 0x21, 0xA2); // reset vocoder codingbuffer
 		write_SPI_page_reg_byte_SPI0(0x04, 0x22, 0x86); // I2S master encode start
@@ -615,7 +632,7 @@ void tick_HR_C6000()
     		if (tmp_val_0x82 & 0x10) // InterLateEntry
     		{
     			// Late entry into ongoing RX
-                if ((slot_state == DMR_STATE_IDLE) && (tmp_ram[0]==0))
+                if ((slot_state == DMR_STATE_IDLE) && (tmp_ram[0]==TG_CALL_FLAG || tmp_ram[0]==PC_CALL_FLAG))
                 {
                 	slot_state = DMR_STATE_RX_1;
                 	store_qsodata();
@@ -648,7 +665,7 @@ void tick_HR_C6000()
     			// Start RX
     			int rxdt = (tmp_val_0x51 >> 4) & 0x0f;
     			int sc = (tmp_val_0x51 >> 0) & 0x03;
-                if ((slot_state == DMR_STATE_IDLE) && (sc==2) && (rxdt==1) && (tmp_ram[0]==0))
+                if ((slot_state == DMR_STATE_IDLE) && (sc==2) && (rxdt==1) && (tmp_ram[0]==TG_CALL_FLAG || tmp_ram[0]==PC_CALL_FLAG))
                 {
                 	slot_state = DMR_STATE_RX_1;
                 	store_qsodata();
@@ -659,7 +676,7 @@ void tick_HR_C6000()
 #endif
                 }
     			// Stop RX
-                if ((sc==2) && (rxdt==2) && (tmp_ram[0]==0))
+                if ((sc==2) && (rxdt==2) && (tmp_ram[0]==TG_CALL_FLAG || tmp_ram[0]==PC_CALL_FLAG))
                 {
                 	slot_state = DMR_STATE_RX_END;
 #if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)

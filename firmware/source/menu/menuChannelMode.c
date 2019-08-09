@@ -108,11 +108,11 @@ static void loadChannelData(bool useChannelDataInMemory)
 	codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
 	if (nonVolatileSettings.overrideTG == 0)
 	{
-		trxTalkGroup = contactData.tgNumber;
+		trxTalkGroupOrPcId = contactData.tgNumber;
 	}
 	else
 	{
-		trxTalkGroup = nonVolatileSettings.overrideTG;
+		trxTalkGroupOrPcId = nonVolatileSettings.overrideTG;
 	}
 }
 
@@ -154,7 +154,14 @@ static void updateScreen()
 			{
 				if (nonVolatileSettings.overrideTG != 0)
 				{
-					sprintf(nameBuf,"TG %d",trxTalkGroup);
+					if((trxTalkGroupOrPcId>>24) == TG_CALL_FLAG)
+					{
+						sprintf(buffer,"TG %d",(trxTalkGroupOrPcId & 0x00FFFFFF));
+					}
+					else
+					{
+						sprintf(buffer,"PC %d",(trxTalkGroupOrPcId & 0x00FFFFFF));
+					}
 				}
 				else
 				{
@@ -259,7 +266,7 @@ static void handleEvent(int buttons, int keys, int events)
 			codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
 
 			nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
-			trxTalkGroup = contactData.tgNumber;
+			trxTalkGroupOrPcId = contactData.tgNumber;
 
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 			updateScreen();
@@ -298,7 +305,7 @@ static void handleEvent(int buttons, int keys, int events)
 
 			codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
 			nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
-			trxTalkGroup = contactData.tgNumber;
+			trxTalkGroupOrPcId = contactData.tgNumber;
 
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 			updateScreen();

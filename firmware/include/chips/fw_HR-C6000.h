@@ -57,6 +57,9 @@
 #define GPIO_INT_C6000_PWD   GPIOE
 #define Pin_INT_C6000_PWD    1
 
+extern const uint8_t TG_CALL_FLAG;
+extern const uint8_t PC_CALL_FLAG;
+
 extern volatile bool int_sys;
 extern volatile bool int_ts;
 extern volatile bool tx_required;

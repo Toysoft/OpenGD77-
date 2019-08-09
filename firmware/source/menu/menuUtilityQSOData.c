@@ -22,6 +22,7 @@
 #include "fw_EEPROM.h"
 #include "fw_SPI_Flash.h"
 #include "fw_settings.h"
+#include "fw_HR-C6000.h"
 
 void updateLastHeardList(int id,int talkGroup);
 
@@ -39,7 +40,7 @@ void lastheardInitList()
     for(int i=0;i<NUM_LASTHEARD_STORED;i++)
     {
     	callsList[i].id=0;
-        callsList[i].talkGroup=0;
+        callsList[i].talkGroupOrPcId=0;
         if (i==0)
         {
             callsList[i].prev=NULL;
@@ -89,10 +90,10 @@ int lastID=0;
 
 void lastHeardListUpdate(uint8_t *dmrDataBuffer)
 {
-	if (dmrDataBuffer[0] == 0x00)
+	if (dmrDataBuffer[0]==TG_CALL_FLAG || dmrDataBuffer[0]==PC_CALL_FLAG)
 	{
-		int talkGroup=(dmrDataBuffer[3]<<16)+(dmrDataBuffer[4]<<8)+(dmrDataBuffer[5]<<0);
-		int id=(dmrDataBuffer[6]<<16)+(dmrDataBuffer[7]<<8)+(dmrDataBuffer[8]<<0);
+		uint32_t talkGroupOrPcId = (dmrDataBuffer[0]<<24) + (dmrDataBuffer[3]<<16)+(dmrDataBuffer[4]<<8)+(dmrDataBuffer[5]<<0);
+		uint32_t id=(dmrDataBuffer[6]<<16)+(dmrDataBuffer[7]<<8)+(dmrDataBuffer[8]<<0);
 
 		if (id!=lastID)
 		{
@@ -103,7 +104,7 @@ void lastHeardListUpdate(uint8_t *dmrDataBuffer)
 			if (item!=NULL)
 			{
 				// Already in the list
-				item->talkGroup = talkGroup;// update the TG in case they changed TG
+				item->talkGroupOrPcId = talkGroupOrPcId;// update the TG in case they changed TG
 
 				if (item == LinkHead)
 				{
@@ -155,7 +156,7 @@ void lastHeardListUpdate(uint8_t *dmrDataBuffer)
 				LinkHead = item;// Make this item the new head
 
 				item->id=id;
-				item->talkGroup =  talkGroup;
+				item->talkGroupOrPcId =  talkGroupOrPcId;
 				memset(item->talkerAlias,0,32);// Clear any TA data
 				menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;// flag that the display needs to update
 			}
@@ -167,7 +168,7 @@ void lastHeardListUpdate(uint8_t *dmrDataBuffer)
 			if (item!=NULL)
 			{
 				// Already in the list
-				item->talkGroup = talkGroup;// update the TG in case they changed TG
+				item->talkGroupOrPcId = talkGroupOrPcId;// update the TG in case they changed TG
 			}
 		}
 	}
@@ -270,7 +271,14 @@ void menuUtilityRenderQSOData()
 	char buffer[32];// buffer passed to the DMR ID lookup function, needs to be large enough to hold worst case text length that is returned. Currently 16+1
 	dmrIdDataStruct_t currentRec;
 
-	sprintf(buffer,"TG %d", LinkHead->talkGroup);
+	if ((LinkHead->talkGroupOrPcId>>24) == TG_CALL_FLAG)
+	{
+		sprintf(buffer,"TG %d", (LinkHead->talkGroupOrPcId & 0xFFFFFF));
+	}
+	else
+	{
+		sprintf(buffer,"PC %d", (LinkHead->talkGroupOrPcId & 0xFFFFFF));
+	}
 	UC1701_printCentered(16, buffer,UC1701_FONT_GD77_8x16);
 
 	// first check if we have this ID in the DMR ID data
