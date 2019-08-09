@@ -20,15 +20,7 @@
 #include "fw_usb_com.h"
 #include "fw_settings.h"
 
-uint8_t tmp_val_0x82;
-uint8_t tmp_val_0x86;
-uint8_t tmp_val_0x51;
-uint8_t tmp_val_0x52;
-uint8_t tmp_val_0x57;
-uint8_t tmp_val_0x5f;
-uint8_t tmp_ram[256];
-uint8_t tmp_ram1[256];
-uint8_t tmp_ram2[256];
+
 
 static void handleCPSRequest();
 

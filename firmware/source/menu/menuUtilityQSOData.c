@@ -58,16 +58,6 @@ void lastheardInitList()
             callsList[i].next=NULL;
         }
     }
-/* TEST DATA
-    updateLastHeardList(5053344,505);
-    updateLastHeardList(5054045,505);
-    updateLastHeardList(5054125,505);
-    updateLastHeardList(5053238,505);
-    updateLastHeardList(5053007,505);
-    updateLastHeardList(5053407,505);
-    updateLastHeardList(5054223,505);
-    updateLastHeardList(1234567,505);
-*/
 }
 
 LinkItem_t * findInList(int id)

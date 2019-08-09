@@ -35,7 +35,6 @@ static int currentIndexInTRxGroup=0;
 static bool displaySquelch=false;
 
 // internal prototypes
-static void updateScreen();
 static void handleEvent(int buttons, int keys, int events);
 
 static void reset_freq_enter_digits();
@@ -101,7 +100,7 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 		}
 		reset_freq_enter_digits();
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-		updateScreen();
+		menuVFOModeUpdateScreen();
 	}
 	else
 	{
@@ -110,7 +109,7 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 			// is there an incoming DMR signal
 			if (menuDisplayQSODataState != QSO_DISPLAY_IDLE)
 			{
-				updateScreen();
+				menuVFOModeUpdateScreen();
 			}
 		}
 		else
@@ -122,7 +121,7 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 	return 0;
 }
 
-static void updateScreen()
+void menuVFOModeUpdateScreen()
 {
 	int val_before_dp;
 	int val_after_dp;
@@ -350,7 +349,7 @@ static void handleEvent(int buttons, int keys, int events)
 				trxTalkGroupOrPcId = contactData.tgNumber;
 
 				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-				updateScreen();
+				menuVFOModeUpdateScreen();
 			}
 			else
 			{
@@ -369,7 +368,7 @@ static void handleEvent(int buttons, int keys, int events)
 
 				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 				displaySquelch=true;
-				updateScreen();
+				menuVFOModeUpdateScreen();
 			}
 		}
 		else if ((keys & KEY_LEFT)!=0)
@@ -388,7 +387,7 @@ static void handleEvent(int buttons, int keys, int events)
 				trxTalkGroupOrPcId = contactData.tgNumber;
 
 				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-				updateScreen();
+				menuVFOModeUpdateScreen();
 			}
 			else
 			{
@@ -405,7 +404,7 @@ static void handleEvent(int buttons, int keys, int events)
 				}
 				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 				displaySquelch=true;
-				updateScreen();
+				menuVFOModeUpdateScreen();
 			}
 		}
 	}
@@ -489,7 +488,7 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 	}
 
-	updateScreen();
+	menuVFOModeUpdateScreen();
 }
 
 static void stepFrequency(int increment)

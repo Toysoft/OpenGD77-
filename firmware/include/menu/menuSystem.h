@@ -36,6 +36,9 @@ typedef struct menuItemNew
        int menuNum;
 } menuItemNew_t;
 
+void menuChannelModeUpdateScreen();
+void menuVFOModeUpdateScreen();
+
 void menuInitMenuSystem();
 void displayLightTrigger();
 void displayLightOverrideTimeout(int timeout);
