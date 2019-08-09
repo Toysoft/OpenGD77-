@@ -21,7 +21,7 @@
 #include "fw_codeplug.h"
 #include "fw_settings.h"
 
-static void updateScreen();
+
 static void handleEvent(int buttons, int keys, int events);
 static void loadChannelData(bool useChannelDataInMemory);
 static struct_codeplugZone_t currentZone;
@@ -38,7 +38,7 @@ int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 	if (isFirstRun)
 	{
 		nonVolatileSettings.initialMenuNumber = MENU_CHANNEL_MODE;// This menu.
-		codeplugZoneGetDataForIndex(nonVolatileSettings.currentZone,&currentZone);
+		codeplugZoneGetDataForNumber(nonVolatileSettings.currentZone,&currentZone);
 		codeplugUtilConvertBufToString(currentZone.name,currentZoneName,16);// need to convert to zero terminated string
 		if (channelScreenChannelData.rxFreq != 0)
 		{
@@ -50,7 +50,7 @@ int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 		}
 		currentChannelData = &channelScreenChannelData;
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-		updateScreen();
+		menuChannelModeUpdateScreen();
 	}
 	else
 	{
@@ -59,7 +59,7 @@ int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 			// is there an incoming DMR signal
 			if (menuDisplayQSODataState != QSO_DISPLAY_IDLE)
 			{
-				updateScreen();
+				menuChannelModeUpdateScreen();
 			}
 		}
 		else
@@ -108,15 +108,15 @@ static void loadChannelData(bool useChannelDataInMemory)
 	codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
 	if (nonVolatileSettings.overrideTG == 0)
 	{
-		trxTalkGroup = contactData.tgNumber;
+		trxTalkGroupOrPcId = contactData.tgNumber;
 	}
 	else
 	{
-		trxTalkGroup = nonVolatileSettings.overrideTG;
+		trxTalkGroupOrPcId = nonVolatileSettings.overrideTG;
 	}
 }
 
-static void updateScreen()
+void menuChannelModeUpdateScreen()
 {
 	char nameBuf[17];
 	int channelNumber;
@@ -154,7 +154,14 @@ static void updateScreen()
 			{
 				if (nonVolatileSettings.overrideTG != 0)
 				{
-					sprintf(nameBuf,"TG %d",trxTalkGroup);
+					if((trxTalkGroupOrPcId>>24) == TG_CALL_FLAG)
+					{
+						sprintf(nameBuf,"TG %d",(trxTalkGroupOrPcId & 0x00FFFFFF));
+					}
+					else
+					{
+						sprintf(nameBuf,"PC %d",(trxTalkGroupOrPcId & 0x00FFFFFF));
+					}
 				}
 				else
 				{
@@ -211,7 +218,7 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 			directChannelNumber=0;
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-			updateScreen();
+			menuChannelModeUpdateScreen();
 		}
 		else if (buttons & BUTTON_SK2 )
 		{
@@ -237,7 +244,7 @@ static void handleEvent(int buttons, int keys, int events)
 		{
 			directChannelNumber=0;
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-			updateScreen();
+			menuChannelModeUpdateScreen();
 		}
 		else
 		{
@@ -259,10 +266,10 @@ static void handleEvent(int buttons, int keys, int events)
 			codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
 
 			nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
-			trxTalkGroup = contactData.tgNumber;
+			trxTalkGroupOrPcId = contactData.tgNumber;
 
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-			updateScreen();
+			menuChannelModeUpdateScreen();
 		}
 		else
 		{
@@ -281,7 +288,7 @@ static void handleEvent(int buttons, int keys, int events)
 
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 			displaySquelch=true;
-			updateScreen();
+			menuChannelModeUpdateScreen();
 		}
 
 	}
@@ -298,10 +305,10 @@ static void handleEvent(int buttons, int keys, int events)
 
 			codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
 			nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
-			trxTalkGroup = contactData.tgNumber;
+			trxTalkGroupOrPcId = contactData.tgNumber;
 
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-			updateScreen();
+			menuChannelModeUpdateScreen();
 		}
 		else
 		{
@@ -319,7 +326,7 @@ static void handleEvent(int buttons, int keys, int events)
 
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 			displaySquelch=true;
-			updateScreen();
+			menuChannelModeUpdateScreen();
 		}
 
 	}
@@ -337,7 +344,7 @@ static void handleEvent(int buttons, int keys, int events)
 			trxSetTxCTCSS(currentChannelData->rxTone);
 		}
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-		updateScreen();
+		menuChannelModeUpdateScreen();
 	}
 	else if ((keys & KEY_DOWN)!=0)
 	{
@@ -362,7 +369,7 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 		loadChannelData(false);
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-		updateScreen();
+		menuChannelModeUpdateScreen();
 	}
 	else if ((keys & KEY_UP)!=0)
 	{
@@ -387,7 +394,7 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 		loadChannelData(false);
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-		updateScreen();
+		menuChannelModeUpdateScreen();
 	}
 	else if (strcmp(currentZoneName,"All Channels")==0)
 	{
@@ -438,7 +445,7 @@ static void handleEvent(int buttons, int keys, int events)
 			directChannelNumber=(directChannelNumber*10) + keyval;
 			if(directChannelNumber>1024) directChannelNumber=0;
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-			updateScreen();
+			menuChannelModeUpdateScreen();
 		}
 	}
 }

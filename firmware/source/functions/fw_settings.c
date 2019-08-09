@@ -84,7 +84,7 @@ void initVFOChannel()
 		nonVolatileSettings.vfoChannel.rxGroupList=1;
 		nonVolatileSettings.vfoChannel.rxColor = 1;
 		nonVolatileSettings.overrideTG = 9;// Set the override TG to local TG 9
-		trxTalkGroup = nonVolatileSettings.overrideTG;
+		trxTalkGroupOrPcId = nonVolatileSettings.overrideTG;
 	}
 
 	if (!trxCheckFrequencyInAmateurBand(nonVolatileSettings.vfoChannel.rxFreq))

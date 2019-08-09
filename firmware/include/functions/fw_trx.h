@@ -35,7 +35,7 @@ extern bool open_squelch;
 extern bool HR_C6000_datalogging;
 
 extern bool trxIsTransmitting;
-extern uint32_t trxTalkGroup;
+extern uint32_t trxTalkGroupOrPcId;
 extern uint32_t trxDMRID;
 extern int trx_measure_count;
 extern int txstopdelay;
