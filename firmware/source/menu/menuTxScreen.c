@@ -103,13 +103,16 @@ static void updateScreen()
 	}
 	else
 	{
+		/*
 		char buf[8];
 		UC1701_clearBuf();
 		sprintf(buf,"%d",timeInSeconds);
 		UC1701_printCentered(20, buf,UC1701_FONT_16x32);
 		UC1701_render();
+		*/
+
+		menuChannelModeUpdateScreen(timeInSeconds);
 		displayLightOverrideTimeout(-1);
-//		menuChannelModeUpdateScreen(timeInSeconds);// To Do
 	}
 }
 

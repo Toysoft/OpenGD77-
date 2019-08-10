@@ -121,6 +121,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 	char nameBuf[17];
 	int channelNumber;
 	char buffer[32];
+	int verticalPositionOffset = 0;
 	UC1701_clearBuf();
 
 	menuUtilityRenderHeader();
@@ -128,10 +129,19 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 	switch(menuDisplayQSODataState)
 	{
 		case QSO_DISPLAY_DEFAULT_SCREEN:
-			codeplugUtilConvertBufToString(channelScreenChannelData.name,nameBuf,16);
-			UC1701_printCentered(32, (char *)nameBuf,UC1701_FONT_GD77_8x16);
 
-			if (strcmp(currentZoneName,"All Channels") == 0)
+			if (trxIsTransmitting)
+			{
+				sprintf(buffer," %d ",txTimeSecs);
+				UC1701_printCentered(0, buffer,UC1701_FONT_16x32);
+				verticalPositionOffset=16;
+			}
+
+
+			codeplugUtilConvertBufToString(channelScreenChannelData.name,nameBuf,16);
+			UC1701_printCentered(32 + verticalPositionOffset, (char *)nameBuf,UC1701_FONT_GD77_8x16);
+
+			if (strcmp(currentZoneName,"All Channels") == 0 && !trxIsTransmitting)
 			{
 				channelNumber=nonVolatileSettings.currentChannelIndexInAllZone;
 				if (directChannelNumber>0)
@@ -142,12 +152,12 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				{
 					sprintf(nameBuf,"CH %d",channelNumber);
 				}
-				UC1701_printCentered(50, (char *)nameBuf,UC1701_FONT_6X8);
+				UC1701_printCentered(50 , (char *)nameBuf,UC1701_FONT_6X8);
 			}
 			else
 			{
 				sprintf(nameBuf,"%s",currentZoneName);
-				UC1701_printCentered(50, (char *)nameBuf,UC1701_FONT_6X8);
+				UC1701_printCentered(50 + verticalPositionOffset, (char *)nameBuf,UC1701_FONT_6X8);
 			}
 
 			if (trxGetMode() == RADIO_MODE_DIGITAL)
@@ -169,9 +179,9 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				{
 					codeplugUtilConvertBufToString(contactData.name,nameBuf,16);
 				}
-				UC1701_printCentered(16, (char *)nameBuf,UC1701_FONT_GD77_8x16);
+				UC1701_printCentered(16 + verticalPositionOffset, (char *)nameBuf,UC1701_FONT_GD77_8x16);
 			}
-			else if(displaySquelch)
+			else if(displaySquelch && !trxIsTransmitting)
 			{
 				sprintf(buffer,"Squelch");
 				UC1701_printAt(0,16,buffer,UC1701_FONT_GD77_8x16);

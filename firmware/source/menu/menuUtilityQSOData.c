@@ -36,6 +36,8 @@ int numLastHeard=0;
 int menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 int qsodata_timer;
 
+static bool isDisplayingPCAcceptancePrompt = false;
+
 void lastheardInitList()
 {
     LinkHead = callsList;
@@ -261,7 +263,7 @@ bool dmrIDLookup( int targetId,dmrIdDataStruct_t *foundRecord)
 
 bool menuUtilityHandlePrivateCallAcceptance(int keys)
 {
-	if ((LinkHead->talkGroupOrPcId>>24) == PC_CALL_FLAG && nonVolatileSettings.overrideTG != LinkHead->talkGroupOrPcId)
+	if (isDisplayingPCAcceptancePrompt && (LinkHead->talkGroupOrPcId>>24) == PC_CALL_FLAG && nonVolatileSettings.overrideTG != LinkHead->talkGroupOrPcId)
 	{
 		if ((keys & KEY_GREEN)!=0)
 		{
@@ -271,6 +273,7 @@ bool menuUtilityHandlePrivateCallAcceptance(int keys)
 			trxTalkGroupOrPcId = returnPCID;
 			menuUtilityRenderQSOData();
 		}
+		isDisplayingPCAcceptancePrompt = false;
 		menuDisplayQSODataState= QSO_DISPLAY_DEFAULT_SCREEN;// Force redraw
 		return true;
 	}
@@ -281,6 +284,8 @@ void menuUtilityRenderQSOData()
 {
 	char buffer[32];// buffer passed to the DMR ID lookup function, needs to be large enough to hold worst case text length that is returned. Currently 16+1
 	dmrIdDataStruct_t currentRec;
+
+	isDisplayingPCAcceptancePrompt = false;
 
 	if ((LinkHead->talkGroupOrPcId>>24) == PC_CALL_FLAG)
 	{
@@ -295,6 +300,7 @@ void menuUtilityRenderQSOData()
 			// No either we are not in PC mode or not on a Private Call to this station
 			UC1701_printCentered(32, "Accept call?",UC1701_FONT_GD77_8x16);
 			UC1701_printCentered(48, "YES          NO",UC1701_FONT_GD77_8x16);
+			isDisplayingPCAcceptancePrompt = true;
 			qsodata_timer = 5000;// hold this longer
 		}
 	}
