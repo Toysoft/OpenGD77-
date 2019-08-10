@@ -124,12 +124,14 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 	int verticalPositionOffset = 0;
 	UC1701_clearBuf();
 
+
 	menuUtilityRenderHeader();
 
 	switch(menuDisplayQSODataState)
 	{
 		case QSO_DISPLAY_DEFAULT_SCREEN:
 
+			menuUtilityisDisplayingPCAcceptancePrompt=false;
 			if (trxIsTransmitting)
 			{
 				sprintf(buffer," %d ",txTimeSecs);
