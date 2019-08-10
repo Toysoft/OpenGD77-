@@ -131,7 +131,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 	{
 		case QSO_DISPLAY_DEFAULT_SCREEN:
 
-			menuUtilityisDisplayingPCAcceptancePrompt=false;
+			menuUtilityReceivedPcId=false;
 			if (trxIsTransmitting)
 			{
 				sprintf(buffer," %d ",txTimeSecs);

@@ -135,7 +135,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 	{
 		case QSO_DISPLAY_DEFAULT_SCREEN:
 
-			menuUtilityisDisplayingPCAcceptancePrompt=false;
+			menuUtilityReceivedPcId=false;
 			if (trxGetMode() == RADIO_MODE_DIGITAL)
 			{
 

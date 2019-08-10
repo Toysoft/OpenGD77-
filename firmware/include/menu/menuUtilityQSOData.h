@@ -48,7 +48,7 @@ enum QSO_DISPLAY_STATE
 extern LinkItem_t *LinkHead;
 extern int menuDisplayQSODataState;
 extern int qsodata_timer;
-extern bool menuUtilityisDisplayingPCAcceptancePrompt;
+extern uint32_t menuUtilityReceivedPcId;
 
 bool dmrIDLookup( int targetId,dmrIdDataStruct_t *foundRecord);
 void menuUtilityRenderQSOData();
