@@ -46,6 +46,7 @@ volatile bool tx_required;
 volatile bool int_rxtx;
 volatile int int_timeout;
 
+static uint32_t receivedTgOrPcId;
 int slot_state;
 int tick_cnt;
 int skip_count;
@@ -413,6 +414,12 @@ void setupPcOrTGHeader()
 	write_SPI_page_reg_bytearray_SPI0(0x02, 0x00, spi_tx, 0x0c);
 }
 
+bool callAcceptFilter()
+{
+	return (tmp_ram[0]==TG_CALL_FLAG || (tmp_ram[0]==PC_CALL_FLAG && receivedTgOrPcId == trxDMRID));
+}
+
+
 void tick_HR_C6000()
 {
 	bool tmp_int_sys=false;
@@ -641,11 +648,12 @@ void tick_HR_C6000()
     			write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0x20);
     		}
 
+    		receivedTgOrPcId = (tmp_ram[3]<<16)+(tmp_ram[4]<<8)+(tmp_ram[5]<<0);
+
     		if (tmp_val_0x82 & 0x10) // InterLateEntry
     		{
     			// Late entry into ongoing RX
-                if ((slot_state == DMR_STATE_IDLE) && (tmp_ram[0]==TG_CALL_FLAG ||
-                	(tmp_ram[0]==PC_CALL_FLAG && ((tmp_ram[3]<<16)+(tmp_ram[4]<<8)+(tmp_ram[5]<<0)) == trxDMRID)))
+                if (slot_state == DMR_STATE_IDLE && callAcceptFilter())
                 {
                 	slot_state = DMR_STATE_RX_1;
                 	store_qsodata();
@@ -678,8 +686,7 @@ void tick_HR_C6000()
     			// Start RX
     			int rxdt = (tmp_val_0x51 >> 4) & 0x0f;
     			int sc = (tmp_val_0x51 >> 0) & 0x03;
-                if ((slot_state == DMR_STATE_IDLE) && (sc==2) && (rxdt==1) && (tmp_ram[0]==TG_CALL_FLAG ||
-                    	(tmp_ram[0]==PC_CALL_FLAG && ((tmp_ram[3]<<16)+(tmp_ram[4]<<8)+(tmp_ram[5]<<0)) == trxDMRID)))
+                if ((slot_state == DMR_STATE_IDLE) && (sc==2) && (rxdt==1) &&  callAcceptFilter())
                 {
                 	slot_state = DMR_STATE_RX_1;
                 	store_qsodata();
@@ -690,8 +697,7 @@ void tick_HR_C6000()
 #endif
                 }
     			// Stop RX
-                if ((sc==2) && (rxdt==2) && (tmp_ram[0]==TG_CALL_FLAG ||
-                    (tmp_ram[0]==PC_CALL_FLAG && ((tmp_ram[3]<<16)+(tmp_ram[4]<<8)+(tmp_ram[5]<<0)) == trxDMRID)))
+                if ((sc==2) && (rxdt==2) && callAcceptFilter())
                 {
                 	slot_state = DMR_STATE_RX_END;
 #if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
