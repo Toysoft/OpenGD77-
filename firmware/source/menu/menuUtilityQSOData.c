@@ -26,12 +26,15 @@
 
 void updateLastHeardList(int id,int talkGroup);
 
+const int QSO_TIMER_TIMEOUT = 2400;
+
 static const int DMRID_MEMORY_STORAGE_START = 0x30000;
 static const int DMRID_HEADER_LENGTH = 0x0C;
 LinkItem_t callsList[NUM_LASTHEARD_STORED];
 LinkItem_t *LinkHead = callsList;
 int numLastHeard=0;
 int menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+int qsodata_timer;
 
 void lastheardInitList()
 {
@@ -256,53 +259,84 @@ bool dmrIDLookup( int targetId,dmrIdDataStruct_t *foundRecord)
 	return false;
 }
 
+bool menuUtilityHandlePrivateCallAcceptance(int keys)
+{
+	if ((LinkHead->talkGroupOrPcId>>24) == PC_CALL_FLAG && nonVolatileSettings.overrideTG != LinkHead->talkGroupOrPcId)
+	{
+		if ((keys & KEY_GREEN)!=0)
+		{
+			uint32_t returnPCID = LinkHead->id | (PC_CALL_FLAG << 24);
+			// User has accepted the private call
+			nonVolatileSettings.overrideTG =  returnPCID;
+			trxTalkGroupOrPcId = returnPCID;
+			menuUtilityRenderQSOData();
+		}
+		menuDisplayQSODataState= QSO_DISPLAY_DEFAULT_SCREEN;// Force redraw
+		return true;
+	}
+	return false;
+}
+
 void menuUtilityRenderQSOData()
 {
 	char buffer[32];// buffer passed to the DMR ID lookup function, needs to be large enough to hold worst case text length that is returned. Currently 16+1
 	dmrIdDataStruct_t currentRec;
 
-	if ((LinkHead->talkGroupOrPcId>>24) == TG_CALL_FLAG)
+	if ((LinkHead->talkGroupOrPcId>>24) == PC_CALL_FLAG)
 	{
-		sprintf(buffer,"TG %d", (LinkHead->talkGroupOrPcId & 0xFFFFFF));
-	}
-	else
-	{
-		sprintf(buffer,"PC %d", (LinkHead->talkGroupOrPcId & 0xFFFFFF));
-	}
-	UC1701_printCentered(16, buffer,UC1701_FONT_GD77_8x16);
-
-	// first check if we have this ID in the DMR ID data
-	if (dmrIDLookup( LinkHead->id,&currentRec))
-	{
+		// Its a Private call
+		dmrIDLookup( (LinkHead->id & 0xFFFFFF),&currentRec);
 		sprintf(buffer,"%s", currentRec.text);
-		UC1701_printCentered(32, buffer,UC1701_FONT_GD77_8x16);
+		UC1701_printCentered(16, buffer,UC1701_FONT_GD77_8x16);
+
+		// Are we already in PC mode to this caller ?
+		if (nonVolatileSettings.overrideTG != (LinkHead->id | (PC_CALL_FLAG<<24)))
+		{
+			// No either we are not in PC mode or not on a Private Call to this station
+			UC1701_printCentered(32, "Accept call?",UC1701_FONT_GD77_8x16);
+			UC1701_printCentered(48, "YES          NO",UC1701_FONT_GD77_8x16);
+			qsodata_timer = 5000;// hold this longer
+		}
 	}
 	else
 	{
-		// We don't have this ID, so try looking in the Talker alias data
-		if (LinkHead->talkerAlias[0] != 0x00)
-		{
-			if (strlen(LinkHead->talkerAlias)> 6)
-			{
-				// More than 1 line wide of text, so we need to split onto 2 lines.
-				memcpy(buffer,LinkHead->talkerAlias,6);
-				buffer[6]=0x00;
-				UC1701_printCentered(32, buffer,UC1701_FONT_GD77_8x16);
+		// Group call
+		sprintf(buffer,"TG %d", (LinkHead->talkGroupOrPcId & 0xFFFFFF));
+		UC1701_printCentered(16, buffer,UC1701_FONT_GD77_8x16);
 
-				memcpy(buffer,&LinkHead->talkerAlias[6],16);
-				buffer[16]=0x00;
-				UC1701_printAt(0,48,buffer,UC1701_FONT_GD77_8x16);
-			}
-			else
-			{
-				UC1701_printCentered(32,LinkHead->talkerAlias,UC1701_FONT_GD77_8x16);
-			}
+		// first check if we have this ID in the DMR ID data
+		if (dmrIDLookup( LinkHead->id,&currentRec))
+		{
+			sprintf(buffer,"%s", currentRec.text);
+			UC1701_printCentered(32, buffer,UC1701_FONT_GD77_8x16);
 		}
 		else
 		{
-			// No talker alias. So we can only show the ID.
-			sprintf(buffer,"ID: %d", LinkHead->id);
-			UC1701_printCentered(32, buffer,UC1701_FONT_GD77_8x16);
+			// We don't have this ID, so try looking in the Talker alias data
+			if (LinkHead->talkerAlias[0] != 0x00)
+			{
+				if (strlen(LinkHead->talkerAlias)> 6)
+				{
+					// More than 1 line wide of text, so we need to split onto 2 lines.
+					memcpy(buffer,LinkHead->talkerAlias,6);
+					buffer[6]=0x00;
+					UC1701_printCentered(32, buffer,UC1701_FONT_GD77_8x16);
+
+					memcpy(buffer,&LinkHead->talkerAlias[6],16);
+					buffer[16]=0x00;
+					UC1701_printAt(0,48,buffer,UC1701_FONT_GD77_8x16);
+				}
+				else
+				{
+					UC1701_printCentered(32,LinkHead->talkerAlias,UC1701_FONT_GD77_8x16);
+				}
+			}
+			else
+			{
+				// No talker alias. So we can only show the ID.
+				sprintf(buffer,"ID: %d", LinkHead->id);
+				UC1701_printCentered(32, buffer,UC1701_FONT_GD77_8x16);
+			}
 		}
 	}
 }

@@ -146,7 +146,9 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					}
 					else
 					{
-						sprintf(buffer,"PC %d",(trxTalkGroupOrPcId & 0x00FFFFFF));
+						dmrIdDataStruct_t currentRec;
+						dmrIDLookup((trxTalkGroupOrPcId & 0x00FFFFFF),&currentRec);
+						sprintf(buffer,"%s",currentRec.text);
 					}
 				}
 				else
@@ -159,7 +161,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 //					sprintf(buffer,"%dmW",((nonVolatileSettings.txPower-790)*50)/23);// Approximate calculation.
 //					UC1701_printCentered(0, buffer,UC1701_FONT_6X8);
 
-					UC1701_printAt(0,32,buffer,UC1701_FONT_GD77_8x16);
+					UC1701_printCentered(32,buffer,UC1701_FONT_GD77_8x16);
 				}
 				else
 				{
@@ -286,6 +288,10 @@ static void handleEvent(int buttons, int keys, int events)
 
 	if ((keys & KEY_GREEN)!=0)
 	{
+		if (menuUtilityHandlePrivateCallAcceptance(keys))
+		{
+			return;
+		}
 		if (buttons & BUTTON_SK2 )
 		{
 			menuSystemPushNewMenu(MENU_CHANNEL_DETAILS);
@@ -350,6 +356,10 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 		else if ((keys & KEY_RED)!=0)
 		{
+			if (menuUtilityHandlePrivateCallAcceptance(keys))
+			{
+				return;
+			}
 			menuSystemSetCurrentMenu(MENU_CHANNEL_MODE);
 			return;
 		}

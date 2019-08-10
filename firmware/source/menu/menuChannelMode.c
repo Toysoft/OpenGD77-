@@ -160,7 +160,9 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 					}
 					else
 					{
-						sprintf(nameBuf,"PC %d",(trxTalkGroupOrPcId & 0x00FFFFFF));
+						dmrIdDataStruct_t currentRec;
+						dmrIDLookup((trxTalkGroupOrPcId & 0x00FFFFFF),&currentRec);
+						sprintf(nameBuf,"%s",currentRec.text);
 					}
 				}
 				else
@@ -205,6 +207,11 @@ static void handleEvent(int buttons, int keys, int events)
 
 	if ((keys & KEY_GREEN)!=0)
 	{
+		if (menuUtilityHandlePrivateCallAcceptance(keys))
+		{
+			return;
+		}
+
 		if (directChannelNumber>0)
 		{
 			if (codeplugChannelIndexIsValid(directChannelNumber))
@@ -240,6 +247,10 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_RED)!=0)
 	{
+		if (menuUtilityHandlePrivateCallAcceptance(keys))
+		{
+			return;
+		}
 		if(directChannelNumber>0)
 		{
 			directChannelNumber=0;
