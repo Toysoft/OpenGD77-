@@ -36,7 +36,8 @@ int numLastHeard=0;
 int menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 int qsodata_timer;
 
-uint32_t menuUtilityReceivedPcId = false;
+uint32_t menuUtilityReceivedPcId 	= 0;// No current Private call awaiting acceptance
+uint32_t menuUtilityTgBeforePcMode 	= 0;// No TG saved, prior to a Private call being accepted.
 
 void lastheardInitList()
 {
@@ -261,23 +262,34 @@ bool dmrIDLookup( int targetId,dmrIdDataStruct_t *foundRecord)
 	return false;
 }
 
-bool menuUtilityHandlePrivateCallAcceptance(int keys)
+bool menuUtilityHandlePrivateCallActions(int buttons, int keys, int events)
 {
-	if (menuUtilityReceivedPcId && (LinkHead->talkGroupOrPcId>>24) == PC_CALL_FLAG && nonVolatileSettings.overrideTG != LinkHead->talkGroupOrPcId)
+	if ((buttons & BUTTON_SK2 )!=0 &&   menuUtilityTgBeforePcMode != 0 && (keys & KEY_RED))
+	{
+		trxTalkGroupOrPcId = menuUtilityTgBeforePcMode;
+		nonVolatileSettings.overrideTG = menuUtilityTgBeforePcMode;
+		menuUtilityReceivedPcId = 0;
+		menuUtilityTgBeforePcMode = 0;
+		menuDisplayQSODataState= QSO_DISPLAY_DEFAULT_SCREEN;// Force redraw
+		return true;// The event has been handled
+	}
+
+	// Note.  menuUtilityReceivedPcId is used to store the PcId but also used as a flag to indicate that a Pc request has occurred.
+	if (menuUtilityReceivedPcId != 0x00 && (LinkHead->talkGroupOrPcId>>24) == PC_CALL_FLAG && nonVolatileSettings.overrideTG != LinkHead->talkGroupOrPcId)
 	{
 		if ((keys & KEY_GREEN)!=0)
 		{
-//			uint32_t returnPCID = LinkHead->id | (PC_CALL_FLAG << 24);
 			// User has accepted the private call
+			menuUtilityTgBeforePcMode = trxTalkGroupOrPcId;// save the current TG
 			nonVolatileSettings.overrideTG =  menuUtilityReceivedPcId;
 			trxTalkGroupOrPcId = menuUtilityReceivedPcId;
 			menuUtilityRenderQSOData();
 		}
 		menuUtilityReceivedPcId = 0;
-		menuDisplayQSODataState= QSO_DISPLAY_DEFAULT_SCREEN;// Force redraw
-		return true;
+		qsodata_timer=1;// time out the qso timer will force the VFO or Channel mode screen to redraw its normal display
+		return true;// The event has been handled
 	}
-	return false;
+	return false;// The event has not been handled
 }
 
 void menuUtilityRenderQSOData()
@@ -301,7 +313,11 @@ void menuUtilityRenderQSOData()
 			UC1701_printCentered(32, "Accept call?",UC1701_FONT_GD77_8x16);
 			UC1701_printCentered(48, "YES          NO",UC1701_FONT_GD77_8x16);
 			menuUtilityReceivedPcId = LinkHead->id | (PC_CALL_FLAG<<24);
-			qsodata_timer = 5000;// hold this longer
+		    set_melody(melody_private_call);
+		}
+		else
+		{
+			UC1701_printCentered(32, "Private call",UC1701_FONT_GD77_8x16);
 		}
 	}
 	else

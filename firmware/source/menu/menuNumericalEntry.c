@@ -16,6 +16,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 #include "menu/menuSystem.h"
+#include "menu/menuUtilityQSOData.h"
 #include "fw_settings.h"
 #include "fw_HR-C6000.h"
 
@@ -70,11 +71,19 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_GREEN)!=0)
 	{
+		uint32_t saveTrxTalkGroupOrPcId = trxTalkGroupOrPcId;
 		trxTalkGroupOrPcId = atoi(digits);
 		nonVolatileSettings.overrideTG = trxTalkGroupOrPcId;
 		if (gMenusCurrentItemIndex == 1)
 		{
 			// Private Call
+
+
+			if ((saveTrxTalkGroupOrPcId >> 24) != PC_CALL_FLAG)
+			{
+				// if the current Tx TG is a TalkGroup then save it so it can be stored after the end of the private call
+				menuUtilityTgBeforePcMode = saveTrxTalkGroupOrPcId;
+			}
 			nonVolatileSettings.overrideTG |= (PC_CALL_FLAG << 24);
 		}
 		menuSystemPopAllAndDisplayRootMenu();

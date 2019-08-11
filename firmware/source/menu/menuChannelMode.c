@@ -131,7 +131,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 	{
 		case QSO_DISPLAY_DEFAULT_SCREEN:
 
-			menuUtilityReceivedPcId=false;
+			menuUtilityReceivedPcId = 0x00;
 			if (trxIsTransmitting)
 			{
 				sprintf(buffer," %d ",txTimeSecs);
@@ -219,7 +219,7 @@ static void handleEvent(int buttons, int keys, int events)
 
 	if ((keys & KEY_GREEN)!=0)
 	{
-		if (menuUtilityHandlePrivateCallAcceptance(keys))
+		if (menuUtilityHandlePrivateCallActions(buttons,keys,events))
 		{
 			return;
 		}
@@ -259,7 +259,7 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_RED)!=0)
 	{
-		if (menuUtilityHandlePrivateCallAcceptance(keys))
+		if (menuUtilityHandlePrivateCallActions(buttons,keys,events))
 		{
 			return;
 		}

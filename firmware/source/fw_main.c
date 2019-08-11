@@ -187,6 +187,12 @@ void fw_main_task()
         			|| (battery_voltage<CUTOFF_VOLTAGE_LOWER_HYST))
         			&& (menuSystemGetCurrentMenuNumber() != MENU_POWER_OFF))
         	{
+        		// If user was in a private call when they turned the radio off we need to restore the last Tg prior to stating the Private call.
+        		// to the nonVolatile Setting overrideTG, otherwise when the radio is turned on again it be in PC mode to that station.
+        		if (menuUtilityTgBeforePcMode!=0)
+        		{
+        			nonVolatileSettings.overrideTG = menuUtilityTgBeforePcMode;
+        		}
 				settingsSaveSettings();
 
         		if (battery_voltage<CUTOFF_VOLTAGE_LOWER_HYST)

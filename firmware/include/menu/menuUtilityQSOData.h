@@ -49,11 +49,12 @@ extern LinkItem_t *LinkHead;
 extern int menuDisplayQSODataState;
 extern int qsodata_timer;
 extern uint32_t menuUtilityReceivedPcId;
+extern uint32_t menuUtilityTgBeforePcMode;
 
 bool dmrIDLookup( int targetId,dmrIdDataStruct_t *foundRecord);
 void menuUtilityRenderQSOData();
 void menuUtilityRenderHeader();
 void lastheardInitList();
 void lastHeardListUpdate(uint8_t *dmrDataBuffer);
-bool menuUtilityHandlePrivateCallAcceptance(int keys);
+bool menuUtilityHandlePrivateCallActions(int buttons, int keys, int events);
 #endif
