@@ -55,6 +55,6 @@ bool dmrIDLookup( int targetId,dmrIdDataStruct_t *foundRecord);
 void menuUtilityRenderQSOData();
 void menuUtilityRenderHeader();
 void lastheardInitList();
-void lastHeardListUpdate(uint8_t *dmrDataBuffer);
+bool lastHeardListUpdate(uint8_t *dmrDataBuffer);
 bool menuUtilityHandlePrivateCallActions(int buttons, int keys, int events);
 #endif

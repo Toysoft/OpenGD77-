@@ -82,17 +82,22 @@ LinkItem_t * findInList(int id)
     return NULL;
 }
 
-int lastID=0;
+uint32_t lastID=0;
+uint32_t lastTG=0;
 
-void lastHeardListUpdate(uint8_t *dmrDataBuffer)
+bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 {
+	bool retVal = false;
+	uint32_t talkGroupOrPcId = (dmrDataBuffer[0]<<24) + (dmrDataBuffer[3]<<16)+(dmrDataBuffer[4]<<8)+(dmrDataBuffer[5]<<0);
+
+
 	if (dmrDataBuffer[0]==TG_CALL_FLAG || dmrDataBuffer[0]==PC_CALL_FLAG)
 	{
-		uint32_t talkGroupOrPcId = (dmrDataBuffer[0]<<24) + (dmrDataBuffer[3]<<16)+(dmrDataBuffer[4]<<8)+(dmrDataBuffer[5]<<0);
 		uint32_t id=(dmrDataBuffer[6]<<16)+(dmrDataBuffer[7]<<8)+(dmrDataBuffer[8]<<0);
 
 		if (id!=lastID)
 		{
+			retVal = true;// something has changed
 			lastID=id;
 
 			LinkItem_t *item = findInList(id);
@@ -101,6 +106,7 @@ void lastHeardListUpdate(uint8_t *dmrDataBuffer)
 			{
 				// Already in the list
 				item->talkGroupOrPcId = talkGroupOrPcId;// update the TG in case they changed TG
+				lastTG = talkGroupOrPcId;
 
 				if (item == LinkHead)
 				{
@@ -153,18 +159,24 @@ void lastHeardListUpdate(uint8_t *dmrDataBuffer)
 
 				item->id=id;
 				item->talkGroupOrPcId =  talkGroupOrPcId;
+				lastTG = talkGroupOrPcId;
 				memset(item->talkerAlias,0,32);// Clear any TA data
 				menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;// flag that the display needs to update
 			}
 		}
 		else // update TG even if the DMRID did not change
 		{
-			LinkItem_t *item = findInList(id);
-
-			if (item!=NULL)
+			if (lastTG != talkGroupOrPcId)
 			{
-				// Already in the list
-				item->talkGroupOrPcId = talkGroupOrPcId;// update the TG in case they changed TG
+				LinkItem_t *item = findInList(id);
+
+				if (item!=NULL)
+				{
+					// Already in the list
+					item->talkGroupOrPcId = talkGroupOrPcId;// update the TG in case they changed TG
+				}
+				lastTG = talkGroupOrPcId;
+				retVal = true;// something has changed
 			}
 		}
 	}
@@ -209,6 +221,7 @@ void lastHeardListUpdate(uint8_t *dmrDataBuffer)
 			menuDisplayQSODataState=QSO_DISPLAY_CALLER_DATA;
 		}
 	}
+	return retVal;
 }
 
 bool dmrIDLookup( int targetId,dmrIdDataStruct_t *foundRecord)

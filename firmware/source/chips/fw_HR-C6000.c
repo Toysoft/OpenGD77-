@@ -339,7 +339,8 @@ void terminate_digital()
 void store_qsodata()
 {
 	// If this is the start of a newly received signal, we always need to trigger the display to show this, even if its the same station calling again.
-	if (qsodata_timer==0)
+	// Of if the display is holding on the PC accept text and the incoming call is not a PC
+	if (qsodata_timer == 0 || (menuUtilityReceivedPcId!=0 && tmp_ram[0]==TG_CALL_FLAG))
 	{
 		menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;
 	}
@@ -349,7 +350,7 @@ void store_qsodata()
 	{
 		// Needs to enter critical because the LastHeard is accessed by other threads
     	taskENTER_CRITICAL();
-		lastHeardListUpdate(tmp_ram);
+    	lastHeardListUpdate(tmp_ram);
 		taskEXIT_CRITICAL();
 		qsodata_timer=QSO_TIMER_TIMEOUT;
 	}
@@ -771,10 +772,17 @@ void tick_HR_C6000()
 
 	if (qsodata_timer>0)
 	{
-		qsodata_timer--;
-		if (qsodata_timer==0)
+		// Only timeout the QSO data display if not displaying the Private Call Accept Yes/No text
+		// if menuUtilityReceivedPcId is non zero the Private Call Accept text is being displayed
+		if (menuUtilityReceivedPcId == 0)
 		{
-			menuDisplayQSODataState= QSO_DISPLAY_DEFAULT_SCREEN;
+			qsodata_timer--;
+
+			if (qsodata_timer==0)
+			{
+				menuDisplayQSODataState= QSO_DISPLAY_DEFAULT_SCREEN;
+			}
 		}
+
 	}
 }
