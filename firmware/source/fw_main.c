@@ -175,7 +175,7 @@ void fw_main_task()
         		}
         		*/
 
-        		if (((buttons & BUTTON_PTT)!=0) && (slot_state==DMR_STATE_IDLE))
+        		if (((buttons & BUTTON_PTT)!=0) && (slot_state==DMR_STATE_IDLE) && (trxGetMode()!=RADIO_MODE_NONE))
         		{
         			menuSystemPushNewMenu(MENU_TX_SCREEN);
         		}
