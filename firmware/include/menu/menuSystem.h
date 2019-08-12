@@ -22,6 +22,7 @@
 extern int menuDisplayLightTimer;
 extern int menuTimer;
 
+
 typedef int (*MenuFunctionPointer_t)(int,int,int,bool); // Typedef for menu function pointers.  Functions are passed the key, the button and the event data. Event can be a Key or a button or both. Last arg is for when the function is only called to initialise and display its screen.
 typedef struct menuControlDataStruct
 {
@@ -36,8 +37,11 @@ typedef struct menuItemNew
        int menuNum;
 } menuItemNew_t;
 
-void menuChannelModeUpdateScreen();
-void menuVFOModeUpdateScreen();
+extern menuControlDataStruct_t menuControlData;
+
+void menuChannelModeUpdateScreen(int txTimeSecs);
+void menuVFOModeUpdateScreen(int txTimeSecs);
+void menuCPSUpdate(int command,int x, int y, int iSize, int alignment, bool isInverted,char *szMsg);
 
 void menuInitMenuSystem();
 void displayLightTrigger();
@@ -78,6 +82,7 @@ enum MENU_SCREENS { MENU_SPLASH_SCREEN=0,
 					MENU_CREDITS,
 					MENU_CHANNEL_DETAILS,
 					MENU_HOTSPOT_MODE,
+					MENU_CPS,
 };
 
 extern int gMenusCurrentItemIndex;

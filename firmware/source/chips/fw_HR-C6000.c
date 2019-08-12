@@ -46,10 +46,10 @@ volatile bool tx_required;
 volatile bool int_rxtx;
 volatile int int_timeout;
 
+static uint32_t receivedTgOrPcId;
 int slot_state;
 int tick_cnt;
 int skip_count;
-int qsodata_timer;
 int tx_sequence;
 uint8_t spi_tx[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
@@ -339,7 +339,8 @@ void terminate_digital()
 void store_qsodata()
 {
 	// If this is the start of a newly received signal, we always need to trigger the display to show this, even if its the same station calling again.
-	if (qsodata_timer==0)
+	// Of if the display is holding on the PC accept text and the incoming call is not a PC
+	if (qsodata_timer == 0 || (menuUtilityReceivedPcId!=0 && tmp_ram[0]==TG_CALL_FLAG))
 	{
 		menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;
 	}
@@ -347,8 +348,11 @@ void store_qsodata()
 	// Not sure if its necessary to check byte [1] for 0x00 but I'm doing this
 	if (tmp_ram[1] == 0x00  && (tmp_ram[0]==TG_CALL_FLAG || tmp_ram[0]==PC_CALL_FLAG  || (tmp_ram[0]>=0x04 && tmp_ram[0]<=0x7)))
 	{
-		lastHeardListUpdate(tmp_ram);
-		qsodata_timer=2400;
+		// Needs to enter critical because the LastHeard is accessed by other threads
+    	taskENTER_CRITICAL();
+    	lastHeardListUpdate(tmp_ram);
+		taskEXIT_CRITICAL();
+		qsodata_timer=QSO_TIMER_TIMEOUT;
 	}
 }
 
@@ -410,6 +414,12 @@ void setupPcOrTGHeader()
 	spi_tx[11] = 0x00;
 	write_SPI_page_reg_bytearray_SPI0(0x02, 0x00, spi_tx, 0x0c);
 }
+
+bool callAcceptFilter()
+{
+	return (tmp_ram[0]==TG_CALL_FLAG || (tmp_ram[0]==PC_CALL_FLAG && receivedTgOrPcId == trxDMRID));
+}
+
 
 void tick_HR_C6000()
 {
@@ -492,7 +502,7 @@ void tick_HR_C6000()
 		case DMR_STATE_RX_1: // Start RX (first step)
 			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00);
 			GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1);
-		    GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
+		    //GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
 			slot_state = DMR_STATE_RX_2;
 			break;
 		case DMR_STATE_RX_2: // Start RX (second step)
@@ -624,6 +634,7 @@ void tick_HR_C6000()
 		int cc = (tmp_val_0x52 >> 4) & 0x0f;
         if ((rcrc==0) && (rpi==0) && (cc == trxGetDMRColourCode()) && (slot_state < DMR_STATE_TX_START_1))
         {
+		    GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);// Turn the LED on as soon as a DMR signal is detected.
     		if (tmp_val_0x82 & 0x20) // InterSendStop
     		{
     			if (tmp_val_0x86 & 0x10)
@@ -638,10 +649,12 @@ void tick_HR_C6000()
     			write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0x20);
     		}
 
+    		receivedTgOrPcId = (tmp_ram[3]<<16)+(tmp_ram[4]<<8)+(tmp_ram[5]<<0);
+
     		if (tmp_val_0x82 & 0x10) // InterLateEntry
     		{
     			// Late entry into ongoing RX
-                if ((slot_state == DMR_STATE_IDLE) && (tmp_ram[0]==TG_CALL_FLAG || tmp_ram[0]==PC_CALL_FLAG))
+                if (slot_state == DMR_STATE_IDLE && callAcceptFilter())
                 {
                 	slot_state = DMR_STATE_RX_1;
                 	store_qsodata();
@@ -674,7 +687,7 @@ void tick_HR_C6000()
     			// Start RX
     			int rxdt = (tmp_val_0x51 >> 4) & 0x0f;
     			int sc = (tmp_val_0x51 >> 0) & 0x03;
-                if ((slot_state == DMR_STATE_IDLE) && (sc==2) && (rxdt==1) && (tmp_ram[0]==TG_CALL_FLAG || tmp_ram[0]==PC_CALL_FLAG))
+                if ((slot_state == DMR_STATE_IDLE) && (sc==2) && (rxdt==1) &&  callAcceptFilter())
                 {
                 	slot_state = DMR_STATE_RX_1;
                 	store_qsodata();
@@ -685,7 +698,7 @@ void tick_HR_C6000()
 #endif
                 }
     			// Stop RX
-                if ((sc==2) && (rxdt==2) && (tmp_ram[0]==TG_CALL_FLAG || tmp_ram[0]==PC_CALL_FLAG))
+                if ((sc==2) && (rxdt==2) && callAcceptFilter())
                 {
                 	slot_state = DMR_STATE_RX_END;
 #if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
@@ -759,10 +772,17 @@ void tick_HR_C6000()
 
 	if (qsodata_timer>0)
 	{
-		qsodata_timer--;
-		if (qsodata_timer==0)
+		// Only timeout the QSO data display if not displaying the Private Call Accept Yes/No text
+		// if menuUtilityReceivedPcId is non zero the Private Call Accept text is being displayed
+		if (menuUtilityReceivedPcId == 0)
 		{
-			menuDisplayQSODataState= QSO_DISPLAY_DEFAULT_SCREEN;
+			qsodata_timer--;
+
+			if (qsodata_timer==0)
+			{
+				menuDisplayQSODataState= QSO_DISPLAY_DEFAULT_SCREEN;
+			}
 		}
+
 	}
 }

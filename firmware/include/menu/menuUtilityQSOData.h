@@ -20,6 +20,7 @@
 #include "fw_common.h"
 
 #define NUM_LASTHEARD_STORED 16
+extern const int QSO_TIMER_TIMEOUT;
 
 typedef struct dmrIdDataStruct
 {
@@ -46,10 +47,14 @@ enum QSO_DISPLAY_STATE
 
 extern LinkItem_t *LinkHead;
 extern int menuDisplayQSODataState;
+extern int qsodata_timer;
+extern uint32_t menuUtilityReceivedPcId;
+extern uint32_t menuUtilityTgBeforePcMode;
 
 bool dmrIDLookup( int targetId,dmrIdDataStruct_t *foundRecord);
 void menuUtilityRenderQSOData();
 void menuUtilityRenderHeader();
 void lastheardInitList();
-void lastHeardListUpdate(uint8_t *dmrDataBuffer);
+bool lastHeardListUpdate(uint8_t *dmrDataBuffer);
+bool menuUtilityHandlePrivateCallActions(int buttons, int keys, int events);
 #endif

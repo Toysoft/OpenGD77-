@@ -17,7 +17,7 @@
  */
 #include "menu/menuSystem.h"
 #include "fw_settings.h"
-
+#include "fw_wdog.h"
 
 static void updateScreen();
 static void handleEvent(int buttons, int keys, int events);
@@ -210,6 +210,7 @@ static void handleEvent(int buttons, int keys, int events)
 		if (doFactoryReset==true)
 		{
 			settingsRestoreDefaultSettings();
+			watchdogReboot();
 		}
 		menuSystemPopAllAndDisplayRootMenu();
 		return;

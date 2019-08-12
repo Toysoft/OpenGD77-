@@ -16,6 +16,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 #include "menu/menuSystem.h"
+#include "menu/menuUtilityQSOData.h"
 #include "fw_settings.h"
 
 
@@ -30,11 +31,12 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		if (trxCheckFrequencyInAmateurBand(currentChannelData->txFreq) || nonVolatileSettings.txFreqLimited == 0x00)
+
+		if ((currentChannelData->flag4 & 0x04) == 0x00 && (  trxCheckFrequencyInAmateurBand(currentChannelData->txFreq) || nonVolatileSettings.txFreqLimited == 0x00))
 		{
 			nextSecondPIT = PITCounter + PIT_COUNTS_PER_SECOND;
 			timeInSeconds = currentChannelData->tot*15;
-			updateScreen();
+
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 			GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 1);
 			trxSetFrequency(currentChannelData->txFreq);
@@ -46,12 +48,27 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 			{
 				trx_activateTX();
 			}
+			updateScreen();
 		}
 		else
 		{
+			// Note.
+			// Currently these messages are not being displayed, because this screen gets immediately after the display is update
+			// However the melody will play
+			//
+			// We need to work out how to display this message for 1 or 2 seconds, even if the PTT is released.
+			// But this would require some sort of timer callback system, which we don't currently have.
+			//
 			UC1701_clearBuf();
 			UC1701_printCentered(4, "ERROR",UC1701_FONT_16x32);
-			UC1701_printCentered(40, "OUT OF BAND",UC1701_FONT_GD77_8x16);
+			if ((currentChannelData->flag4 & 0x04) !=0x00)
+			{
+				UC1701_printCentered(40, "Rx only",UC1701_FONT_GD77_8x16);
+			}
+			else
+			{
+				UC1701_printCentered(40, "OUT OF BAND",UC1701_FONT_GD77_8x16);
+			}
 			UC1701_render();
 			displayLightOverrideTimeout(-1);
 			set_melody(melody_ERROR_beep);
@@ -92,13 +109,18 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 
 static void updateScreen()
 {
-	char buf[8];
-	UC1701_clearBuf();
-	sprintf(buf,"%d",timeInSeconds);
-	UC1701_printCentered(20, buf,UC1701_FONT_16x32);
 
-	UC1701_render();
-	displayLightOverrideTimeout(-1);
+	menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+	if (menuControlData.stack[0]==MENU_VFO_MODE)
+	{
+		menuVFOModeUpdateScreen(timeInSeconds);
+		displayLightOverrideTimeout(-1);
+	}
+	else
+	{
+		menuChannelModeUpdateScreen(timeInSeconds);
+		displayLightOverrideTimeout(-1);
+	}
 }
 
 

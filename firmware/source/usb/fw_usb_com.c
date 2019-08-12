@@ -15,10 +15,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-
+#include <menu/menuSystem.h>
 #include <menu/menuHotspot.h>
 #include "fw_usb_com.h"
 #include "fw_settings.h"
+#include "fw_wdog.h"
 
 
 
@@ -57,6 +58,7 @@ void tick_com_request()
 
 static void handleCPSRequest()
 {
+	//Handle read
 	if (com_requestbuffer[0]=='R') // 'R' read data (com_requestbuffer[1]: 1 => external flash, 2 => EEPROM)
 	{
 		uint32_t address=(com_requestbuffer[2]<<24)+(com_requestbuffer[3]<<16)+(com_requestbuffer[4]<<8)+(com_requestbuffer[5]<<0);
@@ -93,6 +95,7 @@ static void handleCPSRequest()
 			USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, s_ComBuf, 1);
 		}
 	}
+	// Handle Write
 	else if (com_requestbuffer[0]=='W')
 	{
 		bool ok=false;
@@ -177,6 +180,79 @@ static void handleCPSRequest()
 			s_ComBuf[0] = '-';
 			USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, s_ComBuf, 1);
 		}
+	}
+	// Handle a "Command"
+	else if (com_requestbuffer[0]=='C')
+	{
+		int command = com_requestbuffer[1];
+		switch(command)
+		{
+			case 0:
+				// Show CPS screen
+				menuSystemPushNewMenu(MENU_CPS);
+				break;
+			case 1:
+				// Clear CPS screen
+				menuCPSUpdate(0,0,0,0,0,0,NULL);
+				break;
+			case 2:
+				// Write a line of text to CPS screen
+				menuCPSUpdate(1,com_requestbuffer[2],com_requestbuffer[3],com_requestbuffer[4],com_requestbuffer[5],com_requestbuffer[6],(char *)&com_requestbuffer[7]);
+				break;
+			case 3:
+				// Render CPS screen
+				menuCPSUpdate(2,0,0,0,0,0,NULL);
+				break;
+			case 4:
+				// Turn on the display backlight
+				menuCPSUpdate(3,0,0,0,0,0,NULL);
+				break;
+			case 5:
+				// Close
+				menuCPSUpdate(6,0,0,0,0,0,NULL);
+				break;
+			case 6:
+				{
+					int subCommand= com_requestbuffer[2];
+					// Do some other processing
+					switch(subCommand)
+					{
+						case 0:
+							// save current settings and reboot
+							settingsSaveSettings();// Need to save these channels prior to reboot, as reboot does not save
+							watchdogReboot();
+						break;
+						case 1:
+							//reload VFO from codeplug
+							settingsInitVFOChannel();
+							settingsSaveSettings();// Need to save these channels prior to reboot, as reboot does not save
+							watchdogReboot();
+							break;
+						case 2:
+							// factory reset and reboot
+							settingsRestoreDefaultSettings();// Also saves these new settings, so now need to call settingsSaveSettings
+							watchdogReboot();
+							break;
+						case 3:
+							// flash green LED
+							menuCPSUpdate(4,0,0,0,0,0,NULL);
+							break;
+						case 4:
+							// flash red LED
+							menuCPSUpdate(5,0,0,0,0,0,NULL);
+							break;
+						default:
+							break;
+					}
+				}
+				break;
+			default:
+				break;
+		}
+		// Send something generic back.
+		// Probably need to send a response code in the future
+		s_ComBuf[0] = '-';
+		USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, s_ComBuf, 1);
 	}
 	else
 	{

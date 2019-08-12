@@ -26,12 +26,18 @@
 
 void updateLastHeardList(int id,int talkGroup);
 
+const int QSO_TIMER_TIMEOUT = 2400;
+
 static const int DMRID_MEMORY_STORAGE_START = 0x30000;
 static const int DMRID_HEADER_LENGTH = 0x0C;
 LinkItem_t callsList[NUM_LASTHEARD_STORED];
 LinkItem_t *LinkHead = callsList;
 int numLastHeard=0;
 int menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+int qsodata_timer;
+
+uint32_t menuUtilityReceivedPcId 	= 0;// No current Private call awaiting acceptance
+uint32_t menuUtilityTgBeforePcMode 	= 0;// No TG saved, prior to a Private call being accepted.
 
 void lastheardInitList()
 {
@@ -76,17 +82,22 @@ LinkItem_t * findInList(int id)
     return NULL;
 }
 
-int lastID=0;
+uint32_t lastID=0;
+uint32_t lastTG=0;
 
-void lastHeardListUpdate(uint8_t *dmrDataBuffer)
+bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 {
+	bool retVal = false;
+	uint32_t talkGroupOrPcId = (dmrDataBuffer[0]<<24) + (dmrDataBuffer[3]<<16)+(dmrDataBuffer[4]<<8)+(dmrDataBuffer[5]<<0);
+
+
 	if (dmrDataBuffer[0]==TG_CALL_FLAG || dmrDataBuffer[0]==PC_CALL_FLAG)
 	{
-		uint32_t talkGroupOrPcId = (dmrDataBuffer[0]<<24) + (dmrDataBuffer[3]<<16)+(dmrDataBuffer[4]<<8)+(dmrDataBuffer[5]<<0);
 		uint32_t id=(dmrDataBuffer[6]<<16)+(dmrDataBuffer[7]<<8)+(dmrDataBuffer[8]<<0);
 
 		if (id!=lastID)
 		{
+			retVal = true;// something has changed
 			lastID=id;
 
 			LinkItem_t *item = findInList(id);
@@ -95,11 +106,12 @@ void lastHeardListUpdate(uint8_t *dmrDataBuffer)
 			{
 				// Already in the list
 				item->talkGroupOrPcId = talkGroupOrPcId;// update the TG in case they changed TG
+				lastTG = talkGroupOrPcId;
 
 				if (item == LinkHead)
 				{
 					menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;// flag that the display needs to update
-					return;// already at top of the list
+					return true;// already at top of the list
 				}
 				else
 				{
@@ -147,18 +159,24 @@ void lastHeardListUpdate(uint8_t *dmrDataBuffer)
 
 				item->id=id;
 				item->talkGroupOrPcId =  talkGroupOrPcId;
+				lastTG = talkGroupOrPcId;
 				memset(item->talkerAlias,0,32);// Clear any TA data
 				menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;// flag that the display needs to update
 			}
 		}
 		else // update TG even if the DMRID did not change
 		{
-			LinkItem_t *item = findInList(id);
-
-			if (item!=NULL)
+			if (lastTG != talkGroupOrPcId)
 			{
-				// Already in the list
-				item->talkGroupOrPcId = talkGroupOrPcId;// update the TG in case they changed TG
+				LinkItem_t *item = findInList(id);
+
+				if (item!=NULL)
+				{
+					// Already in the list
+					item->talkGroupOrPcId = talkGroupOrPcId;// update the TG in case they changed TG
+				}
+				lastTG = talkGroupOrPcId;
+				retVal = true;// something has changed
 			}
 		}
 	}
@@ -203,6 +221,7 @@ void lastHeardListUpdate(uint8_t *dmrDataBuffer)
 			menuDisplayQSODataState=QSO_DISPLAY_CALLER_DATA;
 		}
 	}
+	return retVal;
 }
 
 bool dmrIDLookup( int targetId,dmrIdDataStruct_t *foundRecord)
@@ -256,53 +275,103 @@ bool dmrIDLookup( int targetId,dmrIdDataStruct_t *foundRecord)
 	return false;
 }
 
+bool menuUtilityHandlePrivateCallActions(int buttons, int keys, int events)
+{
+	if ((buttons & BUTTON_SK2 )!=0 &&   menuUtilityTgBeforePcMode != 0 && (keys & KEY_RED))
+	{
+		trxTalkGroupOrPcId = menuUtilityTgBeforePcMode;
+		nonVolatileSettings.overrideTG = menuUtilityTgBeforePcMode;
+		menuUtilityReceivedPcId = 0;
+		menuUtilityTgBeforePcMode = 0;
+		menuDisplayQSODataState= QSO_DISPLAY_DEFAULT_SCREEN;// Force redraw
+		return true;// The event has been handled
+	}
+
+	// Note.  menuUtilityReceivedPcId is used to store the PcId but also used as a flag to indicate that a Pc request has occurred.
+	if (menuUtilityReceivedPcId != 0x00 && (LinkHead->talkGroupOrPcId>>24) == PC_CALL_FLAG && nonVolatileSettings.overrideTG != LinkHead->talkGroupOrPcId)
+	{
+		if ((keys & KEY_GREEN)!=0)
+		{
+			// User has accepted the private call
+			menuUtilityTgBeforePcMode = trxTalkGroupOrPcId;// save the current TG
+			nonVolatileSettings.overrideTG =  menuUtilityReceivedPcId;
+			trxTalkGroupOrPcId = menuUtilityReceivedPcId;
+			menuUtilityRenderQSOData();
+		}
+		menuUtilityReceivedPcId = 0;
+		qsodata_timer=1;// time out the qso timer will force the VFO or Channel mode screen to redraw its normal display
+		return true;// The event has been handled
+	}
+	return false;// The event has not been handled
+}
+
 void menuUtilityRenderQSOData()
 {
 	char buffer[32];// buffer passed to the DMR ID lookup function, needs to be large enough to hold worst case text length that is returned. Currently 16+1
 	dmrIdDataStruct_t currentRec;
 
-	if ((LinkHead->talkGroupOrPcId>>24) == TG_CALL_FLAG)
-	{
-		sprintf(buffer,"TG %d", (LinkHead->talkGroupOrPcId & 0xFFFFFF));
-	}
-	else
-	{
-		sprintf(buffer,"PC %d", (LinkHead->talkGroupOrPcId & 0xFFFFFF));
-	}
-	UC1701_printCentered(16, buffer,UC1701_FONT_GD77_8x16);
+	menuUtilityReceivedPcId=0;//reset the received PcId
 
-	// first check if we have this ID in the DMR ID data
-	if (dmrIDLookup( LinkHead->id,&currentRec))
+	if ((LinkHead->talkGroupOrPcId>>24) == PC_CALL_FLAG)
 	{
+		// Its a Private call
+		dmrIDLookup( (LinkHead->id & 0xFFFFFF),&currentRec);
 		sprintf(buffer,"%s", currentRec.text);
-		UC1701_printCentered(32, buffer,UC1701_FONT_GD77_8x16);
-	}
-	else
-	{
-		// We don't have this ID, so try looking in the Talker alias data
-		if (LinkHead->talkerAlias[0] != 0x00)
-		{
-			if (strlen(LinkHead->talkerAlias)> 6)
-			{
-				// More than 1 line wide of text, so we need to split onto 2 lines.
-				memcpy(buffer,LinkHead->talkerAlias,6);
-				buffer[6]=0x00;
-				UC1701_printCentered(32, buffer,UC1701_FONT_GD77_8x16);
+		UC1701_printCentered(16, buffer,UC1701_FONT_GD77_8x16);
 
-				memcpy(buffer,&LinkHead->talkerAlias[6],16);
-				buffer[16]=0x00;
-				UC1701_printAt(0,48,buffer,UC1701_FONT_GD77_8x16);
-			}
-			else
-			{
-				UC1701_printCentered(32,LinkHead->talkerAlias,UC1701_FONT_GD77_8x16);
-			}
+		// Are we already in PC mode to this caller ?
+		if (trxTalkGroupOrPcId != (LinkHead->id | (PC_CALL_FLAG<<24)))
+		{
+			// No either we are not in PC mode or not on a Private Call to this station
+			UC1701_printCentered(32, "Accept call?",UC1701_FONT_GD77_8x16);
+			UC1701_printCentered(48, "YES          NO",UC1701_FONT_GD77_8x16);
+			menuUtilityReceivedPcId = LinkHead->id | (PC_CALL_FLAG<<24);
+		    set_melody(melody_private_call);
 		}
 		else
 		{
-			// No talker alias. So we can only show the ID.
-			sprintf(buffer,"ID: %d", LinkHead->id);
+			UC1701_printCentered(32, "Private call",UC1701_FONT_GD77_8x16);
+		}
+	}
+	else
+	{
+		// Group call
+		sprintf(buffer,"TG %d", (LinkHead->talkGroupOrPcId & 0xFFFFFF));
+		UC1701_printCentered(16, buffer,UC1701_FONT_GD77_8x16);
+
+		// first check if we have this ID in the DMR ID data
+		if (dmrIDLookup( LinkHead->id,&currentRec))
+		{
+			sprintf(buffer,"%s", currentRec.text);
 			UC1701_printCentered(32, buffer,UC1701_FONT_GD77_8x16);
+		}
+		else
+		{
+			// We don't have this ID, so try looking in the Talker alias data
+			if (LinkHead->talkerAlias[0] != 0x00)
+			{
+				if (strlen(LinkHead->talkerAlias)> 6)
+				{
+					// More than 1 line wide of text, so we need to split onto 2 lines.
+					memcpy(buffer,LinkHead->talkerAlias,6);
+					buffer[6]=0x00;
+					UC1701_printCentered(32, buffer,UC1701_FONT_GD77_8x16);
+
+					memcpy(buffer,&LinkHead->talkerAlias[6],16);
+					buffer[16]=0x00;
+					UC1701_printAt(0,48,buffer,UC1701_FONT_GD77_8x16);
+				}
+				else
+				{
+					UC1701_printCentered(32,LinkHead->talkerAlias,UC1701_FONT_GD77_8x16);
+				}
+			}
+			else
+			{
+				// No talker alias. So we can only show the ID.
+				sprintf(buffer,"ID: %d", LinkHead->id);
+				UC1701_printCentered(32, buffer,UC1701_FONT_GD77_8x16);
+			}
 		}
 	}
 }
