@@ -50,7 +50,7 @@ int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 		}
 		currentChannelData = &channelScreenChannelData;
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-		menuChannelModeUpdateScreen();
+		menuChannelModeUpdateScreen(0);
 	}
 	else
 	{
@@ -59,7 +59,7 @@ int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 			// is there an incoming DMR signal
 			if (menuDisplayQSODataState != QSO_DISPLAY_IDLE)
 			{
-				menuChannelModeUpdateScreen();
+				menuChannelModeUpdateScreen(0);
 			}
 		}
 		else
@@ -116,22 +116,34 @@ static void loadChannelData(bool useChannelDataInMemory)
 	}
 }
 
-void menuChannelModeUpdateScreen()
+void menuChannelModeUpdateScreen(int txTimeSecs)
 {
 	char nameBuf[17];
 	int channelNumber;
 	char buffer[32];
+	int verticalPositionOffset = 0;
 	UC1701_clearBuf();
+
 
 	menuUtilityRenderHeader();
 
 	switch(menuDisplayQSODataState)
 	{
 		case QSO_DISPLAY_DEFAULT_SCREEN:
-			codeplugUtilConvertBufToString(channelScreenChannelData.name,nameBuf,16);
-			UC1701_printCentered(32, (char *)nameBuf,UC1701_FONT_GD77_8x16);
 
-			if (strcmp(currentZoneName,"All Channels") == 0)
+			menuUtilityReceivedPcId = 0x00;
+			if (trxIsTransmitting)
+			{
+				sprintf(buffer," %d ",txTimeSecs);
+				UC1701_printCentered(0, buffer,UC1701_FONT_16x32);
+				verticalPositionOffset=16;
+			}
+
+
+			codeplugUtilConvertBufToString(channelScreenChannelData.name,nameBuf,16);
+			UC1701_printCentered(32 + verticalPositionOffset, (char *)nameBuf,UC1701_FONT_GD77_8x16);
+
+			if (strcmp(currentZoneName,"All Channels") == 0 && !trxIsTransmitting)
 			{
 				channelNumber=nonVolatileSettings.currentChannelIndexInAllZone;
 				if (directChannelNumber>0)
@@ -142,12 +154,12 @@ void menuChannelModeUpdateScreen()
 				{
 					sprintf(nameBuf,"CH %d",channelNumber);
 				}
-				UC1701_printCentered(50, (char *)nameBuf,UC1701_FONT_6X8);
+				UC1701_printCentered(50 , (char *)nameBuf,UC1701_FONT_6X8);
 			}
 			else
 			{
 				sprintf(nameBuf,"%s",currentZoneName);
-				UC1701_printCentered(50, (char *)nameBuf,UC1701_FONT_6X8);
+				UC1701_printCentered(50 + verticalPositionOffset, (char *)nameBuf,UC1701_FONT_6X8);
 			}
 
 			if (trxGetMode() == RADIO_MODE_DIGITAL)
@@ -160,16 +172,18 @@ void menuChannelModeUpdateScreen()
 					}
 					else
 					{
-						sprintf(nameBuf,"PC %d",(trxTalkGroupOrPcId & 0x00FFFFFF));
+						dmrIdDataStruct_t currentRec;
+						dmrIDLookup((trxTalkGroupOrPcId & 0x00FFFFFF),&currentRec);
+						sprintf(nameBuf,"%s",currentRec.text);
 					}
 				}
 				else
 				{
 					codeplugUtilConvertBufToString(contactData.name,nameBuf,16);
 				}
-				UC1701_printCentered(16, (char *)nameBuf,UC1701_FONT_GD77_8x16);
+				UC1701_printCentered(16 + verticalPositionOffset, (char *)nameBuf,UC1701_FONT_GD77_8x16);
 			}
-			else if(displaySquelch)
+			else if(displaySquelch && !trxIsTransmitting)
 			{
 				sprintf(buffer,"Squelch");
 				UC1701_printAt(0,16,buffer,UC1701_FONT_GD77_8x16);
@@ -205,6 +219,11 @@ static void handleEvent(int buttons, int keys, int events)
 
 	if ((keys & KEY_GREEN)!=0)
 	{
+		if (menuUtilityHandlePrivateCallActions(buttons,keys,events))
+		{
+			return;
+		}
+
 		if (directChannelNumber>0)
 		{
 			if (codeplugChannelIndexIsValid(directChannelNumber))
@@ -218,7 +237,7 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 			directChannelNumber=0;
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-			menuChannelModeUpdateScreen();
+			menuChannelModeUpdateScreen(0);
 		}
 		else if (buttons & BUTTON_SK2 )
 		{
@@ -240,11 +259,15 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_RED)!=0)
 	{
+		if (menuUtilityHandlePrivateCallActions(buttons,keys,events))
+		{
+			return;
+		}
 		if(directChannelNumber>0)
 		{
 			directChannelNumber=0;
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-			menuChannelModeUpdateScreen();
+			menuChannelModeUpdateScreen(0);
 		}
 		else
 		{
@@ -269,7 +292,7 @@ static void handleEvent(int buttons, int keys, int events)
 			trxTalkGroupOrPcId = contactData.tgNumber;
 
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-			menuChannelModeUpdateScreen();
+			menuChannelModeUpdateScreen(0);
 		}
 		else
 		{
@@ -288,7 +311,7 @@ static void handleEvent(int buttons, int keys, int events)
 
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 			displaySquelch=true;
-			menuChannelModeUpdateScreen();
+			menuChannelModeUpdateScreen(0);
 		}
 
 	}
@@ -308,7 +331,7 @@ static void handleEvent(int buttons, int keys, int events)
 			trxTalkGroupOrPcId = contactData.tgNumber;
 
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-			menuChannelModeUpdateScreen();
+			menuChannelModeUpdateScreen(0);
 		}
 		else
 		{
@@ -326,7 +349,7 @@ static void handleEvent(int buttons, int keys, int events)
 
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 			displaySquelch=true;
-			menuChannelModeUpdateScreen();
+			menuChannelModeUpdateScreen(0);
 		}
 
 	}
@@ -344,7 +367,7 @@ static void handleEvent(int buttons, int keys, int events)
 			trxSetTxCTCSS(currentChannelData->rxTone);
 		}
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-		menuChannelModeUpdateScreen();
+		menuChannelModeUpdateScreen(0);
 	}
 	else if ((keys & KEY_DOWN)!=0)
 	{
@@ -369,7 +392,7 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 		loadChannelData(false);
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-		menuChannelModeUpdateScreen();
+		menuChannelModeUpdateScreen(0);
 	}
 	else if ((keys & KEY_UP)!=0)
 	{
@@ -394,7 +417,7 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 		loadChannelData(false);
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-		menuChannelModeUpdateScreen();
+		menuChannelModeUpdateScreen(0);
 	}
 	else if (strcmp(currentZoneName,"All Channels")==0)
 	{
@@ -445,7 +468,7 @@ static void handleEvent(int buttons, int keys, int events)
 			directChannelNumber=(directChannelNumber*10) + keyval;
 			if(directChannelNumber>1024) directChannelNumber=0;
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-			menuChannelModeUpdateScreen();
+			menuChannelModeUpdateScreen(0);
 		}
 	}
 }
