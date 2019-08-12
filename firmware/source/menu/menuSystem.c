@@ -42,6 +42,7 @@ int menuDisplayOptions(int buttons, int keys, int events, bool isFirstRun);
 int menuCredits(int buttons, int keys, int events, bool isFirstRun);
 int menuChannelDetails(int buttons, int keys, int events, bool isFirstRun);
 int menuHotspotMode(int buttons, int keys, int events, bool isFirstRun);
+int menuCPS(int buttons, int keys, int events, bool isFirstRun);
 
 
 /*
@@ -89,7 +90,8 @@ const MenuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
 												menuDisplayOptions,
 												menuCredits,
 												menuChannelDetails,
-												menuHotspotMode};
+												menuHotspotMode,
+												menuCPS};
 
 void menuSystemPushNewMenu(int menuNumber)
 {

@@ -57,5 +57,6 @@ extern int settingsUsbMode;
 void settingsSaveSettings();
 void settingsLoadSettings();
 void settingsRestoreDefaultSettings();
+void settingsInitVFOChannel();
 
 #endif

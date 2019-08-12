@@ -65,7 +65,7 @@ void settingsLoadSettings()
 	trxDMRID = codeplugGetUserDMRID();
 }
 
-void initVFOChannel()
+void settingsInitVFOChannel()
 {
 	codeplugVFO_A_ChannelData(&nonVolatileSettings.vfoChannel);
 
@@ -117,7 +117,7 @@ void settingsRestoreDefaultSettings()
 	nonVolatileSettings.overrideTG=0;// 0 = No override
 	nonVolatileSettings.useCalibration = 0x01;// enable the new calibration system
 	nonVolatileSettings.txFreqLimited = 0x01;// Limit Tx frequency to US Amateur bands
-	initVFOChannel();
+	settingsInitVFOChannel();
 	currentChannelData = &nonVolatileSettings.vfoChannel;// Set the current channel data to point to the VFO data since the default screen will be the VFO
 
 	settingsSaveSettings();

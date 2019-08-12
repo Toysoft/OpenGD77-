@@ -65,17 +65,24 @@ void trxSetModeAndBandwidth(int mode, bool bandwidthIs25kHz)
 		I2C_AT1846_SetBandwidth();
 		trxUpdateC6000Calibration();
 		trxUpdateAT1846SCalibration();
-		if (currentMode == RADIO_MODE_ANALOG)
+		switch(mode)
 		{
+		case RADIO_MODE_NONE:
+			// not truely off
+			GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 0); // connect AT1846S audio to HR_C6000
+			terminate_sound();
+			terminate_digital();
+			break;
+		case RADIO_MODE_ANALOG:
 			GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 1); // connect AT1846S audio to speaker
 			terminate_sound();
 			terminate_digital();
-		}
-		else
-		{
+			break;
+		case RADIO_MODE_DIGITAL:
 			GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 0); // connect AT1846S audio to HR_C6000
 			init_sound();
 			init_digital();
+			break;
 		}
 	}
 }

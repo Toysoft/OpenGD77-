@@ -41,6 +41,7 @@ extern menuControlDataStruct_t menuControlData;
 
 void menuChannelModeUpdateScreen(int txTimeSecs);
 void menuVFOModeUpdateScreen(int txTimeSecs);
+void menuCPSUpdate(int command,int x, int y, int iSize, int alignment, bool isInverted,char *szMsg);
 
 void menuInitMenuSystem();
 void displayLightTrigger();
@@ -81,6 +82,7 @@ enum MENU_SCREENS { MENU_SPLASH_SCREEN=0,
 					MENU_CREDITS,
 					MENU_CHANNEL_DETAILS,
 					MENU_HOTSPOT_MODE,
+					MENU_CPS,
 };
 
 extern int gMenusCurrentItemIndex;
