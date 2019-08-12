@@ -111,7 +111,7 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 				if (item == LinkHead)
 				{
 					menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;// flag that the display needs to update
-					return;// already at top of the list
+					return true;// already at top of the list
 				}
 				else
 				{
