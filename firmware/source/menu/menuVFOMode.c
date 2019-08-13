@@ -266,7 +266,16 @@ static void update_frequency(int frequency)
 			currentChannelData->rxFreq = frequency;
 			currentChannelData->txFreq = currentChannelData->txFreq + deltaFrequency;
 			trxSetFrequency(frequency);
-			set_melody(melody_ACK_beep);
+
+			if (!trxCheckFrequencyIsSupportedByTheRadioHardware(currentChannelData->txFreq))
+			{
+				currentChannelData->txFreq = frequency;
+				set_melody(melody_ERROR_beep);
+			}
+			else
+			{
+				set_melody(melody_ACK_beep);
+			}
 		}
 		else
 		{
