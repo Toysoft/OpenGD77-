@@ -550,16 +550,15 @@ void tick_HR_C6000()
 			}
 			break;
 		case DMR_STATE_TX_2: // Ongoing TX (active timeslot)
+
+			memset(tmp_ram+0x0C, 0, 27);
 			if (trxIsTransmitting)
 			{
 				tick_TXsoundbuffer();
-				tick_codec_encode(tmp_ram);
+				tick_codec_encode(tmp_ram+0x0C);
 			}
-			else
-			{
-				memset(tmp_ram, 0, 27);
-			}
-			write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, tmp_ram, 27);
+
+			write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, tmp_ram+0x0C, 27);
 			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80); // TXnextslotenable
 			switch (tx_sequence)
 			{
