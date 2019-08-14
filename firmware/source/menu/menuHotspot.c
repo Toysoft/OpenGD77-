@@ -21,6 +21,7 @@
 #include "fw_settings.h"
 #include "fw_usb_com.h"
 #include "fw_trx.h"
+#include "fw_HR-C6000.h"
 
 #include <SeggerRTT/RTT/SEGGER_RTT.h>
 
@@ -95,6 +96,7 @@ static void handleEvent(int buttons, int keys, int events)
 #define MMDVM_CAL_DATA      0x08
 #define MMDVM_RSSI_DATA     0x09
 #define MMDVM_SEND_CWID     0x0A
+
 #define MMDVM_DMR_DATA1     0x18
 #define MMDVM_DMR_LOST1     0x19
 #define MMDVM_DMR_DATA2     0x1AU
@@ -102,6 +104,15 @@ static void handleEvent(int buttons, int keys, int events)
 #define MMDVM_DMR_SHORTLC   0x1CU
 #define MMDVM_DMR_START     0x1DU
 #define MMDVM_DMR_ABORT     0x1EU
+
+#define OPENGD77_DMR_DATA1     0x60
+#define OPENGD77_DMR_LOST1     0x61
+#define OPENGD77_DMR_DATA2     0x62
+#define OPENGD77_DMR_LOST2     0x63
+#define OPENGD77_DMR_SHORTLC   0x64
+#define OPENGD77_DMR_START     0x65
+#define OPENGD77_DMR_ABORT     0x66
+
 #define MMDVM_ACK           0x70U
 #define MMDVM_NAK           0x7FU
 #define MMDVM_SERIAL        0x80U
@@ -455,6 +466,27 @@ static void getVersion(uint8_t s_ComBuf[])
 	strcpy((char *)&s_ComBuf[4],HOTSPOT_NAME);
 	USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, s_ComBuf, s_ComBuf[1]);
 }
+
+bool hotspotModeSendReceivedDMRFrame()
+{
+/*
+ 	for (int i=0;i<(0x0c+27);i++)
+	{
+    	SEGGER_RTT_printf(0, " %02x", DMR_frame_buffer[i]);
+	}
+	SEGGER_RTT_printf(0, "\r\n");
+*/
+
+	taskENTER_CRITICAL();
+	memcpy((uint8_t *)com_buffer+3,DMR_frame_buffer,39);// 12 bytes Link Control + 27 bytes AMBE data
+	taskEXIT_CRITICAL();
+	com_buffer[0] = MMDVM_FRAME_START;
+	com_buffer[1] = 39 + 3;
+	com_buffer[2] = OPENGD77_DMR_DATA2;
+	USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, (uint8_t *)com_buffer, 39+3);
+	return true;
+}
+
 void handleHotspotRequest(uint8_t com_requestbuffer[],uint8_t s_ComBuf[])
 {
 	int err;
@@ -583,6 +615,37 @@ void handleHotspotRequest(uint8_t com_requestbuffer[],uint8_t s_ComBuf[])
 				SEGGER_RTT_printf(0, "MMDVM_DEBUG5\r\n");
 				sendACK(s_ComBuf);
 				break;
+
+
+			case OPENGD77_DMR_DATA1:
+				SEGGER_RTT_printf(0, "OPENGD77_DMR_DATA1\r\n");
+				sendACK(s_ComBuf);
+				break;
+			case OPENGD77_DMR_LOST1:
+				SEGGER_RTT_printf(0, "OPENGD77_DMR_LOST1\r\n");
+				sendACK(s_ComBuf);
+				break;
+			case OPENGD77_DMR_DATA2:
+				SEGGER_RTT_printf(0, "OPENGD77_DMR_DATA2\r\n");
+				sendACK(s_ComBuf);
+				break;
+			case OPENGD77_DMR_LOST2:
+				SEGGER_RTT_printf(0, "OPENGD77_DMR_LOST2\r\n");
+				sendACK(s_ComBuf);
+				break;
+			case OPENGD77_DMR_SHORTLC:
+				SEGGER_RTT_printf(0, "OPENGD77_DMR_SHORTLC\r\n");
+				sendACK(s_ComBuf);
+				break;
+			case OPENGD77_DMR_START:
+				SEGGER_RTT_printf(0, "OPENGD77_DMR_START\r\n");
+				sendACK(s_ComBuf);
+				break;
+			case OPENGD77_DMR_ABORT:
+				SEGGER_RTT_printf(0, "OPENGD77_DMR_ABORT\r\n");
+				sendACK(s_ComBuf);
+				break;
+
 			default:
 				sendACK(s_ComBuf);
 				break;

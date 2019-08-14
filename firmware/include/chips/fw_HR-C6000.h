@@ -78,9 +78,7 @@ extern uint8_t tmp_val_0x51;
 extern uint8_t tmp_val_0x52;
 extern uint8_t tmp_val_0x57;
 extern uint8_t tmp_val_0x5f;
-extern uint8_t tmp_ram[64];
-
-
+extern uint8_t DMR_frame_buffer[64];
 
 enum DMR_SLOT_STATE { DMR_STATE_IDLE, DMR_STATE_RX_1, DMR_STATE_RX_2, DMR_STATE_RX_END,
 					  DMR_STATE_TX_START_1, DMR_STATE_TX_START_2, DMR_STATE_TX_START_3, DMR_STATE_TX_START_4, DMR_STATE_TX_START_5, DMR_STATE_TX_1, DMR_STATE_TX_2, DMR_STATE_TX_END_1, DMR_STATE_TX_END_2 };

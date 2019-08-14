@@ -276,7 +276,7 @@ void send_packet(uint8_t val_0x82, uint8_t val_0x86, int ram)
 		add_to_commbuffer(tmp_val_0x5f);
 		for (int i=0;i<=ram;i++)
 		{
-			add_to_commbuffer(tmp_ram[i]);
+			add_to_commbuffer(DMR_frame_buffer[i]);
 		}
 	}
 	taskEXIT_CRITICAL();

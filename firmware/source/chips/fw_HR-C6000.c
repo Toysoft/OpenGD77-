@@ -20,6 +20,7 @@
 
 #include "fw_HR-C6000.h"
 #include "menu/menuUtilityQSOData.h"
+#include "fw_settings.h"
 
 #if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
 #include <SeggerRTT/RTT/SEGGER_RTT.h>
@@ -36,13 +37,15 @@ uint8_t tmp_val_0x51;
 uint8_t tmp_val_0x52;
 uint8_t tmp_val_0x57;
 uint8_t tmp_val_0x5f;
-uint8_t tmp_ram[64];
+uint8_t DMR_frame_buffer[64];
 
 volatile bool int_sys;
 volatile bool int_ts;
 volatile bool tx_required;
 volatile bool int_rxtx;
 volatile int int_timeout;
+
+
 
 static uint32_t receivedTgOrPcId;
 int slot_state;
@@ -338,17 +341,17 @@ void store_qsodata()
 {
 	// If this is the start of a newly received signal, we always need to trigger the display to show this, even if its the same station calling again.
 	// Of if the display is holding on the PC accept text and the incoming call is not a PC
-	if (qsodata_timer == 0 || (menuUtilityReceivedPcId!=0 && tmp_ram[0]==TG_CALL_FLAG))
+	if (qsodata_timer == 0 || (menuUtilityReceivedPcId!=0 && DMR_frame_buffer[0]==TG_CALL_FLAG))
 	{
 		menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;
 	}
 	// check if this is a valid data frame, including Talker Alias data frames (0x04 - 0x07)
 	// Not sure if its necessary to check byte [1] for 0x00 but I'm doing this
-	if (tmp_ram[1] == 0x00  && (tmp_ram[0]==TG_CALL_FLAG || tmp_ram[0]==PC_CALL_FLAG  || (tmp_ram[0]>=0x04 && tmp_ram[0]<=0x7)))
+	if (DMR_frame_buffer[1] == 0x00  && (DMR_frame_buffer[0]==TG_CALL_FLAG || DMR_frame_buffer[0]==PC_CALL_FLAG  || (DMR_frame_buffer[0]>=0x04 && DMR_frame_buffer[0]<=0x7)))
 	{
 		// Needs to enter critical because the LastHeard is accessed by other threads
     	taskENTER_CRITICAL();
-    	lastHeardListUpdate(tmp_ram);
+    	lastHeardListUpdate(DMR_frame_buffer);
 		taskEXIT_CRITICAL();
 		qsodata_timer=QSO_TIMER_TIMEOUT;
 	}
@@ -415,7 +418,7 @@ void setupPcOrTGHeader()
 
 bool callAcceptFilter()
 {
-	return (tmp_ram[0]==TG_CALL_FLAG || (tmp_ram[0]==PC_CALL_FLAG && receivedTgOrPcId == trxDMRID));
+	return (DMR_frame_buffer[0]==TG_CALL_FLAG || (DMR_frame_buffer[0]==PC_CALL_FLAG && receivedTgOrPcId == trxDMRID));
 }
 
 
@@ -551,14 +554,14 @@ void tick_HR_C6000()
 			break;
 		case DMR_STATE_TX_2: // Ongoing TX (active timeslot)
 
-			memset(tmp_ram+0x0C, 0, 27);
+			memset(DMR_frame_buffer+0x0C, 0, 27);
 			if (trxIsTransmitting)
 			{
 				tick_TXsoundbuffer();
-				tick_codec_encode(tmp_ram+0x0C);
+				tick_codec_encode(DMR_frame_buffer+0x0C);
 			}
 
-			write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, tmp_ram+0x0C, 27);
+			write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, DMR_frame_buffer+0x0C, 27);
 			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80); // TXnextslotenable
 			switch (tx_sequence)
 			{
@@ -623,7 +626,7 @@ void tick_HR_C6000()
 		read_SPI_page_reg_byte_SPI0(0x04, 0x52, &tmp_val_0x52);
 		read_SPI_page_reg_byte_SPI0(0x04, 0x57, &tmp_val_0x57);
 		read_SPI_page_reg_byte_SPI0(0x04, 0x5f, &tmp_val_0x5f);
-		read_SPI_page_reg_bytearray_SPI0(0x02, 0x00, tmp_ram, 0x0c);
+		read_SPI_page_reg_bytearray_SPI0(0x02, 0x00, DMR_frame_buffer, 0x0c);
 
 		// Check for correct received packet
 		int rcrc = (tmp_val_0x51 >> 2) & 0x01;
@@ -646,7 +649,7 @@ void tick_HR_C6000()
     			write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0x20);
     		}
 
-    		receivedTgOrPcId = (tmp_ram[3]<<16)+(tmp_ram[4]<<8)+(tmp_ram[5]<<0);
+    		receivedTgOrPcId = (DMR_frame_buffer[3]<<16)+(DMR_frame_buffer[4]<<8)+(DMR_frame_buffer[5]<<0);
 
     		if (tmp_val_0x82 & 0x10) // InterLateEntry
     		{
@@ -666,7 +669,7 @@ void tick_HR_C6000()
             	SEGGER_RTT_printf(0, "LATE %02x [%02x %02x] %02x %02x %02x %02x SC:%02x RCRC:%02x RPI:%02x RXDT:%02x LCSS:%02x TC:%02x AT:%02x CC:%02x ??:%02x ST:%02x RAM:", slot_state, tmp_val_0x82, tmp_val_0x86, tmp_val_0x51, tmp_val_0x52, tmp_val_0x57, tmp_val_0x5f, (tmp_val_0x51 >> 0) & 0x03, (tmp_val_0x51 >> 2) & 0x01, (tmp_val_0x51 >> 3) & 0x01, (tmp_val_0x51 >> 4) & 0x0f, (tmp_val_0x52 >> 0) & 0x03, (tmp_val_0x52 >> 2) & 0x01, (tmp_val_0x52 >> 3) & 0x01, (tmp_val_0x52 >> 4) & 0x0f, (tmp_val_0x57 >> 2) & 0x01, (tmp_val_0x5f >> 0) & 0x03);
 				for (int i=0;i<0x0c;i++)
 				{
-	            	SEGGER_RTT_printf(0, " %02x", tmp_ram[i]);
+	            	SEGGER_RTT_printf(0, " %02x", DMR_frame_buffer[i]);
 				}
             	SEGGER_RTT_printf(0, "\r\n");
 #endif
@@ -712,16 +715,23 @@ void tick_HR_C6000()
                 if ((slot_state != DMR_STATE_IDLE) && (skip_count==0) && (sc!=2) && ((rxdt & 0x07) >= 0x01) && ((rxdt & 0x07) <= 0x06))
                 {
                 	store_qsodata();
-                    read_SPI_page_reg_bytearray_SPI1(0x03, 0x00, tmp_ram+0x0C, 27);
-                	tick_codec_decode(tmp_ram+0x0C);
-                	tick_RXsoundbuffer();
+                    read_SPI_page_reg_bytearray_SPI1(0x03, 0x00, DMR_frame_buffer+0x0C, 27);
+                    if (settingsUsbMode == USB_MODE_HOTSPOT)
+                    {
+                    	hotspotModeSendReceivedDMRFrame();
+                    }
+                    else
+                    {
+                    	tick_codec_decode(DMR_frame_buffer+0x0C);
+                    	tick_RXsoundbuffer();
+                    }
                 }
 
 #if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
                 SEGGER_RTT_printf(0, "DATA %02x [%02x %02x] %02x %02x %02x %02x SC:%02x RCRC:%02x RPI:%02x RXDT:%02x LCSS:%02x TC:%02x AT:%02x CC:%02x ??:%02x ST:%02x RAM:", slot_state, tmp_val_0x82, tmp_val_0x86, tmp_val_0x51, tmp_val_0x52, tmp_val_0x57, tmp_val_0x5f, (tmp_val_0x51 >> 0) & 0x03, (tmp_val_0x51 >> 2) & 0x01, (tmp_val_0x51 >> 3) & 0x01, (tmp_val_0x51 >> 4) & 0x0f, (tmp_val_0x52 >> 0) & 0x03, (tmp_val_0x52 >> 2) & 0x01, (tmp_val_0x52 >> 3) & 0x01, (tmp_val_0x52 >> 4) & 0x0f, (tmp_val_0x57 >> 2) & 0x01, (tmp_val_0x5f >> 0) & 0x03);
 				for (int i=0;i<0x0c;i++)
 				{
-	            	SEGGER_RTT_printf(0, " %02x", tmp_ram[i]);
+	            	SEGGER_RTT_printf(0, " %02x", DMR_frame_buffer[i]);
 				}
             	SEGGER_RTT_printf(0, "\r\n");
 #endif
@@ -760,7 +770,7 @@ void tick_HR_C6000()
             	SEGGER_RTT_printf(0, "---- %02x [%02x %02x] %02x %02x %02x %02x SC:%02x RCRC:%02x RPI:%02x RXDT:%02x LCSS:%02x TC:%02x AT:%02x CC:%02x ??:%02x ST:%02x RAM:", slot_state, tmp_val_0x82, tmp_val_0x86, tmp_val_0x51, tmp_val_0x52, tmp_val_0x57, tmp_val_0x5f, (tmp_val_0x51 >> 0) & 0x03, (tmp_val_0x51 >> 2) & 0x01, (tmp_val_0x51 >> 3) & 0x01, (tmp_val_0x51 >> 4) & 0x0f, (tmp_val_0x52 >> 0) & 0x03, (tmp_val_0x52 >> 2) & 0x01, (tmp_val_0x52 >> 3) & 0x01, (tmp_val_0x52 >> 4) & 0x0f, (tmp_val_0x57 >> 2) & 0x01, (tmp_val_0x5f >> 0) & 0x03);
 				for (int i=0;i<0x0c;i++)
 				{
-	            	SEGGER_RTT_printf(0, " %02x", tmp_ram[i]);
+	            	SEGGER_RTT_printf(0, " %02x", DMR_frame_buffer[i]);
 				}
             	SEGGER_RTT_printf(0, "\r\n");
 #endif

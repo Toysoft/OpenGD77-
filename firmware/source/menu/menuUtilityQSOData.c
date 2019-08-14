@@ -187,7 +187,7 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 		int TAOffset;
 
 		// Data contains the Talker Alias Data
-		switch(tmp_ram[0])
+		switch(DMR_frame_buffer[0])
 		{
 			case 0x04:
 				TAOffset=0;
@@ -217,7 +217,7 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 		}
 		if (LinkHead->talkerAlias[TAOffset] == 0x00 && TABlockLen!=0)
 		{
-			memcpy(&LinkHead->talkerAlias[TAOffset],&tmp_ram[TAStartPos],TABlockLen);// Brandmeister seems to send callsign as 6 chars only
+			memcpy(&LinkHead->talkerAlias[TAOffset],&DMR_frame_buffer[TAStartPos],TABlockLen);// Brandmeister seems to send callsign as 6 chars only
 			menuDisplayQSODataState=QSO_DISPLAY_CALLER_DATA;
 		}
 	}
