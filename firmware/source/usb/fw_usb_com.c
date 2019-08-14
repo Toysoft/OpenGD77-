@@ -281,6 +281,9 @@ void send_packet(uint8_t val_0x82, uint8_t val_0x86, int ram)
 	}
 	taskEXIT_CRITICAL();
 }
+#if false
+uint8_t tmp_ram1[256];
+uint8_t tmp_ram2[256];
 
 void send_packet_big(uint8_t val_0x82, uint8_t val_0x86, int ram1, int ram2)
 {
@@ -306,7 +309,7 @@ void send_packet_big(uint8_t val_0x82, uint8_t val_0x86, int ram1, int ram2)
 	}
 	taskEXIT_CRITICAL();
 }
-
+#endif
 void add_to_commbuffer(uint8_t value)
 {
 	com_buffer[com_buffer_write_idx]=value;
