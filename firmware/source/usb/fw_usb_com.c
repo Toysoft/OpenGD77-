@@ -15,20 +15,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-
+#include <menu/menuSystem.h>
 #include <menu/menuHotspot.h>
 #include "fw_usb_com.h"
 #include "fw_settings.h"
+#include "fw_wdog.h"
 
-uint8_t tmp_val_0x82;
-uint8_t tmp_val_0x86;
-uint8_t tmp_val_0x51;
-uint8_t tmp_val_0x52;
-uint8_t tmp_val_0x57;
-uint8_t tmp_val_0x5f;
-uint8_t tmp_ram[256];
-uint8_t tmp_ram1[256];
-uint8_t tmp_ram2[256];
+
 
 static void handleCPSRequest();
 
@@ -41,7 +34,7 @@ volatile int com_request = 0;
 volatile uint8_t com_requestbuffer[COM_REQUESTBUFFER_SIZE];
 USB_DMA_NONINIT_DATA_ALIGN(USB_DATA_ALIGN_SIZE) static uint8_t s_ComBuf[DATA_BUFF_SIZE];
 
-static uint8_t sectorbuffer[4096];
+
 int sector = -1;
 
 void tick_com_request()
@@ -58,8 +51,6 @@ void tick_com_request()
 				handleHotspotRequest(com_requestbuffer,com_buffer);
 				break;
 		}
-
-
 		com_request=0;
 	}
 	taskEXIT_CRITICAL();
@@ -67,6 +58,7 @@ void tick_com_request()
 
 static void handleCPSRequest()
 {
+	//Handle read
 	if (com_requestbuffer[0]=='R') // 'R' read data (com_requestbuffer[1]: 1 => external flash, 2 => EEPROM)
 	{
 		uint32_t address=(com_requestbuffer[2]<<24)+(com_requestbuffer[3]<<16)+(com_requestbuffer[4]<<8)+(com_requestbuffer[5]<<0);
@@ -103,6 +95,7 @@ static void handleCPSRequest()
 			USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, s_ComBuf, 1);
 		}
 	}
+	// Handle Write
 	else if (com_requestbuffer[0]=='W')
 	{
 		bool ok=false;
@@ -112,7 +105,7 @@ static void handleCPSRequest()
 			{
 				sector=(com_requestbuffer[2]<<16)+(com_requestbuffer[3]<<8)+(com_requestbuffer[4]<<0);
 				taskEXIT_CRITICAL();
-				ok = SPI_Flash_read(sector*4096,sectorbuffer,4096);
+				ok = SPI_Flash_read(sector*4096,SPI_Flash_sectorbuffer,4096);
 				taskENTER_CRITICAL();
 			}
 		}
@@ -131,7 +124,7 @@ static void handleCPSRequest()
 				{
 					if (sector==(address+i)/4096)
 					{
-						sectorbuffer[(address+i) % 4096]=com_requestbuffer[i+8];
+						SPI_Flash_sectorbuffer[(address+i) % 4096]=com_requestbuffer[i+8];
 					}
 				}
 
@@ -150,7 +143,7 @@ static void handleCPSRequest()
 					for (int i=0;i<16;i++)
 					{
 						taskEXIT_CRITICAL();
-						ok = SPI_Flash_writePage(sector*4096+i*256,sectorbuffer+i*256);
+						ok = SPI_Flash_writePage(sector*4096+i*256,SPI_Flash_sectorbuffer+i*256);
 						taskENTER_CRITICAL();
 						if (!ok)
 						{
@@ -173,7 +166,6 @@ static void handleCPSRequest()
 			taskEXIT_CRITICAL();
 			ok = EEPROM_Write(address, (uint8_t*)com_requestbuffer+8, length);
 			taskENTER_CRITICAL();
-//		    vTaskDelay(portTICK_PERIOD_MS * 5);
 		}
 
 		if (ok)
@@ -188,6 +180,79 @@ static void handleCPSRequest()
 			s_ComBuf[0] = '-';
 			USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, s_ComBuf, 1);
 		}
+	}
+	// Handle a "Command"
+	else if (com_requestbuffer[0]=='C')
+	{
+		int command = com_requestbuffer[1];
+		switch(command)
+		{
+			case 0:
+				// Show CPS screen
+				menuSystemPushNewMenu(MENU_CPS);
+				break;
+			case 1:
+				// Clear CPS screen
+				menuCPSUpdate(0,0,0,0,0,0,NULL);
+				break;
+			case 2:
+				// Write a line of text to CPS screen
+				menuCPSUpdate(1,com_requestbuffer[2],com_requestbuffer[3],com_requestbuffer[4],com_requestbuffer[5],com_requestbuffer[6],(char *)&com_requestbuffer[7]);
+				break;
+			case 3:
+				// Render CPS screen
+				menuCPSUpdate(2,0,0,0,0,0,NULL);
+				break;
+			case 4:
+				// Turn on the display backlight
+				menuCPSUpdate(3,0,0,0,0,0,NULL);
+				break;
+			case 5:
+				// Close
+				menuCPSUpdate(6,0,0,0,0,0,NULL);
+				break;
+			case 6:
+				{
+					int subCommand= com_requestbuffer[2];
+					// Do some other processing
+					switch(subCommand)
+					{
+						case 0:
+							// save current settings and reboot
+							settingsSaveSettings();// Need to save these channels prior to reboot, as reboot does not save
+							watchdogReboot();
+						break;
+						case 1:
+							//reload VFO from codeplug
+							settingsInitVFOChannel();
+							settingsSaveSettings();// Need to save these channels prior to reboot, as reboot does not save
+							watchdogReboot();
+							break;
+						case 2:
+							// factory reset and reboot
+							settingsRestoreDefaultSettings();// Also saves these new settings, so now need to call settingsSaveSettings
+							watchdogReboot();
+							break;
+						case 3:
+							// flash green LED
+							menuCPSUpdate(4,0,0,0,0,0,NULL);
+							break;
+						case 4:
+							// flash red LED
+							menuCPSUpdate(5,0,0,0,0,0,NULL);
+							break;
+						default:
+							break;
+					}
+				}
+				break;
+			default:
+				break;
+		}
+		// Send something generic back.
+		// Probably need to send a response code in the future
+		s_ComBuf[0] = '-';
+		USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, s_ComBuf, 1);
 	}
 	else
 	{
@@ -255,6 +320,6 @@ void add_to_commbuffer(uint8_t value)
 
 void USB_DEBUG_PRINT(char *str)
 {
-	strcpy(s_ComBuf,str);
+	strcpy((char*)s_ComBuf,str);
 	USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, s_ComBuf, strlen(str));
 }

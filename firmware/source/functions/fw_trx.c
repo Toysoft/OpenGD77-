@@ -28,7 +28,7 @@ bool HR_C6000_datalogging=false;
 
 int trx_measure_count = 0;
 bool trxIsTransmitting = false;
-uint32_t trxTalkGroup = 9;// Set to local TG just in case there is some problem with it not being loaded
+uint32_t trxTalkGroupOrPcId = 9;// Set to local TG just in case there is some problem with it not being loaded
 uint32_t trxDMRID = 0;// Set ID to 0. Not sure if its valid. This value needs to be loaded from the codeplug.
 int txstopdelay = 0;
 
@@ -65,17 +65,24 @@ void trxSetModeAndBandwidth(int mode, bool bandwidthIs25kHz)
 		I2C_AT1846_SetBandwidth();
 		trxUpdateC6000Calibration();
 		trxUpdateAT1846SCalibration();
-		if (currentMode == RADIO_MODE_ANALOG)
+		switch(mode)
 		{
+		case RADIO_MODE_NONE:
+			// not truely off
+			GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 0); // connect AT1846S audio to HR_C6000
+			terminate_sound();
+			terminate_digital();
+			break;
+		case RADIO_MODE_ANALOG:
 			GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 1); // connect AT1846S audio to speaker
 			terminate_sound();
 			terminate_digital();
-		}
-		else
-		{
+			break;
+		case RADIO_MODE_DIGITAL:
 			GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 0); // connect AT1846S audio to HR_C6000
 			init_sound();
 			init_digital();
+			break;
 		}
 	}
 }
@@ -107,9 +114,25 @@ void trx_check_analog_squelch()
 	{
 		uint8_t RX_signal;
 		uint8_t RX_noise;
+		uint8_t squelch=45;
+
 		read_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x1b,&RX_signal,&RX_noise);
 
-		if ((RX_noise < nonVolatileSettings.squelch) || (open_squelch))
+		// check for variable squelch control
+		if (currentChannelData->sql!=0)
+		{
+			if (currentChannelData->sql==1)
+			{
+				open_squelch = true;
+			}
+			else
+			{
+				squelch =  70 - (((currentChannelData->sql-1)*11)>>2);
+				open_squelch = false;
+			}
+		}
+
+		if ((RX_noise < squelch) || (open_squelch))
 		{
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
 			if(!rxCTCSSactive || (rxCTCSSactive & trxCheckCTCSSFlag())|| open_squelch)
@@ -136,7 +159,8 @@ void trxSetFrequency(int frequency)
 
 		if ((currentMode == RADIO_MODE_ANALOG) && (!open_squelch))
 		{
-			squelch = 0x08;
+//			squelch = 0x08;
+			squelch= 0x00;				//don't use internal squelch.
 		}
 		else
 		{

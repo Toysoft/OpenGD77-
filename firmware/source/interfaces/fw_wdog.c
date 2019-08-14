@@ -30,6 +30,7 @@ volatile bool alive_hrc6000task;
 
 int battery_voltage = 0;
 int battery_voltage_tick = 0;
+static bool reboot=false;
 
 void init_watchdog()
 {
@@ -85,7 +86,7 @@ void tick_watchdog()
 	watchdog_refresh_tick++;
 	if (watchdog_refresh_tick==200)
 	{
-		if (alive_maintask && alive_beeptask && alive_hrc6000task)
+		if (alive_maintask && alive_beeptask && alive_hrc6000task && !reboot)
 		{
 	    	WDOG_Refresh(wdog_base);
 		}
@@ -105,4 +106,9 @@ void tick_watchdog()
 		}
 		battery_voltage_tick=0;
 	}
+}
+
+void watchdogReboot()
+{
+	reboot=true;
 }

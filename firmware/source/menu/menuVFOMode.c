@@ -19,8 +19,8 @@
 #include "menu/menuUtilityQSOData.h"
 #include "fw_trx.h"
 #include "fw_settings.h"
-
-
+#include "fw_codeplug.h"
+#include "fw_HR-C6000.h"
 
 enum VFO_SELECTED_FREQUENCY_INPUT  {VFO_SELECTED_FREQUENCY_INPUT_RX , VFO_SELECTED_FREQUENCY_INPUT_TX};
 
@@ -31,18 +31,16 @@ static int selectedFreq = VFO_SELECTED_FREQUENCY_INPUT_RX;
 static struct_codeplugRxGroup_t rxGroupData;
 static struct_codeplugContact_t contactData;
 
-static int FREQ_STEP =	125;// will load from settings
 static int currentIndexInTRxGroup=0;
+static bool displaySquelch=false;
 
 // internal prototypes
-static void updateScreen();
 static void handleEvent(int buttons, int keys, int events);
 
 static void reset_freq_enter_digits();
 static int read_freq_enter_digits();
 static void update_frequency(int tmp_frequency);
 static void stepFrequency(int increment);
-
 
 // public interface
 int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
@@ -51,6 +49,7 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 	{
 		nonVolatileSettings.initialMenuNumber=MENU_VFO_MODE;
 		currentChannelData = &nonVolatileSettings.vfoChannel;
+		settingsCurrentChannelNumber = -1;// This is not a regular channel. Its the special VFO channel!
 
 		trxSetFrequency(currentChannelData->rxFreq);
 		if (currentChannelData->chMode == RADIO_MODE_ANALOG)
@@ -83,11 +82,11 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 				if (contactData.name[0] == 0 || contactData.tgNumber ==0 || contactData.tgNumber > 9999999)
 				{
 					nonVolatileSettings.overrideTG = 9;// If the VFO does not have an Rx Group list assigned to it. We can't get a TG from the codeplug. So use TG 9.
-					trxTalkGroup = nonVolatileSettings.overrideTG;
+					trxTalkGroupOrPcId = nonVolatileSettings.overrideTG;
 				}
 				else
 				{
-					trxTalkGroup = contactData.tgNumber;
+					trxTalkGroupOrPcId = contactData.tgNumber;
 				}
 			}
 			else
@@ -97,11 +96,11 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 		}
 		else
 		{
-			trxTalkGroup = nonVolatileSettings.overrideTG;
+			trxTalkGroupOrPcId = nonVolatileSettings.overrideTG;
 		}
 		reset_freq_enter_digits();
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-		updateScreen();
+		menuVFOModeUpdateScreen(0);
 	}
 	else
 	{
@@ -110,7 +109,7 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 			// is there an incoming DMR signal
 			if (menuDisplayQSODataState != QSO_DISPLAY_IDLE)
 			{
-				updateScreen();
+				menuVFOModeUpdateScreen(0);
 			}
 		}
 		else
@@ -122,7 +121,7 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 	return 0;
 }
 
-static void updateScreen()
+void menuVFOModeUpdateScreen(int txTimeSecs)
 {
 	int val_before_dp;
 	int val_after_dp;
@@ -136,30 +135,67 @@ static void updateScreen()
 	{
 		case QSO_DISPLAY_DEFAULT_SCREEN:
 
+			menuUtilityReceivedPcId = 0x00;
 			if (trxGetMode() == RADIO_MODE_DIGITAL)
 			{
 
 				if (nonVolatileSettings.overrideTG != 0)
 				{
-					sprintf(buffer,"TG %d",trxTalkGroup);
+					if((trxTalkGroupOrPcId>>24) == TG_CALL_FLAG)
+					{
+						sprintf(buffer,"TG %d",(trxTalkGroupOrPcId & 0x00FFFFFF));
+					}
+					else
+					{
+						dmrIdDataStruct_t currentRec;
+						dmrIDLookup((trxTalkGroupOrPcId & 0x00FFFFFF),&currentRec);
+						sprintf(buffer,"%s",currentRec.text);
+					}
 				}
 				else
 				{
 					codeplugUtilConvertBufToString(contactData.name,buffer,16);
 				}
-				UC1701_printCentered(16,buffer,UC1701_FONT_GD77_8x16);
+
+				if (trxIsTransmitting)
+				{
+//					sprintf(buffer,"%dmW",((nonVolatileSettings.txPower-790)*50)/23);// Approximate calculation.
+//					UC1701_printCentered(0, buffer,UC1701_FONT_6X8);
+
+					UC1701_printCentered(32,buffer,UC1701_FONT_GD77_8x16);
+				}
+				else
+				{
+					UC1701_printCentered(16,buffer,UC1701_FONT_GD77_8x16);
+				}
+			}
+			else if(displaySquelch)
+			{
+				sprintf(buffer,"Squelch");
+				UC1701_printAt(0,16,buffer,UC1701_FONT_GD77_8x16);
+				int bargraph= 1 + ((currentChannelData->sql-1)*5)/2 ;
+				UC1701_fillRect(62,21,bargraph,8,false);
+				displaySquelch=false;
 			}
 
 			if (freq_enter_idx==0)
 			{
-				val_before_dp = currentChannelData->rxFreq/10000;
-				val_after_dp = currentChannelData->rxFreq - val_before_dp*10000;
-				sprintf(buffer,"%cR %d.%04d MHz", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_RX)?'>':' ',val_before_dp, val_after_dp);
-				UC1701_printCentered(32, buffer,UC1701_FONT_GD77_8x16);
+				if (!trxIsTransmitting)
+				{
+					val_before_dp = currentChannelData->rxFreq/10000;
+					val_after_dp = currentChannelData->rxFreq - val_before_dp*10000;
+					sprintf(buffer,"%cR %d.%04d MHz", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_RX)?'>':' ',val_before_dp, val_after_dp);
+					UC1701_printCentered(32, buffer,UC1701_FONT_GD77_8x16);
+				}
+				else
+				{
+					sprintf(buffer," %d ",txTimeSecs);
+					UC1701_printCentered(0, buffer,UC1701_FONT_16x32);
+				}
 
 				val_before_dp = currentChannelData->txFreq/10000;
 				val_after_dp = currentChannelData->txFreq - val_before_dp*10000;
-				sprintf(buffer,"%cT %d.%04d MHz", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX)?'>':' ',val_before_dp, val_after_dp);
+				sprintf(buffer,"%cT %d.%04d MHz", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX || trxIsTransmitting)?'>':' ',val_before_dp, val_after_dp);
 				UC1701_printCentered(48, buffer,UC1701_FONT_GD77_8x16);
 			}
 			else
@@ -230,7 +266,16 @@ static void update_frequency(int frequency)
 			currentChannelData->rxFreq = frequency;
 			currentChannelData->txFreq = currentChannelData->txFreq + deltaFrequency;
 			trxSetFrequency(frequency);
-			set_melody(melody_ACK_beep);
+
+			if (!trxCheckFrequencyIsSupportedByTheRadioHardware(currentChannelData->txFreq))
+			{
+				currentChannelData->txFreq = frequency;
+				set_melody(melody_ERROR_beep);
+			}
+			else
+			{
+				set_melody(melody_ACK_beep);
+			}
 		}
 		else
 		{
@@ -253,6 +298,10 @@ static void handleEvent(int buttons, int keys, int events)
 
 	if ((keys & KEY_GREEN)!=0)
 	{
+		if (menuUtilityHandlePrivateCallActions(buttons,keys,events))
+		{
+			return;
+		}
 		if (buttons & BUTTON_SK2 )
 		{
 			menuSystemPushNewMenu(MENU_CHANNEL_DETAILS);
@@ -265,8 +314,11 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_HASH)!=0)
 	{
-		menuSystemPushNewMenu(MENU_NUMERICAL_ENTRY);
-		return;
+		if (trxGetMode() == RADIO_MODE_DIGITAL)
+		{
+			menuSystemPushNewMenu(MENU_NUMERICAL_ENTRY);
+			return;
+		}
 	}
 
 	if (freq_enter_idx==0)
@@ -295,7 +347,7 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 			else
 			{
-				stepFrequency(FREQ_STEP * -1);
+				stepFrequency(VFO_FREQ_STEP_TABLE[(currentChannelData->VFOflag5 >> 4)] * -1);
 			}
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		}
@@ -307,46 +359,92 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 			else
 			{
-				stepFrequency(FREQ_STEP);
+				stepFrequency(VFO_FREQ_STEP_TABLE[(currentChannelData->VFOflag5 >> 4)]);
 			}
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 
 		}
 		else if ((keys & KEY_RED)!=0)
 		{
+			if (menuUtilityHandlePrivateCallActions(buttons,keys,events))
+			{
+				return;
+			}
 			menuSystemSetCurrentMenu(MENU_CHANNEL_MODE);
 			return;
 		}
 		else if ((keys & KEY_RIGHT)!=0)
 		{
-			currentIndexInTRxGroup++;
-			if (currentIndexInTRxGroup > (rxGroupData.NOT_IN_MEMORY_numTGsInGroup -1))
+			if (trxGetMode() == RADIO_MODE_DIGITAL)
 			{
-				currentIndexInTRxGroup =  0;
+				currentIndexInTRxGroup++;
+				if (currentIndexInTRxGroup > (rxGroupData.NOT_IN_MEMORY_numTGsInGroup -1))
+				{
+					currentIndexInTRxGroup =  0;
+				}
+				codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
+
+				nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
+				trxTalkGroupOrPcId = contactData.tgNumber;
+
+				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+				menuVFOModeUpdateScreen(0);
 			}
-			codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
+			else
+			{
+				if(currentChannelData->sql==0)			//If we were using default squelch level
+				{
+					currentChannelData->sql=10;			//start the adjustment from that point.
+				}
+				else
+				{
+					if (currentChannelData->sql < CODEPLUG_MAX_VARIABLE_SQUELCH)
 
-			nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
-			trxTalkGroup = contactData.tgNumber;
+					{
+						currentChannelData->sql++;
+					}
+				}
 
-			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-			updateScreen();
+				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+				displaySquelch=true;
+				menuVFOModeUpdateScreen(0);
+			}
 		}
 		else if ((keys & KEY_LEFT)!=0)
 		{
-			// To Do change TG in on same channel freq
-			currentIndexInTRxGroup--;
-			if (currentIndexInTRxGroup < 0)
+			if (trxGetMode() == RADIO_MODE_DIGITAL)
 			{
-				currentIndexInTRxGroup =  rxGroupData.NOT_IN_MEMORY_numTGsInGroup - 1;
+				// To Do change TG in on same channel freq
+				currentIndexInTRxGroup--;
+				if (currentIndexInTRxGroup < 0)
+				{
+					currentIndexInTRxGroup =  rxGroupData.NOT_IN_MEMORY_numTGsInGroup - 1;
+				}
+
+				codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
+				nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
+				trxTalkGroupOrPcId = contactData.tgNumber;
+
+				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+				menuVFOModeUpdateScreen(0);
 			}
-
-			codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
-			nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
-			trxTalkGroup = contactData.tgNumber;
-
-			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-			updateScreen();
+			else
+			{
+				if(currentChannelData->sql==0)			//If we were using default squelch level
+				{
+					currentChannelData->sql=10;			//start the adjustment from that point.
+				}
+				else
+				{
+					if (currentChannelData->sql > CODEPLUG_MIN_VARIABLE_SQUELCH)
+					{
+						currentChannelData->sql--;
+					}
+				}
+				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+				displaySquelch=true;
+				menuVFOModeUpdateScreen(0);
+			}
 		}
 	}
 	else
@@ -429,7 +527,7 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 	}
 
-	updateScreen();
+	menuVFOModeUpdateScreen(0);
 }
 
 static void stepFrequency(int increment)

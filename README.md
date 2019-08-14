@@ -1,6 +1,25 @@
 # OpenGD77
 New GD-77 open source firmware written from scratch.
 
+# Project status
+
+The project is currently in a stabilizing phase and on feature freeze. Please see the road map below for details.
+This is to make sure that we use our development time in a coordinated way and make the most of it. Please keep in mind that the project is run on our free time.
+
+Your contribution is welcome in all areas. But please understand that in the current phase our priority is on testing, bug reports and bug fixes. Ideas for changes and/or features will get recorded but have to wait for now.
+If you want to contribute coding please get in touch first, so we can coordinate the work. To keep integration efforts manageable we need to follow a development process.
+
+# Road map
+- Tests / fix bugs.
+- Stabilize / refactor.
+- Implement TX tier 2.
+- Implement hotspot mode.
+
+# Long term goals
+- Rework the core system and its architecture.
+- Implement internal reference test system.
+- Improve overall UI concept. 
+
 # Details
 firmware:
   Most current development version.

@@ -17,11 +17,11 @@
  */
 #include "menu/menuSystem.h"
 #include "fw_settings.h"
-
+#include "fw_wdog.h"
 
 static void updateScreen();
 static void handleEvent(int buttons, int keys, int events);
-static const int NUM_MENUS=5;
+static const int NUM_MENUS=6;
 static bool	doFactoryReset;
 static const int MAX_SAFE_POWER = 3000;// Note 3000 gives about 5.5W on 144Mhz on one of Roger's radios.
 
@@ -108,6 +108,16 @@ static void updateScreen()
 				strcpy(buf,"Calibration:OFF");
 			}
 			break;
+		case 5:// Tx Freq limits
+			if (nonVolatileSettings.txFreqLimited!=0)
+			{
+				strcpy(buf,"Band Limits:ON");
+			}
+			else
+			{
+				strcpy(buf,"Band Limits:OFF");
+			}
+			break;
 		}
 		if (gMenusCurrentItemIndex==mNum)
 		{
@@ -163,7 +173,9 @@ static void handleEvent(int buttons, int keys, int events)
 			case 4:
 				nonVolatileSettings.useCalibration=0x01;
 				break;
-
+			case 5:
+				nonVolatileSettings.txFreqLimited=0x01;
+				break;
 		}
 	}
 	else if ((keys & KEY_LEFT)!=0)
@@ -188,6 +200,9 @@ static void handleEvent(int buttons, int keys, int events)
 			case 4:
 				nonVolatileSettings.useCalibration=0x00;
 				break;
+			case 5:
+				nonVolatileSettings.txFreqLimited=0x00;
+				break;
 		}
 	}
 	else if ((keys & KEY_GREEN)!=0)
@@ -195,6 +210,7 @@ static void handleEvent(int buttons, int keys, int events)
 		if (doFactoryReset==true)
 		{
 			settingsRestoreDefaultSettings();
+			watchdogReboot();
 		}
 		menuSystemPopAllAndDisplayRootMenu();
 		return;

@@ -30,12 +30,13 @@ const int BAND_UHF_MAX 	= 4500000;
 
 static const int STORAGE_BASE_ADDRESS 		= 0x6000;
 static const int STORAGE_BASE_ADDRESS_OLD 	= 0xFF00;
-static const int STORAGE_MAGIC_NUMBER 		= 0x471D;
+static const int STORAGE_MAGIC_NUMBER 		= 0x471F;
 
 settingsStruct_t nonVolatileSettings;
 struct_codeplugChannel_t *currentChannelData;
 struct_codeplugChannel_t channelScreenChannelData={.rxFreq=0};
 int settingsUsbMode = USB_MODE_CPS;
+int settingsCurrentChannelNumber=0;
 
 void settingsSaveSettings()
 {
@@ -64,7 +65,7 @@ void settingsLoadSettings()
 	trxDMRID = codeplugGetUserDMRID();
 }
 
-void initVFOChannel()
+void settingsInitVFOChannel()
 {
 	codeplugVFO_A_ChannelData(&nonVolatileSettings.vfoChannel);
 
@@ -83,7 +84,7 @@ void initVFOChannel()
 		nonVolatileSettings.vfoChannel.rxGroupList=1;
 		nonVolatileSettings.vfoChannel.rxColor = 1;
 		nonVolatileSettings.overrideTG = 9;// Set the override TG to local TG 9
-		trxTalkGroup = nonVolatileSettings.overrideTG;
+		trxTalkGroupOrPcId = nonVolatileSettings.overrideTG;
 	}
 
 	if (!trxCheckFrequencyInAmateurBand(nonVolatileSettings.vfoChannel.rxFreq))
@@ -102,6 +103,7 @@ void settingsRestoreDefaultSettings()
 {
 	nonVolatileSettings.magicNumber=STORAGE_MAGIC_NUMBER;
 	nonVolatileSettings.currentChannelIndexInZone = 0;
+	nonVolatileSettings.currentChannelIndexInAllZone = 1;
 	nonVolatileSettings.currentZone = 0;
 	nonVolatileSettings.backLightTimeout = 5;//0 = never timeout. 1 - 255 time in seconds
 	nonVolatileSettings.displayContrast = 0x0E;
@@ -114,8 +116,8 @@ void settingsRestoreDefaultSettings()
 	nonVolatileSettings.txPower=1600;// intialized to about original firmware LOW
 	nonVolatileSettings.overrideTG=0;// 0 = No override
 	nonVolatileSettings.useCalibration = 0x01;// enable the new calibration system
-	nonVolatileSettings.squelch = 45;// default reasonable value for FM
-	initVFOChannel();
+	nonVolatileSettings.txFreqLimited = 0x01;// Limit Tx frequency to US Amateur bands
+	settingsInitVFOChannel();
 	currentChannelData = &nonVolatileSettings.vfoChannel;// Set the current channel data to point to the VFO data since the default screen will be the VFO
 
 	settingsSaveSettings();

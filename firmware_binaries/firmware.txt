@@ -1,8 +1,26 @@
 Changelog
 =========
 
-V0.3.3 (OpenGD77 Phase 1 - Update 3):
+V0.3.5 (OpenGD77 Phase 1 - Update 5):
+- Updated the timing of the RX/TX switching to exactly match the start of timeslot window.
 <work in progress>
+
+V0.3.4 (OpenGD77 Phase 1 - Update 4):
+- Cleanup.
+- Additional stuff by Roger Clark, VK3KYY / G4KYF and Colin Durbridge, G4EML:
+  - Changes for All Channels Zone and Direct Channel Access. (Colin Durbridge, G4EML)
+  - Change CTCSS Selection Method: Select CTCSS Tones from a list of valid tones. (Colin Durbridge, G4EML)
+  - Fix for EEPROM write delay problem, from Colin G4EML. Removed the 5ms delay after EEPROM write in fw_usb_com.c as that should now also be redundant.
+  - Fix for menu system data inconsistency.
+  - Added hotspot mode (work in progress), currently disabled.
+  - Added USB_DEBUG_PRINT.
+
+V0.3.3 (OpenGD77 Phase 1 - Update 3):
+- Additional stuff by Roger Clark, VK3KYY / G4KYF:
+  - Fix issue with incorrect maximum number of channels per zone.
+  - Improvement for bug when number of Zones is less than 3 (which is the number of lines on the screen). Note this is not the ideal fix in terms of GUI design, but is better than it was before.
+  - Bug fix from Colin G4ELM for the FM green Rx led permanently on, sometimes when switching from DMR to FM.
+  - Add Tx timeout, from value in the codeplug. Tx timer now counts up if TOT is not defined or down from the TOT value is it is defined, and Tx is terminated after the timeout period.
 
 V0.3.2 (OpenGD77 Phase 1 - Update 2):
 - Fixed a bug where DMR RX stopped working due to internally incorrect bandwidth handling.

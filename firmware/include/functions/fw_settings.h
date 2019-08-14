@@ -29,11 +29,13 @@ extern const int BAND_UHF_MIN;
 extern const int BAND_UHF_MAX;
 #define VFO_COUNT 4
 enum USB_MODE { USB_MODE_CPS, USB_MODE_HOTSPOT, USB_MODE_DEBUG};
+extern int settingsCurrentChannelNumber;
 
 typedef struct settingsStruct
 {
 	int 			magicNumber;
 	int16_t			currentChannelIndexInZone;
+	int16_t			currentChannelIndexInAllZone;
 	int16_t			currentZone;
 	uint8_t			backLightTimeout;//0 = never timeout. 1 - 255 time in seconds
 	int8_t			displayContrast;
@@ -44,7 +46,7 @@ typedef struct settingsStruct
 	struct_codeplugChannel_t vfoChannel;
 	uint32_t		overrideTG;
 	uint8_t			useCalibration;
-	uint8_t			squelch;
+	uint8_t			txFreqLimited;
 } settingsStruct_t;
 
 extern settingsStruct_t nonVolatileSettings;
@@ -55,5 +57,6 @@ extern int settingsUsbMode;
 void settingsSaveSettings();
 void settingsLoadSettings();
 void settingsRestoreDefaultSettings();
+void settingsInitVFOChannel();
 
 #endif
