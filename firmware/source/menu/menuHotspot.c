@@ -22,6 +22,7 @@
 #include "fw_usb_com.h"
 #include "fw_trx.h"
 #include "fw_HR-C6000.h"
+#include "dmr/DMRFullLC.h"
 
 #include <SeggerRTT/RTT/SEGGER_RTT.h>
 
@@ -37,6 +38,31 @@ int menuHotspotMode(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
+
+		// Just testing the frame encode and decode functions
+		const uint8_t frameData[] = {	0x0B,0xE6,0x08,0x92,0x13,0xE0,0x20,0xF8,
+										0x12,0xD0,0x9A,0x21,0x44,0x6D,0x5D,0x3F,
+										0x77,0xFD,0x35,0x7E,0x32,0xA8,0x03,0xC8,
+										0x2C,0x70,0x80,0x21,0x6B,0x42,0xB1,0x83,
+										0x15};
+		uint8_t frameDataEncoded[33];
+		memset(frameDataEncoded,0,33);// clear
+		/*
+		false
+		false
+		FLCO_GROUP (0x00000000)
+		0x00 '\0'
+		0x00 '\0'
+		0x0023c52b
+		0x000013ba
+		*/
+		DMRLC_T lc,lcEncodedDecoded;
+		DMRFullLC_decode(frameData, DT_VOICE_LC_HEADER,&lc);
+		DMRFullLC_encode(&lc,frameDataEncoded, DT_VOICE_LC_HEADER);
+		DMRFullLC_decode(frameDataEncoded, DT_VOICE_LC_HEADER,&lcEncodedDecoded);
+		// end of test code
+
+
 		freq_rx = currentChannelData->rxFreq;
 		freq_tx = currentChannelData->txFreq;
 		settingsUsbMode = USB_MODE_HOTSPOT;
@@ -209,7 +235,7 @@ static bool hasTXOverflow()
 
 static int dmrDMOTX_getSpace()
 {
-#warning DONT KNOW WHAT VALUE IS NEEDED HERE
+//#warning DONT KNOW WHAT VALUE IS NEEDED HERE
 	return 64;
 }
 
@@ -219,7 +245,7 @@ static void getStatus(uint8_t* s_ComBuf)
 
  // io.resetWatchdog();
 
-#warning NOT SURE WHAT MODEM STATE DOES
+//#warning NOT SURE WHAT MODEM STATE DOES
 	uint8_t m_modemState=0x00;
 
   // Send all sorts of interesting internal values
@@ -467,9 +493,9 @@ static void getVersion(uint8_t s_ComBuf[])
 	USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, s_ComBuf, s_ComBuf[1]);
 }
 
-bool hotspotModeSendReceivedDMRFrame()
+bool hotspotModeSend_RF_StartFrame()
 {
-/*
+	/*
  	for (int i=0;i<(0x0c+27);i++)
 	{
     	SEGGER_RTT_printf(0, " %02x", DMR_frame_buffer[i]);
@@ -478,14 +504,47 @@ bool hotspotModeSendReceivedDMRFrame()
 */
 
 	taskENTER_CRITICAL();
+
 	memcpy((uint8_t *)com_buffer+3,DMR_frame_buffer,39);// 12 bytes Link Control + 27 bytes AMBE data
 	taskEXIT_CRITICAL();
+
 	com_buffer[0] = MMDVM_FRAME_START;
 	com_buffer[1] = 39 + 3;
 	com_buffer[2] = OPENGD77_DMR_DATA2;
 	USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, (uint8_t *)com_buffer, 39+3);
 	return true;
 }
+
+bool hotspotModeSend_RF_AudioFrame()
+{
+	/*
+ 	for (int i=0;i<(0x0c+27);i++)
+	{
+    	SEGGER_RTT_printf(0, " %02x", DMR_frame_buffer[i]);
+	}
+	SEGGER_RTT_printf(0, "\r\n");
+*/
+
+	taskENTER_CRITICAL();
+
+	memcpy((uint8_t *)com_buffer+3,DMR_frame_buffer,39);// 12 bytes Link Control + 27 bytes AMBE data
+	taskEXIT_CRITICAL();
+
+	com_buffer[0] = MMDVM_FRAME_START;
+	com_buffer[1] = 39 + 3;
+	com_buffer[2] = OPENGD77_DMR_DATA2;
+	USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, (uint8_t *)com_buffer, 39+3);
+	return true;
+}
+
+bool hotspotModeReceiveNetFrame(uint8_t *com_requestbuffer,uint8_t *s_ComBuf, int timeSlot)
+{
+	DMRLC_T lc;
+	DMRFullLC_decode(com_requestbuffer + 4U, DT_VOICE_LC_HEADER,&lc);
+	sendACK(s_ComBuf);
+	return true;
+}
+
 
 void handleHotspotRequest(uint8_t com_requestbuffer[],uint8_t s_ComBuf[])
 {
@@ -557,7 +616,8 @@ void handleHotspotRequest(uint8_t com_requestbuffer[],uint8_t s_ComBuf[])
 				break;
 			case MMDVM_DMR_DATA1:
 				SEGGER_RTT_printf(0, "MMDVM_DMR_DATA1\r\n");
-				sendACK(s_ComBuf);
+				hotspotModeReceiveNetFrame(com_requestbuffer,s_ComBuf,1);
+
 				break;
 			case MMDVM_DMR_LOST1:
 				SEGGER_RTT_printf(0, "MMDVM_DMR_LOST1\r\n");
@@ -565,7 +625,7 @@ void handleHotspotRequest(uint8_t com_requestbuffer[],uint8_t s_ComBuf[])
 				break;
 			case MMDVM_DMR_DATA2:
 				SEGGER_RTT_printf(0, "MMDVM_DMR_DATA2\r\n");
-				sendACK(s_ComBuf);
+				hotspotModeReceiveNetFrame(com_requestbuffer,s_ComBuf,2);
 				break;
 			case MMDVM_DMR_LOST2:
 				SEGGER_RTT_printf(0, "MMDVM_DMR_LOST2\r\n");

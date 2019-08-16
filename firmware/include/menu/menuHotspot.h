@@ -20,5 +20,8 @@
 #include "fw_main.h"
 
 void handleHotspotRequest(volatile uint8_t com_requestbuffer[],volatile uint8_t s_ComBuf[]);
+bool hotspotModeSend_RF_StartFrame();
+bool hotspotModeSend_RF_AudioFrame();
+bool hotspotModeReceiveNetFrame(int timeSlot);
 
 #endif

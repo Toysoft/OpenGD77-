@@ -21,6 +21,7 @@
 #include "fw_HR-C6000.h"
 #include "menu/menuUtilityQSOData.h"
 #include "fw_settings.h"
+#include "menu/menuHotspot.h"
 
 #if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
 #include <SeggerRTT/RTT/SEGGER_RTT.h>
@@ -448,6 +449,7 @@ void tick_HR_C6000()
 		write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xE3); // TX and RX enable
 		write_SPI_page_reg_byte_SPI0(0x04, 0x21, 0xA2); // reset vocoder codingbuffer
 		write_SPI_page_reg_byte_SPI0(0x04, 0x22, 0x86); // I2S master encode start
+
 		slot_state = DMR_STATE_TX_START_1;
 	}
 
@@ -557,8 +559,18 @@ void tick_HR_C6000()
 			memset(DMR_frame_buffer+0x0C, 0, 27);
 			if (trxIsTransmitting)
 			{
+
 				tick_TXsoundbuffer();
+
 				tick_codec_encode(DMR_frame_buffer+0x0C);
+
+//				const uint8_t dummyAudioData[27] = {0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55};
+				const uint8_t dummyAudioData[27] = {0x1	,0x2	,0x3	,0x4	,0x5	,0x6	,0x7	,0x8	,0x9	,0xA	,0xB	,0xC	,0xD	,0xE	,0xF	,0x10	,0x11	,0x12	,0x13	,0x14	,0x15	,0x16	,0x17	,0x18	,0x19	,0x1A	,0x1B};
+
+				memcpy(DMR_frame_buffer+0x0c,dummyAudioData,27);//use dummy audio data.
+
+				//memset(DMR_frame_buffer+0x0c,0x00,27);
+
 			}
 
 			write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, DMR_frame_buffer+0x0C, 27);
@@ -693,9 +705,9 @@ void tick_HR_C6000()
                 	store_qsodata();
                 	init_codec();
                 	skip_count = 0;
-#if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
+//#if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
             	SEGGER_RTT_printf(0, ">>> START\r\n");
-#endif
+//#endif
                 }
     			// Stop RX
                 if ((sc==2) && (rxdt==2) && callAcceptFilter())
@@ -714,17 +726,25 @@ void tick_HR_C6000()
                 // Detect/decode voice packet and transfer it into the output soundbuffer
                 if ((slot_state != DMR_STATE_IDLE) && (skip_count==0) && (sc!=2) && ((rxdt & 0x07) >= 0x01) && ((rxdt & 0x07) <= 0x06))
                 {
+                	SEGGER_RTT_printf(0, ">>> Audio frame\r\n");
                 	store_qsodata();
                     read_SPI_page_reg_bytearray_SPI1(0x03, 0x00, DMR_frame_buffer+0x0C, 27);
                     if (settingsUsbMode == USB_MODE_HOTSPOT)
                     {
-                    	hotspotModeSendReceivedDMRFrame();
+                    	hotspotModeSend_RF_StartFrame();
                     }
                     else
                     {
+                    	//const uint8_t dummyAudioData[27] = {0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55};
+                    	//memcpy(DMR_frame_buffer+0x0c,dummyAudioData,27);//use dummy audio data.
+
                     	tick_codec_decode(DMR_frame_buffer+0x0C);
                     	tick_RXsoundbuffer();
                     }
+                }
+                else
+                {
+                	SEGGER_RTT_printf(0, ">>>\r\n");
                 }
 
 #if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
