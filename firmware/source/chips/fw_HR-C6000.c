@@ -570,7 +570,7 @@ void tick_HR_C6000()
                 }
                 else
                 {
-                	memcpy(DMR_frame_buffer+0x0c,&wavbuffer[wavbuffer_read_idx],27);
+                	memcpy(DMR_frame_buffer+0x0c,(uint8_t *)&wavbuffer[wavbuffer_read_idx],27);
                 	wavbuffer_read_idx++;
                 	if (wavbuffer_read_idx >= (WAV_BUFFER_COUNT-1))
             		{

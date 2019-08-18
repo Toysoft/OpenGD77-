@@ -26,15 +26,6 @@ void dmrUtils_byteToBitsBE(unsigned char byte, bool *bits)
 	bits[5U] = (byte & 0x04U) == 0x04U;
 	bits[6U] = (byte & 0x02U) == 0x02U;
 	bits[7U] = (byte & 0x01U) == 0x01U;
-
-	volatile bool debug0 = bits[0U];
-	volatile bool debug1 = bits[1U];
-	volatile bool debug2 = bits[2U];
-	volatile bool debug3 = bits[3U];
-	volatile bool debug4 = bits[4U];
-	volatile bool debug5 = bits[5U];
-	volatile bool debug6 = bits[6U];
-	volatile bool debug7 = bits[7U];
 }
 
 void dmrUtils_byteToBitsLE(unsigned char byte, bool *bits)
