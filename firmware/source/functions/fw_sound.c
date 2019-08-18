@@ -196,6 +196,7 @@ int wavbuffer_read_idx;
 int wavbuffer_write_idx;
 volatile int wavbuffer_count;
 uint8_t tmp_wavbuffer[WAV_BUFFER_SIZE];
+uint8_t *currentWaveBuffer;
 
 uint8_t spi_sound1[WAV_BUFFER_SIZE*2];
 uint8_t spi_sound2[WAV_BUFFER_SIZE*2];
@@ -266,12 +267,18 @@ void retrieve_soundbuffer()
 
 	if (tmp_wavbuffer_count>0)
 	{
+#if false
+		// There is no need to make a copy of the current wave buffer to send it to the encoded,
+		// just pass a pointer to the wave buffer in question
 		taskENTER_CRITICAL();
 		for (int wav_idx=0;wav_idx<WAV_BUFFER_SIZE;wav_idx++)
 		{
+
 			tmp_wavbuffer[wav_idx]=wavbuffer[wavbuffer_read_idx][wav_idx];
 		}
 		taskEXIT_CRITICAL();
+#endif
+		currentWaveBuffer = (uint8_t *)wavbuffer[wavbuffer_read_idx];// cast just to prevent compiler warning
 		wavbuffer_read_idx++;
 		if (wavbuffer_read_idx>=WAV_BUFFER_COUNT)
 		{
@@ -284,6 +291,8 @@ void retrieve_soundbuffer()
 	}
 }
 
+
+// This function is used when receiving
 void send_sound_data()
 {
 	if (wavbuffer_count>0)
@@ -329,6 +338,7 @@ void send_sound_data()
 	}
 }
 
+// This function is used during transmission.
 void receive_sound_data()
 {
 	if (trxIsTransmitting==false)

@@ -537,7 +537,10 @@ void tick_HR_C6000()
 			slot_state = DMR_STATE_TX_START_5;
 			break;
 		case DMR_STATE_TX_START_5: // Start TX (sixth step)
-			tick_TXsoundbuffer();
+            if (settingsUsbMode != USB_MODE_HOTSPOT)
+            {
+            	tick_TXsoundbuffer();
+            }
 			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);
 			write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x10);
 			tx_sequence=0;
@@ -560,17 +563,30 @@ void tick_HR_C6000()
 			if (trxIsTransmitting)
 			{
 
-				tick_TXsoundbuffer();
+                if (settingsUsbMode != USB_MODE_HOTSPOT)
+                {
+                	tick_TXsoundbuffer();
+    				tick_codec_encode(DMR_frame_buffer+0x0C);
+                }
+                else
+                {
+                	memcpy(DMR_frame_buffer+0x0c,&wavbuffer[wavbuffer_read_idx],27);
+                	wavbuffer_read_idx++;
+                	if (wavbuffer_read_idx >= (WAV_BUFFER_COUNT-1))
+            		{
+                		wavbuffer_read_idx=0;
+            		}
+                }
 
-				tick_codec_encode(DMR_frame_buffer+0x0C);
-
+#if false
 //				const uint8_t dummyAudioData[27] = {0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55,0xAA,0x55};
-//				const uint8_t dummyAudioData[27] = {0x1	,0x2	,0x3	,0x4	,0x5	,0x6	,0x7	,0x8	,0x9	,0xA	,0xB	,0xC	,0xD	,0xE	,0xF	,0x10	,0x11	,0x12	,0x13	,0x14	,0x15	,0x16	,0x17	,0x18	,0x19	,0x1A	,0x1B};
+				const uint8_t dummyAudioData[27] = {0x1	,0x2	,0x3	,0x4	,0x5	,0x6	,0x7	,0x8	,0x9	,0xA	,0xB	,0xC	,0xD	,0xE	,0xF	,0x10	,0x11	,0x12	,0x13	,0x14	,0x15	,0x16	,0x17	,0x18	,0x19	,0x1A	,0x1B};
+//				memset(DMR_frame_buffer+0x0c,0x00,27);
+				memcpy(DMR_frame_buffer+0x0c,dummyAudioData,27);//use dummy audio data.
+//				memset(tmp_wavbuffer,0,WAV_BUFFER_SIZE);
+#else
 
-//				memcpy(DMR_frame_buffer+0x0c,dummyAudioData,27);//use dummy audio data.
-
-				//memset(DMR_frame_buffer+0x0c,0x00,27);
-
+#endif
 			}
 
 			write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, DMR_frame_buffer+0x0C, 27);
@@ -705,9 +721,9 @@ void tick_HR_C6000()
                 	store_qsodata();
                 	init_codec();
                 	skip_count = 0;
-//#if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
+#if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
             	SEGGER_RTT_printf(0, ">>> START\r\n");
-//#endif
+#endif
                 }
     			// Stop RX
                 if ((sc==2) && (rxdt==2) && callAcceptFilter())
@@ -726,12 +742,14 @@ void tick_HR_C6000()
                 // Detect/decode voice packet and transfer it into the output soundbuffer
                 if ((slot_state != DMR_STATE_IDLE) && (skip_count==0) && (sc!=2) && ((rxdt & 0x07) >= 0x01) && ((rxdt & 0x07) <= 0x06))
                 {
+#if false
                 	SEGGER_RTT_printf(0, ">>> Audio frame\r\n");
+#endif
                 	store_qsodata();
                     read_SPI_page_reg_bytearray_SPI1(0x03, 0x00, DMR_frame_buffer+0x0C, 27);
                     if (settingsUsbMode == USB_MODE_HOTSPOT)
                     {
-                    	hotspotModeSend_RF_StartFrame();
+                    	//hotspotModeSend_RF_StartFrame();
                     }
                     else
                     {

@@ -121,7 +121,7 @@ void tick_codec_encode(uint8_t *outdata_ptr)
 		retrieve_soundbuffer();
 
 		r0 = (int)bitbuffer_encode;
-		r2 = (int)tmp_wavbuffer;
+		r2 = (int)currentWaveBuffer;//tmp_wavbuffer;
 		r1 = AMBE_ENCODE_BUFFER;
 
 		asm volatile (
@@ -144,7 +144,7 @@ void tick_codec_encode(uint8_t *outdata_ptr)
 		retrieve_soundbuffer();
 
 		r0 = (int)bitbuffer_encode;
-		r2 = (int)tmp_wavbuffer;
+		r2 = (int)currentWaveBuffer;//tmp_wavbuffer;
 		r1 = AMBE_ENCODE_BUFFER;
 
 		asm volatile (

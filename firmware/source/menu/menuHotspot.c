@@ -26,19 +26,189 @@
 
 #include <SeggerRTT/RTT/SEGGER_RTT.h>
 
+
+#define MMDVM_FRAME_START    0xE0
+
+#define MMDVM_GET_VERSION   0x00
+#define MMDVM_GET_STATUS    0x01
+#define MMDVM_SET_CONFIG    0x02
+#define MMDVM_SET_MODE      0x03
+#define MMDVM_SET_FREQ      0x04
+#define MMDVM_CAL_DATA      0x08
+#define MMDVM_RSSI_DATA     0x09
+#define MMDVM_SEND_CWID     0x0A
+
+#define MMDVM_DMR_DATA1     0x18
+#define MMDVM_DMR_LOST1     0x19
+#define MMDVM_DMR_DATA2     0x1AU
+#define MMDVM_DMR_LOST2     0x1BU
+#define MMDVM_DMR_SHORTLC   0x1CU
+#define MMDVM_DMR_START     0x1DU
+#define MMDVM_DMR_ABORT     0x1EU
+
+#define MMDVM_ACK           0x70U
+#define MMDVM_NAK           0x7FU
+#define MMDVM_SERIAL        0x80U
+#define MMDVM_TRANSPARENT   0x90U
+#define MMDVM_QSO_INFO      0x91U
+#define MMDVM_DEBUG1        0xF1U
+#define MMDVM_DEBUG2        0xF2U
+#define MMDVM_DEBUG3        0xF3U
+#define MMDVM_DEBUG4        0xF4U
+#define MMDVM_DEBUG5        0xF5U
+#define PROTOCOL_VERSION    1U
+
 uint32_t freq_rx;
 uint32_t freq_tx;
 uint8_t rf_power;
+uint32_t savedTGorPC;
+int savedPower;
+
+enum MMDVM_STATE {
+  STATE_IDLE      = 0,
+  STATE_DSTAR     = 1,
+  STATE_DMR       = 2,
+  STATE_YSF       = 3,
+  STATE_P25       = 4,
+  STATE_NXDN      = 5,
+  STATE_POCSAG    = 6,
+
+  // Dummy states start at 90
+  STATE_DMRDMO1K  = 92,
+  STATE_RSSICAL   = 96,
+  STATE_CWID      = 97,
+  STATE_DMRCAL    = 98,
+  STATE_DSTARCAL  = 99,
+  STATE_INTCAL    = 100,
+  STATE_POCSAGCAL = 101
+} modemState = STATE_IDLE;
 
 
 static void updateScreen();
 static void handleEvent(int buttons, int keys, int events);
 
+bool tmpIsTransmitting = false;
+
+static void sendACK(uint8_t* s_ComBuf)
+{
+//  SEGGER_RTT_printf(0, "sendACK\r\n");
+  s_ComBuf[0U] = MMDVM_FRAME_START;
+  s_ComBuf[1U] = 4U;
+  s_ComBuf[2U] = MMDVM_ACK;
+  s_ComBuf[3U] = com_requestbuffer[2U];
+  USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, s_ComBuf, s_ComBuf[1]);
+}
+
+static void sendNAK(uint8_t* s_ComBuf,uint8_t err)
+{
+	SEGGER_RTT_printf(0, "sendNAK\r\n");
+  s_ComBuf[0U] = MMDVM_FRAME_START;
+  s_ComBuf[1U] = 5U;
+  s_ComBuf[2U] = MMDVM_NAK;
+  s_ComBuf[3U] = com_requestbuffer[2U];
+  s_ComBuf[4U] = err;
+  USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, s_ComBuf, s_ComBuf[1]);
+}
+
+
+static void enableTransmission()
+{
+	SEGGER_RTT_printf(0, "enableTransmission\n");
+	// turn on the transmitter
+	GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
+	GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 1);
+
+	trxSetFrequency(currentChannelData->txFreq);
+	txstopdelay=0;
+	trxIsTransmitting=true;
+	tmpIsTransmitting = true;
+
+	trx_setTX();
+	if (trxGetMode() == RADIO_MODE_ANALOG)
+	{
+		trx_activateTX();
+	}
+}
+
+bool hotspotModeReceiveNetFrame(uint8_t *com_requestbuffer,uint8_t *s_ComBuf, int timeSlot)
+{
+	DMRLC_T lc;
+	DMRFullLC_decode(com_requestbuffer + 4U, DT_VOICE_LC_HEADER,&lc);
+
+
+	if (lc.srcId!=0 && lc.dstId!=0)
+	{
+		if 	(!trxIsTransmitting)
+		{
+			trxTalkGroupOrPcId  = lc.dstId;
+			trxDMRID = lc.srcId;
+			wavbuffer_read_idx=0;
+			wavbuffer_write_idx=0;
+
+			enableTransmission();
+		}
+
+		SEGGER_RTT_printf(0, "Net frame FID:%d FLCO:%d PF:%d R:%d dstId:%d src:Id:%d options:0x%02x\n",lc.FID,lc.FLCO,lc.PF,lc.R,lc.dstId,lc.srcId,lc.options);
+	}
+	else
+	{
+		//SEGGER_RTT_printf(0, "Net frame would not decode\n");
+	}
+
+	memcpy(wavbuffer[wavbuffer_read_idx],com_requestbuffer+4,13);//copy the first 13 bytes
+	wavbuffer[wavbuffer_read_idx][13] = (com_requestbuffer[17] & 0xF0) | (com_requestbuffer[23] & 0x0F);
+	memcpy(&wavbuffer[wavbuffer_read_idx][14],(uint8_t *)&com_requestbuffer[24],13);//copy the last 13 bytes
+
+
+	SEGGER_RTT_printf(0, "Audio");
+	for (int i=0;i<27;i++)
+	{
+    	SEGGER_RTT_printf(0, " %02x", wavbuffer[wavbuffer_read_idx][i]);
+	}
+	SEGGER_RTT_printf(0, "\n");
+
+	wavbuffer_write_idx++;
+	if (wavbuffer_write_idx > (WAV_BUFFER_COUNT - 1))
+	{
+		wavbuffer_write_idx=0;
+	}
+
+	sendACK(s_ComBuf);
+	return true;
+}
+
+
 int menuHotspotMode(int buttons, int keys, int events, bool isFirstRun)
 {
+	const uint8_t test[] = {0xE0,0x25,0x1A,0x20,
+							0x51,0xA1,0x52,0xA2,0x53,0xA3,0x54,0xA4,0x55,0xA5,0x56,0xA6,0x57,
+							0xA7,
+							0xF7,0xD5,0xDD,0x17,0xDF,
+							0xD7,
+							0x58,0xA8,0x59,0xA9,0x5A,0xAA,0x5B,0xAB,0x5C,0xAC,0x5D,0xAD,0x5E};
 	if (isFirstRun)
 	{
 
+		memcpy(wavbuffer[wavbuffer_read_idx],test+4,13);//copy the first 13 bytes
+		wavbuffer[wavbuffer_read_idx][13] = (test[17] & 0xF0) | (test[23] & 0x0F);
+		memcpy(&wavbuffer[wavbuffer_read_idx][14],(uint8_t *)&test[24],13);//copy the last 13 bytes
+
+		SEGGER_RTT_printf(0, "Audio");
+		for (int i=0;i<27;i++)
+		{
+	    	SEGGER_RTT_printf(0, " %02x", wavbuffer[wavbuffer_read_idx][i]);
+		}
+		SEGGER_RTT_printf(0, "\n");
+
+
+
+		savedPower = nonVolatileSettings.txPower;
+		nonVolatileSettings.txPower=800;// set very low power for testing
+		savedTGorPC = trxTalkGroupOrPcId;// Save the current TG or PC
+
+		trxTalkGroupOrPcId=0;
+
+#if false
 		// Just testing the frame encode and decode functions
 		const uint8_t frameData[] = {	0x0B,0xE6,0x08,0x92,0x13,0xE0,0x20,0xF8,
 										0x12,0xD0,0x9A,0x21,0x44,0x6D,0x5D,0x3F,
@@ -61,7 +231,7 @@ int menuHotspotMode(int buttons, int keys, int events, bool isFirstRun)
 		DMRFullLC_encode(&lc,frameDataEncoded, DT_VOICE_LC_HEADER);
 		DMRFullLC_decode(frameDataEncoded, DT_VOICE_LC_HEADER,&lcEncodedDecoded);
 		// end of test code
-
+#endif
 
 		freq_rx = currentChannelData->rxFreq;
 		freq_tx = currentChannelData->txFreq;
@@ -104,73 +274,42 @@ static void handleEvent(int buttons, int keys, int events)
 {
 	if ((keys & KEY_RED)!=0)
 	{
+		trxIsTransmitting = false;
+		trx_deactivateTX();
+		trx_setRX();
+		trxTalkGroupOrPcId = savedTGorPC;// restore the current TG or PC
+		nonVolatileSettings.txPower = savedPower;// restore power setting
+		trxDMRID = codeplugGetUserDMRID();
 		settingsUsbMode = USB_MODE_CPS;
+
 		menuSystemPopAllAndDisplayRootMenu();
 		return;
 	}
+
+	if (modemState == STATE_IDLE && tmpIsTransmitting == true)
+	{
+		if (trxIsTransmitting)
+		{
+			trxIsTransmitting=false;
+		}
+
+		if (txstopdelay>0)
+		{
+			txstopdelay--;
+		}
+		else
+		{
+			if ((slot_state < DMR_STATE_TX_START_1))
+			{
+				GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
+				trx_deactivateTX();
+				trx_setRX();
+				tmpIsTransmitting = false;
+			}
+		}
+	}
 }
 
-
-
-#define MMDVM_FRAME_START    0xE0
-
-#define MMDVM_GET_VERSION   0x00
-#define MMDVM_GET_STATUS    0x01
-#define MMDVM_SET_CONFIG    0x02
-#define MMDVM_SET_MODE      0x03
-#define MMDVM_SET_FREQ      0x04
-#define MMDVM_CAL_DATA      0x08
-#define MMDVM_RSSI_DATA     0x09
-#define MMDVM_SEND_CWID     0x0A
-
-#define MMDVM_DMR_DATA1     0x18
-#define MMDVM_DMR_LOST1     0x19
-#define MMDVM_DMR_DATA2     0x1AU
-#define MMDVM_DMR_LOST2     0x1BU
-#define MMDVM_DMR_SHORTLC   0x1CU
-#define MMDVM_DMR_START     0x1DU
-#define MMDVM_DMR_ABORT     0x1EU
-
-#define OPENGD77_DMR_DATA1     0x60
-#define OPENGD77_DMR_LOST1     0x61
-#define OPENGD77_DMR_DATA2     0x62
-#define OPENGD77_DMR_LOST2     0x63
-#define OPENGD77_DMR_SHORTLC   0x64
-#define OPENGD77_DMR_START     0x65
-#define OPENGD77_DMR_ABORT     0x66
-
-#define MMDVM_ACK           0x70U
-#define MMDVM_NAK           0x7FU
-#define MMDVM_SERIAL        0x80U
-#define MMDVM_TRANSPARENT   0x90U
-#define MMDVM_QSO_INFO      0x91U
-#define MMDVM_DEBUG1        0xF1U
-#define MMDVM_DEBUG2        0xF2U
-#define MMDVM_DEBUG3        0xF3U
-#define MMDVM_DEBUG4        0xF4U
-#define MMDVM_DEBUG5        0xF5U
-#define PROTOCOL_VERSION    1U
-
-static void sendACK(uint8_t* s_ComBuf)
-{
-  SEGGER_RTT_printf(0, "sendACK\r\n");
-  s_ComBuf[0U] = MMDVM_FRAME_START;
-  s_ComBuf[1U] = 4U;
-  s_ComBuf[2U] = MMDVM_ACK;
-  s_ComBuf[3U] = com_requestbuffer[2U];
-  USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, s_ComBuf, s_ComBuf[1]);
-}
-
-static void sendNAK(uint8_t* s_ComBuf,uint8_t err)
-{
-	SEGGER_RTT_printf(0, "sendNAK\r\n");
-  s_ComBuf[0U] = MMDVM_FRAME_START;
-  s_ComBuf[1U] = 5U;
-  s_ComBuf[2U] = MMDVM_NAK;
-  s_ComBuf[3U] = com_requestbuffer[2U];
-  s_ComBuf[4U] = err;
-  USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, s_ComBuf, s_ComBuf[1]);
-}
 
 static uint8_t setFreq(const uint8_t* data, uint8_t length)
 {
@@ -205,7 +344,7 @@ const int BAN2_MAX  = 43800000;
 	freq_tx |= data[8U] << 24;
 	freq_tx=freq_tx / 100;
 
-	SEGGER_RTT_printf(0, "Tx freq = %d, Rx freq = %d, Power = %d\n",freq_tx,freq_rx,rf_power);
+
 
 	if ((freq_tx>= BAN1_MIN && freq_tx <= BAN1_MAX) || (freq_tx>= BAN2_MIN && freq_tx <= BAN2_MAX))
 	{
@@ -214,6 +353,7 @@ const int BAN2_MAX  = 43800000;
 
 	if (trxCheckFrequencyInAmateurBand(freq_rx) && trxCheckFrequencyInAmateurBand(freq_tx))
 	{
+		SEGGER_RTT_printf(0, "Tx freq = %d, Rx freq = %d, Power = %d\n",freq_tx,freq_rx,rf_power);
 		trxSetFrequency(freq_rx);
 	}
 	else
@@ -223,6 +363,7 @@ const int BAN2_MAX  = 43800000;
 
   return 0x00;
 }
+
 
 static bool hasRXOverflow()
 {
@@ -243,23 +384,13 @@ static void getStatus(uint8_t* s_ComBuf)
 {
 //	SEGGER_RTT_printf(0, "getStatus\r\n");
 
- // io.resetWatchdog();
-
-//#warning NOT SURE WHAT MODEM STATE DOES
-	uint8_t m_modemState=0x00;
-
   // Send all sorts of interesting internal values
 	s_ComBuf[0U]  = MMDVM_FRAME_START;
 	s_ComBuf[1U]  = 13U;
 	s_ComBuf[2U]  = MMDVM_GET_STATUS;
-
 	s_ComBuf[3U]  = 0x00U;
-
 	s_ComBuf[3U] |= 0x02U;// DMR ENABLED
-
-
-	s_ComBuf[4U]  = m_modemState;
-
+	s_ComBuf[4U]  = modemState;;
 	s_ComBuf[5U]  = trxIsTransmitting  ? 0x01U : 0x00U;
 
 	if (hasRXOverflow())
@@ -283,215 +414,90 @@ static void getStatus(uint8_t* s_ComBuf)
 
 static uint8_t setConfig(const uint8_t* data, uint8_t length)
 {
-	SEGGER_RTT_printf(0, "setConfig\r\n");
-
-/*
-  if (length < 13U)
-    return 4U;
-
- */
-  /*
-  bool ysfLoDev  = (data[0U] & 0x08U) == 0x08U;
-  bool simplex   = (data[0U] & 0x80U) == 0x80U;
-
-  m_debug = (data[0U] & 0x10U) == 0x10U;
-
-  bool dstarEnable  = (data[1U] & 0x01U) == 0x01U;
-  bool dmrEnable    = (data[1U] & 0x02U) == 0x02U;
-  bool ysfEnable    = (data[1U] & 0x04U) == 0x04U;
-  bool p25Enable    = (data[1U] & 0x08U) == 0x08U;
-  bool nxdnEnable   = (data[1U] & 0x10U) == 0x10U;
-  bool pocsagEnable = (data[1U] & 0x20U) == 0x20U;
+	SEGGER_RTT_printf(0, "setConfig \r\n");
 
   uint8_t txDelay = data[2U];
   if (txDelay > 50U)
-    return 4U;
+  {
+	  return 4U;
+  }
 
-  MMDVM_STATE modemState = MMDVM_STATE(data[3U]);
-
-  if (modemState != STATE_IDLE && modemState != STATE_DSTAR && modemState != STATE_DMR && modemState != STATE_YSF && modemState != STATE_P25 && modemState != STATE_NXDN && modemState != STATE_POCSAG && modemState != STATE_DSTARCAL && modemState != STATE_DMRCAL && modemState != STATE_DMRDMO1K && modemState != STATE_INTCAL && modemState != STATE_RSSICAL && modemState != STATE_POCSAGCAL)
-    return 4U;
-  if (modemState == STATE_DSTAR && !dstarEnable)
-    return 4U;
-  if (modemState == STATE_DMR && !dmrEnable)
-    return 4U;
-  if (modemState == STATE_YSF && !ysfEnable)
-    return 4U;
-  if (modemState == STATE_P25 && !p25Enable)
-    return 4U;
-  if (modemState == STATE_NXDN && !nxdnEnable)
-    return 4U;
-  if (modemState == STATE_POCSAG && !pocsagEnable)
-    return 4U;
+  if (data[3U] != STATE_IDLE && data[3U] != STATE_DMR)
+  {
+	  return 4U;// only DMR mode supported
+  }
+  modemState = data[3U];
 
   uint8_t colorCode = data[6U];
   if (colorCode > 15U)
-    return 4U;
-
-#if defined(DUPLEX)
-  uint8_t dmrDelay = data[7U];
-#endif
-
-  m_cwIdTXLevel = data[5U]>>2;
-
-  uint8_t dstarTXLevel  = data[9U];
-  uint8_t dmrTXLevel    = data[10U];
-  uint8_t ysfTXLevel    = data[11U];
-  uint8_t p25TXLevel    = data[12U];
-  uint8_t nxdnTXLevel   = 128U;
-  uint8_t pocsagTXLevel = 128U;
-
-  if (length >= 16U)
-    nxdnTXLevel = data[15U];
-
-  if (length >= 18U)
-    pocsagTXLevel = data[17U];
-
-  io.setDeviations(dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel, nxdnTXLevel, pocsagTXLevel, ysfLoDev);
-
-  m_dstarEnable  = dstarEnable;
-  m_dmrEnable    = dmrEnable;
-  m_ysfEnable    = ysfEnable;
-  m_p25Enable    = p25Enable;
-  m_nxdnEnable   = nxdnEnable;
-  m_pocsagEnable = pocsagEnable;
-
-  if (modemState == STATE_DMRCAL || modemState == STATE_DMRDMO1K || modemState == STATE_RSSICAL || modemState == STATE_INTCAL) {
-    m_dmrEnable = true;
-    m_modemState = STATE_DMR;
-    m_calState = modemState;
-    if (m_firstCal)
-      io.updateCal();
-    if (modemState == STATE_RSSICAL)
-      io.ifConf(STATE_DMR, true);
-  } else if (modemState == STATE_POCSAGCAL) {
-    m_pocsagEnable = true;
-    m_modemState = STATE_POCSAG;
-    m_calState = modemState;
-    if (m_firstCal)
-      io.updateCal();
-  }
-  else {
-    m_modemState = modemState;
-    m_calState = STATE_IDLE;
-  }
-
-  m_duplex      = !simplex;
-
-#if !defined(DUPLEX)
-  if (m_duplex && m_calState == STATE_IDLE && modemState != STATE_DSTARCAL) {
-    DEBUG1("Full duplex not supported with this firmware");
-    return 6U;
-  }
-#endif
-
-  dstarTX.setTXDelay(txDelay);
-  ysfTX.setTXDelay(txDelay);
-  p25TX.setTXDelay(txDelay);
-  nxdnTX.setTXDelay(txDelay);
-  pocsagTX.setTXDelay(txDelay);
-  dmrDMOTX.setTXDelay(txDelay);
-
-#if defined(DUPLEX)
-  dmrTX.setColorCode(colorCode);
-  dmrRX.setColorCode(colorCode);
-  dmrRX.setDelay(dmrDelay);
-  dmrIdleRX.setColorCode(colorCode);
-#endif
-
-  dmrDMORX.setColorCode(colorCode);
-
-  io.setLoDevYSF(ysfLoDev);
-
-  if (!m_firstCal || (modemState != STATE_DMRCAL && modemState != STATE_DMRDMO1K && modemState != STATE_RSSICAL && modemState != STATE_INTCAL && modemState != STATE_POCSAGCAL)) {
-    if(m_dstarEnable)
-      io.ifConf(STATE_DSTAR, true);
-    else if(m_dmrEnable)
-      io.ifConf(STATE_DMR, true);
-    else if(m_ysfEnable)
-      io.ifConf(STATE_YSF, true);
-    else if(m_p25Enable)
-      io.ifConf(STATE_P25, true);
-    else if(m_nxdnEnable)
-      io.ifConf(STATE_NXDN, true);
-    else if(m_pocsagEnable)
-      io.ifConf(STATE_POCSAG, true);
-  }
-
-  io.start();
-#if defined(ENABLE_DEBUG)
-  io.printConf();
-#endif
-
-  if (modemState == STATE_DMRCAL || modemState == STATE_DMRDMO1K || modemState == STATE_RSSICAL || modemState == STATE_INTCAL || modemState == STATE_POCSAGCAL)
-    m_firstCal = true;
-*/
-  return 0U;
-}
-
-uint8_t setMode(const uint8_t* data, uint8_t length)
-{
-	SEGGER_RTT_printf(0, "setMode\r\n");
-	/*
-  if (length < 1U)
   {
     return 4U;
   }
 
-  MMDVM_STATE modemState = MMDVM_STATE(data[0U]);
-  MMDVM_STATE tmpState;
-
-  if (modemState == m_modemState)
-    return 0U;
-
-  if (modemState != STATE_IDLE && modemState != STATE_DSTAR && modemState != STATE_DMR && modemState != STATE_YSF && modemState != STATE_P25 && modemState != STATE_NXDN && modemState != STATE_POCSAG && modemState != STATE_DSTARCAL && modemState != STATE_DMRCAL && modemState != STATE_DMRDMO1K && modemState != STATE_RSSICAL && modemState != STATE_INTCAL && modemState != STATE_POCSAGCAL)
-    return 4U;
-  if (modemState == STATE_DSTAR && !m_dstarEnable)
-    return 4U;
-  if (modemState == STATE_DMR && !m_dmrEnable)
-    return 4U;
-  if (modemState == STATE_YSF && !m_ysfEnable)
-    return 4U;
-  if (modemState == STATE_P25 && !m_p25Enable)
-    return 4U;
-  if (modemState == STATE_NXDN && !m_nxdnEnable)
-    return 4U;
-  if (modemState == STATE_POCSAG && !m_pocsagEnable)
-    return 4U;
-
-  if (modemState == STATE_DMRCAL || modemState == STATE_DMRDMO1K || modemState == STATE_RSSICAL || modemState == STATE_INTCAL) {
-    m_dmrEnable = true;
-    tmpState = STATE_DMR;
-    m_calState = modemState;
-    if (m_firstCal)
-      io.updateCal();
-  } else if (modemState == STATE_POCSAGCAL) {
-    m_pocsagEnable = true;
-    tmpState = STATE_POCSAG;
-    m_calState = modemState;
-    if (m_firstCal)
-      io.updateCal();
-  }
-  else {
-    tmpState  = modemState;
-    m_calState = STATE_IDLE;
-  }
-
-  setMode(tmpState);
-*/
+  /* To Do
+  m_cwIdTXLevel = data[5U]>>2;
+  uint8_t dmrTXLevel    = data[10U];
+  io.setDeviations(dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel, nxdnTXLevel, pocsagTXLevel, ysfLoDev);
+  dmrDMOTX.setTXDelay(txDelay);
+  dmrDMORX.setColorCode(colorCode);
+   */
   return 0U;
 }
+
+
+
+
+uint8_t setMode(const uint8_t* data, uint8_t length)
+{
+	SEGGER_RTT_printf(0, "MMDVM SetMode len:%d %02X %02X %02X %02X %02X %02X %02X %02X\r\n",length,data[0U],data[1U],data[2U],data[3U],data[4U],data[5U],data[6U],data[7U]);
+
+	if (modemState == data[0U])
+	{
+		return 0U;
+	}
+
+	// only supported mode is DMR (or idle)
+	if  (data[0U] != STATE_DMR && data[0U] != STATE_IDLE)
+	{
+		return 4U;
+	}
+
+	// MMDVMHost seems to send setMode commands longer than 1 byte. This seems wrong according to the spec, so we ignore those.
+	if (data[0U] == STATE_IDLE || (length==1 && data[0U] == STATE_DMR))
+	{
+		modemState = data[0U];
+	}
+
+	// MMDVHost on the PC seems to send mode DMR when the transmitter should be turned on and IDLE when it should be turned off.
+	switch(modemState)
+	{
+		case STATE_IDLE:
+			//enableTransmission(false);
+			break;
+		case STATE_DMR:
+			//enableTransmission(true);
+			break;
+		default:
+			break;
+	}
+
+  return 0U;
+}
+
+
 
 static void getVersion(uint8_t s_ComBuf[])
 {
 	SEGGER_RTT_printf(0, "getVersion\r\n");
 
 	const char HOTSPOT_NAME[] = "OpenGD77";
-	s_ComBuf[1]= 4 + strlen(HOTSPOT_NAME) - 1;// minus 1 because there is no terminator
+	s_ComBuf[1]= 4 + strlen(HOTSPOT_NAME);// minus 1 because there is no terminator
 	s_ComBuf[3]= PROTOCOL_VERSION;
 	strcpy((char *)&s_ComBuf[4],HOTSPOT_NAME);
 	USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, s_ComBuf, s_ComBuf[1]);
 }
+
+
 
 bool hotspotModeSend_RF_StartFrame()
 {
@@ -510,7 +516,7 @@ bool hotspotModeSend_RF_StartFrame()
 
 	com_buffer[0] = MMDVM_FRAME_START;
 	com_buffer[1] = 39 + 3;
-	com_buffer[2] = OPENGD77_DMR_DATA2;
+	com_buffer[2] = MMDVM_DMR_DATA2;
 	USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, (uint8_t *)com_buffer, 39+3);
 	return true;
 }
@@ -532,17 +538,19 @@ bool hotspotModeSend_RF_AudioFrame()
 
 	com_buffer[0] = MMDVM_FRAME_START;
 	com_buffer[1] = 39 + 3;
-	com_buffer[2] = OPENGD77_DMR_DATA2;
+	com_buffer[2] = MMDVM_DMR_DATA2;
 	USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, (uint8_t *)com_buffer, 39+3);
 	return true;
 }
 
-bool hotspotModeReceiveNetFrame(uint8_t *com_requestbuffer,uint8_t *s_ComBuf, int timeSlot)
+
+
+static void handleDMRShortLC(uint8_t *com_requestbuffer,uint8_t *s_ComBuf)
 {
-	DMRLC_T lc;
-	DMRFullLC_decode(com_requestbuffer + 4U, DT_VOICE_LC_HEADER,&lc);
-	sendACK(s_ComBuf);
-	return true;
+	SEGGER_RTT_printf(0, "MMDVM ShortLC\n %02X %02X %02X %02X %02X %02X %02X %02X %02X \n",
+							com_requestbuffer[0U],com_requestbuffer[1U],com_requestbuffer[2U],com_requestbuffer[3U],com_requestbuffer[4U],
+							com_requestbuffer[5U],com_requestbuffer[6U],com_requestbuffer[7U],com_requestbuffer[8U]);
+
 }
 
 
@@ -615,7 +623,7 @@ void handleHotspotRequest(uint8_t com_requestbuffer[],uint8_t s_ComBuf[])
 				sendACK(s_ComBuf);
 				break;
 			case MMDVM_DMR_DATA1:
-				SEGGER_RTT_printf(0, "MMDVM_DMR_DATA1\r\n");
+				//SEGGER_RTT_printf(0, "MMDVM_DMR_DATA1\r\n");
 				hotspotModeReceiveNetFrame(com_requestbuffer,s_ComBuf,1);
 
 				break;
@@ -624,7 +632,7 @@ void handleHotspotRequest(uint8_t com_requestbuffer[],uint8_t s_ComBuf[])
 				sendACK(s_ComBuf);
 				break;
 			case MMDVM_DMR_DATA2:
-				SEGGER_RTT_printf(0, "MMDVM_DMR_DATA2\r\n");
+				//SEGGER_RTT_printf(0, "MMDVM_DMR_DATA2\r\n");
 				hotspotModeReceiveNetFrame(com_requestbuffer,s_ComBuf,2);
 				break;
 			case MMDVM_DMR_LOST2:
@@ -633,6 +641,7 @@ void handleHotspotRequest(uint8_t com_requestbuffer[],uint8_t s_ComBuf[])
 				break;
 			case MMDVM_DMR_SHORTLC:
 				SEGGER_RTT_printf(0, "MMDVM_DMR_SHORTLC\r\n");
+				handleDMRShortLC(com_requestbuffer + 3U,s_ComBuf);
 				sendACK(s_ComBuf);
 				break;
 			case MMDVM_DMR_START:
@@ -675,44 +684,15 @@ void handleHotspotRequest(uint8_t com_requestbuffer[],uint8_t s_ComBuf[])
 				SEGGER_RTT_printf(0, "MMDVM_DEBUG5\r\n");
 				sendACK(s_ComBuf);
 				break;
-
-
-			case OPENGD77_DMR_DATA1:
-				SEGGER_RTT_printf(0, "OPENGD77_DMR_DATA1\r\n");
-				sendACK(s_ComBuf);
-				break;
-			case OPENGD77_DMR_LOST1:
-				SEGGER_RTT_printf(0, "OPENGD77_DMR_LOST1\r\n");
-				sendACK(s_ComBuf);
-				break;
-			case OPENGD77_DMR_DATA2:
-				SEGGER_RTT_printf(0, "OPENGD77_DMR_DATA2\r\n");
-				sendACK(s_ComBuf);
-				break;
-			case OPENGD77_DMR_LOST2:
-				SEGGER_RTT_printf(0, "OPENGD77_DMR_LOST2\r\n");
-				sendACK(s_ComBuf);
-				break;
-			case OPENGD77_DMR_SHORTLC:
-				SEGGER_RTT_printf(0, "OPENGD77_DMR_SHORTLC\r\n");
-				sendACK(s_ComBuf);
-				break;
-			case OPENGD77_DMR_START:
-				SEGGER_RTT_printf(0, "OPENGD77_DMR_START\r\n");
-				sendACK(s_ComBuf);
-				break;
-			case OPENGD77_DMR_ABORT:
-				SEGGER_RTT_printf(0, "OPENGD77_DMR_ABORT\r\n");
-				sendACK(s_ComBuf);
-				break;
-
 			default:
+				SEGGER_RTT_printf(0, "Unhandled command type %d\n",com_requestbuffer[2]);
 				sendACK(s_ComBuf);
 				break;
 		}
 	}
 	else
 	{
+		SEGGER_RTT_printf(0, "Invalid start code type %d\n",com_requestbuffer[0]);
 		s_ComBuf[0] = '?';
 		USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, s_ComBuf, 1);
 	}

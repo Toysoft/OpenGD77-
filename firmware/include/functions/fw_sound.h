@@ -62,6 +62,7 @@ extern int wavbuffer_read_idx;
 extern int wavbuffer_write_idx;
 extern volatile int wavbuffer_count;
 extern uint8_t tmp_wavbuffer[WAV_BUFFER_SIZE];
+extern uint8_t *currentWaveBuffer;
 
 extern uint8_t spi_sound1[WAV_BUFFER_SIZE*2];
 extern uint8_t spi_sound2[WAV_BUFFER_SIZE*2];
