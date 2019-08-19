@@ -559,7 +559,7 @@ void tick_HR_C6000()
 			break;
 		case DMR_STATE_TX_2: // Ongoing TX (active timeslot)
 
-			memset(DMR_frame_buffer+0x0C, 0, 27);
+			memset(DMR_frame_buffer+0x0C, 0, 27);// fills the audio buffer with zeros in case there is no real audio
 			if (trxIsTransmitting)
 			{
 
@@ -570,12 +570,20 @@ void tick_HR_C6000()
                 }
                 else
                 {
-                	memcpy(DMR_frame_buffer+0x0c,(uint8_t *)&wavbuffer[wavbuffer_read_idx],27);
-                	wavbuffer_read_idx++;
-                	if (wavbuffer_read_idx >= (WAV_BUFFER_COUNT-1))
-            		{
-                		wavbuffer_read_idx=0;
-            		}
+                	if (wavbuffer_count > 0)
+                	{
+						memcpy(DMR_frame_buffer+0x0c,(uint8_t *)&wavbuffer[wavbuffer_read_idx],27);
+						wavbuffer_read_idx++;
+						if (wavbuffer_read_idx >= (WAV_BUFFER_COUNT-1))
+						{
+							wavbuffer_read_idx=0;
+						}
+						wavbuffer_count--;
+						if (wavbuffer_count<0)
+						{
+							wavbuffer_count = 0;
+						}
+                	}
                 }
 
 #if false

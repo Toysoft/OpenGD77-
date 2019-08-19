@@ -87,7 +87,7 @@ enum MMDVM_STATE {
 static void updateScreen();
 static void handleEvent(int buttons, int keys, int events);
 
-bool tmpIsTransmitting = false;
+volatile bool hotspotModeIsTransmitting = false;
 
 static void sendACK(uint8_t* s_ComBuf)
 {
@@ -113,6 +113,12 @@ static void sendNAK(uint8_t* s_ComBuf,uint8_t err)
 
 static void enableTransmission()
 {
+	if (hotspotModeIsTransmitting || trxIsTransmitting)
+	{
+		return;
+	}
+
+
 	SEGGER_RTT_printf(0, "enableTransmission\n");
 	// turn on the transmitter
 	GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
@@ -121,92 +127,81 @@ static void enableTransmission()
 	trxSetFrequency(currentChannelData->txFreq);
 	txstopdelay=0;
 	trxIsTransmitting=true;
-	tmpIsTransmitting = true;
-
+	hotspotModeIsTransmitting=true;
 	trx_setTX();
-	if (trxGetMode() == RADIO_MODE_ANALOG)
+}
+
+const int TX_BUFFER_MIN_BEFORE_TRANSMISSION = 2;
+
+static void storeNetFrame(uint8_t *com_requestbuffer)
+{
+	const uint8_t END_FRAME_PATTERN[] = {0x5D,0x7F,0x77,0xFD,0x75,0x79};
+
+	if (memcmp((uint8_t *)&com_requestbuffer[18],END_FRAME_PATTERN,6)!=0)
 	{
-		trx_activateTX();
+		SEGGER_RTT_printf(0, "storeNetFrame\n");
+		memcpy((uint8_t *)wavbuffer[wavbuffer_read_idx],com_requestbuffer+4,13);//copy the first 13 bytes
+		wavbuffer[wavbuffer_read_idx][13] = (com_requestbuffer[17] & 0xF0) | (com_requestbuffer[23] & 0x0F);
+		memcpy((uint8_t *)&wavbuffer[wavbuffer_read_idx][14],(uint8_t *)&com_requestbuffer[24],13);//copy the last 13 bytes
+
+		wavbuffer_count++;
+		wavbuffer_write_idx++;
+		if (wavbuffer_write_idx > (WAV_BUFFER_COUNT - 1))
+		{
+			wavbuffer_write_idx=0;
+		}
+	}
+	else
+	{
+		SEGGER_RTT_printf(0, "End frame detected.  %d Frames in the buffer\n",wavbuffer_count);
 	}
 }
 
 bool hotspotModeReceiveNetFrame(uint8_t *com_requestbuffer,uint8_t *s_ComBuf, int timeSlot)
 {
 	DMRLC_T lc;
-	DMRFullLC_decode(com_requestbuffer + 4U, DT_VOICE_LC_HEADER,&lc);
 
+	DMRFullLC_decode(com_requestbuffer + 4U, DT_VOICE_LC_HEADER,&lc);// Need to decode the frame to get the source and destination
 
-	if (lc.srcId!=0 && lc.dstId!=0)
+	// can't start transmitting until we have a valid source and destination Id
+	if (!hotspotModeIsTransmitting)
 	{
-		if 	(!trxIsTransmitting)
+		if 	(lc.srcId!=0 && lc.dstId!=0)
 		{
 			trxTalkGroupOrPcId  = lc.dstId;
 			trxDMRID = lc.srcId;
 			wavbuffer_read_idx=0;
 			wavbuffer_write_idx=0;
-
+			wavbuffer_count=0;
+			SEGGER_RTT_printf(0, "Net frame FID:%d FLCO:%d PF:%d R:%d dstId:%d src:Id:%d options:0x%02x\n",lc.FID,lc.FLCO,lc.PF,lc.R,lc.dstId,lc.srcId,lc.options);
+			storeNetFrame(com_requestbuffer);
 			enableTransmission();
+			sendACK(s_ComBuf);
+			return true;
 		}
-
-		SEGGER_RTT_printf(0, "Net frame FID:%d FLCO:%d PF:%d R:%d dstId:%d src:Id:%d options:0x%02x\n",lc.FID,lc.FLCO,lc.PF,lc.R,lc.dstId,lc.srcId,lc.options);
 	}
 	else
 	{
-		//SEGGER_RTT_printf(0, "Net frame would not decode\n");
-	}
-
-	memcpy(wavbuffer[wavbuffer_read_idx],com_requestbuffer+4,13);//copy the first 13 bytes
-	wavbuffer[wavbuffer_read_idx][13] = (com_requestbuffer[17] & 0xF0) | (com_requestbuffer[23] & 0x0F);
-	memcpy(&wavbuffer[wavbuffer_read_idx][14],(uint8_t *)&com_requestbuffer[24],13);//copy the last 13 bytes
-
-
-	SEGGER_RTT_printf(0, "Audio");
-	for (int i=0;i<27;i++)
-	{
-    	SEGGER_RTT_printf(0, " %02x", wavbuffer[wavbuffer_read_idx][i]);
-	}
-	SEGGER_RTT_printf(0, "\n");
-
-	wavbuffer_write_idx++;
-	if (wavbuffer_write_idx > (WAV_BUFFER_COUNT - 1))
-	{
-		wavbuffer_write_idx=0;
+		storeNetFrame(com_requestbuffer);
 	}
 
 	sendACK(s_ComBuf);
 	return true;
+
 }
 
 
 int menuHotspotMode(int buttons, int keys, int events, bool isFirstRun)
 {
-	const uint8_t test[] = {0xE0,0x25,0x1A,0x20,
-							0x51,0xA1,0x52,0xA2,0x53,0xA3,0x54,0xA4,0x55,0xA5,0x56,0xA6,0x57,
-							0xA7,
-							0xF7,0xD5,0xDD,0x17,0xDF,
-							0xD7,
-							0x58,0xA8,0x59,0xA9,0x5A,0xAA,0x5B,0xAB,0x5C,0xAC,0x5D,0xAD,0x5E};
+
 	if (isFirstRun)
 	{
-
-		memcpy(wavbuffer[wavbuffer_read_idx],test+4,13);//copy the first 13 bytes
-		wavbuffer[wavbuffer_read_idx][13] = (test[17] & 0xF0) | (test[23] & 0x0F);
-		memcpy(&wavbuffer[wavbuffer_read_idx][14],(uint8_t *)&test[24],13);//copy the last 13 bytes
-
-		SEGGER_RTT_printf(0, "Audio");
-		for (int i=0;i<27;i++)
-		{
-	    	SEGGER_RTT_printf(0, " %02x", wavbuffer[wavbuffer_read_idx][i]);
-		}
-		SEGGER_RTT_printf(0, "\n");
-
-
-
 		savedPower = nonVolatileSettings.txPower;
 		nonVolatileSettings.txPower=800;// set very low power for testing
 		savedTGorPC = trxTalkGroupOrPcId;// Save the current TG or PC
-
 		trxTalkGroupOrPcId=0;
+
+		trxSetModeAndBandwidth(RADIO_MODE_DIGITAL,trxGetBandwidthIs25kHz());// hotspot mode is for DMR i.e Digital mode
 
 #if false
 		// Just testing the frame encode and decode functions
@@ -281,12 +276,22 @@ static void handleEvent(int buttons, int keys, int events)
 		nonVolatileSettings.txPower = savedPower;// restore power setting
 		trxDMRID = codeplugGetUserDMRID();
 		settingsUsbMode = USB_MODE_CPS;
-
+		GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
+		GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 1);
 		menuSystemPopAllAndDisplayRootMenu();
 		return;
 	}
 
-	if (modemState == STATE_IDLE && tmpIsTransmitting == true)
+	if (!hotspotModeIsTransmitting && !trxIsTransmitting)
+	{
+		if ((buttons & BUTTON_PTT)!=0)
+		{
+			// To Do. Send dummy transmission so that the TG can be set on the network server.
+		}
+	}
+
+	// Stop transmitting when there is no data in the buffer
+	if (hotspotModeIsTransmitting == true && wavbuffer_count == 0)
 	{
 		if (trxIsTransmitting)
 		{
@@ -304,7 +309,7 @@ static void handleEvent(int buttons, int keys, int events)
 				GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
 				trx_deactivateTX();
 				trx_setRX();
-				tmpIsTransmitting = false;
+				hotspotModeIsTransmitting = false;
 			}
 		}
 	}
@@ -374,11 +379,6 @@ static bool hasTXOverflow()
 	return false;// TO DO.
 }
 
-static int dmrDMOTX_getSpace()
-{
-//#warning DONT KNOW WHAT VALUE IS NEEDED HERE
-	return 64;
-}
 
 static void getStatus(uint8_t* s_ComBuf)
 {
@@ -404,7 +404,7 @@ static void getStatus(uint8_t* s_ComBuf)
 	}
 	s_ComBuf[6U] = 	0U;// No DSTAR
 	s_ComBuf[7U] = 	10U;
-	s_ComBuf[8U] = 	dmrDMOTX_getSpace();
+	s_ComBuf[8U] = 	WAV_BUFFER_COUNT - wavbuffer_count;
 	s_ComBuf[9U] = 	0U;// No YSF
 	s_ComBuf[10U] = 0U;// No P25
 	s_ComBuf[11U] = 0U;// no NXDN
