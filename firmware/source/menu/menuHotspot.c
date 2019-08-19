@@ -139,7 +139,12 @@ static void storeNetFrame(uint8_t *com_requestbuffer)
 
 	if (memcmp((uint8_t *)&com_requestbuffer[18],END_FRAME_PATTERN,6)!=0)
 	{
-		SEGGER_RTT_printf(0, "storeNetFrame\n");
+		//SEGGER_RTT_printf(0, "storeNetFrame\n");
+		for (int i=0;i<37;i++)
+		{
+        	SEGGER_RTT_printf(0, " %02x", com_requestbuffer[i]);
+		}
+    	SEGGER_RTT_printf(0, "\r\n");
 		memcpy((uint8_t *)wavbuffer[wavbuffer_read_idx],com_requestbuffer+4,13);//copy the first 13 bytes
 		wavbuffer[wavbuffer_read_idx][13] = (com_requestbuffer[17] & 0xF0) | (com_requestbuffer[23] & 0x0F);
 		memcpy((uint8_t *)&wavbuffer[wavbuffer_read_idx][14],(uint8_t *)&com_requestbuffer[24],13);//copy the last 13 bytes
@@ -269,15 +274,20 @@ static void handleEvent(int buttons, int keys, int events)
 {
 	if ((keys & KEY_RED)!=0)
 	{
-		trxIsTransmitting = false;
-		trx_deactivateTX();
-		trx_setRX();
+		if (hotspotModeIsTransmitting || trxIsTransmitting)
+		{
+			trxIsTransmitting = false;
+			trx_deactivateTX();
+			trx_setRX();
+
+			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
+			GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
+		}
 		trxTalkGroupOrPcId = savedTGorPC;// restore the current TG or PC
 		nonVolatileSettings.txPower = savedPower;// restore power setting
 		trxDMRID = codeplugGetUserDMRID();
 		settingsUsbMode = USB_MODE_CPS;
-		GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
-		GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 1);
+
 		menuSystemPopAllAndDisplayRootMenu();
 		return;
 	}
@@ -286,7 +296,24 @@ static void handleEvent(int buttons, int keys, int events)
 	{
 		if ((buttons & BUTTON_PTT)!=0)
 		{
+			uint8_t txBuf[37] = {0xE0 ,0x25 ,0x1A ,0x00};
 			// To Do. Send dummy transmission so that the TG can be set on the network server.
+			DMRLC_T lc;
+			lc.srcId = 5053238;
+			lc.dstId = 5057;
+
+			DMRFullLC_encode(&lc, txBuf+4, DT_VOICE_LC_HEADER);
+			for (int i=0;i<37;i++)
+			{
+            	SEGGER_RTT_printf(0, " %02x", txBuf[i]);
+			}
+        	SEGGER_RTT_printf(0, "\r\n");
+
+        	memcpy(com_buffer,txBuf,37);
+        	USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, com_buffer,37);
+
+        	vTaskDelay(portTICK_PERIOD_MS * 10);
+
 		}
 	}
 
