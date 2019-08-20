@@ -39,13 +39,15 @@ int sector = -1;
 
 void tick_com_request()
 {
-	taskENTER_CRITICAL();
+
 	if (com_request==1)
 	{
 		switch (settingsUsbMode)
 		{
 			case USB_MODE_CPS:
+				taskENTER_CRITICAL();
 				handleCPSRequest();
+				taskEXIT_CRITICAL();
 				break;
 			case USB_MODE_HOTSPOT:
 				handleHotspotRequest(com_requestbuffer,com_buffer);
@@ -53,7 +55,7 @@ void tick_com_request()
 		}
 		com_request=0;
 	}
-	taskEXIT_CRITICAL();
+
 }
 
 static void handleCPSRequest()

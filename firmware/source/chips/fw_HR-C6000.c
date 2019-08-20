@@ -442,8 +442,10 @@ void tick_HR_C6000()
 
 	if (trxIsTransmitting==true && (slot_state == DMR_STATE_IDLE)) // Start TX (first step)
 	{
-		init_codec();
-
+		if (settingsUsbMode != USB_MODE_HOTSPOT)
+		{
+			init_codec();
+		}
 		setupPcOrTGHeader();
 
 		write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xE3); // TX and RX enable
@@ -574,14 +576,14 @@ void tick_HR_C6000()
                 	{
 						memcpy(DMR_frame_buffer+0x0c,(uint8_t *)&wavbuffer[wavbuffer_read_idx],27);
 						wavbuffer_read_idx++;
-						if (wavbuffer_read_idx >= (WAV_BUFFER_COUNT-1))
+						if (wavbuffer_read_idx > (WAV_BUFFER_COUNT-1))
 						{
 							wavbuffer_read_idx=0;
 						}
-						wavbuffer_count--;
-						if (wavbuffer_count<0)
+
+						if (wavbuffer_count>0)
 						{
-							wavbuffer_count = 0;
+							wavbuffer_count--;
 						}
                 	}
                 }

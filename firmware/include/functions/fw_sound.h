@@ -58,8 +58,8 @@ extern const uint8_t melody4[];
 #define WAV_BUFFER_COUNT 16
 
 extern volatile uint8_t wavbuffer[WAV_BUFFER_COUNT][WAV_BUFFER_SIZE];
-extern int wavbuffer_read_idx;
-extern int wavbuffer_write_idx;
+extern volatile int wavbuffer_read_idx;
+extern volatile int wavbuffer_write_idx;
 extern volatile int wavbuffer_count;
 extern uint8_t tmp_wavbuffer[WAV_BUFFER_SIZE];
 extern uint8_t *currentWaveBuffer;

@@ -58,13 +58,18 @@
 #define MMDVM_DEBUG5        0xF5U
 #define PROTOCOL_VERSION    1U
 
+const int TX_BUFFER_MIN_BEFORE_TRANSMISSION = 2;
+
+const uint8_t START_FRAME_PATTERN[] = {0xFF,0x57,0xD7,0x5D,0xF5,0xD9};
+const uint8_t END_FRAME_PATTERN[] 	= {0x5D,0x7F,0x77,0xFD,0x75,0x79};
+
 uint32_t freq_rx;
 uint32_t freq_tx;
 uint8_t rf_power;
 uint32_t savedTGorPC;
 int savedPower;
 
-enum MMDVM_STATE {
+volatile enum MMDVM_STATE {
   STATE_IDLE      = 0,
   STATE_DSTAR     = 1,
   STATE_DMR       = 2,
@@ -83,11 +88,16 @@ enum MMDVM_STATE {
   STATE_POCSAGCAL = 101
 } modemState = STATE_IDLE;
 
+volatile enum { HOTSPOT_STATE_INITIALISE,
+				HOTSPOT_STATE_RX,
+				HOTSPOT_STATE_TX_START_BUFFERING,
+				HOTSPOT_STATE_TRANSMITTING,
+				HOTSPOT_STATE_TX_SHUTDOWN } hotspotState;
+
 
 static void updateScreen();
 static void handleEvent(int buttons, int keys, int events);
 
-volatile bool hotspotModeIsTransmitting = false;
 
 static void sendACK(uint8_t* s_ComBuf)
 {
@@ -113,41 +123,37 @@ static void sendNAK(uint8_t* s_ComBuf,uint8_t err)
 
 static void enableTransmission()
 {
-	if (hotspotModeIsTransmitting || trxIsTransmitting)
-	{
-		return;
-	}
+	SEGGER_RTT_printf(0, "EnableTransmission\n");
 
-
-	SEGGER_RTT_printf(0, "enableTransmission\n");
-	// turn on the transmitter
 	GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 	GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 1);
 
 	trxSetFrequency(currentChannelData->txFreq);
 	txstopdelay=0;
 	trxIsTransmitting=true;
-	hotspotModeIsTransmitting=true;
 	trx_setTX();
 }
 
-const int TX_BUFFER_MIN_BEFORE_TRANSMISSION = 2;
 
 static void storeNetFrame(uint8_t *com_requestbuffer)
 {
-	const uint8_t END_FRAME_PATTERN[] = {0x5D,0x7F,0x77,0xFD,0x75,0x79};
 
-	if (memcmp((uint8_t *)&com_requestbuffer[18],END_FRAME_PATTERN,6)!=0)
+	SEGGER_RTT_printf(0, "storeNetFrame\n");
+	if (memcmp((uint8_t *)&com_requestbuffer[18],END_FRAME_PATTERN,6)!=0 && memcmp((uint8_t *)&com_requestbuffer[18],START_FRAME_PATTERN,6)!=0)
 	{
-		//SEGGER_RTT_printf(0, "storeNetFrame\n");
 		for (int i=0;i<37;i++)
 		{
         	SEGGER_RTT_printf(0, " %02x", com_requestbuffer[i]);
 		}
     	SEGGER_RTT_printf(0, "\r\n");
-		memcpy((uint8_t *)wavbuffer[wavbuffer_read_idx],com_requestbuffer+4,13);//copy the first 13 bytes
-		wavbuffer[wavbuffer_read_idx][13] = (com_requestbuffer[17] & 0xF0) | (com_requestbuffer[23] & 0x0F);
-		memcpy((uint8_t *)&wavbuffer[wavbuffer_read_idx][14],(uint8_t *)&com_requestbuffer[24],13);//copy the last 13 bytes
+    	if (wavbuffer_count>=16)
+    	{
+    		SEGGER_RTT_printf(0, "------------------------------ Buffer overflow ---------------------------\n");
+    	}
+    	taskENTER_CRITICAL();
+		memcpy((uint8_t *)wavbuffer[wavbuffer_write_idx],com_requestbuffer+4,13);//copy the first 13 bytes
+		wavbuffer[wavbuffer_write_idx][13] = (com_requestbuffer[17] & 0xF0) | (com_requestbuffer[23] & 0x0F);
+		memcpy((uint8_t *)&wavbuffer[wavbuffer_write_idx][14],(uint8_t *)&com_requestbuffer[24],13);//copy the last 13 bytes
 
 		wavbuffer_count++;
 		wavbuffer_write_idx++;
@@ -155,6 +161,7 @@ static void storeNetFrame(uint8_t *com_requestbuffer)
 		{
 			wavbuffer_write_idx=0;
 		}
+		taskEXIT_CRITICAL();
 	}
 	else
 	{
@@ -169,20 +176,18 @@ bool hotspotModeReceiveNetFrame(uint8_t *com_requestbuffer,uint8_t *s_ComBuf, in
 	DMRFullLC_decode(com_requestbuffer + 4U, DT_VOICE_LC_HEADER,&lc);// Need to decode the frame to get the source and destination
 
 	// can't start transmitting until we have a valid source and destination Id
-	if (!hotspotModeIsTransmitting)
+
+	if 	(lc.srcId!=0 && lc.dstId!=0)
 	{
-		if 	(lc.srcId!=0 && lc.dstId!=0)
+		trxTalkGroupOrPcId  = lc.dstId;
+		trxDMRID = lc.srcId;
+
+		SEGGER_RTT_printf(0, "Net frame FID:%d FLCO:%d PF:%d R:%d dstId:%d src:Id:%d options:0x%02x\n",lc.FID,lc.FLCO,lc.PF,lc.R,lc.dstId,lc.srcId,lc.options);
+
+		if (hotspotState == HOTSPOT_STATE_RX)
 		{
-			trxTalkGroupOrPcId  = lc.dstId;
-			trxDMRID = lc.srcId;
-			wavbuffer_read_idx=0;
-			wavbuffer_write_idx=0;
-			wavbuffer_count=0;
-			SEGGER_RTT_printf(0, "Net frame FID:%d FLCO:%d PF:%d R:%d dstId:%d src:Id:%d options:0x%02x\n",lc.FID,lc.FLCO,lc.PF,lc.R,lc.dstId,lc.srcId,lc.options);
-			storeNetFrame(com_requestbuffer);
-			enableTransmission();
-			sendACK(s_ComBuf);
-			return true;
+			hotspotState = HOTSPOT_STATE_TX_START_BUFFERING;
+			SEGGER_RTT_printf(0, "hotspotModeReceiveNetFrame HOTSPOT_STATE_TX_BUFFERING\n");
 		}
 	}
 	else
@@ -195,12 +200,76 @@ bool hotspotModeReceiveNetFrame(uint8_t *com_requestbuffer,uint8_t *s_ComBuf, in
 
 }
 
+static void hotspotStateMachine()
+{
+	switch(hotspotState)
+	{
+		case HOTSPOT_STATE_INITIALISE:
+			wavbuffer_read_idx=0;
+			wavbuffer_write_idx=0;
+			wavbuffer_count=0;
+			hotspotState = HOTSPOT_STATE_RX;
+			SEGGER_RTT_printf(0, "HOTSPOT_STATE_INITIALISE -> HOTSPOT_STATE_RX\n");
+			break;
+		case HOTSPOT_STATE_RX:
+			wavbuffer_read_idx=0;
+			wavbuffer_write_idx=0;
+			wavbuffer_count=0;
+			// Don't do anything in the state machine for this state at the moment.
+			break;
+		case HOTSPOT_STATE_TX_START_BUFFERING:
+			// If MMDVMHost tells us to go back to idle. (receiving)
+			if (modemState == STATE_IDLE)
+			{
+				hotspotState = HOTSPOT_STATE_INITIALISE;
+				SEGGER_RTT_printf(0, "modemState == STATE_IDLE: HOTSPOT_STATE_TX_START_BUFFERING -> HOTSPOT_STATE_INITIALISE\n");
+			}
+			else
+			{
+				if (wavbuffer_count > 4)
+				{
+					hotspotState = HOTSPOT_STATE_TRANSMITTING;
+					SEGGER_RTT_printf(0, "HOTSPOT_STATE_TX_START_BUFFERING -> HOTSPOT_STATE_TRANSMITTING %d\n",wavbuffer_count);
+					enableTransmission();
+				}
+			}
+			break;
+		case HOTSPOT_STATE_TRANSMITTING:
+			// Stop transmitting when there is no data in the buffer or if MMDVMHost sends the idle command
+			if (wavbuffer_count == 0 || modemState == STATE_IDLE)
+			{
+				hotspotState = HOTSPOT_STATE_TX_SHUTDOWN;
+				SEGGER_RTT_printf(0, "HOTSPOT_STATE_TRANSMITTING -> HOTSPOT_STATE_TX_SHUTDOWN %d %d\n",wavbuffer_count,modemState);
+				trxIsTransmitting=false;
+			}
+			break;
+		case HOTSPOT_STATE_TX_SHUTDOWN:
+			if (txstopdelay>0)
+			{
+				txstopdelay--;
+			}
+			else
+			{
+				if ((slot_state < DMR_STATE_TX_START_1))
+				{
+					GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
+					trx_deactivateTX();
+					trx_setRX();
+					hotspotState = HOTSPOT_STATE_RX;
+					SEGGER_RTT_printf(0, "HOTSPOT_STATE_TX_SHUTDOWN -> HOTSPOT_STATE_RX\n");
+				}
+			}
+			break;
+	}
+}
+
 
 int menuHotspotMode(int buttons, int keys, int events, bool isFirstRun)
 {
 
 	if (isFirstRun)
 	{
+		hotspotState = HOTSPOT_STATE_INITIALISE;
 		savedPower = nonVolatileSettings.txPower;
 		nonVolatileSettings.txPower=800;// set very low power for testing
 		savedTGorPC = trxTalkGroupOrPcId;// Save the current TG or PC
@@ -242,6 +311,9 @@ int menuHotspotMode(int buttons, int keys, int events, bool isFirstRun)
 	{
 		handleEvent(buttons, keys, events);
 	}
+
+	hotspotStateMachine();
+
 	return 0;
 }
 
@@ -274,7 +346,7 @@ static void handleEvent(int buttons, int keys, int events)
 {
 	if ((keys & KEY_RED)!=0)
 	{
-		if (hotspotModeIsTransmitting || trxIsTransmitting)
+		if (trxIsTransmitting)
 		{
 			trxIsTransmitting = false;
 			trx_deactivateTX();
@@ -292,7 +364,7 @@ static void handleEvent(int buttons, int keys, int events)
 		return;
 	}
 
-	if (!hotspotModeIsTransmitting && !trxIsTransmitting)
+	if (hotspotState == HOTSPOT_STATE_RX)
 	{
 		if ((buttons & BUTTON_PTT)!=0)
 		{
@@ -309,35 +381,10 @@ static void handleEvent(int buttons, int keys, int events)
 			}
         	SEGGER_RTT_printf(0, "\r\n");
 
-        	memcpy(com_buffer,txBuf,37);
-        	USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, com_buffer,37);
+        	memcpy((uint8_t *)com_buffer,txBuf,37);
+        	USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, (uint8_t *)com_buffer,37);
 
         	vTaskDelay(portTICK_PERIOD_MS * 10);
-
-		}
-	}
-
-	// Stop transmitting when there is no data in the buffer
-	if (hotspotModeIsTransmitting == true && wavbuffer_count == 0)
-	{
-		if (trxIsTransmitting)
-		{
-			trxIsTransmitting=false;
-		}
-
-		if (txstopdelay>0)
-		{
-			txstopdelay--;
-		}
-		else
-		{
-			if ((slot_state < DMR_STATE_TX_START_1))
-			{
-				GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
-				trx_deactivateTX();
-				trx_setRX();
-				hotspotModeIsTransmitting = false;
-			}
 		}
 	}
 }
@@ -376,16 +423,16 @@ const int BAN2_MAX  = 43800000;
 	freq_tx |= data[8U] << 24;
 	freq_tx=freq_tx / 100;
 
-
+	SEGGER_RTT_printf(0, "Tx freq = %d, Rx freq = %d, Power = %d\n",freq_tx,freq_rx,rf_power);
 
 	if ((freq_tx>= BAN1_MIN && freq_tx <= BAN1_MAX) || (freq_tx>= BAN2_MIN && freq_tx <= BAN2_MAX))
 	{
 		return 4U;// invalid frequency
 	}
 
+
 	if (trxCheckFrequencyInAmateurBand(freq_rx) && trxCheckFrequencyInAmateurBand(freq_tx))
 	{
-		SEGGER_RTT_printf(0, "Tx freq = %d, Rx freq = %d, Power = %d\n",freq_tx,freq_rx,rf_power);
 		trxSetFrequency(freq_rx);
 	}
 	else
@@ -417,8 +464,10 @@ static void getStatus(uint8_t* s_ComBuf)
 	s_ComBuf[2U]  = MMDVM_GET_STATUS;
 	s_ComBuf[3U]  = 0x00U;
 	s_ComBuf[3U] |= 0x02U;// DMR ENABLED
-	s_ComBuf[4U]  = modemState;;
-	s_ComBuf[5U]  = trxIsTransmitting  ? 0x01U : 0x00U;
+	s_ComBuf[4U]  = modemState;
+	s_ComBuf[5U]  = (	hotspotState == HOTSPOT_STATE_TX_START_BUFFERING ||
+						hotspotState == HOTSPOT_STATE_TRANSMITTING ||
+						hotspotState == HOTSPOT_STATE_TX_SHUTDOWN)  ? 0x01U : 0x00U;
 
 	if (hasRXOverflow())
 	{
@@ -436,6 +485,8 @@ static void getStatus(uint8_t* s_ComBuf)
 	s_ComBuf[10U] = 0U;// No P25
 	s_ComBuf[11U] = 0U;// no NXDN
 	s_ComBuf[12U] = 0U;// no POCSAG
+
+	//SEGGER_RTT_printf(0, "getStatus buffers=%d\r\n",s_ComBuf[8U]);
 	USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, s_ComBuf, s_ComBuf[1]);
 }
 

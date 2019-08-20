@@ -192,8 +192,8 @@ void fw_init_beep_task()
 }
 
 volatile uint8_t wavbuffer[WAV_BUFFER_COUNT][WAV_BUFFER_SIZE];
-int wavbuffer_read_idx;
-int wavbuffer_write_idx;
+volatile int  wavbuffer_read_idx;
+volatile int  wavbuffer_write_idx;
 volatile int wavbuffer_count;
 uint8_t tmp_wavbuffer[WAV_BUFFER_SIZE];
 uint8_t *currentWaveBuffer;
