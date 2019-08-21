@@ -23,6 +23,7 @@
 #include "fw_trx.h"
 #include "fw_HR-C6000.h"
 #include "dmr/DMRFullLC.h"
+#include "dmr/DMRSlotType.h"
 
 #include <SeggerRTT/RTT/SEGGER_RTT.h>
 
@@ -141,11 +142,13 @@ static void storeNetFrame(uint8_t *com_requestbuffer)
 	SEGGER_RTT_printf(0, "storeNetFrame\n");
 	if (memcmp((uint8_t *)&com_requestbuffer[18],END_FRAME_PATTERN,6)!=0 && memcmp((uint8_t *)&com_requestbuffer[18],START_FRAME_PATTERN,6)!=0)
 	{
+		/*
 		for (int i=0;i<37;i++)
 		{
         	SEGGER_RTT_printf(0, " %02x", com_requestbuffer[i]);
 		}
     	SEGGER_RTT_printf(0, "\r\n");
+    	*/
     	if (wavbuffer_count>=16)
     	{
     		SEGGER_RTT_printf(0, "------------------------------ Buffer overflow ---------------------------\n");
@@ -165,18 +168,56 @@ static void storeNetFrame(uint8_t *com_requestbuffer)
 	}
 	else
 	{
-		SEGGER_RTT_printf(0, "End frame detected.  %d Frames in the buffer\n",wavbuffer_count);
+		SEGGER_RTT_printf(0, "Non audio frame  %d Frames in the buffer\n",wavbuffer_count);
 	}
 }
 
 bool hotspotModeReceiveNetFrame(uint8_t *com_requestbuffer,uint8_t *s_ComBuf, int timeSlot)
 {
 	DMRLC_T lc;
+	uint32_t colorCode,dataType;
 
-	DMRFullLC_decode(com_requestbuffer + 4U, DT_VOICE_LC_HEADER,&lc);// Need to decode the frame to get the source and destination
+	lc.srcId=0;// zero thise values as they are checked later in the function, but only updated if the data type is DT_VOICE_LC_HEADER
+	lc.dstId=0;
 
-	// can't start transmitting until we have a valid source and destination Id
+	DMRSlotType_decode(com_requestbuffer + 4U,&colorCode,&dataType);
+	switch(dataType)
+	{
+		case DT_VOICE_PI_HEADER:
+			SEGGER_RTT_printf(0, "DT_VOICE_PI_HEADER colorCode:%d\n",colorCode);
+			break;
+		case DT_VOICE_LC_HEADER:
+			SEGGER_RTT_printf(0, "DT_VOICE_LC_HEADER colorCode:%d\n",colorCode);
+			DMRFullLC_decode(com_requestbuffer + 4U, DT_VOICE_LC_HEADER,&lc);// Need to decode the frame to get the source and destination
+			break;
+		case DT_TERMINATOR_WITH_LC:
+			SEGGER_RTT_printf(0, "DT_TERMINATOR_WITH_LC colorCode:%d\n",colorCode);
+			break;
+		case DT_CSBK:
+			SEGGER_RTT_printf(0, "DT_CSBK colorCode:%d\n",colorCode);
+			break;
+		case DT_DATA_HEADER:
+			SEGGER_RTT_printf(0, "DT_DATA_HEADER colorCode:%d\n",colorCode);
+			break;
+		case DT_RATE_12_DATA:
+			SEGGER_RTT_printf(0, "DT_RATE_12_DATA colorCode:%d\n",colorCode);
+			break;
+		case DT_RATE_34_DATA:
+			SEGGER_RTT_printf(0, "DT_RATE_34_DATA colorCode:%d\n",colorCode);
+			break;
+		case DT_IDLE:
+			SEGGER_RTT_printf(0, "DT_IDLE colorCode:%d\n",colorCode);
+			break;
+		case DT_RATE_1_DATA:
+			SEGGER_RTT_printf(0, "DT_RATE_1_DATA colorCode:%d\n",colorCode);
+			break;
+		default:
+			SEGGER_RTT_printf(0, "Unhandled slot dataType %d colorCode:%d\n",dataType,colorCode);
+			break;
+	}
 
+
+	// update the src and destination ID's if valid
 	if 	(lc.srcId!=0 && lc.dstId!=0)
 	{
 		trxTalkGroupOrPcId  = lc.dstId;
@@ -184,6 +225,7 @@ bool hotspotModeReceiveNetFrame(uint8_t *com_requestbuffer,uint8_t *s_ComBuf, in
 
 		SEGGER_RTT_printf(0, "Net frame FID:%d FLCO:%d PF:%d R:%d dstId:%d src:Id:%d options:0x%02x\n",lc.FID,lc.FLCO,lc.PF,lc.R,lc.dstId,lc.srcId,lc.options);
 
+		// the Src and Dst Id's have been sent, and we are in RX mode then an incoming Net normally arrives next
 		if (hotspotState == HOTSPOT_STATE_RX)
 		{
 			hotspotState = HOTSPOT_STATE_TX_START_BUFFERING;
