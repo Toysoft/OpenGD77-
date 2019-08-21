@@ -259,6 +259,7 @@ static void hotspotStateMachine()
 			wavbuffer_write_idx=0;
 			wavbuffer_count=0;
 			// Don't do anything in the state machine for this state at the moment.
+			updateScreen();
 			break;
 		case HOTSPOT_STATE_TX_START_BUFFERING:
 			// If MMDVMHost tells us to go back to idle. (receiving)
@@ -274,6 +275,7 @@ static void hotspotStateMachine()
 					hotspotState = HOTSPOT_STATE_TRANSMITTING;
 					SEGGER_RTT_printf(0, "HOTSPOT_STATE_TX_START_BUFFERING -> HOTSPOT_STATE_TRANSMITTING %d\n",wavbuffer_count);
 					enableTransmission();
+					updateScreen();
 				}
 			}
 			break;
@@ -320,7 +322,7 @@ int menuHotspotMode(int buttons, int keys, int events, bool isFirstRun)
 		trxTalkGroupOrPcId=0;
 
 		trxSetModeAndBandwidth(RADIO_MODE_DIGITAL,trxGetBandwidthIs25kHz());// hotspot mode is for DMR i.e Digital mode
-/*
+
 		uint8_t frameData[] = {0xE0,0x25,0x1A,0x41,0x03,0x0F,0x08,0xC4,0x07,0xA4,0x16,0xA0,0x14,0xA0,0x5B,0x40,0xC4,0x6D,0x5D,0x7F,0x77,0xFD,0x35,0x7E,0x32,0xAC,0x01,0xC8,0x2E,0x10,0x06,0x20,0x73,0xC1,0x84,0x81,0x2A};
 		//						 E0   25   1A   41   01   47   8C   7F   0F   7C   1A   D9   3F   74   60   48   00   00   00  00   00    00   00   00   03   BC   4E   9C   91   FF   5A   28   30   01   1D   31   38
 
@@ -331,15 +333,27 @@ int menuHotspotMode(int buttons, int keys, int events, bool isFirstRun)
 
 		DMRLC_T lc;
 		lc.srcId = 5053238;
-		lc.dstId = 9;
+		lc.dstId = 5050;
 
 		DMRFullLC_encode(&lc,frameData + 4U, DT_VOICE_LC_HEADER);// Need to decode the frame to get the source and destination
+
+		for (unsigned int i = 0U; i < 7U; i++)
+		{
+			frameData[i + 13U+4U] = (frameData[i + 13U+4U] & ~SYNC_MASK[i]) | MS_SOURCED_DATA_SYNC[i];
+		}
+
+		/*
+		for (unsigned int i = 0U; i < 7U; i++)
+		{
+			frameData[i + 13U+4U] = (frameData[i + 13U + 4U] & ~SYNC_MASK[i]) | MS_SOURCED_AUDIO_SYNC[i];
+		}
+*/
 		for (int i=0;i<37;i++)
 		{
         	SEGGER_RTT_printf(0, " %02x", frameData[i]);
 		}
     	SEGGER_RTT_printf(0, "\r\n");
-*/
+
 
 #if false
 		// Just testing the frame encode and decode functions
@@ -385,21 +399,30 @@ static void updateScreen()
 {
 	int val_before_dp;
 	int val_after_dp;
-
 	char buffer[32];
 
 	UC1701_clearBuf();
 	UC1701_printCentered(0, "Hotspot mode",UC1701_FONT_GD77_8x16);
 
-	val_before_dp = freq_rx/10000;
 
-	val_after_dp = freq_rx - val_before_dp*10000;
-	sprintf(buffer,"R %d.%04d MHz",val_before_dp, val_after_dp);
-	UC1701_printCentered(32, buffer,UC1701_FONT_GD77_8x16);
+	if (trxIsTransmitting)
+	{
+		sprintf(buffer,"ID %d",trxDMRID);
+		UC1701_printCentered(16, buffer,UC1701_FONT_GD77_8x16);
 
-	val_before_dp = freq_tx/10000;
-	val_after_dp = freq_tx - val_before_dp*10000;
-	sprintf(buffer,"T %d.%04d MHz",val_before_dp, val_after_dp);
+		sprintf(buffer,"TG %d",trxTalkGroupOrPcId);
+		UC1701_printCentered(32, buffer,UC1701_FONT_GD77_8x16);
+
+		val_before_dp = freq_tx/10000;
+		val_after_dp = freq_tx - val_before_dp*10000;
+		sprintf(buffer,"T %d.%04d MHz",val_before_dp, val_after_dp);
+	}
+	else
+	{
+		val_before_dp = freq_rx/10000;
+		val_after_dp = freq_rx - val_before_dp*10000;
+		sprintf(buffer,"R %d.%04d MHz",val_before_dp, val_after_dp);
+	}
 	UC1701_printCentered(48, buffer,UC1701_FONT_GD77_8x16);
 
 	UC1701_render();
@@ -725,7 +748,6 @@ void handleHotspotRequest(uint8_t com_requestbuffer[],uint8_t s_ComBuf[])
 				{
 				  sendNAK(s_ComBuf,err);
 				}
-				updateScreen();
 				break;
 			case MMDVM_SET_MODE:
 				err = setMode(com_requestbuffer + 3U, s_ComBuf[1] - 3U);
@@ -737,7 +759,6 @@ void handleHotspotRequest(uint8_t com_requestbuffer[],uint8_t s_ComBuf[])
 				{
 					sendNAK(s_ComBuf,err);
 				}
-				updateScreen();
 				break;
 			case MMDVM_SET_FREQ:
 	            err = setFreq(com_requestbuffer + 3U, s_ComBuf[1] - 3U);
