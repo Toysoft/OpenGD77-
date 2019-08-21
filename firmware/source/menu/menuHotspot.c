@@ -129,7 +129,7 @@ static void enableTransmission()
 	GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 	GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 1);
 
-	trxSetFrequency(currentChannelData->txFreq);
+	trxSetFrequency(freq_tx);
 	txstopdelay=0;
 	trxIsTransmitting=true;
 	trx_setTX();
@@ -254,6 +254,7 @@ static void hotspotStateMachine()
 			SEGGER_RTT_printf(0, "HOTSPOT_STATE_INITIALISE -> HOTSPOT_STATE_RX\n");
 			break;
 		case HOTSPOT_STATE_RX:
+			trxSetFrequency(freq_rx);
 			wavbuffer_read_idx=0;
 			wavbuffer_write_idx=0;
 			wavbuffer_count=0;
@@ -299,6 +300,7 @@ static void hotspotStateMachine()
 					trx_setRX();
 					hotspotState = HOTSPOT_STATE_RX;
 					SEGGER_RTT_printf(0, "HOTSPOT_STATE_TX_SHUTDOWN -> HOTSPOT_STATE_RX\n");
+					trxSetFrequency(freq_rx);
 				}
 			}
 			break;
@@ -318,6 +320,26 @@ int menuHotspotMode(int buttons, int keys, int events, bool isFirstRun)
 		trxTalkGroupOrPcId=0;
 
 		trxSetModeAndBandwidth(RADIO_MODE_DIGITAL,trxGetBandwidthIs25kHz());// hotspot mode is for DMR i.e Digital mode
+/*
+		uint8_t frameData[] = {0xE0,0x25,0x1A,0x41,0x03,0x0F,0x08,0xC4,0x07,0xA4,0x16,0xA0,0x14,0xA0,0x5B,0x40,0xC4,0x6D,0x5D,0x7F,0x77,0xFD,0x35,0x7E,0x32,0xAC,0x01,0xC8,0x2E,0x10,0x06,0x20,0x73,0xC1,0x84,0x81,0x2A};
+		//						 E0   25   1A   41   01   47   8C   7F   0F   7C   1A   D9   3F   74   60   48   00   00   00  00   00    00   00   00   03   BC   4E   9C   91   FF   5A   28   30   01   1D   31   38
+
+
+		uint8_t frameData2[]= {0xE0,0x25,0x1A,0x20,0xEE,0x9A,0xA2,0x30,0xE5,0xE0,0x29,0x28,0xF3,0xAE,0xDA,0xC5,0x74,0xA7,0xF7,0xD5,0xDD,0x57,0xDF,0xD3,0xE8,0xE9,0x6A,0x7F,0xAE,0xDA,0xC5,0x74,0x83,0xE8,0xE9,0x6A,0x7F};
+
+		memset(frameData + 4U,0,33);
+
+		DMRLC_T lc;
+		lc.srcId = 5053238;
+		lc.dstId = 9;
+
+		DMRFullLC_encode(&lc,frameData + 4U, DT_VOICE_LC_HEADER);// Need to decode the frame to get the source and destination
+		for (int i=0;i<37;i++)
+		{
+        	SEGGER_RTT_printf(0, " %02x", frameData[i]);
+		}
+    	SEGGER_RTT_printf(0, "\r\n");
+*/
 
 #if false
 		// Just testing the frame encode and decode functions
