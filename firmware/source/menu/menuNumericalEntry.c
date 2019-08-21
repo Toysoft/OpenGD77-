@@ -24,7 +24,7 @@ static char digits[9];
 static void updateScreen();
 static void handleEvent(int buttons, int keys, int events);
 
-static const char *menuName[2]={"TG entry","PC entry"};
+static const char *menuName[]={"TG entry","PC entry","User DMR ID"};
 
 // public interface
 int menuNumericalEntry(int buttons, int keys, int events, bool isFirstRun)
@@ -71,26 +71,45 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_GREEN)!=0)
 	{
-		uint32_t saveTrxTalkGroupOrPcId = trxTalkGroupOrPcId;
-		trxTalkGroupOrPcId = atoi(digits);
-		nonVolatileSettings.overrideTG = trxTalkGroupOrPcId;
-		if (gMenusCurrentItemIndex == 1)
+		if (gMenusCurrentItemIndex!=2)
 		{
-			// Private Call
-
-
-			if ((saveTrxTalkGroupOrPcId >> 24) != PC_CALL_FLAG)
+			uint32_t saveTrxTalkGroupOrPcId = trxTalkGroupOrPcId;
+			trxTalkGroupOrPcId = atoi(digits);
+			nonVolatileSettings.overrideTG = trxTalkGroupOrPcId;
+			if (gMenusCurrentItemIndex == 1)
 			{
-				// if the current Tx TG is a TalkGroup then save it so it can be stored after the end of the private call
-				menuUtilityTgBeforePcMode = saveTrxTalkGroupOrPcId;
+				// Private Call
+
+
+				if ((saveTrxTalkGroupOrPcId >> 24) != PC_CALL_FLAG)
+				{
+					// if the current Tx TG is a TalkGroup then save it so it can be stored after the end of the private call
+					menuUtilityTgBeforePcMode = saveTrxTalkGroupOrPcId;
+				}
+				nonVolatileSettings.overrideTG |= (PC_CALL_FLAG << 24);
 			}
-			nonVolatileSettings.overrideTG |= (PC_CALL_FLAG << 24);
+		}
+		else
+		{
+			trxDMRID = atoi(digits);
 		}
 		menuSystemPopAllAndDisplayRootMenu();
 	}
 	else if ((keys & KEY_HASH)!=0)
 	{
-		gMenusCurrentItemIndex = 1 - gMenusCurrentItemIndex;
+		if ((buttons & BUTTON_SK2)!= 0  && gMenusCurrentItemIndex == 1)
+		{
+			gMenusCurrentItemIndex = 2;
+		}
+		else
+		{
+			gMenusCurrentItemIndex++;
+			if (gMenusCurrentItemIndex > 1)
+			{
+				gMenusCurrentItemIndex = 0;
+			}
+		}
+
 		updateScreen();
 	}
 
