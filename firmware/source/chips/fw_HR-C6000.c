@@ -419,7 +419,15 @@ void setupPcOrTGHeader()
 
 bool callAcceptFilter()
 {
-	return (DMR_frame_buffer[0]==TG_CALL_FLAG || (DMR_frame_buffer[0]==PC_CALL_FLAG && receivedTgOrPcId == trxDMRID));
+	 if (settingsUsbMode == USB_MODE_HOTSPOT)
+	 {
+		 //In Hotspot mode, we need to accept all incoming traffic, otherwise private calls won't work
+		 return (DMR_frame_buffer[0]==TG_CALL_FLAG || DMR_frame_buffer[0]==PC_CALL_FLAG);
+	 }
+	 else
+	 {
+		 return (DMR_frame_buffer[0]==TG_CALL_FLAG || (DMR_frame_buffer[0]==PC_CALL_FLAG && receivedTgOrPcId == trxDMRID));
+	 }
 }
 
 
@@ -639,9 +647,9 @@ void tick_HR_C6000()
             if (tick_cnt==10)
             {
             	slot_state = DMR_STATE_RX_END;
-#if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
+//#if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
             	SEGGER_RTT_printf(0, ">>> TIMEOUT\r\n");
-#endif
+//#endif
             }
     	}
 	}
@@ -687,7 +695,7 @@ void tick_HR_C6000()
     			write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0x20);
     		}
 
-    		receivedTgOrPcId = (DMR_frame_buffer[3]<<16)+(DMR_frame_buffer[4]<<8)+(DMR_frame_buffer[5]<<0);
+    		receivedTgOrPcId = (DMR_frame_buffer[3]<<16)+(DMR_frame_buffer[4]<<8)+(DMR_frame_buffer[5]<<0);// used by the call accept filter
 
     		if (tmp_val_0x82 & 0x10) // InterLateEntry
     		{
@@ -698,9 +706,16 @@ void tick_HR_C6000()
                 	store_qsodata();
                 	init_codec();
                 	skip_count = 2;
-#if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
-            	SEGGER_RTT_printf(0, ">>> START LATE\r\n");
-#endif
+
+//#if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
+					SEGGER_RTT_printf(0, ">>> RX START LATE\r\n");
+//#endif
+					if (settingsUsbMode == USB_MODE_HOTSPOT)
+					{
+						DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_START_LATE;
+						hotspotRxFrameHandler(DMR_frame_buffer);
+					}
+
                 }
 
 #if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
@@ -731,17 +746,28 @@ void tick_HR_C6000()
                 	store_qsodata();
                 	init_codec();
                 	skip_count = 0;
-#if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
-            	SEGGER_RTT_printf(0, ">>> START\r\n");
-#endif
+//#if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
+            	SEGGER_RTT_printf(0, ">>> RX START\r\n");
+//#endif
+					if (settingsUsbMode == USB_MODE_HOTSPOT)
+					{
+						DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_START;
+						hotspotRxFrameHandler(DMR_frame_buffer);
+					}
                 }
     			// Stop RX
                 if ((sc==2) && (rxdt==2) && callAcceptFilter())
                 {
                 	slot_state = DMR_STATE_RX_END;
-#if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
-            	SEGGER_RTT_printf(0, ">>> STOP\r\n");
-#endif
+//#if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
+            	SEGGER_RTT_printf(0, ">>> RX STOP\r\n");
+//#endif
+
+					if (settingsUsbMode == USB_MODE_HOTSPOT)
+					{
+						DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_STOP;
+						hotspotRxFrameHandler(DMR_frame_buffer);
+					}
                 }
 
             	if ((slot_state!=0) && (skip_count>0) && (sc!=2) && ((rxdt & 0x07) == 0x01))
@@ -759,7 +785,9 @@ void tick_HR_C6000()
                     read_SPI_page_reg_bytearray_SPI1(0x03, 0x00, DMR_frame_buffer+0x0C, 27);
                     if (settingsUsbMode == USB_MODE_HOTSPOT)
                     {
-                    	//hotspotModeSend_RF_StartFrame();
+   						DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_AUDIO_FRAME;
+   						DMR_frame_buffer[27 + 0x0c + 1] = (rxdt & 0x07);// audio sequence number
+   						hotspotRxFrameHandler(DMR_frame_buffer);
                     }
                     else
                     {
@@ -769,7 +797,12 @@ void tick_HR_C6000()
                 }
                 else
                 {
-                	SEGGER_RTT_printf(0, ">>>\r\n");
+                    if (settingsUsbMode == USB_MODE_HOTSPOT)
+                    {
+   						DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_IDLE_OR_REPEAT;
+   						hotspotRxFrameHandler(DMR_frame_buffer);
+                    }
+                	SEGGER_RTT_printf(0, ">>> Not valid data (perhaps Idle) or another Voice header LC frame\r\n");
                 }
 
 #if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)

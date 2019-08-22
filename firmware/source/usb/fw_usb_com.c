@@ -50,7 +50,7 @@ void tick_com_request()
 				taskEXIT_CRITICAL();
 				break;
 			case USB_MODE_HOTSPOT:
-				handleHotspotRequest(com_requestbuffer,com_buffer);
+				handleHotspotRequest((uint8_t *)com_requestbuffer,(uint8_t *)com_buffer);
 				break;
 		}
 		com_request=0;

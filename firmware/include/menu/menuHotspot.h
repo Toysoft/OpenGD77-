@@ -18,10 +18,15 @@
 #ifndef _FW_HOTSPOT_H_
 #define _FW_HOTSPOT_H_
 #include "fw_main.h"
+void handleHotspotRequest(uint8_t com_requestbuffer[],uint8_t s_ComBuf[]);
+void hotspotRxFrameHandler(uint8_t* frameBuf);
 
-void handleHotspotRequest(volatile uint8_t com_requestbuffer[],volatile uint8_t s_ComBuf[]);
-bool hotspotModeSend_RF_StartFrame();
-bool hotspotModeSend_RF_AudioFrame();
-bool hotspotModeReceiveNetFrame(int timeSlot);
-
+enum {
+		HOTSPOT_RX_IDLE,
+		HOTSPOT_RX_START,
+		HOTSPOT_RX_START_LATE,
+		HOTSPOT_RX_AUDIO_FRAME,
+		HOTSPOT_RX_STOP,
+		HOTSPOT_RX_IDLE_OR_REPEAT,
+		} ;
 #endif
