@@ -106,7 +106,7 @@ void DMRLC0(DMRLC_T *lc)
 
 
 
-void DMRLC_getDataFromBytes(unsigned char* bytes,DMRLC_T *lc)
+void DMRLC_getDataFromBytes(unsigned char* bytes,const DMRLC_T *lc)
 {
 	bytes[0U] = (unsigned char)lc->FLCO;
 
@@ -132,7 +132,7 @@ void DMRLC_getDataFromBytes(unsigned char* bytes,DMRLC_T *lc)
 	bytes[8U] = (lc->srcId  & 0xFF);
 }
 
-void DMRLC_getDataFromBits(bool* bits,DMRLC_T *lc)
+void DMRLC_getDataFromBits(bool* bits,const DMRLC_T *lc)
 {
 	unsigned char bytes[9U];
 	DMRLC_getDataFromBytes(bytes,lc);

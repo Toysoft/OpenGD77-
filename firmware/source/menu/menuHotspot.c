@@ -17,6 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
+#include <dmr/DMREmbeddedData.h>
 #include "menu/menuSystem.h"
 #include "menu/menuHotspot.h"
 #include "fw_settings.h"
@@ -24,12 +25,12 @@
 #include "fw_trx.h"
 #include "fw_HR-C6000.h"
 #include "dmr/DMRFullLC.h"
+#include "dmr/DMRShortLC.h"
 #include "dmr/DMRSlotType.h"
-
 #include <SeggerRTT/RTT/SEGGER_RTT.h>
 
 
-#define MMDVM_FRAME_START    0xE0
+#define MMDVM_FRAME_START   0xE0
 
 #define MMDVM_GET_VERSION   0x00
 #define MMDVM_GET_STATUS    0x01
@@ -60,6 +61,11 @@
 #define MMDVM_DEBUG5        0xF5U
 #define PROTOCOL_VERSION    1U
 
+#define MMDVM_HEADER_LENGTH  4U
+
+const uint8_t MMDVM_VOICE_SYNC_PATTERN = 0x20U;
+
+const int EMBEDDED_DATA_OFFSET = 13U;
 const int TX_BUFFER_MIN_BEFORE_TRANSMISSION = 2;
 
 const uint8_t START_FRAME_PATTERN[] = {0xFF,0x57,0xD7,0x5D,0xF5,0xD9};
@@ -70,6 +76,8 @@ uint32_t freq_tx;
 uint8_t rf_power;
 uint32_t savedTGorPC;
 int savedPower;
+uint32_t MMDVMHostGetStatusCount = 0;
+
 volatile enum
 {
 	MMDVMHOST_RX_READY,
@@ -103,9 +111,6 @@ volatile enum { HOTSPOT_STATE_INITIALISE,
 				HOTSPOT_STATE_TX_START_BUFFERING,
 				HOTSPOT_STATE_TRANSMITTING,
 				HOTSPOT_STATE_TX_SHUTDOWN } hotspotState;
-
-
-
 
 static void updateScreen();
 static void handleEvent(int buttons, int keys, int events);
@@ -147,9 +152,9 @@ static void enableTransmission()
 }
 
 
-static void displayFrameData(uint8_t *buf)
+static void displayFrameData(uint8_t *buf, int len)
 {
-	for (int i=0;i<37;i++)
+	for (int i=0;i<len;i++)
 	{
     	SEGGER_RTT_printf(0, " %02x", buf[i]);
 	}
@@ -158,99 +163,187 @@ static void displayFrameData(uint8_t *buf)
 const unsigned char VOICE_LC_SYNC_FULL[] 		= { 0x04U, 0x6DU, 0x5DU, 0x7FU, 0x77U, 0xFDU, 0x75U, 0x7EU, 0x30U};
 const unsigned char TERMINATOR_LC_SYNC_FULL[]	= { 0x04U, 0xADU, 0x5DU, 0x7FU, 0x77U, 0xFDU, 0x75U, 0x79U, 0x60U};
 
-const unsigned char LC_SYNC_MASK_FULL[]    		= { 0x0FU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xF0U};
+const uint8_t LC_SYNC_MASK_FULL[]  = { 0x0FU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xF0U};
 
 
-const uint8_t DMR_AUDIO_SEQ_SYNC[6][7] = {  {0x07U, 0xF7U, 0xD5U, 0xDDU, 0x57U, 0xDFU, 0xD0U},// seq 0
-											{0x01U, 0x30U, 0xF0U, 0xF0U, 0xA0U, 0x59U, 0x10U},// seq 1
-											{0x01U, 0x70U, 0x30U, 0x31U, 0x21U, 0xE7U, 0x40U},// seq 2
-											{0x01U, 0x70U, 0x51U, 0x21U, 0xB1U, 0x77U, 0x40U},// seq 3
-											{0x01U, 0x50U, 0x61U, 0x81U, 0xE1U, 0x80U, 0x70U},// seq 4
-											{0x01U, 0x19U, 0x0FU, 0x3AU, 0xD5U, 0xEEU, 0x20U} // seq 5
-};
+const uint8_t DMR_AUDIO_SEQ_SYNC[6][7] = {  {0x07U, 0xF0U, 0x00U, 0x00U, 0x00U, 0x0FU, 0xD0U},// seq 0 NOT USED AS THIS IS THE SYNC
+											{0x01U, 0x30U, 0x00U, 0x00U, 0x00U, 0x09U, 0x10U},// seq 1
+											{0x01U, 0x70U, 0x00U, 0x00U, 0x00U, 0x07U, 0x40U},// seq 2
+											{0x01U, 0x70U, 0x00U, 0x00U, 0x00U, 0x07U, 0x40U},// seq 3
+											{0x01U, 0x50U, 0x00U, 0x00U, 0x00U, 0x00U, 0x70U},// seq 4
+											{0x01U, 0x10U, 0x00U, 0x00U, 0x00U, 0x0EU, 0x20U}};// seq 5
 
-void hotspotSendVoiceFrame(uint8_t *receivedDMRDataAndAudio, int sequenceNumber)
+const uint8_t DMR_AUDIO_SEQ_MASK[]  = 		{0x0FU, 0xF0U, 0x00U, 0x00U, 0x00U, 0x0FU, 0xF0U};
+const uint8_t DMR_EMBED_SEQ_MASK[]  = 		{0x00U, 0x0FU, 0xFFU, 0xFFU, 0xFFU, 0xF0U, 0x00U};
+
+void hotspotSendVoiceFrame(uint8_t *receivedDMRDataAndAudio)
 {
-	uint8_t frameData[37] = {0xE0,0x25,0x1A};
+	uint8_t frameData[DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH] = {0xE0,0x25,MMDVM_DMR_DATA2};
+	uint8_t embData[DMR_FRAME_LENGTH_BYTES];
 
-	sequenceNumber--;// needs to be zero indexed
-	if (sequenceNumber==0)
+	int i;
+	int sequenceNumber = receivedDMRDataAndAudio[27+0x0c + 1] - 1;
+
+	sequenceNumber--;// make zero indexed
+	// copy the audio sections
+	memcpy(frameData+MMDVM_HEADER_LENGTH,receivedDMRDataAndAudio+0x0C,14);
+	memcpy(frameData+MMDVM_HEADER_LENGTH+EMBEDDED_DATA_OFFSET+6,receivedDMRDataAndAudio+0x0C+EMBEDDED_DATA_OFFSET,14);
+
+
+
+	if (sequenceNumber == 0)
 	{
-		frameData[3] = 0x20;
+		frameData[3] = MMDVM_VOICE_SYNC_PATTERN;// sequence 0
+		for (i = 0U; i < 7U; i++)
+		{
+			frameData[i + EMBEDDED_DATA_OFFSET+MMDVM_HEADER_LENGTH] = (frameData[i + EMBEDDED_DATA_OFFSET+MMDVM_HEADER_LENGTH] & ~SYNC_MASK[i]) | MS_SOURCED_AUDIO_SYNC[i];
+		}
 	}
 	else
 	{
 		frameData[3] = sequenceNumber;
+		memset(frameData+4,0,DMR_FRAME_LENGTH_BYTES);//clear
+		DMREmbeddedData_getData(embData, sequenceNumber);
+		for (i = 0U; i < 7U; i++)
+		{
+			frameData[i + EMBEDDED_DATA_OFFSET+MMDVM_HEADER_LENGTH] = (frameData[i + EMBEDDED_DATA_OFFSET+MMDVM_HEADER_LENGTH] & ~DMR_AUDIO_SEQ_MASK[i]) | DMR_AUDIO_SEQ_SYNC[sequenceNumber][i];
+			frameData[i + EMBEDDED_DATA_OFFSET+MMDVM_HEADER_LENGTH] = (frameData[i + EMBEDDED_DATA_OFFSET+MMDVM_HEADER_LENGTH] & ~DMR_EMBED_SEQ_MASK[i]) | embData[i + EMBEDDED_DATA_OFFSET];
+		}
 	}
 
-	memcpy(frameData+4,receivedDMRDataAndAudio+0x0C,14);
-	memcpy(frameData+4+13+6,receivedDMRDataAndAudio+0x0C+13,14);
-
-	for (unsigned int i = 0U; i < 7U; i++)
-	{
-		frameData[i + 13U+4U] = (frameData[i + 13U+4U] & ~SYNC_MASK[i]) | DMR_AUDIO_SEQ_SYNC[sequenceNumber][i];
-	}
-
-/*
 	SEGGER_RTT_printf(0, "hotspotSendVoiceFrame\n");
-	displayFrameData(frameData);
-	SEGGER_RTT_printf(0, "\n");
-*/
 
-	memcpy((uint8_t *)com_buffer,frameData,37);
-	USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, (uint8_t *)com_buffer, 37);
-	MMDVMHostRxState = MMDVMHOST_RX_BUSY;
+	memcpy((uint8_t *)com_buffer,frameData,DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
+	USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, (uint8_t *)com_buffer, DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
 }
 
 
 static void sendVoiceHeaderLC_Frame(volatile uint8_t *receivedDMRDataAndAudio)
 {
-	uint8_t frameData[37] = {0xE0,0x25,0x1A,DMR_SYNC_DATA | DT_VOICE_LC_HEADER};
+	uint8_t frameData[DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH] = {0xE0,0x25,0x1A,DMR_SYNC_DATA | DT_VOICE_LC_HEADER};
 	DMRLC_T lc;
 	memset(&lc,0,sizeof(DMRLC_T));// clear automatic variable
 	lc.srcId = (receivedDMRDataAndAudio[6]<<16)+(receivedDMRDataAndAudio[7]<<8)+(receivedDMRDataAndAudio[8]<<0);
 	lc.dstId = (receivedDMRDataAndAudio[3]<<16)+(receivedDMRDataAndAudio[4]<<8)+(receivedDMRDataAndAudio[5]<<0);
 
-	DMRFullLC_encode(&lc,frameData + 4U, DT_VOICE_LC_HEADER);// Encode the src and dst Ids etc
-
+	DMRFullLC_encode(&lc,frameData + MMDVM_HEADER_LENGTH, DT_VOICE_LC_HEADER);// Encode the src and dst Ids etc
+	DMREmbeddedData_setLC(&lc);
 	for (unsigned int i = 0U; i < 8U; i++)
 	{
-		frameData[i + 12U+4U] = (frameData[i + 12U+4U] & ~LC_SYNC_MASK_FULL[i]) | VOICE_LC_SYNC_FULL[i];
+		frameData[i + 12U+MMDVM_HEADER_LENGTH] = (frameData[i + 12U+MMDVM_HEADER_LENGTH] & ~LC_SYNC_MASK_FULL[i]) | VOICE_LC_SYNC_FULL[i];
 	}
 
-	/*
-	SEGGER_RTT_printf(0, "sendVoice_LC_Frame\r\n");
-	displayFrameData(frameData);
-	 */
+	SEGGER_RTT_printf(0, "sendVoiceHeaderLC_Frame\n");
 
-	memcpy((uint8_t *)com_buffer,frameData,37);
-	USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, (uint8_t *)com_buffer, 37);
-	MMDVMHostRxState = MMDVMHOST_RX_BUSY;
+	memcpy((uint8_t *)com_buffer,frameData,DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
+	USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, (uint8_t *)com_buffer, DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
+
 }
 
 static void sendTerminator_LC_Frame(volatile uint8_t *receivedDMRDataAndAudio)
 {
-	uint8_t frameData[37] = {0xE0,0x25,0x1A,DMR_SYNC_DATA | DT_TERMINATOR_WITH_LC};
+	uint8_t frameData[DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH] = {0xE0,0x25,0x1A,DMR_SYNC_DATA | DT_TERMINATOR_WITH_LC};
 	DMRLC_T lc;
 	memset(&lc,0,sizeof(DMRLC_T));// clear automatic variable
 	lc.srcId = (receivedDMRDataAndAudio[6]<<16)+(receivedDMRDataAndAudio[7]<<8)+(receivedDMRDataAndAudio[8]<<0);
 	lc.dstId = (receivedDMRDataAndAudio[3]<<16)+(receivedDMRDataAndAudio[4]<<8)+(receivedDMRDataAndAudio[5]<<0);
 
-	DMRFullLC_encode(&lc,frameData + 4U, DT_TERMINATOR_WITH_LC);// Encode the src and dst Ids etc
+	DMRFullLC_encode(&lc,frameData + MMDVM_HEADER_LENGTH, DT_TERMINATOR_WITH_LC);// Encode the src and dst Ids etc
 
 	for (unsigned int i = 0U; i < 8U; i++)
 	{
-		frameData[i + 12U+4U] = (frameData[i + 12U+4U] & ~LC_SYNC_MASK_FULL[i]) | TERMINATOR_LC_SYNC_FULL[i];
+		frameData[i + 12U+MMDVM_HEADER_LENGTH] = (frameData[i + 12U + MMDVM_HEADER_LENGTH] & ~LC_SYNC_MASK_FULL[i]) | TERMINATOR_LC_SYNC_FULL[i];
 	}
 
-//	SEGGER_RTT_printf(0, "sendTerminator_LC_Frame\r\n");
-//	displayFrameData(frameData);
+	SEGGER_RTT_printf(0, "sendTerminator_LC_Frame\n");
 
 
-	memcpy((uint8_t *)com_buffer,frameData,37);
-	USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, (uint8_t *)com_buffer, 37);
-	MMDVMHostRxState = MMDVMHOST_RX_BUSY;
+	memcpy((uint8_t *)com_buffer,frameData,DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
+	USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, (uint8_t *)com_buffer, DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
 }
+
+static void startupTests()
+{
+	uint8_t dataBuff[27 + 0x0C+2];
+	uint32_t srcId = 2344235;
+	uint32_t dstId = 777;
+    const uint8_t Tone1K[]  = { 0xCEU, 0xA8U, 0xFEU, 0x83U, 0xACU, 0xC4U, 0x58U, 0x20U,
+    							0x0AU, 0xCEU, 0xA8U, 0xFEU, 0x83U, 0xFCU, 0xC4U, 0x58U,
+								0x20U, 0x0AU, 0xCEU, 0xA8U, 0xFEU, 0x83U, 0xACU, 0xC4U,
+								0x58U, 0x20U, 0x0AU };
+
+	memcpy(dataBuff,0,27 + 0x0C);
+
+	// setup src and dst ID's
+	dataBuff[3] =  ((dstId>>16) & 0xFF);
+	dataBuff[4] =  ((dstId>> 8) & 0xFF);
+	dataBuff[5] =  ((dstId>> 0) & 0xFF);
+
+	dataBuff[6] =  ((srcId>>16) & 0xFF);
+	dataBuff[7] =  ((srcId>> 8) & 0xFF);
+	dataBuff[8] =  ((srcId>> 0) & 0xFF);
+
+	memcpy(dataBuff + 0x0C,Tone1K,27);// copy audio data to the buffer
+
+	sendVoiceHeaderLC_Frame(dataBuff);
+	vTaskDelay(portTICK_PERIOD_MS * 10);
+	for(int i=0;i<5;i++)
+	{
+		dataBuff[27 + 0x0C+1]=i;// sequence number
+		hotspotSendVoiceFrame(dataBuff);
+		vTaskDelay(portTICK_PERIOD_MS * 10);
+	}
+	vTaskDelay(portTICK_PERIOD_MS * 10);
+	sendTerminator_LC_Frame(dataBuff);
+}
+
+static void startupTests2()
+{
+
+//	VOICE_1K
+
+	uint8_t frameData[DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH] = {0xE0,0x25,0x1A};
+	uint8_t embData[DMR_FRAME_LENGTH_BYTES];
+	int i;
+
+	DMRLC_T lc;
+	memset(&lc,0,sizeof(DMRLC_T));// clear automatic variable
+	lc.srcId = 2344235;
+	lc.dstId = 777;
+	DMREmbeddedData_setLC(&lc);
+
+	for(int sequenceNumber=0;sequenceNumber<6;sequenceNumber++)
+	{
+		memset(frameData+4,0,DMR_FRAME_LENGTH_BYTES);//clear
+		SEGGER_RTT_printf(0, "Sequence %d\n",sequenceNumber);
+		vTaskDelay(portTICK_PERIOD_MS * 10);
+
+		if (sequenceNumber == 0)
+		{
+			frameData[3] = 0x20;
+			for (i = 0U; i < 7U; i++)
+			{
+				frameData[i + EMBEDDED_DATA_OFFSET+MMDVM_HEADER_LENGTH] = (frameData[i + EMBEDDED_DATA_OFFSET+MMDVM_HEADER_LENGTH] & ~SYNC_MASK[i]) | MS_SOURCED_AUDIO_SYNC[i];
+			}
+		}
+		else
+		{
+			frameData[3] = sequenceNumber;
+
+			DMREmbeddedData_getData(embData, sequenceNumber);
+			for (i = 0U; i < 7U; i++)
+			{
+				frameData[i + EMBEDDED_DATA_OFFSET+MMDVM_HEADER_LENGTH] = (frameData[i + EMBEDDED_DATA_OFFSET+MMDVM_HEADER_LENGTH] & ~DMR_AUDIO_SEQ_MASK[i]) | DMR_AUDIO_SEQ_SYNC[sequenceNumber][i];
+				frameData[i + EMBEDDED_DATA_OFFSET+MMDVM_HEADER_LENGTH] = (frameData[i + EMBEDDED_DATA_OFFSET+MMDVM_HEADER_LENGTH] & ~DMR_EMBED_SEQ_MASK[i]) | embData[i + EMBEDDED_DATA_OFFSET];
+			}
+		}
+
+		//displayFrameData(frameData,DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
+		vTaskDelay(portTICK_PERIOD_MS * 10);
+	}
+}
+
+
 
 void hotspotRxFrameHandler(uint8_t* frameBuf)
 {
@@ -270,16 +363,16 @@ static void storeNetFrame(uint8_t *com_requestbuffer)
 	SEGGER_RTT_printf(0, "storeNetFrame\n");
 	if (memcmp((uint8_t *)&com_requestbuffer[18],END_FRAME_PATTERN,6)!=0 && memcmp((uint8_t *)&com_requestbuffer[18],START_FRAME_PATTERN,6)!=0)
 	{
-		displayFrameData(com_requestbuffer);
+		displayFrameData(com_requestbuffer,DMR_FRAME_LENGTH_BYTES);
 
     	if (wavbuffer_count>=16)
     	{
     		SEGGER_RTT_printf(0, "------------------------------ Buffer overflow ---------------------------\n");
     	}
     	taskENTER_CRITICAL();
-		memcpy((uint8_t *)wavbuffer[wavbuffer_write_idx],com_requestbuffer+4,13);//copy the first 13 bytes
+		memcpy((uint8_t *)wavbuffer[wavbuffer_write_idx],com_requestbuffer+4,13);//copy the first 13, whole bytes of audio
 		wavbuffer[wavbuffer_write_idx][13] = (com_requestbuffer[17] & 0xF0) | (com_requestbuffer[23] & 0x0F);
-		memcpy((uint8_t *)&wavbuffer[wavbuffer_write_idx][14],(uint8_t *)&com_requestbuffer[24],13);//copy the last 13 bytes
+		memcpy((uint8_t *)&wavbuffer[wavbuffer_write_idx][14],(uint8_t *)&com_requestbuffer[24],13);//copy the last 13, whole bytes of audio
 
 		wavbuffer_count++;
 		wavbuffer_write_idx++;
@@ -303,7 +396,7 @@ bool hotspotModeReceiveNetFrame(uint8_t *com_requestbuffer,uint8_t *s_ComBuf, in
 	lc.srcId=0;// zero thise values as they are checked later in the function, but only updated if the data type is DT_VOICE_LC_HEADER
 	lc.dstId=0;
 
-	DMRSlotType_decode(com_requestbuffer + 4U,&colorCode,&dataType);
+	DMRSlotType_decode(com_requestbuffer + MMDVM_HEADER_LENGTH,&colorCode,&dataType);
 	switch(dataType)
 	{
 		case DT_VOICE_PI_HEADER:
@@ -311,7 +404,7 @@ bool hotspotModeReceiveNetFrame(uint8_t *com_requestbuffer,uint8_t *s_ComBuf, in
 			break;
 		case DT_VOICE_LC_HEADER:
 			SEGGER_RTT_printf(0, "DT_VOICE_LC_HEADER colorCode:%d\n",colorCode);
-			DMRFullLC_decode(com_requestbuffer + 4U, DT_VOICE_LC_HEADER,&lc);// Need to decode the frame to get the source and destination
+			DMRFullLC_decode(com_requestbuffer + MMDVM_HEADER_LENGTH, DT_VOICE_LC_HEADER,&lc);// Need to decode the frame to get the source and destination
 			break;
 		case DT_TERMINATOR_WITH_LC:
 			SEGGER_RTT_printf(0, "DT_TERMINATOR_WITH_LC colorCode:%d\n",colorCode);
@@ -349,7 +442,7 @@ bool hotspotModeReceiveNetFrame(uint8_t *com_requestbuffer,uint8_t *s_ComBuf, in
 		SEGGER_RTT_printf(0, "Net frame FID:%d FLCO:%d PF:%d R:%d dstId:%d src:Id:%d options:0x%02x\n",lc.FID,lc.FLCO,lc.PF,lc.R,lc.dstId,lc.srcId,lc.options);
 
 		// the Src and Dst Id's have been sent, and we are in RX mode then an incoming Net normally arrives next
-		if (hotspotState == HOTSPOT_STATE_RX_START)
+		//if (hotspotState == HOTSPOT_STATE_RX_START || hotspotState = HOTSPOT_STATE_RX_PROCESS)
 		{
 			hotspotState = HOTSPOT_STATE_TX_START_BUFFERING;
 			SEGGER_RTT_printf(0, "hotspotModeReceiveNetFrame HOTSPOT_STATE_TX_BUFFERING\n");
@@ -366,6 +459,7 @@ bool hotspotModeReceiveNetFrame(uint8_t *com_requestbuffer,uint8_t *s_ComBuf, in
 }
 
 uint8_t lastRxState=HOTSPOT_RX_IDLE;
+
 static void hotspotStateMachine()
 {
 	switch(hotspotState)
@@ -378,6 +472,7 @@ static void hotspotStateMachine()
 			SEGGER_RTT_printf(0, "HOTSPOT_STATE_INITIALISE -> HOTSPOT_STATE_RX\n");
 			break;
 		case HOTSPOT_STATE_RX_START:
+			SEGGER_RTT_printf(0, "HOTSPOT_STATE_RX_START\n");
 			trxSetFrequency(freq_rx);
 			wavbuffer_read_idx=0;
 			wavbuffer_write_idx=0;
@@ -386,27 +481,39 @@ static void hotspotStateMachine()
 			hotspotState = HOTSPOT_STATE_RX_PROCESS;
 			break;
 		case HOTSPOT_STATE_RX_PROCESS:
+
         	if (wavbuffer_count > 0)
         	{
         		if (MMDVMHostRxState == MMDVMHOST_RX_READY)
         		{
-					switch(wavbuffer[wavbuffer_read_idx][27+0x0c])
+        			int rx_command = wavbuffer[wavbuffer_read_idx][27+0x0c];
+        			SEGGER_RTT_printf(0, "HOTSPOT_RX_PROCESS cmd:%d buffers:%d\n",rx_command,wavbuffer_count);
+
+					switch(rx_command)
 					{
 						case HOTSPOT_RX_START:
+							SEGGER_RTT_printf(0, "HOTSPOT_RX_START\n",rx_command,wavbuffer_count);
 							sendVoiceHeaderLC_Frame(wavbuffer[wavbuffer_read_idx]);
 							lastRxState = HOTSPOT_RX_START;
 							break;
 						case HOTSPOT_RX_START_LATE:
+							SEGGER_RTT_printf(0, "HOTSPOT_RX_START_LATE\n");
+							sendVoiceHeaderLC_Frame(wavbuffer[wavbuffer_read_idx]);
 							lastRxState = HOTSPOT_RX_START_LATE;
 							break;
 						case HOTSPOT_RX_AUDIO_FRAME:
+							SEGGER_RTT_printf(0, "HOTSPOT_RX_AUDIO_FRAME\n");
+							hotspotSendVoiceFrame(wavbuffer[wavbuffer_read_idx]);
 							lastRxState = HOTSPOT_RX_AUDIO_FRAME;
 							break;
 						case HOTSPOT_RX_STOP:
+							SEGGER_RTT_printf(0, "HOTSPOT_RX_STOP\n");
 							sendTerminator_LC_Frame(wavbuffer[wavbuffer_read_idx]);
 							lastRxState = HOTSPOT_RX_STOP;
+							hotspotState = HOTSPOT_STATE_RX_END;
 							break;
 						case HOTSPOT_RX_IDLE_OR_REPEAT:
+							SEGGER_RTT_printf(0, "HOTSPOT_RX_IDLE_OR_REPEAT\n");/*
 							switch(lastRxState)
 							{
 								case HOTSPOT_RX_START:
@@ -419,8 +526,9 @@ static void hotspotStateMachine()
 									SEGGER_RTT_printf(0, "ERROR: Unkown HOTSPOT_RX_IDLE_OR_REPEAT\n");
 									break;
 							}
-
+							*/
 							break;
+
 						default:
 							SEGGER_RTT_printf(0, "ERROR: Unkown Hotspot RX state\n");
 							break;
@@ -438,7 +546,8 @@ static void hotspotStateMachine()
         		}
         		else
         		{
-        			SEGGER_RTT_printf(0, "Waiting for ACK from MMDVMHost\n");
+        			// Rx Error NAK
+        			hotspotState = HOTSPOT_STATE_RX_END;
         		}
         	}
 			break;
@@ -493,32 +602,7 @@ static void hotspotStateMachine()
 	}
 }
 
-static void startupTests()
-{
-	int i;
-	uint8_t audio[27+0x0c];
 
-	for(i=0;i<27;i++)
-	{
-		audio[i+0x0C]=i+0x10;
-	}
-
-	for(i=1;i<=6;i++)
-	{
-		hotspotSendVoiceFrame(audio, i);
-	}
-
-		/*
-	for(int i=0;i<4;i++)
-	{
-		sendVoice_LC_Frame();
-
-		vTaskDelay(portTICK_PERIOD_MS * 5);
-	}
-
-	sendTerminator_LC_Frame();
-	*/
-}
 
 int menuHotspotMode(int buttons, int keys, int events, bool isFirstRun)
 {
@@ -538,11 +622,19 @@ int menuHotspotMode(int buttons, int keys, int events, bool isFirstRun)
 		settingsUsbMode = USB_MODE_HOTSPOT;
 		MMDVMHostRxState = MMDVMHOST_RX_READY; // We have not sent anything to MMDVMHost, so it can't be busy yet.
 		updateScreen();
+		//startupTests();
 	}
 	else
 	{
 		handleEvent(buttons, keys, events);
 	}
+
+	/*if (MMDVMHostGetStatusCount==60)
+	{
+		vTaskDelay(portTICK_PERIOD_MS * 30);
+		startupTests();
+		MMDVMHostGetStatusCount++;
+	}*/
 
 	hotspotStateMachine();
 
@@ -679,8 +771,10 @@ static bool hasTXOverflow()
 }
 
 
+
 static void getStatus(uint8_t* s_ComBuf)
 {
+	MMDVMHostGetStatusCount++;
 //	SEGGER_RTT_printf(0, "getStatus\r\n");
 
   // Send all sorts of interesting internal values
@@ -800,43 +894,11 @@ static void getVersion(uint8_t s_ComBuf[])
 	USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, s_ComBuf, s_ComBuf[1]);
 }
 
-/*
- * Superseded
-
-bool hotspotModeSend_RF_StartFrame()
-{
-	taskENTER_CRITICAL();
-	memcpy((uint8_t *)com_buffer+3,DMR_frame_buffer,39);// 12 bytes Link Control + 27 bytes AMBE data
-	taskEXIT_CRITICAL();
-
-	com_buffer[0] = MMDVM_FRAME_START;
-	com_buffer[1] = 39 + 3;
-	com_buffer[2] = MMDVM_DMR_DATA2;
-	USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, (uint8_t *)com_buffer, 39+3);
-	return true;
-}
-
-bool hotspotModeSend_RF_AudioFrame()
-{
-	taskENTER_CRITICAL();
-	memcpy((uint8_t *)com_buffer+3,DMR_frame_buffer,39);// 12 bytes Link Control + 27 bytes AMBE data
-	taskEXIT_CRITICAL();
-
-	com_buffer[0] = MMDVM_FRAME_START;
-	com_buffer[1] = 39 + 3;
-	com_buffer[2] = MMDVM_DMR_DATA2;
-	USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, (uint8_t *)com_buffer, 39+3);
-	return true;
-}
-
-*/
-
 static void handleDMRShortLC(uint8_t *com_requestbuffer,uint8_t *s_ComBuf)
 {
-	SEGGER_RTT_printf(0, "MMDVM ShortLC\n %02X %02X %02X %02X %02X %02X %02X %02X %02X \n",
-							com_requestbuffer[0U],com_requestbuffer[1U],com_requestbuffer[2U],com_requestbuffer[3U],com_requestbuffer[4U],
-							com_requestbuffer[5U],com_requestbuffer[6U],com_requestbuffer[7U],com_requestbuffer[8U]);
-
+	uint8_t LCBuf[5];
+	DMRShortLC_decode(com_requestbuffer,LCBuf);
+	SEGGER_RTT_printf(0, "MMDVM ShortLC\n %02X %02X %02X %02X %02X\n",LCBuf[0U],LCBuf[1U],LCBuf[2U],LCBuf[3U],LCBuf[4U],LCBuf[5U]);
 }
 
 
@@ -847,7 +909,7 @@ void handleHotspotRequest(uint8_t com_requestbuffer[],uint8_t s_ComBuf[])
 //	SEGGER_RTT_printf(0, "handleHotspotRequest 0x%0x 0x%0x 0x%0x\r\n",com_requestbuffer[0],com_requestbuffer[1],com_requestbuffer[2]);
 	if (com_requestbuffer[0]==MMDVM_FRAME_START)
 	{
-		//SEGGER_RTT_printf(0, "command is %d\r\n",com_requestbuffer[0]);
+		//SEGGER_RTT_printf(0, "MMDVM %02x\n",com_requestbuffer[2]);
 		s_ComBuf[0] = com_requestbuffer[0];
 		s_ComBuf[2] = com_requestbuffer[2];
 		switch(com_requestbuffer[2])
@@ -969,10 +1031,11 @@ void handleHotspotRequest(uint8_t com_requestbuffer[],uint8_t s_ComBuf[])
 				sendACK(s_ComBuf);
 				break;
 			case MMDVM_ACK:
-				MMDVMHostRxState = MMDVMHOST_RX_READY;
+				//MMDVMHostRxState = MMDVMHOST_RX_READY;
 				break;
 			case MMDVM_NAK:
 				MMDVMHostRxState = MMDVMHOST_RX_ERROR;
+				SEGGER_RTT_printf(0, "MMDVMHost returned NAK\n");
 				break;
 			default:
 				SEGGER_RTT_printf(0, "Unhandled command type %d\n",com_requestbuffer[2]);

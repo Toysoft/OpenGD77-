@@ -25,7 +25,7 @@ int menuSplashScreen(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		menuTimer = 3000;
+		menuTimer = 2000;
 		updateScreen();
 	}
 	else
@@ -55,5 +55,6 @@ static void handleEvent(int buttons, int keys, int events)
 	if (menuTimer == 0)
 	{
 		menuSystemSetCurrentMenu(nonVolatileSettings.initialMenuNumber);
+		menuSystemPushNewMenu(MENU_HOTSPOT_MODE);
 	}
 }
