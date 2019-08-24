@@ -348,7 +348,7 @@ static void startupTests2()
 void hotspotRxFrameHandler(uint8_t* frameBuf)
 {
 	taskENTER_CRITICAL();
-	memcpy((uint8_t *)&wavbuffer[wavbuffer_write_idx],frameBuf+0x0c,27 + 0x0c  + 2);// 27 audio + 0x0c header + 2 hotspot signalling bytes
+	memcpy((uint8_t *)&wavbuffer[wavbuffer_write_idx],frameBuf,27 + 0x0c  + 2);// 27 audio + 0x0c header + 2 hotspot signalling bytes
 	wavbuffer_count++;
 	wavbuffer_write_idx++;
 	if (wavbuffer_write_idx > (WAV_BUFFER_COUNT - 1))
@@ -360,10 +360,10 @@ void hotspotRxFrameHandler(uint8_t* frameBuf)
 static void storeNetFrame(uint8_t *com_requestbuffer)
 {
 
-	SEGGER_RTT_printf(0, "storeNetFrame\n");
+	//SEGGER_RTT_printf(0, "storeNetFrame\n");
 	if (memcmp((uint8_t *)&com_requestbuffer[18],END_FRAME_PATTERN,6)!=0 && memcmp((uint8_t *)&com_requestbuffer[18],START_FRAME_PATTERN,6)!=0)
 	{
-		displayFrameData(com_requestbuffer,DMR_FRAME_LENGTH_BYTES);
+		//displayFrameData(com_requestbuffer,DMR_FRAME_LENGTH_BYTES);
 
     	if (wavbuffer_count>=16)
     	{
@@ -384,7 +384,7 @@ static void storeNetFrame(uint8_t *com_requestbuffer)
 	}
 	else
 	{
-		SEGGER_RTT_printf(0, "Non audio frame  %d Frames in the buffer\n",wavbuffer_count);
+		//SEGGER_RTT_printf(0, "Non audio frame  %d Frames in the buffer\n",wavbuffer_count);
 	}
 }
 
@@ -400,35 +400,35 @@ bool hotspotModeReceiveNetFrame(uint8_t *com_requestbuffer,uint8_t *s_ComBuf, in
 	switch(dataType)
 	{
 		case DT_VOICE_PI_HEADER:
-			SEGGER_RTT_printf(0, "DT_VOICE_PI_HEADER colorCode:%d\n",colorCode);
+			//SEGGER_RTT_printf(0, "DT_VOICE_PI_HEADER colorCode:%d\n",colorCode);
 			break;
 		case DT_VOICE_LC_HEADER:
-			SEGGER_RTT_printf(0, "DT_VOICE_LC_HEADER colorCode:%d\n",colorCode);
+			//SEGGER_RTT_printf(0, "DT_VOICE_LC_HEADER colorCode:%d\n",colorCode);
 			DMRFullLC_decode(com_requestbuffer + MMDVM_HEADER_LENGTH, DT_VOICE_LC_HEADER,&lc);// Need to decode the frame to get the source and destination
 			break;
 		case DT_TERMINATOR_WITH_LC:
-			SEGGER_RTT_printf(0, "DT_TERMINATOR_WITH_LC colorCode:%d\n",colorCode);
+			//SEGGER_RTT_printf(0, "DT_TERMINATOR_WITH_LC colorCode:%d\n",colorCode);
 			break;
 		case DT_CSBK:
-			SEGGER_RTT_printf(0, "DT_CSBK colorCode:%d\n",colorCode);
+			//SEGGER_RTT_printf(0, "DT_CSBK colorCode:%d\n",colorCode);
 			break;
 		case DT_DATA_HEADER:
-			SEGGER_RTT_printf(0, "DT_DATA_HEADER colorCode:%d\n",colorCode);
+			//SEGGER_RTT_printf(0, "DT_DATA_HEADER colorCode:%d\n",colorCode);
 			break;
 		case DT_RATE_12_DATA:
-			SEGGER_RTT_printf(0, "DT_RATE_12_DATA colorCode:%d\n",colorCode);
+			//SEGGER_RTT_printf(0, "DT_RATE_12_DATA colorCode:%d\n",colorCode);
 			break;
 		case DT_RATE_34_DATA:
-			SEGGER_RTT_printf(0, "DT_RATE_34_DATA colorCode:%d\n",colorCode);
+			//SEGGER_RTT_printf(0, "DT_RATE_34_DATA colorCode:%d\n",colorCode);
 			break;
 		case DT_IDLE:
-			SEGGER_RTT_printf(0, "DT_IDLE colorCode:%d\n",colorCode);
+			//SEGGER_RTT_printf(0, "DT_IDLE colorCode:%d\n",colorCode);
 			break;
 		case DT_RATE_1_DATA:
-			SEGGER_RTT_printf(0, "DT_RATE_1_DATA colorCode:%d\n",colorCode);
+			//SEGGER_RTT_printf(0, "DT_RATE_1_DATA colorCode:%d\n",colorCode);
 			break;
 		default:
-			SEGGER_RTT_printf(0, "Unhandled slot dataType %d colorCode:%d\n",dataType,colorCode);
+			//SEGGER_RTT_printf(0, "Unhandled slot dataType %d colorCode:%d\n",dataType,colorCode);
 			break;
 	}
 
