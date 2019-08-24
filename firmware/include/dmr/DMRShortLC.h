@@ -22,7 +22,7 @@
 #include "dmr/dmrDefines.h"
 #include "dmr/DMRLC.h"
 
-bool CDMRShortLC_decode(const unsigned char* in, unsigned char* out);
-void CDMRShortLC_encode(const unsigned char* in, unsigned char* out);
+bool DMRShortLC_decode(const unsigned char* in, unsigned char* out);
+void DMRShortLC_encode(const unsigned char* in, unsigned char* out);
 
 #endif

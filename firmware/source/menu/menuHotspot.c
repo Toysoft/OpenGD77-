@@ -180,22 +180,20 @@ void hotspotSendVoiceFrame(uint8_t *receivedDMRDataAndAudio)
 {
 	uint8_t frameData[DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH] = {0xE0,0x25,MMDVM_DMR_DATA2};
 	uint8_t embData[DMR_FRAME_LENGTH_BYTES];
-
 	int i;
 	int sequenceNumber = receivedDMRDataAndAudio[27+0x0c + 1] - 1;
 
-	sequenceNumber--;// make zero indexed
 	// copy the audio sections
-	displayDataBytes(receivedDMRDataAndAudio+0x0C,27);
+	//displayDataBytes(receivedDMRDataAndAudio+0x0C,27);
 	memcpy(frameData+MMDVM_HEADER_LENGTH,receivedDMRDataAndAudio+0x0C,14);
-	memcpy(frameData+MMDVM_HEADER_LENGTH+EMBEDDED_DATA_OFFSET+8,receivedDMRDataAndAudio+0x0C+EMBEDDED_DATA_OFFSET,14);
+	memcpy(frameData+MMDVM_HEADER_LENGTH+EMBEDDED_DATA_OFFSET+6,receivedDMRDataAndAudio+0x0C+EMBEDDED_DATA_OFFSET,14);
 
-	displayDataBytes(frameData,DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
+	//displayDataBytes(frameData,DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
 
 	if (sequenceNumber == 0)
 	{
 		frameData[3] = MMDVM_VOICE_SYNC_PATTERN;// sequence 0
-		for (i = 0U; i < 6U; i++)
+		for (i = 0U; i < 7U; i++)
 		{
 			frameData[i + EMBEDDED_DATA_OFFSET+MMDVM_HEADER_LENGTH] = (frameData[i + EMBEDDED_DATA_OFFSET+MMDVM_HEADER_LENGTH] & ~SYNC_MASK[i]) | MS_SOURCED_AUDIO_SYNC[i];
 		}
@@ -204,15 +202,18 @@ void hotspotSendVoiceFrame(uint8_t *receivedDMRDataAndAudio)
 	{
 		frameData[3] = sequenceNumber;
 		DMREmbeddedData_getData(embData, sequenceNumber);
-		for (i = 0U; i < 6U; i++)
+		for (i = 0U; i < 7U; i++)
 		{
 			frameData[i + EMBEDDED_DATA_OFFSET+MMDVM_HEADER_LENGTH] = (frameData[i + EMBEDDED_DATA_OFFSET+MMDVM_HEADER_LENGTH] & ~DMR_AUDIO_SEQ_MASK[i]) | DMR_AUDIO_SEQ_SYNC[sequenceNumber][i];
 			frameData[i + EMBEDDED_DATA_OFFSET+MMDVM_HEADER_LENGTH] = (frameData[i + EMBEDDED_DATA_OFFSET+MMDVM_HEADER_LENGTH] & ~DMR_EMBED_SEQ_MASK[i]) | embData[i + EMBEDDED_DATA_OFFSET];
 		}
 	}
 
+	//displayDataBytes(frameData,DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
 	SEGGER_RTT_printf(0, "hotspotSendVoiceFrame\n");
 
+//#warning TESTING RETURN ADDED
+//	return;
 	memcpy((uint8_t *)com_buffer,frameData,DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
 	USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, (uint8_t *)com_buffer, DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
 }
@@ -265,14 +266,23 @@ static void sendTerminator_LC_Frame(volatile uint8_t *receivedDMRDataAndAudio)
 static void startupTests()
 {
 	uint8_t dataBuff[27 + 0x0C+2];
+	DMRLC_T lc;
 	uint32_t srcId = 2344235;
 	uint32_t dstId = 777;
-    const uint8_t Tone1K[]  = { 0xCEU, 0xA8U, 0xFEU, 0x83U, 0xACU, 0xC4U, 0x58U, 0x20U,
-    							0x0AU, 0xCEU, 0xA8U, 0xFEU, 0x83U, 0xFCU, 0xC4U, 0x58U,
-								0x20U, 0x0AU, 0xCEU, 0xA8U, 0xFEU, 0x83U, 0xACU, 0xC4U,
-								0x58U, 0x20U, 0x0AU };
 
-	memcpy(dataBuff,0,27 + 0x0C);
+	memset(&lc,0,sizeof(DMRLC_T));// clear automatic variable
+	lc.srcId = srcId;
+	lc.dstId = dstId;
+	DMREmbeddedData_setLC(&lc);
+
+
+
+	dataBuff[27+0x0c+1] = 1;// sequence 0
+
+	for(int i=0;i<27;i++)
+	{
+		dataBuff[0x0c+i]=0x10+i;
+	}
 
 	// setup src and dst ID's
 	dataBuff[3] =  ((dstId>>16) & 0xFF);
@@ -283,18 +293,7 @@ static void startupTests()
 	dataBuff[7] =  ((srcId>> 8) & 0xFF);
 	dataBuff[8] =  ((srcId>> 0) & 0xFF);
 
-	memcpy(dataBuff + 0x0C,Tone1K,27);// copy audio data to the buffer
-
-	sendVoiceHeaderLC_Frame(dataBuff);
-	vTaskDelay(portTICK_PERIOD_MS * 10);
-	for(int i=0;i<5;i++)
-	{
-		dataBuff[27 + 0x0C+1]=i;// sequence number
-		hotspotSendVoiceFrame(dataBuff);
-		vTaskDelay(portTICK_PERIOD_MS * 10);
-	}
-	vTaskDelay(portTICK_PERIOD_MS * 10);
-	sendTerminator_LC_Frame(dataBuff);
+	hotspotSendVoiceFrame(dataBuff);
 }
 
 static void startupTests2()
