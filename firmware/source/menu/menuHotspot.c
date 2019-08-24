@@ -557,7 +557,11 @@ static void hotspotStateMachine()
 			// If MMDVMHost tells us to go back to idle. (receiving)
 			if (modemState == STATE_IDLE)
 			{
-				hotspotState = HOTSPOT_STATE_INITIALISE;
+				modemState = STATE_DMR;
+				wavbuffer_read_idx=0;
+				wavbuffer_write_idx=0;
+				wavbuffer_count=0;
+				//hotspotState = HOTSPOT_STATE_INITIALISE;
 				SEGGER_RTT_printf(0, "modemState == STATE_IDLE: HOTSPOT_STATE_TX_START_BUFFERING -> HOTSPOT_STATE_INITIALISE\n");
 			}
 			else
