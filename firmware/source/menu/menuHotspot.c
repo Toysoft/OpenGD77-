@@ -152,7 +152,7 @@ static void enableTransmission()
 }
 
 
-static void displayFrameData(uint8_t *buf, int len)
+static void displayDataBytes(uint8_t *buf, int len)
 {
 	for (int i=0;i<len;i++)
 	{
@@ -186,15 +186,16 @@ void hotspotSendVoiceFrame(uint8_t *receivedDMRDataAndAudio)
 
 	sequenceNumber--;// make zero indexed
 	// copy the audio sections
+	displayDataBytes(receivedDMRDataAndAudio+0x0C,27);
 	memcpy(frameData+MMDVM_HEADER_LENGTH,receivedDMRDataAndAudio+0x0C,14);
-	memcpy(frameData+MMDVM_HEADER_LENGTH+EMBEDDED_DATA_OFFSET+6,receivedDMRDataAndAudio+0x0C+EMBEDDED_DATA_OFFSET,14);
+	memcpy(frameData+MMDVM_HEADER_LENGTH+EMBEDDED_DATA_OFFSET+8,receivedDMRDataAndAudio+0x0C+EMBEDDED_DATA_OFFSET,14);
 
-
+	displayDataBytes(frameData,DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
 
 	if (sequenceNumber == 0)
 	{
 		frameData[3] = MMDVM_VOICE_SYNC_PATTERN;// sequence 0
-		for (i = 0U; i < 7U; i++)
+		for (i = 0U; i < 6U; i++)
 		{
 			frameData[i + EMBEDDED_DATA_OFFSET+MMDVM_HEADER_LENGTH] = (frameData[i + EMBEDDED_DATA_OFFSET+MMDVM_HEADER_LENGTH] & ~SYNC_MASK[i]) | MS_SOURCED_AUDIO_SYNC[i];
 		}
@@ -202,9 +203,8 @@ void hotspotSendVoiceFrame(uint8_t *receivedDMRDataAndAudio)
 	else
 	{
 		frameData[3] = sequenceNumber;
-		memset(frameData+4,0,DMR_FRAME_LENGTH_BYTES);//clear
 		DMREmbeddedData_getData(embData, sequenceNumber);
-		for (i = 0U; i < 7U; i++)
+		for (i = 0U; i < 6U; i++)
 		{
 			frameData[i + EMBEDDED_DATA_OFFSET+MMDVM_HEADER_LENGTH] = (frameData[i + EMBEDDED_DATA_OFFSET+MMDVM_HEADER_LENGTH] & ~DMR_AUDIO_SEQ_MASK[i]) | DMR_AUDIO_SEQ_SYNC[sequenceNumber][i];
 			frameData[i + EMBEDDED_DATA_OFFSET+MMDVM_HEADER_LENGTH] = (frameData[i + EMBEDDED_DATA_OFFSET+MMDVM_HEADER_LENGTH] & ~DMR_EMBED_SEQ_MASK[i]) | embData[i + EMBEDDED_DATA_OFFSET];
