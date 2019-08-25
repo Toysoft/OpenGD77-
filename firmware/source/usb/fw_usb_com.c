@@ -262,7 +262,7 @@ static void handleCPSRequest()
 		USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, s_ComBuf, 1);
 	}
 }
-
+#if false
 void send_packet(uint8_t val_0x82, uint8_t val_0x86, int ram)
 {
 	taskENTER_CRITICAL();
@@ -283,7 +283,7 @@ void send_packet(uint8_t val_0x82, uint8_t val_0x86, int ram)
 	}
 	taskEXIT_CRITICAL();
 }
-#if false
+
 uint8_t tmp_ram1[256];
 uint8_t tmp_ram2[256];
 
@@ -311,7 +311,7 @@ void send_packet_big(uint8_t val_0x82, uint8_t val_0x86, int ram1, int ram2)
 	}
 	taskEXIT_CRITICAL();
 }
-#endif
+
 void add_to_commbuffer(uint8_t value)
 {
 	com_buffer[com_buffer_write_idx]=value;
@@ -322,7 +322,7 @@ void add_to_commbuffer(uint8_t value)
 		com_buffer_write_idx=0;
 	}
 }
-
+#endif
 void USB_DEBUG_PRINT(char *str)
 {
 	strcpy((char*)s_ComBuf,str);

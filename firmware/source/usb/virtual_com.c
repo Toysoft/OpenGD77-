@@ -8,6 +8,7 @@
 #include "fsl_device_registers.h"
 #include "clock_config.h"
 #include "board.h"
+#include <SeggerRTT/RTT/SEGGER_RTT.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -434,11 +435,12 @@ void USB_DeviceApplicationInit(void)
 
     if (kStatus_USB_Success != USB_DeviceClassInit(CONTROLLER_ID, &s_cdcAcmConfigList, &s_cdcVcom.deviceHandle))
     {
-        usb_echo("USB device init failed\r\n");
+    	SEGGER_RTT_printf(0, "USB device init failed\r\n");
+//        usb_echo("USB device init failed\r\n");
     }
     else
     {
-        usb_echo("USB device CDC virtual com demo\r\n");
+        //usb_echo("USB device CDC virtual com demo\r\n");
         s_cdcVcom.cdcAcmHandle = s_cdcAcmConfigList.config->classHandle;
     }
 

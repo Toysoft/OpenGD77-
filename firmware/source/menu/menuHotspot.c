@@ -184,11 +184,8 @@ void hotspotSendVoiceFrame(uint8_t *receivedDMRDataAndAudio)
 	int sequenceNumber = receivedDMRDataAndAudio[27+0x0c + 1] - 1;
 
 	// copy the audio sections
-	//displayDataBytes(receivedDMRDataAndAudio+0x0C,27);
 	memcpy(frameData+MMDVM_HEADER_LENGTH,receivedDMRDataAndAudio+0x0C,14);
 	memcpy(frameData+MMDVM_HEADER_LENGTH+EMBEDDED_DATA_OFFSET+6,receivedDMRDataAndAudio+0x0C+EMBEDDED_DATA_OFFSET,14);
-
-	//displayDataBytes(frameData,DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
 
 	if (sequenceNumber == 0)
 	{
@@ -210,7 +207,7 @@ void hotspotSendVoiceFrame(uint8_t *receivedDMRDataAndAudio)
 	}
 
 	//displayDataBytes(frameData,DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
-	SEGGER_RTT_printf(0, "hotspotSendVoiceFrame\n");
+//	SEGGER_RTT_printf(0, "hotspotSendVoiceFrame\n");
 
 //#warning TESTING RETURN ADDED
 //	return;
@@ -234,7 +231,7 @@ static void sendVoiceHeaderLC_Frame(volatile uint8_t *receivedDMRDataAndAudio)
 		frameData[i + 12U+MMDVM_HEADER_LENGTH] = (frameData[i + 12U+MMDVM_HEADER_LENGTH] & ~LC_SYNC_MASK_FULL[i]) | VOICE_LC_SYNC_FULL[i];
 	}
 
-	SEGGER_RTT_printf(0, "sendVoiceHeaderLC_Frame\n");
+//	SEGGER_RTT_printf(0, "sendVoiceHeaderLC_Frame\n");
 
 	memcpy((uint8_t *)com_buffer,frameData,DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
 	USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, (uint8_t *)com_buffer, DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
@@ -256,7 +253,7 @@ static void sendTerminator_LC_Frame(volatile uint8_t *receivedDMRDataAndAudio)
 		frameData[i + 12U+MMDVM_HEADER_LENGTH] = (frameData[i + 12U + MMDVM_HEADER_LENGTH] & ~LC_SYNC_MASK_FULL[i]) | TERMINATOR_LC_SYNC_FULL[i];
 	}
 
-	SEGGER_RTT_printf(0, "sendTerminator_LC_Frame\n");
+//	SEGGER_RTT_printf(0, "sendTerminator_LC_Frame\n");
 
 
 	memcpy((uint8_t *)com_buffer,frameData,DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
@@ -314,7 +311,7 @@ static void startupTests2()
 	for(int sequenceNumber=0;sequenceNumber<6;sequenceNumber++)
 	{
 		memset(frameData+4,0,DMR_FRAME_LENGTH_BYTES);//clear
-		SEGGER_RTT_printf(0, "Sequence %d\n",sequenceNumber);
+//		SEGGER_RTT_printf(0, "Sequence %d\n",sequenceNumber);
 		vTaskDelay(portTICK_PERIOD_MS * 10);
 
 		if (sequenceNumber == 0)
@@ -362,8 +359,6 @@ static void storeNetFrame(uint8_t *com_requestbuffer)
 	//SEGGER_RTT_printf(0, "storeNetFrame\n");
 	if (memcmp((uint8_t *)&com_requestbuffer[18],END_FRAME_PATTERN,6)!=0 && memcmp((uint8_t *)&com_requestbuffer[18],START_FRAME_PATTERN,6)!=0)
 	{
-		//displayFrameData(com_requestbuffer,DMR_FRAME_LENGTH_BYTES);
-
     	if (wavbuffer_count>=16)
     	{
     		SEGGER_RTT_printf(0, "------------------------------ Buffer overflow ---------------------------\n");
@@ -438,11 +433,11 @@ bool hotspotModeReceiveNetFrame(uint8_t *com_requestbuffer,uint8_t *s_ComBuf, in
 		trxTalkGroupOrPcId  = lc.dstId;
 		trxDMRID = lc.srcId;
 
-		SEGGER_RTT_printf(0, "Net frame FID:%d FLCO:%d PF:%d R:%d dstId:%d src:Id:%d options:0x%02x\n",lc.FID,lc.FLCO,lc.PF,lc.R,lc.dstId,lc.srcId,lc.options);
-
-		// the Src and Dst Id's have been sent, and we are in RX mode then an incoming Net normally arrives next
-		//if (hotspotState == HOTSPOT_STATE_RX_START || hotspotState = HOTSPOT_STATE_RX_PROCESS)
+		if (hotspotState != HOTSPOT_STATE_TX_START_BUFFERING)
 		{
+			SEGGER_RTT_printf(0, "Net frame FID:%d FLCO:%d PF:%d R:%d dstId:%d src:Id:%d options:0x%02x\n",lc.FID,lc.FLCO,lc.PF,lc.R,lc.dstId,lc.srcId,lc.options);
+
+			// the Src and Dst Id's have been sent, and we are in RX mode then an incoming Net normally arrives next
 			hotspotState = HOTSPOT_STATE_TX_START_BUFFERING;
 			SEGGER_RTT_printf(0, "hotspotModeReceiveNetFrame HOTSPOT_STATE_TX_BUFFERING\n");
 		}
@@ -501,7 +496,7 @@ static void hotspotStateMachine()
 							lastRxState = HOTSPOT_RX_START_LATE;
 							break;
 						case HOTSPOT_RX_AUDIO_FRAME:
-							SEGGER_RTT_printf(0, "HOTSPOT_RX_AUDIO_FRAME\n");
+							//SEGGER_RTT_printf(0, "HOTSPOT_RX_AUDIO_FRAME\n");
 							hotspotSendVoiceFrame(wavbuffer[wavbuffer_read_idx]);
 							lastRxState = HOTSPOT_RX_AUDIO_FRAME;
 							break;
@@ -604,8 +599,6 @@ static void hotspotStateMachine()
 			break;
 	}
 }
-
-
 
 int menuHotspotMode(int buttons, int keys, int events, bool isFirstRun)
 {

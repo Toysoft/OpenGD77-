@@ -647,9 +647,9 @@ void tick_HR_C6000()
             if (tick_cnt==10)
             {
             	slot_state = DMR_STATE_RX_END;
-//#if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
+#if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
             	SEGGER_RTT_printf(0, ">>> TIMEOUT\r\n");
-//#endif
+#endif
             }
     	}
 	}
@@ -685,11 +685,11 @@ void tick_HR_C6000()
     		{
     			if (tmp_val_0x86 & 0x10)
     			{
-    				send_packet(0x20, 0x10, -1);
+// deprecated. Use Segger print if necessary    				send_packet(0x20, 0x10, -1);
     			}
     			if (tmp_val_0x86 & 0x04)
     			{
-    				send_packet(0x20, 0x04, -1);
+// deprecated. Use Segger print if necessary    				send_packet(0x20, 0x04, -1);
     			}
 
     			write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0x20);
@@ -707,9 +707,9 @@ void tick_HR_C6000()
                 	init_codec();
                 	skip_count = 2;
 
-//#if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
+#if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
 					SEGGER_RTT_printf(0, ">>> RX START LATE\r\n");
-//#endif
+#endif
 					if (settingsUsbMode == USB_MODE_HOTSPOT)
 					{
 						DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_START_LATE;
@@ -727,7 +727,7 @@ void tick_HR_C6000()
             	SEGGER_RTT_printf(0, "\r\n");
 #endif
 
-    			send_packet(0x10, 0x00, -1);
+// deprecated. Use Segger print if necessary    			send_packet(0x10, 0x00, -1);
 
     			write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0x10);
     		}
@@ -746,9 +746,9 @@ void tick_HR_C6000()
                 	store_qsodata();
                 	init_codec();
                 	skip_count = 0;
-//#if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
+#if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
             	SEGGER_RTT_printf(0, ">>> RX START\r\n");
-//#endif
+#endif
 					if (settingsUsbMode == USB_MODE_HOTSPOT)
 					{
 						DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_START;
@@ -759,9 +759,9 @@ void tick_HR_C6000()
                 if ((sc==2) && (rxdt==2) && callAcceptFilter())
                 {
                 	slot_state = DMR_STATE_RX_END;
-//#if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
+#if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
             	SEGGER_RTT_printf(0, ">>> RX STOP\r\n");
-//#endif
+#endif
 
 					if (settingsUsbMode == USB_MODE_HOTSPOT)
 					{
@@ -778,7 +778,7 @@ void tick_HR_C6000()
                 // Detect/decode voice packet and transfer it into the output soundbuffer
                 if ((slot_state != DMR_STATE_IDLE) && (skip_count==0) && (sc!=2) && ((rxdt & 0x07) >= 0x01) && ((rxdt & 0x07) <= 0x06))
                 {
-#if true
+#if false
                 	SEGGER_RTT_printf(0, ">>> Audio frame %02x\r\n",rxdt & 0x07);
 #endif
                 	store_qsodata();
@@ -797,12 +797,15 @@ void tick_HR_C6000()
                 }
                 else
                 {
+#if false
                     if (settingsUsbMode == USB_MODE_HOTSPOT)
                     {
    						DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_IDLE_OR_REPEAT;
    						hotspotRxFrameHandler(DMR_frame_buffer);
                     }
+
                 	SEGGER_RTT_printf(0, ">>> Not valid data (perhaps Idle) or another Voice header LC frame\r\n");
+#endif
                 }
 
 #if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
@@ -814,21 +817,21 @@ void tick_HR_C6000()
             	SEGGER_RTT_printf(0, "\r\n");
 #endif
 
-                send_packet(0x08, 0x00, -1);
+// deprecated. Use Segger print if necessary	send_packet(0x08, 0x00, -1);
 
     			write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0x08);
     		}
 
     		if (tmp_val_0x82 & 0x01) // InterPHYOnly
     		{
-    			send_packet(0x01, 0x00, -1);
+// deprecated. Use Segger print if necessary  	send_packet(0x01, 0x00, -1);
 
     			write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0x01);
     		}
 
     		if (tmp_val_0x82 & 0xC6)
     		{
-    			send_packet(0xFF, 0xFF, -1);
+// deprecated. Use Segger print if necessary     send_packet(0xFF, 0xFF, -1);
 
     			write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0xC6);
     		}
