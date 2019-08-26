@@ -78,8 +78,10 @@ uint32_t savedTGorPC;
 int savedPower;
 uint32_t MMDVMHostGetStatusCount = 0;
 
-volatile int usbComSenBufWritePosition = 0;
-volatile int usbComSenBufReadPosition = 0;
+volatile int usbComSendBufWritePosition = 0;
+volatile int usbComSendBufReadPosition = 0;
+volatile int usbComSendBufCount = 0;
+volatile usb_status_t lastUSBSerialTxStatus = kStatus_USB_Success;
 
 volatile enum
 {
@@ -134,7 +136,7 @@ const uint8_t DMR_EMBED_SEQ_MASK[]  = 		{0x00U, 0x0FU, 0xFFU, 0xFFU, 0xFFU, 0xF0
 
 static void updateScreen();
 static void handleEvent(int buttons, int keys, int events);
-
+/*
 static usb_status_t USBCommWriteBuffer(uint8_t *buff,int length)
 {
 	usb_status_t status;
@@ -158,32 +160,89 @@ static usb_status_t USBCommWriteBuffer(uint8_t *buff,int length)
 	}
 
 	return status;
+}*/
+
+static void displayDataBytes(uint8_t *buf, int len)
+{
+	for (int i=0;i<len;i++)
+	{
+    	SEGGER_RTT_printf(0, " %02x", buf[i]);
+	}
+	SEGGER_RTT_printf(0, "\n");
+}
+static void enqueueUSBData(uint8_t *buff,int length)
+{
+	//SEGGER_RTT_printf(0, "Enqueue: ");
+	//displayDataBytes(buff,length);
+	if ((usbComSendBufWritePosition + length + 1) > (COM_BUFFER_SIZE - 1) )
+	{
+		//SEGGER_RTT_printf(0, "Looping write buffer back to start pos:%d len:%d\n");
+		usbComSendBuf[usbComSendBufWritePosition]=0;// flag that the data block won't fit and will be put at the start of the buffer
+		usbComSendBufWritePosition=0;
+	}
+
+	usbComSendBuf[usbComSendBufWritePosition]=length;
+	memcpy(usbComSendBuf + usbComSendBufWritePosition +1,buff,length);
+	usbComSendBufWritePosition += 1 + length;
+	usbComSendBufCount++;
 }
 
-
-
-static usb_status_t sendACK()
+static void processUSBDataQueue()
 {
-	usb_status_t status;
-	//  SEGGER_RTT_printf(0, "sendACK\r\n");
-	usbComSendBuf[0U] = MMDVM_FRAME_START;
-	usbComSendBuf[1U] = 4U;
-	usbComSendBuf[2U] = MMDVM_ACK;
-	usbComSendBuf[3U] = com_requestbuffer[2U];
-	status = USBCommWriteBuffer(usbComSendBuf,usbComSendBuf[1]);
+	if (usbComSendBufCount!=0)
+	{
+		//SEGGER_RTT_printf(0, "Sending USB:");
+		if (usbComSendBuf[usbComSendBufReadPosition]==0)
+		{
+			usbComSendBufReadPosition=0;
+		}
+		//displayDataBytes(usbComSendBuf+usbComSendBufReadPosition+1,usbComSendBuf[usbComSendBufReadPosition]);
 
-	return status;
+		if (lastUSBSerialTxStatus!=kStatus_USB_Success)
+		{
+			vTaskDelay(portTICK_PERIOD_MS * 5);	// if the last USB Tx failed then delay 5 secs before we retry
+		}
+		lastUSBSerialTxStatus = USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, &usbComSendBuf[usbComSendBufReadPosition+1],usbComSendBuf[usbComSendBufReadPosition]);
+		if ( lastUSBSerialTxStatus == kStatus_USB_Success)
+		{
+			//SEGGER_RTT_printf(0, "Success\n");
+			usbComSendBufReadPosition += usbComSendBuf[usbComSendBufReadPosition] + 1;
+			if (usbComSendBufReadPosition > (COM_BUFFER_SIZE-1))
+			{
+				//SEGGER_RTT_printf(0, "Looping read buffer back to start\n");
+				usbComSendBufReadPosition=0;
+			}
+			usbComSendBufCount--;
+		}
+		else
+		{
+			SEGGER_RTT_printf(0, "USB Send Fail\n");
+		}
+	}
 }
 
-static usb_status_t sendNAK(uint8_t err)
+static void sendACK()
 {
-	SEGGER_RTT_printf(0, "sendNAK\r\n");
-	usbComSendBuf[0U] = MMDVM_FRAME_START;
-	usbComSendBuf[1U] = 5U;
-	usbComSendBuf[2U] = MMDVM_NAK;
-	usbComSendBuf[3U] = com_requestbuffer[2U];
-	usbComSendBuf[4U] = err;
-	return USBCommWriteBuffer(usbComSendBuf,usbComSendBuf[1]);
+	uint8_t buf[4];
+	SEGGER_RTT_printf(0, "sendACK\n");
+
+	buf[0U] = MMDVM_FRAME_START;
+	buf[1U] = 4U;
+	buf[2U] = MMDVM_ACK;
+	buf[3U] = com_requestbuffer[2U];
+	enqueueUSBData(buf,4);
+}
+
+static void sendNAK(uint8_t err)
+{
+	uint8_t buf[5];
+	SEGGER_RTT_printf(0, "sendNAK\n");
+	buf[0U] = MMDVM_FRAME_START;
+	buf[1U] = 5U;
+	buf[2U] = MMDVM_NAK;
+	buf[3U] = com_requestbuffer[2U];
+	buf[4U] = err;
+	enqueueUSBData(buf,5);
 }
 
 static void enableTransmission()
@@ -199,16 +258,9 @@ static void enableTransmission()
 	trx_setTX();
 }
 
-static void displayDataBytes(uint8_t *buf, int len)
-{
-	for (int i=0;i<len;i++)
-	{
-    	SEGGER_RTT_printf(0, " %02x", buf[i]);
-	}
-	SEGGER_RTT_printf(0, "\r\n");
-}
 
-usb_status_t hotspotSendVoiceFrame(uint8_t *receivedDMRDataAndAudio)
+
+static void  hotspotSendVoiceFrame(uint8_t *receivedDMRDataAndAudio)
 {
 	uint8_t frameData[DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH] = {0xE0,0x25,MMDVM_DMR_DATA2};
 	uint8_t embData[DMR_FRAME_LENGTH_BYTES];
@@ -243,12 +295,15 @@ usb_status_t hotspotSendVoiceFrame(uint8_t *receivedDMRDataAndAudio)
 
 //#warning TESTING RETURN ADDED
 //	return;
-	memcpy((uint8_t *)usbComSendBuf,frameData,DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
-	return USBCommWriteBuffer((uint8_t *)usbComSendBuf, DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
+	//memcpy((uint8_t *)usbComSendBuf,frameData,DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
+	//return USBCommWriteBuffer((uint8_t *)usbComSendBuf, DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
+
+	//SEGGER_RTT_printf(0, "hotspotSendVoiceFrame\n");
+	enqueueUSBData(frameData,DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
 }
 
 
-static usb_status_t sendVoiceHeaderLC_Frame(volatile uint8_t *receivedDMRDataAndAudio)
+static void sendVoiceHeaderLC_Frame(volatile uint8_t *receivedDMRDataAndAudio)
 {
 	uint8_t frameData[DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH] = {0xE0,0x25,0x1A,DMR_SYNC_DATA | DT_VOICE_LC_HEADER};
 	DMRLC_T lc;
@@ -265,12 +320,14 @@ static usb_status_t sendVoiceHeaderLC_Frame(volatile uint8_t *receivedDMRDataAnd
 
 //	SEGGER_RTT_printf(0, "sendVoiceHeaderLC_Frame\n");
 
-	memcpy((uint8_t *)usbComSendBuf,frameData,DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
-	return USBCommWriteBuffer((uint8_t *)usbComSendBuf, DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
+	//memcpy((uint8_t *)usbComSendBuf,frameData,DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
+	//return USBCommWriteBuffer((uint8_t *)usbComSendBuf, DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
 
+	//SEGGER_RTT_printf(0, "sendVoiceHeaderLC_Frame\n");
+	enqueueUSBData(frameData,DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
 }
 
-static usb_status_t sendTerminator_LC_Frame(volatile uint8_t *receivedDMRDataAndAudio)
+static void sendTerminator_LC_Frame(volatile uint8_t *receivedDMRDataAndAudio)
 {
 	uint8_t frameData[DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH] = {0xE0,0x25,0x1A,DMR_SYNC_DATA | DT_TERMINATOR_WITH_LC};
 	DMRLC_T lc;
@@ -288,8 +345,11 @@ static usb_status_t sendTerminator_LC_Frame(volatile uint8_t *receivedDMRDataAnd
 //	SEGGER_RTT_printf(0, "sendTerminator_LC_Frame\n");
 
 
-	memcpy((uint8_t *)usbComSendBuf,frameData,DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
-	return USBCommWriteBuffer( (uint8_t *)usbComSendBuf, DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
+	//memcpy((uint8_t *)usbComSendBuf,frameData,DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
+	//return USBCommWriteBuffer( (uint8_t *)usbComSendBuf, DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
+
+	//SEGGER_RTT_printf(0, "sendTerminator_LC_Frame\n");
+	enqueueUSBData(frameData,DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
 }
 
 static void startupTests()
@@ -303,8 +363,6 @@ static void startupTests()
 	lc.srcId = srcId;
 	lc.dstId = dstId;
 	DMREmbeddedData_setLC(&lc);
-
-
 
 	dataBuff[27+0x0c+1] = 1;// sequence 0
 
@@ -478,7 +536,7 @@ bool hotspotModeReceiveNetFrame(uint8_t *com_requestbuffer, int timeSlot)
 	{
 		storeNetFrame(com_requestbuffer);
 	}
-
+	//SEGGER_RTT_printf(0, "hotspotModeReceiveNetFrame ");
 	sendACK();
 	return true;
 
@@ -513,7 +571,6 @@ static void hotspotStateMachine()
         		if (MMDVMHostRxState == MMDVMHOST_RX_READY)
         		{
         			int rx_command = wavbuffer[wavbuffer_read_idx][27+0x0c];
-        			usb_status_t status=kStatus_USB_Success;
         			SEGGER_RTT_printf(0, "HOTSPOT_RX_PROCESS cmd:%d buffers:%d\n",rx_command,wavbuffer_count);
 
 					switch(rx_command)
@@ -530,7 +587,7 @@ static void hotspotStateMachine()
 							break;
 						case HOTSPOT_RX_AUDIO_FRAME:
 							//SEGGER_RTT_printf(0, "HOTSPOT_RX_AUDIO_FRAME\n");
-							status = hotspotSendVoiceFrame(wavbuffer[wavbuffer_read_idx]);
+							hotspotSendVoiceFrame(wavbuffer[wavbuffer_read_idx]);
 							lastRxState = HOTSPOT_RX_AUDIO_FRAME;
 							break;
 						case HOTSPOT_RX_STOP:
@@ -561,7 +618,7 @@ static void hotspotStateMachine()
 							break;
 					}
 					// if we failed to send something then don't pull it out of the buffer and try again the next time through the loop
-					if (status==kStatus_USB_Success)
+					//if (status==kStatus_USB_Success)
 					{
 						wavbuffer_read_idx++;
 						if (wavbuffer_read_idx > (WAV_BUFFER_COUNT-1))
@@ -668,11 +725,11 @@ int menuHotspotMode(int buttons, int keys, int events, bool isFirstRun)
 		startupTests();
 		MMDVMHostGetStatusCount++;
 	}*/
+
+	processUSBDataQueue();
 	if (com_request==1)
 	{
-		taskENTER_CRITICAL();
 		handleHotspotRequest();
-		taskEXIT_CRITICAL();
 		com_request=0;
 	}
 	hotspotStateMachine();
@@ -811,40 +868,41 @@ static bool hasTXOverflow()
 
 
 
-static usb_status_t getStatus()
+static void getStatus()
 {
-	MMDVMHostGetStatusCount++;
+	uint8_t buf[16];
 	SEGGER_RTT_printf(0, "getStatus\n");
   // Send all sorts of interesting internal values
-	usbComSendBuf[0U]  = MMDVM_FRAME_START;
-	usbComSendBuf[1U]  = 13U;
-	usbComSendBuf[2U]  = MMDVM_GET_STATUS;
-	usbComSendBuf[3U]  = 0x00U;
-	usbComSendBuf[3U] |= 0x02U;// DMR ENABLED
-	usbComSendBuf[4U]  = modemState;
-	usbComSendBuf[5U]  = (	hotspotState == HOTSPOT_STATE_TX_START_BUFFERING ||
+	buf[0U]  = MMDVM_FRAME_START;
+	buf[1U]  = 13U;
+	buf[2U]  = MMDVM_GET_STATUS;
+	buf[3U]  = 0x00U;
+	buf[3U] |= 0x02U;// DMR ENABLED
+	buf[4U]  = modemState;
+	buf[5U]  = (	hotspotState == HOTSPOT_STATE_TX_START_BUFFERING ||
 						hotspotState == HOTSPOT_STATE_TRANSMITTING ||
 						hotspotState == HOTSPOT_STATE_TX_SHUTDOWN)  ? 0x01U : 0x00U;
 
 	if (hasRXOverflow())
 	{
-		usbComSendBuf[5U] |= 0x04U;
+		buf[5U] |= 0x04U;
 	}
 
 	if (hasTXOverflow())
 	{
-		usbComSendBuf[5U] |= 0x08U;
+		buf[5U] |= 0x08U;
 	}
-	usbComSendBuf[6U] = 	0U;// No DSTAR
-	usbComSendBuf[7U] = 	10U;// DMR
-	usbComSendBuf[8U] = 	WAV_BUFFER_COUNT - wavbuffer_count;
-	usbComSendBuf[9U] = 	0U;// No YSF
-	usbComSendBuf[10U] = 0U;// No P25
-	usbComSendBuf[11U] = 0U;// no NXDN
-	usbComSendBuf[12U] = 0U;// no POCSAG
+	buf[6U] = 	0U;// No DSTAR
+	buf[7U] = 	10U;// DMR
+	buf[8U] = 	WAV_BUFFER_COUNT - wavbuffer_count;
+	buf[9U] = 	0U;// No YSF
+	buf[10U] = 0U;// No P25
+	buf[11U] = 0U;// no NXDN
+	buf[12U] = 0U;// no POCSAG
 
 	//SEGGER_RTT_printf(0, "getStatus buffers=%d\r\n",s_ComBuf[8U]);
-	return USBCommWriteBuffer( usbComSendBuf, usbComSendBuf[1]);
+	//return USBCommWriteBuffer( usbComSendBuf, usbComSendBuf[1]);
+	enqueueUSBData(buf,buf[1U]);
 }
 
 static uint8_t setConfig(const uint8_t* data, uint8_t length)
@@ -923,13 +981,17 @@ uint8_t setMode(const uint8_t* data, uint8_t length)
 
 static usb_status_t getVersion()
 {
+	uint8_t buf[64];
 	SEGGER_RTT_printf(0, "getVersion\r\n");
 
 	const char HOTSPOT_NAME[] = "OpenGD77";
-	usbComSendBuf[1]= 4 + strlen(HOTSPOT_NAME);// minus 1 because there is no terminator
-	usbComSendBuf[3]= PROTOCOL_VERSION;
-	strcpy((char *)&usbComSendBuf[4],HOTSPOT_NAME);
-	return USBCommWriteBuffer( usbComSendBuf, usbComSendBuf[1]);
+	buf[0U]  = MMDVM_FRAME_START;
+	buf[1U]= 4 + strlen(HOTSPOT_NAME);// minus 1 because there is no terminator
+	buf[2U]  = MMDVM_GET_VERSION;
+	buf[3]= PROTOCOL_VERSION;
+	strcpy((char *)&buf[4],HOTSPOT_NAME);
+	//return USBCommWriteBuffer( usbComSendBuf, usbComSendBuf[1]);
+	enqueueUSBData(buf,buf[1]);
 }
 
 static void handleDMRShortLC()
@@ -947,8 +1009,6 @@ void handleHotspotRequest()
 	if (com_requestbuffer[0]==MMDVM_FRAME_START)
 	{
 		//SEGGER_RTT_printf(0, "MMDVM %02x\n",com_requestbuffer[2]);
-		usbComSendBuf[0] = com_requestbuffer[0];
-		usbComSendBuf[2] = com_requestbuffer[2];
 		switch(com_requestbuffer[2])
 		{
 			case MMDVM_GET_VERSION:

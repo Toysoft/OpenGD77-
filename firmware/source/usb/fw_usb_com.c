@@ -32,7 +32,7 @@ volatile int com_buffer_cnt = 0;
 
 volatile int com_request = 0;
 volatile uint8_t com_requestbuffer[COM_REQUESTBUFFER_SIZE];
-USB_DMA_NONINIT_DATA_ALIGN(USB_DATA_ALIGN_SIZE) uint8_t usbComSendBuf[DATA_BUFF_SIZE];
+USB_DMA_NONINIT_DATA_ALIGN(USB_DATA_ALIGN_SIZE) uint8_t usbComSendBuf[COM_BUFFER_SIZE];//DATA_BUFF_SIZE
 
 
 int sector = -1;
