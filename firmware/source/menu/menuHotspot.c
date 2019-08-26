@@ -79,6 +79,7 @@ int savedPower;
 uint32_t MMDVMHostGetStatusCount = 0;
 
 volatile int usbComSenBufWritePosition = 0;
+volatile int usbComSenBufReadPosition = 0;
 
 volatile enum
 {
@@ -114,7 +115,7 @@ volatile enum { HOTSPOT_STATE_INITIALISE,
 				HOTSPOT_STATE_TRANSMITTING,
 				HOTSPOT_STATE_TX_SHUTDOWN } hotspotState;
 
-const int USB_SERIAL_TX_RETRIES = 5;
+const int USB_SERIAL_TX_RETRIES = 2;
 const unsigned char VOICE_LC_SYNC_FULL[] 		= { 0x04U, 0x6DU, 0x5DU, 0x7FU, 0x77U, 0xFDU, 0x75U, 0x7EU, 0x30U};
 const unsigned char TERMINATOR_LC_SYNC_FULL[]	= { 0x04U, 0xADU, 0x5DU, 0x7FU, 0x77U, 0xFDU, 0x75U, 0x79U, 0x60U};
 
@@ -142,7 +143,7 @@ static usb_status_t USBCommWriteBuffer(uint8_t *buff,int length)
 	{
 		if (retires != USB_SERIAL_TX_RETRIES)
 		{
-			vTaskDelay(portTICK_PERIOD_MS * 1);			// don't delay the first time in the loop.
+			vTaskDelay(portTICK_PERIOD_MS * 5);			// don't delay the first time in the loop.
 		}
 		status = USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, buff, length);
 
@@ -158,6 +159,8 @@ static usb_status_t USBCommWriteBuffer(uint8_t *buff,int length)
 
 	return status;
 }
+
+
 
 static usb_status_t sendACK()
 {
@@ -411,7 +414,7 @@ static void storeNetFrame(uint8_t *com_requestbuffer)
 	}
 }
 
-bool hotspotModeReceiveNetFrame(uint8_t *com_requestbuffer,uint8_t *s_ComBuf, int timeSlot)
+bool hotspotModeReceiveNetFrame(uint8_t *com_requestbuffer, int timeSlot)
 {
 	DMRLC_T lc;
 	uint32_t colorCode,dataType;
@@ -665,7 +668,13 @@ int menuHotspotMode(int buttons, int keys, int events, bool isFirstRun)
 		startupTests();
 		MMDVMHostGetStatusCount++;
 	}*/
-
+	if (com_request==1)
+	{
+		taskENTER_CRITICAL();
+		handleHotspotRequest();
+		taskEXIT_CRITICAL();
+		com_request=0;
+	}
 	hotspotStateMachine();
 
 	return 0;
@@ -802,40 +811,40 @@ static bool hasTXOverflow()
 
 
 
-static usb_status_t getStatus(uint8_t* s_ComBuf)
+static usb_status_t getStatus()
 {
 	MMDVMHostGetStatusCount++;
 	SEGGER_RTT_printf(0, "getStatus\n");
   // Send all sorts of interesting internal values
-	s_ComBuf[0U]  = MMDVM_FRAME_START;
-	s_ComBuf[1U]  = 13U;
-	s_ComBuf[2U]  = MMDVM_GET_STATUS;
-	s_ComBuf[3U]  = 0x00U;
-	s_ComBuf[3U] |= 0x02U;// DMR ENABLED
-	s_ComBuf[4U]  = modemState;
-	s_ComBuf[5U]  = (	hotspotState == HOTSPOT_STATE_TX_START_BUFFERING ||
+	usbComSendBuf[0U]  = MMDVM_FRAME_START;
+	usbComSendBuf[1U]  = 13U;
+	usbComSendBuf[2U]  = MMDVM_GET_STATUS;
+	usbComSendBuf[3U]  = 0x00U;
+	usbComSendBuf[3U] |= 0x02U;// DMR ENABLED
+	usbComSendBuf[4U]  = modemState;
+	usbComSendBuf[5U]  = (	hotspotState == HOTSPOT_STATE_TX_START_BUFFERING ||
 						hotspotState == HOTSPOT_STATE_TRANSMITTING ||
 						hotspotState == HOTSPOT_STATE_TX_SHUTDOWN)  ? 0x01U : 0x00U;
 
 	if (hasRXOverflow())
 	{
-		s_ComBuf[5U] |= 0x04U;
+		usbComSendBuf[5U] |= 0x04U;
 	}
 
 	if (hasTXOverflow())
 	{
-		s_ComBuf[5U] |= 0x08U;
+		usbComSendBuf[5U] |= 0x08U;
 	}
-	s_ComBuf[6U] = 	0U;// No DSTAR
-	s_ComBuf[7U] = 	10U;
-	s_ComBuf[8U] = 	WAV_BUFFER_COUNT - wavbuffer_count;
-	s_ComBuf[9U] = 	0U;// No YSF
-	s_ComBuf[10U] = 0U;// No P25
-	s_ComBuf[11U] = 0U;// no NXDN
-	s_ComBuf[12U] = 0U;// no POCSAG
+	usbComSendBuf[6U] = 	0U;// No DSTAR
+	usbComSendBuf[7U] = 	10U;// DMR
+	usbComSendBuf[8U] = 	WAV_BUFFER_COUNT - wavbuffer_count;
+	usbComSendBuf[9U] = 	0U;// No YSF
+	usbComSendBuf[10U] = 0U;// No P25
+	usbComSendBuf[11U] = 0U;// no NXDN
+	usbComSendBuf[12U] = 0U;// no POCSAG
 
 	//SEGGER_RTT_printf(0, "getStatus buffers=%d\r\n",s_ComBuf[8U]);
-	return USBCommWriteBuffer( s_ComBuf, s_ComBuf[1]);
+	return USBCommWriteBuffer( usbComSendBuf, usbComSendBuf[1]);
 }
 
 static uint8_t setConfig(const uint8_t* data, uint8_t length)
@@ -912,46 +921,45 @@ uint8_t setMode(const uint8_t* data, uint8_t length)
 
 
 
-static usb_status_t getVersion(uint8_t s_ComBuf[])
+static usb_status_t getVersion()
 {
 	SEGGER_RTT_printf(0, "getVersion\r\n");
 
 	const char HOTSPOT_NAME[] = "OpenGD77";
-	s_ComBuf[1]= 4 + strlen(HOTSPOT_NAME);// minus 1 because there is no terminator
-	s_ComBuf[3]= PROTOCOL_VERSION;
-	strcpy((char *)&s_ComBuf[4],HOTSPOT_NAME);
-	return USBCommWriteBuffer( s_ComBuf, s_ComBuf[1]);
+	usbComSendBuf[1]= 4 + strlen(HOTSPOT_NAME);// minus 1 because there is no terminator
+	usbComSendBuf[3]= PROTOCOL_VERSION;
+	strcpy((char *)&usbComSendBuf[4],HOTSPOT_NAME);
+	return USBCommWriteBuffer( usbComSendBuf, usbComSendBuf[1]);
 }
 
-static void handleDMRShortLC(uint8_t *com_requestbuffer,uint8_t *s_ComBuf)
+static void handleDMRShortLC()
 {
 	uint8_t LCBuf[5];
-	DMRShortLC_decode(com_requestbuffer,LCBuf);
+	DMRShortLC_decode(com_requestbuffer + 3U,LCBuf);
 	SEGGER_RTT_printf(0, "MMDVM ShortLC\n %02X %02X %02X %02X %02X\n",LCBuf[0U],LCBuf[1U],LCBuf[2U],LCBuf[3U],LCBuf[4U],LCBuf[5U]);
 }
 
 
-void handleHotspotRequest(uint8_t com_requestbuffer[],uint8_t s_ComBuf[])
+void handleHotspotRequest()
 {
 	int err;
-
 //	SEGGER_RTT_printf(0, "handleHotspotRequest 0x%0x 0x%0x 0x%0x\r\n",com_requestbuffer[0],com_requestbuffer[1],com_requestbuffer[2]);
 	if (com_requestbuffer[0]==MMDVM_FRAME_START)
 	{
 		//SEGGER_RTT_printf(0, "MMDVM %02x\n",com_requestbuffer[2]);
-		s_ComBuf[0] = com_requestbuffer[0];
-		s_ComBuf[2] = com_requestbuffer[2];
+		usbComSendBuf[0] = com_requestbuffer[0];
+		usbComSendBuf[2] = com_requestbuffer[2];
 		switch(com_requestbuffer[2])
 		{
 			case MMDVM_GET_VERSION:
-				getVersion(s_ComBuf);
+				getVersion();
 				break;
 			case MMDVM_GET_STATUS:
-				getStatus(s_ComBuf);
+				getStatus();
 				break;
 
 			case MMDVM_SET_CONFIG:
-				err = setConfig(com_requestbuffer + 3U, s_ComBuf[1] - 3U);
+				err = setConfig(com_requestbuffer + 3U, com_requestbuffer[1] - 3U);
 				if (err == 0U)
 				{
 				  sendACK();
@@ -962,7 +970,7 @@ void handleHotspotRequest(uint8_t com_requestbuffer[],uint8_t s_ComBuf[])
 				}
 				break;
 			case MMDVM_SET_MODE:
-				err = setMode(com_requestbuffer + 3U, s_ComBuf[1] - 3U);
+				err = setMode(com_requestbuffer + 3U, com_requestbuffer[1] - 3U);
 				if (err == 0U)
 				{
 					sendACK();
@@ -973,7 +981,7 @@ void handleHotspotRequest(uint8_t com_requestbuffer[],uint8_t s_ComBuf[])
 				}
 				break;
 			case MMDVM_SET_FREQ:
-	            err = setFreq(com_requestbuffer + 3U, s_ComBuf[1] - 3U);
+	            err = setFreq(com_requestbuffer + 3U, com_requestbuffer[1] - 3U);
 	            if (err == 0x00)
 	            {
 	              sendACK();
@@ -999,7 +1007,7 @@ void handleHotspotRequest(uint8_t com_requestbuffer[],uint8_t s_ComBuf[])
 				break;
 			case MMDVM_DMR_DATA1:
 				//SEGGER_RTT_printf(0, "MMDVM_DMR_DATA1\r\n");
-				hotspotModeReceiveNetFrame(com_requestbuffer,s_ComBuf,1);
+				hotspotModeReceiveNetFrame(com_requestbuffer,1);
 
 				break;
 			case MMDVM_DMR_LOST1:
@@ -1008,7 +1016,7 @@ void handleHotspotRequest(uint8_t com_requestbuffer[],uint8_t s_ComBuf[])
 				break;
 			case MMDVM_DMR_DATA2:
 				//SEGGER_RTT_printf(0, "MMDVM_DMR_DATA2\r\n");
-				hotspotModeReceiveNetFrame(com_requestbuffer,s_ComBuf,2);
+				hotspotModeReceiveNetFrame(com_requestbuffer,2);
 				break;
 			case MMDVM_DMR_LOST2:
 				SEGGER_RTT_printf(0, "MMDVM_DMR_LOST2\r\n");
@@ -1016,7 +1024,7 @@ void handleHotspotRequest(uint8_t com_requestbuffer[],uint8_t s_ComBuf[])
 				break;
 			case MMDVM_DMR_SHORTLC:
 				SEGGER_RTT_printf(0, "MMDVM_DMR_SHORTLC\r\n");
-				handleDMRShortLC(com_requestbuffer + 3U,s_ComBuf);
+				handleDMRShortLC();
 				sendACK();
 				break;
 			case MMDVM_DMR_START:
@@ -1068,15 +1076,13 @@ void handleHotspotRequest(uint8_t com_requestbuffer[],uint8_t s_ComBuf[])
 				break;
 			default:
 				SEGGER_RTT_printf(0, "Unhandled command type %d\n",com_requestbuffer[2]);
-				sendACK();
+				sendNAK(com_requestbuffer[2]);
 				break;
 		}
 	}
 	else
 	{
-		SEGGER_RTT_printf(0, "Invalid MMDVM command number %d\n",com_requestbuffer[0]);
-		s_ComBuf[0] = '?';
-		USBCommWriteBuffer(s_ComBuf, 1);
+		SEGGER_RTT_printf(0, "Invalid MMDVM header byte %d\n",com_requestbuffer[0]);
 	}
 }
 
