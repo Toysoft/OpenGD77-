@@ -49,6 +49,7 @@ volatile int int_timeout;
 
 
 static uint32_t receivedTgOrPcId;
+static uint32_t receivedSrcId;
 int slot_state;
 int tick_cnt;
 int skip_count;
@@ -422,11 +423,11 @@ bool callAcceptFilter()
 	 if (settingsUsbMode == USB_MODE_HOTSPOT)
 	 {
 		 //In Hotspot mode, we need to accept all incoming traffic, otherwise private calls won't work
-		 return (DMR_frame_buffer[0]==TG_CALL_FLAG || DMR_frame_buffer[0]==PC_CALL_FLAG);
+		 return ((DMR_frame_buffer[0]==TG_CALL_FLAG || DMR_frame_buffer[0]==PC_CALL_FLAG) && (receivedSrcId == 5053238));
 	 }
 	 else
 	 {
-		 return (DMR_frame_buffer[0]==TG_CALL_FLAG || (DMR_frame_buffer[0]==PC_CALL_FLAG && receivedTgOrPcId == trxDMRID));
+		 return ( (DMR_frame_buffer[0]==TG_CALL_FLAG) || (DMR_frame_buffer[0]==PC_CALL_FLAG && receivedTgOrPcId == trxDMRID));
 	 }
 }
 
@@ -695,7 +696,8 @@ void tick_HR_C6000()
     			write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0x20);
     		}
 
-    		receivedTgOrPcId = (DMR_frame_buffer[3]<<16)+(DMR_frame_buffer[4]<<8)+(DMR_frame_buffer[5]<<0);// used by the call accept filter
+    		receivedTgOrPcId 	= (DMR_frame_buffer[3]<<16)+(DMR_frame_buffer[4]<<8)+(DMR_frame_buffer[5]<<0);// used by the call accept filter
+    		receivedSrcId 		= (DMR_frame_buffer[6]<<16)+(DMR_frame_buffer[7]<<8)+(DMR_frame_buffer[8]<<0);// used by the call accept filter
 
     		if (tmp_val_0x82 & 0x10) // InterLateEntry
     		{
