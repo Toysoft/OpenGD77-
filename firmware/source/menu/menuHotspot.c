@@ -387,15 +387,19 @@ static void startupTests2()
 }
 #endif
 
+volatile int  	rfFrameBufReadIdx=0;
+volatile int  	rfFrameBufWriteIdx=0;
+volatile int	rfFrameBufCount=0;
+
 void hotspotRxFrameHandler(uint8_t* frameBuf)
 {
 	taskENTER_CRITICAL();
-	memcpy((uint8_t *)&wavbuffer[wavbuffer_write_idx],frameBuf,27 + 0x0c  + 2);// 27 audio + 0x0c header + 2 hotspot signalling bytes
-	wavbuffer_count++;
-	wavbuffer_write_idx++;
-	if (wavbuffer_write_idx > (WAV_BUFFER_COUNT - 1))
+	memcpy((uint8_t *)&wavbuffer[rfFrameBufWriteIdx],frameBuf,27 + 0x0c  + 2);// 27 audio + 0x0c header + 2 hotspot signalling bytes
+	rfFrameBufCount++;
+	rfFrameBufWriteIdx++;
+	if (rfFrameBufWriteIdx > (WAV_BUFFER_COUNT - 1))
 	{
-		wavbuffer_write_idx=0;
+		rfFrameBufWriteIdx=0;
 	}
 	taskEXIT_CRITICAL();
 }
@@ -432,42 +436,44 @@ bool hotspotModeReceiveNetFrame(uint8_t *com_requestbuffer, int timeSlot)
 	DMRLC_T lc;
 	uint32_t colorCode,dataType;
 
-	lc.srcId=0;// zero thise values as they are checked later in the function, but only updated if the data type is DT_VOICE_LC_HEADER
+	lc.srcId=0;// zero these values as they are checked later in the function, but only updated if the data type is DT_VOICE_LC_HEADER
 	lc.dstId=0;
 
 	DMRSlotType_decode(com_requestbuffer + MMDVM_HEADER_LENGTH,&colorCode,&dataType);
 	switch(dataType)
 	{
 		case DT_VOICE_PI_HEADER:
-			//SEGGER_RTT_printf(0, "DT_VOICE_PI_HEADER colorCode:%d\n",colorCode);
+			SEGGER_RTT_printf(0, "DT_VOICE_PI_HEADER CC:%d\n",colorCode);
 			break;
 		case DT_VOICE_LC_HEADER:
-			//SEGGER_RTT_printf(0, "DT_VOICE_LC_HEADER colorCode:%d\n",colorCode);
+			SEGGER_RTT_printf(0, "DT_VOICE_LC_HEADER CC:%d\n",colorCode);
 			DMRFullLC_decode(com_requestbuffer + MMDVM_HEADER_LENGTH, DT_VOICE_LC_HEADER,&lc);// Need to decode the frame to get the source and destination
 			break;
 		case DT_TERMINATOR_WITH_LC:
-			//SEGGER_RTT_printf(0, "DT_TERMINATOR_WITH_LC colorCode:%d\n",colorCode);
+			SEGGER_RTT_printf(0, "DT_TERMINATOR_WITH_LC CC:%d\n",colorCode);
+			//trxTalkGroupOrPcId  = 0;
+			//trxDMRID = 0;
 			break;
 		case DT_CSBK:
-			//SEGGER_RTT_printf(0, "DT_CSBK colorCode:%d\n",colorCode);
+			SEGGER_RTT_printf(0, "DT_CSBK CC:%d\n",colorCode);
 			break;
 		case DT_DATA_HEADER:
-			//SEGGER_RTT_printf(0, "DT_DATA_HEADER colorCode:%d\n",colorCode);
+			SEGGER_RTT_printf(0, "DT_DATA_HEADER CC:%d\n",colorCode);
 			break;
 		case DT_RATE_12_DATA:
-			//SEGGER_RTT_printf(0, "DT_RATE_12_DATA colorCode:%d\n",colorCode);
+			SEGGER_RTT_printf(0, "DT_RATE_12_DATA CC:%d\n",colorCode);
 			break;
 		case DT_RATE_34_DATA:
-			//SEGGER_RTT_printf(0, "DT_RATE_34_DATA colorCode:%d\n",colorCode);
+			SEGGER_RTT_printf(0, "DT_RATE_34_DATA CC:%d\n",colorCode);
 			break;
 		case DT_IDLE:
-			//SEGGER_RTT_printf(0, "DT_IDLE colorCode:%d\n",colorCode);
+			SEGGER_RTT_printf(0, "DT_IDLE C:%d\n",colorCode);
 			break;
 		case DT_RATE_1_DATA:
-			//SEGGER_RTT_printf(0, "DT_RATE_1_DATA colorCode:%d\n",colorCode);
+			SEGGER_RTT_printf(0, "DT_RATE_1_DATA CC:%d\n",colorCode);
 			break;
 		default:
-			//SEGGER_RTT_printf(0, "Unhandled slot dataType %d colorCode:%d\n",dataType,colorCode);
+			SEGGER_RTT_printf(0, "Uknown frame dataType %d CC:%d\n",dataType,colorCode);
 			break;
 	}
 
@@ -490,7 +496,7 @@ bool hotspotModeReceiveNetFrame(uint8_t *com_requestbuffer, int timeSlot)
 	{
 		storeNetFrame(com_requestbuffer);
 	}
-	//SEGGER_RTT_printf(0, "hotspotModeReceiveNetFrame ");
+	//SEGGER_RTT_printf(0, "hotspotModeReceiveNetFrame\n");
 	sendACK();
 	return true;
 }
@@ -522,33 +528,33 @@ static void hotspotStateMachine()
 			break;
 		case HOTSPOT_STATE_RX_PROCESS:
 
-        	if (wavbuffer_count > 0)
+        	if (rfFrameBufCount > 0)
         	{
         		if (MMDVMHostRxState == MMDVMHOST_RX_READY)
         		{
-        			int rx_command = wavbuffer[wavbuffer_read_idx][27+0x0c];
+        			int rx_command = wavbuffer[rfFrameBufReadIdx][27+0x0c];
         			//SEGGER_RTT_printf(0, "RX_PROCESS cmd:%d buf:%d\n",rx_command,wavbuffer_count);
 
 					switch(rx_command)
 					{
 						case HOTSPOT_RX_START:
 							SEGGER_RTT_printf(0, "RX_START\n",rx_command,wavbuffer_count);
-							sendVoiceHeaderLC_Frame(wavbuffer[wavbuffer_read_idx]);
+							sendVoiceHeaderLC_Frame(wavbuffer[rfFrameBufReadIdx]);
 							lastRxState = HOTSPOT_RX_START;
 							break;
 						case HOTSPOT_RX_START_LATE:
 							SEGGER_RTT_printf(0, "RX_START_LATE\n");
-							sendVoiceHeaderLC_Frame(wavbuffer[wavbuffer_read_idx]);
+							sendVoiceHeaderLC_Frame(wavbuffer[rfFrameBufReadIdx]);
 							lastRxState = HOTSPOT_RX_START_LATE;
 							break;
 						case HOTSPOT_RX_AUDIO_FRAME:
 							//SEGGER_RTT_printf(0, "HOTSPOT_RX_AUDIO_FRAME\n");
-							hotspotSendVoiceFrame((uint8_t *)wavbuffer[wavbuffer_read_idx]);
+							hotspotSendVoiceFrame((uint8_t *)wavbuffer[rfFrameBufReadIdx]);
 							lastRxState = HOTSPOT_RX_AUDIO_FRAME;
 							break;
 						case HOTSPOT_RX_STOP:
 							SEGGER_RTT_printf(0, "RX_STOP\n");
-							sendTerminator_LC_Frame(wavbuffer[wavbuffer_read_idx]);
+							sendTerminator_LC_Frame(wavbuffer[rfFrameBufReadIdx]);
 							lastRxState = HOTSPOT_RX_STOP;
 							hotspotState = HOTSPOT_STATE_RX_END;
 							break;
@@ -574,15 +580,15 @@ static void hotspotStateMachine()
 							break;
 					}
 
-					wavbuffer_read_idx++;
-					if (wavbuffer_read_idx > (WAV_BUFFER_COUNT-1))
+					rfFrameBufReadIdx++;
+					if (rfFrameBufReadIdx > (WAV_BUFFER_COUNT-1))
 					{
-						wavbuffer_read_idx=0;
+						rfFrameBufReadIdx=0;
 					}
 
-					if (wavbuffer_count>0)
+					if (rfFrameBufCount>0)
 					{
-						wavbuffer_count--;
+						rfFrameBufCount--;
 					}
         		}
         		else
@@ -1010,7 +1016,7 @@ void handleHotspotRequest()
 				sendACK();
 				break;
 			case MMDVM_DMR_DATA1:
-				//SEGGER_RTT_printf(0, "MMDVM_DMR_DATA1\r\n");
+				SEGGER_RTT_printf(0, "MMDVM_DMR_DATA1\r\n");
 				hotspotModeReceiveNetFrame((uint8_t *)com_requestbuffer,1);
 
 				break;
@@ -1019,7 +1025,7 @@ void handleHotspotRequest()
 				sendACK();
 				break;
 			case MMDVM_DMR_DATA2:
-				//SEGGER_RTT_printf(0, "MMDVM_DMR_DATA2\r\n");
+				SEGGER_RTT_printf(0, "MMDVM_DMR_DATA2\r\n");
 				hotspotModeReceiveNetFrame((uint8_t *)com_requestbuffer,2);
 				break;
 			case MMDVM_DMR_LOST2:
