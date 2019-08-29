@@ -281,6 +281,7 @@ static void sendVoiceHeaderLC_Frame(volatile uint8_t *receivedDMRDataAndAudio)
 	memset(&lc,0,sizeof(DMRLC_T));// clear automatic variable
 	lc.srcId = (receivedDMRDataAndAudio[6]<<16)+(receivedDMRDataAndAudio[7]<<8)+(receivedDMRDataAndAudio[8]<<0);
 	lc.dstId = (receivedDMRDataAndAudio[3]<<16)+(receivedDMRDataAndAudio[4]<<8)+(receivedDMRDataAndAudio[5]<<0);
+	lc.FLCO = receivedDMRDataAndAudio[0];// Private or group call
 
 	DMRFullLC_encode(&lc,frameData + MMDVM_HEADER_LENGTH, DT_VOICE_LC_HEADER);// Encode the src and dst Ids etc
 	DMREmbeddedData_setLC(&lc);
@@ -509,7 +510,7 @@ bool hotspotModeReceiveNetFrame(uint8_t *com_requestbuffer, int timeSlot)
 	// update the src and destination ID's if valid
 	if 	(lc.srcId!=0 && lc.dstId!=0)
 	{
-		trxTalkGroupOrPcId  = lc.dstId;
+		trxTalkGroupOrPcId  = lc.dstId | (lc.FLCO << 24);
 		trxDMRID = lc.srcId;
 
 		if (hotspotState != HOTSPOT_STATE_TX_START_BUFFERING)
