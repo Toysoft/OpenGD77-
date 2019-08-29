@@ -39,13 +39,17 @@ int sector = -1;
 
 void tick_com_request()
 {
-
-
 		switch (settingsUsbMode)
 		{
 			case USB_MODE_CPS:
 				if (com_request==1)
 				{
+					if (com_requestbuffer[0]==0xE0)
+					{
+						settingsUsbMode = USB_MODE_HOTSPOT;
+						menuSystemPushNewMenu(MENU_HOTSPOT_MODE);
+						return;
+					}
 					taskENTER_CRITICAL();
 					handleCPSRequest();
 					taskEXIT_CRITICAL();

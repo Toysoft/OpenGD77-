@@ -423,7 +423,9 @@ bool callAcceptFilter()
 	 if (settingsUsbMode == USB_MODE_HOTSPOT)
 	 {
 		 //In Hotspot mode, we need to accept all incoming traffic, otherwise private calls won't work
-		 return ((DMR_frame_buffer[0]==TG_CALL_FLAG || DMR_frame_buffer[0]==PC_CALL_FLAG) && (receivedSrcId == 5053238));
+		 return ((DMR_frame_buffer[0]==TG_CALL_FLAG || DMR_frame_buffer[0]==PC_CALL_FLAG) &&
+				 ((receivedSrcId == 5053238) ||  (receivedSrcId == 5054125)	||
+				 (receivedSrcId == 5057005)	||  (receivedSrcId == 2345496) ));
 	 }
 	 else
 	 {

@@ -403,15 +403,40 @@ void hotspotRxFrameHandler(uint8_t* frameBuf)
 	}
 	taskEXIT_CRITICAL();
 }
+int findSequenceNumber(uint8_t *com_requestbuffer)
+{
+		if (	(com_requestbuffer[EMBEDDED_DATA_OFFSET + 12 + 0] & 0x0F) 	== 0x04U &&
+				(com_requestbuffer[EMBEDDED_DATA_OFFSET + 12 + 1] ) 			== 0x6DU &&
+				(com_requestbuffer[EMBEDDED_DATA_OFFSET + 12 + 2] ) 			== 0x5DU &&
+				(com_requestbuffer[EMBEDDED_DATA_OFFSET + 12 + 3] ) 			== 0x7FU &&
+				(com_requestbuffer[EMBEDDED_DATA_OFFSET + 12 + 4] ) 			== 0x77U &&
+				(com_requestbuffer[EMBEDDED_DATA_OFFSET + 12 + 5] ) 			== 0xFDU &&
+				(com_requestbuffer[EMBEDDED_DATA_OFFSET + 12 + 6] ) 			== 0x75U &&
+				(com_requestbuffer[EMBEDDED_DATA_OFFSET + 12 + 7] ) 			== 0x7EU &&
+				(com_requestbuffer[EMBEDDED_DATA_OFFSET + 12 + 8] & 0xF0) 	== 0x30U)
+		{
+			return 1;
+		}
+
+	return 0;
+}
+
 static void storeNetFrame(uint8_t *com_requestbuffer)
 {
 	//SEGGER_RTT_printf(0, "storeNetFrame\n");
-	if (memcmp((uint8_t *)&com_requestbuffer[18],END_FRAME_PATTERN,6)!=0 && memcmp((uint8_t *)&com_requestbuffer[18],START_FRAME_PATTERN,6)!=0)
+	if (memcmp((uint8_t *)&com_requestbuffer[18],END_FRAME_PATTERN,6) !=0
+			&& memcmp((uint8_t *)&com_requestbuffer[18],START_FRAME_PATTERN,6)!=0
+			&& (	hotspotState == HOTSPOT_STATE_TX_START_BUFFERING ||
+					hotspotState == HOTSPOT_STATE_TRANSMITTING ||
+					hotspotState == HOTSPOT_STATE_TX_SHUTDOWN))
 	{
     	if (wavbuffer_count>=16)
     	{
     		SEGGER_RTT_printf(0, "------------------------------ Buffer overflow ---------------------------\n");
     	}
+
+    	//SEGGER_RTT_printf(0, "VF\n");
+    	//displayDataBytes(com_requestbuffer, 16);
     	taskENTER_CRITICAL();
 		memcpy((uint8_t *)wavbuffer[wavbuffer_write_idx],com_requestbuffer+4,13);//copy the first 13, whole bytes of audio
 		wavbuffer[wavbuffer_write_idx][13] = (com_requestbuffer[17] & 0xF0) | (com_requestbuffer[23] & 0x0F);
@@ -439,43 +464,47 @@ bool hotspotModeReceiveNetFrame(uint8_t *com_requestbuffer, int timeSlot)
 	lc.srcId=0;// zero these values as they are checked later in the function, but only updated if the data type is DT_VOICE_LC_HEADER
 	lc.dstId=0;
 
-	DMRSlotType_decode(com_requestbuffer + MMDVM_HEADER_LENGTH,&colorCode,&dataType);
+
+	DMRFullLC_decode(com_requestbuffer + MMDVM_HEADER_LENGTH, DT_VOICE_LC_HEADER,&lc);// Need to decode the frame to get the source and destination
+	/*	DMRSlotType_decode(com_requestbuffer + MMDVM_HEADER_LENGTH,&colorCode,&dataType);
+	//SEGGER_RTT_printf(0, "SlotType:$d %d\n",dataType,colorCode);
 	switch(dataType)
 	{
-		case DT_VOICE_PI_HEADER:
-			SEGGER_RTT_printf(0, "DT_VOICE_PI_HEADER CC:%d\n",colorCode);
-			break;
+
 		case DT_VOICE_LC_HEADER:
-			SEGGER_RTT_printf(0, "DT_VOICE_LC_HEADER CC:%d\n",colorCode);
-			DMRFullLC_decode(com_requestbuffer + MMDVM_HEADER_LENGTH, DT_VOICE_LC_HEADER,&lc);// Need to decode the frame to get the source and destination
+			SEGGER_RTT_printf(0, "DT_VOICE_LC_HEADER\n");
 			break;
 		case DT_TERMINATOR_WITH_LC:
-			SEGGER_RTT_printf(0, "DT_TERMINATOR_WITH_LC CC:%d\n",colorCode);
+			SEGGER_RTT_printf(0, "DT_TERMINATOR_WITH_LC\n");
 			//trxTalkGroupOrPcId  = 0;
 			//trxDMRID = 0;
 			break;
+
+		case DT_VOICE_PI_HEADER:
+			SEGGER_RTT_printf(0, "DT_VOICE_PI_HEADER\n");
+			break;
 		case DT_CSBK:
-			SEGGER_RTT_printf(0, "DT_CSBK CC:%d\n",colorCode);
+			SEGGER_RTT_printf(0, "DT_CSBK\n");
 			break;
 		case DT_DATA_HEADER:
-			SEGGER_RTT_printf(0, "DT_DATA_HEADER CC:%d\n",colorCode);
+			SEGGER_RTT_printf(0, "DT_DATA_HEADER\n",);
 			break;
 		case DT_RATE_12_DATA:
-			SEGGER_RTT_printf(0, "DT_RATE_12_DATA CC:%d\n",colorCode);
+			SEGGER_RTT_printf(0, "DT_RATE_12_DATA\n");
 			break;
 		case DT_RATE_34_DATA:
-			SEGGER_RTT_printf(0, "DT_RATE_34_DATA CC:%d\n",colorCode);
+			SEGGER_RTT_printf(0, "DT_RATE_34_DATA\n",);
 			break;
 		case DT_IDLE:
-			SEGGER_RTT_printf(0, "DT_IDLE C:%d\n",colorCode);
+			SEGGER_RTT_printf(0, "DT_IDLE\n");
 			break;
 		case DT_RATE_1_DATA:
-			SEGGER_RTT_printf(0, "DT_RATE_1_DATA CC:%d\n",colorCode);
+			SEGGER_RTT_printf(0, "DT_RATE_1_DATA\n");
 			break;
 		default:
-			SEGGER_RTT_printf(0, "Uknown frame dataType %d CC:%d\n",dataType,colorCode);
+			//SEGGER_RTT_printf(0, "Frame dataType %d\n",dataType);
 			break;
-	}
+	}*/
 
 	// update the src and destination ID's if valid
 	if 	(lc.srcId!=0 && lc.dstId!=0)
@@ -489,7 +518,6 @@ bool hotspotModeReceiveNetFrame(uint8_t *com_requestbuffer, int timeSlot)
 
 			// the Src and Dst Id's have been sent, and we are in RX mode then an incoming Net normally arrives next
 			hotspotState = HOTSPOT_STATE_TX_START_BUFFERING;
-			SEGGER_RTT_printf(0, "hotspotModeReceiveNetFrame HOTSPOT_STATE_TX_BUFFERING\n");
 		}
 	}
 	else
@@ -662,7 +690,7 @@ int menuHotspotMode(int buttons, int keys, int events, bool isFirstRun)
 	{
 		hotspotState = HOTSPOT_STATE_NOT_CONNECTED;
 		savedPower = nonVolatileSettings.txPower;
-		nonVolatileSettings.txPower=1800;// Set around 1W
+		//nonVolatileSettings.txPower=1800;// Set around 1W
 		savedTGorPC = trxTalkGroupOrPcId;// Save the current TG or PC
 		trxTalkGroupOrPcId=0;
 
@@ -883,6 +911,9 @@ static uint8_t setConfig(volatile const uint8_t* data, uint8_t length)
     return 4U;
   }
 
+  SEGGER_RTT_printf(0, "Colour code:%d\n",colorCode);
+  trxSetDMRColourCode(colorCode);
+
   /* To Do
   m_cwIdTXLevel = data[5U]>>2;
   uint8_t dmrTXLevel    = data[10U];
@@ -1025,7 +1056,7 @@ void handleHotspotRequest()
 				sendACK();
 				break;
 			case MMDVM_DMR_DATA2:
-				SEGGER_RTT_printf(0, "MMDVM_DMR_DATA2\r\n");
+				//SEGGER_RTT_printf(0, "MMDVM_DMR_DATA2\r\n");
 				hotspotModeReceiveNetFrame((uint8_t *)com_requestbuffer,2);
 				break;
 			case MMDVM_DMR_LOST2:

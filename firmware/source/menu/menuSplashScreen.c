@@ -55,6 +55,5 @@ static void handleEvent(int buttons, int keys, int events)
 	if (menuTimer == 0)
 	{
 		menuSystemSetCurrentMenu(nonVolatileSettings.initialMenuNumber);
-		menuSystemPushNewMenu(MENU_HOTSPOT_MODE);
 	}
 }
