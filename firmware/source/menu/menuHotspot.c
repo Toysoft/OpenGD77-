@@ -737,10 +737,16 @@ static void updateScreen()
 
 	if (trxIsTransmitting)
 	{
-		sprintf(buffer,"ID %d",trxDMRID);
+		sprintf(buffer,"ID %d",trxDMRID & 0xFFFFFF);
 		UC1701_printCentered(16, buffer,UC1701_FONT_GD77_8x16);
-
-		sprintf(buffer,"TG %d",trxTalkGroupOrPcId);
+		if ((trxTalkGroupOrPcId & 0xFF000000) == 0)
+		{
+			sprintf(buffer,"TG %d",trxTalkGroupOrPcId & 0xFFFFFF);
+		}
+		else
+		{
+			sprintf(buffer,"PC %d",trxTalkGroupOrPcId &0xFFFFFF);
+		}
 		UC1701_printCentered(32, buffer,UC1701_FONT_GD77_8x16);
 
 		val_before_dp = freq_tx/10000;
