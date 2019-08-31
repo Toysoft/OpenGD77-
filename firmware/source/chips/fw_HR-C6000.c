@@ -445,8 +445,10 @@ void setupPcOrTGHeader()
 //const uint32_t USER_ID = 5054125;//vk4jwt
 //const uint32_t USER_ID = 5057058;//vk7zja
 //const uint32_t USER_ID = 5057005;//clayton
-const uint32_t USER_ID = 2345496;
+//const uint32_t USER_ID = 2345496;// G3UBY
 //const uint32_t USER_ID = 5054202;//wayne Vk4wh
+//const uint32_t USER_ID = 2644462;// DG4KLU
+const uint32_t USER_ID = 2351215;// G4EML
 
 bool callAcceptFilter()
 {
