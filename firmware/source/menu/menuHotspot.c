@@ -498,31 +498,45 @@ static void storeNetFrame(uint8_t *com_requestbuffer)
 {
 	//SEGGER_RTT_printf(0, "storeNetFrame\n");
 	if (memcmp((uint8_t *)&com_requestbuffer[18],END_FRAME_PATTERN,6) !=0
-			&& memcmp((uint8_t *)&com_requestbuffer[18],START_FRAME_PATTERN,6)!=0
-			&& (	hotspotState == HOTSPOT_STATE_TX_START_BUFFERING ||
-					hotspotState == HOTSPOT_STATE_TRANSMITTING ||
-					hotspotState == HOTSPOT_STATE_TX_SHUTDOWN))
+			&& memcmp((uint8_t *)&com_requestbuffer[18],START_FRAME_PATTERN,6)!=0)
 	{
-    	if (wavbuffer_count>=16)
-    	{
-    		SEGGER_RTT_printf(0, "------------------------------ Buffer overflow ---------------------------\n");
-    	}
 
-    	getEmbeddedData(com_requestbuffer);
-    	//displayDataBytes(com_requestbuffer, 16);
-    	taskENTER_CRITICAL();
-		memcpy((uint8_t *)&wavbuffer[wavbuffer_write_idx][0x0C],com_requestbuffer+4,13);//copy the first 13, whole bytes of audio
-		wavbuffer[wavbuffer_write_idx][0x0C + 13] = (com_requestbuffer[17] & 0xF0) | (com_requestbuffer[23] & 0x0F);
-		memcpy((uint8_t *)&wavbuffer[wavbuffer_write_idx][0x0C + 14],(uint8_t *)&com_requestbuffer[24],13);//copy the last 13, whole bytes of audio
+		bool foundEmbedded = getEmbeddedData(com_requestbuffer);
 
-		memcpy((uint8_t *)&wavbuffer[wavbuffer_write_idx],hotspotTxLC,9);// copy the current LC into the data (mainly for use with the embedded data);
-		wavbuffer_count++;
-		wavbuffer_write_idx++;
-		if (wavbuffer_write_idx > (WAV_BUFFER_COUNT - 1))
+		if (	foundEmbedded &&
+				(hotspotTxLC==0 || hotspotTxLC==3) &&
+				(hotspotState != HOTSPOT_STATE_TX_START_BUFFERING && hotspotState != HOTSPOT_STATE_TRANSMITTING))
 		{
-			wavbuffer_write_idx=0;
+			SEGGER_RTT_printf(0, "LATE START\n");
+			hotspotState = HOTSPOT_STATE_TX_START_BUFFERING;
 		}
-		taskEXIT_CRITICAL();
+
+		if (hotspotState == HOTSPOT_STATE_TRANSMITTING ||
+			hotspotState == HOTSPOT_STATE_TX_SHUTDOWN  ||
+			hotspotState == HOTSPOT_STATE_TX_START_BUFFERING)
+		{
+			if (wavbuffer_count>=16)
+			{
+				SEGGER_RTT_printf(0, "------------------------------ Buffer overflow ---------------------------\n");
+			}
+
+
+
+			//displayDataBytes(com_requestbuffer, 16);
+			taskENTER_CRITICAL();
+			memcpy((uint8_t *)&wavbuffer[wavbuffer_write_idx][0x0C],com_requestbuffer+4,13);//copy the first 13, whole bytes of audio
+			wavbuffer[wavbuffer_write_idx][0x0C + 13] = (com_requestbuffer[17] & 0xF0) | (com_requestbuffer[23] & 0x0F);
+			memcpy((uint8_t *)&wavbuffer[wavbuffer_write_idx][0x0C + 14],(uint8_t *)&com_requestbuffer[24],13);//copy the last 13, whole bytes of audio
+
+			memcpy((uint8_t *)&wavbuffer[wavbuffer_write_idx],hotspotTxLC,9);// copy the current LC into the data (mainly for use with the embedded data);
+			wavbuffer_count++;
+			wavbuffer_write_idx++;
+			if (wavbuffer_write_idx > (WAV_BUFFER_COUNT - 1))
+			{
+				wavbuffer_write_idx=0;
+			}
+			taskEXIT_CRITICAL();
+		}
 	}
 	else
 	{
