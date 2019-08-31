@@ -27,6 +27,7 @@
 #include "dmr/DMRFullLC.h"
 #include "dmr/DMRShortLC.h"
 #include "dmr/DMRSlotType.h"
+#include "dmr/QR1676.h"
 #include <SeggerRTT/RTT/SEGGER_RTT.h>
 
 #define MMDVM_FRAME_START   0xE0
@@ -76,6 +77,7 @@ uint8_t rf_power;
 uint32_t savedTGorPC;
 int savedPower;
 uint32_t MMDVMHostGetStatusCount = 0;
+uint8_t hotspotTxLC[9];
 
 volatile int usbComSendBufWritePosition = 0;
 volatile int usbComSendBufReadPosition = 0;
@@ -176,13 +178,7 @@ static void processUSBDataQueue()
 		{
 			usbComSendBufReadPosition=0;
 		}
-		//displayDataBytes(usbComSendBuf+usbComSendBufReadPosition+1,usbComSendBuf[usbComSendBufReadPosition]);
-/*
-		if (lastUSBSerialTxStatus!=kStatus_USB_Success)
-		{
-			vTaskDelay(portTICK_PERIOD_MS * 1);	// if the last USB Tx failed then delay 1 millisecond before we retry
-		}
-*/
+
 		lastUSBSerialTxStatus = USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, &usbComSendBuf[usbComSendBufReadPosition+1],usbComSendBuf[usbComSendBufReadPosition]);
 		if ( lastUSBSerialTxStatus == kStatus_USB_Success)
 		{
@@ -404,22 +400,101 @@ void hotspotRxFrameHandler(uint8_t* frameBuf)
 	}
 	taskEXIT_CRITICAL();
 }
-int findSequenceNumber(uint8_t *com_requestbuffer)
+
+static bool startedEmbeddedSearch = false;
+int getEmbeddedData(uint8_t *com_requestbuffer)
 {
-		if (	(com_requestbuffer[EMBEDDED_DATA_OFFSET + 12 + 0] & 0x0F) 	== 0x04U &&
-				(com_requestbuffer[EMBEDDED_DATA_OFFSET + 12 + 1] ) 			== 0x6DU &&
-				(com_requestbuffer[EMBEDDED_DATA_OFFSET + 12 + 2] ) 			== 0x5DU &&
-				(com_requestbuffer[EMBEDDED_DATA_OFFSET + 12 + 3] ) 			== 0x7FU &&
-				(com_requestbuffer[EMBEDDED_DATA_OFFSET + 12 + 4] ) 			== 0x77U &&
-				(com_requestbuffer[EMBEDDED_DATA_OFFSET + 12 + 5] ) 			== 0xFDU &&
-				(com_requestbuffer[EMBEDDED_DATA_OFFSET + 12 + 6] ) 			== 0x75U &&
-				(com_requestbuffer[EMBEDDED_DATA_OFFSET + 12 + 7] ) 			== 0x7EU &&
-				(com_requestbuffer[EMBEDDED_DATA_OFFSET + 12 + 8] & 0xF0) 	== 0x30U)
+	int lcss;
+	unsigned char DMREMB[2U];
+	DMREMB[0U]  = (com_requestbuffer[MMDVM_HEADER_LENGTH + 13U] << 4) & 0xF0U;
+	DMREMB[0U] |= (com_requestbuffer[MMDVM_HEADER_LENGTH + 14U] >> 4) & 0x0FU;
+	DMREMB[1U]  = (com_requestbuffer[MMDVM_HEADER_LENGTH + 18U] << 4) & 0xF0U;
+	DMREMB[1U] |= (com_requestbuffer[MMDVM_HEADER_LENGTH + 19U] >> 4) & 0x0FU;
+	CQR1676_decode(DMREMB);
+
+//	m_colorCode = (DMREMB[0U] >> 4) & 0x0FU;
+//	m_PI        = (DMREMB[0U] & 0x08U) == 0x08U;
+
+	lcss = (DMREMB[0U] >> 1) & 0x03U;
+
+	if (startedEmbeddedSearch==false)
+	{
+		DMREmbeddedData_initEmbeddedDataBuffers();
+		startedEmbeddedSearch=true;
+	}
+
+	if (DMREmbeddedData_addData(com_requestbuffer+4,lcss))
+	{
+		DMRLC_T lc;
+		//uint8_t embData[9U];
+
+		int flco = DMREmbeddedData_getFLCO();
+		//SEGGER_RTT_printf(0, "Embedded FCLO:%d\n",DMREmbeddedData_getFLCO());
+		DMREmbeddedData_getRawData(hotspotTxLC);
+
+		switch (flco)
 		{
-			return 1;
+			case FLCO_GROUP:
+				DMREmbeddedData_getLC(&lc);
+				SEGGER_RTT_printf(0, "Emb Group  FID:%d FLCO:%d PF:%d R:%d dstId:%d src:Id:%d options:0x%02x\n",lc.FID,lc.FLCO,lc.PF,lc.R,lc.dstId,lc.srcId,lc.options);
+				displayDataBytes(hotspotTxLC,9);
+				break;
+			case FLCO_USER_USER:
+				DMREmbeddedData_getLC(&lc);
+				SEGGER_RTT_printf(0, "Emb User  FID:%d FLCO:%d PF:%d R:%d dstId:%d src:Id:%d options:0x%02x\n",lc.FID,lc.FLCO,lc.PF,lc.R,lc.dstId,lc.srcId,lc.options);
+				displayDataBytes(hotspotTxLC,9);
+				break;
+
+			case FLCO_GPS_INFO:
+				SEGGER_RTT_printf(0, "Emb GPS\n");
+				displayDataBytes(hotspotTxLC,9);
+				break;
+
+			case FLCO_TALKER_ALIAS_HEADER:
+				SEGGER_RTT_printf(0, "Emb FLCO_TALKER_ALIAS_HEADER\n");
+				displayDataBytes(hotspotTxLC,9);
+				break;
+
+			case FLCO_TALKER_ALIAS_BLOCK1:
+				SEGGER_RTT_printf(0, "Emb FLCO_TALKER_ALIAS_BLOCK1\n");
+				displayDataBytes(hotspotTxLC,9);
+				break;
+
+			case FLCO_TALKER_ALIAS_BLOCK2:
+				SEGGER_RTT_printf(0, "Emb FLCO_TALKER_ALIAS_BLOCK2\n");
+				displayDataBytes(hotspotTxLC,9);
+				break;
+
+			case FLCO_TALKER_ALIAS_BLOCK3:
+				SEGGER_RTT_printf(0, "Emb FLCO_TALKER_ALIAS_BLOCK3\n");
+				displayDataBytes(hotspotTxLC,9);
+				break;
+
+			default:
+				SEGGER_RTT_printf(0, "Emb UNKNOWN TYPE\n");
+				break;
 		}
+		startedEmbeddedSearch=false;
+	}
+
 
 	return 0;
+
+#if false
+		//displayDataBytes(com_requestbuffer, MMDVM_HEADER_LENGTH+33);
+		for(int i=0;i<6;i++)
+		{
+		if (	(com_requestbuffer[MMDVM_HEADER_LENGTH + EMBEDDED_DATA_OFFSET + 0] & 0x0F) 	==  DMR_AUDIO_SEQ_SYNC[i][0] &&
+				(com_requestbuffer[MMDVM_HEADER_LENGTH + EMBEDDED_DATA_OFFSET + 1] & 0xF0)  ==  DMR_AUDIO_SEQ_SYNC[i][1] &&
+				(com_requestbuffer[MMDVM_HEADER_LENGTH + EMBEDDED_DATA_OFFSET + 5] & 0x0F)  ==  DMR_AUDIO_SEQ_SYNC[i][5] &&
+				(com_requestbuffer[MMDVM_HEADER_LENGTH + EMBEDDED_DATA_OFFSET + 6] & 0xF0)  ==  DMR_AUDIO_SEQ_SYNC[i][6] )
+			{
+				return i;
+			}
+		}
+
+	return -1;
+#endif
 }
 
 static void storeNetFrame(uint8_t *com_requestbuffer)
@@ -436,13 +511,14 @@ static void storeNetFrame(uint8_t *com_requestbuffer)
     		SEGGER_RTT_printf(0, "------------------------------ Buffer overflow ---------------------------\n");
     	}
 
-    	//SEGGER_RTT_printf(0, "VF\n");
+    	getEmbeddedData(com_requestbuffer);
     	//displayDataBytes(com_requestbuffer, 16);
     	taskENTER_CRITICAL();
-		memcpy((uint8_t *)wavbuffer[wavbuffer_write_idx],com_requestbuffer+4,13);//copy the first 13, whole bytes of audio
-		wavbuffer[wavbuffer_write_idx][13] = (com_requestbuffer[17] & 0xF0) | (com_requestbuffer[23] & 0x0F);
-		memcpy((uint8_t *)&wavbuffer[wavbuffer_write_idx][14],(uint8_t *)&com_requestbuffer[24],13);//copy the last 13, whole bytes of audio
+		memcpy((uint8_t *)&wavbuffer[wavbuffer_write_idx][0x0C],com_requestbuffer+4,13);//copy the first 13, whole bytes of audio
+		wavbuffer[wavbuffer_write_idx][0x0C + 13] = (com_requestbuffer[17] & 0xF0) | (com_requestbuffer[23] & 0x0F);
+		memcpy((uint8_t *)&wavbuffer[wavbuffer_write_idx][0x0C + 14],(uint8_t *)&com_requestbuffer[24],13);//copy the last 13, whole bytes of audio
 
+		memcpy((uint8_t *)&wavbuffer[wavbuffer_write_idx],hotspotTxLC,9);// copy the current LC into the data (mainly for use with the embedded data);
 		wavbuffer_count++;
 		wavbuffer_write_idx++;
 		if (wavbuffer_write_idx > (WAV_BUFFER_COUNT - 1))
@@ -460,13 +536,14 @@ static void storeNetFrame(uint8_t *com_requestbuffer)
 bool hotspotModeReceiveNetFrame(uint8_t *com_requestbuffer, int timeSlot)
 {
 	DMRLC_T lc;
-	uint32_t colorCode,dataType;
+	bool lcDecodeOK;
+//	uint32_t colorCode,dataType;
 
 	lc.srcId=0;// zero these values as they are checked later in the function, but only updated if the data type is DT_VOICE_LC_HEADER
 	lc.dstId=0;
 
 
-	DMRFullLC_decode(com_requestbuffer + MMDVM_HEADER_LENGTH, DT_VOICE_LC_HEADER,&lc);// Need to decode the frame to get the source and destination
+	lcDecodeOK = DMRFullLC_decode(com_requestbuffer + MMDVM_HEADER_LENGTH, DT_VOICE_LC_HEADER,&lc);// Need to decode the frame to get the source and destination
 	/*	DMRSlotType_decode(com_requestbuffer + MMDVM_HEADER_LENGTH,&colorCode,&dataType);
 	//SEGGER_RTT_printf(0, "SlotType:$d %d\n",dataType,colorCode);
 	switch(dataType)
@@ -515,10 +592,11 @@ bool hotspotModeReceiveNetFrame(uint8_t *com_requestbuffer, int timeSlot)
 
 		if (hotspotState != HOTSPOT_STATE_TX_START_BUFFERING)
 		{
-			SEGGER_RTT_printf(0, "Net frame FID:%d FLCO:%d PF:%d R:%d dstId:%d src:Id:%d options:0x%02x\n",lc.FID,lc.FLCO,lc.PF,lc.R,lc.dstId,lc.srcId,lc.options);
-
+			SEGGER_RTT_printf(0, "Net frame LC_decodOK:%d FID:%d FLCO:%d PF:%d R:%d dstId:%d src:Id:%d options:0x%02x\n",lcDecodeOK,lc.FID,lc.FLCO,lc.PF,lc.R,lc.dstId,lc.srcId,lc.options);
+			memcpy(hotspotTxLC,lc.rawData,9);//
 			// the Src and Dst Id's have been sent, and we are in RX mode then an incoming Net normally arrives next
 			hotspotState = HOTSPOT_STATE_TX_START_BUFFERING;
+
 		}
 	}
 	else
@@ -973,7 +1051,7 @@ static void getVersion()
 	uint8_t buf[64];
 	SEGGER_RTT_printf(0, "getVersion\r\n");
 
-	const char HOTSPOT_NAME[] = "OpenGD77";
+	const char HOTSPOT_NAME[] = "OpenGD77 Hotspot";
 	buf[0U]  = MMDVM_FRAME_START;
 	buf[1U]= 4 + strlen(HOTSPOT_NAME);// minus 1 because there is no terminator
 	buf[2U]  = MMDVM_GET_VERSION;

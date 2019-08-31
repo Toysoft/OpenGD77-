@@ -401,6 +401,30 @@ void fw_hrc6000_task()
     }
 }
 
+void buildLCDataFromParams(uint8_t *data,uint8_t FLCO,uint32_t srcId,uint32_t dstId)
+{
+	data[0] = FLCO;
+	data[1] = 0x00;
+	data[2] = 0x00;
+	data[3] = (dstId >> 16) & 0xFF;
+	data[4] = (dstId >> 8) & 0xFF;
+	data[5] = (dstId >> 0) & 0xFF;
+	data[6] = (srcId >> 16) & 0xFF;
+	data[7] = (srcId >> 8) & 0xFF;
+	data[8] = (srcId >> 0) & 0xFF;
+	data[9] = 0x00;
+	data[10] = 0x00;
+	data[11] = 0x00;
+}
+
+void buildLC_DataFromLD_Data(uint8_t *outData,uint8_t *LC_DataBytes)
+{
+	memcpy(outData,LC_DataBytes,9);
+	outData[9] = 0x00;
+	outData[10] = 0x00;
+	outData[11] = 0x00;
+}
+
 void setupPcOrTGHeader()
 {
 	spi_tx[0] = (trxTalkGroupOrPcId >> 24) & 0xFF;
@@ -418,14 +442,21 @@ void setupPcOrTGHeader()
 	write_SPI_page_reg_bytearray_SPI0(0x02, 0x00, spi_tx, 0x0c);
 }
 
+//const uint32_t USER_ID = 5054125;//vk4jwt
+//const uint32_t USER_ID = 5057058;//vk7zja
+//const uint32_t USER_ID = 5057005;//clayton
+const uint32_t USER_ID = 2345496;
+//const uint32_t USER_ID = 5054202;//wayne Vk4wh
+
 bool callAcceptFilter()
 {
 	 if (settingsUsbMode == USB_MODE_HOTSPOT)
 	 {
 		 //In Hotspot mode, we need to accept all incoming traffic, otherwise private calls won't work
 		 return ((DMR_frame_buffer[0]==TG_CALL_FLAG || DMR_frame_buffer[0]==PC_CALL_FLAG) &&
-				 ((receivedSrcId == 5053238) ||  (receivedSrcId == 5054125)	||
-				 (receivedSrcId == 5057005)	||  (receivedSrcId == 2345496) ));
+				 				 (receivedSrcId == 5053238 || receivedSrcId == 2345496 || receivedSrcId == USER_ID));
+//				 ((receivedSrcId == 5053238) ||  (receivedSrcId == 5054125)	||
+//				 (receivedSrcId == 5057005)	||  (receivedSrcId == 2345496) ));
 	 }
 	 else
 	 {
@@ -572,7 +603,7 @@ void tick_HR_C6000()
 			break;
 		case DMR_STATE_TX_2: // Ongoing TX (active timeslot)
 
-			memset(DMR_frame_buffer+0x0C, 0, 27);// fills the audio buffer with zeros in case there is no real audio
+			memset(DMR_frame_buffer, 0, 27 + 0x0C);// fills the LC and  audio buffer with zeros in case there is no real audio
 			if (trxIsTransmitting)
 			{
 
@@ -585,7 +616,13 @@ void tick_HR_C6000()
                 {
                 	if (wavbuffer_count > 0)
                 	{
-						memcpy(DMR_frame_buffer+0x0c,(uint8_t *)&wavbuffer[wavbuffer_read_idx],27);
+						memcpy(DMR_frame_buffer,(uint8_t *)&wavbuffer[wavbuffer_read_idx],27+0x0C);
+
+						if(tx_sequence==0)
+						{
+							write_SPI_page_reg_bytearray_SPI0(0x02, 0x00, DMR_frame_buffer, 0x0c);// put LC into hardware
+						}
+
 						wavbuffer_read_idx++;
 						if (wavbuffer_read_idx > (WAV_BUFFER_COUNT-1))
 						{
@@ -596,11 +633,13 @@ void tick_HR_C6000()
 						{
 							wavbuffer_count--;
 						}
+
                 	}
                 }
 			}
 
-			write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, DMR_frame_buffer+0x0C, 27);
+
+			write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, DMR_frame_buffer+0x0C, 27);// send the audio bytes to the hardware
 			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80); // TXnextslotenable
 			switch (tx_sequence)
 			{

@@ -27,32 +27,34 @@
 
 bool DMRFullLC_decode(const unsigned char* data, unsigned char type,DMRLC_T *lc)
 {
-	unsigned char lcData[12U];
+	//unsigned char lcData[12U];
 
 	BPTC19696_init();
-	BPTC19696_decode(data, lcData);
+	BPTC19696_decode(data, lc->rawData);
 
 	switch (type) {
 		case DT_VOICE_LC_HEADER:
-			lcData[9U]  ^= VOICE_LC_HEADER_CRC_MASK[0U];
-			lcData[10U] ^= VOICE_LC_HEADER_CRC_MASK[1U];
-			lcData[11U] ^= VOICE_LC_HEADER_CRC_MASK[2U];
+			lc->rawData[9U]  ^= VOICE_LC_HEADER_CRC_MASK[0U];
+			lc->rawData[10U] ^= VOICE_LC_HEADER_CRC_MASK[1U];
+			lc->rawData[11U] ^= VOICE_LC_HEADER_CRC_MASK[2U];
 			break;
 
 		case DT_TERMINATOR_WITH_LC:
-			lcData[9U]  ^= TERMINATOR_WITH_LC_CRC_MASK[0U];
-			lcData[10U] ^= TERMINATOR_WITH_LC_CRC_MASK[1U];
-			lcData[11U] ^= TERMINATOR_WITH_LC_CRC_MASK[2U];
+			lc->rawData[9U]  ^= TERMINATOR_WITH_LC_CRC_MASK[0U];
+			lc->rawData[10U] ^= TERMINATOR_WITH_LC_CRC_MASK[1U];
+			lc->rawData[11U] ^= TERMINATOR_WITH_LC_CRC_MASK[2U];
 			break;
 
 		default:
 			return false;// unsupported frame type
 	}
 
-	if (!RS129_check(lcData))
+	if (!RS129_check(lc->rawData))
+	{
 		return false;
+	}
 
-	DMRLCfromBytes(lcData,lc);//
+	DMRLCfromBytes(lc->rawData,lc);//
 
 	return true;
 }

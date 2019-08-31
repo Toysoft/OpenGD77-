@@ -30,13 +30,23 @@ enum LC_STATE {
 	LCS_THIRD
 } m_state;
 
-static bool 	m_raw[128];
-static bool 	m_data[72];
-static int		m_FLCO;
-static bool		m_valid;
+static bool 	DMREmbeddedData_m_raw[128];
+static bool 	DMREmbeddedData_m_data[72];
+static int		DMREmbeddedData_m_FLCO;
+static bool		DMREmbeddedData_m_valid;
 
 static void DMREmbeddedData_decodeEmbeddedData();
 static void DMREmbeddedData_encodeEmbeddedData();
+
+void DMREmbeddedData_initEmbeddedDataBuffers()
+{
+	memset(DMREmbeddedData_m_raw,0,sizeof(DMREmbeddedData_m_raw));
+	memset(DMREmbeddedData_m_data,0,sizeof(DMREmbeddedData_m_data));
+	DMREmbeddedData_m_FLCO=0;
+	DMREmbeddedData_m_valid=false;
+}
+
+
 
 // Add LC data (which may consist of 4 blocks) to the data store
 bool DMREmbeddedData_addData(const unsigned char* data, unsigned char lcss)
@@ -52,11 +62,11 @@ bool DMREmbeddedData_addData(const unsigned char* data, unsigned char lcss)
 	if (lcss == 1U) {
 		for (unsigned int a = 0U; a < 32U; a++)
 		{
-			m_raw[a] = rawData[a + 4U];
+			DMREmbeddedData_m_raw[a] = rawData[a + 4U];
 		}
 		// Show we are ready for the next LC block
 		m_state = LCS_FIRST;
-		m_valid = false;
+		DMREmbeddedData_m_valid = false;
 
 		return false;
 	}
@@ -64,7 +74,7 @@ bool DMREmbeddedData_addData(const unsigned char* data, unsigned char lcss)
 	// Is this the 2nd block of a 4 block embedded LC ?
 	if (lcss == 3U && m_state == LCS_FIRST) {
 		for (unsigned int a = 0U; a < 32U; a++)
-			m_raw[a + 32U] = rawData[a + 4U];
+			DMREmbeddedData_m_raw[a + 32U] = rawData[a + 4U];
 
 		// Show we are ready for the next LC block
 		m_state = LCS_SECOND;
@@ -75,7 +85,7 @@ bool DMREmbeddedData_addData(const unsigned char* data, unsigned char lcss)
 	// Is this the 3rd block of a 4 block embedded LC ?
 	if (lcss == 3U && m_state == LCS_SECOND) {
 		for (unsigned int a = 0U; a < 32U; a++)
-			m_raw[a + 64U] = rawData[a + 4U];
+			DMREmbeddedData_m_raw[a + 64U] = rawData[a + 4U];
 
 		// Show we are ready for the final LC block
 		m_state = LCS_THIRD;
@@ -86,18 +96,18 @@ bool DMREmbeddedData_addData(const unsigned char* data, unsigned char lcss)
 	// Is this the final block of a 4 block embedded LC ?
 	if (lcss == 2U && m_state == LCS_THIRD)	{
 		for (unsigned int a = 0U; a < 32U; a++)
-			m_raw[a + 96U] = rawData[a + 4U];
+			DMREmbeddedData_m_raw[a + 96U] = rawData[a + 4U];
 
 		// Show that we're not ready for any more data
 		m_state = LCS_NONE;
 
 		// Process the complete data block
 		DMREmbeddedData_decodeEmbeddedData();
-		if (m_valid)
+		if (DMREmbeddedData_m_valid)
 		{
 			DMREmbeddedData_encodeEmbeddedData();
 		}
-		return m_valid;
+		return DMREmbeddedData_m_valid;
 	}
 
 	return false;
@@ -106,9 +116,9 @@ bool DMREmbeddedData_addData(const unsigned char* data, unsigned char lcss)
 void DMREmbeddedData_setLC(const DMRLC_T * lc)
 {
 
-	DMRLC_getDataFromBits(m_data,lc);
-	m_FLCO  = lc->FLCO;
-	m_valid = true;
+	DMRLC_getDataFromBits(DMREmbeddedData_m_data,lc);
+	DMREmbeddedData_m_FLCO  = lc->FLCO;
+	DMREmbeddedData_m_valid = true;
 
 	DMREmbeddedData_encodeEmbeddedData();
 }
@@ -116,7 +126,7 @@ void DMREmbeddedData_setLC(const DMRLC_T * lc)
 void DMREmbeddedData_encodeEmbeddedData()
 {
 	unsigned int crc;
-	CRC_encodeFiveBit(m_data, &crc);
+	CRC_encodeFiveBit(DMREmbeddedData_m_data, &crc);
 
 	bool data[128U];
 	memset(data, 0x00U, 128U * sizeof(bool));
@@ -129,19 +139,19 @@ void DMREmbeddedData_encodeEmbeddedData()
 
 	unsigned int b = 0U;
 	for (unsigned int a = 0U; a < 11U; a++, b++)
-		data[a] = m_data[b];
+		data[a] = DMREmbeddedData_m_data[b];
 	for (unsigned int a = 16U; a < 27U; a++, b++)
-		data[a] = m_data[b];
+		data[a] = DMREmbeddedData_m_data[b];
 	for (unsigned int a = 32U; a < 42U; a++, b++)
-		data[a] = m_data[b];
+		data[a] = DMREmbeddedData_m_data[b];
 	for (unsigned int a = 48U; a < 58U; a++, b++)
-		data[a] = m_data[b];
+		data[a] = DMREmbeddedData_m_data[b];
 	for (unsigned int a = 64U; a < 74U; a++, b++)
-		data[a] = m_data[b];
+		data[a] = DMREmbeddedData_m_data[b];
 	for (unsigned int a = 80U; a < 90U; a++, b++)
-		data[a] = m_data[b];
+		data[a] = DMREmbeddedData_m_data[b];
 	for (unsigned int a = 96U; a < 106U; a++, b++)
-		data[a] = m_data[b];
+		data[a] = DMREmbeddedData_m_data[b];
 
 	// Hamming (16,11,4) check each row except the last one
 	for (unsigned int a = 0U; a < 112U; a += 16U)
@@ -154,7 +164,7 @@ void DMREmbeddedData_encodeEmbeddedData()
 	// The data is packed downwards in columns
 	b = 0U;
 	for (unsigned int a = 0U; a < 128U; a++) {
-		m_raw[a] = data[b];
+		DMREmbeddedData_m_raw[a] = data[b];
 		b += 16U;
 		if (b > 127U)
 			b -= 127U;
@@ -169,7 +179,7 @@ unsigned char DMREmbeddedData_getData(unsigned char* data, unsigned char n)
 
 		bool bits[40U];
 		memset(bits, 0x00U, 40U * sizeof(bool));
-		memcpy(bits + 4U, m_raw + n * 32U, 32U * sizeof(bool));
+		memcpy(bits + 4U, DMREmbeddedData_m_raw + n * 32U, 32U * sizeof(bool));
 
 		unsigned char bytes[5U];
 		dmrUtils_bitsToByteBE(bits + 0U,  &bytes[0U]);
@@ -212,7 +222,7 @@ static void DMREmbeddedData_decodeEmbeddedData()
 
 	unsigned int b = 0U;
 	for (unsigned int a = 0U; a < 128U; a++) {
-		data[b] = m_raw[a];
+		data[b] = DMREmbeddedData_m_raw[a];
 		b += 16U;
 		if (b > 127U)
 			b -= 127U;
@@ -234,19 +244,19 @@ static void DMREmbeddedData_decodeEmbeddedData()
 	// We have passed the Hamming check so extract the actual payload
 	b = 0U;
 	for (unsigned int a = 0U; a < 11U; a++, b++)
-		m_data[b] = data[a];
+		DMREmbeddedData_m_data[b] = data[a];
 	for (unsigned int a = 16U; a < 27U; a++, b++)
-		m_data[b] = data[a];
+		DMREmbeddedData_m_data[b] = data[a];
 	for (unsigned int a = 32U; a < 42U; a++, b++)
-		m_data[b] = data[a];
+		DMREmbeddedData_m_data[b] = data[a];
 	for (unsigned int a = 48U; a < 58U; a++, b++)
-		m_data[b] = data[a];
+		DMREmbeddedData_m_data[b] = data[a];
 	for (unsigned int a = 64U; a < 74U; a++, b++)
-		m_data[b] = data[a];
+		DMREmbeddedData_m_data[b] = data[a];
 	for (unsigned int a = 80U; a < 90U; a++, b++)
-		m_data[b] = data[a];
+		DMREmbeddedData_m_data[b] = data[a];
 	for (unsigned int a = 96U; a < 106U; a++, b++)
-		m_data[b] = data[a];
+		DMREmbeddedData_m_data[b] = data[a];
 
 	// Extract the 5 bit CRC
 	unsigned int crc = 0U;
@@ -257,58 +267,63 @@ static void DMREmbeddedData_decodeEmbeddedData()
 	if (data[106]) crc += 1U;
 
 	// Now CRC check this
-	if (!CRC_checkFiveBit(m_data, crc))
+	if (!CRC_checkFiveBit(DMREmbeddedData_m_data, crc))
 		return;
 
-	m_valid = true;
+	DMREmbeddedData_m_valid = true;
 
 	// Extract the FLCO
 	unsigned char flco;
-	dmrUtils_bitsToByteBE(m_data + 0U, &flco);
-	m_FLCO = (int)(flco & 0x3FU);
+	dmrUtils_bitsToByteBE(DMREmbeddedData_m_data + 0U, &flco);
+	DMREmbeddedData_m_FLCO = (int)(flco & 0x3FU);
 }
-/*
-DMRLC* DMREmbeddedData_getLC()
+
+bool DMREmbeddedData_getLC(DMRLC_T * lc)
 {
-	if (!m_valid)
-		return NULL;
+	if (!DMREmbeddedData_m_valid)
+	{
+		return false;
+	}
 
-	if (m_FLCO != FLCO_GROUP && m_FLCO != FLCO_USER_USER)
-		return NULL;
+	if (DMREmbeddedData_m_FLCO != FLCO_GROUP && DMREmbeddedData_m_FLCO != FLCO_USER_USER)
+	{
+		return false;
+	}
 
-	return new CDMRLC(m_data);
+	DMRLCfromBits(DMREmbeddedData_m_data,lc);
+	return true;
 }
-*/
+
 bool DMREmbeddedData_isValid()
 {
-	return m_valid;
+	return DMREmbeddedData_m_valid;
 }
 
 int DMREmbeddedData_getFLCO()
 {
-	return m_FLCO;
+	return DMREmbeddedData_m_FLCO;
 }
 
 void DMREmbeddedData_reset()
 {
 	m_state = LCS_NONE;
-	m_valid = false;
+	DMREmbeddedData_m_valid = false;
 }
 
 bool DMREmbeddedData_getRawData(unsigned char* data)
 {
-	if (!m_valid)
+	if (!DMREmbeddedData_m_valid)
 		return false;
 
-	dmrUtils_bitsToByteBE(m_data + 0U,  &data[0U]);
-	dmrUtils_bitsToByteBE(m_data + 8U,  &data[1U]);
-	dmrUtils_bitsToByteBE(m_data + 16U, &data[2U]);
-	dmrUtils_bitsToByteBE(m_data + 24U, &data[3U]);
-	dmrUtils_bitsToByteBE(m_data + 32U, &data[4U]);
-	dmrUtils_bitsToByteBE(m_data + 40U, &data[5U]);
-	dmrUtils_bitsToByteBE(m_data + 48U, &data[6U]);
-	dmrUtils_bitsToByteBE(m_data + 56U, &data[7U]);
-	dmrUtils_bitsToByteBE(m_data + 64U, &data[8U]);
+	dmrUtils_bitsToByteBE(DMREmbeddedData_m_data + 0U,  &data[0U]);
+	dmrUtils_bitsToByteBE(DMREmbeddedData_m_data + 8U,  &data[1U]);
+	dmrUtils_bitsToByteBE(DMREmbeddedData_m_data + 16U, &data[2U]);
+	dmrUtils_bitsToByteBE(DMREmbeddedData_m_data + 24U, &data[3U]);
+	dmrUtils_bitsToByteBE(DMREmbeddedData_m_data + 32U, &data[4U]);
+	dmrUtils_bitsToByteBE(DMREmbeddedData_m_data + 40U, &data[5U]);
+	dmrUtils_bitsToByteBE(DMREmbeddedData_m_data + 48U, &data[6U]);
+	dmrUtils_bitsToByteBE(DMREmbeddedData_m_data + 56U, &data[7U]);
+	dmrUtils_bitsToByteBE(DMREmbeddedData_m_data + 64U, &data[8U]);
 
 	return true;
 }
