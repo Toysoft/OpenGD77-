@@ -426,10 +426,7 @@ int getEmbeddedData(uint8_t *com_requestbuffer)
 	if (DMREmbeddedData_addData(com_requestbuffer+4,lcss))
 	{
 		DMRLC_T lc;
-		//uint8_t embData[9U];
-
 		int flco = DMREmbeddedData_getFLCO();
-		//SEGGER_RTT_printf(0, "Embedded FCLO:%d\n",DMREmbeddedData_getFLCO());
 		DMREmbeddedData_getRawData(hotspotTxLC);
 
 		switch (flco)
@@ -437,37 +434,37 @@ int getEmbeddedData(uint8_t *com_requestbuffer)
 			case FLCO_GROUP:
 				DMREmbeddedData_getLC(&lc);
 				SEGGER_RTT_printf(0, "Emb Group  FID:%d FLCO:%d PF:%d R:%d dstId:%d src:Id:%d options:0x%02x\n",lc.FID,lc.FLCO,lc.PF,lc.R,lc.dstId,lc.srcId,lc.options);
-				displayDataBytes(hotspotTxLC,9);
+				//displayDataBytes(hotspotTxLC,9);
 				break;
 			case FLCO_USER_USER:
 				DMREmbeddedData_getLC(&lc);
 				SEGGER_RTT_printf(0, "Emb User  FID:%d FLCO:%d PF:%d R:%d dstId:%d src:Id:%d options:0x%02x\n",lc.FID,lc.FLCO,lc.PF,lc.R,lc.dstId,lc.srcId,lc.options);
-				displayDataBytes(hotspotTxLC,9);
+				//displayDataBytes(hotspotTxLC,9);
 				break;
 
 			case FLCO_GPS_INFO:
 				SEGGER_RTT_printf(0, "Emb GPS\n");
-				displayDataBytes(hotspotTxLC,9);
+				//displayDataBytes(hotspotTxLC,9);
 				break;
 
 			case FLCO_TALKER_ALIAS_HEADER:
 				SEGGER_RTT_printf(0, "Emb FLCO_TALKER_ALIAS_HEADER\n");
-				displayDataBytes(hotspotTxLC,9);
+				//displayDataBytes(hotspotTxLC,9);
 				break;
 
 			case FLCO_TALKER_ALIAS_BLOCK1:
 				SEGGER_RTT_printf(0, "Emb FLCO_TALKER_ALIAS_BLOCK1\n");
-				displayDataBytes(hotspotTxLC,9);
+				//displayDataBytes(hotspotTxLC,9);
 				break;
 
 			case FLCO_TALKER_ALIAS_BLOCK2:
 				SEGGER_RTT_printf(0, "Emb FLCO_TALKER_ALIAS_BLOCK2\n");
-				displayDataBytes(hotspotTxLC,9);
+				//displayDataBytes(hotspotTxLC,9);
 				break;
 
 			case FLCO_TALKER_ALIAS_BLOCK3:
 				SEGGER_RTT_printf(0, "Emb FLCO_TALKER_ALIAS_BLOCK3\n");
-				displayDataBytes(hotspotTxLC,9);
+				//displayDataBytes(hotspotTxLC,9);
 				break;
 
 			default:
@@ -593,7 +590,7 @@ bool hotspotModeReceiveNetFrame(uint8_t *com_requestbuffer, int timeSlot)
 		if (hotspotState != HOTSPOT_STATE_TX_START_BUFFERING)
 		{
 			SEGGER_RTT_printf(0, "Net frame LC_decodOK:%d FID:%d FLCO:%d PF:%d R:%d dstId:%d src:Id:%d options:0x%02x\n",lcDecodeOK,lc.FID,lc.FLCO,lc.PF,lc.R,lc.dstId,lc.srcId,lc.options);
-			memcpy(hotspotTxLC,lc.rawData,9);//
+			memcpy(hotspotTxLC,lc.rawData,9);//Hotspot uses LC Data bytes rather than the src and dst ID's for the embed data
 			// the Src and Dst Id's have been sent, and we are in RX mode then an incoming Net normally arrives next
 			hotspotState = HOTSPOT_STATE_TX_START_BUFFERING;
 
@@ -743,6 +740,13 @@ static void hotspotStateMachine()
 			if (txstopdelay>0)
 			{
 				txstopdelay--;
+				if (wavbuffer_count>0)
+				{
+					// restart
+					SEGGER_RTT_printf(0, "Restarting transmission %d\n",wavbuffer_count);
+					enableTransmission();
+					hotspotState = HOTSPOT_STATE_TX_START_BUFFERING;
+				}
 			}
 			else
 			{
@@ -754,9 +758,11 @@ static void hotspotStateMachine()
 					hotspotState = HOTSPOT_STATE_RX_START;
 					SEGGER_RTT_printf(0, "TX_SHUTDOWN -> STATE_RX\n");
 					trxSetFrequency(freq_rx);
+					/*
 					wavbuffer_read_idx=0;
 					wavbuffer_write_idx=0;
 					wavbuffer_count=0;
+					*/
 				}
 			}
 			break;
