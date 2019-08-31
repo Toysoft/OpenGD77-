@@ -76,13 +76,16 @@ uint32_t freq_tx;
 uint8_t rf_power;
 uint32_t savedTGorPC;
 int savedPower;
-uint32_t MMDVMHostGetStatusCount = 0;
 uint8_t hotspotTxLC[9];
+static bool startedEmbeddedSearch = false;
 
 volatile int usbComSendBufWritePosition = 0;
 volatile int usbComSendBufReadPosition = 0;
 volatile int usbComSendBufCount = 0;
 volatile usb_status_t lastUSBSerialTxStatus = kStatus_USB_Success;
+volatile int  	rfFrameBufReadIdx=0;
+volatile int  	rfFrameBufWriteIdx=0;
+volatile int	rfFrameBufCount=0;
 
 volatile enum
 {
@@ -173,7 +176,6 @@ static void processUSBDataQueue()
 {
 	if (usbComSendBufCount!=0)
 	{
-		//SEGGER_RTT_printf(0, "Sending USB:");
 		if (usbComSendBuf[usbComSendBufReadPosition]==0)
 		{
 			usbComSendBufReadPosition=0;
@@ -182,11 +184,9 @@ static void processUSBDataQueue()
 		lastUSBSerialTxStatus = USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, &usbComSendBuf[usbComSendBufReadPosition+1],usbComSendBuf[usbComSendBufReadPosition]);
 		if ( lastUSBSerialTxStatus == kStatus_USB_Success)
 		{
-			//SEGGER_RTT_printf(0, "Success\n");
 			usbComSendBufReadPosition += usbComSendBuf[usbComSendBufReadPosition] + 1;
 			if (usbComSendBufReadPosition > (COM_BUFFER_SIZE-1))
 			{
-				//SEGGER_RTT_printf(0, "Looping read buffer back to start\n");
 				usbComSendBufReadPosition=0;
 			}
 			usbComSendBufCount--;
@@ -202,7 +202,6 @@ static void sendACK()
 {
 	uint8_t buf[4];
 //	SEGGER_RTT_printf(0, "sendACK\n");
-
 	buf[0U] = MMDVM_FRAME_START;
 	buf[1U] = 4U;
 	buf[2U] = MMDVM_ACK;
@@ -265,8 +264,6 @@ static void hotspotSendVoiceFrame(uint8_t *receivedDMRDataAndAudio)
 		}
 	}
 
-	//displayDataBytes(frameData,DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
-	//SEGGER_RTT_printf(0, "hotspotSendVoiceFrame\n");
 	enqueueUSBData(frameData,DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
 }
 
@@ -308,85 +305,9 @@ static void sendTerminator_LC_Frame(volatile uint8_t *receivedDMRDataAndAudio)
 	//SEGGER_RTT_printf(0, "sendTerminator_LC_Frame\n");
 	enqueueUSBData(frameData,DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
 }
-#if false
-static void startupTests()
-{
-	uint8_t dataBuff[27 + 0x0C+2];
-	DMRLC_T lc;
-	uint32_t srcId = 2344235;
-	uint32_t dstId = 777;
 
-	memset(&lc,0,sizeof(DMRLC_T));// clear automatic variable
-	lc.srcId = srcId;
-	lc.dstId = dstId;
-	DMREmbeddedData_setLC(&lc);
 
-	dataBuff[27+0x0c+1] = 1;// sequence 0
 
-	for(int i=0;i<27;i++)
-	{
-		dataBuff[0x0c+i]=0x10+i;
-	}
-
-	// setup src and dst ID's
-	dataBuff[3] =  ((dstId>>16) & 0xFF);
-	dataBuff[4] =  ((dstId>> 8) & 0xFF);
-	dataBuff[5] =  ((dstId>> 0) & 0xFF);
-
-	dataBuff[6] =  ((srcId>>16) & 0xFF);
-	dataBuff[7] =  ((srcId>> 8) & 0xFF);
-	dataBuff[8] =  ((srcId>> 0) & 0xFF);
-
-	hotspotSendVoiceFrame(dataBuff);
-}
-
-static void startupTests2()
-{
-	uint8_t frameData[DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH] = {0xE0,0x25,0x1A};
-	uint8_t embData[DMR_FRAME_LENGTH_BYTES];
-	int i;
-
-	DMRLC_T lc;
-	memset(&lc,0,sizeof(DMRLC_T));// clear automatic variable
-	lc.srcId = 2344235;
-	lc.dstId = 777;
-	DMREmbeddedData_setLC(&lc);
-
-	for(int sequenceNumber=0;sequenceNumber<6;sequenceNumber++)
-	{
-		memset(frameData+4,0,DMR_FRAME_LENGTH_BYTES);//clear
-//		SEGGER_RTT_printf(0, "Sequence %d\n",sequenceNumber);
-		vTaskDelay(portTICK_PERIOD_MS * 10);
-
-		if (sequenceNumber == 0)
-		{
-			frameData[3] = 0x20;
-			for (i = 0U; i < 7U; i++)
-			{
-				frameData[i + EMBEDDED_DATA_OFFSET+MMDVM_HEADER_LENGTH] = (frameData[i + EMBEDDED_DATA_OFFSET+MMDVM_HEADER_LENGTH] & ~SYNC_MASK[i]) | MS_SOURCED_AUDIO_SYNC[i];
-			}
-		}
-		else
-		{
-			frameData[3] = sequenceNumber;
-
-			DMREmbeddedData_getData(embData, sequenceNumber);
-			for (i = 0U; i < 7U; i++)
-			{
-				frameData[i + EMBEDDED_DATA_OFFSET+MMDVM_HEADER_LENGTH] = (frameData[i + EMBEDDED_DATA_OFFSET+MMDVM_HEADER_LENGTH] & ~DMR_AUDIO_SEQ_MASK[i]) | DMR_AUDIO_SEQ_SYNC[sequenceNumber][i];
-				frameData[i + EMBEDDED_DATA_OFFSET+MMDVM_HEADER_LENGTH] = (frameData[i + EMBEDDED_DATA_OFFSET+MMDVM_HEADER_LENGTH] & ~DMR_EMBED_SEQ_MASK[i]) | embData[i + EMBEDDED_DATA_OFFSET];
-			}
-		}
-
-		//displayFrameData(frameData,DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
-		vTaskDelay(portTICK_PERIOD_MS * 10);
-	}
-}
-#endif
-
-volatile int  	rfFrameBufReadIdx=0;
-volatile int  	rfFrameBufWriteIdx=0;
-volatile int	rfFrameBufCount=0;
 
 void hotspotRxFrameHandler(uint8_t* frameBuf)
 {
@@ -401,7 +322,7 @@ void hotspotRxFrameHandler(uint8_t* frameBuf)
 	taskEXIT_CRITICAL();
 }
 
-static bool startedEmbeddedSearch = false;
+
 int getEmbeddedData(uint8_t *com_requestbuffer)
 {
 	int lcss;
@@ -425,10 +346,11 @@ int getEmbeddedData(uint8_t *com_requestbuffer)
 
 	if (DMREmbeddedData_addData(com_requestbuffer+4,lcss))
 	{
-		DMRLC_T lc;
+		//DMRLC_T lc;
 		int flco = DMREmbeddedData_getFLCO();
 		DMREmbeddedData_getRawData(hotspotTxLC);
 
+		/*
 		switch (flco)
 		{
 			case FLCO_GROUP:
@@ -471,27 +393,11 @@ int getEmbeddedData(uint8_t *com_requestbuffer)
 				SEGGER_RTT_printf(0, "Emb UNKNOWN TYPE\n");
 				break;
 		}
+		*/
 		startedEmbeddedSearch=false;
 	}
 
-
 	return 0;
-
-#if false
-		//displayDataBytes(com_requestbuffer, MMDVM_HEADER_LENGTH+33);
-		for(int i=0;i<6;i++)
-		{
-		if (	(com_requestbuffer[MMDVM_HEADER_LENGTH + EMBEDDED_DATA_OFFSET + 0] & 0x0F) 	==  DMR_AUDIO_SEQ_SYNC[i][0] &&
-				(com_requestbuffer[MMDVM_HEADER_LENGTH + EMBEDDED_DATA_OFFSET + 1] & 0xF0)  ==  DMR_AUDIO_SEQ_SYNC[i][1] &&
-				(com_requestbuffer[MMDVM_HEADER_LENGTH + EMBEDDED_DATA_OFFSET + 5] & 0x0F)  ==  DMR_AUDIO_SEQ_SYNC[i][5] &&
-				(com_requestbuffer[MMDVM_HEADER_LENGTH + EMBEDDED_DATA_OFFSET + 6] & 0xF0)  ==  DMR_AUDIO_SEQ_SYNC[i][6] )
-			{
-				return i;
-			}
-		}
-
-	return -1;
-#endif
 }
 
 static void storeNetFrame(uint8_t *com_requestbuffer)
@@ -504,7 +410,7 @@ static void storeNetFrame(uint8_t *com_requestbuffer)
 		bool foundEmbedded = getEmbeddedData(com_requestbuffer);
 
 		if (	foundEmbedded &&
-				(hotspotTxLC==0 || hotspotTxLC==3) &&
+				(hotspotTxLC[0]==0 || hotspotTxLC[0]==3) &&
 				(hotspotState != HOTSPOT_STATE_TX_START_BUFFERING && hotspotState != HOTSPOT_STATE_TRANSMITTING))
 		{
 			SEGGER_RTT_printf(0, "LATE START\n");

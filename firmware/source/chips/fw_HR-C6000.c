@@ -489,8 +489,12 @@ void tick_HR_C6000()
 		if (settingsUsbMode != USB_MODE_HOTSPOT)
 		{
 			init_codec();
+			setupPcOrTGHeader();
 		}
-		setupPcOrTGHeader();
+		else
+		{
+			write_SPI_page_reg_bytearray_SPI0(0x02, 0x00, (uint8_t *)&wavbuffer[wavbuffer_read_idx], 0x0c);// put LC into hardware
+		}
 
 		write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xE3); // TX and RX enable
 		write_SPI_page_reg_byte_SPI0(0x04, 0x21, 0xA2); // reset vocoder codingbuffer
