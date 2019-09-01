@@ -444,11 +444,11 @@ void setupPcOrTGHeader()
 
 //const uint32_t USER_ID = 5054125;//vk4jwt
 //const uint32_t USER_ID = 5057058;//vk7zja
-//const uint32_t USER_ID = 5057005;//clayton
+const uint32_t USER_ID = 5057005;//clayton
 //const uint32_t USER_ID = 2345496;// G3UBY
 //const uint32_t USER_ID = 5054202;//wayne Vk4wh
 //const uint32_t USER_ID = 2644462;// DG4KLU
-const uint32_t USER_ID = 2351215;// G4EML
+//const uint32_t USER_ID = 2351215;// G4EML
 
 bool callAcceptFilter()
 {
@@ -493,7 +493,7 @@ void tick_HR_C6000()
 		}
 		else
 		{
-			write_SPI_page_reg_bytearray_SPI0(0x02, 0x00, (uint8_t *)&wavbuffer[wavbuffer_read_idx], 0x0c);// put LC into hardware
+			write_SPI_page_reg_bytearray_SPI0(0x02, 0x00, (uint8_t *)&audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_read_idx], 0x0c);// put LC into hardware
 		}
 
 		write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xE3); // TX and RX enable
@@ -622,7 +622,7 @@ void tick_HR_C6000()
                 {
                 	if (wavbuffer_count > 0)
                 	{
-						memcpy(DMR_frame_buffer,(uint8_t *)&wavbuffer[wavbuffer_read_idx],27+0x0C);
+						memcpy(DMR_frame_buffer,(uint8_t *)&audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_read_idx],27+0x0C);
 
 						if(tx_sequence==0)
 						{
@@ -630,7 +630,7 @@ void tick_HR_C6000()
 						}
 
 						wavbuffer_read_idx++;
-						if (wavbuffer_read_idx > (WAV_BUFFER_COUNT-1))
+						if (wavbuffer_read_idx > (HOTSPOT_BUFFER_COUNT-1))
 						{
 							wavbuffer_read_idx=0;
 						}

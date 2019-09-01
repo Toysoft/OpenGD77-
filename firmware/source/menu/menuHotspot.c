@@ -18,6 +18,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 #include <dmr/DMREmbeddedData.h>
+#include "fw_sound.h"
 #include "menu/menuSystem.h"
 #include "menu/menuHotspot.h"
 #include "fw_settings.h"
@@ -70,6 +71,7 @@ const int TX_BUFFER_MIN_BEFORE_TRANSMISSION = 2;
 
 const uint8_t START_FRAME_PATTERN[] = {0xFF,0x57,0xD7,0x5D,0xF5,0xD9};
 const uint8_t END_FRAME_PATTERN[] 	= {0x5D,0x7F,0x77,0xFD,0x75,0x79};
+const uint32_t HOTSPOT_BUFFER_LENGTH = 0xA0;
 
 uint32_t freq_rx;
 uint32_t freq_tx;
@@ -312,10 +314,10 @@ static void sendTerminator_LC_Frame(volatile uint8_t *receivedDMRDataAndAudio)
 void hotspotRxFrameHandler(uint8_t* frameBuf)
 {
 	taskENTER_CRITICAL();
-	memcpy((uint8_t *)&wavbuffer[rfFrameBufWriteIdx],frameBuf,27 + 0x0c  + 2);// 27 audio + 0x0c header + 2 hotspot signalling bytes
+	memcpy((uint8_t *)&audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufWriteIdx],frameBuf,27 + 0x0c  + 2);// 27 audio + 0x0c header + 2 hotspot signalling bytes
 	rfFrameBufCount++;
 	rfFrameBufWriteIdx++;
-	if (rfFrameBufWriteIdx > (WAV_BUFFER_COUNT - 1))
+	if (rfFrameBufWriteIdx > (HOTSPOT_BUFFER_COUNT - 1))
 	{
 		rfFrameBufWriteIdx=0;
 	}
@@ -421,7 +423,7 @@ static void storeNetFrame(uint8_t *com_requestbuffer)
 			hotspotState == HOTSPOT_STATE_TX_SHUTDOWN  ||
 			hotspotState == HOTSPOT_STATE_TX_START_BUFFERING)
 		{
-			if (wavbuffer_count>=16)
+			if (wavbuffer_count>=HOTSPOT_BUFFER_COUNT)
 			{
 				SEGGER_RTT_printf(0, "------------------------------ Buffer overflow ---------------------------\n");
 			}
@@ -430,14 +432,14 @@ static void storeNetFrame(uint8_t *com_requestbuffer)
 
 			//displayDataBytes(com_requestbuffer, 16);
 			taskENTER_CRITICAL();
-			memcpy((uint8_t *)&wavbuffer[wavbuffer_write_idx][0x0C],com_requestbuffer+4,13);//copy the first 13, whole bytes of audio
-			wavbuffer[wavbuffer_write_idx][0x0C + 13] = (com_requestbuffer[17] & 0xF0) | (com_requestbuffer[23] & 0x0F);
-			memcpy((uint8_t *)&wavbuffer[wavbuffer_write_idx][0x0C + 14],(uint8_t *)&com_requestbuffer[24],13);//copy the last 13, whole bytes of audio
+			memcpy((uint8_t *)&audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_write_idx][0x0C],com_requestbuffer+4,13);//copy the first 13, whole bytes of audio
+			audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_write_idx][0x0C + 13] = (com_requestbuffer[17] & 0xF0) | (com_requestbuffer[23] & 0x0F);
+			memcpy((uint8_t *)&audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_write_idx][0x0C + 14],(uint8_t *)&com_requestbuffer[24],13);//copy the last 13, whole bytes of audio
 
-			memcpy((uint8_t *)&wavbuffer[wavbuffer_write_idx],hotspotTxLC,9);// copy the current LC into the data (mainly for use with the embedded data);
+			memcpy((uint8_t *)&audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_write_idx],hotspotTxLC,9);// copy the current LC into the data (mainly for use with the embedded data);
 			wavbuffer_count++;
 			wavbuffer_write_idx++;
-			if (wavbuffer_write_idx > (WAV_BUFFER_COUNT - 1))
+			if (wavbuffer_write_idx > (HOTSPOT_BUFFER_COUNT - 1))
 			{
 				wavbuffer_write_idx=0;
 			}
@@ -556,29 +558,29 @@ static void hotspotStateMachine()
         	{
         		if (MMDVMHostRxState == MMDVMHOST_RX_READY)
         		{
-        			int rx_command = wavbuffer[rfFrameBufReadIdx][27+0x0c];
+        			int rx_command = audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][27+0x0c];
         			//SEGGER_RTT_printf(0, "RX_PROCESS cmd:%d buf:%d\n",rx_command,wavbuffer_count);
 
 					switch(rx_command)
 					{
 						case HOTSPOT_RX_START:
 							SEGGER_RTT_printf(0, "RX_START\n",rx_command,wavbuffer_count);
-							sendVoiceHeaderLC_Frame(wavbuffer[rfFrameBufReadIdx]);
+							sendVoiceHeaderLC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
 							lastRxState = HOTSPOT_RX_START;
 							break;
 						case HOTSPOT_RX_START_LATE:
 							SEGGER_RTT_printf(0, "RX_START_LATE\n");
-							sendVoiceHeaderLC_Frame(wavbuffer[rfFrameBufReadIdx]);
+							sendVoiceHeaderLC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
 							lastRxState = HOTSPOT_RX_START_LATE;
 							break;
 						case HOTSPOT_RX_AUDIO_FRAME:
 							//SEGGER_RTT_printf(0, "HOTSPOT_RX_AUDIO_FRAME\n");
-							hotspotSendVoiceFrame((uint8_t *)wavbuffer[rfFrameBufReadIdx]);
+							hotspotSendVoiceFrame((uint8_t *)audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
 							lastRxState = HOTSPOT_RX_AUDIO_FRAME;
 							break;
 						case HOTSPOT_RX_STOP:
 							SEGGER_RTT_printf(0, "RX_STOP\n");
-							sendTerminator_LC_Frame(wavbuffer[rfFrameBufReadIdx]);
+							sendTerminator_LC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
 							lastRxState = HOTSPOT_RX_STOP;
 							hotspotState = HOTSPOT_STATE_RX_END;
 							break;
@@ -587,10 +589,10 @@ static void hotspotStateMachine()
 							switch(lastRxState)
 							{
 								case HOTSPOT_RX_START:
-									sendVoiceHeaderLC_Frame(wavbuffer[wavbuffer_read_idx]);
+									sendVoiceHeaderLC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_read_idx]);
 									break;
 								case HOTSPOT_RX_STOP:
-									sendTerminator_LC_Frame(wavbuffer[wavbuffer_read_idx]);
+									sendTerminator_LC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_read_idx]);
 									break;
 								default:
 									SEGGER_RTT_printf(0, "ERROR: Unkown HOTSPOT_RX_IDLE_OR_REPEAT\n");
@@ -605,7 +607,7 @@ static void hotspotStateMachine()
 					}
 
 					rfFrameBufReadIdx++;
-					if (rfFrameBufReadIdx > (WAV_BUFFER_COUNT-1))
+					if (rfFrameBufReadIdx > (HOTSPOT_BUFFER_COUNT-1))
 					{
 						rfFrameBufReadIdx=0;
 					}
@@ -889,7 +891,7 @@ static void getStatus()
 	}
 	buf[6U] = 	0U;// No DSTAR
 	buf[7U] = 	10U;// DMR
-	buf[8U] = 	WAV_BUFFER_COUNT - wavbuffer_count;
+	buf[8U] = 	HOTSPOT_BUFFER_COUNT - wavbuffer_count;
 	buf[9U] = 	0U;// No YSF
 	buf[10U] = 0U;// No P25
 	buf[11U] = 0U;// no NXDN

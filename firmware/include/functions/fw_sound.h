@@ -56,8 +56,15 @@ extern const uint8_t melody4[];
 
 #define WAV_BUFFER_SIZE 0xa0
 #define WAV_BUFFER_COUNT 16
+#define HOTSPOT_BUFFER_SIZE 50
+#define HOTSPOT_BUFFER_COUNT 48
 
-extern volatile uint8_t wavbuffer[WAV_BUFFER_COUNT][WAV_BUFFER_SIZE];
+extern union sharedDataBuffer
+{
+	volatile uint8_t wavbuffer[WAV_BUFFER_COUNT][WAV_BUFFER_SIZE];
+	volatile uint8_t hotspotBuffer[HOTSPOT_BUFFER_COUNT][HOTSPOT_BUFFER_SIZE];
+} audioAndHotspotDataBuffer;
+
 extern volatile int wavbuffer_read_idx;
 extern volatile int wavbuffer_write_idx;
 extern volatile int wavbuffer_count;

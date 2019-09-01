@@ -191,7 +191,8 @@ void fw_init_beep_task()
 				);
 }
 
-volatile uint8_t wavbuffer[WAV_BUFFER_COUNT][WAV_BUFFER_SIZE];
+union sharedDataBuffer audioAndHotspotDataBuffer;
+
 volatile int  wavbuffer_read_idx;
 volatile int  wavbuffer_write_idx;
 volatile int wavbuffer_count;
@@ -244,7 +245,7 @@ void store_soundbuffer()
 		taskENTER_CRITICAL();
 		for (int wav_idx=0;wav_idx<WAV_BUFFER_SIZE;wav_idx++)
 		{
-			wavbuffer[wavbuffer_write_idx][wav_idx]=tmp_wavbuffer[wav_idx];
+			audioAndHotspotDataBuffer.wavbuffer[wavbuffer_write_idx][wav_idx]=tmp_wavbuffer[wav_idx];
 		}
 		taskEXIT_CRITICAL();
 		wavbuffer_write_idx++;
@@ -278,7 +279,7 @@ void retrieve_soundbuffer()
 		}
 		taskEXIT_CRITICAL();
 #endif
-		currentWaveBuffer = (uint8_t *)wavbuffer[wavbuffer_read_idx];// cast just to prevent compiler warning
+		currentWaveBuffer = (uint8_t *)audioAndHotspotDataBuffer.wavbuffer[wavbuffer_read_idx];// cast just to prevent compiler warning
 		wavbuffer_read_idx++;
 		if (wavbuffer_read_idx>=WAV_BUFFER_COUNT)
 		{
@@ -318,8 +319,8 @@ void send_sound_data()
 
 		for (int i=0; i<(WAV_BUFFER_SIZE/2); i++)
 		{
-			*(spi_soundBuf +4*i +3) = wavbuffer[wavbuffer_read_idx][2*i+1];
-			*(spi_soundBuf +4*i +2) = wavbuffer[wavbuffer_read_idx][2*i];
+			*(spi_soundBuf +4*i +3) = audioAndHotspotDataBuffer.wavbuffer[wavbuffer_read_idx][2*i+1];
+			*(spi_soundBuf +4*i +2) = audioAndHotspotDataBuffer.wavbuffer[wavbuffer_read_idx][2*i];
 		}
 
 		xfer.data = spi_soundBuf;
@@ -352,8 +353,8 @@ void receive_sound_data()
 		{
 			for (int i=0; i<(WAV_BUFFER_SIZE/2); i++)
 			{
-				wavbuffer[wavbuffer_write_idx][2*i+1] = *(spi_soundBuf +4*i +3);
-				wavbuffer[wavbuffer_write_idx][2*i] = *(spi_soundBuf +4*i +2);
+				audioAndHotspotDataBuffer.wavbuffer[wavbuffer_write_idx][2*i+1] = *(spi_soundBuf +4*i +3);
+				audioAndHotspotDataBuffer.wavbuffer[wavbuffer_write_idx][2*i] = *(spi_soundBuf +4*i +2);
 			}
 
 			wavbuffer_write_idx++;
