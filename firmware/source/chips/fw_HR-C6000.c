@@ -31,6 +31,8 @@ TaskHandle_t fwhrc6000TaskHandle;
 
 const uint8_t TG_CALL_FLAG = 0x00;
 const uint8_t PC_CALL_FLAG = 0x03;
+const uint8_t SILENCE_AUDIO[27] = {	0xB9U, 0xE8U, 0x81U, 0x52U, 0x61U, 0x73U, 0x00U, 0x2AU, 0x6BU, 0xB9U, 0xE8U, 0x81U, 0x52U,
+									0x61U, 0x73U, 0x00U, 0x2AU, 0x6BU, 0xB9U, 0xE8U, 0x81U, 0x52U, 0x61U, 0x73U, 0x00U, 0x2AU, 0x6BU };
 
 uint8_t tmp_val_0x82;
 uint8_t tmp_val_0x86;
@@ -444,21 +446,35 @@ void setupPcOrTGHeader()
 
 //const uint32_t USER_ID = 5054125;//vk4jwt
 //const uint32_t USER_ID = 5057058;//vk7zja
-const uint32_t USER_ID = 5057005;//clayton
-//const uint32_t USER_ID = 2345496;// G3UBY
+//const uint32_t USER_ID = 5057005;//clayton
+const uint32_t USER_ID = 2345496;// G3UBY
 //const uint32_t USER_ID = 5054202;//wayne Vk4wh
 //const uint32_t USER_ID = 2644462;// DG4KLU
 //const uint32_t USER_ID = 2351215;// G4EML
-
+//const uint32_t USER_ID = 3109921;// 	W1RHS
+//const uint32_t USER_ID = 2420047;// 	LB9AB
+const uint32_t FILTER_LIST[] = {5053238,2345496,5054125,5057058,5057005,5054202,2644462,2351215,3109921,2420047,3109230,3109354};
 bool callAcceptFilter()
 {
 	 if (settingsUsbMode == USB_MODE_HOTSPOT)
 	 {
-		 //In Hotspot mode, we need to accept all incoming traffic, otherwise private calls won't work
-		 return ((DMR_frame_buffer[0]==TG_CALL_FLAG || DMR_frame_buffer[0]==PC_CALL_FLAG) &&
-				 				 (receivedSrcId == 5053238 || receivedSrcId == 2345496 || receivedSrcId == USER_ID));
-//				 ((receivedSrcId == 5053238) ||  (receivedSrcId == 5054125)	||
-//				 (receivedSrcId == 5057005)	||  (receivedSrcId == 2345496) ));
+  		    //In Hotspot mode, we need to accept all incoming traffic, otherwise private calls won't work
+			if (DMR_frame_buffer[0]==TG_CALL_FLAG || DMR_frame_buffer[0]==PC_CALL_FLAG)
+			{
+				int numFilters = sizeof(FILTER_LIST)/sizeof(uint32_t);
+				for(int i=0;i<numFilters;i++)
+				{
+					if (receivedSrcId ==FILTER_LIST [i])
+					{
+						return true;
+					}
+				}
+				return false;
+			}
+			else
+			{
+				return false;
+			}
 	 }
 	 else
 	 {
@@ -610,6 +626,7 @@ void tick_HR_C6000()
 		case DMR_STATE_TX_2: // Ongoing TX (active timeslot)
 
 			memset(DMR_frame_buffer, 0, 27 + 0x0C);// fills the LC and  audio buffer with zeros in case there is no real audio
+
 			if (trxIsTransmitting)
 			{
 
@@ -642,10 +659,14 @@ void tick_HR_C6000()
 
                 	}
                 }
+    			write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, DMR_frame_buffer+0x0C, 27);// send the audio bytes to the hardware
+			}
+			else
+			{
+				write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, (uint8_t *)SILENCE_AUDIO, 27);// send silence audio bytes
 			}
 
 
-			write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, DMR_frame_buffer+0x0C, 27);// send the audio bytes to the hardware
 			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80); // TXnextslotenable
 			switch (tx_sequence)
 			{
@@ -676,6 +697,7 @@ void tick_HR_C6000()
 			slot_state = DMR_STATE_TX_1;
 			break;
 		case DMR_STATE_TX_END_1: // Stop TX (first step)
+			write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, SILENCE_AUDIO, 27);// send silence audio bytes
 			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);
 			write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x20);
 			slot_state = DMR_STATE_TX_END_2;
