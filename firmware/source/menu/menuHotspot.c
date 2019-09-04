@@ -67,7 +67,7 @@
 const uint8_t MMDVM_VOICE_SYNC_PATTERN = 0x20U;
 
 const int EMBEDDED_DATA_OFFSET = 13U;
-const int TX_BUFFER_MIN_BEFORE_TRANSMISSION = 2;
+const int TX_BUFFER_MIN_BEFORE_TRANSMISSION = 4;
 
 const uint8_t START_FRAME_PATTERN[] = {0xFF,0x57,0xD7,0x5D,0xF5,0xD9};
 const uint8_t END_FRAME_PATTERN[] 	= {0x5D,0x7F,0x77,0xFD,0x75,0x79};
@@ -645,7 +645,7 @@ static void hotspotStateMachine()
 			}
 			else
 			{
-				if (wavbuffer_count > 4)
+				if (wavbuffer_count > TX_BUFFER_MIN_BEFORE_TRANSMISSION)
 				{
 					hotspotState = HOTSPOT_STATE_TRANSMITTING;
 					SEGGER_RTT_printf(0, "TX_START_BUFFERING -> TRANSMITTING %d\n",wavbuffer_count);
