@@ -188,7 +188,7 @@ const char menuStringTable[32][16] = { "",//0
 
 
 const menuItemNew_t menuDataMainMenu[] = {
-	{10,10},// number of menus
+	{9,9},// number of menus
 	{ 21, MENU_CREDITS },
 	{ 6, MENU_ZONE_LIST },
 	{ 17, MENU_RSSI_SCREEN },
@@ -198,7 +198,6 @@ const menuItemNew_t menuDataMainMenu[] = {
 	{ 19, MENU_UTILITIES },
 	{ 20, MENU_DISPLAY},
 	{ 22, MENU_CHANNEL_DETAILS},
-	{ 23, MENU_HOTSPOT_MODE},// NOTE THIS MENU IS HIDDEN BECAUSE THE NUMBER OF MENUS IS SET TO 9 NOT 10
 };
 const menuItemNew_t menuDataContact[] = {
 	{ 3, 3 } ,// length

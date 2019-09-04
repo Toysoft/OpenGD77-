@@ -743,7 +743,8 @@ static void updateScreen()
 	char buffer[32];
 
 	UC1701_clearBuf();
-	UC1701_printCentered(0, "Hotspot ACTIVE",UC1701_FONT_GD77_8x16);
+	menuUtilityRenderHeader();
+	UC1701_printCentered(0, "Hotspot",UC1701_FONT_GD77_8x16);
 
 
 	if (trxIsTransmitting)
@@ -773,7 +774,7 @@ static void updateScreen()
 	UC1701_printCentered(48, buffer,UC1701_FONT_GD77_8x16);
 
 	UC1701_render();
-	//displayLightTrigger();
+	displayLightTrigger();
 }
 
 static void handleEvent(int buttons, int keys, int events)
@@ -817,7 +818,7 @@ const int BAN2_MAX  = 43800000;
 
 	SEGGER_RTT_printf(0, "setFreq\r\n");
 	hotspotState = HOTSPOT_STATE_INITIALISE;
-	displayLightOverrideTimeout(-1);// turn the backlight on permanently
+//	displayLightOverrideTimeout(-1);// turn the backlight on permanently
 
 	// Very old MMDVMHost, set full power
 	if (length == 9U)
@@ -984,7 +985,7 @@ static void getVersion()
 	uint8_t buf[64];
 	SEGGER_RTT_printf(0, "getVersion\r\n");
 
-	const char HOTSPOT_NAME[] = "OpenGD77 Hotspot";
+	const char HOTSPOT_NAME[] = "OpenGD77 Hotspot v0.0.1";
 	buf[0U]  = MMDVM_FRAME_START;
 	buf[1U]= 4 + strlen(HOTSPOT_NAME);// minus 1 because there is no terminator
 	buf[2U]  = MMDVM_GET_VERSION;
