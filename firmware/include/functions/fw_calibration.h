@@ -28,6 +28,12 @@ typedef struct calibrationStruct
 	uint8_t powerLevels[16];
 } calibrationStruct_t;
 
+typedef struct calibrationPowerValues
+{
+	uint32_t lowPower;
+	uint32_t highPower;
+} calibrationPowerValues_t;
+
 extern calibrationStruct_t calibrationVHF;
 extern calibrationStruct_t calibrationUHF;
 
@@ -80,5 +86,6 @@ void read_val_noise2_th_narrowband(int offset, uint16_t* value);
 void read_val_rssi3_th_narrowband(int offset, uint16_t* value);
 
 void read_val_squelch_th(int offset, int mod, uint16_t* value);
+bool calibrationGetPowerForFrequency(int freq, calibrationPowerValues_t *powerSettings);
 
 #endif

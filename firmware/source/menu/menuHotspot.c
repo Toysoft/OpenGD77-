@@ -19,6 +19,7 @@
  */
 #include <dmr/DMREmbeddedData.h>
 #include "fw_sound.h"
+#include "fw_calibration.h"
 #include "menu/menuSystem.h"
 #include "menu/menuUtilityQSOData.h"
 #include "menu/menuHotspot.h"
@@ -64,8 +65,10 @@
 #define PROTOCOL_VERSION    1U
 
 #define MMDVM_HEADER_LENGTH  4U
+const int LOWEST_POWER_SETTING = 775;
 
 const uint8_t MMDVM_VOICE_SYNC_PATTERN = 0x20U;
+
 
 const int EMBEDDED_DATA_OFFSET = 13U;
 const int TX_BUFFER_MIN_BEFORE_TRANSMISSION = 4;
@@ -141,6 +144,8 @@ const uint8_t DMR_AUDIO_SEQ_SYNC[6][7] = {  {0x07U, 0xF0U, 0x00U, 0x00U, 0x00U, 
 
 const uint8_t DMR_AUDIO_SEQ_MASK[]  = 		{0x0FU, 0xF0U, 0x00U, 0x00U, 0x00U, 0x0FU, 0xF0U};
 const uint8_t DMR_EMBED_SEQ_MASK[]  = 		{0x00U, 0x0FU, 0xFFU, 0xFFU, 0xFFU, 0xF0U, 0x00U};
+
+static calibrationPowerValues_t powerSettings;
 
 static void updateScreen(int rxState);
 static void handleEvent(int buttons, int keys, int events);
@@ -803,7 +808,11 @@ static void updateScreen(int rxCommandState)
 			}
 			UC1701_printCentered(32, buffer,UC1701_FONT_GD77_8x16);
 		}
-
+		else
+		{
+			sprintf(buffer,"Tx power %d mW" ,  (5000 * (nonVolatileSettings.txPower - LOWEST_POWER_SETTING)) / (powerSettings.highPower-LOWEST_POWER_SETTING)) ;
+			UC1701_printCentered(32, buffer,UC1701_FONT_GD77_8x16);
+		}
 		val_before_dp = freq_rx/10000;
 		val_after_dp = freq_rx - val_before_dp*10000;
 		sprintf(buffer,"R %d.%04d MHz",val_before_dp, val_after_dp);
@@ -835,14 +844,15 @@ static void handleEvent(int buttons, int keys, int events)
 		menuSystemPopAllAndDisplayRootMenu();
 		return;
 	}
-
+/*
 	if (hotspotState == HOTSPOT_STATE_RX_START)
 	{
 		if ((buttons & BUTTON_PTT)!=0)
 		{
-
+			SEGGER_RTT_printf(0, "BUTTON_PTT\r\n");
 		}
 	}
+	*/
 }
 
 static uint8_t setFreq(volatile const uint8_t* data, uint8_t length)
@@ -881,6 +891,14 @@ const int BAN2_MAX  = 43800000;
 	freq_tx=freq_tx / 100;
 
 	SEGGER_RTT_printf(0, "Tx freq = %d, Rx freq = %d, Power = %d\n",freq_tx,freq_rx,rf_power);
+
+	calibrationGetPowerForFrequency(freq_tx, &powerSettings);
+	if (rf_power!=255)
+	{
+
+		nonVolatileSettings.txPower = ((powerSettings.highPower-LOWEST_POWER_SETTING) * rf_power)/255 + LOWEST_POWER_SETTING ;
+		SEGGER_RTT_printf(0, "Power = %d\n",nonVolatileSettings.txPower);
+	}
 
 	if ((freq_tx>= BAN1_MIN && freq_tx <= BAN1_MAX) || (freq_tx>= BAN2_MIN && freq_tx <= BAN2_MAX))
 	{

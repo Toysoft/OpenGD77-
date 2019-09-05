@@ -23,7 +23,7 @@ static void updateScreen();
 static void handleEvent(int buttons, int keys, int events);
 static const int NUM_MENUS=6;
 static bool	doFactoryReset;
-static const int MAX_SAFE_POWER = 3000;// Note 3000 gives about 5.5W on 144Mhz on one of Roger's radios.
+static const int MAX_SAFE_POWER = 3400;// Note 3000 gives about 5.5W on 144Mhz on one of Roger's radios.
 
 int menuUtilities(int buttons, int keys, int events, bool isFirstRun)
 {
@@ -134,6 +134,7 @@ static void updateScreen()
 static void handleEvent(int buttons, int keys, int events)
 {
 	int tmpPower;
+	int powerChangeValue=100;
 	if ((keys & KEY_DOWN)!=0 && gMenusEndIndex!=0)
 	{
 		gMenusCurrentItemIndex++;
@@ -161,7 +162,12 @@ static void handleEvent(int buttons, int keys, int events)
 				HR_C6000_datalogging = 1;
 				break;
 			case 0:
-				tmpPower = trxGetPower() + 100;
+				if (buttons && BUTTON_SK2)
+				{
+					powerChangeValue=1;
+				}
+				tmpPower = trxGetPower() + powerChangeValue;
+
 				if (tmpPower<=MAX_SAFE_POWER)
 				{
 					trxSetPower(tmpPower);
@@ -180,6 +186,7 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_LEFT)!=0)
 	{
+
 		switch(gMenusCurrentItemIndex)
 		{
 			case 1:
@@ -189,9 +196,13 @@ static void handleEvent(int buttons, int keys, int events)
 				HR_C6000_datalogging = 0;
 				break;
 			case 0:
-				if (trxGetPower() >= 100)
+				if (buttons && BUTTON_SK2)
 				{
-					trxSetPower(trxGetPower() - 100);
+					powerChangeValue=1;
+				}
+				if (trxGetPower() >= powerChangeValue)
+				{
+					trxSetPower(trxGetPower() - powerChangeValue);
 				}
 				break;
 			case 3:

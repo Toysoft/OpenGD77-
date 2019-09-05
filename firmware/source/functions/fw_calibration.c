@@ -18,6 +18,7 @@
  */
 
 #include "fw_calibration.h"
+#include "fw_trx.h"
 
 calibrationStruct_t calibrationVHF;
 calibrationStruct_t calibrationUHF;
@@ -168,3 +169,41 @@ void read_val_squelch_th(int offset, int mod, uint16_t* value)
 	}
 	*value=(v1 << 7) + (v2 << 0);
 }
+
+bool calibrationGetPowerForFrequency(int freq, calibrationPowerValues_t *powerSettings)
+{
+	/*
+	 * Power for
+	 * UHF is in 5Mhz bands starting at 400Mhz.
+	 * VHF is in 5Mhz bands from 135Mhz
+	 * first byte of each value is the low power and the second byte is the high power value
+	 */
+	const uint32_t POWER_CALIBRATION_ADDRESS_UHF_400MHZ = 0x8F00B;
+	const uint32_t POWER_CALIBRATION_ADDRESS_VHF_135MHZ = 0x8F07B;
+	int address;
+	uint8_t buffer[2];
+
+	if (trxCheckFrequencyIsVHF(freq))
+	{
+		address = POWER_CALIBRATION_ADDRESS_VHF_135MHZ + ((freq - RADIO_VHF_MIN) / 50000)  * 2;
+	}
+	else
+	{
+		if (trxCheckFrequencyIsUHF(freq))
+		{
+			address = POWER_CALIBRATION_ADDRESS_UHF_400MHZ + ((freq - RADIO_UHF_MIN) / 50000) * 2;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	SPI_Flash_read(address,buffer,2);
+	powerSettings->lowPower 	= buffer[0] * 16;
+	powerSettings->highPower 	= buffer[1] * 16;
+
+	return true;
+}
+
+
