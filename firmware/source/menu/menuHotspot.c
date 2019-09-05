@@ -20,6 +20,7 @@
 #include <dmr/DMREmbeddedData.h>
 #include "fw_sound.h"
 #include "menu/menuSystem.h"
+#include "menu/menuUtilityQSOData.h"
 #include "menu/menuHotspot.h"
 #include "fw_settings.h"
 #include "fw_usb_com.h"
@@ -141,7 +142,7 @@ const uint8_t DMR_AUDIO_SEQ_SYNC[6][7] = {  {0x07U, 0xF0U, 0x00U, 0x00U, 0x00U, 
 const uint8_t DMR_AUDIO_SEQ_MASK[]  = 		{0x0FU, 0xF0U, 0x00U, 0x00U, 0x00U, 0x0FU, 0xF0U};
 const uint8_t DMR_EMBED_SEQ_MASK[]  = 		{0x00U, 0x0FU, 0xFFU, 0xFFU, 0xFFU, 0xF0U, 0x00U};
 
-static void updateScreen();
+static void updateScreen(int rxState);
 static void handleEvent(int buttons, int keys, int events);
 void handleHotspotRequest();
 
@@ -349,10 +350,11 @@ int getEmbeddedData(uint8_t *com_requestbuffer)
 	if (DMREmbeddedData_addData(com_requestbuffer+4,lcss))
 	{
 		//DMRLC_T lc;
-		int flco = DMREmbeddedData_getFLCO();
+
 		DMREmbeddedData_getRawData(hotspotTxLC);
 
 		/*
+		int flco = DMREmbeddedData_getFLCO();
 		switch (flco)
 		{
 			case FLCO_GROUP:
@@ -554,7 +556,7 @@ static void hotspotStateMachine()
 			wavbuffer_read_idx=0;
 			wavbuffer_write_idx=0;
 			wavbuffer_count=0;
-			updateScreen();
+
 			hotspotState = HOTSPOT_STATE_RX_PROCESS;
 			break;
 		case HOTSPOT_STATE_RX_PROCESS:
@@ -566,15 +568,19 @@ static void hotspotStateMachine()
         			int rx_command = audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][27+0x0c];
         			//SEGGER_RTT_printf(0, "RX_PROCESS cmd:%d buf:%d\n",rx_command,wavbuffer_count);
 
-					switch(rx_command)
+
+
+        			switch(rx_command)
 					{
 						case HOTSPOT_RX_START:
 							SEGGER_RTT_printf(0, "RX_START\n",rx_command,wavbuffer_count);
+		        			updateScreen(rx_command);
 							sendVoiceHeaderLC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
 							lastRxState = HOTSPOT_RX_START;
 							break;
 						case HOTSPOT_RX_START_LATE:
 							SEGGER_RTT_printf(0, "RX_START_LATE\n");
+		        			updateScreen(rx_command);
 							sendVoiceHeaderLC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
 							lastRxState = HOTSPOT_RX_START_LATE;
 							break;
@@ -585,6 +591,7 @@ static void hotspotStateMachine()
 							break;
 						case HOTSPOT_RX_STOP:
 							SEGGER_RTT_printf(0, "RX_STOP\n");
+		        			updateScreen(rx_command);
 							sendTerminator_LC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
 							lastRxState = HOTSPOT_RX_STOP;
 							hotspotState = HOTSPOT_STATE_RX_END;
@@ -650,7 +657,7 @@ static void hotspotStateMachine()
 					hotspotState = HOTSPOT_STATE_TRANSMITTING;
 					SEGGER_RTT_printf(0, "TX_START_BUFFERING -> TRANSMITTING %d\n",wavbuffer_count);
 					enableTransmission();
-					updateScreen();
+					updateScreen(HOTSPOT_RX_IDLE);
 				}
 			}
 			break;
@@ -684,6 +691,7 @@ static void hotspotStateMachine()
 					trx_setRX();
 					hotspotState = HOTSPOT_STATE_RX_START;
 					SEGGER_RTT_printf(0, "TX_SHUTDOWN -> STATE_RX\n");
+					updateScreen(HOTSPOT_RX_IDLE);
 					trxSetFrequency(freq_rx);
 					/*
 					wavbuffer_read_idx=0;
@@ -718,7 +726,7 @@ int menuHotspotMode(int buttons, int keys, int events, bool isFirstRun)
 		UC1701_printCentered(48, "PiStar",UC1701_FONT_GD77_8x16);
 		UC1701_render();
 		displayLightTrigger();
-//		updateScreen();
+//		updateScreen(HOTSPOT_RX_IDLE);
 	}
 	else
 	{
@@ -736,11 +744,15 @@ int menuHotspotMode(int buttons, int keys, int events, bool isFirstRun)
 	return 0;
 }
 
-static void updateScreen()
+
+
+
+static void updateScreen(int rxCommandState)
 {
 	int val_before_dp;
 	int val_after_dp;
 	char buffer[32];
+	dmrIdDataStruct_t currentRec;
 
 	UC1701_clearBuf();
 	menuUtilityRenderHeader();
@@ -749,8 +761,12 @@ static void updateScreen()
 
 	if (trxIsTransmitting)
 	{
-		sprintf(buffer,"ID %d",trxDMRID & 0xFFFFFF);
+		dmrIDLookup( (trxDMRID & 0xFFFFFF),&currentRec);
+		sprintf(buffer,"%s", currentRec.text);
 		UC1701_printCentered(16, buffer,UC1701_FONT_GD77_8x16);
+
+	//	sprintf(buffer,"ID %d",trxDMRID & 0xFFFFFF);
+	//	UC1701_printCentered(16, buffer,UC1701_FONT_GD77_8x16);
 		if ((trxTalkGroupOrPcId & 0xFF000000) == 0)
 		{
 			sprintf(buffer,"TG %d",trxTalkGroupOrPcId & 0xFFFFFF);
@@ -767,6 +783,27 @@ static void updateScreen()
 	}
 	else
 	{
+		if (rxCommandState == HOTSPOT_RX_START  || rxCommandState == HOTSPOT_RX_START_LATE)
+		{
+			uint32_t srcId 	= (audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][6]<<16)+(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][7]<<8)+(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][8]<<0);
+			uint32_t dstId 	= (audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][3]<<16)+(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][4]<<8)+(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][5]<<0);
+			uint32_t FLCO 	= audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][0];// Private or group call
+
+			dmrIDLookup(srcId,&currentRec);
+			sprintf(buffer,"%s", currentRec.text);
+			UC1701_printCentered(16, buffer,UC1701_FONT_GD77_8x16);
+
+			if (FLCO == 0)
+			{
+				sprintf(buffer,"TG %d",dstId);
+			}
+			else
+			{
+				sprintf(buffer,"PC %d",dstId);
+			}
+			UC1701_printCentered(32, buffer,UC1701_FONT_GD77_8x16);
+		}
+
 		val_before_dp = freq_rx/10000;
 		val_after_dp = freq_rx - val_before_dp*10000;
 		sprintf(buffer,"R %d.%04d MHz",val_before_dp, val_after_dp);
@@ -1050,7 +1087,7 @@ void handleHotspotRequest()
 	            {
 	              sendNAK(err);
 	            }
-	        	updateScreen();
+	        	updateScreen(HOTSPOT_RX_IDLE);
 				break;
 
 			case MMDVM_CAL_DATA:
