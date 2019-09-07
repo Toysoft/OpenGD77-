@@ -386,7 +386,8 @@ void fw_hrc6000_task()
         	alive_hrc6000task=true;
         	taskEXIT_CRITICAL();
 
-    		if (melody_play==NULL)
+// There seems to be no need to stop the ticks when the melody is playing
+    		//if (melody_play==NULL)
     		{
     	    	if (trxGetMode() == RADIO_MODE_DIGITAL)
     	    	{
@@ -869,8 +870,11 @@ void tick_HR_C6000()
                     }
                     else
                     {
-                    	tick_codec_decode(DMR_frame_buffer+0x0C);
-                    	tick_RXsoundbuffer();
+                    	if (settingsPrivateCallMuteMode == false)
+                    	{
+                    		tick_codec_decode(DMR_frame_buffer+0x0C);
+                    		tick_RXsoundbuffer();
+                    	}
                     }
                 }
                 else

@@ -21,7 +21,7 @@
 
 static void updateScreen();
 static void handleEvent(int buttons, int keys, int events);
-static const int NUM_MENUS=6;
+static const int NUM_MENUS=7;
 static bool	doFactoryReset;
 static const int MAX_SAFE_POWER = 3400;// Note 3000 gives about 5.5W on 144Mhz on one of Roger's radios.
 
@@ -79,13 +79,13 @@ static void updateScreen()
 			}
 			break;
 		case 2:
-			if (HR_C6000_datalogging)
+			if (nonVolatileSettings.txTimeoutBeepSecs!=0)
 			{
-				strcpy(buf,"LOG:ON");
+				sprintf(buf,"Timeout beep:%d",nonVolatileSettings.txTimeoutBeepSecs);
 			}
 			else
 			{
-				strcpy(buf,"LOG:OFF");
+				strcpy(buf,"Timeout beep:OFF");
 			}
 			break;
 		case 3:
@@ -117,6 +117,10 @@ static void updateScreen()
 			{
 				strcpy(buf,"Band Limits:OFF");
 			}
+			break;
+		case 6:// Beep volume reduction
+			sprintf(buf,"Beep vol:%d%%",100/nonVolatileSettings.beepVolumeDivider);
+			soundBeepVolumeDivider = nonVolatileSettings.beepVolumeDivider;
 			break;
 		}
 		if (gMenusCurrentItemIndex==mNum)
@@ -159,7 +163,10 @@ static void handleEvent(int buttons, int keys, int events)
 				open_squelch = 1;
 				break;
 			case 2:
-				HR_C6000_datalogging = 1;
+				if (nonVolatileSettings.txTimeoutBeepSecs<15)
+				{
+					nonVolatileSettings.txTimeoutBeepSecs++;
+				}
 				break;
 			case 0:
 				if (buttons && BUTTON_SK2)
@@ -182,6 +189,12 @@ static void handleEvent(int buttons, int keys, int events)
 			case 5:
 				nonVolatileSettings.txFreqLimited=0x01;
 				break;
+			case 6:
+				if (nonVolatileSettings.beepVolumeDivider>1)
+				{
+					nonVolatileSettings.beepVolumeDivider--;
+				}
+				break;
 		}
 	}
 	else if ((keys & KEY_LEFT)!=0)
@@ -193,7 +206,10 @@ static void handleEvent(int buttons, int keys, int events)
 				open_squelch = 0;
 				break;
 			case 2:
-				HR_C6000_datalogging = 0;
+				if (nonVolatileSettings.txTimeoutBeepSecs>0)
+				{
+					nonVolatileSettings.txTimeoutBeepSecs--;
+				}
 				break;
 			case 0:
 				if (buttons && BUTTON_SK2)
@@ -214,6 +230,11 @@ static void handleEvent(int buttons, int keys, int events)
 			case 5:
 				nonVolatileSettings.txFreqLimited=0x00;
 				break;
+			case 6:
+				if (nonVolatileSettings.beepVolumeDivider<10)
+				{
+					nonVolatileSettings.beepVolumeDivider++;
+				}
 		}
 	}
 	else if ((keys & KEY_GREEN)!=0)

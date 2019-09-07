@@ -22,6 +22,7 @@
 #include "fw_trx.h"
 #include "menu/menuSystem.h"
 #include "fw_codeplug.h"
+#include "fw_sound.h"
 
 const int BAND_VHF_MIN 	= 1440000;
 const int BAND_VHF_MAX 	= 1480000;
@@ -37,6 +38,7 @@ struct_codeplugChannel_t *currentChannelData;
 struct_codeplugChannel_t channelScreenChannelData={.rxFreq=0};
 int settingsUsbMode = USB_MODE_CPS;
 int settingsCurrentChannelNumber=0;
+bool settingsPrivateCallMuteMode = false;
 
 void settingsSaveSettings()
 {
@@ -63,6 +65,19 @@ void settingsLoadSettings()
 		}
 	}
 	trxDMRID = codeplugGetUserDMRID();
+
+	// Added this parameter without changing the magic number, so need to check for default / invalid numbers
+	if (nonVolatileSettings.txTimeoutBeepSecs==255)
+	{
+		nonVolatileSettings.txTimeoutBeepSecs=0;
+	}
+
+	// Added this parameter without changing the magic number, so need to check for default / invalid numbers
+	if (nonVolatileSettings.beepVolumeDivider==0 || nonVolatileSettings.beepVolumeDivider>10)
+	{
+		nonVolatileSettings.beepVolumeDivider = 1;// no reduction in volume
+	}
+	soundBeepVolumeDivider = nonVolatileSettings.beepVolumeDivider;
 }
 
 void settingsInitVFOChannel()
@@ -106,7 +121,7 @@ void settingsRestoreDefaultSettings()
 	nonVolatileSettings.currentChannelIndexInAllZone = 1;
 	nonVolatileSettings.currentZone = 0;
 	nonVolatileSettings.backLightTimeout = 5;//0 = never timeout. 1 - 255 time in seconds
-	nonVolatileSettings.displayContrast = 0x0E;
+	nonVolatileSettings.displayContrast = 0x12;
 	nonVolatileSettings.initialMenuNumber=MENU_VFO_MODE;
 	nonVolatileSettings.displayBacklightPercentage=100U;// 100% brightness
 	nonVolatileSettings.displayInverseVideo=0;// Not inverse video
@@ -117,6 +132,8 @@ void settingsRestoreDefaultSettings()
 	nonVolatileSettings.overrideTG=0;// 0 = No override
 	nonVolatileSettings.useCalibration = 0x01;// enable the new calibration system
 	nonVolatileSettings.txFreqLimited = 0x01;// Limit Tx frequency to US Amateur bands
+	nonVolatileSettings.txTimeoutBeepSecs = 10;
+	nonVolatileSettings.beepVolumeDivider = 1;// no reduction in volume
 	settingsInitVFOChannel();
 	currentChannelData = &nonVolatileSettings.vfoChannel;// Set the current channel data to point to the VFO data since the default screen will be the VFO
 

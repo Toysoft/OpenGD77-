@@ -77,6 +77,7 @@ int i;
 void UC1701_render()
 {
 	uint8_t *rowPos = screenBuf;
+	taskENTER_CRITICAL();
 	for(int row=0;row<8;row++)
 	{
 		UC1701_setCommandMode(true);
@@ -111,6 +112,7 @@ void UC1701_render()
 			rowPos++;
 		}
 	}
+	taskEXIT_CRITICAL();
 }
 
 int UC1701_printCore(int x, int y, char *szMsg, int iSize, int alignment, bool isInverted)

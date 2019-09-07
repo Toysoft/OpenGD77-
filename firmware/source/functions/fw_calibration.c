@@ -20,9 +20,14 @@
 #include "fw_calibration.h"
 #include "fw_trx.h"
 
+// This lookup gives an approximate proportion of power needed for power settings from 0 to 5w in 0.25 W steps, where 32768 is 100% of whatever PA drive is required for 5W
+const int PA_DRIVE_LOOKUP[] = {0,3315,5482,7395,8925,10455,11730,13005,14152,15300,16702,17977,19380,20655,22440,23715,25117,27030,28624,30855,32768};
+const int NUM_PA_DRIVE_INDEXES = 20;// not including zero
+
+/*
 calibrationStruct_t calibrationVHF;
 calibrationStruct_t calibrationUHF;
-
+*/
 void read_val_DACDATA_shift(int offset, uint8_t* val_shift)
 {
 	uint8_t buffer[1];

@@ -34,8 +34,13 @@ typedef struct calibrationPowerValues
 	uint32_t highPower;
 } calibrationPowerValues_t;
 
+/*
 extern calibrationStruct_t calibrationVHF;
 extern calibrationStruct_t calibrationUHF;
+*/
+
+extern const int PA_DRIVE_LOOKUP[];
+extern const int NUM_PA_DRIVE_INDEXES;
 
 #define EXT_DACDATA_shift 0x0008F05D
 #define EXT_twopoint_mod  0x0008F008

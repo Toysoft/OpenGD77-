@@ -32,6 +32,7 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 	if (isFirstRun)
 	{
 
+		settingsPrivateCallMuteMode = false;
 		if ((currentChannelData->flag4 & 0x04) == 0x00 && (  trxCheckFrequencyInAmateurBand(currentChannelData->txFreq) || nonVolatileSettings.txFreqLimited == 0x00))
 		{
 			nextSecondPIT = PITCounter + PIT_COUNTS_PER_SECOND;
@@ -87,6 +88,10 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 				else
 				{
 					timeInSeconds--;
+					if (timeInSeconds < nonVolatileSettings.txTimeoutBeepSecs)
+					{
+						set_melody(melody_key_beep);
+					}
 				}
 				if (currentChannelData->tot!=0 && timeInSeconds == 0)
 				{
@@ -99,6 +104,7 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 				{
 					updateScreen();
 				}
+
 				nextSecondPIT = PITCounter + PIT_COUNTS_PER_SECOND;
 			}
 		}
