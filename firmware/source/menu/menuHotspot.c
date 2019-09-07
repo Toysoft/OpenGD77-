@@ -1040,7 +1040,7 @@ static void getVersion()
 	uint8_t buf[64];
 	SEGGER_RTT_printf(0, "getVersion\r\n");
 
-	const char HOTSPOT_NAME[] = "OpenGD77 Hotspot v0.0.1";
+	const char HOTSPOT_NAME[] = "OpenGD77 Hotspot v0.0.2";
 	buf[0U]  = MMDVM_FRAME_START;
 	buf[1U]= 4 + strlen(HOTSPOT_NAME);// minus 1 because there is no terminator
 	buf[2U]  = MMDVM_GET_VERSION;
