@@ -810,8 +810,10 @@ static void updateScreen(int rxCommandState)
 		}
 		else
 		{
-			sprintf(buffer,"Tx power %d mW" ,  (5000 * (nonVolatileSettings.txPower - LOWEST_POWER_SETTING)) / (powerSettings.highPower-LOWEST_POWER_SETTING)) ;
-			UC1701_printCentered(32, buffer,UC1701_FONT_GD77_8x16);
+			sprintf(buffer,"CC:%d" ,  trxGetDMRColourCode()) ;
+			UC1701_printCore(0, 32, buffer, UC1701_FONT_GD77_8x16, 0, false);
+			sprintf(buffer,"%dmW" ,  (5000 * (nonVolatileSettings.txPower - LOWEST_POWER_SETTING)) / (powerSettings.highPower-LOWEST_POWER_SETTING)) ;
+			UC1701_printCore(0, 32, buffer, UC1701_FONT_GD77_8x16, 2, false);
 		}
 		val_before_dp = freq_rx/10000;
 		val_after_dp = freq_rx - val_before_dp*10000;
@@ -913,7 +915,6 @@ const int BAN2_MAX  = 43800000;
 	{
 		return 4U;// invalid frequency
 	}
-
   return 0x00;
 }
 
@@ -985,7 +986,6 @@ static uint8_t setConfig(volatile const uint8_t* data, uint8_t length)
     return 4U;
   }
 
-  SEGGER_RTT_printf(0, "Colour code:%d\n",colorCode);
   trxSetDMRColourCode(colorCode);
 
   /* To Do
@@ -993,7 +993,6 @@ static uint8_t setConfig(volatile const uint8_t* data, uint8_t length)
   uint8_t dmrTXLevel    = data[10U];
   io.setDeviations(dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel, nxdnTXLevel, pocsagTXLevel, ysfLoDev);
   dmrDMOTX.setTXDelay(txDelay);
-  dmrDMORX.setColorCode(colorCode);
    */
   return 0U;
 }
@@ -1038,15 +1037,12 @@ uint8_t setMode(volatile const uint8_t* data, uint8_t length)
 static void getVersion()
 {
 	uint8_t buf[64];
-	SEGGER_RTT_printf(0, "getVersion\r\n");
-
-	const char HOTSPOT_NAME[] = "OpenGD77 Hotspot v0.0.2";
+	const char HOTSPOT_NAME[] = "OpenGD77 Hotspot v0.0.3";
 	buf[0U]  = MMDVM_FRAME_START;
 	buf[1U]= 4 + strlen(HOTSPOT_NAME);// minus 1 because there is no terminator
 	buf[2U]  = MMDVM_GET_VERSION;
 	buf[3]= PROTOCOL_VERSION;
 	strcpy((char *)&buf[4],HOTSPOT_NAME);
-
 	enqueueUSBData(buf,buf[1]);
 }
 
@@ -1078,6 +1074,7 @@ void handleHotspotRequest()
 				if (err == 0U)
 				{
 				  sendACK();
+				  updateScreen(HOTSPOT_RX_IDLE);
 				}
 				else
 				{
@@ -1100,12 +1097,13 @@ void handleHotspotRequest()
 	            if (err == 0x00)
 	            {
 	              sendACK();
+	              updateScreen(HOTSPOT_RX_IDLE);
 	            }
 	            else
 	            {
 	              sendNAK(err);
 	            }
-	        	updateScreen(HOTSPOT_RX_IDLE);
+
 				break;
 
 			case MMDVM_CAL_DATA:
