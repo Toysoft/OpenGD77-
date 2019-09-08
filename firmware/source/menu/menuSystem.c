@@ -198,7 +198,6 @@ const menuItemNew_t menuDataMainMenu[] = {
 	{ 19, MENU_UTILITIES },
 	{ 20, MENU_DISPLAY},
 	{ 22, MENU_CHANNEL_DETAILS},
-	{ 23, MENU_HOTSPOT_MODE},// NOTE THIS MENU IS HIDDEN BECAUSE THE NUMBER OF MENUS IS SET TO 9 NOT 10
 };
 const menuItemNew_t menuDataContact[] = {
 	{ 3, 3 } ,// length

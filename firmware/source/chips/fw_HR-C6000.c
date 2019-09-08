@@ -20,6 +20,8 @@
 
 #include "fw_HR-C6000.h"
 #include "menu/menuUtilityQSOData.h"
+#include "fw_settings.h"
+#include "menu/menuHotspot.h"
 
 #if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
 #include <SeggerRTT/RTT/SEGGER_RTT.h>
@@ -29,6 +31,8 @@ TaskHandle_t fwhrc6000TaskHandle;
 
 const uint8_t TG_CALL_FLAG = 0x00;
 const uint8_t PC_CALL_FLAG = 0x03;
+const uint8_t SILENCE_AUDIO[27] = {	0xB9U, 0xE8U, 0x81U, 0x52U, 0x61U, 0x73U, 0x00U, 0x2AU, 0x6BU, 0xB9U, 0xE8U, 0x81U, 0x52U,
+									0x61U, 0x73U, 0x00U, 0x2AU, 0x6BU, 0xB9U, 0xE8U, 0x81U, 0x52U, 0x61U, 0x73U, 0x00U, 0x2AU, 0x6BU };
 
 uint8_t tmp_val_0x82;
 uint8_t tmp_val_0x86;
@@ -36,9 +40,7 @@ uint8_t tmp_val_0x51;
 uint8_t tmp_val_0x52;
 uint8_t tmp_val_0x57;
 uint8_t tmp_val_0x5f;
-uint8_t tmp_ram[256];
-uint8_t tmp_ram1[256];
-uint8_t tmp_ram2[256];
+uint8_t DMR_frame_buffer[256];
 
 volatile bool int_sys;
 volatile bool int_ts;
@@ -46,7 +48,10 @@ volatile bool tx_required;
 volatile bool int_rxtx;
 volatile int int_timeout;
 
+
+
 static uint32_t receivedTgOrPcId;
+static uint32_t receivedSrcId;
 int slot_state;
 int tick_cnt;
 int skip_count;
@@ -340,17 +345,17 @@ void store_qsodata()
 {
 	// If this is the start of a newly received signal, we always need to trigger the display to show this, even if its the same station calling again.
 	// Of if the display is holding on the PC accept text and the incoming call is not a PC
-	if (qsodata_timer == 0 || (menuUtilityReceivedPcId!=0 && tmp_ram[0]==TG_CALL_FLAG))
+	if (qsodata_timer == 0 || (menuUtilityReceivedPcId!=0 && DMR_frame_buffer[0]==TG_CALL_FLAG))
 	{
 		menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;
 	}
 	// check if this is a valid data frame, including Talker Alias data frames (0x04 - 0x07)
 	// Not sure if its necessary to check byte [1] for 0x00 but I'm doing this
-	if (tmp_ram[1] == 0x00  && (tmp_ram[0]==TG_CALL_FLAG || tmp_ram[0]==PC_CALL_FLAG  || (tmp_ram[0]>=0x04 && tmp_ram[0]<=0x7)))
+	if (DMR_frame_buffer[1] == 0x00  && (DMR_frame_buffer[0]==TG_CALL_FLAG || DMR_frame_buffer[0]==PC_CALL_FLAG  || (DMR_frame_buffer[0]>=0x04 && DMR_frame_buffer[0]<=0x7)))
 	{
 		// Needs to enter critical because the LastHeard is accessed by other threads
     	taskENTER_CRITICAL();
-    	lastHeardListUpdate(tmp_ram);
+    	lastHeardListUpdate(DMR_frame_buffer);
 		taskEXIT_CRITICAL();
 		qsodata_timer=QSO_TIMER_TIMEOUT;
 	}
@@ -381,7 +386,8 @@ void fw_hrc6000_task()
         	alive_hrc6000task=true;
         	taskEXIT_CRITICAL();
 
-    		if (melody_play==NULL)
+// There seems to be no need to stop the ticks when the melody is playing
+    		//if (melody_play==NULL)
     		{
     	    	if (trxGetMode() == RADIO_MODE_DIGITAL)
     	    	{
@@ -396,6 +402,30 @@ void fw_hrc6000_task()
 
 		vTaskDelay(0);
     }
+}
+
+void buildLCDataFromParams(uint8_t *data,uint8_t FLCO,uint32_t srcId,uint32_t dstId)
+{
+	data[0] = FLCO;
+	data[1] = 0x00;
+	data[2] = 0x00;
+	data[3] = (dstId >> 16) & 0xFF;
+	data[4] = (dstId >> 8) & 0xFF;
+	data[5] = (dstId >> 0) & 0xFF;
+	data[6] = (srcId >> 16) & 0xFF;
+	data[7] = (srcId >> 8) & 0xFF;
+	data[8] = (srcId >> 0) & 0xFF;
+	data[9] = 0x00;
+	data[10] = 0x00;
+	data[11] = 0x00;
+}
+
+void buildLC_DataFromLD_Data(uint8_t *outData,uint8_t *LC_DataBytes)
+{
+	memcpy(outData,LC_DataBytes,9);
+	outData[9] = 0x00;
+	outData[10] = 0x00;
+	outData[11] = 0x00;
 }
 
 void setupPcOrTGHeader()
@@ -415,11 +445,51 @@ void setupPcOrTGHeader()
 	write_SPI_page_reg_bytearray_SPI0(0x02, 0x00, spi_tx, 0x0c);
 }
 
+#if false
+
+// Beta testers limiting functionality
+
+	//const uint32_t USER_ID = 5054125;//vk4jwt
+	//const uint32_t USER_ID = 5057058;//vk7zja
+	//const uint32_t USER_ID = 5057005;//clayton
+	const uint32_t USER_ID = 2345496;// G3UBY
+	//const uint32_t USER_ID = 5054202;//wayne Vk4wh
+	//const uint32_t USER_ID = 2644462;// DG4KLU
+	//const uint32_t USER_ID = 2351215;// G4EML
+	//const uint32_t USER_ID = 3109921;// 	W1RHS
+	//const uint32_t USER_ID = 2420047;// 	LB9AB
+	const uint32_t FILTER_LIST[] = {5053238,2345496,5054125,5057058,5057005,5054202,2644462,2351215,3109921,2420047,3109230,3109354,2346139};
+#endif
 bool callAcceptFilter()
 {
-	return (tmp_ram[0]==TG_CALL_FLAG || (tmp_ram[0]==PC_CALL_FLAG && receivedTgOrPcId == trxDMRID));
+	 if (settingsUsbMode == USB_MODE_HOTSPOT)
+	 {
+  		    //In Hotspot mode, we need to accept all incoming traffic, otherwise private calls won't work
+			if (DMR_frame_buffer[0]==TG_CALL_FLAG || DMR_frame_buffer[0]==PC_CALL_FLAG)
+			{
+#if false
+				int numFilters = sizeof(FILTER_LIST)/sizeof(uint32_t);
+				for(int i=0;i<numFilters;i++)
+				{
+					if (receivedSrcId ==FILTER_LIST [i])
+					{
+						return true;
+					}
+				}
+				return false;
+#endif
+				return true;
+			}
+			else
+			{
+				return false;// Not a PC or TG call
+			}
+	 }
+	 else
+	 {
+		 return ( (DMR_frame_buffer[0]==TG_CALL_FLAG) || (DMR_frame_buffer[0]==PC_CALL_FLAG && receivedTgOrPcId == trxDMRID));
+	 }
 }
-
 
 void tick_HR_C6000()
 {
@@ -440,13 +510,20 @@ void tick_HR_C6000()
 
 	if (trxIsTransmitting==true && (slot_state == DMR_STATE_IDLE)) // Start TX (first step)
 	{
-		init_codec();
-
-		setupPcOrTGHeader();
+		if (settingsUsbMode != USB_MODE_HOTSPOT)
+		{
+			init_codec();
+			setupPcOrTGHeader();
+		}
+		else
+		{
+			write_SPI_page_reg_bytearray_SPI0(0x02, 0x00, (uint8_t *)&audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_read_idx], 0x0c);// put LC into hardware
+		}
 
 		write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xE3); // TX and RX enable
 		write_SPI_page_reg_byte_SPI0(0x04, 0x21, 0xA2); // reset vocoder codingbuffer
 		write_SPI_page_reg_byte_SPI0(0x04, 0x22, 0x86); // I2S master encode start
+
 		slot_state = DMR_STATE_TX_START_1;
 	}
 
@@ -534,7 +611,10 @@ void tick_HR_C6000()
 			slot_state = DMR_STATE_TX_START_5;
 			break;
 		case DMR_STATE_TX_START_5: // Start TX (sixth step)
-			tick_TXsoundbuffer();
+            if (settingsUsbMode != USB_MODE_HOTSPOT)
+            {
+            	tick_TXsoundbuffer();
+            }
 			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);
 			write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x10);
 			tx_sequence=0;
@@ -552,16 +632,49 @@ void tick_HR_C6000()
 			}
 			break;
 		case DMR_STATE_TX_2: // Ongoing TX (active timeslot)
+
+			memset(DMR_frame_buffer, 0, 27 + 0x0C);// fills the LC and  audio buffer with zeros in case there is no real audio
+
 			if (trxIsTransmitting)
 			{
-				tick_TXsoundbuffer();
-				tick_codec_encode(tmp_ram);
+
+                if (settingsUsbMode != USB_MODE_HOTSPOT)
+                {
+                	tick_TXsoundbuffer();
+    				tick_codec_encode(DMR_frame_buffer+0x0C);
+                }
+                else
+                {
+                	if (wavbuffer_count > 0)
+                	{
+						memcpy(DMR_frame_buffer,(uint8_t *)&audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_read_idx],27+0x0C);
+
+						if(tx_sequence==0)
+						{
+							write_SPI_page_reg_bytearray_SPI0(0x02, 0x00, DMR_frame_buffer, 0x0c);// put LC into hardware
+						}
+
+						wavbuffer_read_idx++;
+						if (wavbuffer_read_idx > (HOTSPOT_BUFFER_COUNT-1))
+						{
+							wavbuffer_read_idx=0;
+						}
+
+						if (wavbuffer_count>0)
+						{
+							wavbuffer_count--;
+						}
+
+                	}
+                }
+    			write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, DMR_frame_buffer+0x0C, 27);// send the audio bytes to the hardware
 			}
 			else
 			{
-				memset(tmp_ram, 0, 27);
+				write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, (uint8_t *)SILENCE_AUDIO, 27);// send silence audio bytes
 			}
-			write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, tmp_ram, 27);
+
+
 			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80); // TXnextslotenable
 			switch (tx_sequence)
 			{
@@ -592,6 +705,7 @@ void tick_HR_C6000()
 			slot_state = DMR_STATE_TX_1;
 			break;
 		case DMR_STATE_TX_END_1: // Stop TX (first step)
+			write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, SILENCE_AUDIO, 27);// send silence audio bytes
 			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);
 			write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x20);
 			slot_state = DMR_STATE_TX_END_2;
@@ -620,13 +734,23 @@ void tick_HR_C6000()
 
 	if (tmp_int_sys)
 	{
+		memset(DMR_frame_buffer,0,256);
 		read_SPI_page_reg_byte_SPI0(0x04, 0x82, &tmp_val_0x82);
 		read_SPI_page_reg_byte_SPI0(0x04, 0x86, &tmp_val_0x86);
 		read_SPI_page_reg_byte_SPI0(0x04, 0x51, &tmp_val_0x51);
 		read_SPI_page_reg_byte_SPI0(0x04, 0x52, &tmp_val_0x52);
 		read_SPI_page_reg_byte_SPI0(0x04, 0x57, &tmp_val_0x57);
 		read_SPI_page_reg_byte_SPI0(0x04, 0x5f, &tmp_val_0x5f);
-		read_SPI_page_reg_bytearray_SPI0(0x02, 0x00, tmp_ram, 0x0c);
+		read_SPI_page_reg_bytearray_SPI0(0x02, 0x00, DMR_frame_buffer, 64);//0x0c);
+
+#if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
+           	SEGGER_RTT_printf(0, "DATA %02x [%02x %02x] %02x %02x %02x %02x SC:%02x RCRC:%02x RPI:%02x RXDT:%02x LCSS:%02x TC:%02x AT:%02x CC:%02x ??:%02x ST:%02x RAM:", slot_state, tmp_val_0x82, tmp_val_0x86, tmp_val_0x51, tmp_val_0x52, tmp_val_0x57, tmp_val_0x5f, (tmp_val_0x51 >> 0) & 0x03, (tmp_val_0x51 >> 2) & 0x01, (tmp_val_0x51 >> 3) & 0x01, (tmp_val_0x51 >> 4) & 0x0f, (tmp_val_0x52 >> 0) & 0x03, (tmp_val_0x52 >> 2) & 0x01, (tmp_val_0x52 >> 3) & 0x01, (tmp_val_0x52 >> 4) & 0x0f, (tmp_val_0x57 >> 2) & 0x01, (tmp_val_0x5f >> 0) & 0x03);
+			/*	for (int i=0;i<32;i++)
+				{
+	            	SEGGER_RTT_printf(0, " %02x", DMR_frame_buffer[i]);
+				}
+            	SEGGER_RTT_printf(0, "\r\n");*/
+#endif
 
 		// Check for correct received packet
 		int rcrc = (tmp_val_0x51 >> 2) & 0x01;
@@ -639,17 +763,18 @@ void tick_HR_C6000()
     		{
     			if (tmp_val_0x86 & 0x10)
     			{
-    				send_packet(0x20, 0x10, -1);
+// deprecated. Use Segger print if necessary    				send_packet(0x20, 0x10, -1);
     			}
     			if (tmp_val_0x86 & 0x04)
     			{
-    				send_packet(0x20, 0x04, -1);
+// deprecated. Use Segger print if necessary    				send_packet(0x20, 0x04, -1);
     			}
 
     			write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0x20);
     		}
 
-    		receivedTgOrPcId = (tmp_ram[3]<<16)+(tmp_ram[4]<<8)+(tmp_ram[5]<<0);
+    		receivedTgOrPcId 	= (DMR_frame_buffer[3]<<16)+(DMR_frame_buffer[4]<<8)+(DMR_frame_buffer[5]<<0);// used by the call accept filter
+    		receivedSrcId 		= (DMR_frame_buffer[6]<<16)+(DMR_frame_buffer[7]<<8)+(DMR_frame_buffer[8]<<0);// used by the call accept filter
 
     		if (tmp_val_0x82 & 0x10) // InterLateEntry
     		{
@@ -660,21 +785,28 @@ void tick_HR_C6000()
                 	store_qsodata();
                 	init_codec();
                 	skip_count = 2;
+
 #if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
-            	SEGGER_RTT_printf(0, ">>> START LATE\r\n");
+					SEGGER_RTT_printf(0, ">>> RX START LATE\r\n");
 #endif
+					if (settingsUsbMode == USB_MODE_HOTSPOT)
+					{
+						DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_START_LATE;
+						hotspotRxFrameHandler(DMR_frame_buffer);
+					}
+
                 }
 
 #if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
             	SEGGER_RTT_printf(0, "LATE %02x [%02x %02x] %02x %02x %02x %02x SC:%02x RCRC:%02x RPI:%02x RXDT:%02x LCSS:%02x TC:%02x AT:%02x CC:%02x ??:%02x ST:%02x RAM:", slot_state, tmp_val_0x82, tmp_val_0x86, tmp_val_0x51, tmp_val_0x52, tmp_val_0x57, tmp_val_0x5f, (tmp_val_0x51 >> 0) & 0x03, (tmp_val_0x51 >> 2) & 0x01, (tmp_val_0x51 >> 3) & 0x01, (tmp_val_0x51 >> 4) & 0x0f, (tmp_val_0x52 >> 0) & 0x03, (tmp_val_0x52 >> 2) & 0x01, (tmp_val_0x52 >> 3) & 0x01, (tmp_val_0x52 >> 4) & 0x0f, (tmp_val_0x57 >> 2) & 0x01, (tmp_val_0x5f >> 0) & 0x03);
 				for (int i=0;i<0x0c;i++)
 				{
-	            	SEGGER_RTT_printf(0, " %02x", tmp_ram[i]);
+	            	SEGGER_RTT_printf(0, " %02x", DMR_frame_buffer[i]);
 				}
             	SEGGER_RTT_printf(0, "\r\n");
 #endif
 
-    			send_packet(0x10, 0x00, -1);
+// deprecated. Use Segger print if necessary    			send_packet(0x10, 0x00, -1);
 
     			write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0x10);
     		}
@@ -694,16 +826,27 @@ void tick_HR_C6000()
                 	init_codec();
                 	skip_count = 0;
 #if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
-            	SEGGER_RTT_printf(0, ">>> START\r\n");
+            	SEGGER_RTT_printf(0, ">>> RX START\r\n");
 #endif
+					if (settingsUsbMode == USB_MODE_HOTSPOT)
+					{
+						DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_START;
+						hotspotRxFrameHandler(DMR_frame_buffer);
+					}
                 }
     			// Stop RX
                 if ((sc==2) && (rxdt==2) && callAcceptFilter())
                 {
                 	slot_state = DMR_STATE_RX_END;
 #if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
-            	SEGGER_RTT_printf(0, ">>> STOP\r\n");
+            	SEGGER_RTT_printf(0, ">>> RX STOP\r\n");
 #endif
+
+					if (settingsUsbMode == USB_MODE_HOTSPOT)
+					{
+						DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_STOP;
+						hotspotRxFrameHandler(DMR_frame_buffer);
+					}
                 }
 
             	if ((slot_state!=0) && (skip_count>0) && (sc!=2) && ((rxdt & 0x07) == 0x01))
@@ -714,36 +857,63 @@ void tick_HR_C6000()
                 // Detect/decode voice packet and transfer it into the output soundbuffer
                 if ((slot_state != DMR_STATE_IDLE) && (skip_count==0) && (sc!=2) && ((rxdt & 0x07) >= 0x01) && ((rxdt & 0x07) <= 0x06))
                 {
+#if false
+                	SEGGER_RTT_printf(0, ">>> Audio frame %02x\r\n",rxdt & 0x07);
+#endif
                 	store_qsodata();
-                    read_SPI_page_reg_bytearray_SPI1(0x03, 0x00, tmp_ram, 27);
-                	tick_codec_decode(tmp_ram);
-                	tick_RXsoundbuffer();
+                    read_SPI_page_reg_bytearray_SPI1(0x03, 0x00, DMR_frame_buffer+0x0C, 27);
+                    if (settingsUsbMode == USB_MODE_HOTSPOT)
+                    {
+   						DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_AUDIO_FRAME;
+   						DMR_frame_buffer[27 + 0x0c + 1] = (rxdt & 0x07);// audio sequence number
+   						hotspotRxFrameHandler(DMR_frame_buffer);
+                    }
+                    else
+                    {
+                    	if (settingsPrivateCallMuteMode == false)
+                    	{
+                    		tick_codec_decode(DMR_frame_buffer+0x0C);
+                    		tick_RXsoundbuffer();
+                    	}
+                    }
+                }
+                else
+                {
+#if false
+                    if (settingsUsbMode == USB_MODE_HOTSPOT)
+                    {
+   						DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_IDLE_OR_REPEAT;
+   						hotspotRxFrameHandler(DMR_frame_buffer);
+                    }
+
+                	SEGGER_RTT_printf(0, ">>> Not valid data (perhaps Idle) or another Voice header LC frame\r\n");
+#endif
                 }
 
 #if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
-            	SEGGER_RTT_printf(0, "DATA %02x [%02x %02x] %02x %02x %02x %02x SC:%02x RCRC:%02x RPI:%02x RXDT:%02x LCSS:%02x TC:%02x AT:%02x CC:%02x ??:%02x ST:%02x RAM:", slot_state, tmp_val_0x82, tmp_val_0x86, tmp_val_0x51, tmp_val_0x52, tmp_val_0x57, tmp_val_0x5f, (tmp_val_0x51 >> 0) & 0x03, (tmp_val_0x51 >> 2) & 0x01, (tmp_val_0x51 >> 3) & 0x01, (tmp_val_0x51 >> 4) & 0x0f, (tmp_val_0x52 >> 0) & 0x03, (tmp_val_0x52 >> 2) & 0x01, (tmp_val_0x52 >> 3) & 0x01, (tmp_val_0x52 >> 4) & 0x0f, (tmp_val_0x57 >> 2) & 0x01, (tmp_val_0x5f >> 0) & 0x03);
+                SEGGER_RTT_printf(0, "DATA %02x [%02x %02x] %02x %02x %02x %02x SC:%02x RCRC:%02x RPI:%02x RXDT:%02x LCSS:%02x TC:%02x AT:%02x CC:%02x ??:%02x ST:%02x RAM:", slot_state, tmp_val_0x82, tmp_val_0x86, tmp_val_0x51, tmp_val_0x52, tmp_val_0x57, tmp_val_0x5f, (tmp_val_0x51 >> 0) & 0x03, (tmp_val_0x51 >> 2) & 0x01, (tmp_val_0x51 >> 3) & 0x01, (tmp_val_0x51 >> 4) & 0x0f, (tmp_val_0x52 >> 0) & 0x03, (tmp_val_0x52 >> 2) & 0x01, (tmp_val_0x52 >> 3) & 0x01, (tmp_val_0x52 >> 4) & 0x0f, (tmp_val_0x57 >> 2) & 0x01, (tmp_val_0x5f >> 0) & 0x03);
 				for (int i=0;i<0x0c;i++)
 				{
-	            	SEGGER_RTT_printf(0, " %02x", tmp_ram[i]);
+	            	SEGGER_RTT_printf(0, " %02x", DMR_frame_buffer[i]);
 				}
             	SEGGER_RTT_printf(0, "\r\n");
 #endif
 
-                send_packet(0x08, 0x00, -1);
+// deprecated. Use Segger print if necessary	send_packet(0x08, 0x00, -1);
 
     			write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0x08);
     		}
 
     		if (tmp_val_0x82 & 0x01) // InterPHYOnly
     		{
-    			send_packet(0x01, 0x00, -1);
+// deprecated. Use Segger print if necessary  	send_packet(0x01, 0x00, -1);
 
     			write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0x01);
     		}
 
     		if (tmp_val_0x82 & 0xC6)
     		{
-    			send_packet(0xFF, 0xFF, -1);
+// deprecated. Use Segger print if necessary     send_packet(0xFF, 0xFF, -1);
 
     			write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0xC6);
     		}
@@ -763,7 +933,7 @@ void tick_HR_C6000()
             	SEGGER_RTT_printf(0, "---- %02x [%02x %02x] %02x %02x %02x %02x SC:%02x RCRC:%02x RPI:%02x RXDT:%02x LCSS:%02x TC:%02x AT:%02x CC:%02x ??:%02x ST:%02x RAM:", slot_state, tmp_val_0x82, tmp_val_0x86, tmp_val_0x51, tmp_val_0x52, tmp_val_0x57, tmp_val_0x5f, (tmp_val_0x51 >> 0) & 0x03, (tmp_val_0x51 >> 2) & 0x01, (tmp_val_0x51 >> 3) & 0x01, (tmp_val_0x51 >> 4) & 0x0f, (tmp_val_0x52 >> 0) & 0x03, (tmp_val_0x52 >> 2) & 0x01, (tmp_val_0x52 >> 3) & 0x01, (tmp_val_0x52 >> 4) & 0x0f, (tmp_val_0x57 >> 2) & 0x01, (tmp_val_0x5f >> 0) & 0x03);
 				for (int i=0;i<0x0c;i++)
 				{
-	            	SEGGER_RTT_printf(0, " %02x", tmp_ram[i]);
+	            	SEGGER_RTT_printf(0, " %02x", DMR_frame_buffer[i]);
 				}
             	SEGGER_RTT_printf(0, "\r\n");
 #endif

@@ -30,6 +30,7 @@ extern const int BAND_UHF_MAX;
 #define VFO_COUNT 4
 enum USB_MODE { USB_MODE_CPS, USB_MODE_HOTSPOT, USB_MODE_DEBUG};
 extern int settingsCurrentChannelNumber;
+extern bool settingsPrivateCallMuteMode;
 
 typedef struct settingsStruct
 {
@@ -47,6 +48,8 @@ typedef struct settingsStruct
 	uint32_t		overrideTG;
 	uint8_t			useCalibration;
 	uint8_t			txFreqLimited;
+	uint8_t			txTimeoutBeepSecs;
+	uint8_t			beepVolumeDivider;
 } settingsStruct_t;
 
 extern settingsStruct_t nonVolatileSettings;

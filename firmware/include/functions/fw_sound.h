@@ -31,9 +31,9 @@
 #include "fw_pit.h"
 #include "fw_wdog.h"
 
-extern const uint8_t sine_beep[];
-extern volatile int sine_beep_freq;
-extern volatile int sine_beep_duration;
+//extern const uint8_t sine_beep[];
+//extern volatile int sine_beep_freq;
+// volatile int sine_beep_duration;
 
 extern int melody_generic[512];
 extern const int melody_poweron[];
@@ -53,15 +53,24 @@ extern const uint8_t melody1[];
 extern const uint8_t melody2[];
 extern const uint8_t melody3[];
 extern const uint8_t melody4[];
+extern int soundBeepVolumeDivider;
 
 #define WAV_BUFFER_SIZE 0xa0
 #define WAV_BUFFER_COUNT 16
+#define HOTSPOT_BUFFER_SIZE 50
+#define HOTSPOT_BUFFER_COUNT 48
 
-extern volatile uint8_t wavbuffer[WAV_BUFFER_COUNT][WAV_BUFFER_SIZE];
-extern int wavbuffer_read_idx;
-extern int wavbuffer_write_idx;
+extern union sharedDataBuffer
+{
+	volatile uint8_t wavbuffer[WAV_BUFFER_COUNT][WAV_BUFFER_SIZE];
+	volatile uint8_t hotspotBuffer[HOTSPOT_BUFFER_COUNT][HOTSPOT_BUFFER_SIZE];
+} audioAndHotspotDataBuffer;
+
+extern volatile int wavbuffer_read_idx;
+extern volatile int wavbuffer_write_idx;
 extern volatile int wavbuffer_count;
 extern uint8_t tmp_wavbuffer[WAV_BUFFER_SIZE];
+extern uint8_t *currentWaveBuffer;
 
 extern uint8_t spi_sound1[WAV_BUFFER_SIZE*2];
 extern uint8_t spi_sound2[WAV_BUFFER_SIZE*2];

@@ -25,7 +25,7 @@ int menuSplashScreen(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		menuTimer = 3000;
+		menuTimer = 2000;
 		updateScreen();
 	}
 	else

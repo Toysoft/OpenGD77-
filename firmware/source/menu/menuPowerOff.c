@@ -25,7 +25,7 @@ int menuPowerOff(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		menuTimer = 1200;// Not sure why its this value. But never mind ;-)
+		menuTimer = 500;// Not sure why its this value. But never mind ;-)
 		updateScreen();
 	}
 	else

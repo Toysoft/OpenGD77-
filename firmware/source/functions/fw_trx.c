@@ -27,7 +27,7 @@ bool open_squelch=false;
 bool HR_C6000_datalogging=false;
 
 int trx_measure_count = 0;
-bool trxIsTransmitting = false;
+volatile bool trxIsTransmitting = false;
 uint32_t trxTalkGroupOrPcId = 9;// Set to local TG just in case there is some problem with it not being loaded
 uint32_t trxDMRID = 0;// Set ID to 0. Not sure if its valid. This value needs to be loaded from the codeplug.
 int txstopdelay = 0;

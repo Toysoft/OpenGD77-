@@ -101,10 +101,11 @@ void tick_codec_decode(uint8_t *indata_ptr)
 
 void tick_codec_encode(uint8_t *outdata_ptr)
 {
+	/*
 	for (int i=0;i<27;i++)
 	{
 		outdata_ptr[i]=0;
-	}
+	}*/
 
 	register int r0 asm ("r0") __attribute__((unused));
 	register int r1 asm ("r1") __attribute__((unused));
@@ -120,7 +121,7 @@ void tick_codec_encode(uint8_t *outdata_ptr)
 		retrieve_soundbuffer();
 
 		r0 = (int)bitbuffer_encode;
-		r2 = (int)tmp_wavbuffer;
+		r2 = (int)currentWaveBuffer;//tmp_wavbuffer;
 		r1 = AMBE_ENCODE_BUFFER;
 
 		asm volatile (
@@ -143,7 +144,7 @@ void tick_codec_encode(uint8_t *outdata_ptr)
 		retrieve_soundbuffer();
 
 		r0 = (int)bitbuffer_encode;
-		r2 = (int)tmp_wavbuffer;
+		r2 = (int)currentWaveBuffer;//tmp_wavbuffer;
 		r1 = AMBE_ENCODE_BUFFER;
 
 		asm volatile (

@@ -34,7 +34,7 @@ enum DMR_ADMIT_CRITERIA { ADMIT_CRITERIA_ALWAYS,ADMIT_CRITERIA_CHANNEL_FREE,ADMI
 extern bool open_squelch;
 extern bool HR_C6000_datalogging;
 
-extern bool trxIsTransmitting;
+extern volatile bool trxIsTransmitting;
 extern uint32_t trxTalkGroupOrPcId;
 extern uint32_t trxDMRID;
 extern int trx_measure_count;

@@ -212,7 +212,16 @@ static void handleEvent(int buttons, int keys, int events)
 	{
 		if (buttons & BUTTON_ORANGE)
 		{
-			menuSystemPushNewMenu(MENU_ZONE_LIST);
+			if (buttons & BUTTON_SK2)
+			{
+				settingsPrivateCallMuteMode = !settingsPrivateCallMuteMode;// Toggle PC mute only mode
+				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+				menuVFOModeUpdateScreen(0);
+			}
+			else
+			{
+				menuSystemPushNewMenu(MENU_ZONE_LIST);
+			}
 			return;
 		}
 	}

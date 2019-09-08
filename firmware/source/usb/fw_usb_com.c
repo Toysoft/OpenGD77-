@@ -32,28 +32,36 @@ volatile int com_buffer_cnt = 0;
 
 volatile int com_request = 0;
 volatile uint8_t com_requestbuffer[COM_REQUESTBUFFER_SIZE];
-USB_DMA_NONINIT_DATA_ALIGN(USB_DATA_ALIGN_SIZE) static uint8_t s_ComBuf[DATA_BUFF_SIZE];
+USB_DMA_NONINIT_DATA_ALIGN(USB_DATA_ALIGN_SIZE) uint8_t usbComSendBuf[COM_BUFFER_SIZE];//DATA_BUFF_SIZE
 
 
 int sector = -1;
 
 void tick_com_request()
 {
-	taskENTER_CRITICAL();
-	if (com_request==1)
-	{
 		switch (settingsUsbMode)
 		{
 			case USB_MODE_CPS:
-				handleCPSRequest();
+				if (com_request==1)
+				{
+					if (com_requestbuffer[0]==0xE0)
+					{
+						settingsUsbMode = USB_MODE_HOTSPOT;
+						menuSystemPushNewMenu(MENU_HOTSPOT_MODE);
+						return;
+					}
+					taskENTER_CRITICAL();
+					handleCPSRequest();
+					taskEXIT_CRITICAL();
+					com_request=0;
+				}
+
 				break;
 			case USB_MODE_HOTSPOT:
-				handleHotspotRequest(com_requestbuffer,com_buffer);
 				break;
-		}
-		com_request=0;
+
 	}
-	taskEXIT_CRITICAL();
+
 }
 
 static void handleCPSRequest()
@@ -72,27 +80,27 @@ static void handleCPSRequest()
 		if (com_requestbuffer[1]==1)
 		{
 			taskEXIT_CRITICAL();
-			result = SPI_Flash_read(address, &s_ComBuf[3], length);
+			result = SPI_Flash_read(address, &usbComSendBuf[3], length);
 			taskENTER_CRITICAL();
 		}
 		else if (com_requestbuffer[1]==2)
 		{
 			taskEXIT_CRITICAL();
-			result = EEPROM_Read(address, &s_ComBuf[3], length);
+			result = EEPROM_Read(address, &usbComSendBuf[3], length);
 			taskENTER_CRITICAL();
 		}
 
 		if (result)
 		{
-			s_ComBuf[0] = com_requestbuffer[0];
-			s_ComBuf[1]=(length>>8)&0xFF;
-			s_ComBuf[2]=(length>>0)&0xFF;
-			USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, s_ComBuf, length+3);
+			usbComSendBuf[0] = com_requestbuffer[0];
+			usbComSendBuf[1]=(length>>8)&0xFF;
+			usbComSendBuf[2]=(length>>0)&0xFF;
+			USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, usbComSendBuf, length+3);
 		}
 		else
 		{
-			s_ComBuf[0] = '-';
-			USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, s_ComBuf, 1);
+			usbComSendBuf[0] = '-';
+			USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, usbComSendBuf, 1);
 		}
 	}
 	// Handle Write
@@ -170,15 +178,15 @@ static void handleCPSRequest()
 
 		if (ok)
 		{
-			s_ComBuf[0] = com_requestbuffer[0];
-			s_ComBuf[1] = com_requestbuffer[1];
-			USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, s_ComBuf, 2);
+			usbComSendBuf[0] = com_requestbuffer[0];
+			usbComSendBuf[1] = com_requestbuffer[1];
+			USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, usbComSendBuf, 2);
 		}
 		else
 		{
 			sector=-1;
-			s_ComBuf[0] = '-';
-			USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, s_ComBuf, 1);
+			usbComSendBuf[0] = '-';
+			USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, usbComSendBuf, 1);
 		}
 	}
 	// Handle a "Command"
@@ -251,16 +259,16 @@ static void handleCPSRequest()
 		}
 		// Send something generic back.
 		// Probably need to send a response code in the future
-		s_ComBuf[0] = '-';
-		USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, s_ComBuf, 1);
+		usbComSendBuf[0] = '-';
+		USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, usbComSendBuf, 1);
 	}
 	else
 	{
-		s_ComBuf[0] = '-';
-		USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, s_ComBuf, 1);
+		usbComSendBuf[0] = '-';
+		USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, usbComSendBuf, 1);
 	}
 }
-
+#if false
 void send_packet(uint8_t val_0x82, uint8_t val_0x86, int ram)
 {
 	taskENTER_CRITICAL();
@@ -276,11 +284,14 @@ void send_packet(uint8_t val_0x82, uint8_t val_0x86, int ram)
 		add_to_commbuffer(tmp_val_0x5f);
 		for (int i=0;i<=ram;i++)
 		{
-			add_to_commbuffer(tmp_ram[i]);
+			add_to_commbuffer(DMR_frame_buffer[i]);
 		}
 	}
 	taskEXIT_CRITICAL();
 }
+
+uint8_t tmp_ram1[256];
+uint8_t tmp_ram2[256];
 
 void send_packet_big(uint8_t val_0x82, uint8_t val_0x86, int ram1, int ram2)
 {
@@ -317,9 +328,9 @@ void add_to_commbuffer(uint8_t value)
 		com_buffer_write_idx=0;
 	}
 }
-
+#endif
 void USB_DEBUG_PRINT(char *str)
 {
-	strcpy((char*)s_ComBuf,str);
-	USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, s_ComBuf, strlen(str));
+	strcpy((char*)usbComSendBuf,str);
+	USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, usbComSendBuf, strlen(str));
 }

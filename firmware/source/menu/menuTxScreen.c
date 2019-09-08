@@ -32,6 +32,7 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 	if (isFirstRun)
 	{
 
+		settingsPrivateCallMuteMode = false;
 		if ((currentChannelData->flag4 & 0x04) == 0x00 && (  trxCheckFrequencyInAmateurBand(currentChannelData->txFreq) || nonVolatileSettings.txFreqLimited == 0x00))
 		{
 			nextSecondPIT = PITCounter + PIT_COUNTS_PER_SECOND;
@@ -87,6 +88,10 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 				else
 				{
 					timeInSeconds--;
+					if (timeInSeconds < nonVolatileSettings.txTimeoutBeepSecs)
+					{
+						set_melody(melody_key_beep);
+					}
 				}
 				if (currentChannelData->tot!=0 && timeInSeconds == 0)
 				{
@@ -99,6 +104,7 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 				{
 					updateScreen();
 				}
+
 				nextSecondPIT = PITCounter + PIT_COUNTS_PER_SECOND;
 			}
 		}
@@ -128,17 +134,28 @@ static void handleEvent(int buttons, int keys, int events)
 {
 	if ((buttons & BUTTON_PTT)==0 || (currentChannelData->tot!=0 && timeInSeconds == 0))
 	{
-		trxIsTransmitting=false;
+		if (trxIsTransmitting)
+		{
+			SEGGER_RTT_printf(0, "trxIsTransmitting=false\n");
+			trxIsTransmitting=false;
+		}
+
 		if (txstopdelay>0)
 		{
 			txstopdelay--;
+			SEGGER_RTT_printf(0, "txstopdelay %d\n",txstopdelay);
+
 		}
-		if ((slot_state < DMR_STATE_TX_START_1) && (txstopdelay==0))
+		else
 		{
-			GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
-			trx_deactivateTX();
-			trx_setRX();
-			menuSystemPopPreviousMenu();
+			if ((slot_state < DMR_STATE_TX_START_1))
+			{
+				SEGGER_RTT_printf(0, "slot state %d\n",slot_state);
+				GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
+				trx_deactivateTX();
+				trx_setRX();
+				menuSystemPopPreviousMenu();
+			}
 		}
 	}
 }
