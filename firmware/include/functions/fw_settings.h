@@ -48,7 +48,7 @@ typedef struct settingsStruct
 	uint32_t		overrideTG;
 	uint8_t			useCalibration;
 	uint8_t			txFreqLimited;
-	uint8_t			txTimeoutBeepSecs;
+	uint8_t			txTimeoutBeepX5Secs;
 	uint8_t			beepVolumeDivider;
 } settingsStruct_t;
 

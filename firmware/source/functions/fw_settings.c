@@ -67,9 +67,9 @@ void settingsLoadSettings()
 	trxDMRID = codeplugGetUserDMRID();
 
 	// Added this parameter without changing the magic number, so need to check for default / invalid numbers
-	if (nonVolatileSettings.txTimeoutBeepSecs==255)
+	if (nonVolatileSettings.txTimeoutBeepX5Secs > 4)
 	{
-		nonVolatileSettings.txTimeoutBeepSecs=0;
+		nonVolatileSettings.txTimeoutBeepX5Secs=0;
 	}
 
 	// Added this parameter without changing the magic number, so need to check for default / invalid numbers
@@ -132,7 +132,7 @@ void settingsRestoreDefaultSettings()
 	nonVolatileSettings.overrideTG=0;// 0 = No override
 	nonVolatileSettings.useCalibration = 0x01;// enable the new calibration system
 	nonVolatileSettings.txFreqLimited = 0x01;// Limit Tx frequency to US Amateur bands
-	nonVolatileSettings.txTimeoutBeepSecs = 10;
+	nonVolatileSettings.txTimeoutBeepX5Secs = 0;
 	nonVolatileSettings.beepVolumeDivider = 1;// no reduction in volume
 	settingsInitVFOChannel();
 	currentChannelData = &nonVolatileSettings.vfoChannel;// Set the current channel data to point to the VFO data since the default screen will be the VFO
