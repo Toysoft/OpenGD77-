@@ -399,16 +399,14 @@ void menuUtilityRenderHeader()
 			}
 			break;
 		case RADIO_MODE_DIGITAL:
-			strcpy(buffer, "DMR");
+			sprintf(buffer, "DMR S%d CC%d %s",trxGetDMRTimeSlot(),trxGetDMRColourCode(),
+					(trxGetMode() == RADIO_MODE_DIGITAL && settingsPrivateCallMuteMode == true)?"MUTE":"");
 			break;
 	}
 
 	UC1701_printAt(0,8, buffer,UC1701_FONT_6X8);
 
-	if (trxGetMode() == RADIO_MODE_DIGITAL && settingsPrivateCallMuteMode == true)
-	{
-		UC1701_printCentered(8, "MUTE",UC1701_FONT_6X8);
-	}
+
 
 	int  batteryPerentage = (int)(((battery_voltage - CUTOFF_VOLTAGE_UPPER_HYST) * 100) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));
 	if (batteryPerentage>100)
