@@ -810,7 +810,7 @@ static void updateScreen(int rxCommandState)
 		}
 		else
 		{
-			sprintf(buffer,"CC:%d" ,  trxGetDMRColourCode()) ;
+			sprintf(buffer,"CC:%d" ,  trxGetDMRColourCode());//, trxGetDMRTimeSlot()+1) ;
 			UC1701_printCore(0, 32, buffer, UC1701_FONT_GD77_8x16, 0, false);
 			sprintf(buffer,"%dmW" ,  (5000 * (nonVolatileSettings.txPower - LOWEST_POWER_SETTING)) / (powerSettings.highPower-LOWEST_POWER_SETTING)) ;
 			UC1701_printCore(0, 32, buffer, UC1701_FONT_GD77_8x16, 2, false);

@@ -399,8 +399,15 @@ void menuUtilityRenderHeader()
 			}
 			break;
 		case RADIO_MODE_DIGITAL:
-			sprintf(buffer, "DMR S%d CC%d %s",trxGetDMRTimeSlot(),trxGetDMRColourCode(),
-					(trxGetMode() == RADIO_MODE_DIGITAL && settingsPrivateCallMuteMode == true)?"MUTE":"");
+			if (settingsUsbMode == USB_MODE_HOTSPOT)
+			{
+				sprintf(buffer, "DMR");
+			}
+			else
+			{
+				sprintf(buffer, "DMR S%d CC%d %s",trxGetDMRTimeSlot()+1,trxGetDMRColourCode(),
+						(trxGetMode() == RADIO_MODE_DIGITAL && settingsPrivateCallMuteMode == true)?"MUTE":"");
+			}
 			break;
 	}
 
