@@ -425,6 +425,14 @@ void menuUtilityRenderHeader()
 	{
 		batteryPerentage=0;
 	}
-	sprintf(buffer,"CC%d %d%%",trxGetDMRColourCode(),batteryPerentage);
+	if (settingsUsbMode == USB_MODE_HOTSPOT)
+	{
+		sprintf(buffer,"%d%%",batteryPerentage);
+	}
+	else
+	{
+		sprintf(buffer,"CC%d %d%%",trxGetDMRColourCode(),batteryPerentage);
+	}
+
 	UC1701_printCore(0,Y_OFFSET,buffer,UC1701_FONT_6X8,2,false);// Display battery percentage at the right
 }
