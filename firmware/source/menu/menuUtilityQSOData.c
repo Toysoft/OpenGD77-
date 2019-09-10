@@ -405,7 +405,7 @@ void menuUtilityRenderHeader()
 			}
 			else
 			{
-				sprintf(buffer, "DMR S%d CC%d %s",trxGetDMRTimeSlot()+1,trxGetDMRColourCode(),
+				sprintf(buffer, "DMR S%d%s",trxGetDMRTimeSlot(),
 						(trxGetMode() == RADIO_MODE_DIGITAL && settingsPrivateCallMuteMode == true)?"MUTE":"");
 			}
 			break;
@@ -424,6 +424,6 @@ void menuUtilityRenderHeader()
 	{
 		batteryPerentage=0;
 	}
-	sprintf(buffer,"%d%%",batteryPerentage);
+	sprintf(buffer,"CC%d %d%%",trxGetDMRColourCode(),batteryPerentage);
 	UC1701_printCore(0,8,buffer,UC1701_FONT_6X8,2,false);// Display battery percentage at the right
 }
