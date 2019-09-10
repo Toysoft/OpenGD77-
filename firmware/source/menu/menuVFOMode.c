@@ -123,6 +123,7 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 
 void menuVFOModeUpdateScreen(int txTimeSecs)
 {
+	const int TX_TIMER_Y_OFFSET = 4;
 	int val_before_dp;
 	int val_after_dp;
 
@@ -190,7 +191,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 				else
 				{
 					sprintf(buffer," %d ",txTimeSecs);
-					UC1701_printCentered(0, buffer,UC1701_FONT_16x32);
+					UC1701_printCentered(TX_TIMER_Y_OFFSET, buffer,UC1701_FONT_16x32);
 				}
 
 				val_before_dp = currentChannelData->txFreq/10000;

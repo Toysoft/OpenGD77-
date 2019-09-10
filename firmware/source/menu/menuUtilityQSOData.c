@@ -379,6 +379,7 @@ void menuUtilityRenderQSOData()
 
 void menuUtilityRenderHeader()
 {
+	const int Y_OFFSET = 2;
 	char buffer[24];
 
 	switch(trxGetMode())
@@ -411,7 +412,7 @@ void menuUtilityRenderHeader()
 			break;
 	}
 
-	UC1701_printAt(0,8, buffer,UC1701_FONT_6X8);
+	UC1701_printAt(0,Y_OFFSET, buffer,UC1701_FONT_6X8);
 
 
 
@@ -425,5 +426,5 @@ void menuUtilityRenderHeader()
 		batteryPerentage=0;
 	}
 	sprintf(buffer,"CC%d %d%%",trxGetDMRColourCode(),batteryPerentage);
-	UC1701_printCore(0,8,buffer,UC1701_FONT_6X8,2,false);// Display battery percentage at the right
+	UC1701_printCore(0,Y_OFFSET,buffer,UC1701_FONT_6X8,2,false);// Display battery percentage at the right
 }
