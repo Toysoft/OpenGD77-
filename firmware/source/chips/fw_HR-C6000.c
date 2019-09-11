@@ -97,10 +97,10 @@ void SPI_HR_C6000_init()
 	uint8_t spi_init_values_6[] = { 0x32, 0xef, 0x00, 0x31, 0xef, 0x00, 0x12, 0xef, 0x00, 0x13, 0xef, 0x00, 0x14, 0xef, 0x00, 0x15, 0xef, 0x00, 0x16, 0xef, 0x00, 0x17, 0xef, 0x00, 0x18, 0xef, 0x00, 0x19, 0xef, 0x00, 0x1a, 0xef, 0x00, 0x1b, 0xef, 0x00, 0x1c, 0xef, 0x00, 0x1d, 0xef, 0x00, 0x1e, 0xef, 0x00, 0x1f, 0xef, 0x00, 0x20, 0xef, 0x00, 0x21, 0xef, 0x00, 0x22, 0xef, 0x00, 0x23, 0xef, 0x00, 0x24, 0xef, 0x00, 0x25, 0xef, 0x00, 0x26, 0xef, 0x00, 0x27, 0xef, 0x00, 0x28, 0xef, 0x00, 0x29, 0xef, 0x00, 0x2a, 0xef, 0x00, 0x2b, 0xef, 0x00, 0x2c, 0xef, 0x00, 0x2d, 0xef, 0x00, 0x2e, 0xef, 0x00, 0x2f, 0xef, 0x00 };
 
 	// --- start spi_init_daten_senden()
-	write_SPI_page_reg_byte_SPI0(0x04, 0x0b, 0x40);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x0c, 0x32);
+	write_SPI_page_reg_byte_SPI0(0x04, 0x0b, 0x40);    //Set PLL M Register
+	write_SPI_page_reg_byte_SPI0(0x04, 0x0c, 0x32);    //Set PLL Dividers
 	write_SPI_page_reg_byte_SPI0(0x04, 0xb9, 0x05);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x0a, 0x01);
+	write_SPI_page_reg_byte_SPI0(0x04, 0x0a, 0x01);    //Set Clock Source Enable CLKOUT Pin
 
 	write_SPI_page_reg_bytearray_SPI0(0x01, 0x04, spi_init_values_1, 0x06);
 	write_SPI_page_reg_bytearray_SPI0(0x01, 0x10, spi_init_values_2, 0x20);
@@ -109,71 +109,71 @@ void SPI_HR_C6000_init()
 	write_SPI_page_reg_bytearray_SPI0(0x01, 0x51, spi_init_values_5, 0x05);
 	write_SPI_page_reg_bytearray_SPI0(0x01, 0x60, spi_init_values_6, 0x60);
 
-	write_SPI_page_reg_byte_SPI0(0x04, 0x00, 0x00);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x10, 0x6E); // (oder 0x02 oder 0x6A)
-	write_SPI_page_reg_byte_SPI0(0x04, 0x11, 0x80);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x13, 0x00);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x1F, 0x10); // DMR Colour code in upper 4 bits - defaulted to 1, and is updated elsewhere in the code
-	write_SPI_page_reg_byte_SPI0(0x04, 0x20, 0x00);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x21, 0xA0);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x22, 0x26);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x22, 0x86);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x25, 0x0E);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x26, 0x7D);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x27, 0x40);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x28, 0x7D);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x29, 0x40);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x2A, 0x0B);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x2B, 0x0B);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x2C, 0x17);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x2D, 0x05);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x2E, 0x04);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x2F, 0x0B);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x32, 0x02);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x33, 0xFF);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x34, 0xF0);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x35, 0x28);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x3E, 0x28);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x3F, 0x10);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x36, 0x00);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x37, 0x00);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x4B, 0x1B);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x4C, 0x00);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x56, 0x00); // / (dynamisch)
-	write_SPI_page_reg_byte_SPI0(0x04, 0x5F, 0xC0); // | (dynamisch)
-	write_SPI_page_reg_byte_SPI0(0x04, 0x81, 0xFF); // \ (dynamisch)
-	write_SPI_page_reg_byte_SPI0(0x04, 0xD1, 0xC4);
+	write_SPI_page_reg_byte_SPI0(0x04, 0x00, 0x00);   //Clear all Reset Bits which forces a reset of all internal systems
+	write_SPI_page_reg_byte_SPI0(0x04, 0x10, 0x6E);   //Set DMR,Tier2,Timeslot Mode, Layer 2, Repeater, Aligned, Slot1
+	write_SPI_page_reg_byte_SPI0(0x04, 0x11, 0x80);   //Set LocalChanMode to Default Value 
+	write_SPI_page_reg_byte_SPI0(0x04, 0x13, 0x00);   //Zero Cend_Band Timing advance
+	write_SPI_page_reg_byte_SPI0(0x04, 0x1F, 0x10);   //Set LocalEMB  DMR Colour code in upper 4 bits - defaulted to 1, and is updated elsewhere in the code
+	write_SPI_page_reg_byte_SPI0(0x04, 0x20, 0x00);   //Set LocalAccessPolicy to Impolite
+	write_SPI_page_reg_byte_SPI0(0x04, 0x21, 0xA0);   //Set LocalAccessPolicy1 to Polite to Color Code  (unsure why there are two registers for this)   
+	write_SPI_page_reg_byte_SPI0(0x04, 0x22, 0x26);   //Start Vocoder Decode, I2S mode
+	write_SPI_page_reg_byte_SPI0(0x04, 0x22, 0x86);   //Start Vocoder Encode, I2S mode
+	write_SPI_page_reg_byte_SPI0(0x04, 0x25, 0x0E);   //Undocumented Register 
+	write_SPI_page_reg_byte_SPI0(0x04, 0x26, 0x7D);   //Undocumented Register 
+	write_SPI_page_reg_byte_SPI0(0x04, 0x27, 0x40);   //Undocumented Register 
+	write_SPI_page_reg_byte_SPI0(0x04, 0x28, 0x7D);   //Undocumented Register
+	write_SPI_page_reg_byte_SPI0(0x04, 0x29, 0x40);   //Undocumented Register
+	write_SPI_page_reg_byte_SPI0(0x04, 0x2A, 0x0B);   //Set spi_clk_cnt to default value
+	write_SPI_page_reg_byte_SPI0(0x04, 0x2B, 0x0B);   //According to Datashhet this is a Read only register For FM Squelch
+	write_SPI_page_reg_byte_SPI0(0x04, 0x2C, 0x17);   //According to Datashhet this is a Read only register For FM Squelch
+	write_SPI_page_reg_byte_SPI0(0x04, 0x2D, 0x05);   //Set FM Compression and Decompression points (?)
+	write_SPI_page_reg_byte_SPI0(0x04, 0x2E, 0x04);   //Set tx_pre_on (DMR Transmission advance) to 400us
+	write_SPI_page_reg_byte_SPI0(0x04, 0x2F, 0x0B);   //Set I2S Clock Frequency
+	write_SPI_page_reg_byte_SPI0(0x04, 0x32, 0x02);   //Set LRCK_CNT_H CODEC Operating Frequency to default value
+	write_SPI_page_reg_byte_SPI0(0x04, 0x33, 0xFF);   //Set LRCK_CNT_L CODEC Operating Frequency to default value
+	write_SPI_page_reg_byte_SPI0(0x04, 0x34, 0xF0);   //Set FM Filters on and bandwidth to 12.5Khz 
+	write_SPI_page_reg_byte_SPI0(0x04, 0x35, 0x28);   //Set FM Modulation Coefficient
+	write_SPI_page_reg_byte_SPI0(0x04, 0x3E, 0x28);   //Set FM Modulation Offset
+	write_SPI_page_reg_byte_SPI0(0x04, 0x3F, 0x10);   //Set FM Modulation Limiter
+	write_SPI_page_reg_byte_SPI0(0x04, 0x36, 0x00);   //Enable all clocks
+	write_SPI_page_reg_byte_SPI0(0x04, 0x37, 0x00);   //Set mcu_control_shift to default. (codec under HRC-6000 control)
+	write_SPI_page_reg_byte_SPI0(0x04, 0x4B, 0x1B);   //Set Data packet types to defaults
+	write_SPI_page_reg_byte_SPI0(0x04, 0x4C, 0x00);   //Set Data packet types to defaults
+	write_SPI_page_reg_byte_SPI0(0x04, 0x56, 0x00); 	//Undocumented Register
+	write_SPI_page_reg_byte_SPI0(0x04, 0x5F, 0xC0); 	//Enable Sync detection for MS or BS orignated signals
+	write_SPI_page_reg_byte_SPI0(0x04, 0x81, 0xFF); 	//Enable all Interrupts
+	write_SPI_page_reg_byte_SPI0(0x04, 0xD1, 0xC4);   //According to Datasheet this register is for FM DTMF (?)
 
 	// --- start subroutine spi_init_daten_senden_sub()
-	write_SPI_page_reg_byte_SPI0(0x04, 0x01, 0x70); // (dynamisch)
-	write_SPI_page_reg_byte_SPI0(0x04, 0x03, 0x00);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x05, 0x00);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x12, 0x15); // (dynamisch)
-	write_SPI_page_reg_byte_SPI0(0x04, 0xA1, 0x80); // (dynamisch)
-	write_SPI_page_reg_byte_SPI0(0x04, 0xC0, 0x0A);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x06, 0x21);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x07, 0x0B);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x08, 0xB8);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x09, 0x00);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x0D, 0x10);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x0E, 0x8E);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x0F, 0xB8);
-	write_SPI_page_reg_byte_SPI0(0x04, 0xC2, 0x00);
-	write_SPI_page_reg_byte_SPI0(0x04, 0xE0, 0x8B);
-	write_SPI_page_reg_byte_SPI0(0x04, 0xE1, 0x0F);
-	write_SPI_page_reg_byte_SPI0(0x04, 0xE2, 0x06);
-	write_SPI_page_reg_byte_SPI0(0x04, 0xE3, 0x52);
-	write_SPI_page_reg_byte_SPI0(0x04, 0xE4, 0x4A);
-	write_SPI_page_reg_byte_SPI0(0x04, 0xE5, 0x1A);
+	write_SPI_page_reg_byte_SPI0(0x04, 0x01, 0x70); 	//set 2 point Mod, swap receive I and Q, receive mode IF (?)    (Presumably changed elsewhere)
+	write_SPI_page_reg_byte_SPI0(0x04, 0x03, 0x00);   //zero Receive I Offset
+	write_SPI_page_reg_byte_SPI0(0x04, 0x05, 0x00);   //Zero Receive Q Offset
+	write_SPI_page_reg_byte_SPI0(0x04, 0x12, 0x15); 	//Set rf_pre_on Receive to transmit switching advance 
+	write_SPI_page_reg_byte_SPI0(0x04, 0xA1, 0x80); 	//According to Datasheet this register is for FM Modulation Setting (?)
+	write_SPI_page_reg_byte_SPI0(0x04, 0xC0, 0x0A);   //Set RF Signal Advance to 1ms (10x100us)
+	write_SPI_page_reg_byte_SPI0(0x04, 0x06, 0x21);   //Use SPI vocoder under MCU control
+	write_SPI_page_reg_byte_SPI0(0x04, 0x07, 0x0B);   //Set IF Frequency H to default 450KHz
+	write_SPI_page_reg_byte_SPI0(0x04, 0x08, 0xB8);   //Set IF Frequency M to default 450KHz
+	write_SPI_page_reg_byte_SPI0(0x04, 0x09, 0x00);   //Set IF Frequency L to default 450KHz
+	write_SPI_page_reg_byte_SPI0(0x04, 0x0D, 0x10);   //Set Voice Superframe timeout value
+	write_SPI_page_reg_byte_SPI0(0x04, 0x0E, 0x8E);   //Register Documented as Reserved 
+	write_SPI_page_reg_byte_SPI0(0x04, 0x0F, 0xB8);   //FSK Error Count
+	write_SPI_page_reg_byte_SPI0(0x04, 0xC2, 0x00);   //Disable Mic Gain AGC
+	write_SPI_page_reg_byte_SPI0(0x04, 0xE0, 0x8B);   //CODEC under MCU Control, LineOut2 Enabled, Mic_p Enabled, I2S Slave Mode
+	write_SPI_page_reg_byte_SPI0(0x04, 0xE1, 0x0F);   //Undocumented Register (Probably associated with CODEC)
+	write_SPI_page_reg_byte_SPI0(0x04, 0xE2, 0x06);   //CODEC  Anti Pop Enabled, DAC Output Enabled
+	write_SPI_page_reg_byte_SPI0(0x04, 0xE3, 0x52);   //CODEC Default Settings 
+	write_SPI_page_reg_byte_SPI0(0x04, 0xE4, 0x4A);   //CODEC   LineOut Gain 2dB, Mic Stage 1 Gain 0dB, Mic Stage 2 Gain 30dB
+	write_SPI_page_reg_byte_SPI0(0x04, 0xE5, 0x1A);   //CODEC Default Setting
 	// --- end subroutine spi_init_daten_senden_sub()
 
-	write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xC3); // / (dynamisch)
-	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); // \ (dynamisch)
+	write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xC3);  	//Enable DMR Tx, DMR Rx, Passive Timing, Normal mode
+	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40);   //Receive during next timeslot
 	// --- end spi_init_daten_senden()
 
 	// ------ start spi_more_init
 	// --- start sub_1B5A4
-	set_clear_SPI_page_reg_byte_with_mask_SPI0(0x04, 0x06, 0xFD, 0x02); // SET
+	set_clear_SPI_page_reg_byte_with_mask_SPI0(0x04, 0x06, 0xFD, 0x02); // SET OpenMusic bit (play Boot sound and Call Prompts)
 	// --- end sub_1B5A4
 
 	// --- start sub_1B5DC
@@ -187,71 +187,71 @@ void SPI_HR_C6000_init()
 	// --- end sub_1B5DC
 
 	// --- start sub_1B5A4
-	set_clear_SPI_page_reg_byte_with_mask_SPI0(0x04, 0x06, 0xFD, 0x00); // CLEAR
+	set_clear_SPI_page_reg_byte_with_mask_SPI0(0x04, 0x06, 0xFD, 0x00); // CLEAR OpenMusic bit (play Boot sound and Call Prompts)
 	// --- end sub_1B5A4
 
-	write_SPI_page_reg_byte_SPI0(0x04, 0x37, 0x9E); // (dynamisch)
-	set_clear_SPI_page_reg_byte_with_mask_SPI0(0x04, 0xE4, 0x3F, 0x00); // CLEAR
+	write_SPI_page_reg_byte_SPI0(0x04, 0x37, 0x9E); // MCU take control of CODEC
+	set_clear_SPI_page_reg_byte_with_mask_SPI0(0x04, 0xE4, 0x3F, 0x00); // Set CODEC LineOut Gain to 0dB
 	// ------ end spi_more_init
 }
 
 void SPI_C6000_postinit()
 {
-	write_SPI_page_reg_byte_SPI0(0x04, 0x04, 0xE8);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x46, 0x37);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x48, 0x03);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x47, 0xE8);
+	write_SPI_page_reg_byte_SPI0(0x04, 0x04, 0xE8);  //Set Mod2 output offset
+	write_SPI_page_reg_byte_SPI0(0x04, 0x46, 0x37);  //Set Mod1 Amplitude
+	write_SPI_page_reg_byte_SPI0(0x04, 0x48, 0x03);  //Set 2 Point Mod Bias
+	write_SPI_page_reg_byte_SPI0(0x04, 0x47, 0xE8);  //Set 2 Point Mod Bias
 	// GD-77 FW V3.1.1 data from 0x76010 / length 0x06
 	uint8_t spi_init_values_1[] = { 0xd5, 0xd7, 0xf7, 0x7f, 0xd7, 0x57 };
-	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x20);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0x03);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x00, 0x3F);
+	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x20);  //set sync fail bit (reset?)
+	write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0x03);  //Disable DMR Tx and Rx
+	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00);  //Reset all bits. 
+	write_SPI_page_reg_byte_SPI0(0x04, 0x00, 0x3F);  //Reset DMR Protocol and Physical layer modules.
 	write_SPI_page_reg_bytearray_SPI0(0x01, 0x04, spi_init_values_1, 0x06);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x10, 0x6E);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x1F, 0x10); // DMR Colour code in upper 4 bits - defaulted to 1, and is updated elsewhere in the code
-	write_SPI_page_reg_byte_SPI0(0x04, 0x26, 0x7D);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x27, 0x40);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x28, 0x7D);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x29, 0x40);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x2A, 0x0B);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x2B, 0x0B);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x2C, 0x17);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x2D, 0x05);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x56, 0x00);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x5F, 0xC0);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x81, 0xFF);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x01, 0x70);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x03, 0x00);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x05, 0x00);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x12, 0x15);
-	write_SPI_page_reg_byte_SPI0(0x04, 0xA1, 0x80);
-	write_SPI_page_reg_byte_SPI0(0x04, 0xC0, 0x0A);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x06, 0x21);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x07, 0x0B);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x08, 0xB8);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x09, 0x00);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x0D, 0x10);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x0E, 0x8E);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x0F, 0xB8);
-	write_SPI_page_reg_byte_SPI0(0x04, 0xC2, 0x00);
-	write_SPI_page_reg_byte_SPI0(0x04, 0xE0, 0x8B);
-	write_SPI_page_reg_byte_SPI0(0x04, 0xE1, 0x0F);
-	write_SPI_page_reg_byte_SPI0(0x04, 0xE2, 0x06);
-	write_SPI_page_reg_byte_SPI0(0x04, 0xE3, 0x52);
-	write_SPI_page_reg_byte_SPI0(0x04, 0xE4, 0x4A);
-	write_SPI_page_reg_byte_SPI0(0x04, 0xE5, 0x1A);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x26, 0x7D);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x27, 0x40);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x28, 0x7D);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x29, 0x40);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x20);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xC3);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x01, 0x70);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x10, 0x6E);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x00, 0x3F);
-	write_SPI_page_reg_byte_SPI0(0x04, 0xE4, 0x4B);
+	write_SPI_page_reg_byte_SPI0(0x04, 0x10, 0x6E);  //Set DMR, Tier2, Timeslot mode, Layer2, Repeater, Aligned, Slot 1
+	write_SPI_page_reg_byte_SPI0(0x04, 0x1F, 0x10);  // Set Local EMB. DMR Colour code in upper 4 bits - defaulted to 1, and is updated elsewhere in the code
+	write_SPI_page_reg_byte_SPI0(0x04, 0x26, 0x7D);  //Undocumented Register 
+	write_SPI_page_reg_byte_SPI0(0x04, 0x27, 0x40);  //Undocumented Register 
+	write_SPI_page_reg_byte_SPI0(0x04, 0x28, 0x7D);  //Undocumented Register 
+	write_SPI_page_reg_byte_SPI0(0x04, 0x29, 0x40);  //Undocumented Register 
+	write_SPI_page_reg_byte_SPI0(0x04, 0x2A, 0x0B);  //Set SPI Clock to default value
+	write_SPI_page_reg_byte_SPI0(0x04, 0x2B, 0x0B);  //According to Datasheet this is a Read only register For FM Squelch
+	write_SPI_page_reg_byte_SPI0(0x04, 0x2C, 0x17);  //According to Datasheet this is a Read only register For FM Squelch
+	write_SPI_page_reg_byte_SPI0(0x04, 0x2D, 0x05);  //Set FM Compression and Decompression points (?)
+	write_SPI_page_reg_byte_SPI0(0x04, 0x56, 0x00);  //Undocumented Register
+	write_SPI_page_reg_byte_SPI0(0x04, 0x5F, 0xC0);  //Enable Sync detection for MS or BS orignated signals
+	write_SPI_page_reg_byte_SPI0(0x04, 0x81, 0xFF);  //Enable all Interrupts
+	write_SPI_page_reg_byte_SPI0(0x04, 0x01, 0x70);  //Set 2 Point Mod, Swap Rx I and Q, Rx Mode IF
+	write_SPI_page_reg_byte_SPI0(0x04, 0x03, 0x00);  //Zero Receive I Offset
+	write_SPI_page_reg_byte_SPI0(0x04, 0x05, 0x00);  //Zero Receive Q Offset
+	write_SPI_page_reg_byte_SPI0(0x04, 0x12, 0x15);  //Set RF Switching Receive to Transmit Advance
+	write_SPI_page_reg_byte_SPI0(0x04, 0xA1, 0x80);  //According to Datasheet this register is for FM Modulation Setting (?)
+	write_SPI_page_reg_byte_SPI0(0x04, 0xC0, 0x0A);  //Set RF Signal Advance to 1ms (10x100us)
+	write_SPI_page_reg_byte_SPI0(0x04, 0x06, 0x21);  //Use SPI vocoder under MCU control
+	write_SPI_page_reg_byte_SPI0(0x04, 0x07, 0x0B);  //Set IF Frequency H to default 450KHz
+	write_SPI_page_reg_byte_SPI0(0x04, 0x08, 0xB8);  //Set IF Frequency M to default 450KHz
+	write_SPI_page_reg_byte_SPI0(0x04, 0x09, 0x00);  //Set IF Frequency l to default 450KHz
+	write_SPI_page_reg_byte_SPI0(0x04, 0x0D, 0x10);  //Set Voice Superframe timeout value
+	write_SPI_page_reg_byte_SPI0(0x04, 0x0E, 0x8E);  //Register Documented as Reserved 
+	write_SPI_page_reg_byte_SPI0(0x04, 0x0F, 0xB8);  //FSK Error Count
+	write_SPI_page_reg_byte_SPI0(0x04, 0xC2, 0x00);  //Disable Mic Gain AGC
+	write_SPI_page_reg_byte_SPI0(0x04, 0xE0, 0x8B);  //CODEC under MCU Control, LineOut2 Enabled, Mic_p Enabled, I2S Slave Mode
+	write_SPI_page_reg_byte_SPI0(0x04, 0xE1, 0x0F);  //Undocumented Register (Probably associated with CODEC)
+	write_SPI_page_reg_byte_SPI0(0x04, 0xE2, 0x06);  //CODEC  Anti Pop Enabled, DAC Output Enabled
+	write_SPI_page_reg_byte_SPI0(0x04, 0xE3, 0x52);  //CODEC Default Settings
+	write_SPI_page_reg_byte_SPI0(0x04, 0xE4, 0x4A);  //CODEC   LineOut Gain 2dB, Mic Stage 1 Gain 0dB, Mic Stage 2 Gain 30dB
+	write_SPI_page_reg_byte_SPI0(0x04, 0xE5, 0x1A);  //CODEC Default Setting
+	write_SPI_page_reg_byte_SPI0(0x04, 0x26, 0x7D);  //Undocumented Register
+	write_SPI_page_reg_byte_SPI0(0x04, 0x27, 0x40);  //Undocumented Register
+	write_SPI_page_reg_byte_SPI0(0x04, 0x28, 0x7D);  //Undocumented Register
+	write_SPI_page_reg_byte_SPI0(0x04, 0x29, 0x40);  //Undocumented Register
+	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x20);  //Set Sync Fail Bit  (Reset?)
+	write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xC3);  //Enable DMR Tx and Rx, Passive Timing
+	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40);  //Set Receive During Next Slot Bit
+	write_SPI_page_reg_byte_SPI0(0x04, 0x01, 0x70);  //Set 2 Point Mod, Swap Rx I and Q, Rx Mode IF
+	write_SPI_page_reg_byte_SPI0(0x04, 0x10, 0x6E);  //Set DMR, Tier2, Timeslot mode, Layer2, Repeater, Aligned, Slot 1
+	write_SPI_page_reg_byte_SPI0(0x04, 0x00, 0x3F);  //Reset DMR Protocol and Physical layer modules.
+	write_SPI_page_reg_byte_SPI0(0x04, 0xE4, 0x4B);  //CODEC   LineOut Gain 2dB, Mic Stage 1 Gain 0dB, Mic Stage 2 Gain 33dB
 }
 
 void PORTC_IRQHandler(void)
@@ -317,10 +317,10 @@ void init_digital_state()
 
 void init_digital_DMR_RX()
 {
-	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x20);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x20);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40);
+	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x20);  //Set Sync Fail Bit (Reset?))
+	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00);  //Reset
+	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x20);  //Set Sync Fail Bit (Reset?)
+	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40);  //Receive during next Timeslot
 }
 
 void init_digital()
@@ -520,9 +520,9 @@ void tick_HR_C6000()
 			write_SPI_page_reg_bytearray_SPI0(0x02, 0x00, (uint8_t *)&audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_read_idx], 0x0c);// put LC into hardware
 		}
 
-		write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xE3); // TX and RX enable
-		write_SPI_page_reg_byte_SPI0(0x04, 0x21, 0xA2); // reset vocoder codingbuffer
-		write_SPI_page_reg_byte_SPI0(0x04, 0x22, 0x86); // I2S master encode start
+		write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xE3); // TX and RX enable, Active Timing
+		write_SPI_page_reg_byte_SPI0(0x04, 0x21, 0xA2); // Set Polite to Color Code and Reset vocoder encodingbuffer
+		write_SPI_page_reg_byte_SPI0(0x04, 0x22, 0x86); // Start Vocoder Encode, I2S mode
 
 		slot_state = DMR_STATE_TX_START_1;
 	}
@@ -577,13 +577,13 @@ void tick_HR_C6000()
 		switch (slot_state)
 		{
 		case DMR_STATE_RX_1: // Start RX (first step)
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00);
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00);     //No Transmit or receive in next timeslot
 			GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1);
 		    //GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
 			slot_state = DMR_STATE_RX_2;
 			break;
 		case DMR_STATE_RX_2: // Start RX (second step)
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);   //  Receive during Next Timeslot And Layer2 Access success Bit
 			slot_state = DMR_STATE_RX_1;
 			break;
 		case DMR_STATE_RX_END: // Stop RX
@@ -593,21 +593,21 @@ void tick_HR_C6000()
 			slot_state = DMR_STATE_IDLE;
 			break;
 		case DMR_STATE_TX_START_1: // Start TX (second step)
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);
-			write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x10);
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);    //Transmit during next Timeslot
+			write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x10);    //Set Data Type to 0001 (Voice LC Header), Data, LCSS=00
 			slot_state = DMR_STATE_TX_START_2;
 			break;
 		case DMR_STATE_TX_START_2: // Start TX (third step)
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); // RXnextslotenable
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); 		//Receive during next Timeslot
 			slot_state = DMR_STATE_TX_START_3;
 			break;
 		case DMR_STATE_TX_START_3: // Start TX (fourth step)
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);
-			write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x10);
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);     //Transmit during Next Timeslot
+			write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x10);     //Set Data Type to 0001 (Voice LC Header), Data, LCSS=00
 			slot_state = DMR_STATE_TX_START_4;
 			break;
 		case DMR_STATE_TX_START_4: // Start TX (fifth step)
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); // RXnextslotenable
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); 	//Receive during Next Timeslot
 			slot_state = DMR_STATE_TX_START_5;
 			break;
 		case DMR_STATE_TX_START_5: // Start TX (sixth step)
@@ -615,8 +615,8 @@ void tick_HR_C6000()
             {
             	tick_TXsoundbuffer();
             }
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);
-			write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x10);
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);   //Transmit during next Timeslot
+			write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x10);   //Set Data Type to 0001 (Voice LC Header), Data, LCSS=00
 			tx_sequence=0;
 			slot_state = DMR_STATE_TX_1;
 			break;
@@ -627,7 +627,7 @@ void tick_HR_C6000()
 			}
 			else
 			{
-				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); // RXnextslotenable
+				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); // Receive during next Timeslot
 				slot_state = DMR_STATE_TX_2;
 			}
 			break;
@@ -675,26 +675,26 @@ void tick_HR_C6000()
 			}
 
 
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80); // TXnextslotenable
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80); // Transmit during next Timeslot
 			switch (tx_sequence)
 			{
 			case 0:
-				write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x08); // LCSS = 0
+				write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x08); // Data Type=0000 (Voice Frame A) , Voice, LCSS = 0
 				break;
 			case 1:
-				write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x18); // LCSS = 0
+				write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x18); // Data Type=0001 (Voice Frame B) , Voice, LCSS = 0
 				break;
 			case 2:
-				write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x28); // LCSS = 0
+				write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x28); // Data Type=0010 (Voice Frame C) , Voice, LCSS = 0
 				break;
 			case 3:
-				write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x38); // LCSS = 0
+				write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x38); // Data Type=0011 (Voice Frame D) , Voice, LCSS = 0
 				break;
 			case 4:
-				write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x48); // LCSS = 0
+				write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x48); // Data Type=0100 (Voice Frame E) , Voice, LCSS = 0
 				break;
 			case 5:
-				write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x58); // LCSS = 0
+				write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x58); // Data Type=0101 (Voice Frame F) , Voice, LCSS = 0
 				break;
 			}
 			tx_sequence++;
@@ -706,12 +706,12 @@ void tick_HR_C6000()
 			break;
 		case DMR_STATE_TX_END_1: // Stop TX (first step)
 			write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, SILENCE_AUDIO, 27);// send silence audio bytes
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);
-			write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x20);
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);  //Transmit during Next Timeslot
+			write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x20);  // Data Type =0010 (Terminator with LC), Data, LCSS=0
 			slot_state = DMR_STATE_TX_END_2;
 			break;
 		case DMR_STATE_TX_END_2: // Stop TX (second step)
-			write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xC3);
+			write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xC3);  //Enable DMR Tx and Rx, Passive Timing
 			init_digital_DMR_RX();
 			txstopdelay=30;
 			slot_state = DMR_STATE_IDLE;
@@ -735,13 +735,13 @@ void tick_HR_C6000()
 	if (tmp_int_sys)
 	{
 		memset(DMR_frame_buffer,0,256);
-		read_SPI_page_reg_byte_SPI0(0x04, 0x82, &tmp_val_0x82);
-		read_SPI_page_reg_byte_SPI0(0x04, 0x86, &tmp_val_0x86);
-		read_SPI_page_reg_byte_SPI0(0x04, 0x51, &tmp_val_0x51);
-		read_SPI_page_reg_byte_SPI0(0x04, 0x52, &tmp_val_0x52);
-		read_SPI_page_reg_byte_SPI0(0x04, 0x57, &tmp_val_0x57);
-		read_SPI_page_reg_byte_SPI0(0x04, 0x5f, &tmp_val_0x5f);
-		read_SPI_page_reg_bytearray_SPI0(0x02, 0x00, DMR_frame_buffer, 64);//0x0c);
+		read_SPI_page_reg_byte_SPI0(0x04, 0x82, &tmp_val_0x82);  //Read Interrupt Flag Register1
+		read_SPI_page_reg_byte_SPI0(0x04, 0x86, &tmp_val_0x86);  //Read Interrupt Flag Register2
+		read_SPI_page_reg_byte_SPI0(0x04, 0x51, &tmp_val_0x51);  //Read Received Data type, PI and Sync Register
+		read_SPI_page_reg_byte_SPI0(0x04, 0x52, &tmp_val_0x52);  //Read Received CC and CACH Register
+		read_SPI_page_reg_byte_SPI0(0x04, 0x57, &tmp_val_0x57);  //Undocumented register 
+		read_SPI_page_reg_byte_SPI0(0x04, 0x5f, &tmp_val_0x5f);  //Read Received Sync type register
+		read_SPI_page_reg_bytearray_SPI0(0x02, 0x00, DMR_frame_buffer, 64);  
 
 #if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
            	SEGGER_RTT_printf(0, "DATA %02x [%02x %02x] %02x %02x %02x %02x SC:%02x RCRC:%02x RPI:%02x RXDT:%02x LCSS:%02x TC:%02x AT:%02x CC:%02x ??:%02x ST:%02x RAM:", slot_state, tmp_val_0x82, tmp_val_0x86, tmp_val_0x51, tmp_val_0x52, tmp_val_0x57, tmp_val_0x5f, (tmp_val_0x51 >> 0) & 0x03, (tmp_val_0x51 >> 2) & 0x01, (tmp_val_0x51 >> 3) & 0x01, (tmp_val_0x51 >> 4) & 0x0f, (tmp_val_0x52 >> 0) & 0x03, (tmp_val_0x52 >> 2) & 0x01, (tmp_val_0x52 >> 3) & 0x01, (tmp_val_0x52 >> 4) & 0x0f, (tmp_val_0x57 >> 2) & 0x01, (tmp_val_0x5f >> 0) & 0x03);
@@ -759,13 +759,13 @@ void tick_HR_C6000()
         if ((rcrc==0) && (rpi==0) && (cc == trxGetDMRColourCode()) && (slot_state < DMR_STATE_TX_START_1))
         {
 		    GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);// Turn the LED on as soon as a DMR signal is detected.
-    		if (tmp_val_0x82 & 0x20) // InterSendStop
+    		if (tmp_val_0x82 & 0x20) // InterSendStop interrupt
     		{
-    			if (tmp_val_0x86 & 0x10)
+    			if (tmp_val_0x86 & 0x10) // Rdy_1st_interpt  interupt
     			{
 // deprecated. Use Segger print if necessary    				send_packet(0x20, 0x10, -1);
     			}
-    			if (tmp_val_0x86 & 0x04)
+    			if (tmp_val_0x86 & 0x04)  //Short LC Received int
     			{
 // deprecated. Use Segger print if necessary    				send_packet(0x20, 0x04, -1);
     			}
@@ -776,7 +776,7 @@ void tick_HR_C6000()
     		receivedTgOrPcId 	= (DMR_frame_buffer[3]<<16)+(DMR_frame_buffer[4]<<8)+(DMR_frame_buffer[5]<<0);// used by the call accept filter
     		receivedSrcId 		= (DMR_frame_buffer[6]<<16)+(DMR_frame_buffer[7]<<8)+(DMR_frame_buffer[8]<<0);// used by the call accept filter
 
-    		if (tmp_val_0x82 & 0x10) // InterLateEntry
+    		if (tmp_val_0x82 & 0x10) // InterLateEntry interrupt
     		{
     			// Late entry into ongoing RX
                 if (slot_state == DMR_STATE_IDLE && callAcceptFilter())
@@ -808,7 +808,7 @@ void tick_HR_C6000()
 
 // deprecated. Use Segger print if necessary    			send_packet(0x10, 0x00, -1);
 
-    			write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0x10);
+    			write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0x10);   //Clear Late Entry Interrupt Flag
     		}
 
     		if (tmp_val_0x82 & 0x08) // InterRecvData
@@ -817,9 +817,9 @@ void tick_HR_C6000()
     			tick_cnt = 0;
 
     			// Start RX
-    			int rxdt = (tmp_val_0x51 >> 4) & 0x0f;
-    			int sc = (tmp_val_0x51 >> 0) & 0x03;
-                if ((slot_state == DMR_STATE_IDLE) && (sc==2) && (rxdt==1) &&  callAcceptFilter())
+    			int rxdt = (tmp_val_0x51 >> 4) & 0x0f;   //Recieved Data Type  
+    			int sc = (tmp_val_0x51 >> 0) & 0x03;     //Received Sync Class  0=Sync Header 1=Voice 2=data 3=RC
+                if ((slot_state == DMR_STATE_IDLE) && (sc==2) && (rxdt==1) &&  callAcceptFilter())       //Voice LC Header
                 {
                 	slot_state = DMR_STATE_RX_1;
                 	store_qsodata();
@@ -835,7 +835,7 @@ void tick_HR_C6000()
 					}
                 }
     			// Stop RX
-                if ((sc==2) && (rxdt==2) && callAcceptFilter())
+                if ((sc==2) && (rxdt==2) && callAcceptFilter())        //Terminator with LC
                 {
                 	slot_state = DMR_STATE_RX_END;
 #if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
@@ -901,31 +901,31 @@ void tick_HR_C6000()
 
 // deprecated. Use Segger print if necessary	send_packet(0x08, 0x00, -1);
 
-    			write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0x08);
+    			write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0x08);     // Clear Data Received Interrupt Flag
     		}
 
-    		if (tmp_val_0x82 & 0x01) // InterPHYOnly
+    		if (tmp_val_0x82 & 0x01) // InterPHYOnly flag
     		{
 // deprecated. Use Segger print if necessary  	send_packet(0x01, 0x00, -1);
 
-    			write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0x01);
+    			write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0x01);  //Clear  InterPHYOnly flag
     		}
 
-    		if (tmp_val_0x82 & 0xC6)
+    		if (tmp_val_0x82 & 0xC6)   //Remaining Interrupt Flags
     		{
 // deprecated. Use Segger print if necessary     send_packet(0xFF, 0xFF, -1);
 
-    			write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0xC6);
+    			write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0xC6);  //Clear remaining Interrupt Flags
     		}
         }
         else if (slot_state >= DMR_STATE_TX_START_1)
         {
         	uint8_t tmp_val_0x42;
-			read_SPI_page_reg_byte_SPI0(0x04, 0x42, &tmp_val_0x42);
+			read_SPI_page_reg_byte_SPI0(0x04, 0x42, &tmp_val_0x42);   //Read Current Timeslot Sent, Current Timeslot Received and Current Timeslot Active Status bits
 #if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
             	SEGGER_RTT_printf(0, "TXTX %02x [%02x %02x] %02x\r\n", slot_state, tmp_val_0x82, tmp_val_0x86, tmp_val_0x42);
 #endif
-    		write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0xFF);
+    		write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0xFF);  //Clear all Interrupt Flags
         }
         else
         {
