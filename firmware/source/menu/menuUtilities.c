@@ -79,9 +79,9 @@ static void updateScreen()
 			}
 			break;
 		case 2:
-			if (nonVolatileSettings.txTimeoutBeepSecs!=0)
+			if (nonVolatileSettings.txTimeoutBeepX5Secs!=0)
 			{
-				sprintf(buf,"Timeout beep:%d",nonVolatileSettings.txTimeoutBeepSecs);
+				sprintf(buf,"Timeout beep:%d",nonVolatileSettings.txTimeoutBeepX5Secs * 5);
 			}
 			else
 			{
@@ -163,9 +163,9 @@ static void handleEvent(int buttons, int keys, int events)
 				open_squelch = 1;
 				break;
 			case 2:
-				if (nonVolatileSettings.txTimeoutBeepSecs<15)
+				if (nonVolatileSettings.txTimeoutBeepX5Secs < 4)
 				{
-					nonVolatileSettings.txTimeoutBeepSecs++;
+					nonVolatileSettings.txTimeoutBeepX5Secs++;
 				}
 				break;
 			case 0:
@@ -206,9 +206,9 @@ static void handleEvent(int buttons, int keys, int events)
 				open_squelch = 0;
 				break;
 			case 2:
-				if (nonVolatileSettings.txTimeoutBeepSecs>0)
+				if (nonVolatileSettings.txTimeoutBeepX5Secs>0)
 				{
-					nonVolatileSettings.txTimeoutBeepSecs--;
+					nonVolatileSettings.txTimeoutBeepX5Secs--;
 				}
 				break;
 			case 0:

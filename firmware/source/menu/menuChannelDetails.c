@@ -35,7 +35,7 @@ static const unsigned int CTCSSTones[]={65535,625,670,693,719,744,770,797,825,85
 static int NUM_CTCSS=52;
 static int CTCSSRxIndex=0;
 static int CTCSSTxIndex=0;
-static int NUM_MENUS=6;
+static int NUM_MENUS=7;
 static struct_codeplugChannel_t tmpChannel;// update a temporary copy of the channel and only write back if green menu is pressed
 
 int menuChannelDetails(int buttons, int keys, int events, bool isFirstRun)
@@ -160,7 +160,16 @@ static void updateScreen()
 				tmpVal = VFO_FREQ_STEP_TABLE[(tmpChannel.VFOflag5 >> 4)]/10;
 				sprintf(buf,"Step:%d.%dkHz",tmpVal, VFO_FREQ_STEP_TABLE[(tmpChannel.VFOflag5 >> 4)] - (tmpVal*10));
 				break;
-
+			case 6:// TOT
+				if (tmpChannel.tot!=0)
+				{
+					sprintf(buf,"TOT:%d",tmpChannel.tot * 15);
+				}
+				else
+				{
+					strcpy(buf,"TOT:OFF");
+				}
+				break;
 
 		}
 
@@ -246,6 +255,12 @@ static void handleEvent(int buttons, int keys, int events)
 				tmpChannel.VFOflag5 &= 0x0F;
 				tmpChannel.VFOflag5 |= tmpVal<<4;
 				break;
+			case 6:
+				if (tmpChannel.tot<255)
+				{
+					tmpChannel.tot++;
+				}
+				break;
 		}
 	}
 	else if ((keys & KEY_LEFT)!=0)
@@ -297,6 +312,12 @@ static void handleEvent(int buttons, int keys, int events)
 				}
 				tmpChannel.VFOflag5 &= 0x0F;
 				tmpChannel.VFOflag5 |= tmpVal<<4;
+				break;
+			case 6:
+				if (tmpChannel.tot>0)
+				{
+					tmpChannel.tot--;
+				}
 				break;
 		}
 	}

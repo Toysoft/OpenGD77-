@@ -92,6 +92,7 @@ volatile usb_status_t lastUSBSerialTxStatus = kStatus_USB_Success;
 volatile int  	rfFrameBufReadIdx=0;
 volatile int  	rfFrameBufWriteIdx=0;
 volatile int	rfFrameBufCount=0;
+uint8_t lastRxState=HOTSPOT_RX_IDLE;
 
 volatile enum
 {
@@ -231,7 +232,7 @@ static void sendNAK(uint8_t err)
 
 static void enableTransmission()
 {
-	SEGGER_RTT_printf(0, "EnableTransmission\n");
+	SEGGER_RTT_printf(0, "Enable Transmission\n");
 
 	GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 	GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 1);
@@ -241,6 +242,18 @@ static void enableTransmission()
 	trxIsTransmitting=true;
 	trx_setTX();
 }
+
+static void disableTransmission()
+{
+	SEGGER_RTT_printf(0, "Disable Transmission\n");
+
+	GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
+	trx_deactivateTX();
+	trx_setRX();
+	trxSetFrequency(freq_rx);
+
+}
+
 
 static void hotspotSendVoiceFrame(uint8_t *receivedDMRDataAndAudio)
 {
@@ -539,7 +552,7 @@ bool hotspotModeReceiveNetFrame(uint8_t *com_requestbuffer, int timeSlot)
 	return true;
 }
 
-uint8_t lastRxState=HOTSPOT_RX_IDLE;
+
 
 static void hotspotStateMachine()
 {
@@ -557,6 +570,14 @@ static void hotspotStateMachine()
 			break;
 		case HOTSPOT_STATE_RX_START:
 			SEGGER_RTT_printf(0, "STATE_RX_START\n");
+
+			// force immediate shutdown of Tx if we get here and the tx is on for some reason.
+			if (trxIsTransmitting)
+			{
+				trxIsTransmitting=false;
+				disableTransmission();
+			}
+
 			trxSetFrequency(freq_rx);
 			wavbuffer_read_idx=0;
 			wavbuffer_write_idx=0;
@@ -572,8 +593,6 @@ static void hotspotStateMachine()
         		{
         			int rx_command = audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][27+0x0c];
         			//SEGGER_RTT_printf(0, "RX_PROCESS cmd:%d buf:%d\n",rx_command,wavbuffer_count);
-
-
 
         			switch(rx_command)
 					{
@@ -672,7 +691,7 @@ static void hotspotStateMachine()
 			{
 				hotspotState = HOTSPOT_STATE_TX_SHUTDOWN;
 				SEGGER_RTT_printf(0, "TRANSMITTING -> TX_SHUTDOWN %d %d\n",wavbuffer_count,modemState);
-				trxIsTransmitting=false;
+				trxIsTransmitting = false;
 			}
 			break;
 		case HOTSPOT_STATE_TX_SHUTDOWN:
@@ -691,13 +710,11 @@ static void hotspotStateMachine()
 			{
 				if ((slot_state < DMR_STATE_TX_START_1))
 				{
-					GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
-					trx_deactivateTX();
-					trx_setRX();
+					disableTransmission();
 					hotspotState = HOTSPOT_STATE_RX_START;
 					SEGGER_RTT_printf(0, "TX_SHUTDOWN -> STATE_RX\n");
 					updateScreen(HOTSPOT_RX_IDLE);
-					trxSetFrequency(freq_rx);
+
 					/*
 					wavbuffer_read_idx=0;
 					wavbuffer_write_idx=0;
@@ -810,7 +827,7 @@ static void updateScreen(int rxCommandState)
 		}
 		else
 		{
-			sprintf(buffer,"CC:%d" ,  trxGetDMRColourCode()) ;
+			sprintf(buffer,"CC:%d" ,  trxGetDMRColourCode());//, trxGetDMRTimeSlot()+1) ;
 			UC1701_printCore(0, 32, buffer, UC1701_FONT_GD77_8x16, 0, false);
 			sprintf(buffer,"%dmW" ,  (5000 * (nonVolatileSettings.txPower - LOWEST_POWER_SETTING)) / (powerSettings.highPower-LOWEST_POWER_SETTING)) ;
 			UC1701_printCore(0, 32, buffer, UC1701_FONT_GD77_8x16, 2, false);
@@ -1037,7 +1054,7 @@ uint8_t setMode(volatile const uint8_t* data, uint8_t length)
 static void getVersion()
 {
 	uint8_t buf[64];
-	const char HOTSPOT_NAME[] = "OpenGD77 Hotspot v0.0.3";
+	const char HOTSPOT_NAME[] = "OpenGD77 Hotspot v0.0.4";
 	buf[0U]  = MMDVM_FRAME_START;
 	buf[1U]= 4 + strlen(HOTSPOT_NAME);// minus 1 because there is no terminator
 	buf[2U]  = MMDVM_GET_VERSION;

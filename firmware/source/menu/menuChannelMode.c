@@ -118,6 +118,7 @@ static void loadChannelData(bool useChannelDataInMemory)
 
 void menuChannelModeUpdateScreen(int txTimeSecs)
 {
+	const int TX_TIMER_Y_OFFSET = 4;
 	char nameBuf[17];
 	int channelNumber;
 	char buffer[32];
@@ -135,7 +136,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 			if (trxIsTransmitting)
 			{
 				sprintf(buffer," %d ",txTimeSecs);
-				UC1701_printCentered(0, buffer,UC1701_FONT_16x32);
+				UC1701_printCentered(TX_TIMER_Y_OFFSET, buffer,UC1701_FONT_16x32);
 				verticalPositionOffset=16;
 			}
 
