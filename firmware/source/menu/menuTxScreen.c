@@ -88,9 +88,12 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 				else
 				{
 					timeInSeconds--;
-					if (timeInSeconds < nonVolatileSettings.txTimeoutBeepSecs)
+					if (timeInSeconds <= (nonVolatileSettings.txTimeoutBeepX5Secs * 5))
 					{
-						set_melody(melody_key_beep);
+						if (timeInSeconds%5==0)
+						{
+							set_melody(melody_key_beep);
+						}
 					}
 				}
 				if (currentChannelData->tot!=0 && timeInSeconds == 0)
