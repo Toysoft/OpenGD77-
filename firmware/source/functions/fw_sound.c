@@ -440,10 +440,10 @@ void tick_melody()
 		{
 			if (melody_play[melody_idx]==-1)
 			{
-
 				if (trxGetMode() == RADIO_MODE_ANALOG)
 				{
-				    GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 1);
+					GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 0);// Mute the speaker, otherwise there will be a burst of squelch noise until the next tick in HR-C6000
+				    GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 1);// Set the audio path to AT1846 -> audio amp.
 				}
 				else
 				{
@@ -459,10 +459,10 @@ void tick_melody()
 			{
 				if (melody_idx==0)
 				{
-				    GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1);
+				    GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1);// enable the speaker (audio amplifier)
 					if (trxGetMode() == RADIO_MODE_ANALOG)
 					{
-					    GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 0);
+					    GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 0);// set the audio mux   HR-C6000 -> audio amp
 					}
 				}
 				sine_beep_freq=melody_play[melody_idx];

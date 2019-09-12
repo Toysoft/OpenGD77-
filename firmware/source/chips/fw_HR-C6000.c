@@ -388,18 +388,17 @@ void fw_hrc6000_task()
         	alive_hrc6000task=true;
         	taskEXIT_CRITICAL();
 
-// There seems to be no need to stop the ticks when the melody is playing
-    		//if (melody_play==NULL)
-    		{
-    	    	if (trxGetMode() == RADIO_MODE_DIGITAL)
-    	    	{
-    				tick_HR_C6000();
-    	    	}
-    	    	else if (trxGetMode() == RADIO_MODE_ANALOG)
-    	    	{
-    	    		trx_check_analog_squelch();
-    	    	}
-    		}
+        	if (trxGetMode() == RADIO_MODE_DIGITAL)
+			{
+				tick_HR_C6000();
+			}
+			else
+			{
+				if (trxGetMode() == RADIO_MODE_ANALOG && melody_play==NULL)
+				{
+					trx_check_analog_squelch();
+				}
+			}
     	}
 
 		vTaskDelay(0);
