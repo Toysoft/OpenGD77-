@@ -78,14 +78,14 @@ void clear_SPI_buffer_SPI0();
 int write_SPI_page_reg_byte_SPI0(uint8_t page, uint8_t reg, uint8_t val);
 int read_SPI_page_reg_byte_SPI0(uint8_t page, uint8_t reg, uint8_t* val);
 int set_clear_SPI_page_reg_byte_with_mask_SPI0(uint8_t page, uint8_t reg, uint8_t mask, uint8_t val);
-int write_SPI_page_reg_bytearray_SPI0(uint8_t page, uint8_t reg, uint8_t* values, uint8_t length);
+int write_SPI_page_reg_bytearray_SPI0(uint8_t page, uint8_t reg, const uint8_t* values, uint8_t length);
 int read_SPI_page_reg_bytearray_SPI0(uint8_t page, uint8_t reg, uint8_t* values, uint8_t length);
 
 void clear_SPI_buffer_SPI1();
 int write_SPI_page_reg_byte_SPI1(uint8_t page, uint8_t reg, uint8_t val);
 int read_SPI_page_reg_byte_SPI1(uint8_t page, uint8_t reg, uint8_t* val);
 int set_clear_SPI_page_reg_byte_with_mask_SPI1(uint8_t page, uint8_t reg, uint8_t mask, uint8_t val);
-int write_SPI_page_reg_bytearray_SPI1(uint8_t page, uint8_t reg, uint8_t* values, uint8_t length);
+int write_SPI_page_reg_bytearray_SPI1(uint8_t page, uint8_t reg, const uint8_t* values, uint8_t length);
 int read_SPI_page_reg_bytearray_SPI1(uint8_t page, uint8_t reg, uint8_t* values, uint8_t length);
 
 #endif /* _FW_SPI_H_ */

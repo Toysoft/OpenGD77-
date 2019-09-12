@@ -192,7 +192,7 @@ int set_clear_SPI_page_reg_byte_with_mask_SPI0(uint8_t page, uint8_t reg, uint8_
 	return kStatus_Success;
 }
 
-int write_SPI_page_reg_bytearray_SPI0(uint8_t page, uint8_t reg, uint8_t* values, uint8_t length)
+int write_SPI_page_reg_bytearray_SPI0(uint8_t page, uint8_t reg, const uint8_t* values, uint8_t length)
 {
     dspi_transfer_t masterXfer;
     status_t status;
@@ -346,7 +346,7 @@ int set_clear_SPI_page_reg_byte_with_mask_SPI1(uint8_t page, uint8_t reg, uint8_
 	return kStatus_Success;
 }
 
-int write_SPI_page_reg_bytearray_SPI1(uint8_t page, uint8_t reg, uint8_t* values, uint8_t length)
+int write_SPI_page_reg_bytearray_SPI1(uint8_t page, uint8_t reg, const uint8_t* values, uint8_t length)
 {
     dspi_transfer_t masterXfer;
     status_t status;
