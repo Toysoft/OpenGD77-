@@ -65,6 +65,7 @@
 #define PROTOCOL_VERSION    1U
 
 #define MMDVM_HEADER_LENGTH  4U
+const char * HOTSPOT_VERSION_STRING = "OpenGD77 Hotspot v0.0.5";
 const int LOWEST_POWER_SETTING = 775;
 
 const uint8_t MMDVM_VOICE_SYNC_PATTERN = 0x20U;
@@ -1068,12 +1069,11 @@ uint8_t setMode(volatile const uint8_t* data, uint8_t length)
 static void getVersion()
 {
 	uint8_t buf[64];
-	const char HOTSPOT_NAME[] = "OpenGD77 Hotspot v0.0.4";
 	buf[0U]  = MMDVM_FRAME_START;
-	buf[1U]= 4 + strlen(HOTSPOT_NAME);// minus 1 because there is no terminator
+	buf[1U]= 4 + strlen(HOTSPOT_VERSION_STRING);// minus 1 because there is no terminator
 	buf[2U]  = MMDVM_GET_VERSION;
 	buf[3]= PROTOCOL_VERSION;
-	strcpy((char *)&buf[4],HOTSPOT_NAME);
+	strcpy((char *)&buf[4],HOTSPOT_VERSION_STRING);
 	enqueueUSBData(buf,buf[1]);
 }
 
