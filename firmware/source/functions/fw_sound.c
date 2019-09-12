@@ -47,7 +47,17 @@ const int melody_private_call[] = {
 								880, DAH_LENGTH,
 								0, DIT_LENGTH,
 								880, DIT_LENGTH,
-								-1, -1 };// More letter P
+
+								0, DAH_LENGTH,
+								880, DAH_LENGTH,
+								0, DIT_LENGTH,
+								880, DIT_LENGTH,
+								0, DIT_LENGTH,
+								880, DAH_LENGTH,
+								0, DIT_LENGTH,
+								880, DIT_LENGTH
+
+								-1, -1 };// Morse letters PC for Priavte Call
 const int melody_key_beep[] = { 880, 60, -1, -1 };
 const int melody_sk1_beep[] = { 466, 60, 0, 60, 466, 60, -1, -1 };
 const int melody_sk2_beep[] = { 494, 60, 0, 60, 494, 60, -1, -1 };
