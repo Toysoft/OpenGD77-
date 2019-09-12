@@ -93,6 +93,8 @@ volatile int  	rfFrameBufReadIdx=0;
 volatile int  	rfFrameBufWriteIdx=0;
 volatile int	rfFrameBufCount=0;
 uint8_t lastRxState=HOTSPOT_RX_IDLE;
+const int TX_BUFFERING_TIMEOUT = 5000;// 500mS
+int timeoutCounter;
 
 volatile enum
 {
@@ -446,7 +448,8 @@ static void storeNetFrame(uint8_t *com_requestbuffer)
 			(hotspotTxLC[0]==0 || hotspotTxLC[0]==3) &&
 			(hotspotState != HOTSPOT_STATE_TX_START_BUFFERING && hotspotState != HOTSPOT_STATE_TRANSMITTING))
 	{
-		SEGGER_RTT_printf(0, "LATE START\n");
+		SEGGER_RTT_printf(0, "LATE START -> HOTSPOT_STATE_TX_BUFFERING\n");
+		timeoutCounter=TX_BUFFERING_TIMEOUT;// set buffering timeout
 		hotspotState = HOTSPOT_STATE_TX_START_BUFFERING;
 	}
 
@@ -539,6 +542,8 @@ bool hotspotModeReceiveNetFrame(uint8_t *com_requestbuffer, int timeSlot)
 			SEGGER_RTT_printf(0, "Net frame LC_decodOK:%d FID:%d FLCO:%d PF:%d R:%d dstId:%d src:Id:%d options:0x%02x\n",lcDecodeOK,lc.FID,lc.FLCO,lc.PF,lc.R,lc.dstId,lc.srcId,lc.options);
 			memcpy(hotspotTxLC,lc.rawData,9);//Hotspot uses LC Data bytes rather than the src and dst ID's for the embed data
 			// the Src and Dst Id's have been sent, and we are in RX mode then an incoming Net normally arrives next
+			SEGGER_RTT_printf(0,"hospot state %d -> HOTSPOT_STATE_TX_BUFFERING\n");
+			timeoutCounter=TX_BUFFERING_TIMEOUT;
 			hotspotState = HOTSPOT_STATE_TX_START_BUFFERING;
 
 		}
@@ -671,8 +676,8 @@ static void hotspotStateMachine()
 				wavbuffer_read_idx=0;
 				wavbuffer_write_idx=0;
 				wavbuffer_count=0;
-				//hotspotState = HOTSPOT_STATE_INITIALISE;
-				SEGGER_RTT_printf(0, "modemState == STATE_IDLE: TX_START_BUFFERING -> INITIALISE\n");
+				hotspotState = HOTSPOT_STATE_TX_SHUTDOWN;
+				SEGGER_RTT_printf(0, "modemState == STATE_IDLE: TX_START_BUFFERING -> HOTSPOT_STATE_TX_SHUTDOWN\n");
 			}
 			else
 			{
@@ -683,7 +688,15 @@ static void hotspotStateMachine()
 					enableTransmission();
 					updateScreen(HOTSPOT_RX_IDLE);
 				}
-			}
+				else
+				{
+					if (--timeoutCounter==0)
+					{
+						hotspotState = HOTSPOT_STATE_INITIALISE;
+						SEGGER_RTT_printf(0, "Timeout while buffering TX_START_BUFFERING -> HOTSPOT_STATE_INITIALISE\n");
+					}
+				}
+				}
 			break;
 		case HOTSPOT_STATE_TRANSMITTING:
 			// Stop transmitting when there is no data in the buffer or if MMDVMHost sends the idle command
@@ -703,6 +716,7 @@ static void hotspotStateMachine()
 					// restart
 					SEGGER_RTT_printf(0, "Restarting transmission %d\n",wavbuffer_count);
 					enableTransmission();
+					timeoutCounter=TX_BUFFERING_TIMEOUT;
 					hotspotState = HOTSPOT_STATE_TX_START_BUFFERING;
 				}
 			}
