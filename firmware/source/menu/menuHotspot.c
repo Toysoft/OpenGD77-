@@ -65,7 +65,7 @@
 #define PROTOCOL_VERSION    1U
 
 #define MMDVM_HEADER_LENGTH  4U
-const char * HOTSPOT_VERSION_STRING = "OpenGD77 Hotspot v0.0.5";
+const char * HOTSPOT_VERSION_STRING = "OpenGD77 Hotspot v0.0.51";
 const int LOWEST_POWER_SETTING = 775;
 
 const uint8_t MMDVM_VOICE_SYNC_PATTERN = 0x20U;
@@ -844,7 +844,12 @@ static void updateScreen(int rxCommandState)
 		{
 			sprintf(buffer,"CC:%d" ,  trxGetDMRColourCode());//, trxGetDMRTimeSlot()+1) ;
 			UC1701_printCore(0, 32, buffer, UC1701_FONT_GD77_8x16, 0, false);
-			sprintf(buffer,"%dmW" ,  (5000 * (nonVolatileSettings.txPower - LOWEST_POWER_SETTING)) / (powerSettings.highPower-LOWEST_POWER_SETTING)) ;
+			int powermW =  (5000 * ((int)nonVolatileSettings.txPower - LOWEST_POWER_SETTING)) / ((int)powerSettings.highPower - LOWEST_POWER_SETTING);
+			if (powermW < 0)
+			{
+				powermW=0;
+			}
+			sprintf(buffer,"%dmW" , powermW) ;
 			UC1701_printCore(0, 32, buffer, UC1701_FONT_GD77_8x16, 2, false);
 		}
 		val_before_dp = freq_rx/10000;
