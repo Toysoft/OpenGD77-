@@ -119,7 +119,7 @@ static void updateScreen()
 			}
 			break;
 		case 6:// Beep volume reduction
-			sprintf(buf,"Beep vol:%d%%",100/nonVolatileSettings.beepVolumeDivider);
+			sprintf(buf,"Beep vol:%ddB", (2 - nonVolatileSettings.beepVolumeDivider)*3);
 			soundBeepVolumeDivider = nonVolatileSettings.beepVolumeDivider;
 			break;
 		}
@@ -190,7 +190,7 @@ static void handleEvent(int buttons, int keys, int events)
 				nonVolatileSettings.txFreqLimited=0x01;
 				break;
 			case 6:
-				if (nonVolatileSettings.beepVolumeDivider>1)
+				if (nonVolatileSettings.beepVolumeDivider>0)
 				{
 					nonVolatileSettings.beepVolumeDivider--;
 				}

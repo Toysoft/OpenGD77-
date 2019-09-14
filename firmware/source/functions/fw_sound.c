@@ -58,7 +58,7 @@ const int melody_private_call[] = {
 								880, DIT_LENGTH
 
 								-1, -1 };// Morse letters PC for Priavte Call
-const int melody_key_beep[] = { 880, 60, -1, -1 };
+const int melody_key_beep[] = { 600, 60, -1, -1 };
 const int melody_sk1_beep[] = { 466, 60, 0, 60, 466, 60, -1, -1 };
 const int melody_sk2_beep[] = { 494, 60, 0, 60, 494, 60, -1, -1 };
 const int melody_orange_beep[] = { 440, 60, 494, 60, 440, 60, 494, 60, -1, -1 };
@@ -514,7 +514,7 @@ void fw_beep_task()
     			{
     				for (int i=0; i<16 ;i++)
     				{
-    					swapper.byte16 = ((int)sine_beep16[beep_idx])/soundBeepVolumeDivider;
+    					swapper.byte16 = ((int)sine_beep16[beep_idx])>>soundBeepVolumeDivider;
     					spi_sound[2*i+1]=swapper.bytes8[0];// low byte
     					spi_sound[2*i]=swapper.bytes8[1];// high byte
     					if (sine_beep_freq!=0)

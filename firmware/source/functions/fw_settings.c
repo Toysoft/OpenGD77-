@@ -73,9 +73,9 @@ void settingsLoadSettings()
 	}
 
 	// Added this parameter without changing the magic number, so need to check for default / invalid numbers
-	if (nonVolatileSettings.beepVolumeDivider==0 || nonVolatileSettings.beepVolumeDivider>10)
+	if (nonVolatileSettings.beepVolumeDivider>10)
 	{
-		nonVolatileSettings.beepVolumeDivider = 1;// no reduction in volume
+		nonVolatileSettings.beepVolumeDivider = 2;// no reduction in volume
 	}
 	soundBeepVolumeDivider = nonVolatileSettings.beepVolumeDivider;
 }

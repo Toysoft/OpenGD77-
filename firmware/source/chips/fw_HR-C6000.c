@@ -446,21 +446,6 @@ void setupPcOrTGHeader()
 	write_SPI_page_reg_bytearray_SPI0(0x02, 0x00, spi_tx, 0x0c);
 }
 
-#if false
-
-// Beta testers limiting functionality
-
-	//const uint32_t USER_ID = 5054125;//vk4jwt
-	//const uint32_t USER_ID = 5057058;//vk7zja
-	//const uint32_t USER_ID = 5057005;//clayton
-	const uint32_t USER_ID = 2345496;// G3UBY
-	//const uint32_t USER_ID = 5054202;//wayne Vk4wh
-	//const uint32_t USER_ID = 2644462;// DG4KLU
-	//const uint32_t USER_ID = 2351215;// G4EML
-	//const uint32_t USER_ID = 3109921;// 	W1RHS
-	//const uint32_t USER_ID = 2420047;// 	LB9AB
-	const uint32_t FILTER_LIST[] = {5053238,2345496,5054125,5057058,5057005,5054202,2644462,2351215,3109921,2420047,3109230,3109354,2346139};
-#endif
 bool callAcceptFilter()
 {
 	 if (settingsUsbMode == USB_MODE_HOTSPOT)
@@ -468,17 +453,6 @@ bool callAcceptFilter()
   		    //In Hotspot mode, we need to accept all incoming traffic, otherwise private calls won't work
 			if (DMR_frame_buffer[0]==TG_CALL_FLAG || DMR_frame_buffer[0]==PC_CALL_FLAG)
 			{
-#if false
-				int numFilters = sizeof(FILTER_LIST)/sizeof(uint32_t);
-				for(int i=0;i<numFilters;i++)
-				{
-					if (receivedSrcId ==FILTER_LIST [i])
-					{
-						return true;
-					}
-				}
-				return false;
-#endif
 				return true;
 			}
 			else
