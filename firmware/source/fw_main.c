@@ -175,7 +175,13 @@ void fw_main_task()
         		}
         		*/
 
-        		if (((buttons & BUTTON_PTT)!=0) && (slot_state==DMR_STATE_IDLE) && (trxGetMode()!=RADIO_MODE_NONE) && (settingsUsbMode != USB_MODE_HOTSPOT))
+        		if ((	(buttons & BUTTON_PTT)!=0) &&
+        				(slot_state==DMR_STATE_IDLE) &&
+						(trxGetMode()!=RADIO_MODE_NONE) &&
+						(settingsUsbMode != USB_MODE_HOTSPOT) &&
+						(menuSystemGetCurrentMenuNumber() != MENU_POWER_OFF) &&
+						(menuSystemGetCurrentMenuNumber() != MENU_SPLASH_SCREEN)
+						)
         		{
         			menuSystemPushNewMenu(MENU_TX_SCREEN);
         		}
