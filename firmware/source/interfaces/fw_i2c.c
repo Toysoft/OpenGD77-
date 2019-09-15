@@ -125,7 +125,7 @@ int write_I2C_reg_2byte(uint8_t addr, uint8_t reg, uint8_t val1, uint8_t val2)
     i2c_master_transfer_t masterXfer;
     status_t status;
 
-	taskENTER_CRITICAL();
+	//taskENTER_CRITICAL();
 	clear_I2C_buffer();
 	i2c_master_buff[0] = reg;
 	i2c_master_buff[1] = val1;
@@ -143,11 +143,11 @@ int write_I2C_reg_2byte(uint8_t addr, uint8_t reg, uint8_t val1, uint8_t val2)
     status = I2C_MasterTransferBlocking(I2C0, &masterXfer);
     if (status != kStatus_Success)
     {
-    	taskEXIT_CRITICAL();
+    	//taskEXIT_CRITICAL();
     	return status;
     }
 
-	taskEXIT_CRITICAL();
+	//taskEXIT_CRITICAL();
 	return kStatus_Success;
 }
 
@@ -156,7 +156,7 @@ int read_I2C_reg_2byte(uint8_t addr, uint8_t reg, uint8_t* val1, uint8_t* val2)
     i2c_master_transfer_t masterXfer;
     status_t status;
 
-	taskENTER_CRITICAL();
+	//taskENTER_CRITICAL();
 	clear_I2C_buffer();
 	i2c_master_buff[0] = reg;
 
@@ -172,7 +172,7 @@ int read_I2C_reg_2byte(uint8_t addr, uint8_t reg, uint8_t* val1, uint8_t* val2)
     status = I2C_MasterTransferBlocking(I2C0, &masterXfer);
     if (status != kStatus_Success)
     {
-    	taskEXIT_CRITICAL();
+    	//taskEXIT_CRITICAL();
     	return status;
     }
 
@@ -189,14 +189,14 @@ int read_I2C_reg_2byte(uint8_t addr, uint8_t reg, uint8_t* val1, uint8_t* val2)
     status = I2C_MasterTransferBlocking(I2C0, &masterXfer);
     if (status != kStatus_Success)
     {
-    	taskEXIT_CRITICAL();
+    	//taskEXIT_CRITICAL();
     	return status;
     }
 
     *val1 = i2c_master_buff[0];
     *val2 = i2c_master_buff[1];
 
-	taskEXIT_CRITICAL();
+	//taskEXIT_CRITICAL();
 	return kStatus_Success;
 }
 

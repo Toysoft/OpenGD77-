@@ -223,25 +223,31 @@ int trxGetFrequency()
 
 void trx_setRX()
 {
+	// AT1846 RX + unmute
+	set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0x00);
 	trx_deactivateTX();
 
 	// MUX for RX
 	GPIO_PinWrite(GPIO_TX_audio_mux, Pin_TX_audio_mux, 0);
 
-	// AT1846 RX + unmute
-	set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0x00);
-	set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0x20); // RX
-
-	// RX amp on
-	if (trxCheckFrequencyIsVHF(currentFrequency))
+	// MUX for Rx
+	if (currentMode == RADIO_MODE_ANALOG)
 	{
-		GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 1);
-		GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 0);
+		// RX amp on
+		if (trxCheckFrequencyIsVHF(currentFrequency))
+		{
+			GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 1);
+			GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 0);
+		}
+		else if (trxCheckFrequencyIsUHF(currentFrequency))
+		{
+			GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 0);
+			GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 1);
+		}
 	}
-	else if (trxCheckFrequencyIsUHF(currentFrequency))
+	else
 	{
-		GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 0);
-		GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 1);
+		// DMR Rx enable is controlled by the DMR interrupt system
 	}
 }
 
@@ -265,9 +271,8 @@ void trx_setTX()
 	else
 	{
 		GPIO_PinWrite(GPIO_TX_audio_mux, Pin_TX_audio_mux, 1);
-		set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0xC0); // digital TX
-
-		// Note. Tx Antenna switching is controlled by the DMR system
+		// Note. AT-1846 Tx set set in trx_activeTX by the DMR interrupt system
+		// Note. Tx Antenna switching is controlled by the DMR interrupt system
 	}
 }
 
@@ -281,7 +286,6 @@ void trx_deactivateTX()
 
     GPIO_PinWrite(GPIO_RF_ant_switch, Pin_RF_ant_switch, ANTENNA_SWITCH_RX);
 
-
 	if (trxCheckFrequencyIsVHF(currentFrequency))
 	{
 		GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 1);// VHF pre-amp on
@@ -292,11 +296,14 @@ void trx_deactivateTX()
 		GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 0);// VHF pre-amp off
 		GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 1);// UHF pre-amp on
 	}
+
+	set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0x20); // RX
 }
 
 void trx_activateTX()
 {
     GPIO_PinWrite(GPIO_RF_ant_switch, Pin_RF_ant_switch, ANTENNA_SWITCH_TX);
+    set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0xC0); // digital TX
 	// TX PA on
 	if (trxCheckFrequencyIsVHF(currentFrequency))
 	{
