@@ -49,11 +49,14 @@ static const uint8_t spi_init_values_6[] = { 0x32, 0xef, 0x00, 0x31, 0xef, 0x00,
 
 
 volatile uint8_t tmp_val_0x82;
+volatile uint8_t tmp_val_0x84;
 volatile uint8_t tmp_val_0x86;
 volatile uint8_t tmp_val_0x51;
 volatile uint8_t tmp_val_0x52;
 volatile uint8_t tmp_val_0x57;
 volatile uint8_t tmp_val_0x5f;
+volatile uint8_t tmp_val_0x90;
+volatile uint8_t tmp_val_0x98;
 volatile uint8_t DMR_frame_buffer[DRM_FRAME_BUFFER_SIZE];
 
 volatile bool int_sys;
@@ -61,7 +64,6 @@ volatile bool int_ts;
 volatile bool tx_required;
 volatile bool int_rxtx;
 volatile int int_timeout;
-
 
 static uint32_t receivedTgOrPcId;
 static uint32_t receivedSrcId;
@@ -296,18 +298,187 @@ void PORTC_IRQHandler(void)
 
 void HRC6000SysInterruptHandler()
 {
-	//memset(DMR_frame_buffer,0,DRM_FRAME_BUFFER_SIZE);
 	read_SPI_page_reg_byte_SPI0(0x04, 0x82, &tmp_val_0x82);  //Read Interrupt Flag Register1
-	read_SPI_page_reg_byte_SPI0(0x04, 0x86, &tmp_val_0x86);  //Read Interrupt Flag Register2
-	read_SPI_page_reg_byte_SPI0(0x04, 0x51, &tmp_val_0x51);  //Read Received Data type, PI and Sync Register
+
+
+	if (tmp_val_0x82 & 0x80)
+	{
+		/*
+			Bit7: In DMR mode: indicates that the transmission request rejects the interrupt without a sub-status register.
+			In DMR mode, it indicates that this transmission request is rejected because the channel is busy;
+		 */
+	}
+
+	if (tmp_val_0x82 & 0x40)
+	{
+		/*
+		 	Bit6: In DMR mode: indicates the start of transmission; in MSK mode: indicates that the ping-pong buffer is half-full interrupted.
+			In DMR mode, the sub-status register 0x84 is transmitted at the beginning, and the corresponding interrupt can be masked by 0x85.
+		 */
+
+		read_SPI_page_reg_byte_SPI0(0x04, 0x84, &tmp_val_0x84);  //Read sub status register
+		/*
+			The sub-status registers indicate
+			seven interrupts that initiate the transmission, including:
+			Bit7: Voice transmission starts
+
+			Bit6: OACSU requests to send interrupts, including first-time send and resend requests.
+
+			Bit5: End-to-end voice enhanced encryption interrupt, including EMB72bits update interrupt
+			and voice 216bits key update interrupt, which are distinguished by Bit5~Bit4 of Register
+			0x88, where 01 indicates EMB72bits update interrupt and 10 indicates voice 216bits key update interrupt.
+
+			Bit4: 	The Vocoder configuration returns an interrupt (this interrupt is sent by the HR_C6000
+					to the MCU when the MCU manually configures the AMBE3000). This interrupt is only
+					valid when using the external AMBE3000 vocoder.
+
+			Bit3: Data transmission starts
+
+			Bit2: Data partial retransmission
+
+			Bit1: Data retransmission
+
+			Bit0: The vocoder is initialized to an interrupt. This interrupt is only valid when using an external AMBE3000 or AMBE1000 vocoder.
+
+			In MSK mode, there is no sub-interrupt status.
+		*/
+
+
+	}
+
+	if (tmp_val_0x82 & 0x20)
+	{
+		/*
+			Bit5: In DMR mode: indicates the end of transmission; in MSK mode: indicates the end of	transmission.
+		*/
+
+		read_SPI_page_reg_byte_SPI0(0x04, 0x86, &tmp_val_0x86);  //Read Interrupt Flag Register2
+
+		/*
+			In DMR mode, there is a sub-status register 0x86 at the end of the transmission, and the
+			corresponding interrupt can be masked by 0x87. The sub-status register indicates six interrupts that
+			generate the end of the transmission, including:
+
+			Bit7: 	Indicates that the service transmission is completely terminated, including voice and data.
+					The MCU distinguishes whether the voice or data is sent this time. Confirming that the
+					data service is received is the response packet that receives the correct feedback.
+
+			Bit6: 	Indicates that a Fragment length confirmation packet is sent in the sliding window data
+					service without immediate feedback.
+
+			Bit5: VoiceOACSU wait timeout
+
+			Bit4: 	The Layer 2 mode handles the interrupt. The MCU sends the configuration information
+					to the last processing timing of the chip to control the interrupt. If after the interrupt, the
+					MCU has not written all the information to be sent in the next frame to the chip, the next
+					time slot cannot be Configured to send time slots. This interrupt is only valid when the chip
+					is operating in Layer 2 mode.
+
+			Bit3: 	indicates that a Fragment that needs to be fed back confirms the completion of the data
+					packet transmission. The interrupt is mainly applied to the acknowledgment message after
+					all the data packets have been sent or the data packet that needs to be fed back in the sliding
+					window data service is sent to the MCU to start waiting for the timing of the Response
+					packet. Device.
+
+			Bit2 : ShortLC Receive Interrupt
+
+			Bit1: BS activation timeout interrupt
+
+			In MSK mode, there is no substate interrupt.
+		*/
+	}
+
+	if (tmp_val_0x82 & 0x10)
+	{
+		/*
+		Bit4:
+			In DMR mode: indicates the access interruption;
+			In MSK mode: indicates that the response response is interrupted.
+
+			In DMR mode, the access interrupt has no sub-status register.
+			After receiving the interrupt, it indicates that the access voice communication mode is post-access. the way.
+
+			In MSK mode, this interrupt has no substatus registers.
+		*/
+	}
+
+	if (tmp_val_0x82 & 0x08)
+	{
+		/*
+			Bit3: 	In DMR mode: indicates that the control frame parsing completion interrupt;
+					In MSK mode: indicates the receive interrupt.
+
+			In DMR mode, this interrupt has no sub-status register, but the error and receive type of its received
+			data is given by the 0x51 register. The DLLRecvDataType, DLLRecvCRC are used to indicate the
+			received data type and the error status, and the MCU accordingly performs the corresponding status.
+
+			Display, you can also block the corresponding interrupt.
+			In MSK mode, this interrupt has no substate interrupts.
+
+			The FMB frame's EMB information parsing completion prompt is also the completion of the
+			interrupt, which is distinguished by judging the 0x51 register SyncClass=0.
+
+		*/
+
+		read_SPI_page_reg_byte_SPI0(0x04, 0x51, &tmp_val_0x51);
+	}
+	else
+	{
+		tmp_val_0x51 = 0x00;
+	}
+
+	if (tmp_val_0x82 & 0x04)
+	{
+		/*
+			Bit2:
+			In DMR mode: indicates service data reception interrupt; in FM mode: indicates FM function detection interrupt.
+			In DMR mode, this interrupt has sub-status register 0x90, which has three types:
+			1. 0x80 indicates that the entire information is received and verified. After the service data is
+			verified, the MCU extracts the data after the address 0x30 in the RX terminal 1.2KRAM
+			through the SPI port. The length of the data is defined by the corresponding field of the
+			received frame header.
+			2. 0x00 indicates the entire information reception check error;
+			3. 0x40 indicates that a non-confirmed SMS abnormal interrupt is generated;
+
+			In FM mode, the interrupt has sub-status register 0x90, and the sub-status register has 1 type:
+			1. 0x10 indicates that the FM function detection interrupt is matched. When the FM interrupt is
+			detected in the FM mode, the corresponding analog sound output is turned on.
+		*/
+		read_SPI_page_reg_byte_SPI0(0x04, 0x90, &tmp_val_0x90);
+
+	}
+
+
+	if (tmp_val_0x82 & 0x02)
+	{
+		/*
+			Bit1: In DMR mode: indicates that the voice is abnormally exited;
+			In DMR mode, the cause of the abnormality in DMR mode is the unexpected abnormal voice
+			interrupt generated inside the state machine. The corresponding voice exception type is obtained
+			through Bit2~Bit0 of register address 0x98.
+		*/
+		read_SPI_page_reg_byte_SPI0(0x04, 0x98, &tmp_val_0x98);
+	}
+
+	if (tmp_val_0x82 & 0x02)
+	{
+	/*
+		Bit0: physical layer separate work reception interrupt
+		The physical layer works independently to receive interrupts without a sub-status register. The
+		interrupt is generated in the physical layer single working mode. After receiving the data, the
+		interrupt is generated, and the MCU is notified to read the corresponding register to obtain the
+		received data. This interrupt is typically tested in bit error rate or other performance in physical
+		layer mode.
+	*/
+	}
+
 	read_SPI_page_reg_byte_SPI0(0x04, 0x52, &tmp_val_0x52);  //Read Received CC and CACH Register
-	read_SPI_page_reg_byte_SPI0(0x04, 0x57, &tmp_val_0x57);  //Undocumented register
+//	read_SPI_page_reg_byte_SPI0(0x04, 0x57, &tmp_val_0x57);  //Undocumented register
 	read_SPI_page_reg_byte_SPI0(0x04, 0x5f, &tmp_val_0x5f);  //Read Received Sync type register
 	read_SPI_page_reg_bytearray_SPI0(0x02, 0x00, DMR_frame_buffer, DRM_FRAME_BUFFER_SIZE);
 
 	int_sys=true;
 	timer_hrc6000task=0;
-
 }
 
 void HRC6000TimeslotInterruptHandler()
@@ -600,14 +771,16 @@ void tick_HR_C6000()
 			slot_state = DMR_STATE_TX_START_5;
 			break;
 		case DMR_STATE_TX_START_5: // Start TX (sixth step)
-            if (settingsUsbMode != USB_MODE_HOTSPOT)
-            {
-            	tick_TXsoundbuffer();
-            }
 			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);   //Transmit during next Timeslot
 			write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x10);   //Set Data Type to 0001 (Voice LC Header), Data, LCSS=00
 			tx_sequence=0;
 			slot_state = DMR_STATE_TX_1;
+
+            if (settingsUsbMode != USB_MODE_HOTSPOT)
+            {
+            	tick_TXsoundbuffer();
+            }
+
 			break;
 		case DMR_STATE_TX_1: // Ongoing TX (inactive timeslot)
 			if ((trxIsTransmitting==false) && (tx_sequence==0))
@@ -662,7 +835,6 @@ void tick_HR_C6000()
 			{
 				write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, (uint8_t *)SILENCE_AUDIO, 27);// send silence audio bytes
 			}
-
 
 			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80); // Transmit during next Timeslot
 			switch (tx_sequence)
@@ -723,35 +895,15 @@ void tick_HR_C6000()
 
 	if (tmp_int_sys)
 	{
-
-
-#if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
-           	SEGGER_RTT_printf(0, "DATA %02x [%02x %02x] %02x %02x %02x %02x SC:%02x RCRC:%02x RPI:%02x RXDT:%02x LCSS:%02x TC:%02x AT:%02x CC:%02x ??:%02x ST:%02x RAM:", slot_state, tmp_val_0x82, tmp_val_0x86, tmp_val_0x51, tmp_val_0x52, tmp_val_0x57, tmp_val_0x5f, (tmp_val_0x51 >> 0) & 0x03, (tmp_val_0x51 >> 2) & 0x01, (tmp_val_0x51 >> 3) & 0x01, (tmp_val_0x51 >> 4) & 0x0f, (tmp_val_0x52 >> 0) & 0x03, (tmp_val_0x52 >> 2) & 0x01, (tmp_val_0x52 >> 3) & 0x01, (tmp_val_0x52 >> 4) & 0x0f, (tmp_val_0x57 >> 2) & 0x01, (tmp_val_0x5f >> 0) & 0x03);
-			/*	for (int i=0;i<32;i++)
-				{
-	            	SEGGER_RTT_printf(0, " %02x", DMR_frame_buffer[i]);
-				}
-            	SEGGER_RTT_printf(0, "\r\n");*/
-#endif
-
 		// Check for correct received packet
 		int rcrc = (tmp_val_0x51 >> 2) & 0x01;
 		int rpi = (tmp_val_0x51 >> 3) & 0x01;
-		int cc = (tmp_val_0x52 >> 4) & 0x0f;
+		int cc 	= (tmp_val_0x52 >> 4) & 0x0f;
         if ((rcrc==0) && (rpi==0) && (cc == trxGetDMRColourCode()) && (slot_state < DMR_STATE_TX_START_1))
         {
 		    GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);// Turn the LED on as soon as a DMR signal is detected.
     		if (tmp_val_0x82 & 0x20) // InterSendStop interrupt
     		{
-    			if (tmp_val_0x86 & 0x10) // Rdy_1st_interpt  interupt
-    			{
-// deprecated. Use Segger print if necessary    				send_packet(0x20, 0x10, -1);
-    			}
-    			if (tmp_val_0x86 & 0x04)  //Short LC Received int
-    			{
-// deprecated. Use Segger print if necessary    				send_packet(0x20, 0x04, -1);
-    			}
-
     			write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0x20);
     		}
 
@@ -776,7 +928,6 @@ void tick_HR_C6000()
 						DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_START_LATE;
 						hotspotRxFrameHandler((uint8_t *)DMR_frame_buffer);
 					}
-
                 }
 
 #if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
@@ -787,8 +938,6 @@ void tick_HR_C6000()
 				}
             	SEGGER_RTT_printf(0, "\r\n");
 #endif
-
-// deprecated. Use Segger print if necessary    			send_packet(0x10, 0x00, -1);
 
     			write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0x10);   //Clear Late Entry Interrupt Flag
     		}
@@ -881,22 +1030,16 @@ void tick_HR_C6000()
             	SEGGER_RTT_printf(0, "\r\n");
 #endif
 
-// deprecated. Use Segger print if necessary	send_packet(0x08, 0x00, -1);
-
     			write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0x08);     // Clear Data Received Interrupt Flag
     		}
 
     		if (tmp_val_0x82 & 0x01) // InterPHYOnly flag
     		{
-// deprecated. Use Segger print if necessary  	send_packet(0x01, 0x00, -1);
-
     			write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0x01);  //Clear  InterPHYOnly flag
     		}
 
     		if (tmp_val_0x82 & 0xC6)   //Remaining Interrupt Flags
     		{
-// deprecated. Use Segger print if necessary     send_packet(0xFF, 0xFF, -1);
-
     			write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0xC6);  //Clear remaining Interrupt Flags
     		}
         }
