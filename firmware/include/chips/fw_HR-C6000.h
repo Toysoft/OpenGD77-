@@ -66,11 +66,11 @@ extern volatile bool int_sys;
 extern volatile bool int_ts;
 extern volatile int int_timeout;
 
-extern int slot_state;
+extern volatile int slot_state;
 extern int tick_cnt;
 extern int skip_count;
 
-extern int tx_sequence;
+extern volatile int tx_sequence;
 
 extern volatile uint8_t DMR_frame_buffer[DRM_FRAME_BUFFER_SIZE];
 

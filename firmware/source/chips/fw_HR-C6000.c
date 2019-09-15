@@ -67,10 +67,10 @@ volatile int int_timeout;
 
 static uint32_t receivedTgOrPcId;
 static uint32_t receivedSrcId;
-int slot_state;
+volatile int slot_state;
 int tick_cnt;
 int skip_count;
-int tx_sequence;
+volatile int tx_sequence;
 uint8_t spi_tx[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
 
@@ -483,8 +483,82 @@ void HRC6000SysInterruptHandler()
 
 void HRC6000TimeslotInterruptHandler()
 {
-	int_ts=true;
-	timer_hrc6000task=0;
+
+	int_ts=false;
+	// RX/TX state machine
+	switch (slot_state)
+	{
+		case DMR_STATE_RX_1: // Start RX (first step)
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00);     //No Transmit or receive in next timeslot
+			GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1);
+			//GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
+			slot_state = DMR_STATE_RX_2;
+			break;
+		case DMR_STATE_RX_2: // Start RX (second step)
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);   //  Receive during Next Timeslot And Layer2 Access success Bit
+			slot_state = DMR_STATE_RX_1;
+			break;
+		case DMR_STATE_RX_END: // Stop RX
+			init_digital_DMR_RX();
+			GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 0);
+			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
+			slot_state = DMR_STATE_IDLE;
+			break;
+		case DMR_STATE_TX_START_1: // Start TX (second step)
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);    //Transmit during next Timeslot
+			write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x10);    //Set Data Type to 0001 (Voice LC Header), Data, LCSS=00
+			slot_state = DMR_STATE_TX_START_2;
+			break;
+		case DMR_STATE_TX_START_2: // Start TX (third step)
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); 		//Receive during next Timeslot
+			slot_state = DMR_STATE_TX_START_3;
+			break;
+		case DMR_STATE_TX_START_3: // Start TX (fourth step)
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);     //Transmit during Next Timeslot
+			write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x10);     //Set Data Type to 0001 (Voice LC Header), Data, LCSS=00
+			slot_state = DMR_STATE_TX_START_4;
+			break;
+		case DMR_STATE_TX_START_4: // Start TX (fifth step)
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); 	//Receive during Next Timeslot
+			slot_state = DMR_STATE_TX_START_5;
+			break;
+		/*
+		 * TX_START_5 etc
+		 * SOME OTHER CASES IN HERE PROCESSED BY THE RTOS task function
+		 */
+
+		case DMR_STATE_TX_1: // Ongoing TX (inactive timeslot)
+			if ((trxIsTransmitting==false) && (tx_sequence==0))
+			{
+				slot_state = DMR_STATE_TX_END_1; // only exit here to ensure staying in the correct timeslot
+			}
+			else
+			{
+				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); // Receive during next Timeslot
+				slot_state = DMR_STATE_TX_2;
+			}
+			break;
+
+		case DMR_STATE_TX_END_1: // Stop TX (first step)
+			write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, SILENCE_AUDIO, 27);// send silence audio bytes
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);  //Transmit during Next Timeslot
+			write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x20);  // Data Type =0010 (Terminator with LC), Data, LCSS=0
+			slot_state = DMR_STATE_TX_END_2;
+			break;
+		case DMR_STATE_TX_END_2: // Stop TX (second step)
+			write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xC3);  //Enable DMR Tx and Rx, Passive Timing
+			init_digital_DMR_RX();
+			txstopdelay=30;
+			slot_state = DMR_STATE_IDLE;
+			break;
+
+		default:
+			int_ts=true;// tell the RTOS based state machine that there is something to do
+			break;
+	}
+
+
+	timer_hrc6000task=0;// I don't think this actually does anything. Its probably redundant legacy code
 
 }
 
@@ -736,6 +810,8 @@ void tick_HR_C6000()
 		// RX/TX state machine
 		switch (slot_state)
 		{
+		/*
+		 * MOVED TO ISR
 		case DMR_STATE_RX_1: // Start RX (first step)
 			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00);     //No Transmit or receive in next timeslot
 			GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1);
@@ -770,6 +846,7 @@ void tick_HR_C6000()
 			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); 	//Receive during Next Timeslot
 			slot_state = DMR_STATE_TX_START_5;
 			break;
+			*/
 		case DMR_STATE_TX_START_5: // Start TX (sixth step)
 			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);   //Transmit during next Timeslot
 			write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x10);   //Set Data Type to 0001 (Voice LC Header), Data, LCSS=00
@@ -782,6 +859,7 @@ void tick_HR_C6000()
             }
 
 			break;
+			/* Moved to TS ISR
 		case DMR_STATE_TX_1: // Ongoing TX (inactive timeslot)
 			if ((trxIsTransmitting==false) && (tx_sequence==0))
 			{
@@ -793,6 +871,7 @@ void tick_HR_C6000()
 				slot_state = DMR_STATE_TX_2;
 			}
 			break;
+			*/
 		case DMR_STATE_TX_2: // Ongoing TX (active timeslot)
 
 			memset((uint8_t *)DMR_frame_buffer, 0, 27 + 0x0C);// fills the LC and  audio buffer with zeros in case there is no real audio
@@ -836,6 +915,7 @@ void tick_HR_C6000()
 				write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, (uint8_t *)SILENCE_AUDIO, 27);// send silence audio bytes
 			}
 
+
 			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80); // Transmit during next Timeslot
 			switch (tx_sequence)
 			{
@@ -865,6 +945,9 @@ void tick_HR_C6000()
 			}
 			slot_state = DMR_STATE_TX_1;
 			break;
+
+		/*
+		 * Moved to the TS ISR
 		case DMR_STATE_TX_END_1: // Stop TX (first step)
 			write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, SILENCE_AUDIO, 27);// send silence audio bytes
 			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);  //Transmit during Next Timeslot
@@ -877,6 +960,7 @@ void tick_HR_C6000()
 			txstopdelay=30;
 			slot_state = DMR_STATE_IDLE;
 			break;
+			*/
 		}
 
 		// Timeout interrupted RX
@@ -929,15 +1013,6 @@ void tick_HR_C6000()
 						hotspotRxFrameHandler((uint8_t *)DMR_frame_buffer);
 					}
                 }
-
-#if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
-            	SEGGER_RTT_printf(0, "LATE %02x [%02x %02x] %02x %02x %02x %02x SC:%02x RCRC:%02x RPI:%02x RXDT:%02x LCSS:%02x TC:%02x AT:%02x CC:%02x ??:%02x ST:%02x RAM:", slot_state, tmp_val_0x82, tmp_val_0x86, tmp_val_0x51, tmp_val_0x52, tmp_val_0x57, tmp_val_0x5f, (tmp_val_0x51 >> 0) & 0x03, (tmp_val_0x51 >> 2) & 0x01, (tmp_val_0x51 >> 3) & 0x01, (tmp_val_0x51 >> 4) & 0x0f, (tmp_val_0x52 >> 0) & 0x03, (tmp_val_0x52 >> 2) & 0x01, (tmp_val_0x52 >> 3) & 0x01, (tmp_val_0x52 >> 4) & 0x0f, (tmp_val_0x57 >> 2) & 0x01, (tmp_val_0x5f >> 0) & 0x03);
-				for (int i=0;i<0x0c;i++)
-				{
-	            	SEGGER_RTT_printf(0, " %02x", DMR_frame_buffer[i]);
-				}
-            	SEGGER_RTT_printf(0, "\r\n");
-#endif
 
     			write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0x10);   //Clear Late Entry Interrupt Flag
     		}
