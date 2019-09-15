@@ -256,30 +256,34 @@ void SPI_C6000_postinit()
 	write_SPI_page_reg_byte_SPI0(0x04, 0xE4, 0x4B);  //CODEC   LineOut Gain 2dB, Mic Stage 1 Gain 0dB, Mic Stage 2 Gain 33dB
 }
 
+
+static void HRC6000SysInterruptHandler();
+static void HRC6000TimeslotInterruptHandler();
+static void HRC6000RxInterruptHandler();
+static void HRC6000TxInterruptHandler();
+
+
 void PORTC_IRQHandler(void)
 {
     if ((1U << Pin_INT_C6000_SYS) & PORT_GetPinsInterruptFlags(Port_INT_C6000_SYS))
     {
-    	int_sys=true;
-    	timer_hrc6000task=0;
+    	HRC6000SysInterruptHandler();
         PORT_ClearPinsInterruptFlags(Port_INT_C6000_SYS, (1U << Pin_INT_C6000_SYS));
     }
     if ((1U << Pin_INT_C6000_TS) & PORT_GetPinsInterruptFlags(Port_INT_C6000_TS))
     {
-    	int_ts=true;
-    	timer_hrc6000task=0;
+    	HRC6000TimeslotInterruptHandler();
         PORT_ClearPinsInterruptFlags(Port_INT_C6000_TS, (1U << Pin_INT_C6000_TS));
     }
     if ((1U << Pin_INT_C6000_RF_RX) & PORT_GetPinsInterruptFlags(Port_INT_C6000_RF_RX))
     {
-    	tx_required=false;
-    	int_rxtx=true;
+    	HRC6000RxInterruptHandler();
         PORT_ClearPinsInterruptFlags(Port_INT_C6000_RF_RX, (1U << Pin_INT_C6000_RF_RX));
     }
     if ((1U << Pin_INT_C6000_RF_TX) & PORT_GetPinsInterruptFlags(Port_INT_C6000_RF_TX))
     {
-    	tx_required=true;
-    	int_rxtx=true;
+    	HRC6000TxInterruptHandler();
+
         PORT_ClearPinsInterruptFlags(Port_INT_C6000_RF_TX, (1U << Pin_INT_C6000_RF_TX));
     }
 
@@ -290,14 +294,39 @@ void PORTC_IRQHandler(void)
     __DSB();
 }
 
+void HRC6000SysInterruptHandler()
+{
+	int_sys=true;
+	timer_hrc6000task=0;
+
+}
+
+void HRC6000TimeslotInterruptHandler()
+{
+	int_ts=true;
+	timer_hrc6000task=0;
+
+}
+
+void HRC6000RxInterruptHandler()
+{
+	trx_deactivateTX();
+}
+
+void HRC6000TxInterruptHandler()
+{
+	trx_activateTX();
+}
+
+
 void init_HR_C6000_interrupts()
 {
 	init_digital_state();
 
-    PORT_SetPinInterruptConfig(Port_INT_C6000_SYS, Pin_INT_C6000_SYS, kPORT_InterruptEitherEdge);
-    PORT_SetPinInterruptConfig(Port_INT_C6000_TS, Pin_INT_C6000_TS, kPORT_InterruptEitherEdge);
-    PORT_SetPinInterruptConfig(Port_INT_C6000_RF_RX, Pin_INT_C6000_RF_RX, kPORT_InterruptEitherEdge);
-    PORT_SetPinInterruptConfig(Port_INT_C6000_RF_TX, Pin_INT_C6000_RF_TX, kPORT_InterruptEitherEdge);
+    PORT_SetPinInterruptConfig(Port_INT_C6000_SYS, Pin_INT_C6000_SYS, kPORT_InterruptFallingEdge);
+    PORT_SetPinInterruptConfig(Port_INT_C6000_TS, Pin_INT_C6000_TS, kPORT_InterruptFallingEdge);
+    PORT_SetPinInterruptConfig(Port_INT_C6000_RF_RX, Pin_INT_C6000_RF_RX, kPORT_InterruptFallingEdge);
+    PORT_SetPinInterruptConfig(Port_INT_C6000_RF_TX, Pin_INT_C6000_RF_TX, kPORT_InterruptFallingEdge);
 
     NVIC_SetPriority(PORTC_IRQn, 3);
 }
@@ -307,8 +336,6 @@ void init_digital_state()
 	taskENTER_CRITICAL();
 	int_sys=false;
 	int_ts=false;
-	tx_required=false;
-	int_rxtx=false;
 	int_timeout=0;
 	taskEXIT_CRITICAL();
 	slot_state = DMR_STATE_IDLE;
@@ -526,28 +553,6 @@ void tick_HR_C6000()
 
 	if (tmp_int_ts)
 	{
-		// Enable RX or TX
-		bool tmp_int_rxtx=false;
-		taskENTER_CRITICAL();
-		if (int_rxtx)
-		{
-			tmp_int_rxtx=true;
-			int_rxtx=false;
-		}
-		bool tmp_tx_required=tx_required;
-		taskEXIT_CRITICAL();
-		if (tmp_int_rxtx)
-		{
-			if (tmp_tx_required)
-			{
-				trx_activateTX();
-			}
-			else
-			{
-				trx_deactivateTX();
-			}
-		}
-
 		// RX/TX state machine
 		switch (slot_state)
 		{

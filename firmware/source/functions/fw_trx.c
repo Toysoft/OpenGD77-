@@ -43,6 +43,8 @@ static int currentFrequency = 1440000;
 static int currentCC = 1;
 static uint8_t squelch = 0x00;
 static bool rxCTCSSactive = false;
+static uint8_t ANTENNA_SWITCH_RX = 0;
+static uint8_t ANTENNA_SWITCH_TX = 1;
 
 int	trxGetMode()
 {
@@ -221,11 +223,10 @@ int trxGetFrequency()
 
 void trx_setRX()
 {
+	trx_deactivateTX();
+
 	// MUX for RX
 	GPIO_PinWrite(GPIO_TX_audio_mux, Pin_TX_audio_mux, 0);
-
-	// RX Antenna
-    GPIO_PinWrite(GPIO_RF_ant_switch, Pin_RF_ant_switch, 0);
 
 	// AT1846 RX + unmute
 	set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0x00);
@@ -246,61 +247,69 @@ void trx_setRX()
 
 void trx_setTX()
 {
-	// MUX for TX
-	if (currentMode == RADIO_MODE_ANALOG)
-	{
-		GPIO_PinWrite(GPIO_TX_audio_mux, Pin_TX_audio_mux, 0);
-	}
-	else
-	{
-		GPIO_PinWrite(GPIO_TX_audio_mux, Pin_TX_audio_mux, 1);
-	}
-
-	// RX amp off
+	// RX pre-amp off
 	GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 0);
 	GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 0);
 
 	// AT1846 TX + mute
 	set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0x00);
+
+	// MUX for TX
 	if (currentMode == RADIO_MODE_ANALOG)
 	{
+		GPIO_PinWrite(GPIO_TX_audio_mux, Pin_TX_audio_mux, 0);
 		set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0x40); // analog TX
+
+	    GPIO_PinWrite(GPIO_RF_ant_switch, Pin_RF_ant_switch, ANTENNA_SWITCH_TX);// TX Antenna
 	}
 	else
 	{
+		GPIO_PinWrite(GPIO_TX_audio_mux, Pin_TX_audio_mux, 1);
 		set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0xC0); // digital TX
-	}
 
-	// TX Antenna
-    GPIO_PinWrite(GPIO_RF_ant_switch, Pin_RF_ant_switch, 1);
+		// Note. Tx Antenna switching is controlled by the DMR system
+	}
 }
 
 void trx_deactivateTX()
 {
-	// PA power off
-    DAC_SetBufferValue(DAC0, 0U, 0U);
+    DAC_SetBufferValue(DAC0, 0U, 0U);// PA drive power to zero
 
-	// TX preamp off
-	GPIO_PinWrite(GPIO_VHF_TX_amp_power, Pin_VHF_TX_amp_power, 0);
-	GPIO_PinWrite(GPIO_UHF_TX_amp_power, Pin_UHF_TX_amp_power, 0);
+    // Possibly quicker to turn them both off, than to check which on is on and turn that one off
+	GPIO_PinWrite(GPIO_VHF_TX_amp_power, Pin_VHF_TX_amp_power, 0);// VHF PA off
+	GPIO_PinWrite(GPIO_UHF_TX_amp_power, Pin_UHF_TX_amp_power, 0);// UHF PA off
+
+    GPIO_PinWrite(GPIO_RF_ant_switch, Pin_RF_ant_switch, ANTENNA_SWITCH_RX);
+
+
+	if (trxCheckFrequencyIsVHF(currentFrequency))
+	{
+		GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 1);// VHF pre-amp on
+		GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 0);// UHF pre-amp off
+	}
+	else if (trxCheckFrequencyIsUHF(currentFrequency))
+	{
+		GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 0);// VHF pre-amp off
+		GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 1);// UHF pre-amp on
+	}
 }
 
 void trx_activateTX()
 {
-	// TX preamp on
+    GPIO_PinWrite(GPIO_RF_ant_switch, Pin_RF_ant_switch, ANTENNA_SWITCH_TX);
+	// TX PA on
 	if (trxCheckFrequencyIsVHF(currentFrequency))
 	{
 		GPIO_PinWrite(GPIO_VHF_TX_amp_power, Pin_VHF_TX_amp_power, 1);
-		GPIO_PinWrite(GPIO_UHF_TX_amp_power, Pin_UHF_TX_amp_power, 0);
+		GPIO_PinWrite(GPIO_UHF_TX_amp_power, Pin_UHF_TX_amp_power, 0);// I can't see why this would be needed. Its probably just for safety.
 	}
 	else if (trxCheckFrequencyIsUHF(currentFrequency))
 	{
-		GPIO_PinWrite(GPIO_VHF_TX_amp_power, Pin_VHF_TX_amp_power, 0);
+		GPIO_PinWrite(GPIO_VHF_TX_amp_power, Pin_VHF_TX_amp_power, 0);// I can't see why this would be needed. Its probably just for safety.
 		GPIO_PinWrite(GPIO_UHF_TX_amp_power, Pin_UHF_TX_amp_power, 1);
 	}
 
-	// PA power off
-    DAC_SetBufferValue(DAC0, 0U, nonVolatileSettings.txPower);
+    DAC_SetBufferValue(DAC0, 0U, nonVolatileSettings.txPower);	// PA drive to appropriate level
 }
 
 void trxSetPower(uint32_t powerVal)
