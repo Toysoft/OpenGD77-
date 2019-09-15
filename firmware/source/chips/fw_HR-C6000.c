@@ -342,8 +342,10 @@ void HRC6000SysInterruptHandler()
 
 			In MSK mode, there is no sub-interrupt status.
 		*/
-
-
+	}
+	else
+	{
+		tmp_val_0x84=0x00;
 	}
 
 	if (tmp_val_0x82 & 0x20)
@@ -386,6 +388,10 @@ void HRC6000SysInterruptHandler()
 
 			In MSK mode, there is no substate interrupt.
 		*/
+	}
+	else
+	{
+		tmp_val_0x86=0x00;
 	}
 
 	if (tmp_val_0x82 & 0x10)
@@ -447,6 +453,10 @@ void HRC6000SysInterruptHandler()
 		read_SPI_page_reg_byte_SPI0(0x04, 0x90, &tmp_val_0x90);
 
 	}
+	else
+	{
+		tmp_val_0x90 = 0x00;
+	}
 
 
 	if (tmp_val_0x82 & 0x02)
@@ -458,6 +468,10 @@ void HRC6000SysInterruptHandler()
 			through Bit2~Bit0 of register address 0x98.
 		*/
 		read_SPI_page_reg_byte_SPI0(0x04, 0x98, &tmp_val_0x98);
+	}
+	else
+	{
+		tmp_val_0x98 = 0x00;
 	}
 
 	if (tmp_val_0x82 & 0x02)
