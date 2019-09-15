@@ -64,8 +64,6 @@ extern const uint8_t PC_CALL_FLAG;
 
 extern volatile bool int_sys;
 extern volatile bool int_ts;
-extern volatile bool tx_required;
-extern volatile bool int_rxtx;
 extern volatile int int_timeout;
 
 extern int slot_state;
@@ -74,13 +72,7 @@ extern int skip_count;
 
 extern int tx_sequence;
 
-extern uint8_t tmp_val_0x82;
-extern uint8_t tmp_val_0x86;
-extern uint8_t tmp_val_0x51;
-extern uint8_t tmp_val_0x52;
-extern uint8_t tmp_val_0x57;
-extern uint8_t tmp_val_0x5f;
-extern uint8_t DMR_frame_buffer[DRM_FRAME_BUFFER_SIZE];
+extern volatile uint8_t DMR_frame_buffer[DRM_FRAME_BUFFER_SIZE];
 
 enum DMR_SLOT_STATE { DMR_STATE_IDLE, DMR_STATE_RX_1, DMR_STATE_RX_2, DMR_STATE_RX_END,
 					  DMR_STATE_TX_START_1, DMR_STATE_TX_START_2, DMR_STATE_TX_START_3, DMR_STATE_TX_START_4, DMR_STATE_TX_START_5, DMR_STATE_TX_1, DMR_STATE_TX_2, DMR_STATE_TX_END_1, DMR_STATE_TX_END_2 };

@@ -142,12 +142,12 @@ int write_SPI_page_reg_byte_SPI0(uint8_t page, uint8_t reg, uint8_t val)
 	return kStatus_Success;
 }
 
-int read_SPI_page_reg_byte_SPI0(uint8_t page, uint8_t reg, uint8_t* val)
+int read_SPI_page_reg_byte_SPI0(uint8_t page, uint8_t reg,volatile uint8_t* val)
 {
     dspi_transfer_t masterXfer;
     status_t status;
 
-	taskENTER_CRITICAL();
+//	taskENTER_CRITICAL();
 	clear_SPI_buffer_SPI0();
 	SPI_masterSendBuffer_SPI0[0]=page | 0x80;
 	SPI_masterSendBuffer_SPI0[1]=reg;
@@ -162,13 +162,13 @@ int read_SPI_page_reg_byte_SPI0(uint8_t page, uint8_t reg, uint8_t* val)
     status = DSPI_MasterTransferBlocking(SPI0, &masterXfer);
     if (status != kStatus_Success)
     {
-    	taskEXIT_CRITICAL();
+    	//taskEXIT_CRITICAL();
     	return status;
     }
 
 	*val=spi_masterReceiveBuffer_SPI0[2];
 
-	taskEXIT_CRITICAL();
+	//taskEXIT_CRITICAL();
 	return kStatus_Success;
 }
 
@@ -223,12 +223,12 @@ int write_SPI_page_reg_bytearray_SPI0(uint8_t page, uint8_t reg, const uint8_t* 
 	return kStatus_Success;
 }
 
-int read_SPI_page_reg_bytearray_SPI0(uint8_t page, uint8_t reg, uint8_t* values, uint8_t length)
+int read_SPI_page_reg_bytearray_SPI0(uint8_t page, uint8_t reg,volatile uint8_t* values, uint8_t length)
 {
     dspi_transfer_t masterXfer;
     status_t status;
 
-	taskENTER_CRITICAL();
+	//taskENTER_CRITICAL();
 	clear_SPI_buffer_SPI0();
 	SPI_masterSendBuffer_SPI0[0]=page | 0x80;
 	SPI_masterSendBuffer_SPI0[1]=reg;
@@ -246,7 +246,7 @@ int read_SPI_page_reg_bytearray_SPI0(uint8_t page, uint8_t reg, uint8_t* values,
     status = DSPI_MasterTransferBlocking(SPI0, &masterXfer);
     if (status != kStatus_Success)
     {
-    	taskEXIT_CRITICAL();
+    	//taskEXIT_CRITICAL();
     	return status;
     }
 
@@ -255,7 +255,7 @@ int read_SPI_page_reg_bytearray_SPI0(uint8_t page, uint8_t reg, uint8_t* values,
 		values[i]=spi_masterReceiveBuffer_SPI0[i+2];
 	}
 
-	taskEXIT_CRITICAL();
+	//taskEXIT_CRITICAL();
 	return kStatus_Success;
 }
 
@@ -377,7 +377,7 @@ int write_SPI_page_reg_bytearray_SPI1(uint8_t page, uint8_t reg, const uint8_t* 
 	return kStatus_Success;
 }
 
-int read_SPI_page_reg_bytearray_SPI1(uint8_t page, uint8_t reg, uint8_t* values, uint8_t length)
+int read_SPI_page_reg_bytearray_SPI1(uint8_t page, uint8_t reg, volatile uint8_t* values, uint8_t length)
 {
     dspi_transfer_t masterXfer;
     status_t status;

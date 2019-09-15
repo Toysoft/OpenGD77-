@@ -48,13 +48,13 @@ static const uint8_t spi_init_values_5[] = { 0x00, 0x00, 0xeb, 0x78, 0x67 };
 static const uint8_t spi_init_values_6[] = { 0x32, 0xef, 0x00, 0x31, 0xef, 0x00, 0x12, 0xef, 0x00, 0x13, 0xef, 0x00, 0x14, 0xef, 0x00, 0x15, 0xef, 0x00, 0x16, 0xef, 0x00, 0x17, 0xef, 0x00, 0x18, 0xef, 0x00, 0x19, 0xef, 0x00, 0x1a, 0xef, 0x00, 0x1b, 0xef, 0x00, 0x1c, 0xef, 0x00, 0x1d, 0xef, 0x00, 0x1e, 0xef, 0x00, 0x1f, 0xef, 0x00, 0x20, 0xef, 0x00, 0x21, 0xef, 0x00, 0x22, 0xef, 0x00, 0x23, 0xef, 0x00, 0x24, 0xef, 0x00, 0x25, 0xef, 0x00, 0x26, 0xef, 0x00, 0x27, 0xef, 0x00, 0x28, 0xef, 0x00, 0x29, 0xef, 0x00, 0x2a, 0xef, 0x00, 0x2b, 0xef, 0x00, 0x2c, 0xef, 0x00, 0x2d, 0xef, 0x00, 0x2e, 0xef, 0x00, 0x2f, 0xef, 0x00 };
 
 
-uint8_t tmp_val_0x82;
-uint8_t tmp_val_0x86;
-uint8_t tmp_val_0x51;
-uint8_t tmp_val_0x52;
-uint8_t tmp_val_0x57;
-uint8_t tmp_val_0x5f;
-uint8_t DMR_frame_buffer[DRM_FRAME_BUFFER_SIZE];
+volatile uint8_t tmp_val_0x82;
+volatile uint8_t tmp_val_0x86;
+volatile uint8_t tmp_val_0x51;
+volatile uint8_t tmp_val_0x52;
+volatile uint8_t tmp_val_0x57;
+volatile uint8_t tmp_val_0x5f;
+volatile uint8_t DMR_frame_buffer[DRM_FRAME_BUFFER_SIZE];
 
 volatile bool int_sys;
 volatile bool int_ts;
@@ -296,6 +296,15 @@ void PORTC_IRQHandler(void)
 
 void HRC6000SysInterruptHandler()
 {
+	//memset(DMR_frame_buffer,0,DRM_FRAME_BUFFER_SIZE);
+	read_SPI_page_reg_byte_SPI0(0x04, 0x82, &tmp_val_0x82);  //Read Interrupt Flag Register1
+	read_SPI_page_reg_byte_SPI0(0x04, 0x86, &tmp_val_0x86);  //Read Interrupt Flag Register2
+	read_SPI_page_reg_byte_SPI0(0x04, 0x51, &tmp_val_0x51);  //Read Received Data type, PI and Sync Register
+	read_SPI_page_reg_byte_SPI0(0x04, 0x52, &tmp_val_0x52);  //Read Received CC and CACH Register
+	read_SPI_page_reg_byte_SPI0(0x04, 0x57, &tmp_val_0x57);  //Undocumented register
+	read_SPI_page_reg_byte_SPI0(0x04, 0x5f, &tmp_val_0x5f);  //Read Received Sync type register
+	read_SPI_page_reg_bytearray_SPI0(0x02, 0x00, DMR_frame_buffer, DRM_FRAME_BUFFER_SIZE);
+
 	int_sys=true;
 	timer_hrc6000task=0;
 
@@ -384,7 +393,7 @@ void store_qsodata()
 	{
 		// Needs to enter critical because the LastHeard is accessed by other threads
     	taskENTER_CRITICAL();
-    	lastHeardListUpdate(DMR_frame_buffer);
+    	lastHeardListUpdate((uint8_t *)DMR_frame_buffer);
 		taskEXIT_CRITICAL();
 		qsodata_timer=QSO_TIMER_TIMEOUT;
 	}
@@ -613,7 +622,7 @@ void tick_HR_C6000()
 			break;
 		case DMR_STATE_TX_2: // Ongoing TX (active timeslot)
 
-			memset(DMR_frame_buffer, 0, 27 + 0x0C);// fills the LC and  audio buffer with zeros in case there is no real audio
+			memset((uint8_t *)DMR_frame_buffer, 0, 27 + 0x0C);// fills the LC and  audio buffer with zeros in case there is no real audio
 
 			if (trxIsTransmitting)
 			{
@@ -621,17 +630,17 @@ void tick_HR_C6000()
                 if (settingsUsbMode != USB_MODE_HOTSPOT)
                 {
                 	tick_TXsoundbuffer();
-    				tick_codec_encode(DMR_frame_buffer+0x0C);
+    				tick_codec_encode((uint8_t *)DMR_frame_buffer+0x0C);
                 }
                 else
                 {
                 	if (wavbuffer_count > 0)
                 	{
-						memcpy(DMR_frame_buffer,(uint8_t *)&audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_read_idx],27+0x0C);
+						memcpy((uint8_t *)DMR_frame_buffer,(uint8_t *)&audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_read_idx],27+0x0C);
 
 						if(tx_sequence==0)
 						{
-							write_SPI_page_reg_bytearray_SPI0(0x02, 0x00, DMR_frame_buffer, 0x0c);// put LC into hardware
+							write_SPI_page_reg_bytearray_SPI0(0x02, 0x00, (uint8_t*)DMR_frame_buffer, 0x0c);// put LC into hardware
 						}
 
 						wavbuffer_read_idx++;
@@ -647,7 +656,7 @@ void tick_HR_C6000()
 
                 	}
                 }
-    			write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, DMR_frame_buffer+0x0C, 27);// send the audio bytes to the hardware
+    			write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, (uint8_t*)(DMR_frame_buffer+0x0C), 27);// send the audio bytes to the hardware
 			}
 			else
 			{
@@ -714,14 +723,7 @@ void tick_HR_C6000()
 
 	if (tmp_int_sys)
 	{
-		memset(DMR_frame_buffer,0,DRM_FRAME_BUFFER_SIZE);
-		read_SPI_page_reg_byte_SPI0(0x04, 0x82, &tmp_val_0x82);  //Read Interrupt Flag Register1
-		read_SPI_page_reg_byte_SPI0(0x04, 0x86, &tmp_val_0x86);  //Read Interrupt Flag Register2
-		read_SPI_page_reg_byte_SPI0(0x04, 0x51, &tmp_val_0x51);  //Read Received Data type, PI and Sync Register
-		read_SPI_page_reg_byte_SPI0(0x04, 0x52, &tmp_val_0x52);  //Read Received CC and CACH Register
-		read_SPI_page_reg_byte_SPI0(0x04, 0x57, &tmp_val_0x57);  //Undocumented register 
-		read_SPI_page_reg_byte_SPI0(0x04, 0x5f, &tmp_val_0x5f);  //Read Received Sync type register
-		read_SPI_page_reg_bytearray_SPI0(0x02, 0x00, DMR_frame_buffer, DRM_FRAME_BUFFER_SIZE);
+
 
 #if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
            	SEGGER_RTT_printf(0, "DATA %02x [%02x %02x] %02x %02x %02x %02x SC:%02x RCRC:%02x RPI:%02x RXDT:%02x LCSS:%02x TC:%02x AT:%02x CC:%02x ??:%02x ST:%02x RAM:", slot_state, tmp_val_0x82, tmp_val_0x86, tmp_val_0x51, tmp_val_0x52, tmp_val_0x57, tmp_val_0x5f, (tmp_val_0x51 >> 0) & 0x03, (tmp_val_0x51 >> 2) & 0x01, (tmp_val_0x51 >> 3) & 0x01, (tmp_val_0x51 >> 4) & 0x0f, (tmp_val_0x52 >> 0) & 0x03, (tmp_val_0x52 >> 2) & 0x01, (tmp_val_0x52 >> 3) & 0x01, (tmp_val_0x52 >> 4) & 0x0f, (tmp_val_0x57 >> 2) & 0x01, (tmp_val_0x5f >> 0) & 0x03);
@@ -772,7 +774,7 @@ void tick_HR_C6000()
 					if (settingsUsbMode == USB_MODE_HOTSPOT)
 					{
 						DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_START_LATE;
-						hotspotRxFrameHandler(DMR_frame_buffer);
+						hotspotRxFrameHandler((uint8_t *)DMR_frame_buffer);
 					}
 
                 }
@@ -811,7 +813,7 @@ void tick_HR_C6000()
 					if (settingsUsbMode == USB_MODE_HOTSPOT)
 					{
 						DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_START;
-						hotspotRxFrameHandler(DMR_frame_buffer);
+						hotspotRxFrameHandler((uint8_t *)DMR_frame_buffer);
 					}
                 }
     			// Stop RX
@@ -825,7 +827,7 @@ void tick_HR_C6000()
 					if (settingsUsbMode == USB_MODE_HOTSPOT)
 					{
 						DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_STOP;
-						hotspotRxFrameHandler(DMR_frame_buffer);
+						hotspotRxFrameHandler((uint8_t *)DMR_frame_buffer);
 					}
                 }
 
@@ -846,13 +848,13 @@ void tick_HR_C6000()
                     {
    						DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_AUDIO_FRAME;
    						DMR_frame_buffer[27 + 0x0c + 1] = (rxdt & 0x07);// audio sequence number
-   						hotspotRxFrameHandler(DMR_frame_buffer);
+   						hotspotRxFrameHandler((uint8_t *)DMR_frame_buffer);
                     }
                     else
                     {
                     	if (settingsPrivateCallMuteMode == false)
                     	{
-                    		tick_codec_decode(DMR_frame_buffer+0x0C);
+                    		tick_codec_decode((uint8_t *)DMR_frame_buffer+0x0C);
                     		tick_RXsoundbuffer();
                     	}
                     }
