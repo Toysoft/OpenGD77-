@@ -19,7 +19,6 @@
 #define _FW_HOTSPOT_H_
 #include "fw_main.h"
 void hotspotRxFrameHandler(uint8_t* frameBuf);
-extern uint8_t hotspotTxLC[9];
 
 enum {
 		HOTSPOT_RX_IDLE,
