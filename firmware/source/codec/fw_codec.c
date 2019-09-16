@@ -106,6 +106,7 @@ void tick_codec_encode(uint8_t *outdata_ptr)
 	{
 		outdata_ptr[i]=0;
 	}*/
+	memset((uint8_t *)outdata_ptr, 0, 27);// fills with zeros
 
 	register int r0 asm ("r0") __attribute__((unused));
 	register int r1 asm ("r1") __attribute__((unused));

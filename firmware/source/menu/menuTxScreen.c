@@ -146,8 +146,7 @@ static void handleEvent(int buttons, int keys, int events)
 		if (txstopdelay>0)
 		{
 			txstopdelay--;
-			SEGGER_RTT_printf(0, "txstopdelay %d\n",txstopdelay);
-
+			//SEGGER_RTT_printf(0, "txstopdelay %d\n",txstopdelay);
 		}
 		else
 		{

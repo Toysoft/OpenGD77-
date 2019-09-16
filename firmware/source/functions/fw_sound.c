@@ -351,6 +351,7 @@ void send_sound_data()
 	}
 }
 
+
 // This function is used during transmission.
 void receive_sound_data()
 {
@@ -361,6 +362,7 @@ void receive_sound_data()
 
 	if (wavbuffer_count<WAV_BUFFER_COUNT)
 	{
+		// spi_soundBuf == NULL  happens the first time through there is no previously sampled buffer to load into the wave buffer
 		if (spi_soundBuf!=NULL)
 		{
 			for (int i=0; i<(WAV_BUFFER_SIZE/2); i++)
@@ -403,31 +405,37 @@ void receive_sound_data()
 
 		g_RX_SAI_in_use = true;
 	}
+	else
+	{
+		SEGGER_RTT_printf(0, "Warning. Tx Sound buffer overflow\n");
+	}
 }
 
 void tick_RXsoundbuffer()
 {
-	taskENTER_CRITICAL();
+	//taskENTER_CRITICAL();
 	bool tmp_g_TX_SAI_in_use = g_TX_SAI_in_use;
-	taskEXIT_CRITICAL();
+	//taskEXIT_CRITICAL();
     if (!tmp_g_TX_SAI_in_use)
     {
-    	taskENTER_CRITICAL();
+    	//taskENTER_CRITICAL();
     	send_sound_data();
-    	taskEXIT_CRITICAL();
+    	//taskEXIT_CRITICAL();
     }
 }
 
+
+// Called from tick_HR_C6000
 void tick_TXsoundbuffer()
 {
-	taskENTER_CRITICAL();
+	//taskENTER_CRITICAL();
 	bool tmp_g_RX_SAI_in_use = g_RX_SAI_in_use;
-	taskEXIT_CRITICAL();
+	//taskEXIT_CRITICAL();
     if (!tmp_g_RX_SAI_in_use)
     {
-    	taskENTER_CRITICAL();
+    	//taskENTER_CRITICAL();
     	receive_sound_data();
-    	taskEXIT_CRITICAL();
+    	//taskEXIT_CRITICAL();
     }
 }
 

@@ -276,6 +276,18 @@ void trx_setTX()
 	}
 }
 
+uint32_t trxCalculateAT1846FreqSetting(int freq)
+{
+	uint32_t f = freq * 1.6f;
+	uint8_t fl_l = (f & 0x000000ff) >> 0;
+	uint8_t fl_h = (f & 0x0000ff00) >> 8;
+	uint8_t fh_l = (f & 0x00ff0000) >> 16;
+	uint8_t fh_h = (f & 0xff000000) >> 24;
+
+	write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x29, fh_h, fh_l);
+	write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x2a, fl_h, fl_l);
+}
+
 void trx_deactivateTX()
 {
     DAC_SetBufferValue(DAC0, 0U, 0U);// PA drive power to zero
@@ -298,11 +310,22 @@ void trx_deactivateTX()
 	}
 
 	set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0x20); // RX
+    /* TO DO. Store the FL and FH values for Tx and use them.
+     * We don't want to have to calculate the values each time the tx is activated and deactived
+	write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x29, rx_fh_h, rx_fh_l);
+	write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x2a, rx_fl_h, rx_fl_l);
+	*/
 }
 
 void trx_activateTX()
 {
     GPIO_PinWrite(GPIO_RF_ant_switch, Pin_RF_ant_switch, ANTENNA_SWITCH_TX);
+
+    /* TO DO. Store the FL and FH values for Tx and use them.
+     * We don't want to have to calculate the values each time the tx is activated and deactived
+	write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x29, tx_fh_h, tx_fh_l);
+	write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x2a, tx_fl_h, tx_fl_l);
+	*/
     set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0xC0); // digital TX
 	// TX PA on
 	if (trxCheckFrequencyIsVHF(currentFrequency))

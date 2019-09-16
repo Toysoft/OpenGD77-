@@ -299,6 +299,7 @@ void PORTC_IRQHandler(void)
 
 void HRC6000SysInterruptHandler()
 {
+
 	read_SPI_page_reg_byte_SPI0(0x04, 0x82, &tmp_val_0x82);  //Read Interrupt Flag Register1
 	read_SPI_page_reg_byte_SPI0(0x04, 0x50, &tmp_val_0x50);
 	read_SPI_page_reg_byte_SPI0(0x04, 0x51, &tmp_val_0x51);
@@ -309,6 +310,7 @@ void HRC6000SysInterruptHandler()
 			Bit7: In DMR mode: indicates that the transmission request rejects the interrupt without a sub-status register.
 			In DMR mode, it indicates that this transmission request is rejected because the channel is busy;
 		 */
+		SEGGER_RTT_printf(0, "Sys 0x80\n");
 	}
 
 	if (tmp_val_0x82 & 0x40)
@@ -344,20 +346,21 @@ void HRC6000SysInterruptHandler()
 
 			In MSK mode, there is no sub-interrupt status.
 		*/
+		SEGGER_RTT_printf(0, "Sys 0x%02x 0x%02x\n",tmp_val_0x82,tmp_val_0x84);
 	}
 	else
 	{
 		tmp_val_0x84=0x00;
 	}
 
-	if (tmp_val_0x82 & 0x20)
+	if (tmp_val_0x82 & 0x20)// Kai's comment was InterSendStop interrupt
 	{
 		/*
 			Bit5: In DMR mode: indicates the end of transmission; in MSK mode: indicates the end of	transmission.
 		*/
-
 		read_SPI_page_reg_byte_SPI0(0x04, 0x86, &tmp_val_0x86);  //Read Interrupt Flag Register2
 
+		SEGGER_RTT_printf(0, "Sys 0x%02x 0x%02x\n",tmp_val_0x82,tmp_val_0x86);
 		/*
 			In DMR mode, there is a sub-status register 0x86 at the end of the transmission, and the
 			corresponding interrupt can be masked by 0x87. The sub-status register indicates six interrupts that
@@ -408,6 +411,7 @@ void HRC6000SysInterruptHandler()
 
 			In MSK mode, this interrupt has no substatus registers.
 		*/
+		SEGGER_RTT_printf(0, "Sys 0x10\n");
 	}
 
 	if (tmp_val_0x82 & 0x08)
@@ -427,6 +431,7 @@ void HRC6000SysInterruptHandler()
 			interrupt, which is distinguished by judging the 0x51 register SyncClass=0.
 
 		*/
+		SEGGER_RTT_printf(0, "Sys 0x08\n");
 	}
 	else
 	{
@@ -452,6 +457,8 @@ void HRC6000SysInterruptHandler()
 		*/
 		read_SPI_page_reg_byte_SPI0(0x04, 0x90, &tmp_val_0x90);
 
+		SEGGER_RTT_printf(0, "Sys 0x%02x 0x%02x\n",tmp_val_0x82,tmp_val_0x90);
+
 	}
 	else
 	{
@@ -468,6 +475,7 @@ void HRC6000SysInterruptHandler()
 			through Bit2~Bit0 of register address 0x98.
 		*/
 		read_SPI_page_reg_byte_SPI0(0x04, 0x98, &tmp_val_0x98);
+		SEGGER_RTT_printf(0, "Sys 0x%02x 0x%02x\n",tmp_val_0x82,tmp_val_0x98);
 	}
 	else
 	{
@@ -484,6 +492,7 @@ void HRC6000SysInterruptHandler()
 		received data. This interrupt is typically tested in bit error rate or other performance in physical
 		layer mode.
 	*/
+		SEGGER_RTT_printf(0, "Sys 0x02\n");
 	}
 
 	read_SPI_page_reg_byte_SPI0(0x04, 0x52, &tmp_val_0x52);  //Read Received CC and CACH Register
@@ -493,11 +502,16 @@ void HRC6000SysInterruptHandler()
 
 	int_sys=true;
 	timer_hrc6000task=0;
+
+
+	write_SPI_page_reg_byte_SPI0(0x04, 0x83, tmp_val_0x82);  //Clear remaining Interrupt Flags
+
 }
 
 void HRC6000TimeslotInterruptHandler()
 {
 
+	SEGGER_RTT_printf(0, "TS_ISR\n");
 	int_ts=false;
 	// RX/TX state machine
 	switch (slot_state)
@@ -586,11 +600,13 @@ void HRC6000TimeslotInterruptHandler()
 
 void HRC6000RxInterruptHandler()
 {
+	SEGGER_RTT_printf(0, "Rx ISR\n");
 	trx_deactivateTX();
 }
 
 void HRC6000TxInterruptHandler()
 {
+	SEGGER_RTT_printf(0, "Tx ISR\n");
 	trx_activateTX();
 }
 
@@ -806,6 +822,9 @@ void tick_HR_C6000()
 	}
 
 	// Timeout interrupt
+	// This code appears to check whether there has been a TS ISR in the last 200 RTOS ticks
+	// If not, it reinitialises the DMR subsystem
+	// Its unclear whether this is still needed, as it would indicate that perhaps some other condition is not being handled correctly
 	if (slot_state != DMR_STATE_IDLE)
 	{
 		if (int_timeout<200)
@@ -813,12 +832,10 @@ void tick_HR_C6000()
 			int_timeout++;
 			if (int_timeout==200)
 			{
-	            	init_digital();
-	            	slot_state = DMR_STATE_IDLE;
-	            	int_timeout=0;
-#if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
-            	SEGGER_RTT_printf(0, ">>> INTERRUPT TIMEOUT\r\n");
-#endif
+				init_digital();
+				slot_state = DMR_STATE_IDLE;
+				int_timeout=0;
+				SEGGER_RTT_printf(0, ">>> INTERRUPT TIMEOUT\r\n");
 			}
 		}
 	}
@@ -832,42 +849,8 @@ void tick_HR_C6000()
 		// RX/TX state machine
 		switch (slot_state)
 		{
-		/*
-		 * MOVED TO ISR
-		case DMR_STATE_RX_1: // Start RX (first step)
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00);     //No Transmit or receive in next timeslot
-			GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1);
-		    //GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
-			slot_state = DMR_STATE_RX_2;
-			break;
-		case DMR_STATE_RX_2: // Start RX (second step)
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);   //  Receive during Next Timeslot And Layer2 Access success Bit
-			slot_state = DMR_STATE_RX_1;
-			break;
-		case DMR_STATE_RX_END: // Stop RX
-			init_digital_DMR_RX();
-			GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 0);
-		    GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
-			slot_state = DMR_STATE_IDLE;
-			break;
-		case DMR_STATE_TX_START_1: // Start TX (second step)
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);    //Transmit during next Timeslot
-			write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x10);    //Set Data Type to 0001 (Voice LC Header), Data, LCSS=00
-			slot_state = DMR_STATE_TX_START_2;
-			break;
-		case DMR_STATE_TX_START_2: // Start TX (third step)
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); 		//Receive during next Timeslot
-			slot_state = DMR_STATE_TX_START_3;
-			break;
-		case DMR_STATE_TX_START_3: // Start TX (fourth step)
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);     //Transmit during Next Timeslot
-			write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x10);     //Set Data Type to 0001 (Voice LC Header), Data, LCSS=00
-			slot_state = DMR_STATE_TX_START_4;
-			break;
-		case DMR_STATE_TX_START_4: // Start TX (fifth step)
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); 	//Receive during Next Timeslot
-			slot_state = DMR_STATE_TX_START_5;
-			break;
+			/*
+			 * Other cases moved to the ISR
 			*/
 		case DMR_STATE_TX_START_5: // Start TX (sixth step)
 
@@ -877,28 +860,14 @@ void tick_HR_C6000()
             if (settingsUsbMode != USB_MODE_HOTSPOT)
             {
             	tick_TXsoundbuffer();
+            	memcpy((uint8_t *)DMR_frame_buffer+0x0C,(uint8_t *)SILENCE_AUDIO, 27);// copy silence into the DMR audio
             }
-
 			break;
-			/* Moved to TS ISR
-		case DMR_STATE_TX_1: // Ongoing TX (inactive timeslot)
-			if ((trxIsTransmitting==false) && (tx_sequence==0))
-			{
-				slot_state = DMR_STATE_TX_END_1; // only exit here to ensure staying in the correct timeslot
-			}
-			else
-			{
-				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); // Receive during next Timeslot
-				slot_state = DMR_STATE_TX_2;
-			}
-			break;
-			*/
 		case DMR_STATE_TX_2: // Ongoing TX (active timeslot)
 			if (trxIsTransmitting)
 			{
                 if (settingsUsbMode != USB_MODE_HOTSPOT)
                 {
-        			memset((uint8_t *)DMR_frame_buffer, 0, 27 + 0x0C);// fills the LC and  audio buffer with zeros in case there is no real audio
                 	tick_TXsoundbuffer();
     				tick_codec_encode((uint8_t *)DMR_frame_buffer+0x0C);
                 }
@@ -923,17 +892,16 @@ void tick_HR_C6000()
 						{
 							wavbuffer_count--;
 						}
-
                 	}
                 }
-    			write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, (uint8_t*)(DMR_frame_buffer+0x0C), 27);// send the audio bytes to the hardware
+
 			}
 			else
 			{
-				write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, (uint8_t *)SILENCE_AUDIO, 27);// send silence audio bytes
+				memcpy((uint8_t*)(DMR_frame_buffer+0x0C),(uint8_t *)SILENCE_AUDIO, 27);// send silence audio bytes
 			}
 
-
+			write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, (uint8_t*)(DMR_frame_buffer+0x0C), 27);// send the audio bytes to the hardware
 			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80); // Transmit during next Timeslot
 			switch (tx_sequence)
 			{
@@ -963,22 +931,6 @@ void tick_HR_C6000()
 			}
 			slot_state = DMR_STATE_TX_1;
 			break;
-
-		/*
-		 * Moved to the TS ISR
-		case DMR_STATE_TX_END_1: // Stop TX (first step)
-			write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, SILENCE_AUDIO, 27);// send silence audio bytes
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);  //Transmit during Next Timeslot
-			write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x20);  // Data Type =0010 (Terminator with LC), Data, LCSS=0
-			slot_state = DMR_STATE_TX_END_2;
-			break;
-		case DMR_STATE_TX_END_2: // Stop TX (second step)
-			write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xC3);  //Enable DMR Tx and Rx, Passive Timing
-			init_digital_DMR_RX();
-			txstopdelay=30;
-			slot_state = DMR_STATE_IDLE;
-			break;
-			*/
 		}
 
 		// Timeout interrupted RX
@@ -988,9 +940,9 @@ void tick_HR_C6000()
             if (tick_cnt==10)
             {
             	slot_state = DMR_STATE_RX_END;
-#if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
-            	SEGGER_RTT_printf(0, ">>> TIMEOUT\r\n");
-#endif
+				#if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
+								SEGGER_RTT_printf(0, ">>> TIMEOUT\r\n");
+				#endif
             }
     	}
 	}
@@ -1004,10 +956,6 @@ void tick_HR_C6000()
         if ((rcrc==0) && (rpi==0) && (cc == trxGetDMRColourCode()) && (slot_state < DMR_STATE_TX_START_1))
         {
 		    GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);// Turn the LED on as soon as a DMR signal is detected.
-    		if (tmp_val_0x82 & 0x20) // InterSendStop interrupt
-    		{
-    			write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0x20);
-    		}
 
     		receivedTgOrPcId 	= (DMR_frame_buffer[3]<<16)+(DMR_frame_buffer[4]<<8)+(DMR_frame_buffer[5]<<0);// used by the call accept filter
     		receivedSrcId 		= (DMR_frame_buffer[6]<<16)+(DMR_frame_buffer[7]<<8)+(DMR_frame_buffer[8]<<0);// used by the call accept filter
@@ -1022,17 +970,12 @@ void tick_HR_C6000()
                 	init_codec();
                 	skip_count = 2;
 
-#if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
-					SEGGER_RTT_printf(0, ">>> RX START LATE\r\n");
-#endif
 					if (settingsUsbMode == USB_MODE_HOTSPOT)
 					{
 						DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_START_LATE;
 						hotspotRxFrameHandler((uint8_t *)DMR_frame_buffer);
 					}
                 }
-
-    			write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0x10);   //Clear Late Entry Interrupt Flag
     		}
 
     		if (tmp_val_0x82 & 0x08) // InterRecvData
@@ -1049,9 +992,11 @@ void tick_HR_C6000()
                 	store_qsodata();
                 	init_codec();
                 	skip_count = 0;
-#if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
-            	SEGGER_RTT_printf(0, ">>> RX START\r\n");
-#endif
+
+					#if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
+									SEGGER_RTT_printf(0, ">>> RX START\r\n");
+					#endif
+
 					if (settingsUsbMode == USB_MODE_HOTSPOT)
 					{
 						DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_START;
@@ -1062,9 +1007,10 @@ void tick_HR_C6000()
                 if ((sc==2) && (rxdt==2) && callAcceptFilter())        //Terminator with LC
                 {
                 	slot_state = DMR_STATE_RX_END;
-#if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
-            	SEGGER_RTT_printf(0, ">>> RX STOP\r\n");
-#endif
+
+					#if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
+									SEGGER_RTT_printf(0, ">>> RX STOP\r\n");
+					#endif
 
 					if (settingsUsbMode == USB_MODE_HOTSPOT)
 					{
@@ -1081,9 +1027,9 @@ void tick_HR_C6000()
                 // Detect/decode voice packet and transfer it into the output soundbuffer
                 if ((slot_state != DMR_STATE_IDLE) && (skip_count==0) && (sc!=2) && ((rxdt & 0x07) >= 0x01) && ((rxdt & 0x07) <= 0x06))
                 {
-#if false
-                	SEGGER_RTT_printf(0, ">>> Audio frame %02x\r\n",rxdt & 0x07);
-#endif
+					#if false
+						SEGGER_RTT_printf(0, ">>> Audio frame %02x\r\n",rxdt & 0x07);
+					#endif
                 	store_qsodata();
                     read_SPI_page_reg_bytearray_SPI1(0x03, 0x00, DMR_frame_buffer+0x0C, 27);
                     if (settingsUsbMode == USB_MODE_HOTSPOT)
@@ -1101,37 +1047,30 @@ void tick_HR_C6000()
                     	}
                     }
                 }
-
-    			write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0x08);     // Clear Data Received Interrupt Flag
-    		}
-
-    		if (tmp_val_0x82 & 0x01) // InterPHYOnly flag
-    		{
-    			write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0x01);  //Clear  InterPHYOnly flag
-    		}
-
-    		if (tmp_val_0x82 & 0xC6)   //Remaining Interrupt Flags
-    		{
-    			write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0xC6);  //Clear remaining Interrupt Flags
     		}
         }
-        else if (slot_state >= DMR_STATE_TX_START_1)
-        {
-        	uint8_t tmp_val_0x42;
-			read_SPI_page_reg_byte_SPI0(0x04, 0x42, &tmp_val_0x42);   //Read Current Timeslot Sent, Current Timeslot Received and Current Timeslot Active Status bits
-    		write_SPI_page_reg_byte_SPI0(0x04, 0x83, 0xFF);  //Clear all Interrupt Flags
-        }
+#if false
+        // this code does not seem to do anything so I've #IF'ed it out
         else
         {
-#if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
-            	SEGGER_RTT_printf(0, "---- %02x [%02x %02x] %02x %02x %02x %02x SC:%02x RCRC:%02x RPI:%02x RXDT:%02x LCSS:%02x TC:%02x AT:%02x CC:%02x ??:%02x ST:%02x RAM:", slot_state, tmp_val_0x82, tmp_val_0x86, tmp_val_0x51, tmp_val_0x52, tmp_val_0x57, tmp_val_0x5f, (tmp_val_0x51 >> 0) & 0x03, (tmp_val_0x51 >> 2) & 0x01, (tmp_val_0x51 >> 3) & 0x01, (tmp_val_0x51 >> 4) & 0x0f, (tmp_val_0x52 >> 0) & 0x03, (tmp_val_0x52 >> 2) & 0x01, (tmp_val_0x52 >> 3) & 0x01, (tmp_val_0x52 >> 4) & 0x0f, (tmp_val_0x57 >> 2) & 0x01, (tmp_val_0x5f >> 0) & 0x03);
+			if (slot_state >= DMR_STATE_TX_START_1)
+			{
+				uint8_t tmp_val_0x42;
+				read_SPI_page_reg_byte_SPI0(0x04, 0x42, &tmp_val_0x42);   //Read Current Timeslot Sent, Current Timeslot Received and Current Timeslot Active Status bits
+			}
+			else
+			{
+			#if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
+				SEGGER_RTT_printf(0, "---- %02x [%02x %02x] %02x %02x %02x %02x SC:%02x RCRC:%02x RPI:%02x RXDT:%02x LCSS:%02x TC:%02x AT:%02x CC:%02x ??:%02x ST:%02x RAM:", slot_state, tmp_val_0x82, tmp_val_0x86, tmp_val_0x51, tmp_val_0x52, tmp_val_0x57, tmp_val_0x5f, (tmp_val_0x51 >> 0) & 0x03, (tmp_val_0x51 >> 2) & 0x01, (tmp_val_0x51 >> 3) & 0x01, (tmp_val_0x51 >> 4) & 0x0f, (tmp_val_0x52 >> 0) & 0x03, (tmp_val_0x52 >> 2) & 0x01, (tmp_val_0x52 >> 3) & 0x01, (tmp_val_0x52 >> 4) & 0x0f, (tmp_val_0x57 >> 2) & 0x01, (tmp_val_0x5f >> 0) & 0x03);
 				for (int i=0;i<0x0c;i++)
 				{
-	            	SEGGER_RTT_printf(0, " %02x", DMR_frame_buffer[i]);
+					SEGGER_RTT_printf(0, " %02x", DMR_frame_buffer[i]);
 				}
-            	SEGGER_RTT_printf(0, "\r\n");
+				SEGGER_RTT_printf(0, "\r\n");
+			#endif
+			}
+		}
 #endif
-        }
 	}
 
 	if (qsodata_timer>0)
@@ -1147,6 +1086,5 @@ void tick_HR_C6000()
 				menuDisplayQSODataState= QSO_DISPLAY_DEFAULT_SCREEN;
 			}
 		}
-
 	}
 }
