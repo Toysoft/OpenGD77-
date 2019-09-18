@@ -90,7 +90,7 @@ static void loadChannelData(bool useChannelDataInMemory)
 		}
 	}
 
-	trxSetFrequency(channelScreenChannelData.rxFreq);
+	trxSetFrequency(channelScreenChannelData.rxFreq,channelScreenChannelData.txFreq);
 	if (channelScreenChannelData.chMode == RADIO_MODE_ANALOG)
 	{
 		trxSetModeAndBandwidth(channelScreenChannelData.chMode, ((channelScreenChannelData.flag4 & 0x02) == 0x02));

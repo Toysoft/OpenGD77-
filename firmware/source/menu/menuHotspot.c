@@ -240,7 +240,7 @@ static void enableTransmission()
 	GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 	GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 1);
 
-	trxSetFrequency(freq_tx);
+	//trxSetFrequency(freq_tx);
 	txstopdelay=0;
 	trxIsTransmitting=true;
 	trx_setTX();
@@ -251,9 +251,9 @@ static void disableTransmission()
 	SEGGER_RTT_printf(0, "Disable Transmission\n");
 
 	GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
-	trx_deactivateTX();
+	trx_deactivateRx();
 	trx_setRX();
-	trxSetFrequency(freq_rx);
+	//trxSetFrequency(freq_rx);
 
 }
 
@@ -584,7 +584,7 @@ static void hotspotStateMachine()
 				disableTransmission();
 			}
 
-			trxSetFrequency(freq_rx);
+			trxSetFrequency(freq_rx,freq_tx);
 			wavbuffer_read_idx=0;
 			wavbuffer_write_idx=0;
 			wavbuffer_count=0;
@@ -869,7 +869,7 @@ static void handleEvent(int buttons, int keys, int events)
 		if (trxIsTransmitting)
 		{
 			trxIsTransmitting = false;
-			trx_deactivateTX();
+			trx_deactivateRx();
 			trx_setRX();
 
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
@@ -946,7 +946,7 @@ const int BAN2_MAX  = 43800000;
 
 	if (trxCheckFrequencyInAmateurBand(freq_rx) && trxCheckFrequencyInAmateurBand(freq_tx))
 	{
-		trxSetFrequency(freq_rx);
+		trxSetFrequency(freq_rx,freq_tx);
 	}
 	else
 	{

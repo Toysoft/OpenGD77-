@@ -45,7 +45,7 @@ int	trxGetMode();
 int	trxGetBandwidthIs25kHz();
 int	trxGetFrequency();
 void trxSetModeAndBandwidth(int mode, bool bandwidthIs25kHz);
-void trxSetFrequency(int frequency);
+void trxSetFrequency(int fRx,int fTx);
 void trx_setRX();
 void trx_setTX();
 void trx_deactivateTX();

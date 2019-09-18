@@ -51,7 +51,7 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 		currentChannelData = &nonVolatileSettings.vfoChannel;
 		settingsCurrentChannelNumber = -1;// This is not a regular channel. Its the special VFO channel!
 
-		trxSetFrequency(currentChannelData->rxFreq);
+		trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq);
 		if (currentChannelData->chMode == RADIO_MODE_ANALOG)
 		{
 			trxSetModeAndBandwidth(currentChannelData->chMode, ((currentChannelData->flag4 & 0x02) == 0x02));
@@ -266,7 +266,7 @@ static void update_frequency(int frequency)
 		{
 			currentChannelData->rxFreq = frequency;
 			currentChannelData->txFreq = currentChannelData->txFreq + deltaFrequency;
-			trxSetFrequency(frequency);
+			trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq);
 
 			if (!trxCheckFrequencyIsSupportedByTheRadioHardware(currentChannelData->txFreq))
 			{
@@ -561,7 +561,7 @@ int tmp_frequencyRx;
 		currentChannelData->rxFreq =  tmp_frequencyRx;
 		if (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_RX)
 		{
-			trxSetFrequency(currentChannelData->rxFreq);
+			trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq);
 		}
 	}
 	else

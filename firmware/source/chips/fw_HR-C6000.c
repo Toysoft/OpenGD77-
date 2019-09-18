@@ -47,17 +47,17 @@ static const uint8_t spi_init_values_5[] = { 0x00, 0x00, 0xeb, 0x78, 0x67 };
 // GD-77 FW V3.1.1 data from 0x75FB0 / length 0x60
 static const uint8_t spi_init_values_6[] = { 0x32, 0xef, 0x00, 0x31, 0xef, 0x00, 0x12, 0xef, 0x00, 0x13, 0xef, 0x00, 0x14, 0xef, 0x00, 0x15, 0xef, 0x00, 0x16, 0xef, 0x00, 0x17, 0xef, 0x00, 0x18, 0xef, 0x00, 0x19, 0xef, 0x00, 0x1a, 0xef, 0x00, 0x1b, 0xef, 0x00, 0x1c, 0xef, 0x00, 0x1d, 0xef, 0x00, 0x1e, 0xef, 0x00, 0x1f, 0xef, 0x00, 0x20, 0xef, 0x00, 0x21, 0xef, 0x00, 0x22, 0xef, 0x00, 0x23, 0xef, 0x00, 0x24, 0xef, 0x00, 0x25, 0xef, 0x00, 0x26, 0xef, 0x00, 0x27, 0xef, 0x00, 0x28, 0xef, 0x00, 0x29, 0xef, 0x00, 0x2a, 0xef, 0x00, 0x2b, 0xef, 0x00, 0x2c, 0xef, 0x00, 0x2d, 0xef, 0x00, 0x2e, 0xef, 0x00, 0x2f, 0xef, 0x00 };
 
-
-volatile uint8_t tmp_val_0x82;
-volatile uint8_t tmp_val_0x84;
-volatile uint8_t tmp_val_0x86;
 volatile uint8_t tmp_val_0x50;
 volatile uint8_t tmp_val_0x51;
 volatile uint8_t tmp_val_0x52;
 volatile uint8_t tmp_val_0x57;
 volatile uint8_t tmp_val_0x5f;
+volatile uint8_t tmp_val_0x82;
+volatile uint8_t tmp_val_0x84;
+volatile uint8_t tmp_val_0x86;
 volatile uint8_t tmp_val_0x90;
 volatile uint8_t tmp_val_0x98;
+
 volatile uint8_t DMR_frame_buffer[DRM_FRAME_BUFFER_SIZE];
 
 volatile bool int_sys;
@@ -310,7 +310,7 @@ void HRC6000SysInterruptHandler()
 			Bit7: In DMR mode: indicates that the transmission request rejects the interrupt without a sub-status register.
 			In DMR mode, it indicates that this transmission request is rejected because the channel is busy;
 		 */
-		SEGGER_RTT_printf(0, "Sys 0x80\n");
+		//SEGGER_RTT_printf(0, "%d Sys 0x80\n",PITCounter);
 	}
 
 	if (tmp_val_0x82 & 0x40)
@@ -346,7 +346,7 @@ void HRC6000SysInterruptHandler()
 
 			In MSK mode, there is no sub-interrupt status.
 		*/
-		SEGGER_RTT_printf(0, "Sys 0x%02x 0x%02x\n",tmp_val_0x82,tmp_val_0x84);
+		//SEGGER_RTT_printf(0, "%d Sys 0x%02x 0x%02x\n",PITCounter,tmp_val_0x82,tmp_val_0x84);
 	}
 	else
 	{
@@ -360,7 +360,7 @@ void HRC6000SysInterruptHandler()
 		*/
 		read_SPI_page_reg_byte_SPI0(0x04, 0x86, &tmp_val_0x86);  //Read Interrupt Flag Register2
 
-		SEGGER_RTT_printf(0, "Sys 0x%02x 0x%02x\n",tmp_val_0x82,tmp_val_0x86);
+	//	SEGGER_RTT_printf(0, "%d Sys 0x%02x 0x%02x\n",PITCounter,tmp_val_0x82,tmp_val_0x86);
 		/*
 			In DMR mode, there is a sub-status register 0x86 at the end of the transmission, and the
 			corresponding interrupt can be masked by 0x87. The sub-status register indicates six interrupts that
@@ -411,7 +411,7 @@ void HRC6000SysInterruptHandler()
 
 			In MSK mode, this interrupt has no substatus registers.
 		*/
-		SEGGER_RTT_printf(0, "Sys 0x10\n");
+		//SEGGER_RTT_printf(0, "%d Sys 0x10\n",PITCounter);
 	}
 
 	if (tmp_val_0x82 & 0x08)
@@ -431,7 +431,7 @@ void HRC6000SysInterruptHandler()
 			interrupt, which is distinguished by judging the 0x51 register SyncClass=0.
 
 		*/
-		SEGGER_RTT_printf(0, "Sys 0x08\n");
+		//SEGGER_RTT_printf(0, "%d Sys 0x08\n",PITCounter);
 	}
 	else
 	{
@@ -457,7 +457,7 @@ void HRC6000SysInterruptHandler()
 		*/
 		read_SPI_page_reg_byte_SPI0(0x04, 0x90, &tmp_val_0x90);
 
-		SEGGER_RTT_printf(0, "Sys 0x%02x 0x%02x\n",tmp_val_0x82,tmp_val_0x90);
+		//SEGGER_RTT_printf(0, "%d Sys 0x%02x 0x%02x\n",PITCounter,tmp_val_0x82,tmp_val_0x90);
 
 	}
 	else
@@ -475,7 +475,7 @@ void HRC6000SysInterruptHandler()
 			through Bit2~Bit0 of register address 0x98.
 		*/
 		read_SPI_page_reg_byte_SPI0(0x04, 0x98, &tmp_val_0x98);
-		SEGGER_RTT_printf(0, "Sys 0x%02x 0x%02x\n",tmp_val_0x82,tmp_val_0x98);
+		//SEGGER_RTT_printf(0, "%d Sys 0x%02x 0x%02x\n",PITCounter,tmp_val_0x82,tmp_val_0x98);
 	}
 	else
 	{
@@ -492,7 +492,7 @@ void HRC6000SysInterruptHandler()
 		received data. This interrupt is typically tested in bit error rate or other performance in physical
 		layer mode.
 	*/
-		SEGGER_RTT_printf(0, "Sys 0x02\n");
+		//SEGGER_RTT_printf(0, "%d Sys 0x02\n",PITCounter);
 	}
 
 	read_SPI_page_reg_byte_SPI0(0x04, 0x52, &tmp_val_0x52);  //Read Received CC and CACH Register
@@ -503,6 +503,8 @@ void HRC6000SysInterruptHandler()
 	int_sys=true;
 	timer_hrc6000task=0;
 
+	SEGGER_RTT_printf(0, "SYS\t%d\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\n",PITCounter,tmp_val_0x50,tmp_val_0x51,tmp_val_0x52,tmp_val_0x57,tmp_val_0x5f,tmp_val_0x82,tmp_val_0x84,tmp_val_0x86,tmp_val_0x90,tmp_val_0x98);
+
 
 	write_SPI_page_reg_byte_SPI0(0x04, 0x83, tmp_val_0x82);  //Clear remaining Interrupt Flags
 
@@ -510,8 +512,10 @@ void HRC6000SysInterruptHandler()
 
 void HRC6000TimeslotInterruptHandler()
 {
+	uint8_t tmp_val_0x42;
+	read_SPI_page_reg_byte_SPI0(0x04, 0x42, &tmp_val_0x42);   //Read Current Timeslot Sent, Current Timeslot Received and Current Timeslot Active Status bits
 
-	SEGGER_RTT_printf(0, "TS_ISR\n");
+	SEGGER_RTT_printf(0, "TS_ISR\t%d\t0x%02x\n",PITCounter,tmp_val_0x42);
 	int_ts=false;
 	// RX/TX state machine
 	switch (slot_state)
@@ -600,14 +604,14 @@ void HRC6000TimeslotInterruptHandler()
 
 void HRC6000RxInterruptHandler()
 {
-	SEGGER_RTT_printf(0, "Rx ISR\n");
-	trx_deactivateTX();
+	SEGGER_RTT_printf(0, "RxISR\t%d\n",PITCounter);
+	trx_deactivateRx();
 }
 
 void HRC6000TxInterruptHandler()
 {
-	SEGGER_RTT_printf(0, "Tx ISR\n");
-	trx_activateTX();
+	SEGGER_RTT_printf(0, "TxISR\t%d \n",PITCounter);
+	trx_activateRx();
 }
 
 
