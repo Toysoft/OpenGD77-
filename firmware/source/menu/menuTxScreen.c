@@ -40,15 +40,9 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 			GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 1);
-			trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq);
+			//trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq);
 			txstopdelay=0;
-			trxIsTransmitting=true;
-
 			trx_setTX();
-			if (trxGetMode() == RADIO_MODE_ANALOG)
-			{
-				trx_activateRx();
-			}
 			updateScreen();
 		}
 		else
@@ -154,7 +148,7 @@ static void handleEvent(int buttons, int keys, int events)
 			{
 				SEGGER_RTT_printf(0, "slot state %d\n",slot_state);
 				GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
-				trx_deactivateRx();
+				trx_activateRx();
 				trx_setRX();
 				menuSystemPopPreviousMenu();
 			}

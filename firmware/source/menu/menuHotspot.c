@@ -251,7 +251,7 @@ static void disableTransmission()
 	SEGGER_RTT_printf(0, "Disable Transmission\n");
 
 	GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
-	trx_deactivateRx();
+	trx_activateRx();
 	trx_setRX();
 	//trxSetFrequency(freq_rx);
 
@@ -869,7 +869,7 @@ static void handleEvent(int buttons, int keys, int events)
 		if (trxIsTransmitting)
 		{
 			trxIsTransmitting = false;
-			trx_deactivateRx();
+			trx_activateRx();
 			trx_setRX();
 
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);

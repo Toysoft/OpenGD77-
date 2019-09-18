@@ -257,7 +257,7 @@ void trx_setRX()
 {
 	// AT1846 RX + unmute
 	set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0x00);
-	trx_deactivateRx();
+	trx_activateRx();
 
 	// MUX for RX
 	GPIO_PinWrite(GPIO_TX_audio_mux, Pin_TX_audio_mux, 0);
@@ -265,35 +265,15 @@ void trx_setRX()
 
 void trx_setTX()
 {
-
+	trxIsTransmitting=true;
+	set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0x00);
 	// RX pre-amp off
 	GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 0);
 	GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 0);
-
-
-	set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0x00);
-
-	// MUX for TX
-	if (currentMode == RADIO_MODE_ANALOG)
-	{
-		// AT1846 TX + mute
-		write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x29, tx_fh_h, tx_fh_l);
-		write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x2a, tx_fl_h, tx_fl_l);
-
-		GPIO_PinWrite(GPIO_TX_audio_mux, Pin_TX_audio_mux, 0);
-		set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0x40); // analog TX
-
-	    GPIO_PinWrite(GPIO_RF_ant_switch, Pin_RF_ant_switch, ANTENNA_SWITCH_TX);// TX Antenna
-	}
-	else
-	{
-		GPIO_PinWrite(GPIO_TX_audio_mux, Pin_TX_audio_mux, 1);
-		// Note. AT-1846 Tx set set in trx_activeTX by the DMR interrupt system
-		// Note. Tx Antenna switching is controlled by the DMR interrupt system
-	}
+	trx_activateTx();
 }
 
-void trx_deactivateRx()
+void trx_activateRx()
 {
     DAC_SetBufferValue(DAC0, 0U, 0U);// PA drive power to zero
 
@@ -319,17 +299,19 @@ void trx_deactivateRx()
 	write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x2a, rx_fl_h, rx_fl_l);
 }
 
-void trx_activateRx()
+void trx_activateTx()
 {
 	write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x29, tx_fh_h, tx_fh_l);
 	write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x2a, tx_fl_h, tx_fl_l);
 
 	if (currentMode == RADIO_MODE_ANALOG)
 	{
+		GPIO_PinWrite(GPIO_TX_audio_mux, Pin_TX_audio_mux, 0);
 		set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0x40); // analog TX
 	}
 	else
 	{
+		GPIO_PinWrite(GPIO_TX_audio_mux, Pin_TX_audio_mux, 1);
 		set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0xC0); // digital TX
 	}
 

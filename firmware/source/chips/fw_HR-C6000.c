@@ -605,13 +605,13 @@ void HRC6000TimeslotInterruptHandler()
 void HRC6000RxInterruptHandler()
 {
 	SEGGER_RTT_printf(0, "RxISR\t%d\n",PITCounter);
-	trx_deactivateRx();
+	trx_activateRx();
 }
 
 void HRC6000TxInterruptHandler()
 {
 	SEGGER_RTT_printf(0, "TxISR\t%d \n",PITCounter);
-	trx_activateRx();
+	trx_activateTx();
 }
 
 
