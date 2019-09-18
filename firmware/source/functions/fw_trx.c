@@ -270,7 +270,11 @@ void trx_setTX()
 	// RX pre-amp off
 	GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 0);
 	GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 0);
-	trx_activateTx();
+	if (currentMode == RADIO_MODE_ANALOG)
+	{
+		trx_activateTx();
+	}
+
 }
 
 void trx_activateRx()
