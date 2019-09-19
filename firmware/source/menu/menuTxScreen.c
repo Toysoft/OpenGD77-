@@ -133,25 +133,17 @@ static void handleEvent(int buttons, int keys, int events)
 	{
 		if (trxIsTransmitting)
 		{
-			SEGGER_RTT_printf(0, "trxIsTransmitting=false\n");
+//			SEGGER_RTT_printf(0, "trxIsTransmitting=false\n");
 			trxIsTransmitting=false;
 		}
 
-		if (txstopdelay>0)
+		if ((slot_state != DMR_STATE_IDLE))
 		{
-			txstopdelay--;
-			//SEGGER_RTT_printf(0, "txstopdelay %d\n",txstopdelay);
-		}
-		else
-		{
-			if ((slot_state < DMR_STATE_TX_START_1))
-			{
-				SEGGER_RTT_printf(0, "slot state %d\n",slot_state);
-				GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
-				trx_activateRx();
-				trx_setRX();
-				menuSystemPopPreviousMenu();
-			}
+			//SEGGER_RTT_printf(0, "slot state %d\n",slot_state);
+			GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
+			trx_activateRx();
+			trx_setRX();
+			menuSystemPopPreviousMenu();
 		}
 	}
 }
