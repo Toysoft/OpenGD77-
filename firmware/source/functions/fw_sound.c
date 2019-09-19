@@ -280,17 +280,7 @@ void retrieve_soundbuffer()
 
 	if (tmp_wavbuffer_count>0)
 	{
-#if false
-		// There is no need to make a copy of the current wave buffer to send it to the encoded,
-		// just pass a pointer to the wave buffer in question
-		taskENTER_CRITICAL();
-		for (int wav_idx=0;wav_idx<WAV_BUFFER_SIZE;wav_idx++)
-		{
 
-			tmp_wavbuffer[wav_idx]=wavbuffer[wavbuffer_read_idx][wav_idx];
-		}
-		taskEXIT_CRITICAL();
-#endif
 		currentWaveBuffer = (uint8_t *)audioAndHotspotDataBuffer.wavbuffer[wavbuffer_read_idx];// cast just to prevent compiler warning
 		wavbuffer_read_idx++;
 		if (wavbuffer_read_idx>=WAV_BUFFER_COUNT)
@@ -372,11 +362,16 @@ void receive_sound_data()
 			}
 
 			wavbuffer_write_idx++;
+
 			if (wavbuffer_write_idx>=WAV_BUFFER_COUNT)
 			{
 				wavbuffer_write_idx=0;
 			}
 			wavbuffer_count++;
+			if (wavbuffer_count >= 6)
+			{
+				SEGGER_RTT_printf(0, "%d sound buffers now %d\n",wavbuffer_count,PITCounter);
+			}
 		}
 
 		switch(g_SAI_RX_Handle.queueUser)
@@ -405,10 +400,6 @@ void receive_sound_data()
 
 		g_RX_SAI_in_use = true;
 	}
-	else
-	{
-		SEGGER_RTT_printf(0, "Warning. Tx Sound buffer overflow\n");
-	}
 }
 
 void tick_RXsoundbuffer()
@@ -435,7 +426,12 @@ void tick_TXsoundbuffer()
     {
     	//taskENTER_CRITICAL();
     	receive_sound_data();
+    	SEGGER_RTT_printf(0, "NOT g_RX_SAI_in_use\n");
     	//taskEXIT_CRITICAL();
+    }
+    else
+    {
+    	SEGGER_RTT_printf(0, "g_RX_SAI_in_use\n");
     }
 }
 

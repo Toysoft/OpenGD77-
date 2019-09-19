@@ -101,11 +101,7 @@ void tick_codec_decode(uint8_t *indata_ptr)
 
 void tick_codec_encode(uint8_t *outdata_ptr)
 {
-	/*
-	for (int i=0;i<27;i++)
-	{
-		outdata_ptr[i]=0;
-	}*/
+	SEGGER_RTT_printf(0, "tick_codec_encode now %d\n",PITCounter);
 	memset((uint8_t *)outdata_ptr, 0, 27);// fills with zeros
 
 	register int r0 asm ("r0") __attribute__((unused));
@@ -114,16 +110,19 @@ void tick_codec_encode(uint8_t *outdata_ptr)
 
 	for (int i=0;i<3;i++)
 	{
+
+		memset(bitbuffer_encode,0,72);// faster to call memset as it will be compiled as optimised code
+		/*
 		for (int i=0;i<72;i++)
 		{
 			bitbuffer_encode[i]=0;
-		}
+		}*/
 
-		retrieve_soundbuffer();
+		retrieve_soundbuffer();// gets currentWaveBuffer pointer used as input r2 to the encoder
 
 		r0 = (int)bitbuffer_encode;
 		r2 = (int)currentWaveBuffer;//tmp_wavbuffer;
-		r1 = AMBE_ENCODE_BUFFER;
+		r1 = AMBE_ENCODE_BUFFER;// seems to be a hard coded (defined) memory address of 0x1FFF6B60. I'm not sure why it has to be hard coded, since its passed as a paramater (register)
 
 		asm volatile (
 			"PUSH {R4-R11}\n"
@@ -142,7 +141,7 @@ void tick_codec_encode(uint8_t *outdata_ptr)
 			"POP {R4-R11}"
 		);
 
-		retrieve_soundbuffer();
+		retrieve_soundbuffer();// gets currentWaveBuffer pointer used as input r2 to the encoder
 
 		r0 = (int)bitbuffer_encode;
 		r2 = (int)currentWaveBuffer;//tmp_wavbuffer;

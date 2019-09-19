@@ -503,7 +503,7 @@ void HRC6000SysInterruptHandler()
 	int_sys=true;
 	timer_hrc6000task=0;
 
-	SEGGER_RTT_printf(0, "SYS\t%d\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\n",PITCounter,tmp_val_0x50,tmp_val_0x51,tmp_val_0x52,tmp_val_0x57,tmp_val_0x5f,tmp_val_0x82,tmp_val_0x84,tmp_val_0x86,tmp_val_0x90,tmp_val_0x98);
+	//SEGGER_RTT_printf(0, "SYS\t%d\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\n",PITCounter,tmp_val_0x50,tmp_val_0x51,tmp_val_0x52,tmp_val_0x57,tmp_val_0x5f,tmp_val_0x82,tmp_val_0x84,tmp_val_0x86,tmp_val_0x90,tmp_val_0x98);
 
 
 	write_SPI_page_reg_byte_SPI0(0x04, 0x83, tmp_val_0x82);  //Clear remaining Interrupt Flags
@@ -515,7 +515,7 @@ void HRC6000TimeslotInterruptHandler()
 	uint8_t tmp_val_0x42;
 	read_SPI_page_reg_byte_SPI0(0x04, 0x42, &tmp_val_0x42);   //Read Current Timeslot Sent, Current Timeslot Received and Current Timeslot Active Status bits
 
-	SEGGER_RTT_printf(0, "TS_ISR\t%d\t0x%02x\n",PITCounter,tmp_val_0x42);
+	//SEGGER_RTT_printf(0, "TS_ISR\t%d\t0x%02x\n",PITCounter,tmp_val_0x42);
 	int_ts=false;
 	// RX/TX state machine
 	switch (slot_state)
@@ -542,7 +542,7 @@ void HRC6000TimeslotInterruptHandler()
 			slot_state = DMR_STATE_TX_START_2;
 			break;
 		case DMR_STATE_TX_START_2: // Start TX (third step)
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); 		//Receive during next Timeslot
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); 	//Receive during next Timeslot
 			slot_state = DMR_STATE_TX_START_3;
 			break;
 		case DMR_STATE_TX_START_3: // Start TX (fourth step)
@@ -558,14 +558,27 @@ void HRC6000TimeslotInterruptHandler()
 			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);   //Transmit during next Timeslot
 			write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x10);   //Set Data Type to 0001 (Voice LC Header), Data, LCSS=00
 			tx_sequence=0;
+            if (settingsUsbMode != USB_MODE_HOTSPOT)
+            {
+            	/*
+            	 * At this time g_RX_SAI_in_use is false, so receive_sound_data will be called by tick_TXsoundbuffer
 
-			// --------------- NOTE. Some more processing needs to be done outside the ISR
-			int_ts=true;// tell the RTOS based state machine that there is something to do
+            		tick_TXsoundbuffer();
+
+            		So we may as well just call receive_sound_data() directly
+            	*/
+
+            	/*
+            	 * This function server 2 purposes.
+            	 * 1. If the current spi_soundBuf buffer not null, the contents of the buffer are copied to the wavbuffer.
+            	 * And the I2S sampling is started again for the next sample.
+            	 * 2. If spi_soundBuf is null, no copy to the wave buffer occurs, and the I2S is started for the first time.
+            	 */
+            	receive_sound_data();
+            	//memcpy((uint8_t *)DMR_frame_buffer+0x0C,(uint8_t *)SILENCE_AUDIO, 27);// copy silence into the DMR audio
+            }
+			slot_state = DMR_STATE_TX_1;
 			break;
-		/*
-		 * TX_START_5 etc
-		 * SOME OTHER CASES IN HERE PROCESSED BY THE RTOS task function
-		 */
 
 		case DMR_STATE_TX_1: // Ongoing TX (inactive timeslot)
 			if ((trxIsTransmitting==false) && (tx_sequence==0))
@@ -604,13 +617,13 @@ void HRC6000TimeslotInterruptHandler()
 
 void HRC6000RxInterruptHandler()
 {
-	SEGGER_RTT_printf(0, "RxISR\t%d\n",PITCounter);
+	//SEGGER_RTT_printf(0, "RxISR\t%d\n",PITCounter);
 	trx_activateRx();
 }
 
 void HRC6000TxInterruptHandler()
 {
-	SEGGER_RTT_printf(0, "TxISR\t%d \n",PITCounter);
+	//SEGGER_RTT_printf(0, "TxISR\t%d \n",PITCounter);
 	trx_activateTx();
 }
 
@@ -818,7 +831,16 @@ void tick_HR_C6000()
 			write_SPI_page_reg_bytearray_SPI0(0x02, 0x00, (uint8_t *)&audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_read_idx], 0x0c);// put LC into hardware
 		}
 
-		write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xE3); // TX and RX enable, Active Timing
+		// Active mode.  The spec says use 0xA3 rather than 0xE3, but in practice it didn't seem to make any difference
+		// Passive mode. The spec says use 0x43
+		write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xE3); // TX and RX enable, Active Timing.
+
+
+		/* Passive mode. Initial reception to gain synchronisation is by setting... 0x41 = 0x40
+		 * Continuous receiving state (called blind reception).
+		write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40);
+		*/
+
 		write_SPI_page_reg_byte_SPI0(0x04, 0x21, 0xA2); // Set Polite to Color Code and Reset vocoder encodingbuffer
 		write_SPI_page_reg_byte_SPI0(0x04, 0x22, 0x86); // Start Vocoder Encode, I2S mode
 
@@ -856,23 +878,17 @@ void tick_HR_C6000()
 			/*
 			 * Other cases moved to the ISR
 			*/
-		case DMR_STATE_TX_START_5: // Start TX (sixth step)
 
-			// Note some processing for this has aleady been done in the ISR
-			slot_state = DMR_STATE_TX_1;
-
-            if (settingsUsbMode != USB_MODE_HOTSPOT)
-            {
-            	tick_TXsoundbuffer();
-            	memcpy((uint8_t *)DMR_frame_buffer+0x0C,(uint8_t *)SILENCE_AUDIO, 27);// copy silence into the DMR audio
-            }
-			break;
 		case DMR_STATE_TX_2: // Ongoing TX (active timeslot)
 			if (trxIsTransmitting)
 			{
                 if (settingsUsbMode != USB_MODE_HOTSPOT)
                 {
-                	tick_TXsoundbuffer();
+                	/*
+                	 * RC. In tick_TXsoundbuffer, it checks whether the I2S hardware global g_RX_SAI_in_use is true
+                	 * and and if so tick_TXsoundbuffer just returns. So we don't need to call it here at all, and the Tx audio still works.
+                	 * tick_TXsoundbuffer();
+                	 */
     				tick_codec_encode((uint8_t *)DMR_frame_buffer+0x0C);
                 }
                 else
