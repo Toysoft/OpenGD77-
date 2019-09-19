@@ -59,6 +59,7 @@ volatile uint8_t tmp_val_0x90;
 volatile uint8_t tmp_val_0x98;
 
 volatile uint8_t DMR_frame_buffer[DRM_FRAME_BUFFER_SIZE];
+volatile uint8_t encodedAudioBuffer[DRM_FRAME_BUFFER_SIZE];
 
 volatile bool int_sys;
 volatile bool int_ts;
@@ -552,12 +553,6 @@ void HRC6000TimeslotInterruptHandler()
 			break;
 		case DMR_STATE_TX_START_4: // Start TX (fifth step)
 			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); 	//Receive during Next Timeslot
-			slot_state = DMR_STATE_TX_START_5;
-			break;
-		case DMR_STATE_TX_START_5: // Start TX (sixth step)
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);   //Transmit during next Timeslot
-			write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x10);   //Set Data Type to 0001 (Voice LC Header), Data, LCSS=00
-			tx_sequence=0;
             if (settingsUsbMode != USB_MODE_HOTSPOT)
             {
             	/*
@@ -577,6 +572,13 @@ void HRC6000TimeslotInterruptHandler()
             	receive_sound_data();
             	//memcpy((uint8_t *)DMR_frame_buffer+0x0C,(uint8_t *)SILENCE_AUDIO, 27);// copy silence into the DMR audio
             }
+			slot_state = DMR_STATE_TX_START_5;
+			break;
+		case DMR_STATE_TX_START_5: // Start TX (sixth step)
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);   //Transmit during next Timeslot
+			write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x10);   //Set Data Type to 0001 (Voice LC Header), Data, LCSS=00
+			tx_sequence=0;
+
 			slot_state = DMR_STATE_TX_1;
 			break;
 
@@ -590,6 +592,82 @@ void HRC6000TimeslotInterruptHandler()
 				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); // Receive during next Timeslot
 				slot_state = DMR_STATE_TX_2;
 			}
+			break;
+
+		case DMR_STATE_TX_2: // Ongoing TX (active timeslot)
+			if (trxIsTransmitting)
+			{
+                if (settingsUsbMode != USB_MODE_HOTSPOT)
+                {
+                	/*
+                	 * RC. In tick_TXsoundbuffer, it checks whether the I2S hardware global g_RX_SAI_in_use is true
+                	 * and and if so tick_TXsoundbuffer just returns. So we don't need to call it here at all, and the Tx audio still works.
+                	 * tick_TXsoundbuffer();
+                	 */
+    				//tick_codec_encode((uint8_t *)DMR_frame_buffer+0x0C);
+
+					write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, (uint8_t*)encodedAudioBuffer, 27);// send the audio bytes to the hardware
+                }
+                else
+                {
+                	if (wavbuffer_count > 0)
+                	{
+						memcpy((uint8_t *)DMR_frame_buffer,(uint8_t *)&audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_read_idx],27+0x0C);
+
+						if(tx_sequence==0)
+						{
+							write_SPI_page_reg_bytearray_SPI0(0x02, 0x00, (uint8_t*)DMR_frame_buffer, 0x0c);// put LC into hardware
+						}
+
+						wavbuffer_read_idx++;
+						if (wavbuffer_read_idx > (HOTSPOT_BUFFER_COUNT-1))
+						{
+							wavbuffer_read_idx=0;
+						}
+
+						if (wavbuffer_count>0)
+						{
+							wavbuffer_count--;
+						}
+                	}
+        			write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, (uint8_t*)(DMR_frame_buffer+0x0C), 27);// send the audio bytes to the hardware
+                }
+			}
+			else
+			{
+				//memcpy((uint8_t*)(DMR_frame_buffer+0x0C),(uint8_t *)SILENCE_AUDIO, 27);// send silence audio bytes
+				write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, (uint8_t*)SILENCE_AUDIO, 27);// send the audio bytes to the hardware
+			}
+
+			//write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, (uint8_t*)(DMR_frame_buffer+0x0C), 27);// send the audio bytes to the hardware
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80); // Transmit during next Timeslot
+			switch (tx_sequence)
+			{
+			case 0:
+				write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x08); // Data Type=0000 (Voice Frame A) , Voice, LCSS = 0
+				break;
+			case 1:
+				write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x18); // Data Type=0001 (Voice Frame B) , Voice, LCSS = 0
+				break;
+			case 2:
+				write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x28); // Data Type=0010 (Voice Frame C) , Voice, LCSS = 0
+				break;
+			case 3:
+				write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x38); // Data Type=0011 (Voice Frame D) , Voice, LCSS = 0
+				break;
+			case 4:
+				write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x48); // Data Type=0100 (Voice Frame E) , Voice, LCSS = 0
+				break;
+			case 5:
+				write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x58); // Data Type=0101 (Voice Frame F) , Voice, LCSS = 0
+				break;
+			}
+			tx_sequence++;
+			if (tx_sequence>5)
+			{
+				tx_sequence=0;
+			}
+			slot_state = DMR_STATE_TX_1;
 			break;
 
 		case DMR_STATE_TX_END_1: // Stop TX (first step)
@@ -870,8 +948,18 @@ void tick_HR_C6000()
 		int_timeout=0;
 	}
 
+	if (trxIsTransmitting)
+	{
+		if (wavbuffer_count >= 6)
+		{
+			SEGGER_RTT_printf(0, "%d sound buffers now %d\n",wavbuffer_count,PITCounter);
+			tick_codec_encode((uint8_t *)encodedAudioBuffer);
+		}
+	}
+
 	if (tmp_int_ts)
 	{
+#if false
 		// RX/TX state machine
 		switch (slot_state)
 		{
@@ -889,7 +977,9 @@ void tick_HR_C6000()
                 	 * and and if so tick_TXsoundbuffer just returns. So we don't need to call it here at all, and the Tx audio still works.
                 	 * tick_TXsoundbuffer();
                 	 */
-    				tick_codec_encode((uint8_t *)DMR_frame_buffer+0x0C);
+    				//tick_codec_encode((uint8_t *)DMR_frame_buffer+0x0C);
+
+					write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, (uint8_t*)encodedAudioBuffer, 27);// send the audio bytes to the hardware
                 }
                 else
                 {
@@ -913,15 +1003,17 @@ void tick_HR_C6000()
 							wavbuffer_count--;
 						}
                 	}
+        			write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, (uint8_t*)(DMR_frame_buffer+0x0C), 27);// send the audio bytes to the hardware
                 }
 
 			}
 			else
 			{
-				memcpy((uint8_t*)(DMR_frame_buffer+0x0C),(uint8_t *)SILENCE_AUDIO, 27);// send silence audio bytes
+				//memcpy((uint8_t*)(DMR_frame_buffer+0x0C),(uint8_t *)SILENCE_AUDIO, 27);// send silence audio bytes
+				write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, (uint8_t*)SILENCE_AUDIO, 27);// send the audio bytes to the hardware
 			}
 
-			write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, (uint8_t*)(DMR_frame_buffer+0x0C), 27);// send the audio bytes to the hardware
+			//write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, (uint8_t*)(DMR_frame_buffer+0x0C), 27);// send the audio bytes to the hardware
 			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80); // Transmit during next Timeslot
 			switch (tx_sequence)
 			{
@@ -952,7 +1044,7 @@ void tick_HR_C6000()
 			slot_state = DMR_STATE_TX_1;
 			break;
 		}
-
+#endif
 		// Timeout interrupted RX
     	if ((slot_state < DMR_STATE_TX_START_1) && (tick_cnt<10))
     	{

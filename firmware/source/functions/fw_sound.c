@@ -368,10 +368,7 @@ void receive_sound_data()
 				wavbuffer_write_idx=0;
 			}
 			wavbuffer_count++;
-			if (wavbuffer_count >= 6)
-			{
-				SEGGER_RTT_printf(0, "%d sound buffers now %d\n",wavbuffer_count,PITCounter);
-			}
+
 		}
 
 		switch(g_SAI_RX_Handle.queueUser)
