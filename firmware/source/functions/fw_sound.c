@@ -224,9 +224,8 @@ sai_transfer_t xfer;
 
 void init_sound()
 {
-	taskENTER_CRITICAL();
+
     g_TX_SAI_in_use = false;
-	taskEXIT_CRITICAL();
     SAI_TxSoftwareReset(I2S0, kSAI_ResetAll);
 	SAI_TxEnable(I2S0, true);
     SAI_RxSoftwareReset(I2S0, kSAI_ResetAll);
@@ -234,9 +233,7 @@ void init_sound()
 	spi_soundBuf=NULL;
 	wavbuffer_read_idx = 0;
 	wavbuffer_write_idx = 0;
-	taskENTER_CRITICAL();
 	wavbuffer_count = 0;
-	taskEXIT_CRITICAL();
 }
 
 void terminate_sound()
