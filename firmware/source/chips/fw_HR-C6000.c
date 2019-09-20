@@ -64,8 +64,6 @@ volatile uint8_t DMR_frame_buffer[DRM_FRAME_BUFFER_SIZE];
 volatile uint8_t encodedAudioBuffer[DRM_FRAME_BUFFER_SIZE];
 
 volatile bool int_sys;
-volatile bool int_ts;
-volatile bool tx_required;
 volatile bool int_rxtx;
 volatile int int_timeout;
 
@@ -542,7 +540,6 @@ void HRC6000TimeslotInterruptHandler()
 	read_SPI_page_reg_byte_SPI0(0x04, 0x42, &tmp_val_0x42);   //Read Current Timeslot Sent, Current Timeslot Received and Current Timeslot Active Status bits
 
 	SEGGER_RTT_printf(0, "TS_ISR\t%d\t0x%02x\n",PITCounter,slot_state);
-	int_ts=false;
 	// RX/TX state machine
 	switch (slot_state)
 	{
@@ -709,8 +706,18 @@ void HRC6000TimeslotInterruptHandler()
 			break;
 
 		default:
-			int_ts=true;// tell the RTOS based state machine that there is something to do
 			break;
+	}
+
+	// Timeout interrupted RX
+	if ((slot_state < DMR_STATE_TX_START_1) && (tick_cnt<10))
+	{
+		tick_cnt++;
+        if (tick_cnt==10)
+        {
+        	slot_state = DMR_STATE_RX_END;
+//        	SEGGER_RTT_printf(0, ">>> TIMEOUT\r\n");
+        }
 	}
 
 
@@ -747,7 +754,6 @@ void init_digital_state()
 {
 	taskENTER_CRITICAL();
 	int_sys=false;
-	int_ts=false;
 	int_timeout=0;
 	taskEXIT_CRITICAL();
 	slot_state = DMR_STATE_IDLE;
@@ -794,10 +800,7 @@ void store_qsodata()
 	// Not sure if its necessary to check byte [1] for 0x00 but I'm doing this
 	if (DMR_frame_buffer[1] == 0x00  && (DMR_frame_buffer[0]==TG_CALL_FLAG || DMR_frame_buffer[0]==PC_CALL_FLAG  || (DMR_frame_buffer[0]>=0x04 && DMR_frame_buffer[0]<=0x7)))
 	{
-		// Needs to enter critical because the LastHeard is accessed by other threads
-    	//taskENTER_CRITICAL();
     	lastHeardListUpdate((uint8_t *)DMR_frame_buffer);
-		//taskEXIT_CRITICAL();
 		qsodata_timer=QSO_TIMER_TIMEOUT;
 	}
 }
