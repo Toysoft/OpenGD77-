@@ -101,7 +101,7 @@ void tick_codec_decode(uint8_t *indata_ptr)
 
 void tick_codec_encode(uint8_t *outdata_ptr)
 {
-	SEGGER_RTT_printf(0, "tick_codec_encode now %d\n",PITCounter);
+	//SEGGER_RTT_printf(0, "tick_codec_encode now %d\n",PITCounter);
 	memset((uint8_t *)outdata_ptr, 0, 27);// fills with zeros
 
 	register int r0 asm ("r0") __attribute__((unused));

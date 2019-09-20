@@ -217,7 +217,7 @@ uint8_t spi_sound3[WAV_BUFFER_SIZE*2];
 uint8_t spi_sound4[WAV_BUFFER_SIZE*2];
 
 volatile bool g_TX_SAI_in_use = false;
-volatile bool g_RX_SAI_in_use = false;
+
 
 uint8_t *spi_soundBuf;
 sai_transfer_t xfer;
@@ -226,7 +226,6 @@ void init_sound()
 {
 	taskENTER_CRITICAL();
     g_TX_SAI_in_use = false;
-    g_RX_SAI_in_use = false;
 	taskEXIT_CRITICAL();
     SAI_TxSoftwareReset(I2S0, kSAI_ResetAll);
 	SAI_TxEnable(I2S0, true);
@@ -394,43 +393,17 @@ void receive_sound_data()
 		xfer.dataSize = WAV_BUFFER_SIZE*2;
 
 		SAI_TransferReceiveEDMA(I2S0, &g_SAI_RX_Handle, &xfer);
-
-		g_RX_SAI_in_use = true;
 	}
 }
 
 void tick_RXsoundbuffer()
 {
-	//taskENTER_CRITICAL();
-	bool tmp_g_TX_SAI_in_use = g_TX_SAI_in_use;
-	//taskEXIT_CRITICAL();
-    if (!tmp_g_TX_SAI_in_use)
+    if (!g_TX_SAI_in_use)
     {
-    	//taskENTER_CRITICAL();
     	send_sound_data();
-    	//taskEXIT_CRITICAL();
     }
 }
 
-
-// Called from tick_HR_C6000
-void tick_TXsoundbuffer()
-{
-	//taskENTER_CRITICAL();
-	bool tmp_g_RX_SAI_in_use = g_RX_SAI_in_use;
-	//taskEXIT_CRITICAL();
-    if (!tmp_g_RX_SAI_in_use)
-    {
-    	//taskENTER_CRITICAL();
-    	receive_sound_data();
-    	SEGGER_RTT_printf(0, "NOT g_RX_SAI_in_use\n");
-    	//taskEXIT_CRITICAL();
-    }
-    else
-    {
-    	SEGGER_RTT_printf(0, "g_RX_SAI_in_use\n");
-    }
-}
 
 void tick_melody()
 {

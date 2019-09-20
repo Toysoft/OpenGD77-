@@ -53,7 +53,6 @@ void SAI_TX_Callback(I2S_Type *base, sai_edma_handle_t *handle, status_t status,
 
 void SAI_RX_Callback(I2S_Type *base, sai_edma_handle_t *handle, status_t status, void *userData)
 {
-	g_RX_SAI_in_use = false;
 	receive_sound_data();
 }
 

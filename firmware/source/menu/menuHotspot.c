@@ -335,7 +335,7 @@ static void sendTerminator_LC_Frame(volatile uint8_t *receivedDMRDataAndAudio)
 
 void hotspotRxFrameHandler(uint8_t* frameBuf)
 {
-	taskENTER_CRITICAL();
+	//taskENTER_CRITICAL();
 	memcpy((uint8_t *)&audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufWriteIdx],frameBuf,27 + 0x0c  + 2);// 27 audio + 0x0c header + 2 hotspot signalling bytes
 	rfFrameBufCount++;
 	rfFrameBufWriteIdx++;
@@ -343,7 +343,7 @@ void hotspotRxFrameHandler(uint8_t* frameBuf)
 	{
 		rfFrameBufWriteIdx=0;
 	}
-	taskEXIT_CRITICAL();
+	//taskEXIT_CRITICAL();
 }
 
 
