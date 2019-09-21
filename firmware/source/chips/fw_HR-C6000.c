@@ -49,9 +49,11 @@ static const uint8_t spi_init_values_6[] = { 0x32, 0xef, 0x00, 0x31, 0xef, 0x00,
 
 
 volatile bool hasEncodedAudio=false;
+volatile bool hotspotDMRTxFrameBufferEmpty=false;
+volatile bool hotspotDMRRxFrameBufferAvailable=false;
 
 volatile uint8_t DMR_frame_buffer[DRM_FRAME_BUFFER_SIZE];
-volatile uint8_t encodedAudioBuffer[DRM_FRAME_BUFFER_SIZE];
+volatile uint8_t deferredUpdateBuffer[DRM_FRAME_BUFFER_SIZE];
 
 volatile int int_timeout;
 
@@ -514,13 +516,13 @@ void HRC6000SysInterruptHandler()
 	// Stop RX
     if ((sc==2) && (rxdt==2) && callAcceptFilter())        //Terminator with LC
     {
-		SEGGER_RTT_printf(0, ">>> RX STOP\r\n");
+		//SEGGER_RTT_printf(0, ">>> RX STOP\r\n");
     	slot_state = DMR_STATE_RX_END;
 
 		if (settingsUsbMode == USB_MODE_HOTSPOT)
 		{
 			DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_STOP;
-			hotspotRxFrameHandler((uint8_t *)DMR_frame_buffer);
+			hotspotDMRRxFrameBufferAvailable=true;
 		}
     }
 
@@ -553,7 +555,7 @@ void HRC6000SysInterruptHandler()
 				if (settingsUsbMode == USB_MODE_HOTSPOT)
 				{
 					DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_START_LATE;
-					hotspotRxFrameHandler((uint8_t *)DMR_frame_buffer);
+					hotspotDMRRxFrameBufferAvailable=true;
 				}
 			}
 		}
@@ -575,7 +577,7 @@ void HRC6000SysInterruptHandler()
 				if (settingsUsbMode == USB_MODE_HOTSPOT)
 				{
 					DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_START;
-					hotspotRxFrameHandler((uint8_t *)DMR_frame_buffer);
+					hotspotDMRRxFrameBufferAvailable=true;
 				}
 			}
 
@@ -590,7 +592,7 @@ void HRC6000SysInterruptHandler()
 				{
 					DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_AUDIO_FRAME;
 					DMR_frame_buffer[27 + 0x0c + 1] = (rxdt & 0x07);// audio sequence number
-					hotspotRxFrameHandler((uint8_t *)DMR_frame_buffer);
+					hotspotDMRRxFrameBufferAvailable=true;
 				}
 				else
 				{
@@ -602,8 +604,7 @@ void HRC6000SysInterruptHandler()
 			}
 		}
 	}
-	//SEGGER_RTT_printf(0, "SYS\t%d\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\n",PITCounter,tmp_val_0x50,tmp_val_0x51,tmp_val_0x52,tmp_val_0x57,tmp_val_0x5f,tmp_val_0x82,tmp_val_0x84,tmp_val_0x86,tmp_val_0x90,tmp_val_0x98);
-	SEGGER_RTT_printf(0, "SYS %02x [%02x %02x] %02x %02x %02x %02x SC:%02x RCRC:%02x RPI:%02x RXDT:%02x LCSS:%02x TC:%02x AT:%02x CC:%02x ??:%02x ST:%02x RAM:", slot_state, tmp_val_0x82, tmp_val_0x86, tmp_val_0x51, tmp_val_0x52, tmp_val_0x57, tmp_val_0x5f, (tmp_val_0x51 >> 0) & 0x03, (tmp_val_0x51 >> 2) & 0x01, (tmp_val_0x51 >> 3) & 0x01, (tmp_val_0x51 >> 4) & 0x0f, (tmp_val_0x52 >> 0) & 0x03, (tmp_val_0x52 >> 2) & 0x01, (tmp_val_0x52 >> 3) & 0x01, (tmp_val_0x52 >> 4) & 0x0f, (tmp_val_0x57 >> 2) & 0x01, (tmp_val_0x5f >> 0) & 0x03);
+	//SEGGER_RTT_printf(0, "SYS %02x [%02x %02x] %02x %02x %02x %02x SC:%02x RCRC:%02x RPI:%02x RXDT:%02x LCSS:%02x TC:%02x AT:%02x CC:%02x ??:%02x ST:%02x RAM:", slot_state, tmp_val_0x82, tmp_val_0x86, tmp_val_0x51, tmp_val_0x52, tmp_val_0x57, tmp_val_0x5f, (tmp_val_0x51 >> 0) & 0x03, (tmp_val_0x51 >> 2) & 0x01, (tmp_val_0x51 >> 3) & 0x01, (tmp_val_0x51 >> 4) & 0x0f, (tmp_val_0x52 >> 0) & 0x03, (tmp_val_0x52 >> 2) & 0x01, (tmp_val_0x52 >> 3) & 0x01, (tmp_val_0x52 >> 4) & 0x0f, (tmp_val_0x57 >> 2) & 0x01, (tmp_val_0x5f >> 0) & 0x03);
 
 }
 
@@ -612,7 +613,7 @@ void HRC6000TimeslotInterruptHandler()
 	uint8_t tmp_val_0x42;
 	read_SPI_page_reg_byte_SPI0(0x04, 0x42, &tmp_val_0x42);   //Read Current Timeslot Sent, Current Timeslot Received and Current Timeslot Active Status bits
 
-	SEGGER_RTT_printf(0, "TS_ISR\t%d\t0x%02x\n",PITCounter,slot_state);
+	//SEGGER_RTT_printf(0, "TS_ISR\t%d\t0x%02x\n",PITCounter,slot_state);
 	// RX/TX state machine
 	switch (slot_state)
 	{
@@ -701,31 +702,19 @@ void HRC6000TimeslotInterruptHandler()
                 	 */
     				//tick_codec_encode((uint8_t *)DMR_frame_buffer+0x0C);
 
-					write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, (uint8_t*)encodedAudioBuffer, 27);// send the audio bytes to the hardware
+					write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, (uint8_t*)deferredUpdateBuffer, 27);// send the audio bytes to the hardware
                 }
                 else
                 {
-                	if (wavbuffer_count > 0)
-                	{
-						memcpy((uint8_t *)DMR_frame_buffer,(uint8_t *)&audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_read_idx],27+0x0C);
 
-						if(tx_sequence==0)
-						{
-							write_SPI_page_reg_bytearray_SPI0(0x02, 0x00, (uint8_t*)DMR_frame_buffer, 0x0c);// put LC into hardware
-						}
+					if(tx_sequence==0)
+					{
+						write_SPI_page_reg_bytearray_SPI0(0x02, 0x00, (uint8_t*)deferredUpdateBuffer, 0x0c);// put LC into hardware
+					}
+        			write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, (uint8_t*)(deferredUpdateBuffer+0x0C), 27);// send the audio bytes to the hardware
 
-						wavbuffer_read_idx++;
-						if (wavbuffer_read_idx > (HOTSPOT_BUFFER_COUNT-1))
-						{
-							wavbuffer_read_idx=0;
-						}
+        			hotspotDMRTxFrameBufferEmpty=true;// we have finished with the current frame data from the hotspot
 
-						if (wavbuffer_count>0)
-						{
-							wavbuffer_count--;
-						}
-                	}
-        			write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, (uint8_t*)(DMR_frame_buffer+0x0C), 27);// send the audio bytes to the hardware
                 }
 			}
 			else
@@ -963,7 +952,7 @@ void tick_HR_C6000()
 {
 	if (trxIsTransmitting==true && (slot_state == DMR_STATE_IDLE)) // Start TX (first step)
 	{
-		SEGGER_RTT_printf(0, "Start Tx\n");
+		//SEGGER_RTT_printf(0, "Start Tx\n");
 	    NVIC_DisableIRQ(PORTC_IRQn);
 		if (settingsUsbMode != USB_MODE_HOTSPOT)
 		{
@@ -972,7 +961,11 @@ void tick_HR_C6000()
 		}
 		else
 		{
+
+			// Note. We don't increment the buffer indexes, becuase this is also the first frame of audio and we need it later
 			write_SPI_page_reg_bytearray_SPI0(0x02, 0x00, (uint8_t *)&audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_read_idx], 0x0c);// put LC into hardware
+			memcpy((uint8_t *)deferredUpdateBuffer,(uint8_t *)&audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_read_idx],27+0x0C);
+			hotspotDMRTxFrameBufferEmpty=false;
 		}
 
 		// Active mode.  The spec says use 0xA3 rather than 0xE3, but in practice it didn't seem to make any difference
@@ -1004,7 +997,7 @@ void tick_HR_C6000()
 				init_digital();
 				slot_state = DMR_STATE_IDLE;
 				int_timeout=0;
-				SEGGER_RTT_printf(0, ">>> INTERRUPT TIMEOUT\r\n");
+				//SEGGER_RTT_printf(0, ">>> INTERRUPT TIMEOUT\r\n");
 			}
 		}
 	}
@@ -1015,22 +1008,56 @@ void tick_HR_C6000()
 
 	if (trxIsTransmitting)
 	{
-		// Once there are 6 buffers available they can be encoded into one DMR frame
-		// The will happen  prior to the data being needed in the TS ISR, so that by the time tick_codec_encode encodes complete,
-		// the data is ready to be used in the TS ISR
-		if (wavbuffer_count >= 6)
+		if (settingsUsbMode == USB_MODE_HOTSPOT)
 		{
-			//SEGGER_RTT_printf(0, "%d sound buffers now %d\n",wavbuffer_count,PITCounter);
-			tick_codec_encode((uint8_t *)encodedAudioBuffer);
+			if (hotspotDMRTxFrameBufferEmpty == true && (wavbuffer_count > 0))
+			{
+				SEGGER_RTT_printf(0, "Hotspot put data into send buffer \n");
+				memcpy((uint8_t *)deferredUpdateBuffer,(uint8_t *)&audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_read_idx],27+0x0C);
+				wavbuffer_read_idx++;
+				if (wavbuffer_read_idx > (HOTSPOT_BUFFER_COUNT-1))
+				{
+					wavbuffer_read_idx=0;
+				}
+
+				if (wavbuffer_count>0)
+				{
+					wavbuffer_count--;
+				}
+				hotspotDMRTxFrameBufferEmpty=false;
+			}
+		}
+		else
+		{
+			// Once there are 6 buffers available they can be encoded into one DMR frame
+			// The will happen  prior to the data being needed in the TS ISR, so that by the time tick_codec_encode encodes complete,
+			// the data is ready to be used in the TS ISR
+			if (wavbuffer_count >= 6)
+			{
+				//SEGGER_RTT_printf(0, "%d sound buffers now %d\n",wavbuffer_count,PITCounter);
+				tick_codec_encode((uint8_t *)deferredUpdateBuffer);
+			}
 		}
 	}
 	else
 	{
-		if (hasEncodedAudio)
+		// receiving RF DMR
+		if (settingsUsbMode == USB_MODE_HOTSPOT)
 		{
-			hasEncodedAudio=false;
-			tick_codec_decode((uint8_t *)DMR_frame_buffer+0x0C);
-			tick_RXsoundbuffer();
+			if (hotspotDMRRxFrameBufferAvailable == true)
+			{
+				hotspotRxFrameHandler((uint8_t *)DMR_frame_buffer);
+				hotspotDMRRxFrameBufferAvailable = false;
+			}
+		}
+		else
+		{
+			if (hasEncodedAudio)
+			{
+				hasEncodedAudio=false;
+				tick_codec_decode((uint8_t *)DMR_frame_buffer+0x0C);
+				tick_RXsoundbuffer();
+			}
 		}
 	}
 

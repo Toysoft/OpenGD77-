@@ -37,6 +37,8 @@ USB_DMA_NONINIT_DATA_ALIGN(USB_DATA_ALIGN_SIZE) uint8_t usbComSendBuf[COM_BUFFER
 
 int sector = -1;
 
+#define ENABLE_HOTSPOT_MODE
+
 void tick_com_request()
 {
 		switch (settingsUsbMode)
@@ -44,12 +46,14 @@ void tick_com_request()
 			case USB_MODE_CPS:
 				if (com_request==1)
 				{
+#ifdef ENABLE_HOTSPOT_MODE
 					if (com_requestbuffer[0]==0xE0)
 					{
 						settingsUsbMode = USB_MODE_HOTSPOT;
 						menuSystemPushNewMenu(MENU_HOTSPOT_MODE);
 						return;
 					}
+#endif
 					taskENTER_CRITICAL();
 					handleCPSRequest();
 					taskEXIT_CRITICAL();
