@@ -59,6 +59,7 @@ static uint8_t tx_fl_h;
 static uint8_t tx_fh_l;
 static uint8_t tx_fh_h;
 
+int trxDMRMode = DMR_MODE_ACTIVE;// Active is for simplex
 
 int	trxGetMode()
 {
@@ -173,6 +174,18 @@ void trxSetFrequency(int fRx,int fTx)
 	{
 		currentRxFrequency=fRx;
 		currentTxFrequency=fTx;
+
+		// Most DMR radios determine whether to use Active or Passive DMR depending on whether the Tx and Rx freq are the same
+		// This prevents split simplex operation, but since no other radio appears to support split freq simplex
+		// Its easier to do things the same way as othe radios, and revisit this again in the future if split freq simplex is required.
+		if (currentRxFrequency == currentTxFrequency)
+		{
+			trxDMRMode = DMR_MODE_ACTIVE;
+		}
+		else
+		{
+			trxDMRMode = DMR_MODE_PASSIVE;
+		}
 
 #if false
 		if ((currentMode == RADIO_MODE_ANALOG) && (!open_squelch))

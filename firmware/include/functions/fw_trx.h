@@ -29,8 +29,9 @@ extern const int RADIO_UHF_MAX;
 
 enum RADIO_MODE { RADIO_MODE_NONE,RADIO_MODE_ANALOG,RADIO_MODE_DIGITAL};
 enum DMR_ADMIT_CRITERIA { ADMIT_CRITERIA_ALWAYS,ADMIT_CRITERIA_CHANNEL_FREE,ADMIT_CRITERIA_COLOR_CODE};
+enum DMR_MODE {DMR_MODE_ACTIVE,DMR_MODE_PASSIVE};
 
-
+extern int trxDMRMode;
 extern bool open_squelch;
 extern bool HR_C6000_datalogging;
 
@@ -39,6 +40,7 @@ extern uint32_t trxTalkGroupOrPcId;
 extern uint32_t trxDMRID;
 extern int trx_measure_count;
 extern int txstopdelay;
+
 
 void trx_check_analog_squelch();
 int	trxGetMode();
