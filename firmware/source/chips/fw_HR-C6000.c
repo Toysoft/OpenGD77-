@@ -81,11 +81,6 @@ bool callAcceptFilter();
 void setupPcOrTGHeader();
 volatile int TxTimeslot=0;
 volatile bool transitionToTX=false;
-/*
-enum DMR_MODE {
-	DMR_MODE_ACTIVE,DMR_MODE_PASSIVE
-} drmMode = DMR_MODE_PASSIVE ;
-*/
 
 enum SyncClass { SYNC_CLASS_HEADER, SYNC_CLASS_VOICE, SYNC_CLASS_DATA, SYNC_CLASS_RC};
 
@@ -559,6 +554,7 @@ void HRC6000SysInterruptHandler()
 			// Late entry into ongoing RX
 			if (slot_state == DMR_STATE_IDLE && callAcceptFilter())
 			{
+				SEGGER_RTT_printf(0,"InterLateEntry interrupt\n");
 				slot_state = DMR_STATE_RX_1;
 				store_qsodata();
 				init_codec();
@@ -572,13 +568,14 @@ void HRC6000SysInterruptHandler()
 			}
 		}
 
-		if (tmp_val_0x82 & 0x08) // InterRecvData
+		if (tmp_val_0x82 & 0x08) // Inter RecvData
 		{
 			// Reset RX timeout
 			tick_cnt = 0;
 			// Start RX
 			if ((slot_state == DMR_STATE_IDLE) && (rxSyncClass==2) && (rxDataType==1) &&  callAcceptFilter())       //Voice LC Header
 			{
+				SEGGER_RTT_printf(0,"RX START\n");
 				slot_state = DMR_STATE_RX_1;
 				store_qsodata();
 				init_codec();
