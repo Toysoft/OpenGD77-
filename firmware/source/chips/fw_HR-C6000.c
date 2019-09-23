@@ -613,7 +613,7 @@ void HRC6000SysInterruptHandler()
 			}
 		}
 	}
-//	SEGGER_RTT_printf(0, "SYS\t%d\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\n",PITCounter,tmp_val_0x50,tmp_val_0x51,tmp_val_0x52,tmp_val_0x57,tmp_val_0x5f,tmp_val_0x82,tmp_val_0x84,tmp_val_0x86,tmp_val_0x90,tmp_val_0x98);
+	//SEGGER_RTT_printf(0, "SYS\t%d\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\n",PITCounter,tmp_val_0x50,tmp_val_0x51,tmp_val_0x52,tmp_val_0x57,tmp_val_0x5f,tmp_val_0x82,tmp_val_0x84,tmp_val_0x86,tmp_val_0x90,tmp_val_0x98);
 }
 
 void HRC6000TransitionToTx()
@@ -635,7 +635,7 @@ void HRC6000TimeslotInterruptHandler()
 	uint8_t tmp_val_0x42;
 	read_SPI_page_reg_byte_SPI0(0x04, 0x42, &tmp_val_0x42);   //Read Current Timeslot Sent, Current Timeslot Received and Current Timeslot Active Status bits
 
-	//SEGGER_RTT_printf(0, "TS_ISR s:%d r0x57:0x%02x\n",slot_state,tmp_val_0x57);
+	SEGGER_RTT_printf(0, "TS_ISR\ts:%d\tr0x52:0x%02x\tr0x42:0x%02x\n",slot_state,((tmp_val_0x52 & 0x04) >> 2),tmp_val_0x42);
 	// RX/TX state machine
 	switch (slot_state)
 	{
@@ -643,12 +643,7 @@ void HRC6000TimeslotInterruptHandler()
 
 			GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1);
 			//GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
-			if ((transitionToTX == true) )
-			{
-				SEGGER_RTT_printf(0, "Transition incorrect TS\n");
-				return false;// Not this TS
-			}
-			if (trxIsTransmitting && (trxDMRMode == DMR_MODE_PASSIVE) && (((tmp_val_0x52 & 0x04) >> 2) == TxTimeslot))
+			if (trxIsTransmitting && (trxDMRMode == DMR_MODE_PASSIVE))
 			{
 				HRC6000TransitionToTx();
 			}
@@ -659,15 +654,8 @@ void HRC6000TimeslotInterruptHandler()
 			}
 			break;
 		case DMR_STATE_RX_2: // Start RX (second step)
-			if (trxIsTransmitting && (trxDMRMode == DMR_MODE_PASSIVE) && (((tmp_val_0x52 & 0x04) >> 2) == TxTimeslot))
-			{
-				HRC6000TransitionToTx();
-			}
-			else
-			{
 				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);   //  Receive during Next Timeslot And Layer2 Access success Bit
 				slot_state = DMR_STATE_RX_1;
-			}
 			break;
 		case DMR_STATE_RX_END: // Stop RX
 			init_digital_DMR_RX();
@@ -857,7 +845,12 @@ void init_digital_state()
 
 void init_digital_DMR_RX()
 {
-   // if (trxDMRMode == DMR_MODE_ACTIVE)
+   if (trxDMRMode == DMR_MODE_ACTIVE)
+    {
+    	write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0x43);  //Enable DMR Tx, DMR Rx, Passive Timing, Normal mode
+		write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40);  //Receive during next Timeslot
+    }
+    else
     {
     	write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xC3);  //Enable DMR Tx, DMR Rx, Passive Timing, Normal mode
 		write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x20);  //Set Sync Fail Bit (Reset?))
@@ -865,12 +858,6 @@ void init_digital_DMR_RX()
 		write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x20);  //Set Sync Fail Bit (Reset?)
 		write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40);  //Receive during next Timeslot
     }
-    /*
-    else
-    {
-    	write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0x43);	// Disable DMR Tx, Enable DMR Rx, Passive Timing, Normal mode
-		write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); // Receive during next Timeslot
-    }*/
 }
 
 void init_digital()
