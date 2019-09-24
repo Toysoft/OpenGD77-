@@ -773,21 +773,40 @@ void HRC6000TimeslotInterruptHandler()
 			slot_state = DMR_STATE_TX_END_2;
 			break;
 		case DMR_STATE_TX_END_2: // Stop TX (second step)
-			write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xC3);  //Enable DMR Tx and Rx, Passive Timing
+
+
+#ifdef THREE_STATE_SHUTDOWN
+			 slot_state = DMR_STATE_TX_END_3;
+#else
 
 			if (trxDMRMode == DMR_MODE_PASSIVE)
 			{
+				write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xC3);  //Enable DMR Tx and Rx, Passive Timing
 				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);   //  Receive during Next Timeslot And Layer2 Access success Bit
-				slot_state = DMR_STATE_RX_1;
+				slot_state = DMR_STATE_TX_END_3;
 			}
 			else
 			{
-				slot_state = DMR_STATE_TX_END_3;
+				init_digital_DMR_RX();
+				txstopdelay=30;
+				slot_state = DMR_STATE_IDLE;
 			}
+#endif
+
 			break;
 		case DMR_STATE_TX_END_3:
-			init_digital_DMR_RX();
-			slot_state = DMR_STATE_IDLE;
+			if (trxDMRMode == DMR_MODE_PASSIVE)
+			{
+				// Next line is from RX_1
+				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00);     //No Transmit or receive in next timeslot
+
+				//write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);   //  Receive during Next Timeslot And Layer2 Access success Bit
+				slot_state = DMR_STATE_RX_2;
+			}
+			else
+			{
+				slot_state = DMR_STATE_IDLE;
+			}
 			break;
 
 		default:
@@ -851,11 +870,12 @@ void init_digital_DMR_RX()
     	write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0x43);  //Enable DMR Tx, DMR Rx, Passive Timing, Normal mode
 		write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40);  //Receive during next Timeslot
 		*/
-		write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xC3);  //Enable DMR Tx, DMR Rx, Passive Timing, Normal mode
+    	write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xC3);  //Enable DMR Tx, DMR Rx, Passive Timing, Normal mode
 		write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x20);  //Set Sync Fail Bit (Reset?))
 		write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00);  //Reset
 		write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x20);  //Set Sync Fail Bit (Reset?)
 		write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40);  //Receive during next Timeslot
+
     }
     else
     {

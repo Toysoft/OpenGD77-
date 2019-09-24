@@ -240,6 +240,9 @@ static void enableTransmission()
 	GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 	GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 1);
 
+	//trxSetFrequency(freq_tx);
+	txstopdelay=0;
+	trxIsTransmitting=true;
 	trx_setTX();
 }
 
@@ -248,7 +251,10 @@ static void disableTransmission()
 	SEGGER_RTT_printf(0, "Disable Transmission\n");
 
 	GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
+	trx_activateRx();
 	trx_setRX();
+	//trxSetFrequency(freq_rx);
+
 }
 
 
@@ -703,7 +709,6 @@ static void hotspotStateMachine()
 			}
 			break;
 		case HOTSPOT_STATE_TX_SHUTDOWN:
-			/*
 			if (txstopdelay>0)
 			{
 				txstopdelay--;
@@ -717,14 +722,19 @@ static void hotspotStateMachine()
 				}
 			}
 			else
-			*/
 			{
-				if ((slot_state == DMR_STATE_IDLE))
+				if ((slot_state < DMR_STATE_TX_START_1))
 				{
 					disableTransmission();
 					hotspotState = HOTSPOT_STATE_RX_START;
 					SEGGER_RTT_printf(0, "TX_SHUTDOWN -> STATE_RX\n");
 					updateScreen(HOTSPOT_RX_IDLE);
+
+					/*
+					wavbuffer_read_idx=0;
+					wavbuffer_write_idx=0;
+					wavbuffer_count=0;
+					*/
 				}
 			}
 			break;
