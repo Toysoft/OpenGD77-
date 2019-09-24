@@ -41,7 +41,6 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 			GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 1);
 			//trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq);
-			txstopdelay=0;
 			trx_setTX();
 			updateScreen();
 		}
@@ -137,13 +136,15 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 		else
 		{
+			/*
 			if (txstopdelay>0)
 			{
 				txstopdelay--;
 			}
 			else
+			*/
 			{
-				if ((slot_state < DMR_STATE_TX_START_1))
+				if ((slot_state == DMR_STATE_IDLE))
 				{
 					//SEGGER_RTT_printf(0, "slot state %d\n",slot_state);
 					GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);

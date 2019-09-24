@@ -782,12 +782,12 @@ void HRC6000TimeslotInterruptHandler()
 			}
 			else
 			{
-				init_digital_DMR_RX();
-				txstopdelay=30;
-				slot_state = DMR_STATE_IDLE;
+				slot_state = DMR_STATE_TX_END_3;
 			}
 			break;
 		case DMR_STATE_TX_END_3:
+			init_digital_DMR_RX();
+			slot_state = DMR_STATE_IDLE;
 			break;
 
 		default:
@@ -847,7 +847,14 @@ void init_digital_DMR_RX()
 {
    if (trxDMRMode == DMR_MODE_ACTIVE)
     {
+	   /*
     	write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0x43);  //Enable DMR Tx, DMR Rx, Passive Timing, Normal mode
+		write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40);  //Receive during next Timeslot
+		*/
+		write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xC3);  //Enable DMR Tx, DMR Rx, Passive Timing, Normal mode
+		write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x20);  //Set Sync Fail Bit (Reset?))
+		write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00);  //Reset
+		write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x20);  //Set Sync Fail Bit (Reset?)
 		write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40);  //Receive during next Timeslot
     }
     else
