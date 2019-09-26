@@ -566,92 +566,97 @@ void HRC6000SysInterruptHandler()
 
 
 
-
-	timer_hrc6000task=0;
-	write_SPI_page_reg_byte_SPI0(0x04, 0x83, tmp_val_0x82);  //Clear remaining Interrupt Flags
-
-	rxDataType 	= (tmp_val_0x51 >> 4) & 0x0f;//Data Type or Voice Frame sequence number
-	rxSyncClass = (tmp_val_0x51 >> 0) & 0x03;//Received Sync Class  0=Sync Header 1=Voice 2=data 3=RC
-
-	// Stop RX
-    if ((rxSyncClass==SYNC_CLASS_DATA) && (rxDataType==2) && callAcceptFilter())        //Terminator with LC
-    {
-		//SEGGER_RTT_printf(0, ">>> RX STOP\r\n");
-    	slot_state = DMR_STATE_RX_END;
-
-		if (settingsUsbMode == USB_MODE_HOTSPOT)
-		{
-			DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_STOP;
-			hotspotDMRRxFrameBufferAvailable=true;
-		}
-		return;
-    }
-
-	if ((slot_state!=0) && (skip_count>0) && (rxSyncClass!=SYNC_CLASS_DATA) && ((rxDataType & 0x07) == 0x01))
+	if ((tmp_val_0x82 & SYS_INT_RECEIVED_DATA))
 	{
-		skip_count--;
-	}
-	rxCRCStatus = (((tmp_val_0x51 >> 2) & 0x01)==0);// CRC is OK if its 0
-	rpi = (tmp_val_0x51 >> 3) & 0x01;
-	rxColorCode 	= (tmp_val_0x52 >> 4) & 0x0f;
+		rxDataType 	= (tmp_val_0x51 >> 4) & 0x0f;//Data Type or Voice Frame sequence number
+		rxSyncClass = (tmp_val_0x51 >> 0) & 0x03;//Received Sync Class  0=Sync Header 1=Voice 2=data 3=RC
 
-
-	// Check for correct received packet
-	if ((tmp_val_0x82 & SYS_INT_RECEIVED_DATA) && (rxCRCStatus==true) && (rpi==0) && (rxColorCode == trxGetDMRColourCode()) && (slot_state < DMR_STATE_TX_START_1))
-	{
-		SEGGER_RTT_printf(0,"Data OK 0x%02x\n",tmp_val_0x82);
-
-		GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);// Turn the LED on as soon as a DMR signal is detected.
-
-
-
-
-
-		if (tmp_val_0x82 & 0x08) // Inter RecvData
+		// Stop RX
+		if ((rxSyncClass==SYNC_CLASS_DATA) && (rxDataType==2) && callAcceptFilter())        //Terminator with LC
 		{
-			// Reset RX timeout
-			tick_cnt = 0;
-			// Start RX
-			if ((slot_state == DMR_STATE_IDLE) && (rxSyncClass==SYNC_CLASS_DATA) && (rxDataType==1) &&  callAcceptFilter())       //Voice LC Header
+			SEGGER_RTT_printf(0, "RX STOP 0x%02x\n",tmp_val_0x82);
+			slot_state = DMR_STATE_RX_END;
+
+			if (settingsUsbMode == USB_MODE_HOTSPOT)
 			{
-				SEGGER_RTT_printf(0,"RX START\n");
-				slot_state = DMR_STATE_RX_1;
-				store_qsodata();
-				init_codec();
-				skip_count = 0;
-
-				//SEGGER_RTT_printf(0, ">>> RX START\r\n");
-
-				if (settingsUsbMode == USB_MODE_HOTSPOT)
-				{
-					DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_START;
-					hotspotDMRRxFrameBufferAvailable=true;
-				}
+				DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_STOP;
+				hotspotDMRRxFrameBufferAvailable=true;
 			}
+			return;
+		}
 
-			// Detect/decode voice packet and transfer it into the output soundbuffer
-			if ((slot_state != DMR_STATE_IDLE) && (skip_count==0) && (rxSyncClass!=SYNC_CLASS_DATA) && ((rxDataType & 0x07) >= 0x01) && ((rxDataType & 0x07) <= 0x06))
+		if ((slot_state!=0) && (skip_count>0) && (rxSyncClass!=SYNC_CLASS_DATA) && ((rxDataType & 0x07) == 0x01))
+		{
+			skip_count--;
+		}
+		rxCRCStatus = (((tmp_val_0x51 >> 2) & 0x01)==0);// CRC is OK if its 0
+		rpi = (tmp_val_0x51 >> 3) & 0x01;
+		rxColorCode 	= (tmp_val_0x52 >> 4) & 0x0f;
+
+
+		// Check for correct received packet
+		if ((rxCRCStatus==true) && (rpi==0) && (rxColorCode == trxGetDMRColourCode()) && (slot_state < DMR_STATE_TX_START_1))
+		{
+			//SEGGER_RTT_printf(0,"Data OK 0x%02x\n",tmp_val_0x82);
+
+			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);// Turn the LED on as soon as a DMR signal is detected.
+
+
+
+			// Start RX
+			if (slot_state == DMR_STATE_IDLE)
 			{
-//				SEGGER_RTT_printf(0, ">>> Audio frame %02x\r\n",rxdt & 0x07);
+				if ((rxSyncClass==SYNC_CLASS_DATA) && (rxDataType==1) &&  callAcceptFilter())       //Voice LC Header
+				{
+					SEGGER_RTT_printf(0,"RX START\n");
+					slot_state = DMR_STATE_RX_1;
+					store_qsodata();
+					init_codec();
+					skip_count = 0;
 
-				store_qsodata();
-				read_SPI_page_reg_bytearray_SPI1(0x03, 0x00, DMR_frame_buffer+0x0C, 27);
-				if (settingsUsbMode == USB_MODE_HOTSPOT)
-				{
-					DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_AUDIO_FRAME;
-					DMR_frame_buffer[27 + 0x0c + 1] = (rxDataType & 0x07);// audio sequence number
-					hotspotDMRRxFrameBufferAvailable=true;
-				}
-				else
-				{
-					if (settingsPrivateCallMuteMode == false)
+					//SEGGER_RTT_printf(0, ">>> RX START\r\n");
+
+					if (settingsUsbMode == USB_MODE_HOTSPOT)
 					{
-						hasEncodedAudio=true;// tell foreground that there is audio to encode
+						DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_START;
+						hotspotDMRRxFrameBufferAvailable=true;
 					}
 				}
 			}
+			else
+			{
+				// Detect/decode voice packet and transfer it into the output soundbuffer
+				if ((skip_count==0) && (rxSyncClass!=SYNC_CLASS_DATA) && ((rxDataType & 0x07) >= 0x01) && ((rxDataType & 0x07) <= 0x06))
+				{
+	//				SEGGER_RTT_printf(0, ">>> Audio frame %02x\r\n",rxdt & 0x07);
+
+					store_qsodata();
+					read_SPI_page_reg_bytearray_SPI1(0x03, 0x00, DMR_frame_buffer+0x0C, 27);
+					if (settingsUsbMode == USB_MODE_HOTSPOT)
+					{
+						DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_AUDIO_FRAME;
+						DMR_frame_buffer[27 + 0x0c + 1] = (rxDataType & 0x07);// audio sequence number
+						hotspotDMRRxFrameBufferAvailable=true;
+					}
+					else
+					{
+						if (settingsPrivateCallMuteMode == false)
+						{
+							hasEncodedAudio=true;// tell foreground that there is audio to encode
+						}
+					}
+				}
+			}
+
+
 		}
 	}
+
+
+
+
+	write_SPI_page_reg_byte_SPI0(0x04, 0x83, tmp_val_0x82);  //Clear remaining Interrupt Flags
+	timer_hrc6000task=0;
 	//SEGGER_RTT_printf(0, "SYS\t%d\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\n",PITCounter,tmp_val_0x50,tmp_val_0x51,tmp_val_0x52,tmp_val_0x57,tmp_val_0x5f,tmp_val_0x82,tmp_val_0x84,tmp_val_0x86,tmp_val_0x90,tmp_val_0x98);
 }
 
@@ -836,11 +841,8 @@ void HRC6000TimeslotInterruptHandler()
 		case DMR_STATE_TX_END_3:
 			if (trxDMRMode == DMR_MODE_PASSIVE)
 			{
-				// Next line is from RX_1
-				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00);     //No Transmit or receive in next timeslot
-
-				//write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);   //  Receive during Next Timeslot And Layer2 Access success Bit
-				slot_state = DMR_STATE_RX_2;
+				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);   //  Receive during Next Timeslot And Layer2 Access success Bit
+				slot_state = DMR_STATE_RX_1;
 			}
 			else
 			{
@@ -859,7 +861,7 @@ void HRC6000TimeslotInterruptHandler()
         if (tick_cnt==10)
         {
         	slot_state = DMR_STATE_RX_END;
-        	SEGGER_RTT_printf(0, ">>> TIMEOUT\r\n");
+        	SEGGER_RTT_printf(0, "TIMEOUT\n");
         }
 	}
 	timer_hrc6000task=0;// I don't think this actually does anything. Its probably redundant legacy code
@@ -950,12 +952,14 @@ void store_qsodata()
 	// Of if the display is holding on the PC accept text and the incoming call is not a PC
 	if (qsodata_timer == 0 || (menuUtilityReceivedPcId!=0 && DMR_frame_buffer[0]==TG_CALL_FLAG))
 	{
+		//SEGGER_RTT_printf(0, "QSO_DISPLAY_CALLER_DATA\n");
 		menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;
 	}
 	// check if this is a valid data frame, including Talker Alias data frames (0x04 - 0x07)
 	// Not sure if its necessary to check byte [1] for 0x00 but I'm doing this
 	if (DMR_frame_buffer[1] == 0x00  && (DMR_frame_buffer[0]==TG_CALL_FLAG || DMR_frame_buffer[0]==PC_CALL_FLAG  || (DMR_frame_buffer[0]>=0x04 && DMR_frame_buffer[0]<=0x7)))
 	{
+		//SEGGER_RTT_printf(0, "lastHeardListUpdate\n");
     	lastHeardListUpdate((uint8_t *)DMR_frame_buffer);
 		qsodata_timer=QSO_TIMER_TIMEOUT;
 	}
