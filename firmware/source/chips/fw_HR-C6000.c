@@ -27,6 +27,15 @@
 #include <SeggerRTT/RTT/SEGGER_RTT.h>
 #endif
 
+static const int SYS_INT_SEND_REQUEST_REJECTED  = 0x80;
+static const int SYS_INT_SEND_START 			= 0x40;
+static const int SYS_INT_SEND_END 				= 0x20;
+static const int SYS_INT_POST_ACCESS			= 0x10;
+static const int SYS_INT_RECEIVED_DATA			= 0x08;
+static const int SYS_INT_RECEIVED_INFORMATION	= 0x04;
+static const int SYS_INT_ABNORMAL_EXIT			= 0x02;
+static const int SYS_INT_PHYSICAL_LAYER			= 0x01;
+
 TaskHandle_t fwhrc6000TaskHandle;
 
 const uint8_t TG_CALL_FLAG = 0x00;
@@ -82,7 +91,7 @@ void setupPcOrTGHeader();
 volatile int TxTimeslot=0;
 volatile bool transitionToTX=false;
 
-enum SyncClass { SYNC_CLASS_HEADER, SYNC_CLASS_VOICE, SYNC_CLASS_DATA, SYNC_CLASS_RC};
+enum RXSyncClass { SYNC_CLASS_HEADER = 0, SYNC_CLASS_VOICE = 1, SYNC_CLASS_DATA = 2, SYNC_CLASS_RC = 3};
 
 void SPI_HR_C6000_init()
 {
@@ -306,6 +315,178 @@ void PORTC_IRQHandler(void)
     __DSB();
 }
 
+
+inline static void HRC6000SysSendRejectedInt()
+{
+	/*
+		Bit7: In DMR mode: indicates that the transmission request rejects the interrupt without a sub-status register.
+		In DMR mode, it indicates that this transmission request is rejected because the channel is busy;
+	 */
+//	SEGGER_RTT_printf(0, "%d SYS_INT_SEND_REQUEST_REJECTED\n",PITCounter);
+}
+
+inline static void HRC6000SysSendStartInt()
+{
+/*
+		Bit6: In DMR mode: indicates the start of transmission; in MSK mode: indicates that the ping-pong buffer is half-full interrupted.
+		In DMR mode, the sub-status register 0x84 is transmitted at the beginning, and the corresponding interrupt can be masked by 0x85.
+	 */
+
+	read_SPI_page_reg_byte_SPI0(0x04, 0x84, &tmp_val_0x84);  //Read sub status register
+
+//	SEGGER_RTT_printf(0, "%d SYS_INT_SEND_START 0x%02x 0x%02x\n",PITCounter,tmp_val_0x84);
+
+	/*
+		The sub-status registers indicate
+		seven interrupts that initiate the transmission, including:
+		Bit7: Voice transmission starts
+
+		Bit6: OACSU requests to send interrupts, including first-time send and resend requests.
+
+		Bit5: End-to-end voice enhanced encryption interrupt, including EMB72bits update interrupt
+		and voice 216bits key update interrupt, which are distinguished by Bit5~Bit4 of Register
+		0x88, where 01 indicates EMB72bits update interrupt and 10 indicates voice 216bits key update interrupt.
+
+		Bit4: 	The Vocoder configuration returns an interrupt (this interrupt is sent by the HR_C6000
+				to the MCU when the MCU manually configures the AMBE3000). This interrupt is only
+				valid when using the external AMBE3000 vocoder.
+
+		Bit3: Data transmission starts
+
+		Bit2: Data partial retransmission
+
+		Bit1: Data retransmission
+
+		Bit0: The vocoder is initialized to an interrupt. This interrupt is only valid when using an external AMBE3000 or AMBE1000 vocoder.
+
+		In MSK mode, there is no sub-interrupt status.
+	*/
+}
+
+inline static void HRC6000SysSendEndInt()
+{
+	/*
+		Bit5: In DMR mode: indicates the end of transmission; in MSK mode: indicates the end of	transmission.
+	*/
+	read_SPI_page_reg_byte_SPI0(0x04, 0x86, &tmp_val_0x86);  //Read Interrupt Flag Register2
+
+	//SEGGER_RTT_printf(0, "%d SYS_INT_SEND_END 0x%02x\n",PITCounter,tmp_val_0x86);
+	/*
+		In DMR mode, there is a sub-status register 0x86 at the end of the transmission, and the
+		corresponding interrupt can be masked by 0x87. The sub-status register indicates six interrupts that
+		generate the end of the transmission, including:
+
+		Bit7: 	Indicates that the service transmission is completely terminated, including voice and data.
+				The MCU distinguishes whether the voice or data is sent this time. Confirming that the
+				data service is received is the response packet that receives the correct feedback.
+
+		Bit6: 	Indicates that a Fragment length confirmation packet is sent in the sliding window data
+				service without immediate feedback.
+
+		Bit5: VoiceOACSU wait timeout
+
+		Bit4: 	The Layer 2 mode handles the interrupt. The MCU sends the configuration information
+				to the last processing timing of the chip to control the interrupt. If after the interrupt, the
+				MCU has not written all the information to be sent in the next frame to the chip, the next
+				time slot cannot be Configured to send time slots. This interrupt is only valid when the chip
+				is operating in Layer 2 mode.
+
+		Bit3: 	indicates that a Fragment that needs to be fed back confirms the completion of the data
+				packet transmission. The interrupt is mainly applied to the acknowledgment message after
+				all the data packets have been sent or the data packet that needs to be fed back in the sliding
+				window data service is sent to the MCU to start waiting for the timing of the Response
+				packet. Device.
+
+		Bit2 : ShortLC Receive Interrupt
+
+		Bit1: BS activation timeout interrupt
+
+		In MSK mode, there is no substate interrupt.
+	*/
+}
+
+inline static void HRC6000SysPostAccessInt()
+{
+	/*
+	Bit4:
+		In DMR mode: indicates the access interruption;
+		In MSK mode: indicates that the response response is interrupted.
+
+		In DMR mode, the access interrupt has no sub-status register.
+		After receiving the interrupt, it indicates that the access voice communication mode is post-access. the way.
+
+		In MSK mode, this interrupt has no substatus registers.
+	*/
+
+	// Late entry into ongoing RX
+	if (slot_state == DMR_STATE_IDLE && callAcceptFilter())
+	{
+		SEGGER_RTT_printf(0,"InterLateEntry interrupt\n");
+		slot_state = DMR_STATE_RX_1;
+		store_qsodata();
+		init_codec();
+		skip_count = 2;
+
+		if (settingsUsbMode == USB_MODE_HOTSPOT)
+		{
+			DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_START_LATE;
+			hotspotDMRRxFrameBufferAvailable=true;
+		}
+	}
+
+}
+
+inline static void HRC6000SysReceivedDataInt()
+{
+	//SEGGER_RTT_printf(0, "%d SYS_INT_RECEIVED_DATA\n",PITCounter);
+	/*
+		Bit3: 	In DMR mode: indicates that the control frame parsing completion interrupt;
+				In MSK mode: indicates the receive interrupt.
+
+		In DMR mode, this interrupt has no sub-status register, but the error and receive type of its received
+		data is given by the 0x51 register. The DLLRecvDataType, DLLRecvCRC are used to indicate the
+		received data type and the error status, and the MCU accordingly performs the corresponding status.
+
+		Display, you can also block the corresponding interrupt.
+		In MSK mode, this interrupt has no substate interrupts.
+
+		The FMB frame's EMB information parsing completion prompt is also the completion of the
+		interrupt, which is distinguished by judging the 0x51 register SyncClass=0.
+	*/
+}
+
+inline static void HRC6000SysReceivedInformationInt()
+{
+	//SEGGER_RTT_printf(0, "%d SYS_INT_RECEIVED_INFORMATION\n",PITCounter);
+
+}
+
+inline static void HRC6000SysAbnormalExitInt()
+{
+	read_SPI_page_reg_byte_SPI0(0x04, 0x98, &tmp_val_0x98);
+//	SEGGER_RTT_printf(0, "%d SYS_INT_ABNORMAL_EXIT 0x%02x\n",PITCounter,tmp_val_0x98);
+	/*
+		Bit1: In DMR mode: indicates that the voice is abnormally exited;
+		In DMR mode, the cause of the abnormality in DMR mode is the unexpected abnormal voice
+		interrupt generated inside the state machine. The corresponding voice exception type is obtained
+		through Bit2~Bit0 of register address 0x98.
+	*/
+}
+
+inline static void HRC6000SysPhysicalLayerInt()
+{
+//	SEGGER_RTT_printf(0, "%d SYS_INT_PHYSICAL_LAYER 0x02\n",PITCounter);
+	/*
+		Bit0: physical layer separate work reception interrupt
+		The physical layer works independently to receive interrupts without a sub-status register. The
+		interrupt is generated in the physical layer single working mode. After receiving the data, the
+		interrupt is generated, and the MCU is notified to read the corresponding register to obtain the
+		received data. This interrupt is typically tested in bit error rate or other performance in physical
+		layer mode.
+	*/
+}
+
+
 void HRC6000SysInterruptHandler()
 {
 
@@ -318,210 +499,82 @@ void HRC6000SysInterruptHandler()
 	read_SPI_page_reg_byte_SPI0(0x04, 0x82, &tmp_val_0x82);  //Read Interrupt Flag Register1
 	read_SPI_page_reg_byte_SPI0(0x04, 0x50, &tmp_val_0x50);
 	read_SPI_page_reg_byte_SPI0(0x04, 0x51, &tmp_val_0x51);
-	read_SPI_page_reg_byte_SPI0(0x04, 0x57, &tmp_val_0x57);// Not sure what this does
+	read_SPI_page_reg_byte_SPI0(0x04, 0x52, &tmp_val_0x52);  //Read Received CC and CACH Register
+	read_SPI_page_reg_byte_SPI0(0x04, 0x5f, &tmp_val_0x5f);  //Read Received Sync type register
+	//read_SPI_page_reg_byte_SPI0(0x04, 0x57, &tmp_val_0x57);// Not sure what this does
 
-	if (tmp_val_0x82 & 0x80)
+	read_SPI_page_reg_bytearray_SPI0(0x02, 0x00, DMR_frame_buffer, DRM_FRAME_BUFFER_SIZE);
+	receivedTgOrPcId 	= (DMR_frame_buffer[3]<<16)+(DMR_frame_buffer[4]<<8)+(DMR_frame_buffer[5]<<0);// used by the call accept filter
+	receivedSrcId 		= (DMR_frame_buffer[6]<<16)+(DMR_frame_buffer[7]<<8)+(DMR_frame_buffer[8]<<0);// used by the call accept filter
+
+	if (tmp_val_0x82 & SYS_INT_SEND_REQUEST_REJECTED)
 	{
-		/*
-			Bit7: In DMR mode: indicates that the transmission request rejects the interrupt without a sub-status register.
-			In DMR mode, it indicates that this transmission request is rejected because the channel is busy;
-		 */
-		//SEGGER_RTT_printf(0, "%d Sys 0x80\n",PITCounter);
+		HRC6000SysSendRejectedInt();
 	}
 
-	if (tmp_val_0x82 & 0x40)
+	if (tmp_val_0x82 & SYS_INT_SEND_START)
 	{
-		/*
-		 	Bit6: In DMR mode: indicates the start of transmission; in MSK mode: indicates that the ping-pong buffer is half-full interrupted.
-			In DMR mode, the sub-status register 0x84 is transmitted at the beginning, and the corresponding interrupt can be masked by 0x85.
-		 */
-
-		read_SPI_page_reg_byte_SPI0(0x04, 0x84, &tmp_val_0x84);  //Read sub status register
-		/*
-			The sub-status registers indicate
-			seven interrupts that initiate the transmission, including:
-			Bit7: Voice transmission starts
-
-			Bit6: OACSU requests to send interrupts, including first-time send and resend requests.
-
-			Bit5: End-to-end voice enhanced encryption interrupt, including EMB72bits update interrupt
-			and voice 216bits key update interrupt, which are distinguished by Bit5~Bit4 of Register
-			0x88, where 01 indicates EMB72bits update interrupt and 10 indicates voice 216bits key update interrupt.
-
-			Bit4: 	The Vocoder configuration returns an interrupt (this interrupt is sent by the HR_C6000
-					to the MCU when the MCU manually configures the AMBE3000). This interrupt is only
-					valid when using the external AMBE3000 vocoder.
-
-			Bit3: Data transmission starts
-
-			Bit2: Data partial retransmission
-
-			Bit1: Data retransmission
-
-			Bit0: The vocoder is initialized to an interrupt. This interrupt is only valid when using an external AMBE3000 or AMBE1000 vocoder.
-
-			In MSK mode, there is no sub-interrupt status.
-		*/
-		//SEGGER_RTT_printf(0, "%d Sys 0x%02x 0x%02x\n",PITCounter,tmp_val_0x82,tmp_val_0x84);
+		HRC6000SysSendStartInt();
 	}
 	else
 	{
 		tmp_val_0x84=0x00;
 	}
 
-	if (tmp_val_0x82 & 0x20)// Kai's comment was InterSendStop interrupt
+	if (tmp_val_0x82 & SYS_INT_SEND_END)// Kai's comment was InterSendStop interrupt
 	{
-		/*
-			Bit5: In DMR mode: indicates the end of transmission; in MSK mode: indicates the end of	transmission.
-		*/
-		read_SPI_page_reg_byte_SPI0(0x04, 0x86, &tmp_val_0x86);  //Read Interrupt Flag Register2
-
-	//	SEGGER_RTT_printf(0, "%d Sys 0x%02x 0x%02x\n",PITCounter,tmp_val_0x82,tmp_val_0x86);
-		/*
-			In DMR mode, there is a sub-status register 0x86 at the end of the transmission, and the
-			corresponding interrupt can be masked by 0x87. The sub-status register indicates six interrupts that
-			generate the end of the transmission, including:
-
-			Bit7: 	Indicates that the service transmission is completely terminated, including voice and data.
-					The MCU distinguishes whether the voice or data is sent this time. Confirming that the
-					data service is received is the response packet that receives the correct feedback.
-
-			Bit6: 	Indicates that a Fragment length confirmation packet is sent in the sliding window data
-					service without immediate feedback.
-
-			Bit5: VoiceOACSU wait timeout
-
-			Bit4: 	The Layer 2 mode handles the interrupt. The MCU sends the configuration information
-					to the last processing timing of the chip to control the interrupt. If after the interrupt, the
-					MCU has not written all the information to be sent in the next frame to the chip, the next
-					time slot cannot be Configured to send time slots. This interrupt is only valid when the chip
-					is operating in Layer 2 mode.
-
-			Bit3: 	indicates that a Fragment that needs to be fed back confirms the completion of the data
-					packet transmission. The interrupt is mainly applied to the acknowledgment message after
-					all the data packets have been sent or the data packet that needs to be fed back in the sliding
-					window data service is sent to the MCU to start waiting for the timing of the Response
-					packet. Device.
-
-			Bit2 : ShortLC Receive Interrupt
-
-			Bit1: BS activation timeout interrupt
-
-			In MSK mode, there is no substate interrupt.
-		*/
+		HRC6000SysSendEndInt();
 	}
 	else
 	{
 		tmp_val_0x86=0x00;
 	}
 
-	if (tmp_val_0x82 & 0x10)
+	if (tmp_val_0x82 & SYS_INT_POST_ACCESS)
 	{
-		/*
-		Bit4:
-			In DMR mode: indicates the access interruption;
-			In MSK mode: indicates that the response response is interrupted.
-
-			In DMR mode, the access interrupt has no sub-status register.
-			After receiving the interrupt, it indicates that the access voice communication mode is post-access. the way.
-
-			In MSK mode, this interrupt has no substatus registers.
-		*/
-		//SEGGER_RTT_printf(0, "%d Sys 0x10\n",PITCounter);
+		HRC6000SysPostAccessInt();
 	}
 
-	if (tmp_val_0x82 & 0x08)
+	if (tmp_val_0x82 & SYS_INT_RECEIVED_DATA)
 	{
-		/*
-			Bit3: 	In DMR mode: indicates that the control frame parsing completion interrupt;
-					In MSK mode: indicates the receive interrupt.
-
-			In DMR mode, this interrupt has no sub-status register, but the error and receive type of its received
-			data is given by the 0x51 register. The DLLRecvDataType, DLLRecvCRC are used to indicate the
-			received data type and the error status, and the MCU accordingly performs the corresponding status.
-
-			Display, you can also block the corresponding interrupt.
-			In MSK mode, this interrupt has no substate interrupts.
-
-			The FMB frame's EMB information parsing completion prompt is also the completion of the
-			interrupt, which is distinguished by judging the 0x51 register SyncClass=0.
-
-		*/
-		//SEGGER_RTT_printf(0, "%d Sys 0x08\n",PITCounter);
+		HRC6000SysReceivedDataInt();
 	}
 
-
-	if (tmp_val_0x82 & 0x04)
+	if (tmp_val_0x82 & SYS_INT_RECEIVED_INFORMATION)
 	{
-		/*
-			Bit2:
-			In DMR mode: indicates service data reception interrupt; in FM mode: indicates FM function detection interrupt.
-			In DMR mode, this interrupt has sub-status register 0x90, which has three types:
-			1. 0x80 indicates that the entire information is received and verified. After the service data is
-			verified, the MCU extracts the data after the address 0x30 in the RX terminal 1.2KRAM
-			through the SPI port. The length of the data is defined by the corresponding field of the
-			received frame header.
-			2. 0x00 indicates the entire information reception check error;
-			3. 0x40 indicates that a non-confirmed SMS abnormal interrupt is generated;
-
-			In FM mode, the interrupt has sub-status register 0x90, and the sub-status register has 1 type:
-			1. 0x10 indicates that the FM function detection interrupt is matched. When the FM interrupt is
-			detected in the FM mode, the corresponding analog sound output is turned on.
-		*/
-		read_SPI_page_reg_byte_SPI0(0x04, 0x90, &tmp_val_0x90);
-
-		//SEGGER_RTT_printf(0, "%d Sys 0x%02x 0x%02x\n",PITCounter,tmp_val_0x82,tmp_val_0x90);
-
+		HRC6000SysReceivedInformationInt();
 	}
 	else
 	{
 		tmp_val_0x90 = 0x00;
 	}
 
-
-	if (tmp_val_0x82 & 0x02)
+	if (tmp_val_0x82 & SYS_INT_ABNORMAL_EXIT)
 	{
-		/*
-			Bit1: In DMR mode: indicates that the voice is abnormally exited;
-			In DMR mode, the cause of the abnormality in DMR mode is the unexpected abnormal voice
-			interrupt generated inside the state machine. The corresponding voice exception type is obtained
-			through Bit2~Bit0 of register address 0x98.
-		*/
-		read_SPI_page_reg_byte_SPI0(0x04, 0x98, &tmp_val_0x98);
-		//SEGGER_RTT_printf(0, "%d Sys 0x%02x 0x%02x\n",PITCounter,tmp_val_0x82,tmp_val_0x98);
+		HRC6000SysAbnormalExitInt();
 	}
 	else
 	{
 		tmp_val_0x98 = 0x00;
 	}
 
-	if (tmp_val_0x82 & 0x02)
+
+	if (tmp_val_0x82 & SYS_INT_PHYSICAL_LAYER)
 	{
-	/*
-		Bit0: physical layer separate work reception interrupt
-		The physical layer works independently to receive interrupts without a sub-status register. The
-		interrupt is generated in the physical layer single working mode. After receiving the data, the
-		interrupt is generated, and the MCU is notified to read the corresponding register to obtain the
-		received data. This interrupt is typically tested in bit error rate or other performance in physical
-		layer mode.
-	*/
-		//SEGGER_RTT_printf(0, "%d Sys 0x02\n",PITCounter);
+		HRC6000SysPhysicalLayerInt();
 	}
 
-	read_SPI_page_reg_byte_SPI0(0x04, 0x52, &tmp_val_0x52);  //Read Received CC and CACH Register
-	read_SPI_page_reg_byte_SPI0(0x04, 0x5f, &tmp_val_0x5f);  //Read Received Sync type register
-	read_SPI_page_reg_bytearray_SPI0(0x02, 0x00, DMR_frame_buffer, DRM_FRAME_BUFFER_SIZE);
+
+
 
 	timer_hrc6000task=0;
-
-
 	write_SPI_page_reg_byte_SPI0(0x04, 0x83, tmp_val_0x82);  //Clear remaining Interrupt Flags
 
 	rxDataType 	= (tmp_val_0x51 >> 4) & 0x0f;//Data Type or Voice Frame sequence number
 	rxSyncClass = (tmp_val_0x51 >> 0) & 0x03;//Received Sync Class  0=Sync Header 1=Voice 2=data 3=RC
 
 	// Stop RX
-    if ((rxSyncClass==2) && (rxDataType==2) && callAcceptFilter())        //Terminator with LC
+    if ((rxSyncClass==SYNC_CLASS_DATA) && (rxDataType==2) && callAcceptFilter())        //Terminator with LC
     {
 		//SEGGER_RTT_printf(0, ">>> RX STOP\r\n");
     	slot_state = DMR_STATE_RX_END;
@@ -531,9 +584,10 @@ void HRC6000SysInterruptHandler()
 			DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_STOP;
 			hotspotDMRRxFrameBufferAvailable=true;
 		}
+		return;
     }
 
-	if ((slot_state!=0) && (skip_count>0) && (rxSyncClass!=2) && ((rxDataType & 0x07) == 0x01))
+	if ((slot_state!=0) && (skip_count>0) && (rxSyncClass!=SYNC_CLASS_DATA) && ((rxDataType & 0x07) == 0x01))
 	{
 		skip_count--;
 	}
@@ -541,39 +595,24 @@ void HRC6000SysInterruptHandler()
 	rpi = (tmp_val_0x51 >> 3) & 0x01;
 	rxColorCode 	= (tmp_val_0x52 >> 4) & 0x0f;
 
+
 	// Check for correct received packet
-	if ((rxCRCStatus==true) && (rpi==0) && (rxColorCode == trxGetDMRColourCode()) && (slot_state < DMR_STATE_TX_START_1))
+	if ((tmp_val_0x82 & SYS_INT_RECEIVED_DATA) && (rxCRCStatus==true) && (rpi==0) && (rxColorCode == trxGetDMRColourCode()) && (slot_state < DMR_STATE_TX_START_1))
 	{
+		SEGGER_RTT_printf(0,"Data OK 0x%02x\n",tmp_val_0x82);
+
 		GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);// Turn the LED on as soon as a DMR signal is detected.
 
-		receivedTgOrPcId 	= (DMR_frame_buffer[3]<<16)+(DMR_frame_buffer[4]<<8)+(DMR_frame_buffer[5]<<0);// used by the call accept filter
-		receivedSrcId 		= (DMR_frame_buffer[6]<<16)+(DMR_frame_buffer[7]<<8)+(DMR_frame_buffer[8]<<0);// used by the call accept filter
 
-		if (tmp_val_0x82 & 0x10) // InterLateEntry interrupt
-		{
-			// Late entry into ongoing RX
-			if (slot_state == DMR_STATE_IDLE && callAcceptFilter())
-			{
-				SEGGER_RTT_printf(0,"InterLateEntry interrupt\n");
-				slot_state = DMR_STATE_RX_1;
-				store_qsodata();
-				init_codec();
-				skip_count = 2;
 
-				if (settingsUsbMode == USB_MODE_HOTSPOT)
-				{
-					DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_START_LATE;
-					hotspotDMRRxFrameBufferAvailable=true;
-				}
-			}
-		}
+
 
 		if (tmp_val_0x82 & 0x08) // Inter RecvData
 		{
 			// Reset RX timeout
 			tick_cnt = 0;
 			// Start RX
-			if ((slot_state == DMR_STATE_IDLE) && (rxSyncClass==2) && (rxDataType==1) &&  callAcceptFilter())       //Voice LC Header
+			if ((slot_state == DMR_STATE_IDLE) && (rxSyncClass==SYNC_CLASS_DATA) && (rxDataType==1) &&  callAcceptFilter())       //Voice LC Header
 			{
 				SEGGER_RTT_printf(0,"RX START\n");
 				slot_state = DMR_STATE_RX_1;
@@ -591,7 +630,7 @@ void HRC6000SysInterruptHandler()
 			}
 
 			// Detect/decode voice packet and transfer it into the output soundbuffer
-			if ((slot_state != DMR_STATE_IDLE) && (skip_count==0) && (rxSyncClass!=2) && ((rxDataType & 0x07) >= 0x01) && ((rxDataType & 0x07) <= 0x06))
+			if ((slot_state != DMR_STATE_IDLE) && (skip_count==0) && (rxSyncClass!=SYNC_CLASS_DATA) && ((rxDataType & 0x07) >= 0x01) && ((rxDataType & 0x07) <= 0x06))
 			{
 //				SEGGER_RTT_printf(0, ">>> Audio frame %02x\r\n",rxdt & 0x07);
 
