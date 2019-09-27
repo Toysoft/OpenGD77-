@@ -578,12 +578,13 @@ void HRC6000SysInterruptHandler()
 		rxColorCode 	= (tmp_val_0x52 >> 4) & 0x0f;
 		timeCode =  ((tmp_val_0x52 & 0x04) >> 2);
 
-		//SEGGER_RTT_printf(0, "RXDT\taf:%d\tsc:%02x\tcrc:%02x\trpi:%02x\tcc:%d\n",(rxDataType&0x07),rxSyncClass,rxCRCStatus,rpi,rxColorCode);
+		SEGGER_RTT_printf(0, "RXDT\taf:%d\tsc:%02x\tcrc:%02x\trpi:%02x\tcc:%d\n",(rxDataType&0x07),rxSyncClass,rxCRCStatus,rpi,rxColorCode);
 
 
-		// Stop RX
-		if ((rxSyncClass==SYNC_CLASS_DATA) && (rxDataType==2) && callAcceptFilter())        //Terminator with LC
+		// Note only detect terminator frames in Active mode, because in passive we can see our own terminators echoed back which can be a problem
+		if ((trxDMRMode == DMR_MODE_ACTIVE) && (rxSyncClass==SYNC_CLASS_DATA) && (rxDataType==2) && callAcceptFilter())        //Terminator with LC
 		{
+
 			SEGGER_RTT_printf(0, "RX STOP 0x%02x\n",tmp_val_0x82);
 			slot_state = DMR_STATE_RX_END;
 
@@ -637,7 +638,7 @@ void HRC6000SysInterruptHandler()
 
 				// Detect/decode voice packet and transfer it into the output soundbuffer
 				if ((skip_count==0) && (rxSyncClass!=SYNC_CLASS_DATA) && ((rxDataType & 0x07) >= 0x01) && ((rxDataType & 0x07) <= 0x06)
-						&&  ((trxDMRMode == DMR_MODE_PASSIVE && timeCode == trxGetDMRTimeSlot()) || (trxDMRMode == DMR_MODE_ACTIVE && (slot_state == DMR_STATE_RX_1))))
+						&&  ((trxDMRMode == DMR_MODE_PASSIVE) && (timeCode == trxGetDMRTimeSlot()) && (rxColorCode == trxGetDMRColourCode()) || (trxDMRMode == DMR_MODE_ACTIVE && (slot_state == DMR_STATE_RX_1))))
 				{
 					SEGGER_RTT_printf(0, "Audio frame %d\t%d\t%d\n",(rxDataType & 0x07),timeCode,trxGetDMRTimeSlot());
 					store_qsodata();
@@ -689,7 +690,7 @@ void HRC6000TimeslotInterruptHandler()
 	switch (slot_state)
 	{
 		case DMR_STATE_RX_1: // Start RX (first step)
-			if (trxDMRMode == DMR_MODE_PASSIVE && trxIsTransmitting)
+			if ((trxDMRMode == DMR_MODE_PASSIVE) && trxIsTransmitting && (timeCode == trxGetDMRTimeSlot()))
 			{
 					HRC6000TransitionToTx();
 			}
@@ -700,8 +701,15 @@ void HRC6000TimeslotInterruptHandler()
 			}
 			break;
 		case DMR_STATE_RX_2: // Start RX (second step)
-				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);   //  Receive during Next Timeslot And Layer2 Access success Bit
+			if ((trxDMRMode == DMR_MODE_PASSIVE) && trxIsTransmitting && (timeCode == trxGetDMRTimeSlot()))
+			{
+					HRC6000TransitionToTx();
+			}
+			else
+			{
+				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);     //No Transmit or receive in next timeslot
 				slot_state = DMR_STATE_RX_1;
+			}
 			break;
 		case DMR_STATE_RX_END: // Stop RX
 			init_digital_DMR_RX();
@@ -843,6 +851,9 @@ void HRC6000TimeslotInterruptHandler()
 		case DMR_STATE_TX_END_3:
 			if (trxDMRMode == DMR_MODE_PASSIVE)
 			{
+				GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1);
+				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
+				GPIO_PinWrite(GPIO_TX_audio_mux, Pin_TX_audio_mux, 0);
 				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);   //  Receive during Next Timeslot And Layer2 Access success Bit
 				slot_state = DMR_STATE_RX_1;
 			}
@@ -857,9 +868,9 @@ void HRC6000TimeslotInterruptHandler()
 	}
 
 	// Timeout interrupted RX
-	//if ((slot_state < DMR_STATE_TX_START_1) && (tick_cnt<=10))
+	if (slot_state < DMR_STATE_TX_START_1)
 	{
-//		tick_cnt++;
+
         if (tick_cnt++>=10)
         {
         	slot_state = DMR_STATE_RX_END;
