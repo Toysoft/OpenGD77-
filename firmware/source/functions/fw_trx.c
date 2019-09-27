@@ -582,7 +582,7 @@ int trxGetDMRColourCode()
 
 int trxGetDMRTimeSlot()
 {
-	return ((currentChannelData->flag2 & 0x40) >> 6);
+	return ((currentChannelData->flag2 & 0x40)!=0);
 }
 
 void trxSetTxCTCSS(int toneFreqX10)
