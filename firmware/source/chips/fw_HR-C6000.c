@@ -640,7 +640,6 @@ void HRC6000SysInterruptHandler()
 						&&  ((trxDMRMode == DMR_MODE_PASSIVE && timeCode == trxGetDMRTimeSlot()) || (trxDMRMode == DMR_MODE_ACTIVE && (slot_state == DMR_STATE_RX_1))))
 				{
 					SEGGER_RTT_printf(0, "Audio frame %d\t%d\t%d\n",(rxDataType & 0x07),timeCode,trxGetDMRTimeSlot());
-
 					store_qsodata();
 					read_SPI_page_reg_bytearray_SPI1(0x03, 0x00, DMR_frame_buffer+0x0C, 27);
 					if (settingsUsbMode == USB_MODE_HOTSPOT)
@@ -964,8 +963,8 @@ void store_qsodata()
 	{
 		//SEGGER_RTT_printf(0, "lastHeardListUpdate\n");
     	lastHeardListUpdate((uint8_t *)DMR_frame_buffer);
-		qsodata_timer=QSO_TIMER_TIMEOUT;
 	}
+	qsodata_timer=QSO_TIMER_TIMEOUT;
 }
 
 void init_hrc6000_task()
