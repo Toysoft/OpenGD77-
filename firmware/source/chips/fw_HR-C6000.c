@@ -690,6 +690,7 @@ void HRC6000TimeslotInterruptHandler()
 	switch (slot_state)
 	{
 		case DMR_STATE_RX_1: // Start RX (first step)
+			GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1);
 			if ((trxDMRMode == DMR_MODE_PASSIVE) && trxIsTransmitting && (timeCode == trxGetDMRTimeSlot()))
 			{
 					HRC6000TransitionToTx();
