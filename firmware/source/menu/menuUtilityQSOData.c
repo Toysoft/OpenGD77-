@@ -406,7 +406,7 @@ void menuUtilityRenderHeader()
 			}
 			else
 			{
-				sprintf(buffer, "DMR TS%d%s",trxGetDMRTimeSlot(),
+				sprintf(buffer, "DMR TS%d%s",trxGetDMRTimeSlot()+1,
 						(trxGetMode() == RADIO_MODE_DIGITAL && settingsPrivateCallMuteMode == true)?" MUTE":"");
 			}
 			break;

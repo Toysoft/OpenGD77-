@@ -61,17 +61,7 @@
 
 extern const uint8_t TG_CALL_FLAG;
 extern const uint8_t PC_CALL_FLAG;
-
-extern volatile bool int_sys;
-extern volatile bool int_ts;
-extern volatile int int_timeout;
-
 extern volatile int slot_state;
-extern int tick_cnt;
-extern int skip_count;
-
-extern volatile int tx_sequence;
-
 extern volatile uint8_t DMR_frame_buffer[DRM_FRAME_BUFFER_SIZE];
 
 enum DMR_SLOT_STATE { DMR_STATE_IDLE, DMR_STATE_RX_1, DMR_STATE_RX_2, DMR_STATE_RX_END,
