@@ -349,7 +349,6 @@ static void handleEvent(int buttons, int keys, int events)
 				}
 
 				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-				menuChannelModeUpdateScreen(0);
 			}
 			else
 			{
@@ -365,7 +364,6 @@ static void handleEvent(int buttons, int keys, int events)
 					trxSetTxCTCSS(currentChannelData->rxTone);
 				}
 				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-				menuChannelModeUpdateScreen(0);
 			}
 		}
 		else if ((keys & KEY_DOWN)!=0)
