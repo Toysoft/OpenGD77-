@@ -424,11 +424,15 @@ inline static void HRC6000SysPostAccessInt()
 	if (slot_state == DMR_STATE_IDLE && callAcceptFilter())
 	{
 		SEGGER_RTT_printf(0,"InterLateEntry interrupt\n");
-		write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);     //Receive only in next timeslot
-		slot_state = DMR_STATE_RX_1;
 		store_qsodata();
 		init_codec();
-		skip_count = 2;
+		GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1);
+		GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
+
+		write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);     //Receive only in next timeslot
+		slot_state = DMR_STATE_RX_1;
+
+		skip_count = 2;// RC. seems to be something to do with late entry but I'm but sure what, or whether its still needed
 
 		if (settingsUsbMode == USB_MODE_HOTSPOT)
 		{
@@ -502,26 +506,21 @@ inline static void HRC6000SysReceivedDataInt()
 	{
 		//SEGGER_RTT_printf(0,"Data OK 0x%02x\n",tmp_val_0x82);
 
-		GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);// Turn the LED on as soon as a DMR signal is detected.
-
-
-
 		// Start RX
 		if (slot_state == DMR_STATE_IDLE)
 		{
 			if ((rxColorCode == trxGetDMRColourCode()) && (rxSyncClass==SYNC_CLASS_DATA) && (rxDataType==1) &&  callAcceptFilter())       //Voice LC Header
 			{
 				SEGGER_RTT_printf(0,"RX START\n");
-				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);     //Receive only in next timeslot
-				slot_state = DMR_STATE_RX_1;
 				store_qsodata();
 				init_codec();
-				skip_count = 0;
-
 				GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1);
 				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
 
-				SEGGER_RTT_printf(0, "RX START\n");
+				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);     //Receive only in next timeslot
+				slot_state = DMR_STATE_RX_1;
+
+				skip_count = 0;
 
 				if (settingsUsbMode == USB_MODE_HOTSPOT)
 				{
@@ -558,9 +557,6 @@ inline static void HRC6000SysReceivedDataInt()
 			}
 		}
 	}
-
-
-
 }
 
 inline static void HRC6000SysReceivedInformationInt()
@@ -666,12 +662,6 @@ void HRC6000SysInterruptHandler()
 	}
 
 	//SEGGER_RTT_printf(0, "%d\tSYS\t0x%02x\n",PITCounter,tmp_val_0x82);
-
-	if ((tmp_val_0x82 & SYS_INT_RECEIVED_DATA))
-	{
-
-	}
-
 
 	write_SPI_page_reg_byte_SPI0(0x04, 0x83, tmp_val_0x82);  //Clear remaining Interrupt Flags
 	timer_hrc6000task=0;
