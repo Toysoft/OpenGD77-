@@ -456,6 +456,111 @@ inline static void HRC6000SysReceivedDataInt()
 		The FMB frame's EMB information parsing completion prompt is also the completion of the
 		interrupt, which is distinguished by judging the 0x51 register SyncClass=0.
 	*/
+	int rxDataType;
+	int rxSyncClass;
+	bool rxCRCStatus;
+	int rpi;
+	int rxColorCode;
+
+	tick_cnt=0;
+
+	read_SPI_page_reg_byte_SPI0(0x04, 0x51, &tmp_val_0x51);
+	read_SPI_page_reg_byte_SPI0(0x04, 0x52, &tmp_val_0x52);  //Read Received CC and CACH Register
+
+	rxDataType 	= (tmp_val_0x51 >> 4) & 0x0f;//Data Type or Voice Frame sequence number
+	rxSyncClass = (tmp_val_0x51 >> 0) & 0x03;//Received Sync Class  0=Sync Header 1=Voice 2=data 3=RC
+	rxCRCStatus = (((tmp_val_0x51 >> 2) & 0x01)==0);// CRC is OK if its 0
+	rpi = (tmp_val_0x51 >> 3) & 0x01;
+	rxColorCode 	= (tmp_val_0x52 >> 4) & 0x0f;
+	timeCode =  ((tmp_val_0x52 & 0x04) >> 2);
+
+	SEGGER_RTT_printf(0, "RXDT\taf:%d\tsc:%02x\tcrc:%02x\trpi:%02x\tcc:%d\n",(rxDataType&0x07),rxSyncClass,rxCRCStatus,rpi,rxColorCode);
+
+
+	// Note only detect terminator frames in Active mode, because in passive we can see our own terminators echoed back which can be a problem
+	if ((trxDMRMode == DMR_MODE_ACTIVE) && (rxSyncClass==SYNC_CLASS_DATA) && (rxDataType==2) && callAcceptFilter())        //Terminator with LC
+	{
+
+		SEGGER_RTT_printf(0, "RX STOP 0x%02x\n",tmp_val_0x82);
+		slot_state = DMR_STATE_RX_END;
+
+		if (settingsUsbMode == USB_MODE_HOTSPOT)
+		{
+			DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_STOP;
+			hotspotDMRRxFrameBufferAvailable=true;
+		}
+		return;
+	}
+
+	if ((slot_state!=0) && (skip_count>0) && (rxSyncClass!=SYNC_CLASS_DATA) && ((rxDataType & 0x07) == 0x01))
+	{
+		skip_count--;
+	}
+
+	// Check for correct received packet
+	if ((rxCRCStatus==true) && (rpi==0) &&  (slot_state < DMR_STATE_TX_START_1))//(rxColorCode == trxGetDMRColourCode()) &&
+	{
+		//SEGGER_RTT_printf(0,"Data OK 0x%02x\n",tmp_val_0x82);
+
+		GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);// Turn the LED on as soon as a DMR signal is detected.
+
+
+
+		// Start RX
+		if (slot_state == DMR_STATE_IDLE)
+		{
+			if ((rxColorCode == trxGetDMRColourCode()) && (rxSyncClass==SYNC_CLASS_DATA) && (rxDataType==1) &&  callAcceptFilter())       //Voice LC Header
+			{
+				SEGGER_RTT_printf(0,"RX START\n");
+				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);     //Receive only in next timeslot
+				slot_state = DMR_STATE_RX_1;
+				store_qsodata();
+				init_codec();
+				skip_count = 0;
+
+				GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1);
+				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
+
+				SEGGER_RTT_printf(0, "RX START\n");
+
+				if (settingsUsbMode == USB_MODE_HOTSPOT)
+				{
+					DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_START;
+					hotspotDMRRxFrameBufferAvailable=true;
+				}
+			}
+		}
+		else
+		{
+
+			// Detect/decode voice packet and transfer it into the output soundbuffer
+			if (	(skip_count==0) &&	(rxSyncClass!=SYNC_CLASS_DATA) && ((rxDataType & 0x07) >= 0x01) && ((rxDataType & 0x07) <= 0x06) &&
+					((trxDMRMode == DMR_MODE_PASSIVE) && (timeCode == trxGetDMRTimeSlot()) &&
+					 (rxColorCode == trxGetDMRColourCode()) || (trxDMRMode == DMR_MODE_ACTIVE &&
+					 (slot_state == DMR_STATE_RX_1))))
+			{
+				SEGGER_RTT_printf(0, "Audio frame %d\t%d\t%d\n",(rxDataType & 0x07),timeCode,trxGetDMRTimeSlot());
+				store_qsodata();
+				read_SPI_page_reg_bytearray_SPI1(0x03, 0x00, DMR_frame_buffer+0x0C, 27);
+				if (settingsUsbMode == USB_MODE_HOTSPOT)
+				{
+					DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_AUDIO_FRAME;
+					DMR_frame_buffer[27 + 0x0c + 1] = (rxDataType & 0x07);// audio sequence number
+					hotspotDMRRxFrameBufferAvailable=true;
+				}
+				else
+				{
+					if (settingsPrivateCallMuteMode == false)
+					{
+						hasEncodedAudio=true;// tell foreground that there is audio to encode
+					}
+				}
+			}
+		}
+	}
+
+
+
 }
 
 inline static void HRC6000SysReceivedInformationInt()
@@ -493,17 +598,11 @@ inline static void HRC6000SysPhysicalLayerInt()
 void HRC6000SysInterruptHandler()
 {
 
-	int rxDataType;
-	int rxSyncClass;
-	bool rxCRCStatus;
-	int rpi;
-	int rxColorCode;
+
 
 	read_SPI_page_reg_byte_SPI0(0x04, 0x82, &tmp_val_0x82);  //Read Interrupt Flag Register1
-	read_SPI_page_reg_byte_SPI0(0x04, 0x50, &tmp_val_0x50);
-	read_SPI_page_reg_byte_SPI0(0x04, 0x51, &tmp_val_0x51);
-	read_SPI_page_reg_byte_SPI0(0x04, 0x52, &tmp_val_0x52);  //Read Received CC and CACH Register
-	read_SPI_page_reg_byte_SPI0(0x04, 0x5f, &tmp_val_0x5f);  //Read Received Sync type register
+	//read_SPI_page_reg_byte_SPI0(0x04, 0x50, &tmp_val_0x50);
+	//read_SPI_page_reg_byte_SPI0(0x04, 0x5f, &tmp_val_0x5f);  //Read Received Sync type register
 	//read_SPI_page_reg_byte_SPI0(0x04, 0x57, &tmp_val_0x57);// Not sure what this does
 
 	read_SPI_page_reg_bytearray_SPI0(0x02, 0x00, DMR_frame_buffer, DRM_FRAME_BUFFER_SIZE);
@@ -570,97 +669,7 @@ void HRC6000SysInterruptHandler()
 
 	if ((tmp_val_0x82 & SYS_INT_RECEIVED_DATA))
 	{
-		tick_cnt=0;
 
-		rxDataType 	= (tmp_val_0x51 >> 4) & 0x0f;//Data Type or Voice Frame sequence number
-		rxSyncClass = (tmp_val_0x51 >> 0) & 0x03;//Received Sync Class  0=Sync Header 1=Voice 2=data 3=RC
-		rxCRCStatus = (((tmp_val_0x51 >> 2) & 0x01)==0);// CRC is OK if its 0
-		rpi = (tmp_val_0x51 >> 3) & 0x01;
-		rxColorCode 	= (tmp_val_0x52 >> 4) & 0x0f;
-		timeCode =  ((tmp_val_0x52 & 0x04) >> 2);
-
-		SEGGER_RTT_printf(0, "RXDT\taf:%d\tsc:%02x\tcrc:%02x\trpi:%02x\tcc:%d\n",(rxDataType&0x07),rxSyncClass,rxCRCStatus,rpi,rxColorCode);
-
-
-		// Note only detect terminator frames in Active mode, because in passive we can see our own terminators echoed back which can be a problem
-		if ((trxDMRMode == DMR_MODE_ACTIVE) && (rxSyncClass==SYNC_CLASS_DATA) && (rxDataType==2) && callAcceptFilter())        //Terminator with LC
-		{
-
-			SEGGER_RTT_printf(0, "RX STOP 0x%02x\n",tmp_val_0x82);
-			slot_state = DMR_STATE_RX_END;
-
-			if (settingsUsbMode == USB_MODE_HOTSPOT)
-			{
-				DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_STOP;
-				hotspotDMRRxFrameBufferAvailable=true;
-			}
-			return;
-		}
-
-		if ((slot_state!=0) && (skip_count>0) && (rxSyncClass!=SYNC_CLASS_DATA) && ((rxDataType & 0x07) == 0x01))
-		{
-			skip_count--;
-		}
-
-		// Check for correct received packet
-		if ((rxCRCStatus==true) && (rpi==0) &&  (slot_state < DMR_STATE_TX_START_1))//(rxColorCode == trxGetDMRColourCode()) &&
-		{
-			//SEGGER_RTT_printf(0,"Data OK 0x%02x\n",tmp_val_0x82);
-
-			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);// Turn the LED on as soon as a DMR signal is detected.
-
-
-
-			// Start RX
-			if (slot_state == DMR_STATE_IDLE)
-			{
-				if ((rxColorCode == trxGetDMRColourCode()) && (rxSyncClass==SYNC_CLASS_DATA) && (rxDataType==1) &&  callAcceptFilter())       //Voice LC Header
-				{
-					SEGGER_RTT_printf(0,"RX START\n");
-					write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);     //Receive only in next timeslot
-					slot_state = DMR_STATE_RX_1;
-					store_qsodata();
-					init_codec();
-					skip_count = 0;
-
-					GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1);
-					GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
-
-					SEGGER_RTT_printf(0, "RX START\n");
-
-					if (settingsUsbMode == USB_MODE_HOTSPOT)
-					{
-						DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_START;
-						hotspotDMRRxFrameBufferAvailable=true;
-					}
-				}
-			}
-			else
-			{
-
-				// Detect/decode voice packet and transfer it into the output soundbuffer
-				if ((skip_count==0) && (rxSyncClass!=SYNC_CLASS_DATA) && ((rxDataType & 0x07) >= 0x01) && ((rxDataType & 0x07) <= 0x06)
-						&&  ((trxDMRMode == DMR_MODE_PASSIVE) && (timeCode == trxGetDMRTimeSlot()) && (rxColorCode == trxGetDMRColourCode()) || (trxDMRMode == DMR_MODE_ACTIVE && (slot_state == DMR_STATE_RX_1))))
-				{
-					SEGGER_RTT_printf(0, "Audio frame %d\t%d\t%d\n",(rxDataType & 0x07),timeCode,trxGetDMRTimeSlot());
-					store_qsodata();
-					read_SPI_page_reg_bytearray_SPI1(0x03, 0x00, DMR_frame_buffer+0x0C, 27);
-					if (settingsUsbMode == USB_MODE_HOTSPOT)
-					{
-						DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_AUDIO_FRAME;
-						DMR_frame_buffer[27 + 0x0c + 1] = (rxDataType & 0x07);// audio sequence number
-						hotspotDMRRxFrameBufferAvailable=true;
-					}
-					else
-					{
-						if (settingsPrivateCallMuteMode == false)
-						{
-							hasEncodedAudio=true;// tell foreground that there is audio to encode
-						}
-					}
-				}
-			}
-		}
 	}
 
 
@@ -678,15 +687,13 @@ void HRC6000TransitionToTx()
 
 	write_SPI_page_reg_byte_SPI0(0x04, 0x21, 0xA2); // Set Polite to Color Code and Reset vocoder encodingbuffer
 	write_SPI_page_reg_byte_SPI0(0x04, 0x22, 0x86); // Start Vocoder Encode, I2S mode
-	setupPcOrTGHeader();
 	slot_state = DMR_STATE_TX_START_1;
 }
 
 void HRC6000TimeslotInterruptHandler()
 {
-	uint8_t tmp_val_0x42;
 
-	SEGGER_RTT_printf(0, "TS_ISR\state:%d\TC:0x%02x\n",slot_state,timeCode);
+	SEGGER_RTT_printf(0, "TS_ISR\state:%d\tTC:0x%02x\n",slot_state,timeCode);
 	// RX/TX state machine
 	switch (slot_state)
 	{
@@ -727,6 +734,7 @@ void HRC6000TimeslotInterruptHandler()
 			slot_state = DMR_STATE_IDLE;
 			break;
 		case DMR_STATE_TX_START_1: // Start TX (second step)
+			setupPcOrTGHeader();
 			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);    //Transmit during next Timeslot
 			write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x10);    //Set Data Type to 0001 (Voice LC Header), Data, LCSS=00
 			slot_state = DMR_STATE_TX_START_2;
@@ -1099,7 +1107,6 @@ void tick_HR_C6000()
 			if (settingsUsbMode != USB_MODE_HOTSPOT)
 			{
 				init_codec();
-				setupPcOrTGHeader();
 			}
 			else
 			{
