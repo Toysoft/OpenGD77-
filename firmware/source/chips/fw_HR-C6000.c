@@ -691,17 +691,28 @@ void HRC6000TimeslotInterruptHandler()
 	{
 		case DMR_STATE_RX_1: // Start RX (first step)
 			GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1);
-			if ((trxDMRMode == DMR_MODE_PASSIVE) && trxIsTransmitting && (timeCode == trxGetDMRTimeSlot()))
+			if (trxDMRMode == DMR_MODE_PASSIVE)
 			{
-					HRC6000TransitionToTx();
+				if( trxIsTransmitting && (timeCode == trxGetDMRTimeSlot()))
+				{
+						HRC6000TransitionToTx();
+				}
+				else
+				{
+					write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);     //Receive only in next timeslot
+					//slot_state = DMR_STATE_RX_1;// stay in state 1
+				}
 			}
 			else
 			{
-				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);     //No Transmit or receive in next timeslot
+				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00);     //No Transmit or receive in next timeslot
 				slot_state = DMR_STATE_RX_2;
 			}
 			break;
 		case DMR_STATE_RX_2: // Start RX (second step)
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);     //Receive only in next timeslot
+			slot_state = DMR_STATE_RX_1;
+			/*
 			if ((trxDMRMode == DMR_MODE_PASSIVE) && trxIsTransmitting && (timeCode == trxGetDMRTimeSlot()))
 			{
 					HRC6000TransitionToTx();
@@ -710,7 +721,7 @@ void HRC6000TimeslotInterruptHandler()
 			{
 				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);     //No Transmit or receive in next timeslot
 				slot_state = DMR_STATE_RX_1;
-			}
+			}*/
 			break;
 		case DMR_STATE_RX_END: // Stop RX
 			init_digital_DMR_RX();
