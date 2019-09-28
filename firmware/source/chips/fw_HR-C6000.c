@@ -531,11 +531,10 @@ inline static void HRC6000SysReceivedDataInt()
 		}
 		else
 		{
-
 			// Detect/decode voice packet and transfer it into the output soundbuffer
 			if (	(skip_count==0) &&	(rxSyncClass!=SYNC_CLASS_DATA) && ((rxDataType & 0x07) >= 0x01) && ((rxDataType & 0x07) <= 0x06) &&
-					((trxDMRMode == DMR_MODE_PASSIVE) && (timeCode == trxGetDMRTimeSlot()) &&
-					 (rxColorCode == trxGetDMRColourCode()) || (trxDMRMode == DMR_MODE_ACTIVE &&
+					(((trxDMRMode == DMR_MODE_PASSIVE) && (timeCode == trxGetDMRTimeSlot()) &&
+					 (rxColorCode == trxGetDMRColourCode())) || (trxDMRMode == DMR_MODE_ACTIVE &&
 					 (slot_state == DMR_STATE_RX_1))))
 			{
 				SEGGER_RTT_printf(0, "Audio frame %d\t%d\t%d\n",(rxDataType & 0x07),timeCode,trxGetDMRTimeSlot());
