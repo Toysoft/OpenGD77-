@@ -424,6 +424,7 @@ inline static void HRC6000SysPostAccessInt()
 	if (slot_state == DMR_STATE_IDLE && callAcceptFilter())
 	{
 		SEGGER_RTT_printf(0,"InterLateEntry interrupt\n");
+		write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);     //Receive only in next timeslot
 		slot_state = DMR_STATE_RX_1;
 		store_qsodata();
 		init_codec();
@@ -616,6 +617,7 @@ void HRC6000SysInterruptHandler()
 				if ((rxColorCode == trxGetDMRColourCode()) && (rxSyncClass==SYNC_CLASS_DATA) && (rxDataType==1) &&  callAcceptFilter())       //Voice LC Header
 				{
 					SEGGER_RTT_printf(0,"RX START\n");
+					write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);     //Receive only in next timeslot
 					slot_state = DMR_STATE_RX_1;
 					store_qsodata();
 					init_codec();
@@ -674,7 +676,6 @@ void HRC6000TransitionToTx()
 	GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 	init_codec();
 
-	//write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xC3); // Already in passive timing from RX   -    TX and RX enable, Passive Timing.
 	write_SPI_page_reg_byte_SPI0(0x04, 0x21, 0xA2); // Set Polite to Color Code and Reset vocoder encodingbuffer
 	write_SPI_page_reg_byte_SPI0(0x04, 0x22, 0x86); // Start Vocoder Encode, I2S mode
 	setupPcOrTGHeader();
@@ -685,26 +686,32 @@ void HRC6000TimeslotInterruptHandler()
 {
 	uint8_t tmp_val_0x42;
 
-	SEGGER_RTT_printf(0, "TS_ISR\ts:%d\tr0x52:0x%02x\n",slot_state,((tmp_val_0x52 & 0x04) >> 2));
+	SEGGER_RTT_printf(0, "TS_ISR\state:%d\TC:0x%02x\n",slot_state,timeCode);
 	// RX/TX state machine
 	switch (slot_state)
 	{
 		case DMR_STATE_RX_1: // Start RX (first step)
-			GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1);
+
 			if (trxDMRMode == DMR_MODE_PASSIVE)
 			{
+				GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1);// Note. Because of the way the Tx shuts down its necessary to have this line
 				if( trxIsTransmitting && (timeCode == trxGetDMRTimeSlot()))
 				{
 						HRC6000TransitionToTx();
 				}
 				else
 				{
-					write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);     //Receive only in next timeslot
+					// Note. The C6000 needs to be told what to do for the next timeslot each time.
+					// It no longer seems to receive if this line is removed.
+					// Though in the future this needs to be double checked. In case there is a way to get it to constantly receive.
+					//write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);     //Receive only in next timeslot
 					//slot_state = DMR_STATE_RX_1;// stay in state 1
 				}
 			}
 			else
 			{
+				// When in Active (simplex) mode. We need to only receive on one of the 2 timeslots, otherwise we get random data for the other slot
+				// and this can sometimes be interpreted as valid data, which then screws things up.
 				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00);     //No Transmit or receive in next timeslot
 				slot_state = DMR_STATE_RX_2;
 			}
@@ -712,16 +719,6 @@ void HRC6000TimeslotInterruptHandler()
 		case DMR_STATE_RX_2: // Start RX (second step)
 			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);     //Receive only in next timeslot
 			slot_state = DMR_STATE_RX_1;
-			/*
-			if ((trxDMRMode == DMR_MODE_PASSIVE) && trxIsTransmitting && (timeCode == trxGetDMRTimeSlot()))
-			{
-					HRC6000TransitionToTx();
-			}
-			else
-			{
-				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);     //No Transmit or receive in next timeslot
-				slot_state = DMR_STATE_RX_1;
-			}*/
 			break;
 		case DMR_STATE_RX_END: // Stop RX
 			init_digital_DMR_RX();
@@ -735,7 +732,7 @@ void HRC6000TimeslotInterruptHandler()
 			slot_state = DMR_STATE_TX_START_2;
 			break;
 		case DMR_STATE_TX_START_2: // Start TX (third step)
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); 	//Receive during next Timeslot
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); 	//Receive during next Timeslot (no Layer 2 Access)
 			slot_state = DMR_STATE_TX_START_3;
 			break;
 		case DMR_STATE_TX_START_3: // Start TX (fourth step)
@@ -744,7 +741,7 @@ void HRC6000TimeslotInterruptHandler()
 			slot_state = DMR_STATE_TX_START_4;
 			break;
 		case DMR_STATE_TX_START_4: // Start TX (fifth step)
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); 	//Receive during Next Timeslot
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); 	//Receive during Next Timeslot (no Layer 2 Access)
             if (settingsUsbMode != USB_MODE_HOTSPOT)
             {
             	/*
@@ -781,7 +778,7 @@ void HRC6000TimeslotInterruptHandler()
 			}
 			else
 			{
-				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); // Receive during next Timeslot
+				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); // Receive during next Timeslot (no Layer 2 Access)
 				slot_state = DMR_STATE_TX_2;
 			}
 			break;
@@ -802,7 +799,6 @@ void HRC6000TimeslotInterruptHandler()
                 }
                 else
                 {
-
 					if(tx_sequence==0)
 					{
 						write_SPI_page_reg_bytearray_SPI0(0x02, 0x00, (uint8_t*)deferredUpdateBuffer, 0x0c);// put LC into hardware
@@ -863,7 +859,6 @@ void HRC6000TimeslotInterruptHandler()
 		case DMR_STATE_TX_END_3:
 			if (trxDMRMode == DMR_MODE_PASSIVE)
 			{
-				GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1);
 				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
 				GPIO_PinWrite(GPIO_TX_audio_mux, Pin_TX_audio_mux, 0);
 				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);   //  Receive during Next Timeslot And Layer2 Access success Bit
