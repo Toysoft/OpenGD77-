@@ -88,6 +88,7 @@ static uint8_t spi_tx[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 static volatile int tx_sequence=0;
 
 static volatile int timeCode;
+static volatile int repeaterWakeupResponseTimeout=0;
 
 static bool callAcceptFilter();
 static void setupPcOrTGHeader();
@@ -681,6 +682,8 @@ void HRC6000TransitionToTx()
 
 void HRC6000TimeslotInterruptHandler()
 {
+	static int rxwait;// used for Repeater wakeup sequence
+	static int rxcnt;// used for Repeater wakeup sequence
 
 	SEGGER_RTT_printf(0, "TS_ISR\state:%d\tTC:0x%02x\n",slot_state,timeCode);
 	// RX/TX state machine
@@ -866,7 +869,62 @@ void HRC6000TimeslotInterruptHandler()
 				slot_state = DMR_STATE_IDLE;
 			}
 			break;
-
+		case DMR_STATE_REPEATER_WAKE_1:
+			SEGGER_RTT_printf(0, "DMR_STATE_REPEATER_WAKE_1\n");
+			{
+				uint8_t spi_tx1[] = { 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+				spi_tx1[7] = (trxDMRID >> 16) & 0xFF;
+				spi_tx1[8] = (trxDMRID >> 8) & 0xFF;
+				spi_tx1[9] = (trxDMRID >> 0) & 0xFF;
+				write_SPI_page_reg_bytearray_SPI0(0x02, 0x00, spi_tx1, 0x0c);
+				write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x30);
+				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);
+			}
+			slot_state = DMR_STATE_REPEATER_WAKE_2;
+			break;
+		case DMR_STATE_REPEATER_WAKE_2:
+			SEGGER_RTT_printf(0, "DMR_STATE_REPEATER_WAKE_2\n");
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); //  Receive during Next Timeslot
+			slot_state = DMR_STATE_REPEATER_WAKE_3;
+			break;
+		case DMR_STATE_REPEATER_WAKE_3:
+			SEGGER_RTT_printf(0, "DMR_STATE_REPEATER_WAKE_3\n");
+			init_digital_DMR_RX();
+			rxwait=10;
+			rxcnt=0;
+			slot_state = DMR_STATE_REPEATER_WAKE_4;
+			break;
+		case DMR_STATE_REPEATER_WAKE_4:
+			SEGGER_RTT_printf(0, "DMR_STATE_REPEATER_WAKE_4 %d %d\n",rxwait,rxcnt);
+			if ((rxwait>0) && (trxIsTransmitting==true))
+			{
+				rxwait--;
+				if (repeaterWakeupResponseTimeout>0)
+				{
+					rxcnt++;
+	            	if ((rxcnt>=5) && (timeCode==0))
+	            	{
+	            		// repeater is awake
+	            		slot_state = DMR_STATE_TX_START_1;
+	            	}
+				}
+			}
+			else
+			{
+				// Failed to wake the repeater
+				slot_state = DMR_STATE_REPEATER_WAKE_FAIL_1;
+			}
+			break;
+		case DMR_STATE_REPEATER_WAKE_FAIL_1:
+			slot_state = DMR_STATE_REPEATER_WAKE_FAIL_2;
+			write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x20);
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);
+			break;
+		case DMR_STATE_REPEATER_WAKE_FAIL_2:
+			write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xC3);
+			init_digital_DMR_RX();
+			txstopdelay=30;
+			slot_state = DMR_STATE_IDLE;
 		default:
 			break;
 	}
@@ -1088,36 +1146,49 @@ void tick_HR_C6000()
 {
 	if (trxIsTransmitting==true)
 	{
+		if (repeaterWakeupResponseTimeout > 0)
+		{
+			repeaterWakeupResponseTimeout--;
+		}
+
 		if (slot_state == DMR_STATE_IDLE) // Start TX (first step)
 		{
-			//SEGGER_RTT_printf(0, "Start Tx\n");
-			NVIC_DisableIRQ(PORTC_IRQn);
-			if (settingsUsbMode != USB_MODE_HOTSPOT)
+			if (trxDMRMode == DMR_MODE_ACTIVE)
 			{
-				init_codec();
+				//SEGGER_RTT_printf(0, "Start Tx\n");
+				NVIC_DisableIRQ(PORTC_IRQn);
+				if (settingsUsbMode != USB_MODE_HOTSPOT)
+				{
+					init_codec();
+				}
+				else
+				{
+					// Note. We don't increment the buffer indexes, becuase this is also the first frame of audio and we need it later
+					write_SPI_page_reg_bytearray_SPI0(0x02, 0x00, (uint8_t *)&audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_read_idx], 0x0c);// put LC into hardware
+					memcpy((uint8_t *)deferredUpdateBuffer,(uint8_t *)&audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_read_idx],27+0x0C);
+					hotspotDMRTxFrameBufferEmpty=false;
+				}
+
+				write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xE3); // TX and RX enable, Active Timing.
+				write_SPI_page_reg_byte_SPI0(0x04, 0x21, 0xA2); // Set Polite to Color Code and Reset vocoder encodingbuffer
+				write_SPI_page_reg_byte_SPI0(0x04, 0x22, 0x86); // Start Vocoder Encode, I2S mode
+				NVIC_EnableIRQ(PORTC_IRQn);
+				slot_state = DMR_STATE_TX_START_1;
 			}
 			else
 			{
-
-				// Note. We don't increment the buffer indexes, becuase this is also the first frame of audio and we need it later
-				write_SPI_page_reg_bytearray_SPI0(0x02, 0x00, (uint8_t *)&audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_read_idx], 0x0c);// put LC into hardware
-				memcpy((uint8_t *)deferredUpdateBuffer,(uint8_t *)&audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_read_idx],27+0x0C);
-				hotspotDMRTxFrameBufferEmpty=false;
+				SEGGER_RTT_printf(0, "Passive repeater wakeup\n");
+				if (settingsUsbMode != USB_MODE_HOTSPOT)
+				{
+					init_codec();
+				}
+				NVIC_DisableIRQ(PORTC_IRQn);
+				write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xE3); // TX and RX enable, Active Timing.
+				write_SPI_page_reg_byte_SPI0(0x04, 0x21, 0xA2); // Set Polite to Color Code and Reset vocoder encodingbuffer
+				write_SPI_page_reg_byte_SPI0(0x04, 0x22, 0x86); // Start Vocoder Encode, I2S mode
+				NVIC_EnableIRQ(PORTC_IRQn);
+				slot_state = DMR_STATE_REPEATER_WAKE_1;
 			}
-
-			// Active mode.  The spec says use 0xA3 rather than 0xE3, but in practice it didn't seem to make any difference
-			// Passive mode. The spec says use 0x43
-			write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xE3); // TX and RX enable, Active Timing.
-
-			/* Passive mode. Initial reception to gain synchronisation is by setting... 0x41 = 0x40
-			 * Continuous receiving state (called blind reception).
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40);
-			*/
-
-			write_SPI_page_reg_byte_SPI0(0x04, 0x21, 0xA2); // Set Polite to Color Code and Reset vocoder encodingbuffer
-			write_SPI_page_reg_byte_SPI0(0x04, 0x22, 0x86); // Start Vocoder Encode, I2S mode
-			NVIC_EnableIRQ(PORTC_IRQn);
-			slot_state = DMR_STATE_TX_START_1;
 		}
 	}
 

@@ -272,10 +272,12 @@ int trxGetFrequency()
 
 void trx_setRX()
 {
+//	set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0x00);
 	if (currentMode == RADIO_MODE_ANALOG)
 	{
 		trx_activateRx();
 	}
+
 }
 
 void trx_setTX()
@@ -286,6 +288,7 @@ void trx_setTX()
 	GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 0);
 	GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 0);
 
+//	set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0x00);
 	if (currentMode == RADIO_MODE_ANALOG)
 	{
 		trx_activateTx();
