@@ -62,12 +62,20 @@ void fw_main_task()
     // Init I2C
     init_I2C0a();
     setup_I2C0();
-    settingsLoadSettings();
+
 
 	fw_init_common();
 	fw_init_buttons();
 	fw_init_LEDs();
 	fw_init_keyboard();
+
+	fw_check_button_event(&buttons, &button_event);// Read button state and event
+	if (buttons & BUTTON_SK2)
+	{
+		settingsRestoreDefaultSettings();
+	}
+    settingsLoadSettings();
+
 	fw_init_display();
 
     // Init SPI

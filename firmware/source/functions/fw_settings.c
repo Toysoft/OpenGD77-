@@ -61,7 +61,6 @@ void settingsLoadSettings()
 		else
 		{
 			settingsRestoreDefaultSettings();
-			settingsSaveSettings();
 		}
 	}
 	trxDMRID = codeplugGetUserDMRID();
