@@ -368,33 +368,42 @@ static void handleEvent(int buttons, int keys, int events)
 		// Toggle TimeSlot
 		if (buttons & BUTTON_SK2 )
 		{
-			if (currentChannelData->flag2 & 0x40)
+			if (trxGetMode() == RADIO_MODE_ANALOG)
 			{
-				currentChannelData->flag2 = currentChannelData->flag2 & ~0x40;
+				channelScreenChannelData.chMode = RADIO_MODE_DIGITAL;
+				trxSetModeAndBandwidth(channelScreenChannelData.chMode, false);
 			}
 			else
 			{
-				currentChannelData->flag2 = currentChannelData->flag2 | 0x40;
+				channelScreenChannelData.chMode = RADIO_MODE_ANALOG;
+				trxSetModeAndBandwidth(channelScreenChannelData.chMode, ((channelScreenChannelData.flag4 & 0x02) == 0x02));
+				trxSetTxCTCSS(currentChannelData->rxTone);
 			}
-
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 			menuChannelModeUpdateScreen(0);
 		}
 		else
 		{
-			if (trxGetMode() == RADIO_MODE_ANALOG)
+			if (trxGetMode() == RADIO_MODE_DIGITAL)
 			{
-				channelScreenChannelData.chMode = RADIO_MODE_DIGITAL;
-				trxSetModeAndBandwidth(RADIO_MODE_DIGITAL, false);
+				if (currentChannelData->flag2 & 0x40)
+				{
+					currentChannelData->flag2 = currentChannelData->flag2 & ~0x40;
+					channelScreenChannelData.flag2 = channelScreenChannelData.flag2 & ~0x40;
+				}
+				else
+				{
+					currentChannelData->flag2 = currentChannelData->flag2 | 0x40;
+					channelScreenChannelData.flag2 = channelScreenChannelData.flag2 | 0x40;
+				}
+
+				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+				menuChannelModeUpdateScreen(0);
 			}
 			else
 			{
-				channelScreenChannelData.chMode = RADIO_MODE_ANALOG;
-				trxSetModeAndBandwidth(RADIO_MODE_ANALOG, ((channelScreenChannelData.flag4 & 0x02) == 0x02));
-				trxSetTxCTCSS(currentChannelData->rxTone);
+				set_melody(melody_ERROR_beep);
 			}
-			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-			menuChannelModeUpdateScreen(0);
 		}
 	}
 	else if ((keys & KEY_DOWN)!=0)
