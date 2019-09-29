@@ -93,11 +93,13 @@ void trxSetModeAndBandwidth(int mode, bool bandwidthIs25kHz)
 			terminate_digital();
 			break;
 		case RADIO_MODE_ANALOG:
+			GPIO_PinWrite(GPIO_TX_audio_mux, Pin_TX_audio_mux, 0); // Connect mic to mic input of AT-1846
 			GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 1); // connect AT1846S audio to speaker
 			terminate_sound();
 			terminate_digital();
 			break;
 		case RADIO_MODE_DIGITAL:
+			GPIO_PinWrite(GPIO_TX_audio_mux, Pin_TX_audio_mux, 1); // Connect mic to MIC_P input of HR-C6000
 			GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 0); // connect AT1846S audio to HR_C6000
 			init_sound();
 			init_digital();
@@ -270,21 +272,20 @@ int trxGetFrequency()
 
 void trx_setRX()
 {
-	// AT1846 RX + unmute
-	set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0x00);
-	trx_activateRx();
-
-	// MUX for RX
-	GPIO_PinWrite(GPIO_TX_audio_mux, Pin_TX_audio_mux, 0);
+	if (currentMode == RADIO_MODE_ANALOG)
+	{
+		trx_activateRx();
+	}
 }
 
 void trx_setTX()
 {
 	trxIsTransmitting=true;
-	set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0x00);
+
 	// RX pre-amp off
 	GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 0);
 	GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 0);
+
 	if (currentMode == RADIO_MODE_ANALOG)
 	{
 		trx_activateTx();
@@ -312,7 +313,7 @@ void trx_activateRx()
 		GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 1);// VHF pre-amp on
 		GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 0);// UHF pre-amp off
 	}
-
+	set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0x00); // Clear Tx and Rx bits
 	set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0x20); // RX
 	write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x29, rx_fh_h, rx_fh_l);
 	write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x2a, rx_fl_h, rx_fl_l);
@@ -323,14 +324,13 @@ void trx_activateTx()
 	write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x29, tx_fh_h, tx_fh_l);
 	write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x2a, tx_fl_h, tx_fl_l);
 
+	set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0x00); // Clear Tx and Rx bits
 	if (currentMode == RADIO_MODE_ANALOG)
 	{
-		GPIO_PinWrite(GPIO_TX_audio_mux, Pin_TX_audio_mux, 0);
 		set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0x40); // analog TX
 	}
 	else
 	{
-		GPIO_PinWrite(GPIO_TX_audio_mux, Pin_TX_audio_mux, 1);
 		set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0xC0); // digital TX
 	}
 

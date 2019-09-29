@@ -857,12 +857,12 @@ void HRC6000TimeslotInterruptHandler()
 			if (trxDMRMode == DMR_MODE_PASSIVE)
 			{
 				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
-				GPIO_PinWrite(GPIO_TX_audio_mux, Pin_TX_audio_mux, 0);
 				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);   //  Receive during Next Timeslot And Layer2 Access success Bit
 				slot_state = DMR_STATE_RX_1;
 			}
 			else
 			{
+				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 				slot_state = DMR_STATE_IDLE;
 			}
 			break;
@@ -874,7 +874,6 @@ void HRC6000TimeslotInterruptHandler()
 	// Timeout interrupted RX
 	if (slot_state < DMR_STATE_TX_START_1)
 	{
-
         if (tick_cnt++>=10)
         {
         	slot_state = DMR_STATE_RX_END;
