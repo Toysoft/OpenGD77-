@@ -77,7 +77,7 @@ void trxSetModeAndBandwidth(int mode, bool bandwidthIs25kHz)
 	{
 
 		currentMode=mode;
-		currentChannelData->chMode = currentMode;
+
 		currentBandWidthIs25kHz=bandwidthIs25kHz;
 
 		I2C_AT1846_SetMode();
