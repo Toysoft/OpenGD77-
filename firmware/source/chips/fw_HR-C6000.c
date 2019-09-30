@@ -1193,7 +1193,7 @@ void tick_HR_C6000()
 	}
 
 
-#define TIMEOUT 1
+#define TIMEOUT 200
 	// Timeout interrupt
 	// This code appears to check whether there has been a TS ISR in the last 200 RTOS ticks
 	// If not, it reinitialises the DMR subsystem

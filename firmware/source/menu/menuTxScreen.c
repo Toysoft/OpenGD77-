@@ -137,11 +137,11 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 		else
 		{
-			if (txstopdelay>0)
+			/*if (txstopdelay>0)
 			{
 				txstopdelay--;
 			}
-			else
+			else*/
 			{
 				if ((slot_state < DMR_STATE_TX_START_1))
 				{
