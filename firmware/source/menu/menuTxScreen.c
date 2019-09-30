@@ -126,7 +126,6 @@ static void updateScreen()
 	}
 }
 
-
 static void handleEvent(int buttons, int keys, int events)
 {
 	if ((buttons & BUTTON_PTT)==0 || (currentChannelData->tot!=0 && timeInSeconds == 0))
@@ -134,24 +133,24 @@ static void handleEvent(int buttons, int keys, int events)
 		if (trxIsTransmitting)
 		{
 			trxIsTransmitting=false;
+			if (trxGetMode() == RADIO_MODE_ANALOG)
+			{
+				// In analog mode. Stop transmitting immediately
+				GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
+				trx_activateRx();
+				menuSystemPopPreviousMenu();
+			}
+			// When not in analogue mode, only the trxIsTransmitting flag is cleared
+			// This screen keeps getting called via the handleEvent function and goes into the else clause - below.
 		}
 		else
 		{
-			/*if (txstopdelay>0)
+			// In DMR mode, wait for the DMR system to finish before exiting
+			if (slot_state < DMR_STATE_TX_START_1)
 			{
-				txstopdelay--;
-			}
-			else*/
-			{
-				if ((slot_state < DMR_STATE_TX_START_1))
-				{
-					//SEGGER_RTT_printf(0, "slot state %d\n",slot_state);
-					GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
-					trx_setRX();
-					menuSystemPopPreviousMenu();
-				}
+				GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
+				menuSystemPopPreviousMenu();
 			}
 		}
 	}
 }
-

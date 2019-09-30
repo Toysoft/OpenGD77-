@@ -286,7 +286,7 @@ void trx_setTX()
 
 void trx_activateRx()
 {
-	SEGGER_RTT_printf(0, "trx_activateRx\n");
+	//SEGGER_RTT_printf(0, "trx_activateRx\n");
     DAC_SetBufferValue(DAC0, 0U, 0U);// PA drive power to zero
 
     // Possibly quicker to turn them both off, than to check which on is on and turn that one off
