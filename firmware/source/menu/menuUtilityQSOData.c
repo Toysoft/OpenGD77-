@@ -425,8 +425,9 @@ void menuUtilityRenderHeader()
 	{
 		batteryPerentage=0;
 	}
-	if (settingsUsbMode == USB_MODE_HOTSPOT)
+	if (settingsUsbMode == USB_MODE_HOTSPOT || trxGetMode() == RADIO_MODE_ANALOG)
 	{
+		// In hotspot mode the CC is show as part of the rest of the display and in Analogue mode the CC is meaningless
 		sprintf(buffer,"%d%%",batteryPerentage);
 	}
 	else
