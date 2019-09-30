@@ -191,18 +191,6 @@ void trxSetFrequency(int fRx,int fTx)
 			trxDMRMode = DMR_MODE_PASSIVE;
 		}
 
-#if false
-		if ((currentMode == RADIO_MODE_ANALOG) && (!open_squelch))
-		{
-//			squelch = 0x08;
-			squelch= 0x00;				//don't use internal squelch.
-		}
-		else
-		{
-			squelch = 0x00;
-		}
-#endif
-
 		uint32_t f = currentRxFrequency * 1.6f;
 		rx_fl_l = (f & 0x000000ff) >> 0;
 		rx_fl_h = (f & 0x0000ff00) >> 8;
@@ -245,7 +233,7 @@ void trxSetFrequency(int fRx,int fTx)
 		trxUpdateC6000Calibration();
 		trxUpdateAT1846SCalibration();
 
-		if (trxCheckFrequencyIsUHF(currentRxFrequency))
+		if (trxCheckFrequencyIsUHF(currentRxFrequency) && !trxIsTransmitting)
 		{
 			GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 0);
 			GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 1);
@@ -298,6 +286,7 @@ void trx_setTX()
 
 void trx_activateRx()
 {
+	SEGGER_RTT_printf(0, "trx_activateRx\n");
     DAC_SetBufferValue(DAC0, 0U, 0U);// PA drive power to zero
 
     // Possibly quicker to turn them both off, than to check which on is on and turn that one off

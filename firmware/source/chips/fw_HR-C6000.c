@@ -505,7 +505,7 @@ inline static void HRC6000SysReceivedDataInt()
 	// Check for correct received packet
 	if ((rxCRCStatus==true) && (rpi==0) &&  (slot_state < DMR_STATE_TX_START_1))//(rxColorCode == trxGetDMRColourCode()) &&
 	{
-		//SEGGER_RTT_printf(0,"Data OK 0x%02x\n",tmp_val_0x82);
+		SEGGER_RTT_printf(0,"Data OK 0x%02x\n",tmp_val_0x82);
 
 		// Start RX
 		if (slot_state == DMR_STATE_IDLE)
@@ -685,7 +685,7 @@ void HRC6000TimeslotInterruptHandler()
 	static int rxwait;// used for Repeater wakeup sequence
 	static int rxcnt;// used for Repeater wakeup sequence
 
-	SEGGER_RTT_printf(0, "TS_ISR\state:%d\tTC:0x%02x\n",slot_state,timeCode);
+	SEGGER_RTT_printf(0, "TS_ISR\tstate:%d\tTC:0x%02x\n",slot_state,timeCode);
 	// RX/TX state machine
 	switch (slot_state)
 	{
@@ -943,13 +943,13 @@ void HRC6000TimeslotInterruptHandler()
 
 void HRC6000RxInterruptHandler()
 {
-	//SEGGER_RTT_printf(0, "RxISR\t%d\n",PITCounter);
+	SEGGER_RTT_printf(0, "RxISR\t%d\n",PITCounter);
 	trx_activateRx();
 }
 
 void HRC6000TxInterruptHandler()
 {
-	//SEGGER_RTT_printf(0, "TxISR\t%d \n",PITCounter);
+	SEGGER_RTT_printf(0, "TxISR\t%d \n",PITCounter);
 	trx_activateTx();
 }
 
@@ -1193,21 +1193,23 @@ void tick_HR_C6000()
 	}
 
 
+#define TIMEOUT 1
 	// Timeout interrupt
 	// This code appears to check whether there has been a TS ISR in the last 200 RTOS ticks
 	// If not, it reinitialises the DMR subsystem
 	// Its unclear whether this is still needed, as it would indicate that perhaps some other condition is not being handled correctly
 	if (slot_state != DMR_STATE_IDLE)
 	{
-		if (int_timeout<200)
+		if (int_timeout<TIMEOUT)
 		{
+			//SEGGER_RTT_printf(0, "TO%d\n",int_timeout);
 			int_timeout++;
-			if (int_timeout==200)
+			if (int_timeout==TIMEOUT)
 			{
 				init_digital();
 				slot_state = DMR_STATE_IDLE;
 				int_timeout=0;
-				//SEGGER_RTT_printf(0, ">>> INTERRUPT TIMEOUT\n");
+				SEGGER_RTT_printf(0, "INTERRUPT TIMEOUT\n");
 			}
 		}
 	}
