@@ -89,6 +89,9 @@ static volatile int tx_sequence=0;
 
 static volatile int timeCode;
 static volatile int repeaterWakeupResponseTimeout=0;
+static volatile bool isWaking = false;
+static volatile int rxwait;// used for Repeater wakeup sequence
+static volatile int rxcnt;// used for Repeater wakeup sequence
 
 static bool callAcceptFilter();
 static void setupPcOrTGHeader();
@@ -497,6 +500,18 @@ inline static void HRC6000SysReceivedDataInt()
 		return;
 	}
 
+	if ((slot_state==DMR_STATE_REPEATER_WAKE_3) && (rxSyncClass==SYNC_CLASS_HEADER))
+	{
+		if ((rxcnt++) >5)
+		{
+			isWaking=false;
+
+			slot_state = DMR_STATE_TX_START_1;
+		}
+		return;
+	}
+
+
 	if ((slot_state!=0) && (skip_count>0) && (rxSyncClass!=SYNC_CLASS_DATA) && ((rxDataType & 0x07) == 0x01))
 	{
 		skip_count--;
@@ -597,6 +612,9 @@ void HRC6000SysInterruptHandler()
 
 
 	read_SPI_page_reg_byte_SPI0(0x04, 0x82, &tmp_val_0x82);  //Read Interrupt Flag Register1
+
+	//SEGGER_RTT_printf(0, "%d\tSYS\t0x%02x\n",PITCounter,tmp_val_0x82);
+
 	//read_SPI_page_reg_byte_SPI0(0x04, 0x50, &tmp_val_0x50);
 	//read_SPI_page_reg_byte_SPI0(0x04, 0x5f, &tmp_val_0x5f);  //Read Received Sync type register
 	//read_SPI_page_reg_byte_SPI0(0x04, 0x57, &tmp_val_0x57);// Not sure what this does
@@ -682,8 +700,8 @@ void HRC6000TransitionToTx()
 
 void HRC6000TimeslotInterruptHandler()
 {
-	static int rxwait;// used for Repeater wakeup sequence
-	static int rxcnt;// used for Repeater wakeup sequence
+
+
 
 	SEGGER_RTT_printf(0, "TS_ISR\tstate:%d\tTC:0x%02x\n",slot_state,timeCode);
 	// RX/TX state machine
@@ -694,7 +712,7 @@ void HRC6000TimeslotInterruptHandler()
 			if (trxDMRMode == DMR_MODE_PASSIVE)
 			{
 				GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1);// Note. Because of the way the Tx shuts down its necessary to have this line
-				if( trxIsTransmitting && (timeCode == trxGetDMRTimeSlot()))
+				if( !isWaking &&  trxIsTransmitting && (timeCode == trxGetDMRTimeSlot()))
 				{
 						HRC6000TransitionToTx();
 				}
@@ -884,19 +902,20 @@ void HRC6000TimeslotInterruptHandler()
 			break;
 		case DMR_STATE_REPEATER_WAKE_2:
 			SEGGER_RTT_printf(0, "DMR_STATE_REPEATER_WAKE_2\n");
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); //  Receive during Next Timeslot
+			write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xC3);  //Enable DMR Tx and Rx, Passive Timing
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);   //  Receive during Next Timeslot And Layer2 Access success Bit
+			rxcnt=0;
 			slot_state = DMR_STATE_REPEATER_WAKE_3;
 			break;
 		case DMR_STATE_REPEATER_WAKE_3:
 			SEGGER_RTT_printf(0, "DMR_STATE_REPEATER_WAKE_3\n");
-			init_digital_DMR_RX();
-			rxwait=10;
-			rxcnt=0;
-			slot_state = DMR_STATE_REPEATER_WAKE_4;
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);   //  Receive during Next Timeslot And Layer2 Access success Bit
+
+			slot_state = DMR_STATE_REPEATER_WAKE_3;// not really needed, but just to make it obvious we stay in this state
 			break;
 		case DMR_STATE_REPEATER_WAKE_4:
 			SEGGER_RTT_printf(0, "DMR_STATE_REPEATER_WAKE_4 %d %d\n",rxwait,rxcnt);
-			if ((rxwait>0) && (trxIsTransmitting==true))
+			if ((rxwait>0) && (trxIsTransmitting==true) && isWaking)
 			{
 				rxwait--;
 				if (repeaterWakeupResponseTimeout>0)
@@ -943,13 +962,13 @@ void HRC6000TimeslotInterruptHandler()
 
 void HRC6000RxInterruptHandler()
 {
-	SEGGER_RTT_printf(0, "RxISR\t%d\n",PITCounter);
+	//SEGGER_RTT_printf(0, "RxISR\t%d\n",PITCounter);
 	trx_activateRx();
 }
 
 void HRC6000TxInterruptHandler()
 {
-	SEGGER_RTT_printf(0, "TxISR\t%d \n",PITCounter);
+	//SEGGER_RTT_printf(0, "TxISR\t%d \n",PITCounter);
 	trx_activateTx();
 }
 
@@ -968,9 +987,7 @@ void init_HR_C6000_interrupts()
 
 void init_digital_state()
 {
-	taskENTER_CRITICAL();
 	int_timeout=0;
-	taskEXIT_CRITICAL();
 	slot_state = DMR_STATE_IDLE;
 	tick_cnt=0;
 	skip_count=0;
@@ -1142,21 +1159,32 @@ bool callAcceptFilter()
 	 }
 }
 
+
 void tick_HR_C6000()
 {
-	if (trxIsTransmitting==true)
+	if (trxIsTransmitting==true  && !isWaking)
 	{
 		if (repeaterWakeupResponseTimeout > 0)
 		{
 			repeaterWakeupResponseTimeout--;
 		}
 
-		if (slot_state == DMR_STATE_IDLE) // Start TX (first step)
+		if (slot_state == DMR_STATE_IDLE)
 		{
+			// Because the ISR's also write to the SPI we need to disable interrupts on Port C when doing any SPI transfers.
+			// Otherwise there could be clashes in the SPI subsystem.
+			// This is possibly not the ideal solution, and a better solution may be found at a later date
+			// But at least it should prevent things going too badly wrong
+			NVIC_DisableIRQ(PORTC_IRQn);
+			write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xE3); // TX and RX enable, Active Timing.
+			write_SPI_page_reg_byte_SPI0(0x04, 0x21, 0xA2); // Set Polite to Color Code and Reset vocoder encodingbuffer
+			write_SPI_page_reg_byte_SPI0(0x04, 0x22, 0x86); // Start Vocoder Encode, I2S mode
+			NVIC_EnableIRQ(PORTC_IRQn);
+
 			if (trxDMRMode == DMR_MODE_ACTIVE)
 			{
 				//SEGGER_RTT_printf(0, "Start Tx\n");
-				NVIC_DisableIRQ(PORTC_IRQn);
+
 				if (settingsUsbMode != USB_MODE_HOTSPOT)
 				{
 					init_codec();
@@ -1164,15 +1192,12 @@ void tick_HR_C6000()
 				else
 				{
 					// Note. We don't increment the buffer indexes, becuase this is also the first frame of audio and we need it later
+					NVIC_DisableIRQ(PORTC_IRQn);
 					write_SPI_page_reg_bytearray_SPI0(0x02, 0x00, (uint8_t *)&audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_read_idx], 0x0c);// put LC into hardware
+					NVIC_EnableIRQ(PORTC_IRQn);
 					memcpy((uint8_t *)deferredUpdateBuffer,(uint8_t *)&audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_read_idx],27+0x0C);
 					hotspotDMRTxFrameBufferEmpty=false;
 				}
-
-				write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xE3); // TX and RX enable, Active Timing.
-				write_SPI_page_reg_byte_SPI0(0x04, 0x21, 0xA2); // Set Polite to Color Code and Reset vocoder encodingbuffer
-				write_SPI_page_reg_byte_SPI0(0x04, 0x22, 0x86); // Start Vocoder Encode, I2S mode
-				NVIC_EnableIRQ(PORTC_IRQn);
 				slot_state = DMR_STATE_TX_START_1;
 			}
 			else
@@ -1182,13 +1207,14 @@ void tick_HR_C6000()
 				{
 					init_codec();
 				}
-				NVIC_DisableIRQ(PORTC_IRQn);
-				write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xE3); // TX and RX enable, Active Timing.
-				write_SPI_page_reg_byte_SPI0(0x04, 0x21, 0xA2); // Set Polite to Color Code and Reset vocoder encodingbuffer
-				write_SPI_page_reg_byte_SPI0(0x04, 0x22, 0x86); // Start Vocoder Encode, I2S mode
-				NVIC_EnableIRQ(PORTC_IRQn);
+				isWaking=true;
 				slot_state = DMR_STATE_REPEATER_WAKE_1;
 			}
+		}
+		else
+		{
+			// Note. In Tier 2 Passive (Repeater operation). The radio will already be receiving DMR frames from the repeater
+			// And the transition from Rx to Tx is handled in the Timeslot ISR state machine
 		}
 	}
 
@@ -1206,9 +1232,8 @@ void tick_HR_C6000()
 			int_timeout++;
 			if (int_timeout==TIMEOUT)
 			{
-				init_digital();
+				init_digital();// sets 	int_timeout=0;
 				slot_state = DMR_STATE_IDLE;
-				int_timeout=0;
 				SEGGER_RTT_printf(0, "INTERRUPT TIMEOUT\n");
 			}
 		}
@@ -1224,7 +1249,7 @@ void tick_HR_C6000()
 		{
 			if (hotspotDMRTxFrameBufferEmpty == true && (wavbuffer_count > 0))
 			{
-				SEGGER_RTT_printf(0, "Hotspot put data into send buffer \n");
+				//SEGGER_RTT_printf(0, "Hotspot put data into send buffer \n");
 				memcpy((uint8_t *)deferredUpdateBuffer,(uint8_t *)&audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_read_idx],27+0x0C);
 				wavbuffer_read_idx++;
 				if (wavbuffer_read_idx > (HOTSPOT_BUFFER_COUNT-1))
