@@ -288,7 +288,7 @@ static void HRC6000SysInterruptHandler();
 static void HRC6000TimeslotInterruptHandler();
 static void HRC6000RxInterruptHandler();
 static void HRC6000TxInterruptHandler();
-
+void HRC6000TransitionToTx();
 
 void PORTC_IRQHandler(void)
 {
@@ -507,7 +507,7 @@ inline static void HRC6000SysReceivedDataInt()
 		{
 			isWaking=false;
 
-			slot_state = DMR_STATE_TX_START_1;
+			HRC6000TransitionToTx();
 		}
 		return;
 	}
