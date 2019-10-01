@@ -620,7 +620,7 @@ void HRC6000SysInterruptHandler()
 	//read_SPI_page_reg_byte_SPI0(0x04, 0x5f, &tmp_val_0x5f);  //Read Received Sync type register
 	//read_SPI_page_reg_byte_SPI0(0x04, 0x57, &tmp_val_0x57);// Not sure what this does
 
-	read_SPI_page_reg_bytearray_SPI0(0x02, 0x00, DMR_frame_buffer, DRM_FRAME_BUFFER_SIZE);
+	read_SPI_page_reg_bytearray_SPI0(0x02, 0x00, DMR_frame_buffer, 0x0C);
 	receivedTgOrPcId 	= (DMR_frame_buffer[3]<<16)+(DMR_frame_buffer[4]<<8)+(DMR_frame_buffer[5]<<0);// used by the call accept filter
 	receivedSrcId 		= (DMR_frame_buffer[6]<<16)+(DMR_frame_buffer[7]<<8)+(DMR_frame_buffer[8]<<0);// used by the call accept filter
 
