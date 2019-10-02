@@ -18,6 +18,7 @@
 #include "menu/menuSystem.h"
 #include "menu/menuUtilityQSOData.h"
 #include "fw_settings.h"
+#include "fw_HR-C6000.h"
 
 
 static void updateScreen();
@@ -40,8 +41,9 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 			GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 1);
-			//trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq);
+
 			txstopdelay=0;
+			isWaking=false;
 			trx_setTX();
 			updateScreen();
 		}

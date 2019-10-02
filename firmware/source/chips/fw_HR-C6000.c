@@ -22,10 +22,8 @@
 #include "menu/menuUtilityQSOData.h"
 #include "fw_settings.h"
 #include "menu/menuHotspot.h"
-
-#if defined(USE_SEGGER_RTT) && defined(DEBUG_DMR_DATA)
 #include <SeggerRTT/RTT/SEGGER_RTT.h>
-#endif
+
 
 static const int SYS_INT_SEND_REQUEST_REJECTED  = 0x80;
 static const int SYS_INT_SEND_START 			= 0x40;
@@ -89,7 +87,7 @@ static volatile int tx_sequence=0;
 
 static volatile int timeCode;
 static volatile int repeaterWakeupResponseTimeout=0;
-static volatile bool isWaking = false;
+volatile bool isWaking = false;
 static volatile int rxwait;// used for Repeater wakeup sequence
 static volatile int rxcnt;// used for Repeater wakeup sequence
 
