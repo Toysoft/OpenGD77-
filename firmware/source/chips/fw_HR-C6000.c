@@ -722,6 +722,7 @@ void HRC6000TimeslotInterruptHandler()
 			slot_state = DMR_STATE_IDLE;
 			break;
 		case DMR_STATE_TX_START_1: // Start TX (second step)
+			GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 1);// for repeater wakeup
 			setupPcOrTGHeader();
 			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);    //Transmit during next Timeslot
 			write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x10);    //Set Data Type to 0001 (Voice LC Header), Data, LCSS=00
@@ -807,13 +808,11 @@ void HRC6000TimeslotInterruptHandler()
 			}
 			else
 			{
-				//memcpy((uint8_t*)(DMR_frame_buffer+0x0C),(uint8_t *)SILENCE_AUDIO, 27);// send silence audio bytes
 				write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, (uint8_t*)SILENCE_AUDIO, 27);// send the audio bytes to the hardware
 			}
 
 			//write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, (uint8_t*)(DMR_frame_buffer+0x0C), 27);// send the audio bytes to the hardware
 			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80); // Transmit during next Timeslot
-
 			write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x08 + (tx_sequence<<4)); // Data Type= sequence number 0 - 5 (Voice Frame A) , Voice, LCSS = 0
 
 			tx_sequence++;
@@ -866,7 +865,6 @@ void HRC6000TimeslotInterruptHandler()
 			}
 			break;
 		case DMR_STATE_REPEATER_WAKE_1:
-			//SEGGER_RTT_printf(0, "DMR_STATE_REPEATER_WAKE_1\n");
 			{
 				uint8_t spi_tx1[] = { 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 				spi_tx1[7] = (trxDMRID >> 16) & 0xFF;
@@ -879,19 +877,16 @@ void HRC6000TimeslotInterruptHandler()
 			slot_state = DMR_STATE_REPEATER_WAKE_2;
 			break;
 		case DMR_STATE_REPEATER_WAKE_2:
-			//SEGGER_RTT_printf(0, "DMR_STATE_REPEATER_WAKE_2\n");
 			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); // RXnextslotenable
 			slot_state = DMR_STATE_REPEATER_WAKE_3;
+			GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);// for repeater wakeup
 			break;
 		case DMR_STATE_REPEATER_WAKE_3:
-			//SEGGER_RTT_printf(0, "DMR_STATE_REPEATER_WAKE_3\n");
-			//trxEnableRx();
 			init_digital_DMR_RX();
 			rxcnt=0;
 			slot_state = DMR_STATE_REPEATER_WAKE_4;
 			break;
 		case DMR_STATE_REPEATER_WAKE_4:
-			//SEGGER_RTT_printf(0, "DMR_STATE_REPEATER_WAKE_4\n");
 			slot_state = DMR_STATE_RX_1;
 			isWaking=false;
 			break;
