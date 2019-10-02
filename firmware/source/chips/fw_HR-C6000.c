@@ -500,7 +500,7 @@ inline static void HRC6000SysReceivedDataInt()
 		}
 		return;
 	}
-
+/*
 	if ((slot_state==DMR_STATE_REPEATER_WAKE_3) && (rxSyncClass==SYNC_CLASS_HEADER))
 	{
 		if ((rxcnt++) >5)
@@ -511,7 +511,7 @@ inline static void HRC6000SysReceivedDataInt()
 		}
 		return;
 	}
-
+*/
 
 	if ((slot_state!=0) && (skip_count>0) && (rxSyncClass!=SYNC_CLASS_DATA) && ((rxDataType & 0x07) == 0x01))
 	{
@@ -903,18 +903,21 @@ void HRC6000TimeslotInterruptHandler()
 			break;
 		case DMR_STATE_REPEATER_WAKE_2:
 			SEGGER_RTT_printf(0, "DMR_STATE_REPEATER_WAKE_2\n");
-			write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xC3);  //Enable DMR Tx and Rx, Passive Timing
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);   //  Receive during Next Timeslot And Layer2 Access success Bit
-			rxcnt=0;
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); // RXnextslotenable
 			slot_state = DMR_STATE_REPEATER_WAKE_3;
 			break;
 		case DMR_STATE_REPEATER_WAKE_3:
 			SEGGER_RTT_printf(0, "DMR_STATE_REPEATER_WAKE_3\n");
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);   //  Receive during Next Timeslot And Layer2 Access success Bit
-
-			slot_state = DMR_STATE_REPEATER_WAKE_3;// not really needed, but just to make it obvious we stay in this state
+			trxEnableRx();
+			init_digital_DMR_RX();
+			rxcnt=0;
+			slot_state = DMR_STATE_REPEATER_WAKE_4;
 			break;
 		case DMR_STATE_REPEATER_WAKE_4:
+			SEGGER_RTT_printf(0, "DMR_STATE_REPEATER_WAKE_4\n");
+			slot_state = DMR_STATE_RX_1;
+			isWaking=false;
+			/*
 			SEGGER_RTT_printf(0, "DMR_STATE_REPEATER_WAKE_4 %d %d\n",rxwait,rxcnt);
 			if ((rxwait>0) && (trxIsTransmitting==true) && isWaking)
 			{
@@ -933,7 +936,7 @@ void HRC6000TimeslotInterruptHandler()
 			{
 				// Failed to wake the repeater
 				slot_state = DMR_STATE_REPEATER_WAKE_FAIL_1;
-			}
+			}*/
 			break;
 		case DMR_STATE_REPEATER_WAKE_FAIL_1:
 			slot_state = DMR_STATE_REPEATER_WAKE_FAIL_2;
@@ -963,13 +966,13 @@ void HRC6000TimeslotInterruptHandler()
 
 void HRC6000RxInterruptHandler()
 {
-	//SEGGER_RTT_printf(0, "RxISR\t%d\n",PITCounter);
+	SEGGER_RTT_printf(0, "RxISR\t%d\n",PITCounter);
 	trx_activateRx();
 }
 
 void HRC6000TxInterruptHandler()
 {
-	//SEGGER_RTT_printf(0, "TxISR\t%d \n",PITCounter);
+	SEGGER_RTT_printf(0, "TxISR\t%d \n",PITCounter);
 	trx_activateTx();
 }
 
@@ -1220,7 +1223,7 @@ void tick_HR_C6000()
 	}
 
 
-#define TIMEOUT 200
+#define TIMEOUT 2000
 	// Timeout interrupt
 	// This code appears to check whether there has been a TS ISR in the last 200 RTOS ticks
 	// If not, it reinitialises the DMR subsystem

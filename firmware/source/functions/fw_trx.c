@@ -60,6 +60,7 @@ static uint8_t tx_fh_l;
 static uint8_t tx_fh_h;
 
 int trxDMRMode = DMR_MODE_ACTIVE;// Active is for simplex
+static volatile bool txPAEnabled=false;
 
 int	trxGetMode()
 {
@@ -172,6 +173,34 @@ void trx_check_analog_squelch()
 	}
 }
 
+
+void trxEnableRx()
+{
+	if (currentBandWidthIs25kHz)
+	{
+		// 25 kHz settings
+		write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x30, 0x70, 0x06); // RX off
+	}
+	else
+	{
+		// 12.5 kHz settings
+		write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x30, 0x40, 0x06); // RX off
+	}
+	write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x05, 0x87, 0x63); // select 'normal' frequency mode
+	write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x49, 0x0C, 0x15); // setting SQ open and shut threshold
+
+	if (currentBandWidthIs25kHz)
+	{
+		// 25 kHz settings
+		write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x30, 0x70, 0x26); // RX on
+	}
+	else
+	{
+		// 12.5 kHz settings
+		write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x30, 0x40, 0x26); // RX on
+	}
+}
+
 void trxSetFrequency(int fRx,int fTx)
 {
 	if (currentRxFrequency!=fRx || currentRxFrequency!=fTx)
@@ -233,15 +262,22 @@ void trxSetFrequency(int fRx,int fTx)
 		trxUpdateC6000Calibration();
 		trxUpdateAT1846SCalibration();
 
-		if (trxCheckFrequencyIsUHF(currentRxFrequency) && !trxIsTransmitting)
+		if (!txPAEnabled)
 		{
-			GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 0);
-			GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 1);
+			if (trxCheckFrequencyIsUHF(currentRxFrequency))
+			{
+				GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 0);
+				GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 1);
+			}
+			else
+			{
+				GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 1);
+				GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 0);
+			}
 		}
 		else
 		{
-			GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 1);
-			GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 0);
+			//SEGGER_RTT_printf(0, "ERROR Cant enable Rx when PA active\n");
 		}
 	}
 }
@@ -294,6 +330,8 @@ void trx_activateRx()
 	GPIO_PinWrite(GPIO_UHF_TX_amp_power, Pin_UHF_TX_amp_power, 0);// UHF PA off
 
     GPIO_PinWrite(GPIO_RF_ant_switch, Pin_RF_ant_switch, ANTENNA_SWITCH_RX);
+	txPAEnabled=false;
+
 
     if (trxCheckFrequencyIsUHF(currentRxFrequency))
 	{
@@ -313,6 +351,7 @@ void trx_activateRx()
 
 void trx_activateTx()
 {
+	txPAEnabled=true;
 	write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x29, tx_fh_h, tx_fh_l);
 	write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x2a, tx_fl_h, tx_fl_l);
 
