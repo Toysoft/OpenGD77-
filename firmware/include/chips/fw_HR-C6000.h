@@ -63,7 +63,6 @@ extern const uint8_t TG_CALL_FLAG;
 extern const uint8_t PC_CALL_FLAG;
 extern volatile int slot_state;
 extern volatile uint8_t DMR_frame_buffer[DRM_FRAME_BUFFER_SIZE];
-//extern volatile bool isWaking;
 
 enum DMR_SLOT_STATE { DMR_STATE_IDLE, DMR_STATE_RX_1, DMR_STATE_RX_2, DMR_STATE_RX_END,
 					  DMR_STATE_TX_START_1, DMR_STATE_TX_START_2, DMR_STATE_TX_START_3, DMR_STATE_TX_START_4, DMR_STATE_TX_START_5,
@@ -83,5 +82,6 @@ void store_qsodata();
 void init_hrc6000_task();
 void fw_hrc6000_task();
 void tick_HR_C6000();
+void clearIsWaking();
 
 #endif /* _FW_HR_C6000_H_ */

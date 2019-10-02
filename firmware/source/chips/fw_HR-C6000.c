@@ -1263,3 +1263,8 @@ void tick_HR_C6000()
 		}
 	}
 }
+
+void clearIsWaking()
+{
+	isWaking=false;
+}
