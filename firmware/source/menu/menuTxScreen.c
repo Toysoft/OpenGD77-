@@ -43,7 +43,7 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 			GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 1);
 
 			txstopdelay=0;
-			isWaking=false;
+//			isWaking=false;
 			trx_setTX();
 			updateScreen();
 		}

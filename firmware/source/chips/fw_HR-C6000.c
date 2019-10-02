@@ -87,7 +87,7 @@ static volatile int tx_sequence=0;
 
 static volatile int timeCode;
 static volatile int repeaterWakeupResponseTimeout=0;
-volatile bool isWaking = false;
+static volatile bool isWaking = false;
 static volatile int rxwait;// used for Repeater wakeup sequence
 static volatile int rxcnt;// used for Repeater wakeup sequence
 
