@@ -427,7 +427,7 @@ inline static void HRC6000SysPostAccessInt()
 	// Late entry into ongoing RX
 	if (slot_state == DMR_STATE_IDLE && callAcceptFilter())
 	{
-		SEGGER_RTT_printf(0,"InterLateEntry interrupt\n");
+		//SEGGER_RTT_printf(0,"InterLateEntry interrupt\n");
 		store_qsodata();
 		init_codec();
 		GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1);
@@ -474,7 +474,7 @@ inline static void HRC6000SysReceivedDataInt()
 
 	read_SPI_page_reg_byte_SPI0(0x04, 0x51, &tmp_val_0x51);
 	read_SPI_page_reg_byte_SPI0(0x04, 0x52, &tmp_val_0x52);  //Read Received CC and CACH Register
-	read_SPI_page_reg_byte_SPI0(0x04, 0x57, &tmp_val_0x57);
+	//read_SPI_page_reg_byte_SPI0(0x04, 0x57, &tmp_val_0x57);
 
 	rxDataType 	= (tmp_val_0x51 >> 4) & 0x0f;//Data Type or Voice Frame sequence number
 	rxSyncClass = (tmp_val_0x51 >> 0) & 0x03;//Received Sync Class  0=Sync Header 1=Voice 2=data 3=RC
@@ -483,14 +483,14 @@ inline static void HRC6000SysReceivedDataInt()
 	rxColorCode 	= (tmp_val_0x52 >> 4) & 0x0f;
 	timeCode =  ((tmp_val_0x52 & 0x04) >> 2);
 
-	SEGGER_RTT_printf(0, "RXDT\taf:%d\tsc:%02x\tcrc:%02x\trpi:%02x\tcc:%d\ttc:%d\treg0x57:%d\n",(rxDataType&0x07),rxSyncClass,rxCRCStatus,rpi,rxColorCode,timeCode,(tmp_val_0x57 >> 2) & 0x01);
+	//SEGGER_RTT_printf(0, "RXDT\taf:%d\tsc:%02x\tcrc:%02x\trpi:%02x\tcc:%d\ttc:%d\treg0x57:%d\n",(rxDataType&0x07),rxSyncClass,rxCRCStatus,rpi,rxColorCode,timeCode,(tmp_val_0x57 >> 2) & 0x01);
 
 
 	// Note only detect terminator frames in Active mode, because in passive we can see our own terminators echoed back which can be a problem
 	if ((trxDMRMode == DMR_MODE_ACTIVE) && (rxSyncClass==SYNC_CLASS_DATA) && (rxDataType==2) && callAcceptFilter())        //Terminator with LC
 	{
 
-		SEGGER_RTT_printf(0, "RX STOP 0x%02x\n",tmp_val_0x82);
+		//SEGGER_RTT_printf(0, "RX STOP 0x%02x\n",tmp_val_0x82);
 		slot_state = DMR_STATE_RX_END;
 
 		if (settingsUsbMode == USB_MODE_HOTSPOT)
@@ -500,18 +500,6 @@ inline static void HRC6000SysReceivedDataInt()
 		}
 		return;
 	}
-/*
-	if ((slot_state==DMR_STATE_REPEATER_WAKE_3) && (rxSyncClass==SYNC_CLASS_HEADER))
-	{
-		if ((rxcnt++) >5)
-		{
-			isWaking=false;
-
-			HRC6000TransitionToTx();
-		}
-		return;
-	}
-*/
 
 	if ((slot_state!=0) && (skip_count>0) && (rxSyncClass!=SYNC_CLASS_DATA) && ((rxDataType & 0x07) == 0x01))
 	{
@@ -521,14 +509,12 @@ inline static void HRC6000SysReceivedDataInt()
 	// Check for correct received packet
 	if ((rxCRCStatus==true) && (rpi==0) &&  (slot_state < DMR_STATE_TX_START_1))//(rxColorCode == trxGetDMRColourCode()) &&
 	{
-		SEGGER_RTT_printf(0,"Data OK 0x%02x\n",tmp_val_0x82);
-
 		// Start RX
 		if (slot_state == DMR_STATE_IDLE)
 		{
-			if ((rxColorCode == trxGetDMRColourCode()) && (rxSyncClass==SYNC_CLASS_DATA) && (rxDataType==1) &&  callAcceptFilter())       //Voice LC Header
+			if ((rxColorCode == trxGetDMRColourCode()) && (rxSyncClass==SYNC_CLASS_DATA) && (rxDataType==1) &&  callAcceptFilter() && (timeCode == trxGetDMRTimeSlot()))       //Voice LC Header
 			{
-				SEGGER_RTT_printf(0,"RX START\n");
+				//SEGGER_RTT_printf(0,"RX START\n");
 				store_qsodata();
 				init_codec();
 				GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1);
@@ -554,7 +540,7 @@ inline static void HRC6000SysReceivedDataInt()
 					 (rxColorCode == trxGetDMRColourCode())) || (trxDMRMode == DMR_MODE_ACTIVE &&
 					 (slot_state == DMR_STATE_RX_1))))
 			{
-				SEGGER_RTT_printf(0, "Audio frame %d\t%d\t%d\n",(rxDataType & 0x07),timeCode,trxGetDMRTimeSlot());
+				//SEGGER_RTT_printf(0, "Audio frame %d\t%d\t%d\n",(rxDataType & 0x07),timeCode,trxGetDMRTimeSlot());
 				store_qsodata();
 				read_SPI_page_reg_bytearray_SPI1(0x03, 0x00, DMR_frame_buffer+0x0C, 27);
 				if (settingsUsbMode == USB_MODE_HOTSPOT)
@@ -609,16 +595,10 @@ inline static void HRC6000SysPhysicalLayerInt()
 
 void HRC6000SysInterruptHandler()
 {
-
-
-
 	read_SPI_page_reg_byte_SPI0(0x04, 0x82, &tmp_val_0x82);  //Read Interrupt Flag Register1
 
 	//SEGGER_RTT_printf(0, "%d\tSYS\t0x%02x\n",PITCounter,tmp_val_0x82);
 
-	//read_SPI_page_reg_byte_SPI0(0x04, 0x50, &tmp_val_0x50);
-	//read_SPI_page_reg_byte_SPI0(0x04, 0x5f, &tmp_val_0x5f);  //Read Received Sync type register
-	//read_SPI_page_reg_byte_SPI0(0x04, 0x57, &tmp_val_0x57);// Not sure what this does
 
 	read_SPI_page_reg_bytearray_SPI0(0x02, 0x00, DMR_frame_buffer, 0x0C);
 	receivedTgOrPcId 	= (DMR_frame_buffer[3]<<16)+(DMR_frame_buffer[4]<<8)+(DMR_frame_buffer[5]<<0);// used by the call accept filter
@@ -689,7 +669,7 @@ void HRC6000SysInterruptHandler()
 
 void HRC6000TransitionToTx()
 {
-	SEGGER_RTT_printf(0, "Transition to TX %d 0x%02x\n",slot_state,timeCode);
+	//SEGGER_RTT_printf(0, "Transition to TX %d 0x%02x\n",slot_state,timeCode);
 	GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 0);
 	GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 	init_codec();
@@ -701,9 +681,6 @@ void HRC6000TransitionToTx()
 
 void HRC6000TimeslotInterruptHandler()
 {
-
-
-
 	SEGGER_RTT_printf(0, "TS_ISR\tstate:%d\tTC:0x%02x\n",slot_state,timeCode);
 	// RX/TX state machine
 	switch (slot_state)
@@ -889,7 +866,7 @@ void HRC6000TimeslotInterruptHandler()
 			}
 			break;
 		case DMR_STATE_REPEATER_WAKE_1:
-			SEGGER_RTT_printf(0, "DMR_STATE_REPEATER_WAKE_1\n");
+			//SEGGER_RTT_printf(0, "DMR_STATE_REPEATER_WAKE_1\n");
 			{
 				uint8_t spi_tx1[] = { 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 				spi_tx1[7] = (trxDMRID >> 16) & 0xFF;
@@ -902,41 +879,21 @@ void HRC6000TimeslotInterruptHandler()
 			slot_state = DMR_STATE_REPEATER_WAKE_2;
 			break;
 		case DMR_STATE_REPEATER_WAKE_2:
-			SEGGER_RTT_printf(0, "DMR_STATE_REPEATER_WAKE_2\n");
+			//SEGGER_RTT_printf(0, "DMR_STATE_REPEATER_WAKE_2\n");
 			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); // RXnextslotenable
 			slot_state = DMR_STATE_REPEATER_WAKE_3;
 			break;
 		case DMR_STATE_REPEATER_WAKE_3:
-			SEGGER_RTT_printf(0, "DMR_STATE_REPEATER_WAKE_3\n");
+			//SEGGER_RTT_printf(0, "DMR_STATE_REPEATER_WAKE_3\n");
 			//trxEnableRx();
 			init_digital_DMR_RX();
 			rxcnt=0;
 			slot_state = DMR_STATE_REPEATER_WAKE_4;
 			break;
 		case DMR_STATE_REPEATER_WAKE_4:
-			SEGGER_RTT_printf(0, "DMR_STATE_REPEATER_WAKE_4\n");
+			//SEGGER_RTT_printf(0, "DMR_STATE_REPEATER_WAKE_4\n");
 			slot_state = DMR_STATE_RX_1;
 			isWaking=false;
-			/*
-			SEGGER_RTT_printf(0, "DMR_STATE_REPEATER_WAKE_4 %d %d\n",rxwait,rxcnt);
-			if ((rxwait>0) && (trxIsTransmitting==true) && isWaking)
-			{
-				rxwait--;
-				if (repeaterWakeupResponseTimeout>0)
-				{
-					rxcnt++;
-	            	if ((rxcnt>=5) && (timeCode==0))
-	            	{
-	            		// repeater is awake
-	            		slot_state = DMR_STATE_TX_START_1;
-	            	}
-				}
-			}
-			else
-			{
-				// Failed to wake the repeater
-				slot_state = DMR_STATE_REPEATER_WAKE_FAIL_1;
-			}*/
 			break;
 		case DMR_STATE_REPEATER_WAKE_FAIL_1:
 			slot_state = DMR_STATE_REPEATER_WAKE_FAIL_2;
@@ -966,13 +923,13 @@ void HRC6000TimeslotInterruptHandler()
 
 void HRC6000RxInterruptHandler()
 {
-	SEGGER_RTT_printf(0, "RxISR\t%d\n",PITCounter);
+	//SEGGER_RTT_printf(0, "RxISR\t%d\n",PITCounter);
 	trx_activateRx();
 }
 
 void HRC6000TxInterruptHandler()
 {
-	SEGGER_RTT_printf(0, "TxISR\t%d \n",PITCounter);
+	//SEGGER_RTT_printf(0, "TxISR\t%d \n",PITCounter);
 	trx_activateTx();
 }
 
@@ -1002,10 +959,6 @@ void init_digital_DMR_RX()
 {
    if (trxDMRMode == DMR_MODE_ACTIVE)
     {
-	   /*
-    	write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0x43);  //Enable DMR Tx, DMR Rx, Passive Timing, Normal mode
-		write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40);  //Receive during next Timeslot
-		*/
     	write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xC3);  //Enable DMR Tx, DMR Rx, Passive Timing, Normal mode
 		write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x20);  //Set Sync Fail Bit (Reset?))
 		write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00);  //Reset
@@ -1238,7 +1191,7 @@ void tick_HR_C6000()
 			{
 				init_digital();// sets 	int_timeout=0;
 				slot_state = DMR_STATE_IDLE;
-				SEGGER_RTT_printf(0, "INTERRUPT TIMEOUT\n");
+				//SEGGER_RTT_printf(0, "INTERRUPT TIMEOUT\n");
 			}
 		}
 	}
