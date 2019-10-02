@@ -908,7 +908,7 @@ void HRC6000TimeslotInterruptHandler()
 			break;
 		case DMR_STATE_REPEATER_WAKE_3:
 			SEGGER_RTT_printf(0, "DMR_STATE_REPEATER_WAKE_3\n");
-			trxEnableRx();
+			//trxEnableRx();
 			init_digital_DMR_RX();
 			rxcnt=0;
 			slot_state = DMR_STATE_REPEATER_WAKE_4;
