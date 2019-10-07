@@ -431,7 +431,7 @@ inline static void HRC6000SysPostAccessInt()
 		GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1);
 		GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
 
-		write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);     //Receive only in next timeslot
+		write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40);     //Receive only in next timeslot
 		slot_state = DMR_STATE_RX_1;
 
 		skip_count = 2;// RC. seems to be something to do with late entry but I'm but sure what, or whether its still needed
@@ -445,6 +445,7 @@ inline static void HRC6000SysPostAccessInt()
 
 }
 
+volatile int lastTimeCode=0;
 inline static void HRC6000SysReceivedDataInt()
 {
 	//SEGGER_RTT_printf(0, "%d SYS_INT_RECEIVED_DATA\n",PITCounter);
@@ -484,6 +485,22 @@ inline static void HRC6000SysReceivedDataInt()
 	//SEGGER_RTT_printf(0, "RXDT\taf:%d\tsc:%02x\tcrc:%02x\trpi:%02x\tcc:%d\ttc:%d\treg0x57:%d\n",(rxDataType&0x07),rxSyncClass,rxCRCStatus,rpi,rxColorCode,timeCode,(tmp_val_0x57 >> 2) & 0x01);
 
 
+	// Wait for the repeater to wakeup and count the number of frames where the Timecode (TS number) is toggling correctly
+	if (slot_state == DMR_STATE_REPEATER_WAKE_4)
+	{
+		if (lastTimeCode!=timeCode)
+		{
+			// timecode has toggled correctly
+			lastTimeCode = timeCode;
+			rxcnt++;
+		}
+		else
+		{
+			// timecode has not toggled correctly so reset the counter used in the TS state machine
+			rxcnt=0;
+		}
+	}
+
 	// Note only detect terminator frames in Active mode, because in passive we can see our own terminators echoed back which can be a problem
 	if ((trxDMRMode == DMR_MODE_ACTIVE) && (rxSyncClass==SYNC_CLASS_DATA) && (rxDataType==2) && callAcceptFilter())        //Terminator with LC
 	{
@@ -518,7 +535,7 @@ inline static void HRC6000SysReceivedDataInt()
 				GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1);
 				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
 
-				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);     //Receive only in next timeslot
+				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40);     //Receive only in next timeslot
 				slot_state = DMR_STATE_RX_1;
 
 				skip_count = 0;
@@ -697,7 +714,7 @@ void HRC6000TimeslotInterruptHandler()
 					// Note. The C6000 needs to be told what to do for the next timeslot each time.
 					// It no longer seems to receive if this line is removed.
 					// Though in the future this needs to be double checked. In case there is a way to get it to constantly receive.
-					//write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);     //Receive only in next timeslot
+					//write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40);     //Receive only in next timeslot
 					//slot_state = DMR_STATE_RX_1;// stay in state 1
 				}
 			}
@@ -710,7 +727,7 @@ void HRC6000TimeslotInterruptHandler()
 			}
 			break;
 		case DMR_STATE_RX_2: // Start RX (second step)
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);     //Receive only in next timeslot
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40);     //Receive only in next timeslot
 			slot_state = DMR_STATE_RX_1;
 			break;
 		case DMR_STATE_RX_END: // Stop RX
@@ -727,7 +744,8 @@ void HRC6000TimeslotInterruptHandler()
 			slot_state = DMR_STATE_TX_START_2;
 			break;
 		case DMR_STATE_TX_START_2: // Start TX (third step)
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); 	//Receive during next Timeslot (no Layer 2 Access)
+			//write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); 	//Receive during next Timeslot (no Layer 2 Access)
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00); 	//Do nothing on the next TS
 			slot_state = DMR_STATE_TX_START_3;
 			break;
 		case DMR_STATE_TX_START_3: // Start TX (fourth step)
@@ -736,7 +754,8 @@ void HRC6000TimeslotInterruptHandler()
 			slot_state = DMR_STATE_TX_START_4;
 			break;
 		case DMR_STATE_TX_START_4: // Start TX (fifth step)
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); 	//Receive during Next Timeslot (no Layer 2 Access)
+			//write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); 	//Receive during Next Timeslot (no Layer 2 Access)
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00); 	//Do nothing on the next TS
             if (settingsUsbMode != USB_MODE_HOTSPOT)
             {
             	/*
@@ -773,7 +792,8 @@ void HRC6000TimeslotInterruptHandler()
 			}
 			else
 			{
-				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); // Receive during next Timeslot (no Layer 2 Access)
+				//write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); // Receive during next Timeslot (no Layer 2 Access)
+				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00); 	//Do nothing on the next TS
 				slot_state = DMR_STATE_TX_2;
 			}
 			break;
@@ -837,7 +857,7 @@ void HRC6000TimeslotInterruptHandler()
 			if (trxDMRMode == DMR_MODE_PASSIVE)
 			{
 				write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xC3);  //Enable DMR Tx and Rx, Passive Timing
-				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);   //  Receive during Next Timeslot And Layer2 Access success Bit
+				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40);   //  Receive during Next Timeslot And Layer2 Access success Bit
 				slot_state = DMR_STATE_TX_END_3;
 			}
 			else
@@ -847,7 +867,6 @@ void HRC6000TimeslotInterruptHandler()
 				slot_state = DMR_STATE_IDLE;
 			}
 #endif
-
 			break;
 		case DMR_STATE_TX_END_3:
 			if (trxDMRMode == DMR_MODE_PASSIVE)
@@ -872,21 +891,31 @@ void HRC6000TimeslotInterruptHandler()
 				write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x30);
 				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);
 			}
-			slot_state = DMR_STATE_REPEATER_WAKE_2;
+			slot_state = DMR_STATE_REPEATER_WAKE_3;
 			break;
 		case DMR_STATE_REPEATER_WAKE_2:
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); // RXnextslotenable
+			/*
+			 *
+			// Note. I'm not sure if this state is really necessary, as it may be better simply to goto wakeup 3 and reset the C6000 TS system straight away.
+			 *
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40); // RX next slotenable
 			slot_state = DMR_STATE_REPEATER_WAKE_3;
-			GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);// for repeater wakeup
+			GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);// Turn off the Green LED while we are waiting for the repeater to wakeup
 			break;
+			*/
 		case DMR_STATE_REPEATER_WAKE_3:
+			GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);// Turn off the Green LED while we are waiting for the repeater to wakeup
 			init_digital_DMR_RX();
 			rxcnt=0;
 			slot_state = DMR_STATE_REPEATER_WAKE_4;
 			break;
 		case DMR_STATE_REPEATER_WAKE_4:
-			slot_state = DMR_STATE_RX_1;
-			isWaking=false;
+			if (rxcnt>2)
+			{
+				// wait for the signal from the repeater to have toggled timecode at least twice, i.e the signal should be stable and we should be able to go into Tx
+				slot_state = DMR_STATE_RX_1;
+				isWaking=false;
+			}
 			break;
 		case DMR_STATE_REPEATER_WAKE_FAIL_1:
 			slot_state = DMR_STATE_REPEATER_WAKE_FAIL_2;
