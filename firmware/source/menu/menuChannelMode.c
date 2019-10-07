@@ -381,23 +381,42 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_DOWN)!=0)
 	{
-		if (strcmp(currentZoneName,"All Channels")==0)
+		if (buttons & BUTTON_SK2)
 		{
-			do
+			int numZones = codeplugZonesGetCount();
+
+			if (nonVolatileSettings.currentZone == 0) {
+				nonVolatileSettings.currentZone = numZones-1;
+			}
+			else
 			{
-				nonVolatileSettings.currentChannelIndexInAllZone--;
-				if (nonVolatileSettings.currentChannelIndexInAllZone<1)
-				{
-					nonVolatileSettings.currentChannelIndexInAllZone=1024;
-				}
-			} while(!codeplugChannelIndexIsValid(nonVolatileSettings.currentChannelIndexInAllZone));
+				nonVolatileSettings.currentZone--;
+			}
+			nonVolatileSettings.overrideTG = 0; // remove any TG override
+			nonVolatileSettings.currentChannelIndexInZone = 0;// Since we are switching zones the channel index should be reset
+			channelScreenChannelData.rxFreq=0x00; // Flag to the Channel screeen that the channel data is now invalid and needs to be reloaded
+			menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
 		}
 		else
 		{
-			nonVolatileSettings.currentChannelIndexInZone--;
-			if (nonVolatileSettings.currentChannelIndexInZone < 0)
+			if (strcmp(currentZoneName,"All Channels")==0)
 			{
-				nonVolatileSettings.currentChannelIndexInZone =  currentZone.NOT_IN_MEMORY_numChannelsInZone - 1;
+				do
+				{
+					nonVolatileSettings.currentChannelIndexInAllZone--;
+					if (nonVolatileSettings.currentChannelIndexInAllZone<1)
+					{
+						nonVolatileSettings.currentChannelIndexInAllZone=1024;
+					}
+				} while(!codeplugChannelIndexIsValid(nonVolatileSettings.currentChannelIndexInAllZone));
+			}
+			else
+			{
+				nonVolatileSettings.currentChannelIndexInZone--;
+				if (nonVolatileSettings.currentChannelIndexInZone < 0)
+				{
+					nonVolatileSettings.currentChannelIndexInZone =  currentZone.NOT_IN_MEMORY_numChannelsInZone - 1;
+				}
 			}
 		}
 		loadChannelData(false);
@@ -406,23 +425,39 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_UP)!=0)
 	{
-		if (strcmp(currentZoneName,"All Channels")==0)
+		if (buttons & BUTTON_SK2)
 		{
-			do
-			{
-				nonVolatileSettings.currentChannelIndexInAllZone++;
-				if (nonVolatileSettings.currentChannelIndexInAllZone>1024)
-				{
-					nonVolatileSettings.currentChannelIndexInAllZone=1;
-				}
-			} while(!codeplugChannelIndexIsValid(nonVolatileSettings.currentChannelIndexInAllZone));
+			int numZones = codeplugZonesGetCount();
+
+			nonVolatileSettings.currentZone++;
+			if (nonVolatileSettings.currentZone >= numZones) {
+				nonVolatileSettings.currentZone = 0;
+			}
+			nonVolatileSettings.overrideTG = 0; // remove any TG override
+			nonVolatileSettings.currentChannelIndexInZone = 0;// Since we are switching zones the channel index should be reset
+			channelScreenChannelData.rxFreq=0x00; // Flag to the Channel screen that the channel data is now invalid and needs to be reloaded
+			menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
 		}
 		else
 		{
-			nonVolatileSettings.currentChannelIndexInZone++;
-			if (nonVolatileSettings.currentChannelIndexInZone > currentZone.NOT_IN_MEMORY_numChannelsInZone - 1)
+			if (strcmp(currentZoneName,"All Channels")==0)
 			{
-				nonVolatileSettings.currentChannelIndexInZone = 0;
+				do
+				{
+					nonVolatileSettings.currentChannelIndexInAllZone++;
+					if (nonVolatileSettings.currentChannelIndexInAllZone>1024)
+					{
+						nonVolatileSettings.currentChannelIndexInAllZone=1;
+					}
+				} while(!codeplugChannelIndexIsValid(nonVolatileSettings.currentChannelIndexInAllZone));
+			}
+			else
+			{
+				nonVolatileSettings.currentChannelIndexInZone++;
+				if (nonVolatileSettings.currentChannelIndexInZone > currentZone.NOT_IN_MEMORY_numChannelsInZone - 1)
+				{
+						nonVolatileSettings.currentChannelIndexInZone = 0;
+				}
 			}
 		}
 		loadChannelData(false);
