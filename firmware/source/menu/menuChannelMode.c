@@ -27,7 +27,7 @@ static void loadChannelData(bool useChannelDataInMemory);
 static struct_codeplugZone_t currentZone;
 static struct_codeplugRxGroup_t rxGroupData;
 static struct_codeplugContact_t contactData;
-static int currentIndexInTRxGroup=0;
+//static int currentIndexInTRxGroup=0;
 static char currentZoneName[17];
 static int directChannelNumber=0;
 static bool displaySquelch=false;
@@ -105,7 +105,7 @@ static void loadChannelData(bool useChannelDataInMemory)
 	trxSetRxCTCSS(channelScreenChannelData.rxTone);
 
 	codeplugRxGroupGetDataForIndex(channelScreenChannelData.rxGroupList,&rxGroupData);
-	codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
+	codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
 	if (nonVolatileSettings.overrideTG == 0)
 	{
 		trxTalkGroupOrPcId = contactData.tgNumber;
@@ -291,12 +291,12 @@ static void handleEvent(int buttons, int keys, int events)
 	{
 		if (trxGetMode() == RADIO_MODE_DIGITAL)
 		{
-			currentIndexInTRxGroup++;
-			if (currentIndexInTRxGroup > (rxGroupData.NOT_IN_MEMORY_numTGsInGroup -1))
+			nonVolatileSettings.currentIndexInTRxGroupList++;
+			if (nonVolatileSettings.currentIndexInTRxGroupList > (rxGroupData.NOT_IN_MEMORY_numTGsInGroup -1))
 			{
-				currentIndexInTRxGroup =  0;
+				nonVolatileSettings.currentIndexInTRxGroupList =  0;
 			}
-			codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
+			codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
 
 			nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
 			trxTalkGroupOrPcId = contactData.tgNumber;
@@ -330,13 +330,13 @@ static void handleEvent(int buttons, int keys, int events)
 		if (trxGetMode() == RADIO_MODE_DIGITAL)
 		{
 			// To Do change TG in on same channel freq
-			currentIndexInTRxGroup--;
-			if (currentIndexInTRxGroup < 0)
+			nonVolatileSettings.currentIndexInTRxGroupList--;
+			if (nonVolatileSettings.currentIndexInTRxGroupList < 0)
 			{
-				currentIndexInTRxGroup =  rxGroupData.NOT_IN_MEMORY_numTGsInGroup - 1;
+				nonVolatileSettings.currentIndexInTRxGroupList =  rxGroupData.NOT_IN_MEMORY_numTGsInGroup - 1;
 			}
 
-			codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
+			codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
 			nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
 			trxTalkGroupOrPcId = contactData.tgNumber;
 
