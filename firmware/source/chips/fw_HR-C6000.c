@@ -469,7 +469,7 @@ inline static void HRC6000SysReceivedDataInt()
 	int rpi;
 	int rxColorCode;
 
-	tick_cnt=0;
+
 
 	read_SPI_page_reg_byte_SPI0(0x04, 0x51, &tmp_val_0x51);
 	read_SPI_page_reg_byte_SPI0(0x04, 0x52, &tmp_val_0x52);  //Read Received CC and CACH Register
@@ -484,6 +484,11 @@ inline static void HRC6000SysReceivedDataInt()
 
 	SEGGER_RTT_printf(0, "RXDT\taf:%d\tsc:%02x\tcrc:%02x\trpi:%02x\tcc:%d\ttc:%d\t\n",(rxDataType&0x07),rxSyncClass,rxCRCStatus,rpi,rxColorCode,timeCode);
 
+	if ((slot_state == DMR_STATE_RX_1 || slot_state == DMR_STATE_RX_2) && (rxColorCode != trxGetDMRColourCode() || rpi!=0 || rxCRCStatus != true))
+	{
+		return;
+	}
+	tick_cnt=0;
 
 	// Wait for the repeater to wakeup and count the number of frames where the Timecode (TS number) is toggling correctly
 	if (slot_state == DMR_STATE_REPEATER_WAKE_4)
@@ -528,7 +533,7 @@ inline static void HRC6000SysReceivedDataInt()
 		{
 			if ((rxColorCode == trxGetDMRColourCode()) && (rxSyncClass==SYNC_CLASS_DATA) && (rxDataType==1) &&  callAcceptFilter() && (timeCode == trxGetDMRTimeSlot()))       //Voice LC Header
 			{
-				//SEGGER_RTT_printf(0,"RX START\n");
+				SEGGER_RTT_printf(0,"RX START\n");
 				store_qsodata();
 				init_codec();
 				GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1);
@@ -614,7 +619,7 @@ void HRC6000SysInterruptHandler()
 {
 	read_SPI_page_reg_byte_SPI0(0x04, 0x82, &tmp_val_0x82);  //Read Interrupt Flag Register1
 
-	//SEGGER_RTT_printf(0, "%d\tSYS\t0x%02x\n",PITCounter,tmp_val_0x82);
+	SEGGER_RTT_printf(0, "%d\tSYS\t0x%02x\n",PITCounter,tmp_val_0x82);
 
 
 	read_SPI_page_reg_bytearray_SPI0(0x02, 0x00, DMR_frame_buffer, 0x0C);
@@ -707,6 +712,7 @@ void HRC6000TimeslotInterruptHandler()
 			if (trxDMRMode == DMR_MODE_PASSIVE)
 			{
 				GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1);// Note. Because of the way the Tx shuts down its necessary to have this line
+				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
 				if( !isWaking &&  trxIsTransmitting && (timeCode == trxGetDMRTimeSlot()))
 				{
 						HRC6000TransitionToTx();
@@ -933,14 +939,32 @@ void HRC6000TimeslotInterruptHandler()
 			break;
 	}
 
+#define START_TICK_TIMEOUT 10
+#define END_TICK_TIMEOUT 2
+
 	// Timeout interrupted RX
 	if (slot_state < DMR_STATE_TX_START_1)
 	{
-        if (tick_cnt++>=10)
+		tick_cnt++;
+		if (slot_state == DMR_STATE_IDLE && tick_cnt > START_TICK_TIMEOUT)
         {
-        	slot_state = DMR_STATE_RX_END;
-        	SEGGER_RTT_printf(0, "TIMEOUT\n");
+			init_digital_DMR_RX();
+			GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 0);
+			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
+			slot_state = DMR_STATE_IDLE;
+        	SEGGER_RTT_printf(0, "START TIMEOUT\n");
         }
+		else
+		{
+			if ((slot_state == DMR_STATE_RX_1 || slot_state == DMR_STATE_RX_1) && tick_cnt> END_TICK_TIMEOUT )
+			{
+				init_digital_DMR_RX();
+				GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 0);
+				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
+				slot_state = DMR_STATE_IDLE;
+	        	SEGGER_RTT_printf(0, "END TIMEOUT\n");
+			}
+		}
 	}
 	timer_hrc6000task=0;// I don't think this actually does anything. Its probably redundant legacy code
 }
