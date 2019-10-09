@@ -482,10 +482,11 @@ inline static void HRC6000SysReceivedDataInt()
 	rxColorCode 	= (tmp_val_0x52 >> 4) & 0x0f;
 	timeCode =  ((tmp_val_0x52 & 0x04) >> 2);
 
-	SEGGER_RTT_printf(0, "RXDT\taf:%d\tsc:%02x\tcrc:%02x\trpi:%02x\tcc:%d\ttc:%d\t\n",(rxDataType&0x07),rxSyncClass,rxCRCStatus,rpi,rxColorCode,timeCode);
+	//SEGGER_RTT_printf(0, "RXDT\taf:%d\tsc:%02x\tcrc:%02x\trpi:%02x\tcc:%d\ttc:%d\t\n",(rxDataType&0x07),rxSyncClass,rxCRCStatus,rpi,rxColorCode,timeCode);
 
 	if ((slot_state == DMR_STATE_RX_1 || slot_state == DMR_STATE_RX_2) && (rxColorCode != trxGetDMRColourCode() || rpi!=0 || rxCRCStatus != true))
 	{
+		// Something is not correct
 		return;
 	}
 	tick_cnt=0;
@@ -614,17 +615,26 @@ inline static void HRC6000SysPhysicalLayerInt()
 	*/
 }
 
+uint8_t LCBuf[12];
 
 void HRC6000SysInterruptHandler()
 {
 	read_SPI_page_reg_byte_SPI0(0x04, 0x82, &tmp_val_0x82);  //Read Interrupt Flag Register1
 
-	SEGGER_RTT_printf(0, "%d\tSYS\t0x%02x\n",PITCounter,tmp_val_0x82);
+	SEGGER_RTT_printf(0, "SYS\t0x%02x\n",tmp_val_0x82);
 
 
-	read_SPI_page_reg_bytearray_SPI0(0x02, 0x00, DMR_frame_buffer, 0x0C);
-	receivedTgOrPcId 	= (DMR_frame_buffer[3]<<16)+(DMR_frame_buffer[4]<<8)+(DMR_frame_buffer[5]<<0);// used by the call accept filter
-	receivedSrcId 		= (DMR_frame_buffer[6]<<16)+(DMR_frame_buffer[7]<<8)+(DMR_frame_buffer[8]<<0);// used by the call accept filter
+	read_SPI_page_reg_bytearray_SPI0(0x02, 0x00, LCBuf, 12);
+	if (LCBuf[0]<0x08)
+	{
+		SEGGER_RTT_printf(0, "Valid LC\t0x%02x\n",tmp_val_0x82);
+		memcpy(DMR_frame_buffer,LCBuf,12);
+		if (DMR_frame_buffer[0]==0)
+		{
+			receivedTgOrPcId 	= (DMR_frame_buffer[3]<<16)+(DMR_frame_buffer[4]<<8)+(DMR_frame_buffer[5]<<0);// used by the call accept filter
+			receivedSrcId 		= (DMR_frame_buffer[6]<<16)+(DMR_frame_buffer[7]<<8)+(DMR_frame_buffer[8]<<0);// used by the call accept filter
+		}
+	}
 
 	if (tmp_val_0x82 & SYS_INT_SEND_REQUEST_REJECTED)
 	{
@@ -939,7 +949,7 @@ void HRC6000TimeslotInterruptHandler()
 			break;
 	}
 
-#define START_TICK_TIMEOUT 10
+#define START_TICK_TIMEOUT 20
 #define END_TICK_TIMEOUT 2
 
 	// Timeout interrupted RX
