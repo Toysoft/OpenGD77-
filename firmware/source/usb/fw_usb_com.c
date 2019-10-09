@@ -37,7 +37,7 @@ USB_DMA_NONINIT_DATA_ALIGN(USB_DATA_ALIGN_SIZE) uint8_t usbComSendBuf[COM_BUFFER
 
 int sector = -1;
 
-#define ENABLE_HOTSPOT_MODE
+//#define ENABLE_HOTSPOT_MODE
 
 void tick_com_request()
 {
