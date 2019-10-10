@@ -1106,7 +1106,9 @@ void fw_hrc6000_task()
 			{
 				if (trxGetMode() == RADIO_MODE_ANALOG && melody_play==NULL)
 				{
+		        	taskENTER_CRITICAL();
 					trx_check_analog_squelch();
+		        	taskEXIT_CRITICAL();
 				}
 			}
     	}

@@ -124,7 +124,8 @@ static void sampleRSSIAndNoise()
 {
     uint8_t RX_signal;
     uint8_t RX_noise;
-
+    taskENTER_CRITICAL();
     read_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x1b, &RX_signal, &RX_noise);
+    taskEXIT_CRITICAL();
     RSSI_totalVal += RX_signal;
 }
