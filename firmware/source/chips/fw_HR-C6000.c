@@ -469,8 +469,6 @@ inline static void HRC6000SysReceivedDataInt()
 	int rpi;
 	int rxColorCode;
 
-
-
 	read_SPI_page_reg_byte_SPI0(0x04, 0x51, &tmp_val_0x51);
 	read_SPI_page_reg_byte_SPI0(0x04, 0x52, &tmp_val_0x52);  //Read Received CC and CACH Register
 	//read_SPI_page_reg_byte_SPI0(0x04, 0x57, &tmp_val_0x57);
@@ -486,6 +484,7 @@ inline static void HRC6000SysReceivedDataInt()
 
 	if ((slot_state == DMR_STATE_RX_1 || slot_state == DMR_STATE_RX_2) && (rxColorCode != trxGetDMRColourCode() || rpi!=0 || rxCRCStatus != true))
 	{
+		SEGGER_RTT_printf(0, "INVALID DATA");
 		// Something is not correct
 		return;
 	}
@@ -532,7 +531,8 @@ inline static void HRC6000SysReceivedDataInt()
 		// Start RX
 		if (slot_state == DMR_STATE_IDLE)
 		{
-			if ((rxColorCode == trxGetDMRColourCode()) && (rxSyncClass==SYNC_CLASS_DATA) && (rxDataType==1) &&  callAcceptFilter() && (timeCode == trxGetDMRTimeSlot()))       //Voice LC Header
+		//	SEGGER_RTT_printf(0, "State is idle\n");
+			if ((rxColorCode == trxGetDMRColourCode()))// && (rxSyncClass==SYNC_CLASS_DATA) && (rxDataType==1) )// && (timeCode == trxGetDMRTimeSlot()))       //Voice LC Header
 			{
 				SEGGER_RTT_printf(0,"RX START\n");
 				if (hasLC)
@@ -554,6 +554,10 @@ inline static void HRC6000SysReceivedDataInt()
 					DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_START;
 					hotspotDMRRxFrameBufferAvailable=true;
 				}
+			}
+			else
+			{
+				//SEGGER_RTT_printf(0, "Conditions failed\n");
 			}
 		}
 		else
