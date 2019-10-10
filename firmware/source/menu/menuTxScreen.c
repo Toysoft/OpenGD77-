@@ -139,7 +139,11 @@ static void handleEvent(int buttons, int keys, int events)
 			{
 				// In analog mode. Stop transmitting immediately
 				GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
+
+				// Need to wrap this in Task Critical to avoid bus contention on the I2C bus.
+				taskENTER_CRITICAL();
 				trx_activateRx();
+				taskEXIT_CRITICAL();
 				menuSystemPopPreviousMenu();
 			}
 			// When not in analogue mode, only the trxIsTransmitting flag is cleared
