@@ -372,10 +372,11 @@ void trx_activateTx()
 
 void trxSetPower(uint32_t powerVal)
 {
-	if (powerVal<4096)
+	if (powerVal>4095)
 	{
-		nonVolatileSettings.txPower = powerVal;
+		powerVal=4095;
 	}
+	nonVolatileSettings.txPower = powerVal;
 }
 
 uint16_t trxGetPower()

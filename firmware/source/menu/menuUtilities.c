@@ -23,7 +23,7 @@ static void updateScreen();
 static void handleEvent(int buttons, int keys, int events);
 static const int NUM_MENUS=7;
 static bool	doFactoryReset;
-static const int MAX_SAFE_POWER = 3400;// Note 3000 gives about 5.5W on 144Mhz on one of Roger's radios.
+static const int MAX_POWER = 4100;// Max DAC value is actually 4096 but no one should need to drive the PA that hard, so I rounded this down to 4000
 
 int menuUtilities(int buttons, int keys, int events, bool isFirstRun)
 {
@@ -171,11 +171,11 @@ static void handleEvent(int buttons, int keys, int events)
 			case 0:
 				if (buttons && BUTTON_SK2)
 				{
-					powerChangeValue=1;
+					powerChangeValue=10;
 				}
 				tmpPower = trxGetPower() + powerChangeValue;
 
-				if (tmpPower<=MAX_SAFE_POWER)
+				if (tmpPower<=MAX_POWER)
 				{
 					trxSetPower(tmpPower);
 				}
@@ -212,13 +212,20 @@ static void handleEvent(int buttons, int keys, int events)
 				}
 				break;
 			case 0:
-				if (buttons && BUTTON_SK2)
 				{
-					powerChangeValue=1;
-				}
-				if (trxGetPower() >= powerChangeValue)
-				{
-					trxSetPower(trxGetPower() - powerChangeValue);
+					uint32_t pwr = trxGetPower();
+					if (pwr==4095)
+					{
+						pwr = 4100;// round up for display purposes
+					}
+					if (buttons && BUTTON_SK2)
+					{
+						powerChangeValue=10;
+					}
+					if (pwr >= powerChangeValue)
+					{
+						trxSetPower(pwr- powerChangeValue);
+					}
 				}
 				break;
 			case 3:
