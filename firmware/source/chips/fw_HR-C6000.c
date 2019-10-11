@@ -471,7 +471,7 @@ inline static void HRC6000SysReceivedDataInt()
 
 	read_SPI_page_reg_byte_SPI0(0x04, 0x51, &tmp_val_0x51);
 	read_SPI_page_reg_byte_SPI0(0x04, 0x52, &tmp_val_0x52);  //Read Received CC and CACH Register
-	//read_SPI_page_reg_byte_SPI0(0x04, 0x57, &tmp_val_0x57);
+	//read_SPI_page_reg_byte_SPI0(0x04, 0x57, &tmp_val_0x57);// Kai said that the official firmware uses this register instead of 0x52 for the timecode
 
 	rxDataType 	= (tmp_val_0x51 >> 4) & 0x0f;//Data Type or Voice Frame sequence number
 	rxSyncClass = (tmp_val_0x51 >> 0) & 0x03;//Received Sync Class  0=Sync Header 1=Voice 2=data 3=RC
@@ -570,7 +570,7 @@ inline static void HRC6000SysReceivedDataInt()
 					 (rxColorCode == trxGetDMRColourCode())) || (trxDMRMode == DMR_MODE_ACTIVE &&
 					 (slot_state == DMR_STATE_RX_1))))
 			{
-				//SEGGER_RTT_printf(0, "Audio frame %d\t%d\t%d\n",sequenceNumber,timeCode,trxGetDMRTimeSlot());
+				//SEGGER_RTT_printf(0, "Audio frame %d\t%d\n",sequenceNumber,timeCode);
 				if (hasLC)
 				{
 					store_qsodata();
@@ -637,18 +637,21 @@ inline static void HRC6000SysInterruptHandler()
 
 	SEGGER_RTT_printf(0, "SYS\t0x%02x\n",tmp_val_0x82);
 
-
-	read_SPI_page_reg_bytearray_SPI0(0x02, 0x00, LCBuf, 12);
-	if (LCBuf[0]<0x08)
+	// Only read the LC data bank in Rx
+	if (!trxIsTransmitting)
 	{
-		SEGGER_RTT_printf(0, "Valid LC\t%d\n",LCBuf[0]);
-		memcpy((uint8_t *)DMR_frame_buffer,LCBuf,12);
-		if (DMR_frame_buffer[0]==0)
+		read_SPI_page_reg_bytearray_SPI0(0x02, 0x00, LCBuf, 12);
+		if (LCBuf[0]<0x08)
 		{
-			receivedTgOrPcId 	= (DMR_frame_buffer[3]<<16)+(DMR_frame_buffer[4]<<8)+(DMR_frame_buffer[5]<<0);// used by the call accept filter
-			receivedSrcId 		= (DMR_frame_buffer[6]<<16)+(DMR_frame_buffer[7]<<8)+(DMR_frame_buffer[8]<<0);// used by the call accept filter
+			//SEGGER_RTT_printf(0, "Valid LC\t%d\n",LCBuf[0]);
+			memcpy((uint8_t *)DMR_frame_buffer,LCBuf,12);
+			if (DMR_frame_buffer[0]==0)
+			{
+				receivedTgOrPcId 	= (DMR_frame_buffer[3]<<16)+(DMR_frame_buffer[4]<<8)+(DMR_frame_buffer[5]<<0);// used by the call accept filter
+				receivedSrcId 		= (DMR_frame_buffer[6]<<16)+(DMR_frame_buffer[7]<<8)+(DMR_frame_buffer[8]<<0);// used by the call accept filter
+			}
+			hasLC=true;
 		}
-		hasLC=true;
 	}
 
 	if (tmp_val_0x82 & SYS_INT_SEND_REQUEST_REJECTED)
