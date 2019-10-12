@@ -223,7 +223,7 @@ void fw_main_task()
         		{
 					menuSystemPushNewMenu(MENU_POWER_OFF);
         		}
-    		    GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 0);
+    		    GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
     		    set_melody(NULL);
         	}
 

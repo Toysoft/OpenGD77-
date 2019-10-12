@@ -413,7 +413,7 @@ void tick_melody()
 			{
 				if (trxGetMode() == RADIO_MODE_ANALOG)
 				{
-					GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 0);// Mute the speaker, otherwise there will be a burst of squelch noise until the next tick in HR-C6000
+					GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);// Mute the speaker, otherwise there will be a burst of squelch noise until the next tick in HR-C6000
 				    GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 1);// Set the audio path to AT1846 -> audio amp.
 				}
 				else
@@ -421,7 +421,7 @@ void tick_melody()
 					// only mute the speaker if in DMR and not receiving
 					if (slot_state !=DMR_STATE_RX_1 && slot_state !=DMR_STATE_RX_2)
 					{
-						GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 0);
+						GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
 					}
 				}
 			    set_melody(NULL);
@@ -430,7 +430,7 @@ void tick_melody()
 			{
 				if (melody_idx==0)
 				{
-				    GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1);// enable the speaker (audio amplifier)
+				    GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1);// enable the speaker (audio amplifier)
 					if (trxGetMode() == RADIO_MODE_ANALOG)
 					{
 					    GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 0);// set the audio mux   HR-C6000 -> audio amp

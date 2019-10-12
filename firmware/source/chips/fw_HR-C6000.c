@@ -431,7 +431,7 @@ inline static void HRC6000SysPostAccessInt()
 			hasLC = false;
 		}
 		init_codec();
-		//GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1);
+		//GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1);
 		GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
 
 		write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);     //Receive only in next timeslot
@@ -543,7 +543,7 @@ inline static void HRC6000SysReceivedDataInt()
 					hasLC = false;
 				}
 				init_codec();
-				//GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1);
+				//GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1);
 				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
 
 				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);     //Receive only in next timeslot
@@ -573,7 +573,7 @@ inline static void HRC6000SysReceivedDataInt()
 					 (slot_state == DMR_STATE_RX_1))))
 			{
 				//SEGGER_RTT_printf(0, "Audio frame %d\t%d\n",sequenceNumber,timeCode);
-				GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1);// Note it may be more effecient to store variable to indicate whether this call needs to be made
+				GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1);// Note it may be more effecient to store variable to indicate whether this call needs to be made
 
 				if (hasLC)
 				{
@@ -724,7 +724,7 @@ inline static void HRC6000SysInterruptHandler()
 void HRC6000TransitionToTx()
 {
 	//SEGGER_RTT_printf(0, "Transition to TX %d 0x%02x\n",slot_state,timeCode);
-	GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 0);
+	GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
 	GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 	init_codec();
 
@@ -771,7 +771,7 @@ void HRC6000TimeslotInterruptHandler()
 			break;
 		case DMR_STATE_RX_END: // Stop RX
 			init_digital_DMR_RX();
-			GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 0);
+			GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 			slot_state = DMR_STATE_IDLE;
 			break;
@@ -972,7 +972,7 @@ void HRC6000TimeslotInterruptHandler()
 		if (slot_state == DMR_STATE_IDLE && tick_cnt > START_TICK_TIMEOUT)
         {
 			init_digital_DMR_RX();
-			GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 0);
+			GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 			tick_cnt=0;
 			slot_state = DMR_STATE_IDLE;
@@ -983,7 +983,7 @@ void HRC6000TimeslotInterruptHandler()
 			if ((slot_state == DMR_STATE_RX_1 || slot_state == DMR_STATE_RX_1) && tick_cnt> END_TICK_TIMEOUT )
 			{
 				init_digital_DMR_RX();
-				GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 0);
+				GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
 				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 				tick_cnt=0;
 				slot_state = DMR_STATE_IDLE;
@@ -1040,7 +1040,7 @@ void init_digital_DMR_RX()
 
 void init_digital()
 {
-	GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 0);
+	GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
     GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 	init_digital_DMR_RX();
 	init_digital_state();
@@ -1050,7 +1050,7 @@ void init_digital()
 
 void terminate_digital()
 {
-	GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 0);
+	GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
     GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 	init_digital_state();
     NVIC_DisableIRQ(PORTC_IRQn);

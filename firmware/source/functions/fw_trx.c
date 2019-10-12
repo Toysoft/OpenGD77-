@@ -159,13 +159,13 @@ void trx_check_analog_squelch()
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
 			if(!rxCTCSSactive || (rxCTCSSactive & trxCheckCTCSSFlag())|| open_squelch)
 			{
-				GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1); // speaker on
+				GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1); // speaker on
 				displayLightTrigger();
 			}
 		}
 		else
 		{
-			GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 0); // speaker off
+			GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0); // speaker off
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 		}
 
