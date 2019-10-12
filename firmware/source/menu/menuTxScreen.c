@@ -43,7 +43,7 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 			GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 1);
 
 			txstopdelay=0;
-			clearIsWaking();
+			clearIsWakingState();
 			trx_setTX();
 			updateScreen();
 		}
@@ -73,7 +73,7 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 	}
 	else
 	{
-		if (trxIsTransmitting)
+		if (trxIsTransmitting && (getIsWakingState() == WAKING_MODE_NONE ))
 		{
 			if (PITCounter >= nextSecondPIT )
 			{
@@ -114,7 +114,6 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 
 static void updateScreen()
 {
-
 	menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 	if (menuControlData.stack[0]==MENU_VFO_MODE)
 	{

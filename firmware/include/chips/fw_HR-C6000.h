@@ -70,6 +70,8 @@ enum DMR_SLOT_STATE { DMR_STATE_IDLE, DMR_STATE_RX_1, DMR_STATE_RX_2, DMR_STATE_
 					  DMR_STATE_REPEATER_WAKE_1,DMR_STATE_REPEATER_WAKE_2,DMR_STATE_REPEATER_WAKE_3,DMR_STATE_REPEATER_WAKE_4,
 					  DMR_STATE_REPEATER_WAKE_FAIL_1,DMR_STATE_REPEATER_WAKE_FAIL_2};
 
+enum WakingMode { WAKING_MODE_NONE, WAKING_MODE_WAITING, WAKING_MODE_FAILED };
+
 void SPI_HR_C6000_init();
 void SPI_C6000_postinit();
 void PORTC_IRQHandler(void);
@@ -82,6 +84,8 @@ void store_qsodata();
 void init_hrc6000_task();
 void fw_hrc6000_task();
 void tick_HR_C6000();
-void clearIsWaking();
+
+void clearIsWakingState();
+int getIsWakingState();
 
 #endif /* _FW_HR_C6000_H_ */

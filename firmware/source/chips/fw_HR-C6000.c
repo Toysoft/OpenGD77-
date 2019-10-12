@@ -34,6 +34,8 @@ static const int SYS_INT_RECEIVED_INFORMATION	= 0x04;
 static const int SYS_INT_ABNORMAL_EXIT			= 0x02;
 static const int SYS_INT_PHYSICAL_LAYER			= 0x01;
 
+static const int WAKEUP_RETRY_PERIOD			= 500;
+
 TaskHandle_t fwhrc6000TaskHandle;
 
 const uint8_t TG_CALL_FLAG = 0x00;
@@ -87,7 +89,7 @@ static volatile int tx_sequence=0;
 
 static volatile int timeCode;
 static volatile int repeaterWakeupResponseTimeout=0;
-static volatile bool isWaking = false;
+static volatile int isWaking = WAKING_MODE_NONE;
 static volatile int rxwait;// used for Repeater wakeup sequence
 static volatile int rxcnt;// used for Repeater wakeup sequence
 static bool hasLC=false;
@@ -919,6 +921,7 @@ void HRC6000TimeslotInterruptHandler()
 			break;
 		case DMR_STATE_REPEATER_WAKE_1:
 			{
+				GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 1);// Turn on the Red LED while when we transmit the wakeup frame
 				uint8_t spi_tx1[] = { 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 				spi_tx1[7] = (trxDMRID >> 16) & 0xFF;
 				spi_tx1[8] = (trxDMRID >> 8) & 0xFF;
@@ -927,6 +930,7 @@ void HRC6000TimeslotInterruptHandler()
 				write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x30);
 				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);
 			}
+			repeaterWakeupResponseTimeout=WAKEUP_RETRY_PERIOD;
 			slot_state = DMR_STATE_REPEATER_WAKE_3;
 			break;
 		case DMR_STATE_REPEATER_WAKE_2:
@@ -940,7 +944,7 @@ void HRC6000TimeslotInterruptHandler()
 			break;
 			*/
 		case DMR_STATE_REPEATER_WAKE_3:
-			GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);// Turn off the Green LED while we are waiting for the repeater to wakeup
+			GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);// Turn off the Red LED while we are waiting for the repeater to wakeup
 			init_digital_DMR_RX();
 			rxcnt=0;
 			slot_state = DMR_STATE_REPEATER_WAKE_4;
@@ -950,19 +954,9 @@ void HRC6000TimeslotInterruptHandler()
 			{
 				// wait for the signal from the repeater to have toggled timecode at least twice, i.e the signal should be stable and we should be able to go into Tx
 				slot_state = DMR_STATE_RX_1;
-				isWaking=false;
+				isWaking = WAKING_MODE_NONE;
 			}
 			break;
-		case DMR_STATE_REPEATER_WAKE_FAIL_1:
-			slot_state = DMR_STATE_REPEATER_WAKE_FAIL_2;
-			write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x20);
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);
-			break;
-		case DMR_STATE_REPEATER_WAKE_FAIL_2:
-			write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xC3);
-			init_digital_DMR_RX();
-			txstopdelay=30;
-			slot_state = DMR_STATE_IDLE;
 		default:
 			break;
 	}
@@ -1190,13 +1184,8 @@ bool callAcceptFilter()
 
 void tick_HR_C6000()
 {
-	if (trxIsTransmitting==true  && !isWaking)
+	if (trxIsTransmitting==true  && (isWaking == WAKING_MODE_NONE))
 	{
-		if (repeaterWakeupResponseTimeout > 0)
-		{
-			repeaterWakeupResponseTimeout--;
-		}
-
 		if (slot_state == DMR_STATE_IDLE)
 		{
 			// Because the ISR's also write to the SPI we need to disable interrupts on Port C when doing any SPI transfers.
@@ -1235,7 +1224,7 @@ void tick_HR_C6000()
 				{
 					init_codec();
 				}
-				isWaking=true;
+				isWaking = WAKING_MODE_WAITING;
 				slot_state = DMR_STATE_REPEATER_WAKE_1;
 			}
 		}
@@ -1273,36 +1262,60 @@ void tick_HR_C6000()
 
 	if (trxIsTransmitting)
 	{
-		if (settingsUsbMode == USB_MODE_HOTSPOT)
+		if (isWaking == WAKING_MODE_WAITING)
 		{
-			if (hotspotDMRTxFrameBufferEmpty == true && (wavbuffer_count > 0))
+			if (repeaterWakeupResponseTimeout > 0)
 			{
-				//SEGGER_RTT_printf(0, "Hotspot put data into send buffer \n");
-				memcpy((uint8_t *)deferredUpdateBuffer,(uint8_t *)&audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_read_idx],27+0x0C);
-				wavbuffer_read_idx++;
-				if (wavbuffer_read_idx > (HOTSPOT_BUFFER_COUNT-1))
-				{
-					wavbuffer_read_idx=0;
-				}
-
-				if (wavbuffer_count>0)
-				{
-					wavbuffer_count--;
-				}
-				hotspotDMRTxFrameBufferEmpty=false;
+				repeaterWakeupResponseTimeout--;
 			}
+			else
+			{
+				SEGGER_RTT_printf(0, "Waking Timeout\n");
+				NVIC_DisableIRQ(PORTC_IRQn);
+				write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xE3); // TX and RX enable, Active Timing.
+				write_SPI_page_reg_byte_SPI0(0x04, 0x21, 0xA2); // Set Polite to Color Code and Reset vocoder encodingbuffer
+				write_SPI_page_reg_byte_SPI0(0x04, 0x22, 0x86); // Start Vocoder Encode, I2S mode
+				NVIC_EnableIRQ(PORTC_IRQn);
+				repeaterWakeupResponseTimeout=WAKEUP_RETRY_PERIOD;
+				slot_state = DMR_STATE_REPEATER_WAKE_1;
+			}
+
 		}
 		else
 		{
-			// Once there are 6 buffers available they can be encoded into one DMR frame
-			// The will happen  prior to the data being needed in the TS ISR, so that by the time tick_codec_encode encodes complete,
-			// the data is ready to be used in the TS ISR
-			if (wavbuffer_count >= 6)
+			// normal operation. Not waking the repeater
+			if (settingsUsbMode == USB_MODE_HOTSPOT)
 			{
-				//SEGGER_RTT_printf(0, "%d sound buffers now %d\n",wavbuffer_count,PITCounter);
-				tick_codec_encode((uint8_t *)deferredUpdateBuffer);
+				if (hotspotDMRTxFrameBufferEmpty == true && (wavbuffer_count > 0))
+				{
+					//SEGGER_RTT_printf(0, "Hotspot put data into send buffer \n");
+					memcpy((uint8_t *)deferredUpdateBuffer,(uint8_t *)&audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_read_idx],27+0x0C);
+					wavbuffer_read_idx++;
+					if (wavbuffer_read_idx > (HOTSPOT_BUFFER_COUNT-1))
+					{
+						wavbuffer_read_idx=0;
+					}
+
+					if (wavbuffer_count>0)
+					{
+						wavbuffer_count--;
+					}
+					hotspotDMRTxFrameBufferEmpty=false;
+				}
+			}
+			else
+			{
+				// Once there are 6 buffers available they can be encoded into one DMR frame
+				// The will happen  prior to the data being needed in the TS ISR, so that by the time tick_codec_encode encodes complete,
+				// the data is ready to be used in the TS ISR
+				if (wavbuffer_count >= 6)
+				{
+					//SEGGER_RTT_printf(0, "%d sound buffers now %d\n",wavbuffer_count,PITCounter);
+					tick_codec_encode((uint8_t *)deferredUpdateBuffer);
+				}
 			}
 		}
+
 	}
 	else
 	{
@@ -1342,7 +1355,14 @@ void tick_HR_C6000()
 	}
 }
 
-void clearIsWaking()
+// RC. I had to use accessor functions for the isWaking flag
+// because the compiler seems to have problems with volatile vars as externs used by other parts of the firmware (the Tx Screen)
+void clearIsWakingState()
 {
-	isWaking=false;
+	isWaking = WAKING_MODE_NONE;
+}
+
+int getIsWakingState()
+{
+	return isWaking;
 }
