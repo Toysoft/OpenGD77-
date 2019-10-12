@@ -389,43 +389,7 @@ void trxCalcBandAndFrequencyOffset(int *band_offset, int *freq_offset)
 // NOTE. For crossband duplex DMR, the calibration potentially needs to be changed every time the Tx/Rx is switched over on each 30ms cycle
 // But at the moment this is an unnecessary complication and I'll just use the Rx frequency to get the calibration offsets
 
-	if (trxCheckFrequencyIsVHF(currentRxFrequency))
-	{
-		*band_offset=0x00000070;
-		if (currentRxFrequency<1380000)
-		{
-			*freq_offset=0x00000000;
-		}
-		else if (currentRxFrequency<1425000)
-		{
-			*freq_offset=0x00000001;
-		}
-		else if (currentRxFrequency<1475000)
-		{
-			*freq_offset=0x00000002;
-		}
-		else if (currentRxFrequency<1525000)
-		{
-			*freq_offset=0x00000003;
-		}
-		else if (currentRxFrequency<1575000)
-		{
-			*freq_offset=0x00000004;
-		}
-		else if (currentRxFrequency<1625000)
-		{
-			*freq_offset=0x00000005;
-		}
-		else if (currentRxFrequency<1685000)
-		{
-			*freq_offset=0x00000006;
-		}
-		else
-		{
-			*freq_offset=0x00000007;
-		}
-	}
-	else if (trxCheckFrequencyIsUHF(currentRxFrequency))
+	if (trxCheckFrequencyIsUHF(currentRxFrequency))
 	{
 		*band_offset=0x00000000;
 		if (currentRxFrequency<4100000)
@@ -453,6 +417,42 @@ void trxCalcBandAndFrequencyOffset(int *band_offset, int *freq_offset)
 			*freq_offset=0x00000005;
 		}
 		else if (currentRxFrequency<4700000)
+		{
+			*freq_offset=0x00000006;
+		}
+		else
+		{
+			*freq_offset=0x00000007;
+		}
+	}
+	else
+	{
+		*band_offset=0x00000070;
+		if (currentRxFrequency<1380000)
+		{
+			*freq_offset=0x00000000;
+		}
+		else if (currentRxFrequency<1425000)
+		{
+			*freq_offset=0x00000001;
+		}
+		else if (currentRxFrequency<1475000)
+		{
+			*freq_offset=0x00000002;
+		}
+		else if (currentRxFrequency<1525000)
+		{
+			*freq_offset=0x00000003;
+		}
+		else if (currentRxFrequency<1575000)
+		{
+			*freq_offset=0x00000004;
+		}
+		else if (currentRxFrequency<1625000)
+		{
+			*freq_offset=0x00000005;
+		}
+		else if (currentRxFrequency<1685000)
 		{
 			*freq_offset=0x00000006;
 		}

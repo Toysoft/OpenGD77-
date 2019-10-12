@@ -66,16 +66,16 @@ static void updateScreen()
 
 		RSSI_totalVal /= NUM_SAMPLES;
 
-		if (trxCheckFrequencyIsVHF(trxGetFrequency()))
+		if (trxCheckFrequencyIsUHF(trxGetFrequency()))
+		{
+			// Use fixed point maths to scale the RSSI value to dBm, based on data from VK4JWT and VK7ZJA
+			dBm = -151 + RSSI_totalVal;// Note no the RSSI value on UHF does not need to be scaled like it does on VHF
+		}
+		else
 		{
 			// VHF
 			// Use fixed point maths to scale the RSSI value to dBm, based on data from VK4JWT and VK7ZJA
 			dBm = -164 + ((RSSI_totalVal * 32) / 27);
-		}
-		else
-		{
-			// Use fixed point maths to scale the RSSI value to dBm, based on data from VK4JWT and VK7ZJA
-			dBm = -151 + RSSI_totalVal;// Note no the RSSI value on UHF does not need to be scaled like it does on VHF
 		}
 
 		UC1701_clearBuf();
