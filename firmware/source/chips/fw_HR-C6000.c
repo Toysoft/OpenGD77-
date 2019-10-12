@@ -431,7 +431,7 @@ inline static void HRC6000SysPostAccessInt()
 			hasLC = false;
 		}
 		init_codec();
-		GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1);
+		//GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1);
 		GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
 
 		write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);     //Receive only in next timeslot
@@ -543,7 +543,7 @@ inline static void HRC6000SysReceivedDataInt()
 					hasLC = false;
 				}
 				init_codec();
-				GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1);
+				//GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1);
 				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
 
 				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);     //Receive only in next timeslot
@@ -573,6 +573,8 @@ inline static void HRC6000SysReceivedDataInt()
 					 (slot_state == DMR_STATE_RX_1))))
 			{
 				//SEGGER_RTT_printf(0, "Audio frame %d\t%d\n",sequenceNumber,timeCode);
+				GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1);// Note it may be more effecient to store variable to indicate whether this call needs to be made
+
 				if (hasLC)
 				{
 					store_qsodata();
@@ -741,7 +743,6 @@ void HRC6000TimeslotInterruptHandler()
 
 			if (trxDMRMode == DMR_MODE_PASSIVE)
 			{
-				GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1);// Note. Because of the way the Tx shuts down its necessary to have this line
 				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
 				if( !isWaking &&  trxIsTransmitting && (timeCode == trxGetDMRTimeSlot()))
 				{
