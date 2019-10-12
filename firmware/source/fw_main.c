@@ -36,7 +36,7 @@ void fw_init()
 				"fw main task",                      /* task name for kernel awareness debugging */
 				5000L / sizeof(portSTACK_TYPE),      /* task stack size */
 				NULL,                      			 /* optional task startup argument */
-				5U,                                  /* initial priority */
+				6U,                                  /* initial priority */
 				fwMainTaskHandle					 /* optional task handle to create */
 				);
 

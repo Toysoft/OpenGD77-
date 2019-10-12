@@ -1086,7 +1086,7 @@ void init_hrc6000_task()
 				"fw hrc6000 task",                      /* task name for kernel awareness debugging */
 				5000L / sizeof(portSTACK_TYPE),      /* task stack size */
 				NULL,                      			 /* optional task startup argument */
-				5U,                                  /* initial priority */
+				4U,                                  /* initial priority */
 				fwhrc6000TaskHandle					 /* optional task handle to create */
 				);
 }
