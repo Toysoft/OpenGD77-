@@ -18,7 +18,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <UC1701.h>
+#include <hardware/UC1701.h>
 #include "FreeRTOS.h"
 #include "task.h"
 

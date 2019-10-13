@@ -16,7 +16,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "fw_EEPROM.h"
+#include <hardware/fw_EEPROM.h>
 
 const uint8_t EEPROM_ADDRESS 	= 0x50;
 const uint8_t EEPROM_PAGE_SIZE 	= 128;

@@ -16,8 +16,8 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <hardware/fw_HR-C6000.h>
 #include "fw_sound.h"
-#include "fw_HR-C6000.h"
 #include "fw_settings.h"
 
 TaskHandle_t fwBeepTaskHandle;

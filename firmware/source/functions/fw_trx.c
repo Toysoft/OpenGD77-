@@ -16,11 +16,11 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <hardware/fw_AT1846S.h>
+#include <hardware/fw_HR-C6000.h>
 #include "fw_trx.h"
-#include "fw_HR-C6000.h"
 #include "fw_settings.h"
 #include "fw_calibration.h"
-#include "fw_AT1846S.h"
 #include "menu/menuSystem.h"
 
 bool open_squelch=false;

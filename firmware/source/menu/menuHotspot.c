@@ -18,6 +18,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 #include <dmr/DMREmbeddedData.h>
+#include <hardware/fw_HR-C6000.h>
 #include "fw_sound.h"
 #include "fw_calibration.h"
 #include "menu/menuSystem.h"
@@ -26,7 +27,6 @@
 #include "fw_settings.h"
 #include "fw_usb_com.h"
 #include "fw_trx.h"
-#include "fw_HR-C6000.h"
 #include "dmr/DMRFullLC.h"
 #include "dmr/DMRShortLC.h"
 #include "dmr/DMRSlotType.h"

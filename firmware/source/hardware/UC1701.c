@@ -20,8 +20,8 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <UC1701.h>
-#include <UC1701_charset.h>
+#include <hardware/UC1701.h>
+#include <hardware/UC1701_charset.h>
 #include "fw_display.h"
 #include "fw_settings.h"
 

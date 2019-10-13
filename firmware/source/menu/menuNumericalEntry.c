@@ -15,10 +15,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
+#include <hardware/fw_HR-C6000.h>
 #include "menu/menuSystem.h"
 #include "menu/menuUtilityQSOData.h"
 #include "fw_settings.h"
-#include "fw_HR-C6000.h"
 
 static char digits[9];
 static void updateScreen();

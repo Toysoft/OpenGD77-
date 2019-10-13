@@ -16,7 +16,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "fw_AT1846S.h"
+#include <hardware/fw_AT1846S.h>
 #include "fw_trx.h"
 
 static const uint8_t AT1846InitSettings[][AT1846_BYTES_PER_COMMAND] = {

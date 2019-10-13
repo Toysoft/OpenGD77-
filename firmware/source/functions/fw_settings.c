@@ -17,8 +17,8 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <hardware/fw_EEPROM.h>
 #include "fw_settings.h"
-#include "fw_EEPROM.h"
 #include "fw_trx.h"
 #include "menu/menuSystem.h"
 #include "fw_codeplug.h"

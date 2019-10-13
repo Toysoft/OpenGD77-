@@ -16,7 +16,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <fw_SPI_Flash.h>
+#include <hardware/fw_SPI_Flash.h>
 
 // private functions
 static bool spi_flash_busy();
