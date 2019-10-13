@@ -486,7 +486,7 @@ inline static void HRC6000SysReceivedDataInt()
 
 	if ((slot_state == DMR_STATE_RX_1 || slot_state == DMR_STATE_RX_2) && (rxColorCode != trxGetDMRColourCode() || rpi!=0 || rxCRCStatus != true))
 	{
-		SEGGER_RTT_printf(0, "INVALID DATA");
+		//SEGGER_RTT_printf(0, "INVALID DATA");
 		// Something is not correct
 		return;
 	}
@@ -511,7 +511,7 @@ inline static void HRC6000SysReceivedDataInt()
 	if ((trxDMRMode == DMR_MODE_ACTIVE) && (rxSyncClass==SYNC_CLASS_DATA) && (rxDataType==2) && callAcceptFilter())        //Terminator with LC
 	{
 
-		SEGGER_RTT_printf(0, "RX STOP 0x%02x\n",tmp_val_0x82);
+		//SEGGER_RTT_printf(0, "RX STOP 0x%02x\n",tmp_val_0x82);
 		slot_state = DMR_STATE_RX_END;
 
 		if (settingsUsbMode == USB_MODE_HOTSPOT)
@@ -533,10 +533,9 @@ inline static void HRC6000SysReceivedDataInt()
 		// Start RX
 		if (slot_state == DMR_STATE_IDLE)
 		{
-		//	SEGGER_RTT_printf(0, "State is idle\n");
 			if ((rxColorCode == trxGetDMRColourCode()))// && (rxSyncClass==SYNC_CLASS_DATA) && (rxDataType==1) )// && (timeCode == trxGetDMRTimeSlot()))       //Voice LC Header
 			{
-				SEGGER_RTT_printf(0,"RX START\n");
+				//SEGGER_RTT_printf(0,"RX START\n");
 				if (hasLC)
 				{
 					store_qsodata();
@@ -718,12 +717,10 @@ inline static void HRC6000SysInterruptHandler()
 
 	write_SPI_page_reg_byte_SPI0(0x04, 0x83, tmp_val_0x82);  //Clear remaining Interrupt Flags
 	timer_hrc6000task=0;
-	//SEGGER_RTT_printf(0, "SYS\t%d\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\t0x%02x\n",PITCounter,tmp_val_0x50,tmp_val_0x51,tmp_val_0x52,tmp_val_0x57,tmp_val_0x5f,tmp_val_0x82,tmp_val_0x84,tmp_val_0x86,tmp_val_0x90,tmp_val_0x98);
 }
 
 void HRC6000TransitionToTx()
 {
-	//SEGGER_RTT_printf(0, "Transition to TX %d 0x%02x\n",slot_state,timeCode);
 	GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
 	GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 	init_codec();
@@ -976,7 +973,6 @@ void HRC6000TimeslotInterruptHandler()
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 			tick_cnt=0;
 			slot_state = DMR_STATE_IDLE;
-        	//SEGGER_RTT_printf(0, "START TIMEOUT\n");
         }
 		else
 		{
@@ -987,7 +983,6 @@ void HRC6000TimeslotInterruptHandler()
 				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 				tick_cnt=0;
 				slot_state = DMR_STATE_IDLE;
-	        	//SEGGER_RTT_printf(0, "END TIMEOUT\n");
 			}
 		}
 	}
@@ -1062,14 +1057,12 @@ void store_qsodata()
 	// Of if the display is holding on the PC accept text and the incoming call is not a PC
 	if (qsodata_timer == 0 || (menuUtilityReceivedPcId!=0 && DMR_frame_buffer[0]==TG_CALL_FLAG))
 	{
-		//SEGGER_RTT_printf(0, "QSO_DISPLAY_CALLER_DATA\n");
 		menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;
 	}
 	// check if this is a valid data frame, including Talker Alias data frames (0x04 - 0x07)
 	// Not sure if its necessary to check byte [1] for 0x00 but I'm doing this
 	if (DMR_frame_buffer[1] == 0x00  && (DMR_frame_buffer[0]==TG_CALL_FLAG || DMR_frame_buffer[0]==PC_CALL_FLAG  || (DMR_frame_buffer[0]>=0x04 && DMR_frame_buffer[0]<=0x7)))
 	{
-		//SEGGER_RTT_printf(0, "lastHeardListUpdate\n");
     	lastHeardListUpdate((uint8_t *)DMR_frame_buffer);
 	}
 	qsodata_timer=QSO_TIMER_TIMEOUT;
@@ -1201,8 +1194,6 @@ void tick_HR_C6000()
 
 			if (trxDMRMode == DMR_MODE_ACTIVE)
 			{
-				//SEGGER_RTT_printf(0, "Start Tx\n");
-
 				if (settingsUsbMode != USB_MODE_HOTSPOT)
 				{
 					init_codec();
@@ -1220,7 +1211,6 @@ void tick_HR_C6000()
 			}
 			else
 			{
-				//SEGGER_RTT_printf(0, "Passive repeater wakeup\n");
 				if (settingsUsbMode != USB_MODE_HOTSPOT)
 				{
 					init_codec();
@@ -1246,7 +1236,6 @@ void tick_HR_C6000()
 	{
 		if (int_timeout<TIMEOUT)
 		{
-			//SEGGER_RTT_printf(0, "TO%d\n",int_timeout);
 			int_timeout++;
 			if (int_timeout==TIMEOUT)
 			{
@@ -1271,7 +1260,6 @@ void tick_HR_C6000()
 			}
 			else
 			{
-				//SEGGER_RTT_printf(0, "Waking Timeout\n");
 				NVIC_DisableIRQ(PORTC_IRQn);
 				write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xE3); // TX and RX enable, Active Timing.
 				write_SPI_page_reg_byte_SPI0(0x04, 0x21, 0xA2); // Set Polite to Color Code and Reset vocoder encodingbuffer
@@ -1289,7 +1277,6 @@ void tick_HR_C6000()
 			{
 				if (hotspotDMRTxFrameBufferEmpty == true && (wavbuffer_count > 0))
 				{
-					//SEGGER_RTT_printf(0, "Hotspot put data into send buffer \n");
 					memcpy((uint8_t *)deferredUpdateBuffer,(uint8_t *)&audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_read_idx],27+0x0C);
 					wavbuffer_read_idx++;
 					if (wavbuffer_read_idx > (HOTSPOT_BUFFER_COUNT-1))
@@ -1311,7 +1298,6 @@ void tick_HR_C6000()
 				// the data is ready to be used in the TS ISR
 				if (wavbuffer_count >= 6)
 				{
-					//SEGGER_RTT_printf(0, "%d sound buffers now %d\n",wavbuffer_count,PITCounter);
 					tick_codec_encode((uint8_t *)deferredUpdateBuffer);
 				}
 			}
