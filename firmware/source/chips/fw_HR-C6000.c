@@ -639,7 +639,7 @@ inline static void HRC6000SysInterruptHandler()
 
 	read_SPI_page_reg_byte_SPI0(0x04, 0x82, &tmp_val_0x82);  //Read Interrupt Flag Register1
 
-	SEGGER_RTT_printf(0, "SYS\t0x%02x\n",tmp_val_0x82);
+	//SEGGER_RTT_printf(0, "SYS\t0x%02x\n",tmp_val_0x82);
 
 	// Only read the LC data bank in Rx
 	if (!trxIsTransmitting)
@@ -735,7 +735,7 @@ void HRC6000TransitionToTx()
 
 void HRC6000TimeslotInterruptHandler()
 {
-	SEGGER_RTT_printf(0, "TS\tS:%d\tTC:%d\n",slot_state,timeCode);
+	//SEGGER_RTT_printf(0, "TS\tS:%d\tTC:%d\n",slot_state,timeCode);
 	// RX/TX state machine
 	switch (slot_state)
 	{
@@ -976,7 +976,7 @@ void HRC6000TimeslotInterruptHandler()
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 			tick_cnt=0;
 			slot_state = DMR_STATE_IDLE;
-        	SEGGER_RTT_printf(0, "START TIMEOUT\n");
+        	//SEGGER_RTT_printf(0, "START TIMEOUT\n");
         }
 		else
 		{
@@ -987,7 +987,7 @@ void HRC6000TimeslotInterruptHandler()
 				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 				tick_cnt=0;
 				slot_state = DMR_STATE_IDLE;
-	        	SEGGER_RTT_printf(0, "END TIMEOUT\n");
+	        	//SEGGER_RTT_printf(0, "END TIMEOUT\n");
 			}
 		}
 	}
@@ -1220,7 +1220,7 @@ void tick_HR_C6000()
 			}
 			else
 			{
-				SEGGER_RTT_printf(0, "Passive repeater wakeup\n");
+				//SEGGER_RTT_printf(0, "Passive repeater wakeup\n");
 				if (settingsUsbMode != USB_MODE_HOTSPOT)
 				{
 					init_codec();
@@ -1271,7 +1271,7 @@ void tick_HR_C6000()
 			}
 			else
 			{
-				SEGGER_RTT_printf(0, "Waking Timeout\n");
+				//SEGGER_RTT_printf(0, "Waking Timeout\n");
 				NVIC_DisableIRQ(PORTC_IRQn);
 				write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xE3); // TX and RX enable, Active Timing.
 				write_SPI_page_reg_byte_SPI0(0x04, 0x21, 0xA2); // Set Polite to Color Code and Reset vocoder encodingbuffer
