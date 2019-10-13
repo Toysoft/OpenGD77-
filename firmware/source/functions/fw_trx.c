@@ -175,7 +175,7 @@ void trx_check_analog_squelch()
 
 void trxSetFrequency(int fRx,int fTx)
 {
-	if (currentRxFrequency!=fRx || currentRxFrequency!=fTx)
+	if (currentRxFrequency!=fRx || currentTxFrequency!=fTx)
 	{
 		currentRxFrequency=fRx;
 		currentTxFrequency=fTx;
