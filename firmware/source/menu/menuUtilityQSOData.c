@@ -218,7 +218,7 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 		if (LinkHead->talkerAlias[TAOffset] == 0x00 && TABlockLen!=0)
 		{
 			memcpy(&LinkHead->talkerAlias[TAOffset],(uint8_t *)&DMR_frame_buffer[TAStartPos],TABlockLen);// Brandmeister seems to send callsign as 6 chars only
-			menuDisplayQSODataState=QSO_DISPLAY_CALLER_DATA;
+			//menuDisplayQSODataState=QSO_DISPLAY_CALLER_DATA;
 		}
 	}
 	return retVal;

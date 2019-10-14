@@ -92,7 +92,6 @@ static volatile int repeaterWakeupResponseTimeout=0;
 static volatile int isWaking = WAKING_MODE_NONE;
 static volatile int rxwait;// used for Repeater wakeup sequence
 static volatile int rxcnt;// used for Repeater wakeup sequence
-static bool hasLC=false;
 volatile int lastTimeCode=0;
 
 static bool callAcceptFilter();
@@ -101,7 +100,8 @@ static inline void HRC6000SysInterruptHandler();
 static inline void HRC6000TimeslotInterruptHandler();
 static inline void HRC6000RxInterruptHandler();
 static inline void HRC6000TxInterruptHandler();
-void HRC6000TransitionToTx();
+static void HRC6000TransitionToTx();
+static void triggerQSOdataDisplay();
 
 enum RXSyncClass { SYNC_CLASS_HEADER = 0, SYNC_CLASS_VOICE = 1, SYNC_CLASS_DATA = 2, SYNC_CLASS_RC = 3};
 
@@ -424,14 +424,10 @@ inline static void HRC6000SysPostAccessInt()
 	// Late entry into ongoing RX
 	if (slot_state == DMR_STATE_IDLE && callAcceptFilter())
 	{
-		//SEGGER_RTT_printf(0,"InterLateEntry interrupt\n");
-		if (hasLC)
-		{
-			store_qsodata();
-			hasLC = false;
-		}
+		SEGGER_RTT_printf(0,"HRC6000SysPostAccessInt\n");
+
+		triggerQSOdataDisplay();
 		init_codec();
-		//GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1);
 		GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
 
 		write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);     //Receive only in next timeslot
@@ -536,13 +532,8 @@ inline static void HRC6000SysReceivedDataInt()
 			if ((rxColorCode == trxGetDMRColourCode()))// && (rxSyncClass==SYNC_CLASS_DATA) && (rxDataType==1) )// && (timeCode == trxGetDMRTimeSlot()))       //Voice LC Header
 			{
 				//SEGGER_RTT_printf(0,"RX START\n");
-				if (hasLC)
-				{
-					store_qsodata();
-					hasLC = false;
-				}
+				//triggerQSOdataDisplay();
 				init_codec();
-				//GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1);
 				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
 
 				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);     //Receive only in next timeslot
@@ -574,11 +565,8 @@ inline static void HRC6000SysReceivedDataInt()
 				//SEGGER_RTT_printf(0, "Audio frame %d\t%d\n",sequenceNumber,timeCode);
 				GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1);// Note it may be more effecient to store variable to indicate whether this call needs to be made
 
-				if (hasLC)
-				{
-					store_qsodata();
-					hasLC = false;
-				}
+				triggerQSOdataDisplay();
+
 				read_SPI_page_reg_bytearray_SPI1(0x03, 0x00, DMR_frame_buffer+0x0C, 27);
 				if (settingsUsbMode == USB_MODE_HOTSPOT)
 				{
@@ -640,20 +628,37 @@ inline static void HRC6000SysInterruptHandler()
 
 	//SEGGER_RTT_printf(0, "SYS\t0x%02x\n",tmp_val_0x82);
 
-	// Only read the LC data bank in Rx
-	if (!trxIsTransmitting)
+	if (!trxIsTransmitting) // ignore the LC data when we are transmitting
 	{
-		read_SPI_page_reg_bytearray_SPI0(0x02, 0x00, LCBuf, 12);
-		if (LCBuf[0]<0x08)
+		uint8_t reg0x52;
+		read_SPI_page_reg_byte_SPI0(0x04, 0x52, &reg0x52);  //Read Received CC and CACH Register to get the timecode (TS number)
+		int tc = ((reg0x52 & 0x04) >> 2);// extract the timecode from the CACH register
+
+		if (tc == trxGetDMRTimeSlot()) // only do this for the selected timeslot
 		{
-			//SEGGER_RTT_printf(0, "Valid LC\t%d\n",LCBuf[0]);
-			memcpy((uint8_t *)DMR_frame_buffer,LCBuf,12);
-			if (DMR_frame_buffer[0]==0)
+			uint8_t LCBuf[12];
+			read_SPI_page_reg_bytearray_SPI0(0x02, 0x00, LCBuf, 12);// read the LC from the C6000
+
+			if (LCBuf[1] == 0x00 && (LCBuf[0]==TG_CALL_FLAG || LCBuf[0]==PC_CALL_FLAG  || (LCBuf[0]>=0x04 && LCBuf[0]<=0x7)) &&
+				memcmp((uint8_t *)DMR_frame_buffer,LCBuf,12)!=0)
 			{
-				receivedTgOrPcId 	= (DMR_frame_buffer[3]<<16)+(DMR_frame_buffer[4]<<8)+(DMR_frame_buffer[5]<<0);// used by the call accept filter
-				receivedSrcId 		= (DMR_frame_buffer[6]<<16)+(DMR_frame_buffer[7]<<8)+(DMR_frame_buffer[8]<<0);// used by the call accept filter
+
+				memcpy((uint8_t *)DMR_frame_buffer,LCBuf,12);
+				if (DMR_frame_buffer[0]==TG_CALL_FLAG || DMR_frame_buffer[0]==PC_CALL_FLAG)
+				{
+					receivedTgOrPcId 	= (DMR_frame_buffer[3]<<16)+(DMR_frame_buffer[4]<<8)+(DMR_frame_buffer[5]<<0);// used by the call accept filter
+					receivedSrcId 		= (DMR_frame_buffer[6]<<16)+(DMR_frame_buffer[7]<<8)+(DMR_frame_buffer[8]<<0);// used by the call accept filter
+
+					if (receivedTgOrPcId!=0 && receivedSrcId!=0) // only store the data if its actually valid
+					{
+						lastHeardListUpdate((uint8_t *)DMR_frame_buffer);
+					}
+				}
+				else
+				{
+					lastHeardListUpdate((uint8_t *)DMR_frame_buffer);
+				}
 			}
-			hasLC=true;
 		}
 	}
 
@@ -719,7 +724,7 @@ inline static void HRC6000SysInterruptHandler()
 	timer_hrc6000task=0;
 }
 
-void HRC6000TransitionToTx()
+static void HRC6000TransitionToTx()
 {
 	GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
 	GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
@@ -730,7 +735,7 @@ void HRC6000TransitionToTx()
 	slot_state = DMR_STATE_TX_START_1;
 }
 
-void HRC6000TimeslotInterruptHandler()
+inline static void HRC6000TimeslotInterruptHandler()
 {
 	//SEGGER_RTT_printf(0, "TS\tS:%d\tTC:%d\n",slot_state,timeCode);
 	// RX/TX state machine
@@ -1021,7 +1026,6 @@ void init_digital_state()
 	tick_cnt=0;
 	skip_count=0;
 	qsodata_timer = 0;
-	hasLC = false;
 }
 
 void init_digital_DMR_RX()
@@ -1051,7 +1055,7 @@ void terminate_digital()
     NVIC_DisableIRQ(PORTC_IRQn);
 }
 
-void store_qsodata()
+void triggerQSOdataDisplay()
 {
 	// If this is the start of a newly received signal, we always need to trigger the display to show this, even if its the same station calling again.
 	// Of if the display is holding on the PC accept text and the incoming call is not a PC
@@ -1059,12 +1063,13 @@ void store_qsodata()
 	{
 		menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;
 	}
+	/*
 	// check if this is a valid data frame, including Talker Alias data frames (0x04 - 0x07)
 	// Not sure if its necessary to check byte [1] for 0x00 but I'm doing this
 	if (DMR_frame_buffer[1] == 0x00  && (DMR_frame_buffer[0]==TG_CALL_FLAG || DMR_frame_buffer[0]==PC_CALL_FLAG  || (DMR_frame_buffer[0]>=0x04 && DMR_frame_buffer[0]<=0x7)))
 	{
     	lastHeardListUpdate((uint8_t *)DMR_frame_buffer);
-	}
+	}*/
 	qsodata_timer=QSO_TIMER_TIMEOUT;
 }
 
@@ -1352,4 +1357,11 @@ void clearIsWakingState()
 int getIsWakingState()
 {
 	return isWaking;
+}
+
+void clearActiveDMRID()
+{
+	memset((uint8_t *)DMR_frame_buffer,0x00,12);
+	receivedTgOrPcId 	= 0x00;
+	receivedSrcId 		= 0x00;
 }

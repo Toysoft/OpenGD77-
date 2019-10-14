@@ -80,7 +80,6 @@ void init_digital_state();
 void init_digital_DMR_RX();
 void init_digital();
 void terminate_digital();
-void store_qsodata();
 void init_hrc6000_task();
 void fw_hrc6000_task();
 void tick_HR_C6000();
