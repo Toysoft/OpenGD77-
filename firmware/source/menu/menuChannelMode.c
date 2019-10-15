@@ -32,6 +32,7 @@ static char currentZoneName[17];
 static int directChannelNumber=0;
 static bool displaySquelch=false;
 int currentChannelNumber=0;
+static bool isDisplayingQSOData=false;
 
 int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 {
@@ -131,7 +132,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 	switch(menuDisplayQSODataState)
 	{
 		case QSO_DISPLAY_DEFAULT_SCREEN:
-
+			isDisplayingQSOData=false;
 			menuUtilityReceivedPcId = 0x00;
 			if (trxIsTransmitting)
 			{
@@ -198,6 +199,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 			break;
 
 		case QSO_DISPLAY_CALLER_DATA:
+			isDisplayingQSOData=true;
 			menuUtilityRenderQSOData();
 			displayLightTrigger();
 			UC1701_render();
@@ -209,6 +211,17 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 
 static void handleEvent(int buttons, int keys, int events)
 {
+	// If Blue button is pressed during reception it sets the Tx TG to the incoming TG
+	if (isDisplayingQSOData && (buttons & BUTTON_SK2)!=0 && trxGetMode() == RADIO_MODE_DIGITAL)
+	{
+		uint32_t tg = (LinkHead->talkGroupOrPcId & 0xFFFFFF);
+		trxTalkGroupOrPcId = tg;
+		nonVolatileSettings.overrideTG = trxTalkGroupOrPcId;
+		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+		menuChannelModeUpdateScreen(0);
+		return;
+	}
+
 	if (events & 0x02)
 	{
 		if (buttons & BUTTON_ORANGE)
@@ -217,7 +230,7 @@ static void handleEvent(int buttons, int keys, int events)
 			{
 				settingsPrivateCallMuteMode = !settingsPrivateCallMuteMode;// Toggle PC mute only mode
 				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-				menuVFOModeUpdateScreen(0);
+				menuChannelModeUpdateScreen(0);
 			}
 			else
 			{

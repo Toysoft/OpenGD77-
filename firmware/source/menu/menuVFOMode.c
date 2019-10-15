@@ -41,12 +41,14 @@ static void reset_freq_enter_digits();
 static int read_freq_enter_digits();
 static void update_frequency(int tmp_frequency);
 static void stepFrequency(int increment);
+static bool isDisplayingQSOData=false;
 
 // public interface
 int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
+		isDisplayingQSOData=false;
 		nonVolatileSettings.initialMenuNumber=MENU_VFO_MODE;
 		currentChannelData = &nonVolatileSettings.vfoChannel;
 		settingsCurrentChannelNumber = -1;// This is not a regular channel. Its the special VFO channel!
@@ -65,7 +67,7 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 		trxSetTxCTCSS(currentChannelData->txTone);
 		trxSetRxCTCSS(currentChannelData->rxTone);
 
-		//Need to load the Rx group if specificed even if TG is currently overridden as we may need it later when the left or right button is pressed
+		//Need to load the Rx group if specified even if TG is currently overridden as we may need it later when the left or right button is pressed
 		if (currentChannelData->rxGroupList != 0)
 		{
 			codeplugRxGroupGetDataForIndex(currentChannelData->rxGroupList,&rxGroupData);
@@ -136,6 +138,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 	{
 		case QSO_DISPLAY_DEFAULT_SCREEN:
 
+			isDisplayingQSOData=false;
 			menuUtilityReceivedPcId = 0x00;
 			if (trxGetMode() == RADIO_MODE_DIGITAL)
 			{
@@ -217,6 +220,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 			break;
 
 		case QSO_DISPLAY_CALLER_DATA:
+			isDisplayingQSOData=true;
 			menuUtilityRenderQSOData();
 			displayLightTrigger();
 			UC1701_render();
@@ -289,6 +293,17 @@ static void update_frequency(int frequency)
 
 static void handleEvent(int buttons, int keys, int events)
 {
+	// If Blue button is pressed during reception it sets the Tx TG to the incoming TG
+	if (isDisplayingQSOData && (buttons & BUTTON_SK2)!=0 && trxGetMode() == RADIO_MODE_DIGITAL)
+	{
+		uint32_t tg = (LinkHead->talkGroupOrPcId & 0xFFFFFF);
+		trxTalkGroupOrPcId = tg;
+		nonVolatileSettings.overrideTG = trxTalkGroupOrPcId;
+		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+		menuChannelModeUpdateScreen(0);
+		return;
+	}
+
 	if (events & 0x02)
 	{
 		if (buttons & BUTTON_ORANGE)
