@@ -103,6 +103,15 @@ uint32_t fw_read_keyboard()
 	GPIO_PinWrite(GPIO_Key_Col0, Pin_Key_Col0, 1);
     GPIO_PinInit(GPIO_Key_Col0, Pin_Key_Col0, &pin_config_input);
 
+#if 0
+    // I think the keypad pins may need to be set to pulldown, but at the moement I don't know how to do this
+    // So I'm trying this workaround for Riku
+    // Special for Riku
+    if (result == 0x84210)
+    {
+    	result=0;
+    }
+#endif
     return result;
 }
 
