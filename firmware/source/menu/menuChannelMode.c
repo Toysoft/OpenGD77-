@@ -400,6 +400,8 @@ static void handleEvent(int buttons, int keys, int events)
 		{
 			if (trxGetMode() == RADIO_MODE_DIGITAL)
 			{
+				// Toggle timeslot
+
 				if (currentChannelData->flag2 & 0x40)
 				{
 					currentChannelData->flag2 = currentChannelData->flag2 & ~0x40;
@@ -410,7 +412,7 @@ static void handleEvent(int buttons, int keys, int events)
 					currentChannelData->flag2 = currentChannelData->flag2 | 0x40;
 					channelScreenChannelData.flag2 = channelScreenChannelData.flag2 | 0x40;
 				}
-
+				clearActiveDMRID();
 				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 				menuChannelModeUpdateScreen(0);
 			}

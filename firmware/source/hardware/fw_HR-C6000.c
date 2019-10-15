@@ -93,6 +93,7 @@ static volatile int isWaking = WAKING_MODE_NONE;
 static volatile int rxwait;// used for Repeater wakeup sequence
 static volatile int rxcnt;// used for Repeater wakeup sequence
 volatile int lastTimeCode=0;
+static volatile uint8_t previousLCBuf[12];
 
 static bool callAcceptFilter();
 static void setupPcOrTGHeader();
@@ -102,7 +103,6 @@ static inline void HRC6000RxInterruptHandler();
 static inline void HRC6000TxInterruptHandler();
 static void HRC6000TransitionToTx();
 static void triggerQSOdataDisplay();
-static void clearActiveDMRID();
 
 enum RXSyncClass { SYNC_CLASS_HEADER = 0, SYNC_CLASS_VOICE = 1, SYNC_CLASS_DATA = 2, SYNC_CLASS_RC = 3};
 
@@ -632,21 +632,24 @@ inline static void HRC6000SysInterruptHandler()
 
 	//SEGGER_RTT_printf(0, "SYS\t0x%02x\n",tmp_val_0x82);
 
+
+
 	if (!trxIsTransmitting) // ignore the LC data when we are transmitting
 	{
 		uint8_t reg0x52;
-		read_SPI_page_reg_byte_SPI0(0x04, 0x52, &reg0x52);  //Read Received CC and CACH Register to get the timecode (TS number)
-		int tc = ((reg0x52 & 0x04) >> 2);// extract the timecode from the CACH register
+		uint8_t LCBuf[12];
+		read_SPI_page_reg_bytearray_SPI0(0x02, 0x00, LCBuf, 12);// read the LC from the C6000
 
-		if (tc == trxGetDMRTimeSlot()) // only do this for the selected timeslot
+		if (LCBuf[1] == 0x00 && (LCBuf[0]==TG_CALL_FLAG || LCBuf[0]==PC_CALL_FLAG  || (LCBuf[0]>=0x04 && LCBuf[0]<=0x7)) &&
+			memcmp((uint8_t *)previousLCBuf,LCBuf,12)!=0)
 		{
-			uint8_t LCBuf[12];
-			read_SPI_page_reg_bytearray_SPI0(0x02, 0x00, LCBuf, 12);// read the LC from the C6000
+			memcpy((uint8_t *)previousLCBuf,LCBuf,12);
 
-			if (LCBuf[1] == 0x00 && (LCBuf[0]==TG_CALL_FLAG || LCBuf[0]==PC_CALL_FLAG  || (LCBuf[0]>=0x04 && LCBuf[0]<=0x7)) &&
-				memcmp((uint8_t *)DMR_frame_buffer,LCBuf,12)!=0)
+			read_SPI_page_reg_byte_SPI0(0x04, 0x52, &reg0x52);  //Read Received CC and CACH Register to get the timecode (TS number)
+			int tc = ((reg0x52 & 0x04) >> 2);// extract the timecode from the CACH register
+
+			if (tc == trxGetDMRTimeSlot()) // only do this for the selected timeslot
 			{
-
 				memcpy((uint8_t *)DMR_frame_buffer,LCBuf,12);
 				if (DMR_frame_buffer[0]==TG_CALL_FLAG || DMR_frame_buffer[0]==PC_CALL_FLAG)
 				{
@@ -1369,9 +1372,10 @@ int getIsWakingState()
 	return isWaking;
 }
 
-static void clearActiveDMRID()
+void clearActiveDMRID()
 {
-	memset((uint8_t *)DMR_frame_buffer,0x00,12);
+	memset((uint8_t *)previousLCBuf,0x00,12);
+//	memset((uint8_t *)DMR_frame_buffer,0x00,12);
 	receivedTgOrPcId 	= 0x00;
 	receivedSrcId 		= 0x00;
 }

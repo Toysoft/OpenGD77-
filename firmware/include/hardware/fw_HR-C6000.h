@@ -86,5 +86,6 @@ void tick_HR_C6000();
 
 void clearIsWakingState();
 int getIsWakingState();
+void clearActiveDMRID();
 
 #endif /* _FW_HR_C6000_H_ */
