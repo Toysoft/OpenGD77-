@@ -102,6 +102,7 @@ static inline void HRC6000RxInterruptHandler();
 static inline void HRC6000TxInterruptHandler();
 static void HRC6000TransitionToTx();
 static void triggerQSOdataDisplay();
+static void clearActiveDMRID();
 
 enum RXSyncClass { SYNC_CLASS_HEADER = 0, SYNC_CLASS_VOICE = 1, SYNC_CLASS_DATA = 2, SYNC_CLASS_RC = 3};
 
@@ -426,7 +427,10 @@ inline static void HRC6000SysPostAccessInt()
 	{
 		SEGGER_RTT_printf(0,"HRC6000SysPostAccessInt\n");
 
-		triggerQSOdataDisplay();
+		if (skip_count == 0 ||  (receivedSrcId != trxDMRID && receivedSrcId!=0x00))
+		{
+			triggerQSOdataDisplay();
+		}
 		init_codec();
 		GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
 
@@ -557,16 +561,18 @@ inline static void HRC6000SysReceivedDataInt()
 			int sequenceNumber = (rxDataType & 0x07);
 			// Detect/decode voice packet and transfer it into the output soundbuffer
 			if (
-					(skip_count==0) &&	(rxSyncClass!=SYNC_CLASS_DATA) && ( sequenceNumber>= 0x01) && (sequenceNumber <= 0x06) &&
+					(skip_count == 0 ||  (receivedSrcId != trxDMRID && receivedSrcId!=0x00)) &&
+					(rxSyncClass!=SYNC_CLASS_DATA) && ( sequenceNumber>= 0x01) && (sequenceNumber <= 0x06) &&
 					(((trxDMRMode == DMR_MODE_PASSIVE) && (timeCode == trxGetDMRTimeSlot() && lastTimeCode != timeCode) &&
 					 (rxColorCode == trxGetDMRColourCode())) || (trxDMRMode == DMR_MODE_ACTIVE &&
 					 (slot_state == DMR_STATE_RX_1))))
 			{
 				//SEGGER_RTT_printf(0, "Audio frame %d\t%d\n",sequenceNumber,timeCode);
 				GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1);// Note it may be more effecient to store variable to indicate whether this call needs to be made
-
-				triggerQSOdataDisplay();
-
+				if (sequenceNumber == 1)
+				{
+					triggerQSOdataDisplay();
+				}
 				read_SPI_page_reg_bytearray_SPI1(0x03, 0x00, DMR_frame_buffer+0x0C, 27);
 				if (settingsUsbMode == USB_MODE_HOTSPOT)
 				{
@@ -622,8 +628,6 @@ inline static void HRC6000SysPhysicalLayerInt()
 
 inline static void HRC6000SysInterruptHandler()
 {
-	uint8_t LCBuf[12];
-
 	read_SPI_page_reg_byte_SPI0(0x04, 0x82, &tmp_val_0x82);  //Read Interrupt Flag Register1
 
 	//SEGGER_RTT_printf(0, "SYS\t0x%02x\n",tmp_val_0x82);
@@ -656,6 +660,7 @@ inline static void HRC6000SysInterruptHandler()
 				}
 				else
 				{
+					//SEGGER_RTT_printf(0, "TA %d\n",DMR_frame_buffer);
 					lastHeardListUpdate((uint8_t *)DMR_frame_buffer);
 				}
 			}
@@ -772,6 +777,7 @@ inline static void HRC6000TimeslotInterruptHandler()
 			slot_state = DMR_STATE_RX_1;
 			break;
 		case DMR_STATE_RX_END: // Stop RX
+			clearActiveDMRID();
 			init_digital_DMR_RX();
 			GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
@@ -910,6 +916,7 @@ inline static void HRC6000TimeslotInterruptHandler()
 #endif
 			break;
 		case DMR_STATE_TX_END_3:
+			skip_count=2;// Hold off displaying or opening the DMR squelch frames under some conditions
 			if (trxDMRMode == DMR_MODE_PASSIVE)
 			{
 				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
@@ -977,6 +984,7 @@ inline static void HRC6000TimeslotInterruptHandler()
 			GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 			tick_cnt=0;
+			menuDisplayQSODataState= QSO_DISPLAY_DEFAULT_SCREEN;
 			slot_state = DMR_STATE_IDLE;
         }
 		else
@@ -987,6 +995,7 @@ inline static void HRC6000TimeslotInterruptHandler()
 				GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
 				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 				tick_cnt=0;
+				menuDisplayQSODataState= QSO_DISPLAY_DEFAULT_SCREEN;
 				slot_state = DMR_STATE_IDLE;
 			}
 		}
@@ -1245,6 +1254,7 @@ void tick_HR_C6000()
 			if (int_timeout==TIMEOUT)
 			{
 				init_digital();// sets 	int_timeout=0;
+				menuDisplayQSODataState= QSO_DISPLAY_DEFAULT_SCREEN;
 				slot_state = DMR_STATE_IDLE;
 				//SEGGER_RTT_printf(0, "INTERRUPT TIMEOUT\n");
 			}
@@ -1359,7 +1369,7 @@ int getIsWakingState()
 	return isWaking;
 }
 
-void clearActiveDMRID()
+static void clearActiveDMRID()
 {
 	memset((uint8_t *)DMR_frame_buffer,0x00,12);
 	receivedTgOrPcId 	= 0x00;
