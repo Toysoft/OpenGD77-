@@ -423,9 +423,9 @@ inline static void HRC6000SysPostAccessInt()
 	*/
 
 	// Late entry into ongoing RX
-	if (slot_state == DMR_STATE_IDLE && callAcceptFilter())
+	if (slot_state == DMR_STATE_IDLE)// && callAcceptFilter())
 	{
-		SEGGER_RTT_printf(0,"HRC6000SysPostAccessInt\n");
+		//SEGGER_RTT_printf(0,"HRC6000SysPostAccessInt\n");
 
 		if (skip_count == 0 ||  (receivedSrcId != trxDMRID && receivedSrcId!=0x00))
 		{
@@ -482,7 +482,7 @@ inline static void HRC6000SysReceivedDataInt()
 	rxColorCode 	= (tmp_val_0x52 >> 4) & 0x0f;
 	timeCode =  ((tmp_val_0x52 & 0x04) >> 2);
 
-	//SEGGER_RTT_printf(0, "RXDT\taf:%d\tsc:%02x\tcrc:%02x\trpi:%02x\tcc:%d\ttc:%d\t\n",(rxDataType&0x07),rxSyncClass,rxCRCStatus,rpi,rxColorCode,timeCode);
+	//SEGGER_RTT_printf(0, "\t\tRXDT\taf:%d\tsc:%02x\tcrc:%02x\trpi:%02x\tcc:%d\ttc:%d\t\n",(rxDataType&0x07),rxSyncClass,rxCRCStatus,rpi,rxColorCode,timeCode);
 
 	if ((slot_state == DMR_STATE_RX_1 || slot_state == DMR_STATE_RX_2) && (rxColorCode != trxGetDMRColourCode() || rpi!=0 || rxCRCStatus != true))
 	{
@@ -508,19 +508,31 @@ inline static void HRC6000SysReceivedDataInt()
 	}
 
 	// Note only detect terminator frames in Active mode, because in passive we can see our own terminators echoed back which can be a problem
-	if ((trxDMRMode == DMR_MODE_ACTIVE) && (rxSyncClass==SYNC_CLASS_DATA) && (rxDataType==2) && callAcceptFilter())        //Terminator with LC
+
+	if (rxSyncClass==SYNC_CLASS_DATA  && rxDataType == 2)        //Terminator with LC
 	{
-
-		//SEGGER_RTT_printf(0, "RX STOP 0x%02x\n",tmp_val_0x82);
-		slot_state = DMR_STATE_RX_END;
-
-		if (settingsUsbMode == USB_MODE_HOTSPOT)
+		//SEGGER_RTT_printf(0, "RX_STOP\tTC:%d\n",timeCode);
+		if (trxDMRMode == DMR_MODE_ACTIVE && callAcceptFilter())
 		{
-			DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_STOP;
-			hotspotDMRRxFrameBufferAvailable=true;
+
+			slot_state = DMR_STATE_RX_END;
+
+			if (settingsUsbMode == USB_MODE_HOTSPOT)
+			{
+				DMR_frame_buffer[27 + 0x0c] = HOTSPOT_RX_STOP;
+				hotspotDMRRxFrameBufferAvailable=true;
+			}
+			return;
 		}
-		return;
+		else
+		{
+			if ((timeCode == trxGetDMRTimeSlot() && lastTimeCode != timeCode))
+			{
+				GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);// Disable the audio
+			}
+		}
 	}
+
 
 	if ((slot_state!=0) && (skip_count>0) && (rxSyncClass!=SYNC_CLASS_DATA) && ((rxDataType & 0x07) == 0x01))
 	{
@@ -984,6 +996,7 @@ inline static void HRC6000TimeslotInterruptHandler()
 		if (slot_state == DMR_STATE_IDLE && tick_cnt > START_TICK_TIMEOUT)
         {
 			init_digital_DMR_RX();
+			clearActiveDMRID();
 			GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 			tick_cnt=0;
@@ -995,6 +1008,7 @@ inline static void HRC6000TimeslotInterruptHandler()
 			if ((slot_state == DMR_STATE_RX_1 || slot_state == DMR_STATE_RX_1) && tick_cnt> END_TICK_TIMEOUT )
 			{
 				init_digital_DMR_RX();
+				clearActiveDMRID();
 				GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
 				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 				tick_cnt=0;
@@ -1257,6 +1271,7 @@ void tick_HR_C6000()
 			if (int_timeout==TIMEOUT)
 			{
 				init_digital();// sets 	int_timeout=0;
+				clearActiveDMRID();
 				menuDisplayQSODataState= QSO_DISPLAY_DEFAULT_SCREEN;
 				slot_state = DMR_STATE_IDLE;
 				//SEGGER_RTT_printf(0, "INTERRUPT TIMEOUT\n");
@@ -1375,7 +1390,7 @@ int getIsWakingState()
 void clearActiveDMRID()
 {
 	memset((uint8_t *)previousLCBuf,0x00,12);
-//	memset((uint8_t *)DMR_frame_buffer,0x00,12);
+	memset((uint8_t *)DMR_frame_buffer,0x00,12);
 	receivedTgOrPcId 	= 0x00;
 	receivedSrcId 		= 0x00;
 }
