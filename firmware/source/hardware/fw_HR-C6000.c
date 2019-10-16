@@ -94,6 +94,7 @@ static volatile int rxwait;// used for Repeater wakeup sequence
 static volatile int rxcnt;// used for Repeater wakeup sequence
 volatile int lastTimeCode=0;
 static volatile uint8_t previousLCBuf[12];
+static volatile bool updateLastHeard=false;
 
 static bool callAcceptFilter();
 static void setupPcOrTGHeader();
@@ -662,21 +663,32 @@ inline static void HRC6000SysInterruptHandler()
 
 			if (tc == trxGetDMRTimeSlot()) // only do this for the selected timeslot
 			{
-				memcpy((uint8_t *)DMR_frame_buffer,LCBuf,12);
+
+
 				if (DMR_frame_buffer[0]==TG_CALL_FLAG || DMR_frame_buffer[0]==PC_CALL_FLAG)
 				{
-					receivedTgOrPcId 	= (DMR_frame_buffer[3]<<16)+(DMR_frame_buffer[4]<<8)+(DMR_frame_buffer[5]<<0);// used by the call accept filter
-					receivedSrcId 		= (DMR_frame_buffer[6]<<16)+(DMR_frame_buffer[7]<<8)+(DMR_frame_buffer[8]<<0);// used by the call accept filter
+					receivedTgOrPcId 	= (LCBuf[3]<<16)+(LCBuf[4]<<8)+(LCBuf[5]<<0);// used by the call accept filter
+					receivedSrcId 		= (LCBuf[6]<<16)+(LCBuf[7]<<8)+(LCBuf[8]<<0);// used by the call accept filter
 
 					if (receivedTgOrPcId!=0 && receivedSrcId!=0) // only store the data if its actually valid
 					{
-						lastHeardListUpdate((uint8_t *)DMR_frame_buffer);
+						if (updateLastHeard == false)
+						{
+							memcpy((uint8_t *)DMR_frame_buffer,LCBuf,12);
+							updateLastHeard=true;	//lastHeardListUpdate((uint8_t *)DMR_frame_buffer);
+						}
+
 					}
 				}
 				else
 				{
 					//SEGGER_RTT_printf(0, "TA %d\n",DMR_frame_buffer);
-					lastHeardListUpdate((uint8_t *)DMR_frame_buffer);
+					if (updateLastHeard == false)
+					{
+						memcpy((uint8_t *)DMR_frame_buffer,LCBuf,12);
+						updateLastHeard=true;//lastHeardListUpdate((uint8_t *)DMR_frame_buffer);
+					}
+
 				}
 			}
 		}
@@ -1339,6 +1351,14 @@ void tick_HR_C6000()
 	}
 	else
 	{
+		if (updateLastHeard==true)
+		{
+			// update this in the RTOS task to stop
+	    	taskENTER_CRITICAL();
+			lastHeardListUpdate((uint8_t *)DMR_frame_buffer);
+			updateLastHeard=false;
+	    	taskEXIT_CRITICAL();
+		}
 		// receiving RF DMR
 		if (settingsUsbMode == USB_MODE_HOTSPOT)
 		{
