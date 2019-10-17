@@ -656,8 +656,6 @@ inline static void HRC6000SysInterruptHandler()
 		if (LCBuf[1] == 0x00 && (LCBuf[0]==TG_CALL_FLAG || LCBuf[0]==PC_CALL_FLAG  || (LCBuf[0]>=0x04 && LCBuf[0]<=0x7)) &&
 			memcmp((uint8_t *)previousLCBuf,LCBuf,12)!=0)
 		{
-			memcpy((uint8_t *)previousLCBuf,LCBuf,12);
-
 			read_SPI_page_reg_byte_SPI0(0x04, 0x52, &reg0x52);  //Read Received CC and CACH Register to get the timecode (TS number)
 			int tc = ((reg0x52 & 0x04) >> 2);// extract the timecode from the CACH register
 
@@ -692,6 +690,7 @@ inline static void HRC6000SysInterruptHandler()
 				}
 			}
 		}
+		memcpy((uint8_t *)previousLCBuf,LCBuf,12);
 	}
 
 	if (tmp_val_0x82 & SYS_INT_SEND_REQUEST_REJECTED)
