@@ -58,6 +58,8 @@ static void updateScreen()
 	UC1701_clearBuf();
 	UC1701_printCentered(0, "Last heard",UC1701_FONT_GD77_8x16);
 
+    taskENTER_CRITICAL();
+
 	// skip over the first gMenusCurrentItemIndex in the listing
 	for(int i=0;i<gMenusCurrentItemIndex;i++)
 	{
@@ -99,7 +101,7 @@ static void updateScreen()
 			break;
 		}
 	}
-
+	taskEXIT_CRITICAL();
 	UC1701_render();
 	displayLightTrigger();
 	menuDisplayQSODataState = QSO_DISPLAY_IDLE;

@@ -430,7 +430,7 @@ inline static void HRC6000SysPostAccessInt()
 
 		if (skip_count == 0 ||  (receivedSrcId != trxDMRID && receivedSrcId!=0x00))
 		{
-			triggerQSOdataDisplay();
+//			triggerQSOdataDisplay();
 		}
 		init_codec();
 		GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
