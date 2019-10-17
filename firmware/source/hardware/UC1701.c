@@ -95,17 +95,18 @@ void UC1701_render()
 			data1= *rowPos;
 			for (register int i=0; i<8; i++)
 			{
+				__asm volatile( "nop" );
 				GPIO_Display_SCK->PCOR = 1U << Pin_Display_SCK;
-
+				__asm volatile( "nop" );
 				if ((data1&0x80) == 0U)
 				{
-					GPIO_Display_SDA->PCOR = 1U << Pin_Display_SDA;// Hopefully the compiler will otimise this to a value rather than using a shift
+					GPIO_Display_SDA->PCOR = 1U << Pin_Display_SDA;// Hopefully the compiler will optimise this to a value rather than using a shift
 				}
 				else
 				{
-					GPIO_Display_SDA->PSOR = 1U << Pin_Display_SDA;// Hopefully the compiler will otimise this to a value rather than using a shift
+					GPIO_Display_SDA->PSOR = 1U << Pin_Display_SDA;// Hopefully the compiler will optimise this to a value rather than using a shift
 				}
-				GPIO_Display_SCK->PSOR = 1U << Pin_Display_SCK;// Hopefully the compiler will otimise this to a value rather than using a shift
+				GPIO_Display_SCK->PSOR = 1U << Pin_Display_SCK;// Hopefully the compiler will optimise this to a value rather than using a shift
 
 				data1=data1<<1;
 			}
