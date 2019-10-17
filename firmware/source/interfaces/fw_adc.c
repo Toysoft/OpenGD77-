@@ -19,10 +19,10 @@
 #include "fw_adc.h"
 
 volatile uint32_t adc_channel;
-volatile uint32_t adc0_dp0;
+//volatile uint32_t adc0_dp0;
 volatile uint32_t adc0_dp1;
-volatile uint32_t adc0_dp2;
-volatile uint32_t adc0_dp3;
+//volatile uint32_t adc0_dp2;
+//volatile uint32_t adc0_dp3;
 
 const int CUTOFF_VOLTAGE_UPPER_HYST = 64;
 const int CUTOFF_VOLTAGE_LOWER_HYST = 62;
@@ -43,11 +43,11 @@ void adc_init()
 	adc16_config_t adc16ConfigStruct;
 
 	taskENTER_CRITICAL();
-	adc_channel = 0;
-	adc0_dp0 = 0;
+	adc_channel = 1;
+//	adc0_dp0 = 0;
 	adc0_dp1 = 0;
-	adc0_dp2 = 0;
-	adc0_dp3 = 0;
+//	adc0_dp2 = 0;
+//	adc0_dp3 = 0;
 	taskEXIT_CRITICAL();
 
     ADC16_GetDefaultConfig(&adc16ConfigStruct);
@@ -62,7 +62,12 @@ void adc_init()
 
 void ADC0_IRQHandler(void)
 {
-    uint32_t result = ADC16_GetChannelConversionValue(ADC0, 0);
+	adc0_dp1 = ADC16_GetChannelConversionValue(ADC0, 0);
+/*
+ *
+ *
+ * Note. We don't need to waste MCU cycles by constantly running the ACD reading all the channels
+
 
     switch (adc_channel)
     {
@@ -83,7 +88,7 @@ void ADC0_IRQHandler(void)
     }
 
     trigger_adc();
-
+*/
     /* Add for ARM errata 838869, affects Cortex-M4, Cortex-M4F Store immediate overlapping
     exception return operation might vector to incorrect interrupt */
     __DSB();
@@ -92,8 +97,6 @@ void ADC0_IRQHandler(void)
 // result of conversion is rounded voltage*10 as integer
 int get_battery_voltage()
 {
-	taskENTER_CRITICAL();
 	int tmp_voltage = adc0_dp1/41.6f+0.5f;
-	taskEXIT_CRITICAL();
 	return tmp_voltage;
 }

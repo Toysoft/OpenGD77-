@@ -51,12 +51,12 @@ static void updateScreen()
 	UC1701_clearBuf();
 	UC1701_printCentered(0, "Battery",UC1701_FONT_GD77_8x16);
 
-	int val1 = battery_voltage/10;
-	int val2 = battery_voltage - (val1 * 10);
+	int val1 = averageBatteryVoltage/10;
+	int val2 = averageBatteryVoltage - (val1 * 10);
 
 	sprintf(buffer,"%d.%dV", val1,val2);
 	UC1701_printAt(24,16, buffer,UC1701_FONT_16x32);
-	uint32_t h = (uint32_t)(((battery_voltage - CUTOFF_VOLTAGE_UPPER_HYST) * MAX_BATTERY_BAR_HEIGHT) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));
+	uint32_t h = (uint32_t)(((averageBatteryVoltage - CUTOFF_VOLTAGE_UPPER_HYST) * MAX_BATTERY_BAR_HEIGHT) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));
 
 	if (h>MAX_BATTERY_BAR_HEIGHT)
 	{
