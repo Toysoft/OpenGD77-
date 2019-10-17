@@ -57,4 +57,5 @@ void menuUtilityRenderHeader();
 void lastheardInitList();
 bool lastHeardListUpdate(uint8_t *dmrDataBuffer);
 bool menuUtilityHandlePrivateCallActions(int buttons, int keys, int events);
+void lastHeardClearLastID();
 #endif

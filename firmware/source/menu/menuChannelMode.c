@@ -414,6 +414,7 @@ static void handleEvent(int buttons, int keys, int events)
 				}
 				init_digital();
 				clearActiveDMRID();
+				lastHeardClearLastID();
 				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 				menuChannelModeUpdateScreen(0);
 			}

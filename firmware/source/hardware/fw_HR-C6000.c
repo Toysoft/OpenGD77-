@@ -437,6 +437,7 @@ inline static void HRC6000SysPostAccessInt()
 
 		write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);     //Receive only in next timeslot
 		slot_state = DMR_STATE_RX_1;
+		lastHeardClearLastID();// Tell the LastHeard system that this is a new start
 
 		skip_count = 2;// RC. seems to be something to do with late entry but I'm but sure what, or whether its still needed
 
@@ -557,6 +558,7 @@ inline static void HRC6000SysReceivedDataInt()
 				slot_state = DMR_STATE_RX_1;
 
 				skip_count = 0;
+				lastHeardClearLastID();// Tell the LastHeard system that this is a new start
 
 				if (settingsUsbMode == USB_MODE_HOTSPOT)
 				{

@@ -82,8 +82,13 @@ LinkItem_t * findInList(int id)
     return NULL;
 }
 
-uint32_t lastID=0;
+volatile uint32_t lastID=0;// This needs to be volatile as lastHeardClearLastID() is called from an ISR
 uint32_t lastTG=0;
+
+void lastHeardClearLastID()
+{
+	lastID=0;
+}
 
 bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 {
