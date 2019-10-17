@@ -1352,14 +1352,6 @@ void tick_HR_C6000()
 	}
 	else
 	{
-		if (updateLastHeard==true)
-		{
-			// update this in the RTOS task to stop
-	    	taskENTER_CRITICAL();
-			lastHeardListUpdate((uint8_t *)DMR_frame_buffer);
-			updateLastHeard=false;
-	    	taskEXIT_CRITICAL();
-		}
 		// receiving RF DMR
 		if (settingsUsbMode == USB_MODE_HOTSPOT)
 		{
@@ -1378,22 +1370,31 @@ void tick_HR_C6000()
 				tick_RXsoundbuffer();
 			}
 		}
-	}
-
-	if (qsodata_timer>0)
-	{
-		// Only timeout the QSO data display if not displaying the Private Call Accept Yes/No text
-		// if menuUtilityReceivedPcId is non zero the Private Call Accept text is being displayed
-		if (menuUtilityReceivedPcId == 0)
+		if (updateLastHeard==true)
 		{
-			qsodata_timer--;
+	    	taskENTER_CRITICAL();
+			lastHeardListUpdate((uint8_t *)DMR_frame_buffer);
+			updateLastHeard=false;
+	    	taskEXIT_CRITICAL();
+		}
 
-			if (qsodata_timer==0)
+		if (qsodata_timer>0)
+		{
+			// Only timeout the QSO data display if not displaying the Private Call Accept Yes/No text
+			// if menuUtilityReceivedPcId is non zero the Private Call Accept text is being displayed
+			if (menuUtilityReceivedPcId == 0)
 			{
-				menuDisplayQSODataState= QSO_DISPLAY_DEFAULT_SCREEN;
+				qsodata_timer--;
+
+				if (qsodata_timer==0)
+				{
+					menuDisplayQSODataState= QSO_DISPLAY_DEFAULT_SCREEN;
+				}
 			}
 		}
 	}
+
+
 }
 
 // RC. I had to use accessor functions for the isWaking flag
