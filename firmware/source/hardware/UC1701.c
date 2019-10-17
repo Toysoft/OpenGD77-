@@ -106,6 +106,7 @@ void UC1701_render()
 				{
 					GPIO_Display_SDA->PSOR = 1U << Pin_Display_SDA;// Hopefully the compiler will optimise this to a value rather than using a shift
 				}
+				__asm volatile( "nop" );
 				GPIO_Display_SCK->PSOR = 1U << Pin_Display_SCK;// Hopefully the compiler will optimise this to a value rather than using a shift
 
 				data1=data1<<1;
