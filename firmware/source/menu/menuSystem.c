@@ -66,7 +66,7 @@ const menuItemNew_t * menusData[] = { 	NULL,// splash
 										NULL,// Numerical entry
 										NULL,// Tx
 										NULL,// RSSI
-										NULL,// LastHeard
+										//NULL,// LastHeard
 										NULL,// Display options
 										NULL,// Credits
 										NULL,// Channel Details
@@ -85,7 +85,7 @@ const MenuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
 												menuNumericalEntry,
 												menuTxScreen,
 												menuRSSIScreen,
-												menuLastHeard,
+												//menuLastHeard,
 												menuUtilities,
 												menuDisplayOptions,
 												menuCredits,
@@ -188,12 +188,12 @@ const char menuStringTable[32][16] = { "",//0
 
 
 const menuItemNew_t menuDataMainMenu[] = {
-	{9,9},// number of menus
+	{8,8},// number of menus
 	{ 21, MENU_CREDITS },
 	{ 6, MENU_ZONE_LIST },
 	{ 17, MENU_RSSI_SCREEN },
 	{ 15, MENU_BATTERY },
-	{ 18, MENU_LAST_HEARD },
+	//{ 18, MENU_LAST_HEARD },
 	{ 16, MENU_FIRMWARE_INFO },
 	{ 19, MENU_UTILITIES },
 	{ 20, MENU_DISPLAY},
