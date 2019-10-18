@@ -381,7 +381,7 @@ static void handleEvent(int buttons, int keys, int events)
 						currentChannelData->flag2 = currentChannelData->flag2 | 0x40;
 					}
 
-					init_digital();
+					//init_digital();
 					clearActiveDMRID();
 					lastHeardClearLastID();
 					menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
