@@ -337,8 +337,17 @@ void menuUtilityRenderQSOData()
 	else
 	{
 		// Group call
-		sprintf(buffer,"TG %d", (LinkHead->talkGroupOrPcId & 0xFFFFFF));
-		UC1701_printCentered(16, buffer,UC1701_FONT_GD77_8x16);
+		uint32_t tg = (LinkHead->talkGroupOrPcId & 0xFFFFFF);
+		sprintf(buffer,"TG %d", tg);
+		if (tg != trxTalkGroupOrPcId)
+		{
+			UC1701_fillRect(0,16,128,16,false);// fill background with black
+			UC1701_printCore(0, 16, buffer,UC1701_FONT_GD77_8x16,1,true);// draw the text in inverse video
+		}
+		else
+		{
+			UC1701_printCentered(16, buffer,UC1701_FONT_GD77_8x16);
+		}
 
 		// first check if we have this ID in the DMR ID data
 		if (dmrIDLookup( LinkHead->id,&currentRec))
