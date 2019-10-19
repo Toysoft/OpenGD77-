@@ -333,7 +333,7 @@ static void handleEvent(int buttons, int keys, int events)
 
 	if (freq_enter_idx==0)
 	{
-		if ((keys & KEY_STAR)!=0)
+		if ((keys & KEY_STAR)!=0 && (buttons & BUTTON_SK2))
 		{
 			if (trxGetMode() == RADIO_MODE_ANALOG)
 			{

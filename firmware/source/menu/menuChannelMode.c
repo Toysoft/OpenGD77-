@@ -363,7 +363,7 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 
 	}
-	else if ((keys & KEY_STAR)!=0)
+	else if ((keys & KEY_STAR)!=0 && (buttons & BUTTON_SK2))
 	{
 		if (trxGetMode() == RADIO_MODE_ANALOG)
 		{
