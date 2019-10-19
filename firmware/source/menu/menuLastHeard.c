@@ -17,6 +17,7 @@
  */
 #include "menu/menuSystem.h"
 #include "menu/menuUtilityQSOData.h"
+const int LAST_HEARD_NUM_LINES_ON_DISPLAY = 3;
 
 static void updateScreen();
 static void handleEvent(int buttons, int keys, int events);
@@ -86,7 +87,7 @@ static void updateScreen()
 		numDisplayed++;
 
 		item=item->next;
-		if (numDisplayed>3)
+		if (numDisplayed > (LAST_HEARD_NUM_LINES_ON_DISPLAY -1))
 		{
 			if (item!=NULL && item->id != 0)
 			{
@@ -99,12 +100,10 @@ static void updateScreen()
 			break;
 		}
 	}
-
 	UC1701_render();
 	displayLightTrigger();
 	menuDisplayQSODataState = QSO_DISPLAY_IDLE;
 }
-
 
 static void handleEvent(int buttons, int keys, int events)
 {
