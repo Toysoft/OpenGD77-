@@ -195,6 +195,14 @@ void fw_main_task()
         		}
         	}
 
+    		if (!trxIsTransmitting && updateLastHeard==true)
+    		{
+    //	    	taskENTER_CRITICAL();
+    			lastHeardListUpdate((uint8_t *)DMR_frame_buffer);
+    			updateLastHeard=false;
+    //	    	taskEXIT_CRITICAL();
+    		}
+
         	menuSystemCallCurrentMenuTick(buttons,keys,(button_event<<1) | key_event);
 
         	if (((GPIO_PinRead(GPIO_Power_Switch, Pin_Power_Switch)!=0)

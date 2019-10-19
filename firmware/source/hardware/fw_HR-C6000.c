@@ -94,7 +94,7 @@ static volatile int rxwait;// used for Repeater wakeup sequence
 static volatile int rxcnt;// used for Repeater wakeup sequence
 volatile int lastTimeCode=0;
 static volatile uint8_t previousLCBuf[12];
-static volatile bool updateLastHeard=false;
+volatile bool updateLastHeard=false;
 
 static bool callAcceptFilter();
 static void setupPcOrTGHeader();
@@ -1369,13 +1369,6 @@ void tick_HR_C6000()
 				tick_codec_decode((uint8_t *)DMR_frame_buffer+0x0C);
 				tick_RXsoundbuffer();
 			}
-		}
-		if (updateLastHeard==true)
-		{
-	    	taskENTER_CRITICAL();
-			lastHeardListUpdate((uint8_t *)DMR_frame_buffer);
-			updateLastHeard=false;
-	    	taskEXIT_CRITICAL();
 		}
 
 		if (qsodata_timer>0)
