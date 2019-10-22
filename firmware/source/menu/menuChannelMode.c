@@ -90,9 +90,9 @@ static void loadChannelData(bool useChannelDataInMemory)
 			settingsCurrentChannelNumber = currentZone.channels[nonVolatileSettings.currentChannelIndexInZone];
 			codeplugChannelGetDataForIndex(currentZone.channels[nonVolatileSettings.currentChannelIndexInZone],&channelScreenChannelData);
 		}
-	}
 
-	trxSetFrequency(channelScreenChannelData.rxFreq,channelScreenChannelData.txFreq);
+		trxSetFrequency(channelScreenChannelData.rxFreq,channelScreenChannelData.txFreq);
+	}
 
 	if (channelScreenChannelData.chMode == RADIO_MODE_ANALOG)
 	{
@@ -116,8 +116,6 @@ static void loadChannelData(bool useChannelDataInMemory)
 			trxTalkGroupOrPcId = nonVolatileSettings.overrideTG;
 		}
 	}
-
-	trxSetPower(nonVolatileSettings.txPower);
 }
 
 void menuChannelModeUpdateScreen(int txTimeSecs)
