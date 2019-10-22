@@ -35,11 +35,11 @@ static const unsigned int CTCSSTones[]={65535,625,670,693,719,744,770,797,825,85
 static int NUM_CTCSS=52;
 static int CTCSSRxIndex=0;
 static int CTCSSTxIndex=0;
-static int NUM_MENUS=7;
 static struct_codeplugChannel_t tmpChannel;// update a temporary copy of the channel and only write back if green menu is pressed
 
-enum CHANNEL_DETAILS_DISPLAY_LIST { CH_DETAILS_MODE, CH_DETAILS_DMR_CC,CH_DETAILS_DMR_TS,CH_DETAILS_RXCTCSS, CH_DETAILS_TXCTCSS , CH_DETAILS_BANDWIDTH,
-									CH_DETAILS_FREQ_STEP, CH_DETAILS_TOT};
+enum CHANNEL_DETAILS_DISPLAY_LIST { CH_DETAILS_MODE = 0, CH_DETAILS_DMR_CC, CH_DETAILS_DMR_TS,CH_DETAILS_RXCTCSS, CH_DETAILS_TXCTCSS , CH_DETAILS_BANDWIDTH,
+									CH_DETAILS_FREQ_STEP, CH_DETAILS_TOT,
+									NUM_CH_DETAILS_ITEMS};// The last item in the list is used so that we automatically get a total number of items in the list
 
 int menuChannelDetails(int buttons, int keys, int events, bool isFirstRun)
 {
@@ -85,11 +85,11 @@ static void updateScreen()
 		mNum = gMenusCurrentItemIndex+i;
 		if (mNum<0)
 		{
-			mNum = NUM_MENUS + mNum;
+			mNum = NUM_CH_DETAILS_ITEMS + mNum;
 		}
-		if (mNum >= NUM_MENUS)
+		if (mNum >= NUM_CH_DETAILS_ITEMS)
 		{
-			mNum = mNum - NUM_MENUS;
+			mNum = mNum - NUM_CH_DETAILS_ITEMS;
 		}
 
 		switch(mNum)
@@ -206,7 +206,7 @@ static void handleEvent(int buttons, int keys, int events)
 	if ((keys & KEY_DOWN)!=0)
 	{
 		gMenusCurrentItemIndex++;
-		if (gMenusCurrentItemIndex>=NUM_MENUS)
+		if (gMenusCurrentItemIndex>=NUM_CH_DETAILS_ITEMS)
 		{
 			gMenusCurrentItemIndex=0;
 		}
@@ -216,7 +216,7 @@ static void handleEvent(int buttons, int keys, int events)
 		gMenusCurrentItemIndex--;
 		if (gMenusCurrentItemIndex<0)
 		{
-			gMenusCurrentItemIndex=NUM_MENUS-1;
+			gMenusCurrentItemIndex=NUM_CH_DETAILS_ITEMS-1;
 		}
 	}
 	else if ((keys & KEY_RIGHT)!=0)
