@@ -39,14 +39,15 @@ int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 	if (isFirstRun)
 	{
 		nonVolatileSettings.initialMenuNumber = MENU_CHANNEL_MODE;// This menu.
-		codeplugZoneGetDataForNumber(nonVolatileSettings.currentZone,&currentZone);
-		codeplugUtilConvertBufToString(currentZone.name,currentZoneName,16);// need to convert to zero terminated string
+
 		if (channelScreenChannelData.rxFreq != 0)
 		{
 			loadChannelData(true);
 		}
 		else
 		{
+			codeplugZoneGetDataForNumber(nonVolatileSettings.currentZone,&currentZone);
+			codeplugUtilConvertBufToString(currentZone.name,currentZoneName,16);// need to convert to zero terminated string
 			loadChannelData(false);
 		}
 		currentChannelData = &channelScreenChannelData;
@@ -92,29 +93,31 @@ static void loadChannelData(bool useChannelDataInMemory)
 	}
 
 	trxSetFrequency(channelScreenChannelData.rxFreq,channelScreenChannelData.txFreq);
+
 	if (channelScreenChannelData.chMode == RADIO_MODE_ANALOG)
 	{
 		trxSetModeAndBandwidth(channelScreenChannelData.chMode, ((channelScreenChannelData.flag4 & 0x02) == 0x02));
+		trxSetTxCTCSS(channelScreenChannelData.txTone);
+		trxSetRxCTCSS(channelScreenChannelData.rxTone);
 	}
 	else
 	{
-		trxSetModeAndBandwidth(channelScreenChannelData.chMode, false);
-	}
-	trxSetDMRColourCode(channelScreenChannelData.rxColor);
-	trxSetPower(nonVolatileSettings.txPower);
-	trxSetTxCTCSS(channelScreenChannelData.txTone);
-	trxSetRxCTCSS(channelScreenChannelData.rxTone);
+		trxSetModeAndBandwidth(channelScreenChannelData.chMode, false);// bandwidth false = 12.5Khz as DMR uses 12.5kHz
+		trxSetDMRColourCode(channelScreenChannelData.rxColor);
 
-	codeplugRxGroupGetDataForIndex(channelScreenChannelData.rxGroupList,&rxGroupData);
-	codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
-	if (nonVolatileSettings.overrideTG == 0)
-	{
-		trxTalkGroupOrPcId = contactData.tgNumber;
+		codeplugRxGroupGetDataForIndex(channelScreenChannelData.rxGroupList,&rxGroupData);
+		codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
+		if (nonVolatileSettings.overrideTG == 0)
+		{
+			trxTalkGroupOrPcId = contactData.tgNumber;
+		}
+		else
+		{
+			trxTalkGroupOrPcId = nonVolatileSettings.overrideTG;
+		}
 	}
-	else
-	{
-		trxTalkGroupOrPcId = nonVolatileSettings.overrideTG;
-	}
+
+	trxSetPower(nonVolatileSettings.txPower);
 }
 
 void menuChannelModeUpdateScreen(int txTimeSecs)
