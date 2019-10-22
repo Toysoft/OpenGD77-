@@ -57,49 +57,49 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 		if (currentChannelData->chMode == RADIO_MODE_ANALOG)
 		{
 			trxSetModeAndBandwidth(currentChannelData->chMode, ((currentChannelData->flag4 & 0x02) == 0x02));
+			trxSetTxCTCSS(currentChannelData->txTone);
+			trxSetRxCTCSS(currentChannelData->rxTone);
 		}
 		else
 		{
+			trxSetDMRColourCode(currentChannelData->rxColor);
 			trxSetModeAndBandwidth(currentChannelData->chMode, false);
-		}
-		trxSetDMRColourCode(currentChannelData->rxColor);
-		trxSetPower(nonVolatileSettings.txPower);
-		trxSetTxCTCSS(currentChannelData->txTone);
-		trxSetRxCTCSS(currentChannelData->rxTone);
 
-		//Need to load the Rx group if specified even if TG is currently overridden as we may need it later when the left or right button is pressed
-		if (currentChannelData->rxGroupList != 0)
-		{
-			codeplugRxGroupGetDataForIndex(currentChannelData->rxGroupList,&rxGroupData);
-		}
-
-
-		if (nonVolatileSettings.overrideTG == 0)
-		{
+			//Need to load the Rx group if specified even if TG is currently overridden as we may need it later when the left or right button is pressed
 			if (currentChannelData->rxGroupList != 0)
 			{
-				codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
+				codeplugRxGroupGetDataForIndex(currentChannelData->rxGroupList,&rxGroupData);
+			}
 
-				// Check whether the contact data seems valid
-				if (contactData.name[0] == 0 || contactData.tgNumber ==0 || contactData.tgNumber > 9999999)
+
+			if (nonVolatileSettings.overrideTG == 0)
+			{
+				if (currentChannelData->rxGroupList != 0)
 				{
-					nonVolatileSettings.overrideTG = 9;// If the VFO does not have an Rx Group list assigned to it. We can't get a TG from the codeplug. So use TG 9.
-					trxTalkGroupOrPcId = nonVolatileSettings.overrideTG;
+					codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
+
+					// Check whether the contact data seems valid
+					if (contactData.name[0] == 0 || contactData.tgNumber ==0 || contactData.tgNumber > 9999999)
+					{
+						nonVolatileSettings.overrideTG = 9;// If the VFO does not have an Rx Group list assigned to it. We can't get a TG from the codeplug. So use TG 9.
+						trxTalkGroupOrPcId = nonVolatileSettings.overrideTG;
+					}
+					else
+					{
+						trxTalkGroupOrPcId = contactData.tgNumber;
+					}
 				}
 				else
 				{
-					trxTalkGroupOrPcId = contactData.tgNumber;
+					nonVolatileSettings.overrideTG = 9;// If the VFO does not have an Rx Group list assigned to it. We can't get a TG from the codeplug. So use TG 9.
 				}
 			}
 			else
 			{
-				nonVolatileSettings.overrideTG = 9;// If the VFO does not have an Rx Group list assigned to it. We can't get a TG from the codeplug. So use TG 9.
+				trxTalkGroupOrPcId = nonVolatileSettings.overrideTG;
 			}
 		}
-		else
-		{
-			trxTalkGroupOrPcId = nonVolatileSettings.overrideTG;
-		}
+
 		reset_freq_enter_digits();
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		menuVFOModeUpdateScreen(0);
