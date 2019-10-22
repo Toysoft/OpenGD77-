@@ -58,8 +58,8 @@ extern struct_codeplugChannel_t *currentChannelData;
 extern struct_codeplugChannel_t channelScreenChannelData;
 extern int settingsUsbMode;
 
-void settingsSaveSettings();
-void settingsLoadSettings();
+bool settingsSaveSettings();
+bool settingsLoadSettings();
 void settingsRestoreDefaultSettings();
 void settingsInitVFOChannel();
 

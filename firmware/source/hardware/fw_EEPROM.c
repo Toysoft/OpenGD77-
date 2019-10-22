@@ -30,7 +30,6 @@ bool EEPROM_Write(int address,uint8_t *buf, int size)
     i2c_master_transfer_t masterXfer;
     status_t status;
 
-	taskENTER_CRITICAL();
     while(size > 0)
     {
 		transferSize = size>EEPROM_PAGE_SIZE?EEPROM_PAGE_SIZE:size;
@@ -50,7 +49,7 @@ bool EEPROM_Write(int address,uint8_t *buf, int size)
 		// So repeat the write command until it responds or timeout after 50
 		// attempts 1mS apart
 
-		int timoutCount=50;
+		int timoutCount=50;// worst case timeout
 		status=kStatus_Success;
 		do
 		{
@@ -65,7 +64,6 @@ bool EEPROM_Write(int address,uint8_t *buf, int size)
 
 		if (status != kStatus_Success)
 		{
-	    	taskEXIT_CRITICAL();
 			return false;
 		}
 
@@ -81,13 +79,11 @@ bool EEPROM_Write(int address,uint8_t *buf, int size)
 		status = I2C_MasterTransferBlocking(I2C0, &masterXfer);
 		if (status != kStatus_Success)
 		{
-	    	taskEXIT_CRITICAL();
 			return status;
 		}
 		address += transferSize;
 		size -= transferSize;
     }
-	taskEXIT_CRITICAL();
 	return true;
 }
 
@@ -98,7 +94,6 @@ bool EEPROM_Read(int address,uint8_t *buf, int size)
     i2c_master_transfer_t masterXfer;
     status_t status;
 
-	taskENTER_CRITICAL();
     tmpBuf[0] = address >> 8;
     tmpBuf[1] = address & 0xff;
 
@@ -114,7 +109,6 @@ bool EEPROM_Read(int address,uint8_t *buf, int size)
     status = I2C_MasterTransferBlocking(I2C0, &masterXfer);
     if (status != kStatus_Success)
     {
-    	taskEXIT_CRITICAL();
     	return false;
     }
 
@@ -130,10 +124,8 @@ bool EEPROM_Read(int address,uint8_t *buf, int size)
     status = I2C_MasterTransferBlocking(I2C0, &masterXfer);
     if (status != kStatus_Success)
     {
-    	taskEXIT_CRITICAL();
     	return false;
     }
 
-	taskEXIT_CRITICAL();
 	return true;
 }

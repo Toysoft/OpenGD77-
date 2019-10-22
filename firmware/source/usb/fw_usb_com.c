@@ -175,9 +175,7 @@ static void handleCPSRequest()
 				length=32;
 			}
 
-			taskEXIT_CRITICAL();
 			ok = EEPROM_Write(address, (uint8_t*)com_requestbuffer+8, length);
-			taskENTER_CRITICAL();
 		}
 
 		if (ok)

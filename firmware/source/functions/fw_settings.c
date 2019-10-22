@@ -40,28 +40,17 @@ int settingsUsbMode = USB_MODE_CPS;
 int settingsCurrentChannelNumber=0;
 bool settingsPrivateCallMuteMode = false;
 
-void settingsSaveSettings()
+bool settingsSaveSettings()
 {
-	EEPROM_Write(STORAGE_BASE_ADDRESS, (uint8_t*)&nonVolatileSettings, sizeof(settingsStruct_t));
-    vTaskDelay(portTICK_PERIOD_MS * 5);
+	return EEPROM_Write(STORAGE_BASE_ADDRESS, (uint8_t*)&nonVolatileSettings, sizeof(settingsStruct_t));
 }
 
-void settingsLoadSettings()
+bool settingsLoadSettings()
 {
-	EEPROM_Read(STORAGE_BASE_ADDRESS, (uint8_t*)&nonVolatileSettings, sizeof(settingsStruct_t));
-	if (nonVolatileSettings.magicNumber != STORAGE_MAGIC_NUMBER)
+	bool readOK = EEPROM_Read(STORAGE_BASE_ADDRESS, (uint8_t*)&nonVolatileSettings, sizeof(settingsStruct_t));
+	if (nonVolatileSettings.magicNumber != STORAGE_MAGIC_NUMBER || readOK != true)
 	{
-		// Try loading from the old address and moving it
-		EEPROM_Read(STORAGE_BASE_ADDRESS_OLD, (uint8_t*)&nonVolatileSettings, sizeof(settingsStruct_t));
-		if (nonVolatileSettings.magicNumber == STORAGE_MAGIC_NUMBER)
-		{
-			// Found data in the old location
-			settingsSaveSettings();	// save to the new location for next time
-		}
-		else
-		{
-			settingsRestoreDefaultSettings();
-		}
+		settingsRestoreDefaultSettings();
 	}
 	trxDMRID = codeplugGetUserDMRID();
 
@@ -77,6 +66,8 @@ void settingsLoadSettings()
 		nonVolatileSettings.beepVolumeDivider = 2;// no reduction in volume
 	}
 	soundBeepVolumeDivider = nonVolatileSettings.beepVolumeDivider;
+
+	return readOK;
 }
 
 void settingsInitVFOChannel()
