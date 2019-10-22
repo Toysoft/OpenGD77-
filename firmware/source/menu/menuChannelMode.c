@@ -236,7 +236,7 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 			else
 			{
-				menuSystemPushNewMenu(MENU_ZONE_LIST);
+				// ToDo Quick Menu
 			}
 			return;
 		}
