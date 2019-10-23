@@ -36,7 +36,6 @@ static bool displaySquelch=false;
 
 // internal prototypes
 static void handleEvent(int buttons, int keys, int events);
-
 static void reset_freq_enter_digits();
 static int read_freq_enter_digits();
 static void update_frequency(int tmp_frequency);
@@ -49,6 +48,7 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 	if (isFirstRun)
 	{
 		isDisplayingQSOData=false;
+		gMenusCurrentItemIndex=0;
 		nonVolatileSettings.initialMenuNumber=MENU_VFO_MODE;
 		currentChannelData = &nonVolatileSettings.vfoChannel;
 		settingsCurrentChannelNumber = -1;// This is not a regular channel. Its the special VFO channel!
@@ -70,7 +70,6 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 			{
 				codeplugRxGroupGetDataForIndex(currentChannelData->rxGroupList,&rxGroupData);
 			}
-
 
 			if (nonVolatileSettings.overrideTG == 0)
 			{
@@ -119,7 +118,6 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 			handleEvent(buttons, keys, events);
 		}
 	}
-
 	return 0;
 }
 
@@ -142,7 +140,6 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 			menuUtilityReceivedPcId = 0x00;
 			if (trxGetMode() == RADIO_MODE_DIGITAL)
 			{
-
 				if (nonVolatileSettings.overrideTG != 0)
 				{
 					if((trxTalkGroupOrPcId>>24) == TG_CALL_FLAG)
@@ -226,7 +223,6 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 			UC1701_render();
 			break;
 	}
-
 	menuDisplayQSODataState = QSO_DISPLAY_IDLE;
 }
 
@@ -288,7 +284,6 @@ static void update_frequency(int frequency)
 			set_melody(melody_ERROR_beep);
 		}
 	}
-
 }
 
 static void handleEvent(int buttons, int keys, int events)
@@ -316,7 +311,7 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 			else
 			{
-				// ToDo Quick Menu
+				menuSystemPushNewMenu(MENU_VFO_QUICK_MENU);
 			}
 			return;
 		}
@@ -391,8 +386,6 @@ static void handleEvent(int buttons, int keys, int events)
 	        	    set_melody(melody_ERROR_beep);
 				}
 			}
-
-
 		}
 		else if ((keys & KEY_DOWN)!=0)
 		{
@@ -581,7 +574,6 @@ static void handleEvent(int buttons, int keys, int events)
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		}
 	}
-
 	menuVFOModeUpdateScreen(0);
 }
 
@@ -615,3 +607,123 @@ int tmp_frequencyRx;
 	}
 }
 
+// Quick Menu functions
+enum VFO_SCREEN_QUICK_MENU_ITEMS { VFO_SCREEN_QUICK_MENU_TX_SWAP_RX = 0,	VFO_SCREEN_QUICK_MENU_BOTH_TO_RX , VFO_SCREEN_QUICK_MENU_BOTH_TO_TX,
+									NUM_VFO_SCREEN_QUICK_MENU_ITEMS};// The last item in the list is used so that we automatically get a total number of items in the list
+
+static void updateQuickMenuScreen()
+{
+	int mNum=0;
+	char buf[17];
+
+	UC1701_clearBuf();
+	UC1701_printCentered(0, "Quick menu",UC1701_FONT_GD77_8x16);
+	for(int i=-1;i<=1;i++)
+	{
+		mNum = gMenusCurrentItemIndex+i;
+		if (mNum<0)
+		{
+			mNum = NUM_VFO_SCREEN_QUICK_MENU_ITEMS + mNum;
+		}
+		if (mNum >= NUM_VFO_SCREEN_QUICK_MENU_ITEMS)
+		{
+			mNum = mNum - NUM_VFO_SCREEN_QUICK_MENU_ITEMS;
+		}
+
+		switch(mNum)
+		{
+			case VFO_SCREEN_QUICK_MENU_BOTH_TO_RX:
+				strcpy(buf,"Rx --> Tx");
+				break;
+			case VFO_SCREEN_QUICK_MENU_TX_SWAP_RX:
+				strcpy(buf,"Tx <--> Rx");
+				break;
+			case VFO_SCREEN_QUICK_MENU_BOTH_TO_TX:
+				strcpy(buf,"Tx --> Rx");
+				break;
+			default:
+				strcpy(buf,"");
+				break;
+		}
+
+		if (gMenusCurrentItemIndex==mNum)
+		{
+			UC1701_fillRect(0,(i+2)*16,128,16,false);
+		}
+
+		UC1701_printCore(0,(i+2)*16,buf,UC1701_FONT_GD77_8x16,0,(gMenusCurrentItemIndex==mNum));
+	}
+
+	UC1701_render();
+	displayLightTrigger();
+}
+
+static void handleQuickMenuEvent(int buttons, int keys, int events)
+{
+	if ((keys & KEY_RED)!=0)
+	{
+		menuSystemPopPreviousMenu();
+		return;
+	}
+	else if ((keys & KEY_GREEN)!=0)
+	{
+		switch(gMenusCurrentItemIndex)
+		{
+			case VFO_SCREEN_QUICK_MENU_BOTH_TO_RX:
+				currentChannelData->txFreq = currentChannelData->rxFreq;
+				trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq);
+				menuSystemPopPreviousMenu();
+				break;
+			case VFO_SCREEN_QUICK_MENU_TX_SWAP_RX:
+				{
+					int tmpFreq = currentChannelData->txFreq;
+					currentChannelData->txFreq = currentChannelData->rxFreq;
+					currentChannelData->rxFreq =  tmpFreq;
+					trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq);
+					menuSystemPopPreviousMenu();
+				}
+				break;
+			case VFO_SCREEN_QUICK_MENU_BOTH_TO_TX:
+				currentChannelData->rxFreq = currentChannelData->txFreq;
+				trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq);
+				menuSystemPopPreviousMenu();
+				break;
+		}
+		return;
+	}
+	else if ((keys & KEY_DOWN)!=0)
+	{
+		gMenusCurrentItemIndex++;
+		if (gMenusCurrentItemIndex >= NUM_VFO_SCREEN_QUICK_MENU_ITEMS)
+		{
+			gMenusCurrentItemIndex=0;
+		}
+		updateQuickMenuScreen();
+	}
+	else if ((keys & KEY_UP)!=0)
+	{
+		gMenusCurrentItemIndex--;
+		if (gMenusCurrentItemIndex<0)
+		{
+			gMenusCurrentItemIndex=NUM_VFO_SCREEN_QUICK_MENU_ITEMS - 1;
+		}
+		updateQuickMenuScreen();
+	}
+}
+
+int menuVFOModeQuickMenu(int buttons, int keys, int events, bool isFirstRun)
+{
+	if (isFirstRun)
+	{
+		gMenusCurrentItemIndex=0;
+		updateQuickMenuScreen();
+	}
+	else
+	{
+		if (events!=0 && keys!=0)
+		{
+			handleQuickMenuEvent(buttons, keys, events);
+		}
+	}
+	return 0;
+}

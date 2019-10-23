@@ -27,12 +27,12 @@ static void loadChannelData(bool useChannelDataInMemory);
 static struct_codeplugZone_t currentZone;
 static struct_codeplugRxGroup_t rxGroupData;
 static struct_codeplugContact_t contactData;
-//static int currentIndexInTRxGroup=0;
 static char currentZoneName[17];
 static int directChannelNumber=0;
 static bool displaySquelch=false;
 int currentChannelNumber=0;
 static bool isDisplayingQSOData=false;
+static bool isTxRxFreqSwap=false;
 
 int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 {
@@ -46,6 +46,7 @@ int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 		}
 		else
 		{
+			isTxRxFreqSwap = false;
 			codeplugZoneGetDataForNumber(nonVolatileSettings.currentZone,&currentZone);
 			codeplugUtilConvertBufToString(currentZone.name,currentZoneName,16);// need to convert to zero terminated string
 			loadChannelData(false);
@@ -126,7 +127,6 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 	char buffer[32];
 	int verticalPositionOffset = 0;
 	UC1701_clearBuf();
-
 
 	menuUtilityRenderHeader();
 
@@ -237,6 +237,7 @@ static void handleEvent(int buttons, int keys, int events)
 			else
 			{
 				// ToDo Quick Menu
+				menuSystemPushNewMenu(MENU_CHANNEL_QUICK_MENU);
 			}
 			return;
 		}
@@ -562,4 +563,150 @@ static void handleEvent(int buttons, int keys, int events)
 			menuChannelModeUpdateScreen(0);
 		}
 	}
+}
+
+// Quick Menu functions
+
+enum CHANNEL_SCREEN_QUICK_MENU_ITEMS { CH_SCREEN_QUICK_MENU_COPY2VFO = 0, CH_SCREEN_QUICK_MENU_TX_SWAP_RX,	CH_SCREEN_QUICK_MENU_UNUSED,
+									NUM_CH_SCREEN_QUICK_MENU_ITEMS};// The last item in the list is used so that we automatically get a total number of items in the list
+
+static void updateQuickMenuScreen()
+{
+	int mNum=0;
+	char buf[17];
+
+
+	UC1701_clearBuf();
+	UC1701_printCentered(0, "Quick menu",UC1701_FONT_GD77_8x16);
+	for(int i=-1;i<=1;i++)
+	{
+		mNum = gMenusCurrentItemIndex+i;
+		if (mNum<0)
+		{
+			mNum = NUM_CH_SCREEN_QUICK_MENU_ITEMS + mNum;
+		}
+		if (mNum >= NUM_CH_SCREEN_QUICK_MENU_ITEMS)
+		{
+			mNum = mNum - NUM_CH_SCREEN_QUICK_MENU_ITEMS;
+		}
+
+		switch(mNum)
+		{
+			case CH_SCREEN_QUICK_MENU_COPY2VFO:
+				strcpy(buf,"Copy to VFO");
+				break;
+			case CH_SCREEN_QUICK_MENU_TX_SWAP_RX:
+				if (isTxRxFreqSwap)
+				{
+					strcpy(buf,"Tx<-->RX:ON");
+				}
+				else
+				{
+					strcpy(buf,"Tx<-->RX:OFF");
+				}
+				break;
+			default:
+				strcpy(buf,"");
+				break;
+		}
+
+		if (gMenusCurrentItemIndex==mNum)
+		{
+			UC1701_fillRect(0,(i+2)*16,128,16,false);
+		}
+
+		UC1701_printCore(0,(i+2)*16,buf,UC1701_FONT_GD77_8x16,0,(gMenusCurrentItemIndex==mNum));
+	}
+
+	UC1701_render();
+	displayLightTrigger();
+}
+
+static void handleTxRxFreqToggle()
+{
+	isTxRxFreqSwap = !isTxRxFreqSwap;
+	if (isTxRxFreqSwap)
+	{
+		trxSetFrequency(channelScreenChannelData.txFreq,channelScreenChannelData.rxFreq);
+	}
+	else
+	{
+		trxSetFrequency(channelScreenChannelData.txFreq,channelScreenChannelData.rxFreq);
+	}
+}
+
+static void handleQuickMenuEvent(int buttons, int keys, int events)
+{
+	if ((keys & KEY_RED)!=0)
+	{
+		menuSystemPopPreviousMenu();
+		return;
+	}
+	else if ((keys & KEY_GREEN)!=0)
+	{
+		switch(gMenusCurrentItemIndex)
+		{
+			case CH_SCREEN_QUICK_MENU_COPY2VFO:
+				memcpy(&nonVolatileSettings.vfoChannel,&channelScreenChannelData,sizeof(struct_codeplugChannel_t));
+				menuSystemPopAllAndDisplaySpecificRootMenu(MENU_VFO_MODE);
+				break;
+		}
+		return;
+	}
+	else if ((keys & KEY_DOWN)!=0)
+	{
+		gMenusCurrentItemIndex++;
+		if (gMenusCurrentItemIndex>=NUM_CH_SCREEN_QUICK_MENU_ITEMS)
+		{
+			gMenusCurrentItemIndex=0;
+		}
+	}
+	else if ((keys & KEY_UP)!=0)
+	{
+		gMenusCurrentItemIndex--;
+		if (gMenusCurrentItemIndex<0)
+		{
+			gMenusCurrentItemIndex=NUM_CH_SCREEN_QUICK_MENU_ITEMS-1;
+		}
+	}
+	else if ((keys & KEY_RIGHT)!=0)
+		{
+			switch(gMenusCurrentItemIndex)
+			{
+				case CH_SCREEN_QUICK_MENU_COPY2VFO:
+					break;
+				case CH_SCREEN_QUICK_MENU_TX_SWAP_RX:
+					handleTxRxFreqToggle();
+					break;
+			}
+		}
+		else if ((keys & KEY_LEFT)!=0)
+		{
+			switch(gMenusCurrentItemIndex)
+			{
+				case CH_SCREEN_QUICK_MENU_COPY2VFO:
+					break;
+				case CH_SCREEN_QUICK_MENU_TX_SWAP_RX:
+					handleTxRxFreqToggle();
+					break;
+			}
+		}
+	updateQuickMenuScreen();
+}
+
+int menuChannelModeQuickMenu(int buttons, int keys, int events, bool isFirstRun)
+{
+	if (isFirstRun)
+	{
+		gMenusCurrentItemIndex=0;
+		updateQuickMenuScreen();
+	}
+	else
+	{
+		if (events!=0 && keys!=0)
+		{
+			handleQuickMenuEvent(buttons, keys, events);
+		}
+	}
+	return 0;
 }
