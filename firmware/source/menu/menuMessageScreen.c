@@ -41,7 +41,7 @@ int menuMessageScreen(int buttons, int keys, int events, bool isFirstRun)
 
 static void updateScreen()
 {
-	char buffer[8];
+//	char buffer[8];
 
 	UC1701_clearBuf();
 	UC1701_printCentered(0, "Message",UC1701_FONT_GD77_8x16);

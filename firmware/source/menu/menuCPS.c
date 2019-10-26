@@ -88,21 +88,6 @@ void menuCPSUpdate(int command,int x, int y, int iSize, int alignment, bool isIn
 	}
 }
 
-
-static void handleEvent(int buttons, int keys, int events)
-{
-	if ((keys & KEY_RED)!=0)
-	{
-		menuSystemPopPreviousMenu();
-		return;
-	}
-	else if ((keys & KEY_GREEN)!=0)
-	{
-		menuSystemPopAllAndDisplayRootMenu();
-		return;
-	}
-}
-
 static void handleTick()
 {
 	switch(mode)

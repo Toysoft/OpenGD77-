@@ -154,7 +154,9 @@ static calibrationPowerValues_t powerSettings;
 static void updateScreen(int rxState);
 static void handleEvent(int buttons, int keys, int events);
 void handleHotspotRequest();
-
+/*
+ *
+ //Enable when debugging
 static void displayDataBytes(uint8_t *buf, int len)
 {
 	for (int i=0;i<len;i++)
@@ -163,6 +165,7 @@ static void displayDataBytes(uint8_t *buf, int len)
 	}
 	SEGGER_RTT_printf(0, "\n");
 }
+*/
 
 // Queue system is a single byte header containing the length of the item, followed by the data
 // if the block won't fit in the space between the current write location and the end of the buffer,

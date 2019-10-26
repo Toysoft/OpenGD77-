@@ -30,7 +30,6 @@ const int BAND_UHF_MIN 	= 4300000;
 const int BAND_UHF_MAX 	= 4500000;
 
 static const int STORAGE_BASE_ADDRESS 		= 0x6000;
-static const int STORAGE_BASE_ADDRESS_OLD 	= 0xFF00;
 static const int STORAGE_MAGIC_NUMBER 		= 0x4720;
 
 settingsStruct_t nonVolatileSettings;

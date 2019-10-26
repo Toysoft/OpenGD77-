@@ -624,7 +624,7 @@ static void updateQuickMenuScreen()
 	UC1701_render();
 	displayLightTrigger();
 }
-
+/*
 static void handleTxRxFreqToggle()
 {
 	isTxRxFreqSwap = !isTxRxFreqSwap;
@@ -637,7 +637,7 @@ static void handleTxRxFreqToggle()
 		trxSetFrequency(channelScreenChannelData.txFreq,channelScreenChannelData.rxFreq);
 	}
 }
-
+*/
 static void handleQuickMenuEvent(int buttons, int keys, int events)
 {
 	if ((keys & KEY_RED)!=0)
