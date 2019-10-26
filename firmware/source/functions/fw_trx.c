@@ -23,9 +23,6 @@
 #include "fw_calibration.h"
 #include "menu/menuSystem.h"
 
-bool open_squelch=false;
-bool HR_C6000_datalogging=false;
-
 int trx_measure_count = 0;
 volatile bool trxIsTransmitting = false;
 uint32_t trxTalkGroupOrPcId = 9;// Set to local TG just in case there is some problem with it not being loaded
@@ -145,19 +142,19 @@ void trx_check_analog_squelch()
 		{
 			if (currentChannelData->sql==1)
 			{
-				open_squelch = true;
+				//open_squelch = true;
 			}
 			else
 			{
 				squelch =  70 - (((currentChannelData->sql-1)*11)>>2);
-				open_squelch = false;
+				//open_squelch = false;
 			}
 		}
 
-		if ((RX_noise < squelch) || (open_squelch))
+		if (RX_noise < squelch)
 		{
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
-			if(!rxCTCSSactive || (rxCTCSSactive & trxCheckCTCSSFlag())|| open_squelch)
+			if(!rxCTCSSactive || (rxCTCSSactive & trxCheckCTCSSFlag()))
 			{
 				GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1); // speaker on
 				displayLightTrigger();

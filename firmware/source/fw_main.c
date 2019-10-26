@@ -113,9 +113,6 @@ void fw_main_task()
 
 	init_pit();
 
-	open_squelch=false;
-	HR_C6000_datalogging=false;
-
 	trx_measure_count = 0;
 
 	if (get_battery_voltage()<CUTOFF_VOLTAGE_UPPER_HYST)
