@@ -141,29 +141,30 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				UC1701_printCentered(TX_TIMER_Y_OFFSET, buffer,UC1701_FONT_16x32);
 				verticalPositionOffset=16;
 			}
-
-
-			codeplugUtilConvertBufToString(channelScreenChannelData.name,nameBuf,16);
-			UC1701_printCentered(32 + verticalPositionOffset, (char *)nameBuf,UC1701_FONT_GD77_8x16);
-
-			if (strcmp(currentZoneName,"All Channels") == 0 && !trxIsTransmitting)
+			else
 			{
-				channelNumber=nonVolatileSettings.currentChannelIndexInAllZone;
-				if (directChannelNumber>0)
+				if (strcmp(currentZoneName,"All Channels") == 0)
 				{
-					sprintf(nameBuf,"Goto %d",directChannelNumber);
+					channelNumber=nonVolatileSettings.currentChannelIndexInAllZone;
+					if (directChannelNumber>0)
+					{
+						sprintf(nameBuf,"Goto %d",directChannelNumber);
+					}
+					else
+					{
+						sprintf(nameBuf,"CH %d",channelNumber);
+					}
+					UC1701_printCentered(50 , (char *)nameBuf,UC1701_FONT_6X8);
 				}
 				else
 				{
-					sprintf(nameBuf,"CH %d",channelNumber);
+					sprintf(nameBuf,"%s",currentZoneName);
+					UC1701_printCentered(50, (char *)nameBuf,UC1701_FONT_6X8);
 				}
-				UC1701_printCentered(50 , (char *)nameBuf,UC1701_FONT_6X8);
 			}
-			else
-			{
-				sprintf(nameBuf,"%s",currentZoneName);
-				UC1701_printCentered(50 + verticalPositionOffset, (char *)nameBuf,UC1701_FONT_6X8);
-			}
+
+			codeplugUtilConvertBufToString(channelScreenChannelData.name,nameBuf,16);
+			UC1701_printCentered(32 + verticalPositionOffset, (char *)nameBuf,UC1701_FONT_GD77_8x16);
 
 			if (trxGetMode() == RADIO_MODE_DIGITAL)
 			{

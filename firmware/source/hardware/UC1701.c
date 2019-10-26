@@ -26,6 +26,11 @@
 #include "fw_settings.h"
 
 static uint8_t screenBuf[1024];
+//#define DISPLAY_CHECK_BOUNDS
+
+#ifdef DISPLAY_CHECK_BOUNDS
+static const uint8_t *screenBufEnd = screenBuf + sizeof(screenBuf);
+#endif
 int activeBufNum=0;
 
 void UC1701_setCommandMode(bool isCommand)
@@ -117,6 +122,19 @@ void UC1701_render()
 	taskEXIT_CRITICAL();
 }
 
+//#define DISPLAY_CHECK_BOUNDS
+#ifdef DISPLAY_CHECK_BOUNDS
+static inline bool checkWritePos(uint8_t * writePos)
+{
+	if (writePos < screenBuf || writePos > screenBufEnd)
+	{
+		SEGGER_RTT_printf(0,"Display buffer error\n");
+		return false;
+	}
+	return true;
+}
+#endif
+
 int UC1701_printCore(int x, int y, char *szMsg, int iSize, int alignment, bool isInverted)
 {
 int i, sLen;
@@ -198,10 +216,17 @@ uint8_t *readPos;
 				{
 					if (isInverted)
 					{
+
+						#ifdef DISPLAY_CHECK_BOUNDS
+							checkWritePos(writePos);
+						#endif
 						*writePos++ &= ~(*readPos++);
 					}
 					else
 					{
+						#ifdef DISPLAY_CHECK_BOUNDS
+							checkWritePos(writePos);
+						#endif
 						*writePos++ |= *readPos++;
 					}
 				}
@@ -215,10 +240,16 @@ uint8_t *readPos;
 				{
 					if (isInverted)
 					{
+						#ifdef DISPLAY_CHECK_BOUNDS
+							checkWritePos(writePos);
+						#endif
 						*writePos++ &= ~((*readPos++) << shiftNum);
 					}
 					else
 					{
+						#ifdef DISPLAY_CHECK_BOUNDS
+							checkWritePos(writePos);
+						#endif
 						*writePos++ |= ((*readPos++) << shiftNum);
 					}
 				}
@@ -230,10 +261,16 @@ uint8_t *readPos;
 				{
 					if (isInverted)
 					{
+						#ifdef DISPLAY_CHECK_BOUNDS
+							checkWritePos(writePos);
+						#endif
 						*writePos++ &= ~((*readPos++) >> (8 - shiftNum));
 					}
 					else
 					{
+						#ifdef DISPLAY_CHECK_BOUNDS
+							checkWritePos(writePos);
+						#endif
 						*writePos++ |= ((*readPos++) >> (8 - shiftNum));
 					}
 				}
