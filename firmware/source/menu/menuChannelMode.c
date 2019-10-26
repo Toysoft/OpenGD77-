@@ -568,7 +568,7 @@ static void handleEvent(int buttons, int keys, int events)
 
 // Quick Menu functions
 
-enum CHANNEL_SCREEN_QUICK_MENU_ITEMS { CH_SCREEN_QUICK_MENU_COPY2VFO = 0, CH_SCREEN_QUICK_MENU_TX_SWAP_RX,	CH_SCREEN_QUICK_MENU_UNUSED,
+enum CHANNEL_SCREEN_QUICK_MENU_ITEMS { CH_SCREEN_QUICK_MENU_COPY2VFO = 0, CH_SCREEN_QUICK_MENU_UNUSED_1,CH_SCREEN_QUICK_MENU_UNUSED_2,
 									NUM_CH_SCREEN_QUICK_MENU_ITEMS};// The last item in the list is used so that we automatically get a total number of items in the list
 
 static void updateQuickMenuScreen()
@@ -594,8 +594,9 @@ static void updateQuickMenuScreen()
 		switch(mNum)
 		{
 			case CH_SCREEN_QUICK_MENU_COPY2VFO:
-				strcpy(buf,"Copy to VFO");
+				strcpy(buf,"CH --> VFO");
 				break;
+				/*
 			case CH_SCREEN_QUICK_MENU_TX_SWAP_RX:
 				if (isTxRxFreqSwap)
 				{
@@ -606,6 +607,7 @@ static void updateQuickMenuScreen()
 					strcpy(buf,"Tx<-->RX:OFF");
 				}
 				break;
+				*/
 			default:
 				strcpy(buf,"");
 				break;
@@ -676,9 +678,11 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 			{
 				case CH_SCREEN_QUICK_MENU_COPY2VFO:
 					break;
+					/*
 				case CH_SCREEN_QUICK_MENU_TX_SWAP_RX:
 					handleTxRxFreqToggle();
 					break;
+					*/
 			}
 		}
 		else if ((keys & KEY_LEFT)!=0)
@@ -687,9 +691,11 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 			{
 				case CH_SCREEN_QUICK_MENU_COPY2VFO:
 					break;
+					/*
 				case CH_SCREEN_QUICK_MENU_TX_SWAP_RX:
 					handleTxRxFreqToggle();
 					break;
+					*/
 			}
 		}
 	updateQuickMenuScreen();
