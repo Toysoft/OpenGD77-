@@ -639,15 +639,10 @@ inline static void HRC6000SysPhysicalLayerInt()
 	*/
 }
 
-
-
 inline static void HRC6000SysInterruptHandler()
 {
 	read_SPI_page_reg_byte_SPI0(0x04, 0x82, &tmp_val_0x82);  //Read Interrupt Flag Register1
-
 	//SEGGER_RTT_printf(0, "SYS\t0x%02x\n",tmp_val_0x82);
-
-
 
 	if (!trxIsTransmitting) // ignore the LC data when we are transmitting
 	{
@@ -661,10 +656,8 @@ inline static void HRC6000SysInterruptHandler()
 			read_SPI_page_reg_byte_SPI0(0x04, 0x52, &reg0x52);  //Read Received CC and CACH Register to get the timecode (TS number)
 			int tc = ((reg0x52 & 0x04) >> 2);// extract the timecode from the CACH register
 
-			if (tc == trxGetDMRTimeSlot()) // only do this for the selected timeslot
+			if (tc == trxGetDMRTimeSlot() || trxDMRMode == DMR_MODE_ACTIVE) // only do this for the selected timeslot, or when in Active mode
 			{
-
-
 				if (DMR_frame_buffer[0]==TG_CALL_FLAG || DMR_frame_buffer[0]==PC_CALL_FLAG)
 				{
 					receivedTgOrPcId 	= (LCBuf[3]<<16)+(LCBuf[4]<<8)+(LCBuf[5]<<0);// used by the call accept filter
@@ -682,13 +675,11 @@ inline static void HRC6000SysInterruptHandler()
 				}
 				else
 				{
-					//SEGGER_RTT_printf(0, "TA %d\n",DMR_frame_buffer);
 					if (updateLastHeard == false)
 					{
 						memcpy((uint8_t *)DMR_frame_buffer,LCBuf,12);
 						updateLastHeard=true;//lastHeardListUpdate((uint8_t *)DMR_frame_buffer);
 					}
-
 				}
 			}
 		}
