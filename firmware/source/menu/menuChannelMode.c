@@ -53,6 +53,7 @@ int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 		}
 		currentChannelData = &channelScreenChannelData;
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+		RssiUpdateCounter = RSSI_UPDATE_COUNTER_RELOAD;
 		menuChannelModeUpdateScreen(0);
 	}
 	else
@@ -63,6 +64,15 @@ int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 			if (menuDisplayQSODataState != QSO_DISPLAY_IDLE)
 			{
 				menuChannelModeUpdateScreen(0);
+			}
+			else
+			{
+				if (RssiUpdateCounter-- == 0)
+				{
+					drawRSSIBarGraph();
+					UC1701_render();
+					RssiUpdateCounter = RSSI_UPDATE_COUNTER_RELOAD;
+				}
 			}
 		}
 		else

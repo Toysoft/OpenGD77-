@@ -38,7 +38,8 @@ extern uint32_t trxTalkGroupOrPcId;
 extern uint32_t trxDMRID;
 extern int trx_measure_count;
 extern int txstopdelay;
-
+extern volatile uint8_t trxRxSignal;
+extern volatile uint8_t trxRxNoise;
 
 void trx_check_analog_squelch();
 int	trxGetMode();
@@ -65,5 +66,5 @@ void trxSetRxCTCSS(int toneFreqX10);
 bool trxCheckCTCSSFlag();
 bool trxCheckFrequencyInAmateurBand(int tmp_frequency);
 bool trxCheckFrequencyIsSupportedByTheRadioHardware(int frequency);
-
+void trxReadRSSIAndNoise();
 #endif /* _FW_TRX_H_ */

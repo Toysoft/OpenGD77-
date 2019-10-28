@@ -16,23 +16,16 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 #include "menu/menuSystem.h"
-#include "fw_i2c.h"
-
+#include "menu/menuUtilityQSOData.h"
 
 static void updateScreen();
 static void handleEvent(int buttons, int keys, int events);
-static void sampleRSSIAndNoise();
-
-static const int NUM_SAMPLES = 256;
-static int sampleCount;
-static int RSSI_totalVal;
 
 int menuRSSIScreen(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		sampleCount=0;
-		RSSI_totalVal=0;
+		RssiUpdateCounter = RSSI_UPDATE_COUNTER_RELOAD;
 	}
 	else
 	{
@@ -41,17 +34,10 @@ int menuRSSIScreen(int buttons, int keys, int events, bool isFirstRun)
 			handleEvent(buttons, keys, events);
 		}
 
-		sampleCount++;
-
-		if (sampleCount < NUM_SAMPLES)
-		{
-			sampleRSSIAndNoise();
-		}
-		else
+		if (RssiUpdateCounter-- == 0)
 		{
 			updateScreen();
-			sampleCount=0;
-			RSSI_totalVal=0;
+			RssiUpdateCounter = RSSI_UPDATE_COUNTER_RELOAD;
 		}
 	}
 	return 0;
@@ -64,24 +50,22 @@ static void updateScreen()
 	int barGraphLength;
 	char buffer[17];
 
-		RSSI_totalVal /= NUM_SAMPLES;
-
 		if (trxCheckFrequencyIsUHF(trxGetFrequency()))
 		{
 			// Use fixed point maths to scale the RSSI value to dBm, based on data from VK4JWT and VK7ZJA
-			dBm = -151 + RSSI_totalVal;// Note no the RSSI value on UHF does not need to be scaled like it does on VHF
+			dBm = -151 + trxRxSignal;// Note no the RSSI value on UHF does not need to be scaled like it does on VHF
 		}
 		else
 		{
 			// VHF
 			// Use fixed point maths to scale the RSSI value to dBm, based on data from VK4JWT and VK7ZJA
-			dBm = -164 + ((RSSI_totalVal * 32) / 27);
+			dBm = -164 + ((trxRxSignal * 32) / 27);
 		}
 
 		UC1701_clearBuf();
 		UC1701_printCentered(0, "RSSI",UC1701_FONT_GD77_8x16);
 
-		sprintf(buffer,"%d", RSSI_totalVal);
+		sprintf(buffer,"%d", trxRxSignal);
 		UC1701_printCore(0,0,buffer,UC1701_FONT_GD77_8x16,2,false);
 
 		sprintf(buffer,"%ddBm", dBm);
@@ -102,6 +86,7 @@ static void updateScreen()
 		UC1701_printCore(5,50,"S1  S3  S5  S7  S9",UC1701_FONT_6X8,0,false);
 		UC1701_render();
 		displayLightTrigger();
+		trxRxSignal=0;
 
 }
 
@@ -118,14 +103,4 @@ static void handleEvent(int buttons, int keys, int events)
 		menuSystemPopAllAndDisplayRootMenu();
 		return;
 	}
-}
-
-static void sampleRSSIAndNoise()
-{
-    uint8_t RX_signal;
-    uint8_t RX_noise;
-    taskENTER_CRITICAL();
-    read_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x1b, &RX_signal, &RX_noise);
-    taskEXIT_CRITICAL();
-    RSSI_totalVal += RX_signal;
 }

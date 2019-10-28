@@ -47,6 +47,7 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
+		RssiUpdateCounter = RSSI_UPDATE_COUNTER_RELOAD;
 		isDisplayingQSOData=false;
 		gMenusCurrentItemIndex=0;
 		nonVolatileSettings.initialMenuNumber=MENU_VFO_MODE;
@@ -111,6 +112,15 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 			if (menuDisplayQSODataState != QSO_DISPLAY_IDLE)
 			{
 				menuVFOModeUpdateScreen(0);
+			}
+			else
+			{
+				if (RssiUpdateCounter-- == 0)
+				{
+					drawRSSIBarGraph();
+					UC1701_render();
+					RssiUpdateCounter = RSSI_UPDATE_COUNTER_RELOAD;
+				}
 			}
 		}
 		else
@@ -574,7 +584,7 @@ static void handleEvent(int buttons, int keys, int events)
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		}
 	}
-	menuVFOModeUpdateScreen(0);
+//	menuVFOModeUpdateScreen(0);
 }
 
 static void stepFrequency(int increment)

@@ -23,6 +23,7 @@
 #include "fw_settings.h"
 #include "menu/menuHotspot.h"
 #include <SeggerRTT/RTT/SEGGER_RTT.h>
+#include "fw_trx.h"
 
 
 static const int SYS_INT_SEND_REQUEST_REJECTED  = 0x80;
@@ -83,6 +84,7 @@ volatile int slot_state;
 static volatile int tick_cnt;
 static volatile int skip_count;
 static volatile bool transitionToTX=false;
+static volatile int readDMRRSSI = 0;
 
 
 static volatile int tx_sequence=0;
@@ -769,13 +771,16 @@ inline static void HRC6000TimeslotInterruptHandler()
 
 			if (trxDMRMode == DMR_MODE_PASSIVE)
 			{
-				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
+
 				if( !isWaking &&  trxIsTransmitting && (timeCode == trxGetDMRTimeSlot()))
 				{
 						HRC6000TransitionToTx();
 				}
 				else
 				{
+					GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
+					readDMRRSSI = 15;// wait 15 ticks (of approximately 1mS) before reading the RSSI
+
 					// Note. The C6000 needs to be told what to do for the next timeslot each time.
 					// It no longer seems to receive if this line is removed.
 					// Though in the future this needs to be double checked. In case there is a way to get it to constantly receive.
@@ -788,8 +793,10 @@ inline static void HRC6000TimeslotInterruptHandler()
 				// When in Active (simplex) mode. We need to only receive on one of the 2 timeslots, otherwise we get random data for the other slot
 				// and this can sometimes be interpreted as valid data, which then screws things up.
 				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00);     //No Transmit or receive in next timeslot
+				readDMRRSSI = 15;// wait 15 ticks (of approximately 1mS) before reading the RSSI
 				slot_state = DMR_STATE_RX_2;
 			}
+
 			break;
 		case DMR_STATE_RX_2: // Start RX (second step)
 			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);     //Receive only in next timeslot
@@ -1375,6 +1382,15 @@ void tick_HR_C6000()
 					menuDisplayQSODataState= QSO_DISPLAY_DEFAULT_SCREEN;
 				}
 			}
+		}
+	}
+
+	if (readDMRRSSI>0)
+	{
+		readDMRRSSI--;
+		if (readDMRRSSI==0)
+		{
+			trxReadRSSIAndNoise();
 		}
 	}
 

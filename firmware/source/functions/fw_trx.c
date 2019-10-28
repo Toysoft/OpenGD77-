@@ -56,6 +56,9 @@ static uint8_t tx_fl_h;
 static uint8_t tx_fh_l;
 static uint8_t tx_fh_h;
 
+volatile uint8_t trxRxSignal;
+volatile uint8_t trxRxNoise;
+
 int trxDMRMode = DMR_MODE_ACTIVE;// Active is for simplex
 static volatile bool txPAEnabled=false;
 
@@ -126,16 +129,19 @@ bool trxCheckFrequencyInAmateurBand(int tmp_frequency)
 	return ((tmp_frequency>=BAND_VHF_MIN) && (tmp_frequency<=BAND_VHF_MAX)) || ((tmp_frequency>=BAND_UHF_MIN) && (tmp_frequency<=BAND_UHF_MAX));
 }
 
+void trxReadRSSIAndNoise()
+{
+	read_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x1b,(uint8_t *)&trxRxSignal,(uint8_t *)&trxRxNoise);
+}
+
 void trx_check_analog_squelch()
 {
 	trx_measure_count++;
 	if (trx_measure_count==50)
 	{
-		uint8_t RX_signal;
-		uint8_t RX_noise;
 		uint8_t squelch=45;
 
-		read_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x1b,&RX_signal,&RX_noise);
+		trxReadRSSIAndNoise();
 
 		// check for variable squelch control
 		if (currentChannelData->sql!=0)
@@ -151,7 +157,7 @@ void trx_check_analog_squelch()
 			}
 		}
 
-		if (RX_noise < squelch)
+		if (trxRxNoise < squelch)
 		{
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
 			if(!rxCTCSSactive || (rxCTCSSactive & trxCheckCTCSSFlag()))
