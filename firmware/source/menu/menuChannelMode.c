@@ -330,7 +330,7 @@ static void handleEvent(int buttons, int keys, int events)
 
 			nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
 			trxTalkGroupOrPcId = contactData.tgNumber;
-
+			lastHeardClearLastID();
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 			menuChannelModeUpdateScreen(0);
 		}
@@ -369,7 +369,7 @@ static void handleEvent(int buttons, int keys, int events)
 			codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
 			nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
 			trxTalkGroupOrPcId = contactData.tgNumber;
-
+			lastHeardClearLastID();
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 			menuChannelModeUpdateScreen(0);
 		}
