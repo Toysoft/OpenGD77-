@@ -55,6 +55,7 @@ int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		RssiUpdateCounter = RSSI_UPDATE_COUNTER_RELOAD;
 		menuChannelModeUpdateScreen(0);
+		lastHeardClearLastID();
 	}
 	else
 	{
@@ -457,6 +458,7 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 		else
 		{
+			lastHeardClearLastID();
 			if (strcmp(currentZoneName,"All Channels")==0)
 			{
 				do
@@ -498,6 +500,7 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 		else
 		{
+			lastHeardClearLastID();
 			if (strcmp(currentZoneName,"All Channels")==0)
 			{
 				do
