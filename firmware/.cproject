@@ -287,6 +287,22 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<folderInfo id="com.crt.advproject.config.exe.debug.1021312312.60014907" name="/" resourcePath="amazon-freertos/FreeRTOS">
+						<toolChain id="com.crt.advproject.toolchain.exe.debug.1704538287" name="NXP MCU Tools" superClass="com.crt.advproject.toolchain.exe.debug" unusedChildren="">
+							<tool id="com.crt.advproject.cpp.exe.debug.1442965060" name="MCU C++ Compiler" superClass="com.crt.advproject.cpp.exe.debug.1589160145"/>
+							<tool id="com.crt.advproject.gcc.exe.debug.2103328623" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.475830819">
+								<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.764378222" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+								<inputType id="com.crt.advproject.compiler.input.1396510413" superClass="com.crt.advproject.compiler.input"/>
+							</tool>
+							<tool id="com.crt.advproject.gas.exe.debug.1113940398" name="MCU Assembler" superClass="com.crt.advproject.gas.exe.debug.515920313">
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.41242818" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+								<inputType id="com.crt.advproject.assembler.input.328459607" name="Additional Assembly Source Files" superClass="com.crt.advproject.assembler.input"/>
+							</tool>
+							<tool id="com.crt.advproject.link.cpp.exe.debug.782961770" name="MCU C++ Linker" superClass="com.crt.advproject.link.cpp.exe.debug.751888783"/>
+							<tool id="com.crt.advproject.link.exe.debug.158651558" name="MCU Linker" superClass="com.crt.advproject.link.exe.debug.856992099"/>
+							<tool id="com.crt.advproject.tool.debug.debug.1513054654" name="MCU Debugger" superClass="com.crt.advproject.tool.debug.debug.1827433604"/>
+						</toolChain>
+					</folderInfo>
 					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.1966879323" name="fw_mbelib.c" rcbsApplicability="disable" resourcePath="source/codec/fw_mbelib.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.475830819.1273654524">
 						<tool id="com.crt.advproject.gcc.exe.debug.475830819.1273654524" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.475830819">
 							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1488889347" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
