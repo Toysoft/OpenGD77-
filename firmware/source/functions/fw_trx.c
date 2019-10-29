@@ -216,7 +216,7 @@ void trxSetFrequency(int fRx,int fTx)
 		tx_fh_l = (f & 0x00ff0000) >> 16;
 		tx_fh_h = (f & 0xff000000) >> 24;
 
-		if (currentMode=RADIO_MODE_DIGITAL)
+		if (currentMode==RADIO_MODE_DIGITAL)
 		{
 			terminate_digital();
 		}
@@ -269,7 +269,7 @@ void trxSetFrequency(int fRx,int fTx)
 			//SEGGER_RTT_printf(0, "ERROR Cant enable Rx when PA active\n");
 		}
 
-		if (currentMode=RADIO_MODE_DIGITAL)
+		if (currentMode==RADIO_MODE_DIGITAL)
 		{
 			init_digital();
 		}
