@@ -303,6 +303,7 @@ static void handleEvent(int buttons, int keys, int events)
 	// If Blue button is pressed during reception it sets the Tx TG to the incoming TG
 	if (isDisplayingQSOData && (buttons & BUTTON_SK2)!=0 && trxGetMode() == RADIO_MODE_DIGITAL && trxTalkGroupOrPcId != tg)
 	{
+		lastHeardClearLastID();
 		trxTalkGroupOrPcId = tg;
 		nonVolatileSettings.overrideTG = trxTalkGroupOrPcId;
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
