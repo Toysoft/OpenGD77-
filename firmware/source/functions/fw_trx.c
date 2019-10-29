@@ -76,15 +76,10 @@ void trxSetModeAndBandwidth(int mode, bool bandwidthIs25kHz)
 {
 	if ((mode != currentMode) || (bandwidthIs25kHz != currentBandWidthIs25kHz))
 	{
-
 		currentMode=mode;
 
 		currentBandWidthIs25kHz=bandwidthIs25kHz;
 
-		I2C_AT1846_SetMode();
-		I2C_AT1846_SetBandwidth();
-		trxUpdateC6000Calibration();
-		trxUpdateAT1846SCalibration();
 		switch(mode)
 		{
 		case RADIO_MODE_NONE:
@@ -92,14 +87,28 @@ void trxSetModeAndBandwidth(int mode, bool bandwidthIs25kHz)
 			GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 0); // connect AT1846S audio to HR_C6000
 			terminate_sound();
 			terminate_digital();
+
+			I2C_AT1846_SetMode();
+			I2C_AT1846_SetBandwidth();
+			trxUpdateC6000Calibration();
+			trxUpdateAT1846SCalibration();
 			break;
 		case RADIO_MODE_ANALOG:
 			GPIO_PinWrite(GPIO_TX_audio_mux, Pin_TX_audio_mux, 0); // Connect mic to mic input of AT-1846
 			GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 1); // connect AT1846S audio to speaker
 			terminate_sound();
 			terminate_digital();
+
+			I2C_AT1846_SetMode();
+			I2C_AT1846_SetBandwidth();
+			trxUpdateC6000Calibration();
+			trxUpdateAT1846SCalibration();
 			break;
 		case RADIO_MODE_DIGITAL:
+			I2C_AT1846_SetMode();
+			I2C_AT1846_SetBandwidth();
+			trxUpdateC6000Calibration();
+			trxUpdateAT1846SCalibration();
 			GPIO_PinWrite(GPIO_TX_audio_mux, Pin_TX_audio_mux, 1); // Connect mic to MIC_P input of HR-C6000
 			GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 0); // connect AT1846S audio to HR_C6000
 			init_sound();
@@ -207,6 +216,11 @@ void trxSetFrequency(int fRx,int fTx)
 		tx_fh_l = (f & 0x00ff0000) >> 16;
 		tx_fh_h = (f & 0xff000000) >> 24;
 
+		if (currentMode=RADIO_MODE_DIGITAL)
+		{
+			terminate_digital();
+		}
+
 		if (currentBandWidthIs25kHz)
 		{
 			// 25 kHz settings
@@ -253,6 +267,11 @@ void trxSetFrequency(int fRx,int fTx)
 		else
 		{
 			//SEGGER_RTT_printf(0, "ERROR Cant enable Rx when PA active\n");
+		}
+
+		if (currentMode=RADIO_MODE_DIGITAL)
+		{
+			init_digital();
 		}
 	}
 }
