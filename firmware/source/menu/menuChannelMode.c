@@ -40,6 +40,8 @@ int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 	{
 		nonVolatileSettings.initialMenuNumber = MENU_CHANNEL_MODE;// This menu.
 
+		lastHeardClearLastID();
+
 		if (channelScreenChannelData.rxFreq != 0)
 		{
 			loadChannelData(true);
@@ -55,7 +57,7 @@ int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		RssiUpdateCounter = RSSI_UPDATE_COUNTER_RELOAD;
 		menuChannelModeUpdateScreen(0);
-		lastHeardClearLastID();
+
 	}
 	else
 	{

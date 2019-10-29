@@ -99,11 +99,11 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 				trxTalkGroupOrPcId = nonVolatileSettings.overrideTG;
 			}
 		}
-
+		lastHeardClearLastID();
 		reset_freq_enter_digits();
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		menuVFOModeUpdateScreen(0);
-		lastHeardClearLastID();
+
 	}
 	else
 	{
