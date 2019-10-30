@@ -92,6 +92,11 @@ static void handleEvent(int buttons, int keys, int events)
 		else
 		{
 			trxDMRID = atoi(digits);
+			if (buttons & BUTTON_SK2)
+			{
+				// make the change to DMR ID permanent if Function + Green is pressed
+				codeplugSetUserDMRID(trxDMRID);
+			}
 		}
 		menuSystemPopAllAndDisplayRootMenu();
 	}

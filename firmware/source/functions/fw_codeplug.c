@@ -385,6 +385,12 @@ int codeplugGetUserDMRID()
 	return bcd2int(byteSwap32(dmrId));
 }
 
+void codeplugSetUserDMRID(uint32_t dmrId)
+{
+	dmrId = byteSwap32(int2bcd(dmrId));
+	EEPROM_Write(CODEPLUG_ADDR_USER_DMRID,(uint8_t *)&dmrId,4);
+}
+
 // Max length the user can enter is 8. Hence buf must be 16 chars to allow for the termination
 void codeplugGetRadioName(char *buf)
 {
