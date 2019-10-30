@@ -37,6 +37,7 @@
 void UC1701_begin(bool isInverted);
 void UC1701_clearBuf();
 void UC1701_render();
+void UC1701RenderRows(int startRow,int endRow);
 void UC1701_printCentered(uint8_t y, char *text,int fontSize);
 void UC1701_printAt(uint8_t x, uint8_t y, char *text,int fontSize);
 int UC1701_printCore(int x, int y, char *szMsg, int iSize, int alignment, bool isInverted);
