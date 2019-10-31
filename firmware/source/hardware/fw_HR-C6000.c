@@ -1390,7 +1390,9 @@ void tick_HR_C6000()
 		readDMRRSSI--;
 		if (readDMRRSSI==0)
 		{
+			taskENTER_CRITICAL();
 			trxReadRSSIAndNoise();
+			taskEXIT_CRITICAL();
 		}
 	}
 
