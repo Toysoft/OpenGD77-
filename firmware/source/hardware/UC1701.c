@@ -81,7 +81,7 @@ int i;
 
 void UC1701RenderRows(int startRow,int endRow)
 {
-	uint8_t *rowPos = screenBuf;
+	uint8_t *rowPos = (screenBuf + startRow*128);
 		taskENTER_CRITICAL();
 		for(int row=startRow;row<endRow;row++)
 		{
