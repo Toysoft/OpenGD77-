@@ -376,6 +376,8 @@ void trx_activateTx()
 		set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0xC0); // digital TX
 	}
 
+	trxSelectVoiceChannel(AT1846_VOICE_CHANNEL_MIC);
+
     GPIO_PinWrite(GPIO_RF_ant_switch, Pin_RF_ant_switch, ANTENNA_SWITCH_TX);
 
 	// TX PA on
@@ -672,8 +674,40 @@ bool trxCheckCTCSSFlag()
 	uint8_t FlagsH;
 	uint8_t FlagsL;
 
-	read_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x1c,&FlagsH,&FlagsL);
+	read_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x1c, &FlagsH, &FlagsL);
 
 	return (FlagsH & 0x01);
+}
+
+void trxSelectVoiceChannel(uint8_t channel) {
+	switch (channel) {
+	case AT1846_VOICE_CHANNEL_TONE1:
+	case AT1846_VOICE_CHANNEL_TONE2:
+		set_clear_I2C_reg_2byte_with_mask(0x79, 0xff, 0xff, 0xc0, 0x00); // Select single tone
+		set_clear_I2C_reg_2byte_with_mask(0x7a, 0x7f, 0xff, 0x40, 0x00); // Disable DTMF, enable single tone
+		break;
+	case AT1846_VOICE_CHANNEL_DTMF:
+		set_clear_I2C_reg_2byte_with_mask(0x79, 0x3f, 0xff, 0x00, 0x00); // Select single tone
+		set_clear_I2C_reg_2byte_with_mask(0x7a, 0x3f, 0xff, 0x80, 0x00); // Enable DTMF, disable single tone
+		break;
+	default:
+		set_clear_I2C_reg_2byte_with_mask(0x7a, 0x7f, 0xff, 0x00, 0x00); // Disable DTMF, disable single tone
+		break;
+	}
+	set_clear_I2C_reg_2byte_with_mask(0x3a, 0x8f, 0xff, channel, 0x00);
+}
+
+void trxSetTone1(int toneFreq)
+{
+	toneFreq = toneFreq * 10;
+
+	write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x35, (toneFreq >> 8) & 0xff,	(toneFreq & 0xff));   // tone1_freq
+}
+
+void trxSetTone2(int toneFreq)
+{
+	toneFreq = toneFreq * 10;
+
+	write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x36, (toneFreq >> 8) & 0xff,	(toneFreq & 0xff));   // tone2_freq
 }
 
