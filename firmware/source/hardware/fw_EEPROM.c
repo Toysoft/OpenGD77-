@@ -111,12 +111,24 @@ bool EEPROM_Read(int address,uint8_t *buf, int size)
     masterXfer.dataSize = COMMAND_SIZE;
     masterXfer.flags = kI2C_TransferNoStopFlag;
 
-    status = I2C_MasterTransferBlocking(I2C0, &masterXfer);
-    if (status != kStatus_Success)
-    {
+	int timoutCount=50;
+	status=kStatus_Success;
+	do
+	{
+		if(status!=kStatus_Success)
+		{
+			vTaskDelay(portTICK_PERIOD_MS * 1);
+		}
+
+	status = I2C_MasterTransferBlocking(I2C0, &masterXfer);
+
+	}while((status!=kStatus_Success)& (timoutCount-- >0));
+
+	if (status != kStatus_Success)
+	{
     	taskEXIT_CRITICAL();
-    	return false;
-    }
+		return false;
+	}
 
     memset(&masterXfer, 0, sizeof(masterXfer));
     masterXfer.slaveAddress = EEPROM_ADDRESS;
