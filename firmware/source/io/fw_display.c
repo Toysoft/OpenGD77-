@@ -75,8 +75,9 @@ void fw_init_display()
 
 	// Reset LCD
 	GPIO_PinWrite(GPIO_Display_RST, Pin_Display_RST, 0);
-    vTaskDelay(portTICK_PERIOD_MS * 100);
+    vTaskDelay(portTICK_PERIOD_MS * 1);
 	GPIO_PinWrite(GPIO_Display_RST, Pin_Display_RST, 1);
+	vTaskDelay(portTICK_PERIOD_MS * 5);
 
     UC1701_begin(nonVolatileSettings.displayInverseVideo);
 }

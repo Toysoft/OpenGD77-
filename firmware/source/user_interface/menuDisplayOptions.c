@@ -30,6 +30,7 @@ static int8_t 	backLightTimeout;// used int_8 to save space
 const int BACKLIGHT_MAX_TIMEOUT = 30;
 const int CONTRAST_MAX_VALUE = 30;// Maximum value which still seems to be readable
 const int CONTRAST_MIN_VALUE = 12;// Minimum value which still seems to be readable
+enum DISPLAY_MENU_LIST { DISPLAY_MENU_BRIGHTNESS = 0, DISPLAY_MENU_CONTRAST, DISPLAY_MENU_TIMEOUT, DISPLAY_MENU_COLOUR_INVERT, NUM_DISPLAY_MENU_ITEMS};
 
 int menuDisplayOptions(int buttons, int keys, int events, bool isFirstRun)
 {
@@ -54,30 +55,53 @@ int menuDisplayOptions(int buttons, int keys, int events, bool isFirstRun)
 
 static void updateScreen()
 {
-	char buf[20];
+	int mNum=0;
+	char buf[17];
 	UC1701_clearBuf();
 	UC1701_printCentered(0, "Display options",UC1701_FONT_GD77_8x16);
 
-	if (gMenusCurrentItemIndex==0)
+	// Can only display 3 of the options at a time menu at -1, 0 and +1
+	for(int i=-1;i<=1;i++)
 	{
-		UC1701_fillRect(0,16,128,16,false);
-	}
-	sprintf(buf,"Brightness %d%%",nonVolatileSettings.displayBacklightPercentage);
-	UC1701_printCore(0,16,buf,UC1701_FONT_GD77_8x16,0,(gMenusCurrentItemIndex==0));
+		mNum = gMenusCurrentItemIndex+i;
+		if (mNum<0)
+		{
+			mNum = NUM_DISPLAY_MENU_ITEMS + mNum;
+		}
+		if (mNum >= NUM_DISPLAY_MENU_ITEMS)
+		{
+			mNum = mNum - NUM_DISPLAY_MENU_ITEMS;
+		}
 
-	if (gMenusCurrentItemIndex==1)
-	{
-		UC1701_fillRect(0,32,128,16,false);
-	}
-	sprintf(buf,"Contrast %d",contrast);
-	UC1701_printCore(0,32,buf,UC1701_FONT_GD77_8x16,0,(gMenusCurrentItemIndex==1));
+		switch(mNum)
+		{
+			case DISPLAY_MENU_BRIGHTNESS:
+				sprintf(buf,"Brightness %d%%",nonVolatileSettings.displayBacklightPercentage);
+				break;
+			case DISPLAY_MENU_CONTRAST:
+				sprintf(buf,"Contrast %d",contrast);
+				break;
+			case DISPLAY_MENU_TIMEOUT:
+				sprintf(buf,"Timeout %d",backLightTimeout);
+				break;
+			case DISPLAY_MENU_COLOUR_INVERT:
+				if (inverseVideo)
+				{
+					strcpy(buf,"Color:Invert");
+				}
+				else
+				{
+					strcpy(buf,"Color:Normal");
+				}
+				break;
+		}
+		if (gMenusCurrentItemIndex==mNum)
+		{
+			UC1701_fillRect(0,(i+2)*16,128,16,false);
+		}
 
-	if (gMenusCurrentItemIndex==2)
-	{
-		UC1701_fillRect(0,48,128,16,false);
+		UC1701_printCore(0,(i+2)*16,buf,UC1701_FONT_GD77_8x16,0,(gMenusCurrentItemIndex==mNum));
 	}
-	sprintf(buf,"Timeout %d",backLightTimeout);
-	UC1701_printCore(0,48,buf,UC1701_FONT_GD77_8x16,0,(gMenusCurrentItemIndex==2));
 
 	UC1701_render();
 	displayLightTrigger();
@@ -88,7 +112,7 @@ static void handleEvent(int buttons, int keys, int events)
 	if ((keys & KEY_DOWN)!=0 && gMenusEndIndex!=0)
 	{
 		gMenusCurrentItemIndex++;
-		if (gMenusCurrentItemIndex > 2)
+		if (gMenusCurrentItemIndex > NUM_DISPLAY_MENU_ITEMS)
 		{
 			gMenusCurrentItemIndex = 0;
 		}
@@ -98,14 +122,14 @@ static void handleEvent(int buttons, int keys, int events)
 		gMenusCurrentItemIndex--;
 		if (gMenusCurrentItemIndex < 0)
 		{
-			gMenusCurrentItemIndex=2;
+			gMenusCurrentItemIndex=NUM_DISPLAY_MENU_ITEMS - 1;
 		}
 	}
 	else if ((keys & KEY_RIGHT)!=0)
 	{
 		switch(gMenusCurrentItemIndex)
 		{
-			case 0:
+			case DISPLAY_MENU_BRIGHTNESS:
 				if (nonVolatileSettings.displayBacklightPercentage<10)
 				{
 					nonVolatileSettings.displayBacklightPercentage += 1;
@@ -120,7 +144,7 @@ static void handleEvent(int buttons, int keys, int events)
 					nonVolatileSettings.displayBacklightPercentage=100;
 				}
 				break;
-			case 1:
+			case DISPLAY_MENU_CONTRAST:
 				contrast++;
 				if (contrast > CONTRAST_MAX_VALUE)
 				{
@@ -128,11 +152,22 @@ static void handleEvent(int buttons, int keys, int events)
 				}
 				UC1701_setContrast(contrast);
 				break;
-			case 2:
+			case DISPLAY_MENU_TIMEOUT:
 				backLightTimeout += 5;
 				if (backLightTimeout > BACKLIGHT_MAX_TIMEOUT)
 				{
 					backLightTimeout=0;
+				}
+				break;
+			case DISPLAY_MENU_COLOUR_INVERT:
+				inverseVideo=!inverseVideo;
+				if (!inverseVideo)
+				{
+					fw_init_display();// Need to perform a full reset on the display to change back to non-inverted
+				}
+				else
+				{
+					UC1701_setInverseVideo(inverseVideo);
 				}
 				break;
 		}
@@ -141,7 +176,7 @@ static void handleEvent(int buttons, int keys, int events)
 	{
 		switch(gMenusCurrentItemIndex)
 		{
-			case 0:
+			case DISPLAY_MENU_BRIGHTNESS:
 				if (nonVolatileSettings.displayBacklightPercentage <= 10)
 				{
 					nonVolatileSettings.displayBacklightPercentage -= 1;
@@ -156,7 +191,7 @@ static void handleEvent(int buttons, int keys, int events)
 					nonVolatileSettings.displayBacklightPercentage=0;
 				}
 				break;
-			case 1:
+			case DISPLAY_MENU_CONTRAST:
 				contrast--;
 				if (contrast < CONTRAST_MIN_VALUE)
 				{
@@ -164,11 +199,22 @@ static void handleEvent(int buttons, int keys, int events)
 				}
 				UC1701_setContrast(contrast);
 				break;
-			case 2:
+			case DISPLAY_MENU_TIMEOUT:
 				backLightTimeout -= 5;
 				if (backLightTimeout < 0)
 				{
 					backLightTimeout = BACKLIGHT_MAX_TIMEOUT;
+				}
+				break;
+			case DISPLAY_MENU_COLOUR_INVERT:
+				inverseVideo=!inverseVideo;
+				if (!inverseVideo)
+				{
+					fw_init_display();// Need to perform a full reset on the display to change back to non-inverted
+				}
+				else
+				{
+					UC1701_setInverseVideo(inverseVideo);
 				}
 				break;
 		}
@@ -178,6 +224,7 @@ static void handleEvent(int buttons, int keys, int events)
 		nonVolatileSettings.displayInverseVideo = inverseVideo;
 		nonVolatileSettings.displayContrast = contrast;
 		nonVolatileSettings.backLightTimeout = backLightTimeout;
+		UC1701_begin(nonVolatileSettings.displayInverseVideo);
 		menuSystemPopAllAndDisplayRootMenu();
 		return;
 	}
@@ -185,6 +232,10 @@ static void handleEvent(int buttons, int keys, int events)
 	{
 		if (nonVolatileSettings.displayContrast != contrast || nonVolatileSettings.displayInverseVideo != inverseVideo)
 		{
+			if (nonVolatileSettings.displayInverseVideo)
+			{
+				fw_init_display();// Need to perform a full reset on the display to change back to non-inverted
+			}
 			UC1701_begin(nonVolatileSettings.displayInverseVideo);
 		}
 		nonVolatileSettings.displayBacklightPercentage = originalBrightness;
