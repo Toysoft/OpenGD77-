@@ -71,12 +71,41 @@
 #define KEY_STAR  0x00008000
 #define KEY_HASH  0x00020000
 
+//#define KEY_UP    '^'
+//#define KEY_DOWN  0x0a
+//#define KEY_LEFT  '<'
+//#define KEY_RIGHT '>'
+//#define KEY_GREEN 0x0d
+//#define KEY_RED   0x1b
+//#define KEY_0     '0'
+//#define KEY_1     '1'
+//#define KEY_2     '2'
+//#define KEY_3     '3'
+//#define KEY_4     '4'
+//#define KEY_5     '5'
+//#define KEY_6     '6'
+//#define KEY_7     '7'
+//#define KEY_8     '8'
+//#define KEY_9     '9'
+//#define KEY_STAR  '*'
+//#define KEY_HASH  '#'
+
+
+#define KEY_MOD_DOWN  0x01000000
+#define KEY_MOD_UP    0x02000000
+#define KEY_MOD_LONG  0x04000000
+
 #define EVENT_KEY_NONE   0
 #define EVENT_KEY_CHANGE 1
+
+#define KEY_DEBOUNCE_COUNTER   20
+#define KEY_LONG_PRESS_COUNTER 5000
 
 void fw_init_keyboard();
 uint8_t fw_read_keyboard_col();
 uint32_t fw_read_keyboard();
 void fw_check_key_event(uint32_t *keys, int *event);
+uint32_t fw_scan_key(uint32_t keys);
+bool fw_key_check(uint32_t keys, uint32_t key, uint32_t mod);
 
 #endif /* _FW_KEYBOARD_H_ */
