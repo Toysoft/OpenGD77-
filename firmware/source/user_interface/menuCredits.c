@@ -15,81 +15,94 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-#include "menu/menuSystem.h"
+#include <user_interface/menuSystem.h>
 
 static void updateScreen();
 static void handleEvent(int buttons, int keys, int events);
-static int updateCounter;
+static void scrollDownOneLine();
 
-int menuBattery(int buttons, int keys, int events, bool isFirstRun)
+#define CREDIT_TEXT_LENGTH 33
+static const int NUM_LINES_PER_SCREEN = 7;
+static const char creditTexts[][CREDIT_TEXT_LENGTH] = {"Conceived & developed","by","Kai DG4KLU","with help from","Roger VK3KYY","Colin G4EML"};
+static int currentDisplayIndex=0;
+
+int menuCredits(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		updateCounter=0;
+		gMenusCurrentItemIndex=5000;
+		menuTimer = 3000;
 		updateScreen();
 	}
 	else
 	{
-		if (++updateCounter > 10000)
-		{
-			updateCounter=0;
-			updateScreen();// update the screen once per second to show any changes to the battery voltage
-		}
 		if (events!=0 && keys!=0)
 		{
 			handleEvent(buttons, keys, events);
 		}
+/*
+ * Uncomment to enable auto scrolling
+		if ((gMenusCurrentItemIndex--)==0)
+		{
+			scrollDownOneLine();
+			gMenusCurrentItemIndex=1000;
+		}
+*/
 	}
 	return 0;
 }
 
 static void updateScreen()
 {
-	const int MAX_BATTERY_BAR_HEIGHT = 50;
-	char buffer[8];
-
+	int numCredits = sizeof(creditTexts)/CREDIT_TEXT_LENGTH;
 	UC1701_clearBuf();
-	UC1701_printCentered(0, "Battery",UC1701_FONT_GD77_8x16);
 
-	int val1 = averageBatteryVoltage/10;
-	int val2 = averageBatteryVoltage - (val1 * 10);
+	UC1701_printCentered(0,	"OpenGD77",UC1701_FONT_GD77_8x16);
 
-	sprintf(buffer,"%d.%dV", val1,val2);
-	UC1701_printAt(24,16, buffer,UC1701_FONT_16x32);
-	uint32_t h = (uint32_t)(((averageBatteryVoltage - CUTOFF_VOLTAGE_UPPER_HYST) * MAX_BATTERY_BAR_HEIGHT) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));
-
-	if (h>MAX_BATTERY_BAR_HEIGHT)
+	for(int i=0;i<6;i++)
 	{
-		h=MAX_BATTERY_BAR_HEIGHT;
+		if ((i+currentDisplayIndex) < numCredits)
+		{
+			UC1701_printCentered(i*8 + 16,(char *)creditTexts[i+currentDisplayIndex],0);
+		}
 	}
-	// draw frame
-	UC1701_fillRect(100,10,24,52,false);
-	UC1701_fillRect(101,11,22,50,true);
-
-	UC1701_fillRect(101, 11 + 50 - h ,22,h,false);// fill battery
-
-	for(int y=56; y > 11;y-=5)
-	{
-		UC1701_fillRect(101,y,22,1,true);
-	}
-
 	UC1701_render();
 	displayLightTrigger();
 }
 
+static void scrollDownOneLine()
+{
+	int numCredits = sizeof(creditTexts)/CREDIT_TEXT_LENGTH;
+	if (currentDisplayIndex < (numCredits - NUM_LINES_PER_SCREEN) )
+	{
+		currentDisplayIndex++;
+	}
+	updateScreen();
+}
 
 static void handleEvent(int buttons, int keys, int events)
 {
+
 	if ((keys & KEY_RED)!=0)
 	{
 		menuSystemPopPreviousMenu();
 		return;
+	}
+	else if ((keys & KEY_DOWN)!=0)
+	{
+		scrollDownOneLine();
+	}
+	else if ((keys & KEY_UP)!=0)
+	{
+		if (currentDisplayIndex>0)
+		{
+			currentDisplayIndex--;
+		}
+		updateScreen();
 	}
 	else if ((keys & KEY_GREEN)!=0)
 	{
 		menuSystemPopAllAndDisplayRootMenu();
 		return;
 	}
-
-
 }

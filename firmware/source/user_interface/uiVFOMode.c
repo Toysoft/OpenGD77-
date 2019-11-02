@@ -16,8 +16,8 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 #include <hardware/fw_HR-C6000.h>
-#include "menu/menuSystem.h"
-#include "menu/menuUtilityQSOData.h"
+#include <user_interface/menuSystem.h>
+#include <user_interface/menuUtilityQSOData.h>
 #include "fw_trx.h"
 #include "fw_settings.h"
 #include "fw_codeplug.h"

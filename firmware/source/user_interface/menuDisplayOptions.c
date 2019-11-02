@@ -16,7 +16,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 #include <hardware/UC1701.h>
-#include "menu/menuSystem.h"
+#include <user_interface/menuSystem.h>
 #include "fw_settings.h"
 
 static void updateScreen();

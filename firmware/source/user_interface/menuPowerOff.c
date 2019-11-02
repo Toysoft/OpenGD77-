@@ -15,17 +15,17 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-#include "menu/menuSystem.h"
-#include "fw_settings.h"
+#include <user_interface/menuSystem.h>
 
 static void updateScreen();
 static void handleEvent(int buttons, int keys, int events);
 
-int menuSplashScreen(int buttons, int keys, int events, bool isFirstRun)
+
+int menuPowerOff(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		menuTimer = 2000;
+		menuTimer = 500;// Not sure why its this value. But never mind ;-)
 		updateScreen();
 	}
 	else
@@ -37,23 +37,27 @@ int menuSplashScreen(int buttons, int keys, int events, bool isFirstRun)
 
 static void updateScreen()
 {
-	char line1[16];
-	char line2[16];
-
-	codeplugGetBootItemTexts(line1,line2);
 	UC1701_clearBuf();
-	UC1701_printCentered(10, "OpenGD77",UC1701_FONT_GD77_8x16);
-	UC1701_printCentered(28, line1,UC1701_FONT_GD77_8x16);
-	UC1701_printCentered(42, line2,UC1701_FONT_GD77_8x16);
+	UC1701_printCentered(12, "Power Off...",UC1701_FONT_GD77_8x16);
+	UC1701_printCentered(32, "73",UC1701_FONT_GD77_8x16);
 	UC1701_render();
 	displayLightTrigger();
 }
 
 static void handleEvent(int buttons, int keys, int events)
 {
+	if ((GPIO_PinRead(GPIO_Power_Switch, Pin_Power_Switch)==0) && (battery_voltage>CUTOFF_VOLTAGE_LOWER_HYST))
+	{
+		// I think this is to handle if the power button is turned back on during shutdown
+		menuSystemPopPreviousMenu();
+		return;
+	}
+
 	menuTimer--;
+
 	if (menuTimer == 0)
 	{
-		menuSystemSetCurrentMenu(nonVolatileSettings.initialMenuNumber);
+		// This turns the power off to the CPU.
+		GPIO_PinWrite(GPIO_Keep_Power_On, Pin_Keep_Power_On, 0);
 	}
 }

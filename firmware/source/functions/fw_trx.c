@@ -18,10 +18,10 @@
 
 #include <hardware/fw_AT1846S.h>
 #include <hardware/fw_HR-C6000.h>
+#include <user_interface/menuSystem.h>
 #include "fw_trx.h"
 #include "fw_settings.h"
 #include "fw_calibration.h"
-#include "menu/menuSystem.h"
 
 int trx_measure_count = 0;
 volatile bool trxIsTransmitting = false;

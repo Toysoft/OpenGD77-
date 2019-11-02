@@ -16,9 +16,9 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <user_interface/menuSystem.h>
+#include <user_interface/menuUtilityQSOData.h>
 #include "fw_main.h"
-#include "menu/menuSystem.h"
-#include "menu/menuUtilityQSOData.h"
 #include "fw_settings.h"
 
 #if defined(USE_SEGGER_RTT)

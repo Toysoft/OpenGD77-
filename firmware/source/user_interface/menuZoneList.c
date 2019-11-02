@@ -15,21 +15,20 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-#include "menu/menuSystem.h"
+#include <fw_codeplug.h>
+#include <user_interface/menuSystem.h>
 #include "fw_main.h"
+#include "fw_settings.h"
 
 static void updateScreen();
 static void handleEvent(int buttons, int keys, int events);
 
-int menuDisplayMenuList(int buttons, int keys, int events, bool isFirstRun)
+int menuZoneList(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-
-		gMenuCurrentMenuList = (menuItemNew_t *)menusData[menuSystemGetCurrentMenuNumber()];
-		gMenusEndIndex = gMenuCurrentMenuList[0].stringNumber;// first entry actually contains the number of entries
-		gMenuCurrentMenuList = & gMenuCurrentMenuList[1];// move to first real index
-		gMenusCurrentItemIndex=1;
+		gMenusEndIndex = codeplugZonesGetCount();
+		gMenusCurrentItemIndex = nonVolatileSettings.currentZone;
 		updateScreen();
 	}
 	else
@@ -44,26 +43,36 @@ int menuDisplayMenuList(int buttons, int keys, int events, bool isFirstRun)
 
 static void updateScreen()
 {
+	char nameBuf[17];
 	const int headerOffset = 12;
 	int rPos;
+	struct_codeplugZone_t zoneBuf;
 	UC1701_clearBuf();
-	UC1701_printCentered(0, "Menu",UC1701_FONT_GD77_8x16);
-	for(int i=-1; i <= 1 ;i++)
+	UC1701_printCentered(0, "Zones",UC1701_FONT_GD77_8x16);
+	for(int i=-1; i <= 1;i++)
+	{
+		if (gMenusEndIndex <= (i+1))
 		{
-			rPos= i + gMenusCurrentItemIndex;
-			if (rPos >= gMenusEndIndex)
-			{
-				rPos=0;
-			}
-			if (rPos<0)
-			{
-				rPos = gMenusEndIndex+rPos;
-			}
-			if (rPos == gMenusCurrentItemIndex)
-			{
-				UC1701_fillRect(0,2+headerOffset + ((i+1)*16),128,16,false);
-			}
-		UC1701_printCore(5,(i+1)*16 + (headerOffset) ,(char *)menuStringTable[gMenuCurrentMenuList[rPos].stringNumber], UC1701_FONT_GD77_8x16,0,(rPos==gMenusCurrentItemIndex));
+			break;
+		}
+		rPos= i + gMenusCurrentItemIndex;
+		if (rPos >= gMenusEndIndex)
+		{
+			rPos=0;
+		}
+		if (rPos<0)
+		{
+			rPos = gMenusEndIndex+rPos;
+		}
+		if (rPos == gMenusCurrentItemIndex)
+		{
+			UC1701_fillRect(0,2+headerOffset + ((i+1)*16),128,16,false);
+		}
+
+		codeplugZoneGetDataForNumber(rPos,&zoneBuf);
+		codeplugUtilConvertBufToString(zoneBuf.name,nameBuf,16);// need to convert to zero terminated string
+
+		UC1701_printCore(5,(i+1)*16 + (headerOffset) ,(char *)nameBuf, UC1701_FONT_GD77_8x16,0,(rPos==gMenusCurrentItemIndex));
 	}
 
 
@@ -91,10 +100,13 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_GREEN)!=0)
 	{
-		if (gMenuCurrentMenuList[gMenusCurrentItemIndex].menuNum!=-1)
-		{
-			menuSystemPushNewMenu(gMenuCurrentMenuList[gMenusCurrentItemIndex].menuNum);
-		}
+		nonVolatileSettings.overrideTG = 0; // remove any TG override
+		nonVolatileSettings.currentZone = gMenusCurrentItemIndex;
+		nonVolatileSettings.currentChannelIndexInZone = 0;// Since we are switching zones the channel index should be reset
+		nonVolatileSettings.currentIndexInTRxGroupList=0;// Since we are switching zones the TRx Group index should be reset
+		channelScreenChannelData.rxFreq=0x00; // Flag to the Channel screeen that the channel data is now invalid and needs to be reloaded
+		menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
+
 		return;
 	}
 	else if ((keys & KEY_RED)!=0)
@@ -102,6 +114,5 @@ static void handleEvent(int buttons, int keys, int events)
 		menuSystemPopPreviousMenu();
 		return;
 	}
-
 	updateScreen();
 }

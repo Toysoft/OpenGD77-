@@ -15,18 +15,16 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-
-#include "menu/menuSystem.h"
+#include <user_interface/menuSystem.h>
 
 static void updateScreen();
 static void handleEvent(int buttons, int keys, int events);
-static int updateCounter;
 
-int menuMessageScreen(int buttons, int keys, int events, bool isFirstRun)
+int menuFirmwareInfoScreen(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		updateCounter=0;
+		menuTimer = 3000;// Increased so its easier to see what version of fw is being run
 		updateScreen();
 	}
 	else
@@ -41,12 +39,10 @@ int menuMessageScreen(int buttons, int keys, int events, bool isFirstRun)
 
 static void updateScreen()
 {
-//	char buffer[8];
-
 	UC1701_clearBuf();
-	UC1701_printCentered(0, "Message",UC1701_FONT_GD77_8x16);
-
-
+	UC1701_printCentered(12, "OpenGD77",UC1701_FONT_GD77_8x16);
+	UC1701_printCentered(32,(char *)FIRMWARE_VERSION_STRING,UC1701_FONT_GD77_8x16);
+	UC1701_printCentered(48,__DATE__,UC1701_FONT_GD77_8x16);
 	UC1701_render();
 	displayLightTrigger();
 }

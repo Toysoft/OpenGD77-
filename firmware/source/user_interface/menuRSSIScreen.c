@@ -15,8 +15,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-#include "menu/menuSystem.h"
-#include "menu/menuUtilityQSOData.h"
+#include <user_interface/menuSystem.h>
+#include <user_interface/menuUtilityQSOData.h>
 
 static void updateScreen();
 static void handleEvent(int buttons, int keys, int events);

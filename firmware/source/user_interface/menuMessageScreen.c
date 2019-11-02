@@ -15,49 +15,53 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-#include "menu/menuSystem.h"
+
+#include <user_interface/menuSystem.h>
 
 static void updateScreen();
 static void handleEvent(int buttons, int keys, int events);
+static int updateCounter;
 
-
-int menuPowerOff(int buttons, int keys, int events, bool isFirstRun)
+int menuMessageScreen(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		menuTimer = 500;// Not sure why its this value. But never mind ;-)
+		updateCounter=0;
 		updateScreen();
 	}
 	else
 	{
-		handleEvent(buttons, keys, events);
+		if (events!=0 && keys!=0)
+		{
+			handleEvent(buttons, keys, events);
+		}
 	}
 	return 0;
 }
 
 static void updateScreen()
 {
+//	char buffer[8];
+
 	UC1701_clearBuf();
-	UC1701_printCentered(12, "Power Off...",UC1701_FONT_GD77_8x16);
-	UC1701_printCentered(32, "73",UC1701_FONT_GD77_8x16);
+	UC1701_printCentered(0, "Message",UC1701_FONT_GD77_8x16);
+
+
 	UC1701_render();
 	displayLightTrigger();
 }
 
+
 static void handleEvent(int buttons, int keys, int events)
 {
-	if ((GPIO_PinRead(GPIO_Power_Switch, Pin_Power_Switch)==0) && (battery_voltage>CUTOFF_VOLTAGE_LOWER_HYST))
+	if ((keys & KEY_RED)!=0)
 	{
-		// I think this is to handle if the power button is turned back on during shutdown
 		menuSystemPopPreviousMenu();
 		return;
 	}
-
-	menuTimer--;
-
-	if (menuTimer == 0)
+	else if ((keys & KEY_GREEN)!=0)
 	{
-		// This turns the power off to the CPU.
-		GPIO_PinWrite(GPIO_Keep_Power_On, Pin_Keep_Power_On, 0);
+		menuSystemPopAllAndDisplayRootMenu();
+		return;
 	}
 }

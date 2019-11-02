@@ -21,9 +21,6 @@
 #include <hardware/fw_HR-C6000.h>
 #include "fw_sound.h"
 #include "fw_calibration.h"
-#include "menu/menuSystem.h"
-#include "menu/menuUtilityQSOData.h"
-#include "menu/menuHotspot.h"
 #include "fw_settings.h"
 #include "fw_usb_com.h"
 #include "fw_trx.h"
@@ -32,6 +29,9 @@
 #include "dmr/DMRSlotType.h"
 #include "dmr/QR1676.h"
 #include <SeggerRTT/RTT/SEGGER_RTT.h>
+#include <user_interface/menuHotspot.h>
+#include <user_interface/menuSystem.h>
+#include <user_interface/menuUtilityQSOData.h>
 
 #define MMDVM_FRAME_START   0xE0
 

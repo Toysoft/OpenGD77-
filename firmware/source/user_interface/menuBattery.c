@@ -15,20 +15,26 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-#include "menu/menuSystem.h"
+#include <user_interface/menuSystem.h>
 
 static void updateScreen();
 static void handleEvent(int buttons, int keys, int events);
+static int updateCounter;
 
-int menuFirmwareInfoScreen(int buttons, int keys, int events, bool isFirstRun)
+int menuBattery(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		menuTimer = 3000;// Increased so its easier to see what version of fw is being run
+		updateCounter=0;
 		updateScreen();
 	}
 	else
 	{
+		if (++updateCounter > 10000)
+		{
+			updateCounter=0;
+			updateScreen();// update the screen once per second to show any changes to the battery voltage
+		}
 		if (events!=0 && keys!=0)
 		{
 			handleEvent(buttons, keys, events);
@@ -39,10 +45,34 @@ int menuFirmwareInfoScreen(int buttons, int keys, int events, bool isFirstRun)
 
 static void updateScreen()
 {
+	const int MAX_BATTERY_BAR_HEIGHT = 50;
+	char buffer[8];
+
 	UC1701_clearBuf();
-	UC1701_printCentered(12, "OpenGD77",UC1701_FONT_GD77_8x16);
-	UC1701_printCentered(32,(char *)FIRMWARE_VERSION_STRING,UC1701_FONT_GD77_8x16);
-	UC1701_printCentered(48,__DATE__,UC1701_FONT_GD77_8x16);
+	UC1701_printCentered(0, "Battery",UC1701_FONT_GD77_8x16);
+
+	int val1 = averageBatteryVoltage/10;
+	int val2 = averageBatteryVoltage - (val1 * 10);
+
+	sprintf(buffer,"%d.%dV", val1,val2);
+	UC1701_printAt(24,16, buffer,UC1701_FONT_16x32);
+	uint32_t h = (uint32_t)(((averageBatteryVoltage - CUTOFF_VOLTAGE_UPPER_HYST) * MAX_BATTERY_BAR_HEIGHT) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));
+
+	if (h>MAX_BATTERY_BAR_HEIGHT)
+	{
+		h=MAX_BATTERY_BAR_HEIGHT;
+	}
+	// draw frame
+	UC1701_fillRect(100,10,24,52,false);
+	UC1701_fillRect(101,11,22,50,true);
+
+	UC1701_fillRect(101, 11 + 50 - h ,22,h,false);// fill battery
+
+	for(int y=56; y > 11;y-=5)
+	{
+		UC1701_fillRect(101,y,22,1,true);
+	}
+
 	UC1701_render();
 	displayLightTrigger();
 }
@@ -60,4 +90,6 @@ static void handleEvent(int buttons, int keys, int events)
 		menuSystemPopAllAndDisplayRootMenu();
 		return;
 	}
+
+
 }
