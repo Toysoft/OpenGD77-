@@ -37,6 +37,7 @@ typedef struct settingsStruct
 	int 			magicNumber;
 	int16_t			currentChannelIndexInZone;
 	int16_t			currentChannelIndexInAllZone;
+	int16_t			currentIndexInTRxGroupList;
 	int16_t			currentZone;
 	uint8_t			backLightTimeout;//0 = never timeout. 1 - 255 time in seconds
 	int8_t			displayContrast;
@@ -57,8 +58,8 @@ extern struct_codeplugChannel_t *currentChannelData;
 extern struct_codeplugChannel_t channelScreenChannelData;
 extern int settingsUsbMode;
 
-void settingsSaveSettings();
-void settingsLoadSettings();
+bool settingsSaveSettings();
+bool settingsLoadSettings();
 void settingsRestoreDefaultSettings();
 void settingsInitVFOChannel();
 

@@ -35,8 +35,11 @@ static const unsigned int CTCSSTones[]={65535,625,670,693,719,744,770,797,825,85
 static int NUM_CTCSS=52;
 static int CTCSSRxIndex=0;
 static int CTCSSTxIndex=0;
-static int NUM_MENUS=7;
 static struct_codeplugChannel_t tmpChannel;// update a temporary copy of the channel and only write back if green menu is pressed
+
+enum CHANNEL_DETAILS_DISPLAY_LIST { CH_DETAILS_MODE = 0, CH_DETAILS_DMR_CC, CH_DETAILS_DMR_TS,CH_DETAILS_RXCTCSS, CH_DETAILS_TXCTCSS , CH_DETAILS_BANDWIDTH,
+									CH_DETAILS_FREQ_STEP, CH_DETAILS_TOT,
+									NUM_CH_DETAILS_ITEMS};// The last item in the list is used so that we automatically get a total number of items in the list
 
 int menuChannelDetails(int buttons, int keys, int events, bool isFirstRun)
 {
@@ -82,17 +85,28 @@ static void updateScreen()
 		mNum = gMenusCurrentItemIndex+i;
 		if (mNum<0)
 		{
-			mNum = NUM_MENUS + mNum;
+			mNum = NUM_CH_DETAILS_ITEMS + mNum;
 		}
-		if (mNum >= NUM_MENUS)
+		if (mNum >= NUM_CH_DETAILS_ITEMS)
 		{
-			mNum = mNum - NUM_MENUS;
+			mNum = mNum - NUM_CH_DETAILS_ITEMS;
 		}
 
 		switch(mNum)
 		{
-			case 0:
-				if (trxGetMode()==RADIO_MODE_ANALOG)
+			case CH_DETAILS_MODE:
+				if (tmpChannel.chMode == RADIO_MODE_ANALOG)
+				{
+					strcpy(buf,"Mode:FM");
+				}
+				else
+				{
+					sprintf(buf,"Mode:DMR");
+				}
+				break;
+			break;
+			case CH_DETAILS_DMR_CC:
+				if (tmpChannel.chMode==RADIO_MODE_ANALOG)
 				{
 					strcpy(buf,"Color Code:N/A");
 				}
@@ -101,8 +115,8 @@ static void updateScreen()
 					sprintf(buf,"Color Code:%d",tmpChannel.rxColor);
 				}
 				break;
-			case 1:
-				if (trxGetMode()==RADIO_MODE_ANALOG)
+			case CH_DETAILS_DMR_TS:
+				if (tmpChannel.chMode==RADIO_MODE_ANALOG)
 				{
 					strcpy(buf,"Timeslot:N/A");
 				}
@@ -111,8 +125,8 @@ static void updateScreen()
 					sprintf(buf,"Timeslot:%d",((tmpChannel.flag2 & 0x40) >> 6) + 1);
 				}
 				break;
-			case 2:
-				if (trxGetMode()==RADIO_MODE_ANALOG)
+			case CH_DETAILS_RXCTCSS:
+				if (tmpChannel.chMode==RADIO_MODE_ANALOG)
 				{
 					if (tmpChannel.txTone==CTCSS_TONE_NONE)
 					{
@@ -128,8 +142,8 @@ static void updateScreen()
 					strcpy(buf,"Tx CTCSS:N/A");
 				}
 				break;
-			case 3:
-				if (trxGetMode()==RADIO_MODE_ANALOG)
+			case CH_DETAILS_TXCTCSS:
+				if (tmpChannel.chMode==RADIO_MODE_ANALOG)
 				{
 					if (tmpChannel.rxTone==CTCSS_TONE_NONE)
 					{
@@ -145,9 +159,9 @@ static void updateScreen()
 					strcpy(buf,"Rx CTCSS:N/A");
 				}
 				break;
-			case 4:
+			case CH_DETAILS_BANDWIDTH:
 				// Bandwidth
-				if (trxGetMode()==RADIO_MODE_DIGITAL)
+				if (tmpChannel.chMode==RADIO_MODE_DIGITAL)
 				{
 					strcpy(buf,"Bandwidth:N/A");
 				}
@@ -156,11 +170,11 @@ static void updateScreen()
 					sprintf(buf,"Bandwidth:%s",((tmpChannel.flag4 & 0x02) == 0x02)?"25kHz":"12.5kHz");
 				}
 				break;
-			case 5:
+			case CH_DETAILS_FREQ_STEP:
 				tmpVal = VFO_FREQ_STEP_TABLE[(tmpChannel.VFOflag5 >> 4)]/10;
 				sprintf(buf,"Step:%d.%dkHz",tmpVal, VFO_FREQ_STEP_TABLE[(tmpChannel.VFOflag5 >> 4)] - (tmpVal*10));
 				break;
-			case 6:// TOT
+			case CH_DETAILS_TOT:// TOT
 				if (tmpChannel.tot!=0)
 				{
 					sprintf(buf,"TOT:%d",tmpChannel.tot * 15);
@@ -192,7 +206,7 @@ static void handleEvent(int buttons, int keys, int events)
 	if ((keys & KEY_DOWN)!=0)
 	{
 		gMenusCurrentItemIndex++;
-		if (gMenusCurrentItemIndex>=NUM_MENUS)
+		if (gMenusCurrentItemIndex>=NUM_CH_DETAILS_ITEMS)
 		{
 			gMenusCurrentItemIndex=0;
 		}
@@ -202,25 +216,35 @@ static void handleEvent(int buttons, int keys, int events)
 		gMenusCurrentItemIndex--;
 		if (gMenusCurrentItemIndex<0)
 		{
-			gMenusCurrentItemIndex=NUM_MENUS-1;
+			gMenusCurrentItemIndex=NUM_CH_DETAILS_ITEMS-1;
 		}
 	}
 	else if ((keys & KEY_RIGHT)!=0)
 	{
 		switch(gMenusCurrentItemIndex)
 		{
-			case 0:
+			case CH_DETAILS_MODE:
+				if (tmpChannel.chMode ==RADIO_MODE_ANALOG)
+				{
+					tmpChannel.chMode = RADIO_MODE_DIGITAL;
+				}
+				else
+				{
+					tmpChannel.chMode = RADIO_MODE_ANALOG;
+				}
+				break;
+			case CH_DETAILS_DMR_CC:
 				if (tmpChannel.rxColor<15)
 				{
 					tmpChannel.rxColor++;
 					trxSetDMRColourCode(tmpChannel.rxColor);
 				}
 				break;
-			case 1:
+			case CH_DETAILS_DMR_TS:
 				tmpChannel.flag2 |= 0x40;// set TS 2 bit
 				break;
-			case 2:
-				if (trxGetMode()==RADIO_MODE_ANALOG)
+			case CH_DETAILS_RXCTCSS:
+				if (tmpChannel.chMode==RADIO_MODE_ANALOG)
 				{
 					CTCSSTxIndex++;
 					if (CTCSSTxIndex>=NUM_CTCSS)
@@ -231,8 +255,8 @@ static void handleEvent(int buttons, int keys, int events)
 					trxSetTxCTCSS(tmpChannel.txTone);
 				}
 				break;
-			case 3:
-				if (trxGetMode()==RADIO_MODE_ANALOG)
+			case CH_DETAILS_TXCTCSS:
+				if (tmpChannel.chMode==RADIO_MODE_ANALOG)
 				{
 					CTCSSRxIndex++;
 					if (CTCSSRxIndex>=NUM_CTCSS)
@@ -243,10 +267,10 @@ static void handleEvent(int buttons, int keys, int events)
 					trxSetRxCTCSS(tmpChannel.rxTone);
 				}
 				break;
-			case 4:
+			case CH_DETAILS_BANDWIDTH:
 				tmpChannel.flag4 |= 0x02;// set 25kHz bit
 				break;
-			case 5:
+			case CH_DETAILS_FREQ_STEP:
 				tmpVal = (tmpChannel.VFOflag5>>4)+1;
 				if (tmpVal>15)
 				{
@@ -255,7 +279,7 @@ static void handleEvent(int buttons, int keys, int events)
 				tmpChannel.VFOflag5 &= 0x0F;
 				tmpChannel.VFOflag5 |= tmpVal<<4;
 				break;
-			case 6:
+			case CH_DETAILS_TOT:
 				if (tmpChannel.tot<255)
 				{
 					tmpChannel.tot++;
@@ -267,18 +291,28 @@ static void handleEvent(int buttons, int keys, int events)
 	{
 		switch(gMenusCurrentItemIndex)
 		{
-			case 0:
+			case CH_DETAILS_MODE:
+				if (tmpChannel.chMode==RADIO_MODE_ANALOG)
+				{
+					tmpChannel.chMode = RADIO_MODE_DIGITAL;
+				}
+				else
+				{
+					tmpChannel.chMode = RADIO_MODE_ANALOG;
+				}
+				break;
+			case CH_DETAILS_DMR_CC:
 				if (tmpChannel.rxColor>0)
 				{
 					tmpChannel.rxColor--;
 					trxSetDMRColourCode(tmpChannel.rxColor);
 				}
 				break;
-			case 1:
+			case CH_DETAILS_DMR_TS:
 				tmpChannel.flag2 &= 0xBF;// Clear TS 2 bit
 				break;
-			case 2:
-				if (trxGetMode()==RADIO_MODE_ANALOG)
+			case CH_DETAILS_RXCTCSS:
+				if (tmpChannel.chMode == RADIO_MODE_ANALOG)
 				{
 					CTCSSTxIndex--;
 					if (CTCSSTxIndex < 0)
@@ -289,8 +323,8 @@ static void handleEvent(int buttons, int keys, int events)
 					trxSetTxCTCSS(tmpChannel.txTone);
 				}
 				break;
-			case 3:
-				if (trxGetMode()==RADIO_MODE_ANALOG)
+			case CH_DETAILS_TXCTCSS:
+				if (tmpChannel.chMode == RADIO_MODE_ANALOG)
 				{
 					CTCSSRxIndex--;
 					if (CTCSSRxIndex < 0)
@@ -301,10 +335,10 @@ static void handleEvent(int buttons, int keys, int events)
 					trxSetRxCTCSS(tmpChannel.rxTone);
 				}
 				break;
-			case 4:
+			case CH_DETAILS_BANDWIDTH:
 				tmpChannel.flag4 &= ~0x02;// clear 25kHz bit
 				break;
-			case 5:
+			case CH_DETAILS_FREQ_STEP:
 				tmpVal = (tmpChannel.VFOflag5>>4)-1;
 				if (tmpVal<0)
 				{
@@ -313,7 +347,7 @@ static void handleEvent(int buttons, int keys, int events)
 				tmpChannel.VFOflag5 &= 0x0F;
 				tmpChannel.VFOflag5 |= tmpVal<<4;
 				break;
-			case 6:
+			case CH_DETAILS_TOT:
 				if (tmpChannel.tot>0)
 				{
 					tmpChannel.tot--;

@@ -26,7 +26,9 @@ menuControlDataStruct_t menuControlData = { .stackPosition = 0, .stack = {0,0,0,
 
 
 int menuVFOMode(int buttons, int keys, int events, bool isFirstRun);
+int menuVFOModeQuickMenu(int buttons, int keys, int events, bool isFirstRun);
 int menuChannelMode(int buttons, int keys, int events, bool isFirstRun);
+int menuChannelModeQuickMenu(int buttons, int keys, int events, bool isFirstRun);
 int menuZoneList(int buttons, int keys, int events, bool isFirstRun);
 int menuDisplayMenuList(int buttons, int keys, int events, bool isFirstRun);
 int menuBattery(int buttons, int keys, int events, bool isFirstRun);
@@ -91,7 +93,9 @@ const MenuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
 												menuCredits,
 												menuChannelDetails,
 												menuHotspotMode,
-												menuCPS};
+												menuCPS,
+												menuChannelModeQuickMenu,
+												menuVFOModeQuickMenu};
 
 void menuSystemPushNewMenu(int menuNumber)
 {

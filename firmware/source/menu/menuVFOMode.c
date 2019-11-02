@@ -15,12 +15,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
+#include <hardware/fw_HR-C6000.h>
 #include "menu/menuSystem.h"
 #include "menu/menuUtilityQSOData.h"
 #include "fw_trx.h"
 #include "fw_settings.h"
 #include "fw_codeplug.h"
-#include "fw_HR-C6000.h"
 
 enum VFO_SELECTED_FREQUENCY_INPUT  {VFO_SELECTED_FREQUENCY_INPUT_RX , VFO_SELECTED_FREQUENCY_INPUT_TX};
 
@@ -36,71 +36,74 @@ static bool displaySquelch=false;
 
 // internal prototypes
 static void handleEvent(int buttons, int keys, int events);
-
 static void reset_freq_enter_digits();
 static int read_freq_enter_digits();
 static void update_frequency(int tmp_frequency);
 static void stepFrequency(int increment);
+static bool isDisplayingQSOData=false;
 
 // public interface
 int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
+		RssiUpdateCounter = RSSI_UPDATE_COUNTER_RELOAD;
+		isDisplayingQSOData=false;
+		gMenusCurrentItemIndex=0;
 		nonVolatileSettings.initialMenuNumber=MENU_VFO_MODE;
 		currentChannelData = &nonVolatileSettings.vfoChannel;
 		settingsCurrentChannelNumber = -1;// This is not a regular channel. Its the special VFO channel!
 
-		trxSetFrequency(currentChannelData->rxFreq);
+		trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq);
 		if (currentChannelData->chMode == RADIO_MODE_ANALOG)
 		{
 			trxSetModeAndBandwidth(currentChannelData->chMode, ((currentChannelData->flag4 & 0x02) == 0x02));
+			trxSetTxCTCSS(currentChannelData->txTone);
+			trxSetRxCTCSS(currentChannelData->rxTone);
 		}
 		else
 		{
+			trxSetDMRColourCode(currentChannelData->rxColor);
 			trxSetModeAndBandwidth(currentChannelData->chMode, false);
-		}
-		trxSetDMRColourCode(currentChannelData->rxColor);
-		trxSetPower(nonVolatileSettings.txPower);
-		trxSetTxCTCSS(currentChannelData->txTone);
-		trxSetRxCTCSS(currentChannelData->rxTone);
 
-		//Need to load the Rx group if specificed even if TG is currently overridden as we may need it later when the left or right button is pressed
-		if (currentChannelData->rxGroupList != 0)
-		{
-			codeplugRxGroupGetDataForIndex(currentChannelData->rxGroupList,&rxGroupData);
-		}
-
-
-		if (nonVolatileSettings.overrideTG == 0)
-		{
+			//Need to load the Rx group if specified even if TG is currently overridden as we may need it later when the left or right button is pressed
 			if (currentChannelData->rxGroupList != 0)
 			{
-				codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
+				codeplugRxGroupGetDataForIndex(currentChannelData->rxGroupList,&rxGroupData);
+			}
 
-				// Check whether the contact data seems valid
-				if (contactData.name[0] == 0 || contactData.tgNumber ==0 || contactData.tgNumber > 9999999)
+			if (nonVolatileSettings.overrideTG == 0)
+			{
+				if (currentChannelData->rxGroupList != 0)
 				{
-					nonVolatileSettings.overrideTG = 9;// If the VFO does not have an Rx Group list assigned to it. We can't get a TG from the codeplug. So use TG 9.
-					trxTalkGroupOrPcId = nonVolatileSettings.overrideTG;
+					codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
+
+					// Check whether the contact data seems valid
+					if (contactData.name[0] == 0 || contactData.tgNumber ==0 || contactData.tgNumber > 9999999)
+					{
+						nonVolatileSettings.overrideTG = 9;// If the VFO does not have an Rx Group list assigned to it. We can't get a TG from the codeplug. So use TG 9.
+						trxTalkGroupOrPcId = nonVolatileSettings.overrideTG;
+					}
+					else
+					{
+						trxTalkGroupOrPcId = contactData.tgNumber;
+					}
 				}
 				else
 				{
-					trxTalkGroupOrPcId = contactData.tgNumber;
+					nonVolatileSettings.overrideTG = 9;// If the VFO does not have an Rx Group list assigned to it. We can't get a TG from the codeplug. So use TG 9.
 				}
 			}
 			else
 			{
-				nonVolatileSettings.overrideTG = 9;// If the VFO does not have an Rx Group list assigned to it. We can't get a TG from the codeplug. So use TG 9.
+				trxTalkGroupOrPcId = nonVolatileSettings.overrideTG;
 			}
 		}
-		else
-		{
-			trxTalkGroupOrPcId = nonVolatileSettings.overrideTG;
-		}
+		lastHeardClearLastID();
 		reset_freq_enter_digits();
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		menuVFOModeUpdateScreen(0);
+
 	}
 	else
 	{
@@ -111,13 +114,22 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 			{
 				menuVFOModeUpdateScreen(0);
 			}
+			else
+			{
+				if (RssiUpdateCounter-- == 0)
+				{
+					drawRSSIBarGraph();
+					//UC1701RenderRows(1,1);// Only render the second row which contains the bar graph, as there is no need to redraw the rest of the screen
+					UC1701_render();
+					RssiUpdateCounter = RSSI_UPDATE_COUNTER_RELOAD;
+				}
+			}
 		}
 		else
 		{
 			handleEvent(buttons, keys, events);
 		}
 	}
-
 	return 0;
 }
 
@@ -136,10 +148,10 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 	{
 		case QSO_DISPLAY_DEFAULT_SCREEN:
 
+			isDisplayingQSOData=false;
 			menuUtilityReceivedPcId = 0x00;
 			if (trxGetMode() == RADIO_MODE_DIGITAL)
 			{
-
 				if (nonVolatileSettings.overrideTG != 0)
 				{
 					if((trxTalkGroupOrPcId>>24) == TG_CALL_FLAG)
@@ -217,12 +229,12 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 			break;
 
 		case QSO_DISPLAY_CALLER_DATA:
+			isDisplayingQSOData=true;
 			menuUtilityRenderQSOData();
 			displayLightTrigger();
 			UC1701_render();
 			break;
 	}
-
 	menuDisplayQSODataState = QSO_DISPLAY_IDLE;
 }
 
@@ -256,6 +268,7 @@ static void update_frequency(int frequency)
 		if (trxCheckFrequencyIsSupportedByTheRadioHardware(frequency))
 		{
 			currentChannelData->txFreq = frequency;
+			trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq);
 			set_melody(melody_ACK_beep);
 		}
 	}
@@ -266,7 +279,7 @@ static void update_frequency(int frequency)
 		{
 			currentChannelData->rxFreq = frequency;
 			currentChannelData->txFreq = currentChannelData->txFreq + deltaFrequency;
-			trxSetFrequency(frequency);
+			trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq);
 
 			if (!trxCheckFrequencyIsSupportedByTheRadioHardware(currentChannelData->txFreq))
 			{
@@ -283,11 +296,22 @@ static void update_frequency(int frequency)
 			set_melody(melody_ERROR_beep);
 		}
 	}
-
 }
 
 static void handleEvent(int buttons, int keys, int events)
 {
+	uint32_t tg = (LinkHead->talkGroupOrPcId & 0xFFFFFF);
+	// If Blue button is pressed during reception it sets the Tx TG to the incoming TG
+	if (isDisplayingQSOData && (buttons & BUTTON_SK2)!=0 && trxGetMode() == RADIO_MODE_DIGITAL && trxTalkGroupOrPcId != tg)
+	{
+		lastHeardClearLastID();
+		trxTalkGroupOrPcId = tg;
+		nonVolatileSettings.overrideTG = trxTalkGroupOrPcId;
+		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+		menuVFOModeUpdateScreen(0);
+		return;
+	}
+
 	if (events & 0x02)
 	{
 		if (buttons & BUTTON_ORANGE)
@@ -300,7 +324,7 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 			else
 			{
-				menuSystemPushNewMenu(MENU_ZONE_LIST);
+				menuSystemPushNewMenu(MENU_VFO_QUICK_MENU);
 			}
 			return;
 		}
@@ -333,21 +357,48 @@ static void handleEvent(int buttons, int keys, int events)
 
 	if (freq_enter_idx==0)
 	{
-		if ((keys & KEY_STAR)!=0 && (buttons & BUTTON_SK2))
+		if ((keys & KEY_STAR)!=0)
 		{
-			if (trxGetMode() == RADIO_MODE_ANALOG)
+			if (buttons & BUTTON_SK2 )
 			{
-				channelScreenChannelData.chMode = RADIO_MODE_DIGITAL;
-				trxSetModeAndBandwidth(RADIO_MODE_DIGITAL, false);
+				if (trxGetMode() == RADIO_MODE_ANALOG)
+				{
+					currentChannelData->chMode = RADIO_MODE_DIGITAL;
+					trxSetModeAndBandwidth(currentChannelData->chMode, false);
+				}
+				else
+				{
+					currentChannelData->chMode = RADIO_MODE_ANALOG;
+					trxSetModeAndBandwidth(currentChannelData->chMode, ((channelScreenChannelData.flag4 & 0x02) == 0x02));
+					trxSetTxCTCSS(currentChannelData->rxTone);
+				}
+				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 			}
 			else
 			{
-				channelScreenChannelData.chMode = RADIO_MODE_ANALOG;
-				trxSetModeAndBandwidth(RADIO_MODE_ANALOG, ((currentChannelData->flag4 & 0x02) == 0x02));
-				trxSetTxCTCSS(currentChannelData->rxTone);
+				if (trxGetMode() == RADIO_MODE_DIGITAL)
+				{
+					// Toggle TimeSlot
+					if (currentChannelData->flag2 & 0x40)
+					{
+						currentChannelData->flag2 = currentChannelData->flag2 & ~0x40;
+					}
+					else
+					{
+						currentChannelData->flag2 = currentChannelData->flag2 | 0x40;
+					}
+
+					//init_digital();
+					clearActiveDMRID();
+					lastHeardClearLastID();
+					menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+					menuVFOModeUpdateScreen(0);
+				}
+				else
+				{
+	        	    set_melody(melody_ERROR_beep);
+				}
 			}
-			currentChannelData->chMode = trxGetMode();
-			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		}
 		else if ((keys & KEY_DOWN)!=0)
 		{
@@ -396,7 +447,7 @@ static void handleEvent(int buttons, int keys, int events)
 
 				nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
 				trxTalkGroupOrPcId = contactData.tgNumber;
-
+				lastHeardClearLastID();
 				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 				menuVFOModeUpdateScreen(0);
 			}
@@ -434,7 +485,7 @@ static void handleEvent(int buttons, int keys, int events)
 				codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
 				nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
 				trxTalkGroupOrPcId = contactData.tgNumber;
-
+				lastHeardClearLastID();
 				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 				menuVFOModeUpdateScreen(0);
 			}
@@ -536,8 +587,7 @@ static void handleEvent(int buttons, int keys, int events)
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		}
 	}
-
-	menuVFOModeUpdateScreen(0);
+//	menuVFOModeUpdateScreen(0);
 }
 
 static void stepFrequency(int increment)
@@ -561,7 +611,7 @@ int tmp_frequencyRx;
 		currentChannelData->rxFreq =  tmp_frequencyRx;
 		if (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_RX)
 		{
-			trxSetFrequency(currentChannelData->rxFreq);
+			trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq);
 		}
 	}
 	else
@@ -570,3 +620,123 @@ int tmp_frequencyRx;
 	}
 }
 
+// Quick Menu functions
+enum VFO_SCREEN_QUICK_MENU_ITEMS { VFO_SCREEN_QUICK_MENU_TX_SWAP_RX = 0,	VFO_SCREEN_QUICK_MENU_BOTH_TO_RX , VFO_SCREEN_QUICK_MENU_BOTH_TO_TX,
+									NUM_VFO_SCREEN_QUICK_MENU_ITEMS};// The last item in the list is used so that we automatically get a total number of items in the list
+
+static void updateQuickMenuScreen()
+{
+	int mNum=0;
+	char buf[17];
+
+	UC1701_clearBuf();
+	UC1701_printCentered(0, "Quick menu",UC1701_FONT_GD77_8x16);
+	for(int i=-1;i<=1;i++)
+	{
+		mNum = gMenusCurrentItemIndex+i;
+		if (mNum<0)
+		{
+			mNum = NUM_VFO_SCREEN_QUICK_MENU_ITEMS + mNum;
+		}
+		if (mNum >= NUM_VFO_SCREEN_QUICK_MENU_ITEMS)
+		{
+			mNum = mNum - NUM_VFO_SCREEN_QUICK_MENU_ITEMS;
+		}
+
+		switch(mNum)
+		{
+			case VFO_SCREEN_QUICK_MENU_BOTH_TO_RX:
+				strcpy(buf,"Rx --> Tx");
+				break;
+			case VFO_SCREEN_QUICK_MENU_TX_SWAP_RX:
+				strcpy(buf,"Tx <--> Rx");
+				break;
+			case VFO_SCREEN_QUICK_MENU_BOTH_TO_TX:
+				strcpy(buf,"Tx --> Rx");
+				break;
+			default:
+				strcpy(buf,"");
+				break;
+		}
+
+		if (gMenusCurrentItemIndex==mNum)
+		{
+			UC1701_fillRect(0,(i+2)*16,128,16,false);
+		}
+
+		UC1701_printCore(0,(i+2)*16,buf,UC1701_FONT_GD77_8x16,0,(gMenusCurrentItemIndex==mNum));
+	}
+
+	UC1701_render();
+	displayLightTrigger();
+}
+
+static void handleQuickMenuEvent(int buttons, int keys, int events)
+{
+	if ((keys & KEY_RED)!=0)
+	{
+		menuSystemPopPreviousMenu();
+		return;
+	}
+	else if ((keys & KEY_GREEN)!=0)
+	{
+		switch(gMenusCurrentItemIndex)
+		{
+			case VFO_SCREEN_QUICK_MENU_BOTH_TO_RX:
+				currentChannelData->txFreq = currentChannelData->rxFreq;
+				trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq);
+				menuSystemPopPreviousMenu();
+				break;
+			case VFO_SCREEN_QUICK_MENU_TX_SWAP_RX:
+				{
+					int tmpFreq = currentChannelData->txFreq;
+					currentChannelData->txFreq = currentChannelData->rxFreq;
+					currentChannelData->rxFreq =  tmpFreq;
+					trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq);
+					menuSystemPopPreviousMenu();
+				}
+				break;
+			case VFO_SCREEN_QUICK_MENU_BOTH_TO_TX:
+				currentChannelData->rxFreq = currentChannelData->txFreq;
+				trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq);
+				menuSystemPopPreviousMenu();
+				break;
+		}
+		return;
+	}
+	else if ((keys & KEY_DOWN)!=0)
+	{
+		gMenusCurrentItemIndex++;
+		if (gMenusCurrentItemIndex >= NUM_VFO_SCREEN_QUICK_MENU_ITEMS)
+		{
+			gMenusCurrentItemIndex=0;
+		}
+		updateQuickMenuScreen();
+	}
+	else if ((keys & KEY_UP)!=0)
+	{
+		gMenusCurrentItemIndex--;
+		if (gMenusCurrentItemIndex<0)
+		{
+			gMenusCurrentItemIndex=NUM_VFO_SCREEN_QUICK_MENU_ITEMS - 1;
+		}
+		updateQuickMenuScreen();
+	}
+}
+
+int menuVFOModeQuickMenu(int buttons, int keys, int events, bool isFirstRun)
+{
+	if (isFirstRun)
+	{
+		gMenusCurrentItemIndex=0;
+		updateQuickMenuScreen();
+	}
+	else
+	{
+		if (events!=0 && keys!=0)
+		{
+			handleQuickMenuEvent(buttons, keys, events);
+		}
+	}
+	return 0;
+}

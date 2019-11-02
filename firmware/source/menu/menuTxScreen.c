@@ -15,6 +15,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
+#include <hardware/fw_HR-C6000.h>
 #include "menu/menuSystem.h"
 #include "menu/menuUtilityQSOData.h"
 #include "fw_settings.h"
@@ -40,15 +41,10 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 			GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 1);
-			trxSetFrequency(currentChannelData->txFreq);
-			txstopdelay=0;
-			trxIsTransmitting=true;
 
+			txstopdelay=0;
+			clearIsWakingState();
 			trx_setTX();
-			if (trxGetMode() == RADIO_MODE_ANALOG)
-			{
-				trx_activateTX();
-			}
 			updateScreen();
 		}
 		else
@@ -77,7 +73,7 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 	}
 	else
 	{
-		if (trxIsTransmitting)
+		if (trxIsTransmitting && (getIsWakingState() == WAKING_MODE_NONE ))
 		{
 			if (PITCounter >= nextSecondPIT )
 			{
@@ -118,7 +114,6 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 
 static void updateScreen()
 {
-
 	menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 	if (menuControlData.stack[0]==MENU_VFO_MODE)
 	{
@@ -132,34 +127,35 @@ static void updateScreen()
 	}
 }
 
-
 static void handleEvent(int buttons, int keys, int events)
 {
 	if ((buttons & BUTTON_PTT)==0 || (currentChannelData->tot!=0 && timeInSeconds == 0))
 	{
 		if (trxIsTransmitting)
 		{
-			SEGGER_RTT_printf(0, "trxIsTransmitting=false\n");
 			trxIsTransmitting=false;
-		}
+			if (trxGetMode() == RADIO_MODE_ANALOG)
+			{
+				// In analog mode. Stop transmitting immediately
+				GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
 
-		if (txstopdelay>0)
-		{
-			txstopdelay--;
-			SEGGER_RTT_printf(0, "txstopdelay %d\n",txstopdelay);
-
+				// Need to wrap this in Task Critical to avoid bus contention on the I2C bus.
+				taskENTER_CRITICAL();
+				trx_activateRx();
+				taskEXIT_CRITICAL();
+				menuSystemPopPreviousMenu();
+			}
+			// When not in analogue mode, only the trxIsTransmitting flag is cleared
+			// This screen keeps getting called via the handleEvent function and goes into the else clause - below.
 		}
 		else
 		{
-			if ((slot_state < DMR_STATE_TX_START_1))
+			// In DMR mode, wait for the DMR system to finish before exiting
+			if (slot_state < DMR_STATE_TX_START_1)
 			{
-				SEGGER_RTT_printf(0, "slot state %d\n",slot_state);
 				GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
-				trx_deactivateTX();
-				trx_setRX();
 				menuSystemPopPreviousMenu();
 			}
 		}
 	}
 }
-

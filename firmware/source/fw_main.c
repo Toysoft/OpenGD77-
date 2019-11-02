@@ -36,7 +36,7 @@ void fw_init()
 				"fw main task",                      /* task name for kernel awareness debugging */
 				5000L / sizeof(portSTACK_TYPE),      /* task stack size */
 				NULL,                      			 /* optional task startup argument */
-				5U,                                  /* initial priority */
+				6U,                                  /* initial priority */
 				fwMainTaskHandle					 /* optional task handle to create */
 				);
 
@@ -62,12 +62,20 @@ void fw_main_task()
     // Init I2C
     init_I2C0a();
     setup_I2C0();
-    settingsLoadSettings();
+
 
 	fw_init_common();
 	fw_init_buttons();
 	fw_init_LEDs();
 	fw_init_keyboard();
+
+	fw_check_button_event(&buttons, &button_event);// Read button state and event
+	if (buttons & BUTTON_SK2)
+	{
+		settingsRestoreDefaultSettings();
+	}
+    settingsLoadSettings();
+
 	fw_init_display();
 
     // Init SPI
@@ -104,9 +112,6 @@ void fw_main_task()
     vTaskDelay(portTICK_PERIOD_MS * 500);
 
 	init_pit();
-
-	open_squelch=false;
-	HR_C6000_datalogging=false;
 
 	trx_measure_count = 0;
 
@@ -176,7 +181,7 @@ void fw_main_task()
         		*/
 
         		if ((	(buttons & BUTTON_PTT)!=0) &&
-        				(slot_state==DMR_STATE_IDLE) &&
+        				(slot_state==DMR_STATE_IDLE || trxDMRMode == DMR_MODE_PASSIVE) &&
 						(trxGetMode()!=RADIO_MODE_NONE) &&
 						(settingsUsbMode != USB_MODE_HOTSPOT) &&
 						(menuSystemGetCurrentMenuNumber() != MENU_POWER_OFF) &&
@@ -186,6 +191,14 @@ void fw_main_task()
         			menuSystemPushNewMenu(MENU_TX_SCREEN);
         		}
         	}
+
+    		if (!trxIsTransmitting && updateLastHeard==true)
+    		{
+    //	    	taskENTER_CRITICAL();
+    			lastHeardListUpdate((uint8_t *)DMR_frame_buffer);
+    			updateLastHeard=false;
+    //	    	taskEXIT_CRITICAL();
+    		}
 
         	menuSystemCallCurrentMenuTick(buttons,keys,(button_event<<1) | key_event);
 
@@ -215,7 +228,7 @@ void fw_main_task()
         		{
 					menuSystemPushNewMenu(MENU_POWER_OFF);
         		}
-    		    GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 0);
+    		    GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
     		    set_melody(NULL);
         	}
 

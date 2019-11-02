@@ -17,8 +17,8 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <hardware/fw_EEPROM.h>
 #include "fw_settings.h"
-#include "fw_EEPROM.h"
 #include "fw_trx.h"
 #include "menu/menuSystem.h"
 #include "fw_codeplug.h"
@@ -30,8 +30,7 @@ const int BAND_UHF_MIN 	= 4300000;
 const int BAND_UHF_MAX 	= 4500000;
 
 static const int STORAGE_BASE_ADDRESS 		= 0x6000;
-static const int STORAGE_BASE_ADDRESS_OLD 	= 0xFF00;
-static const int STORAGE_MAGIC_NUMBER 		= 0x471F;
+static const int STORAGE_MAGIC_NUMBER 		= 0x4720;
 
 settingsStruct_t nonVolatileSettings;
 struct_codeplugChannel_t *currentChannelData;
@@ -40,29 +39,17 @@ int settingsUsbMode = USB_MODE_CPS;
 int settingsCurrentChannelNumber=0;
 bool settingsPrivateCallMuteMode = false;
 
-void settingsSaveSettings()
+bool settingsSaveSettings()
 {
-	EEPROM_Write(STORAGE_BASE_ADDRESS, (uint8_t*)&nonVolatileSettings, sizeof(settingsStruct_t));
-    vTaskDelay(portTICK_PERIOD_MS * 5);
+	return EEPROM_Write(STORAGE_BASE_ADDRESS, (uint8_t*)&nonVolatileSettings, sizeof(settingsStruct_t));
 }
 
-void settingsLoadSettings()
+bool settingsLoadSettings()
 {
-	EEPROM_Read(STORAGE_BASE_ADDRESS, (uint8_t*)&nonVolatileSettings, sizeof(settingsStruct_t));
-	if (nonVolatileSettings.magicNumber != STORAGE_MAGIC_NUMBER)
+	bool readOK = EEPROM_Read(STORAGE_BASE_ADDRESS, (uint8_t*)&nonVolatileSettings, sizeof(settingsStruct_t));
+	if (nonVolatileSettings.magicNumber != STORAGE_MAGIC_NUMBER || readOK != true)
 	{
-		// Try loading from the old address and moving it
-		EEPROM_Read(STORAGE_BASE_ADDRESS_OLD, (uint8_t*)&nonVolatileSettings, sizeof(settingsStruct_t));
-		if (nonVolatileSettings.magicNumber == STORAGE_MAGIC_NUMBER)
-		{
-			// Found data in the old location
-			settingsSaveSettings();	// save to the new location for next time
-		}
-		else
-		{
-			settingsRestoreDefaultSettings();
-			settingsSaveSettings();
-		}
+		settingsRestoreDefaultSettings();
 	}
 	trxDMRID = codeplugGetUserDMRID();
 
@@ -78,6 +65,8 @@ void settingsLoadSettings()
 		nonVolatileSettings.beepVolumeDivider = 2;// no reduction in volume
 	}
 	soundBeepVolumeDivider = nonVolatileSettings.beepVolumeDivider;
+
+	return readOK;
 }
 
 void settingsInitVFOChannel()
@@ -119,6 +108,7 @@ void settingsRestoreDefaultSettings()
 	nonVolatileSettings.magicNumber=STORAGE_MAGIC_NUMBER;
 	nonVolatileSettings.currentChannelIndexInZone = 0;
 	nonVolatileSettings.currentChannelIndexInAllZone = 1;
+	nonVolatileSettings.currentIndexInTRxGroupList=0;
 	nonVolatileSettings.currentZone = 0;
 	nonVolatileSettings.backLightTimeout = 5;//0 = never timeout. 1 - 255 time in seconds
 	nonVolatileSettings.displayContrast = 0x12;

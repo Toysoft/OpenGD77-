@@ -16,15 +16,12 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <hardware/fw_AT1846S.h>
+#include <hardware/fw_HR-C6000.h>
 #include "fw_trx.h"
-#include "fw_HR-C6000.h"
 #include "fw_settings.h"
 #include "fw_calibration.h"
-#include "fw_AT1846S.h"
 #include "menu/menuSystem.h"
-
-bool open_squelch=false;
-bool HR_C6000_datalogging=false;
 
 int trx_measure_count = 0;
 volatile bool trxIsTransmitting = false;
@@ -39,10 +36,31 @@ const int RADIO_UHF_MAX			=	5200000;
 
 static int currentMode = RADIO_MODE_NONE;
 static bool currentBandWidthIs25kHz = BANDWIDTH_12P5KHZ;
-static int currentFrequency = 1440000;
+static int currentRxFrequency = 1440000;
+static int currentTxFrequency = 1440000;
 static int currentCC = 1;
 static uint8_t squelch = 0x00;
 static bool rxCTCSSactive = false;
+static uint8_t ANTENNA_SWITCH_RX = 0;
+static uint8_t ANTENNA_SWITCH_TX = 1;
+
+// AT-1846 native values for Rx
+static uint8_t rx_fl_l;
+static uint8_t rx_fl_h;
+static uint8_t rx_fh_l;
+static uint8_t rx_fh_h;
+
+// AT-1846 native values for Tx
+static uint8_t tx_fl_l;
+static uint8_t tx_fl_h;
+static uint8_t tx_fh_l;
+static uint8_t tx_fh_h;
+
+volatile uint8_t trxRxSignal;
+volatile uint8_t trxRxNoise;
+
+int trxDMRMode = DMR_MODE_ACTIVE;// Active is for simplex
+static volatile bool txPAEnabled=false;
 
 int	trxGetMode()
 {
@@ -59,12 +77,9 @@ void trxSetModeAndBandwidth(int mode, bool bandwidthIs25kHz)
 	if ((mode != currentMode) || (bandwidthIs25kHz != currentBandWidthIs25kHz))
 	{
 		currentMode=mode;
+
 		currentBandWidthIs25kHz=bandwidthIs25kHz;
 
-		I2C_AT1846_SetMode();
-		I2C_AT1846_SetBandwidth();
-		trxUpdateC6000Calibration();
-		trxUpdateAT1846SCalibration();
 		switch(mode)
 		{
 		case RADIO_MODE_NONE:
@@ -72,13 +87,29 @@ void trxSetModeAndBandwidth(int mode, bool bandwidthIs25kHz)
 			GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 0); // connect AT1846S audio to HR_C6000
 			terminate_sound();
 			terminate_digital();
+
+			I2C_AT1846_SetMode();
+			I2C_AT1846_SetBandwidth();
+			trxUpdateC6000Calibration();
+			trxUpdateAT1846SCalibration();
 			break;
 		case RADIO_MODE_ANALOG:
+			GPIO_PinWrite(GPIO_TX_audio_mux, Pin_TX_audio_mux, 0); // Connect mic to mic input of AT-1846
 			GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 1); // connect AT1846S audio to speaker
 			terminate_sound();
 			terminate_digital();
+
+			I2C_AT1846_SetMode();
+			I2C_AT1846_SetBandwidth();
+			trxUpdateC6000Calibration();
+			trxUpdateAT1846SCalibration();
 			break;
 		case RADIO_MODE_DIGITAL:
+			I2C_AT1846_SetMode();
+			I2C_AT1846_SetBandwidth();
+			trxUpdateC6000Calibration();
+			trxUpdateAT1846SCalibration();
+			GPIO_PinWrite(GPIO_TX_audio_mux, Pin_TX_audio_mux, 1); // Connect mic to MIC_P input of HR-C6000
 			GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 0); // connect AT1846S audio to HR_C6000
 			init_sound();
 			init_digital();
@@ -107,43 +138,46 @@ bool trxCheckFrequencyInAmateurBand(int tmp_frequency)
 	return ((tmp_frequency>=BAND_VHF_MIN) && (tmp_frequency<=BAND_VHF_MAX)) || ((tmp_frequency>=BAND_UHF_MIN) && (tmp_frequency<=BAND_UHF_MAX));
 }
 
+void trxReadRSSIAndNoise()
+{
+	read_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x1b,(uint8_t *)&trxRxSignal,(uint8_t *)&trxRxNoise);
+}
+
 void trx_check_analog_squelch()
 {
 	trx_measure_count++;
 	if (trx_measure_count==50)
 	{
-		uint8_t RX_signal;
-		uint8_t RX_noise;
 		uint8_t squelch=45;
 
-		read_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x1b,&RX_signal,&RX_noise);
+		trxReadRSSIAndNoise();
 
 		// check for variable squelch control
 		if (currentChannelData->sql!=0)
 		{
 			if (currentChannelData->sql==1)
 			{
-				open_squelch = true;
+				//open_squelch = true;
 			}
 			else
 			{
 				squelch =  70 - (((currentChannelData->sql-1)*11)>>2);
-				open_squelch = false;
+				//open_squelch = false;
 			}
 		}
 
-		if ((RX_noise < squelch) || (open_squelch))
+		if (trxRxNoise < squelch)
 		{
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
-			if(!rxCTCSSactive || (rxCTCSSactive & trxCheckCTCSSFlag())|| open_squelch)
+			if(!rxCTCSSactive || (rxCTCSSactive & trxCheckCTCSSFlag()))
 			{
-				GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1); // speaker on
+				GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1); // speaker on
 				displayLightTrigger();
 			}
 		}
 		else
 		{
-			GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 0); // speaker off
+			GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0); // speaker off
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 		}
 
@@ -151,27 +185,41 @@ void trx_check_analog_squelch()
 	}
 }
 
-void trxSetFrequency(int frequency)
+void trxSetFrequency(int fRx,int fTx)
 {
-	if (currentFrequency!=frequency)
+	if (currentRxFrequency!=fRx || currentTxFrequency!=fTx)
 	{
-		currentFrequency=frequency;
+		currentRxFrequency=fRx;
+		currentTxFrequency=fTx;
 
-		if ((currentMode == RADIO_MODE_ANALOG) && (!open_squelch))
+		// Most DMR radios determine whether to use Active or Passive DMR depending on whether the Tx and Rx freq are the same
+		// This prevents split simplex operation, but since no other radio appears to support split freq simplex
+		// Its easier to do things the same way as othe radios, and revisit this again in the future if split freq simplex is required.
+		if (currentRxFrequency == currentTxFrequency)
 		{
-//			squelch = 0x08;
-			squelch= 0x00;				//don't use internal squelch.
+			trxDMRMode = DMR_MODE_ACTIVE;
 		}
 		else
 		{
-			squelch = 0x00;
+			trxDMRMode = DMR_MODE_PASSIVE;
 		}
 
-		uint32_t f = currentFrequency * 1.6f;
-		uint8_t fl_l = (f & 0x000000ff) >> 0;
-		uint8_t fl_h = (f & 0x0000ff00) >> 8;
-		uint8_t fh_l = (f & 0x00ff0000) >> 16;
-		uint8_t fh_h = (f & 0xff000000) >> 24;
+		uint32_t f = currentRxFrequency * 1.6f;
+		rx_fl_l = (f & 0x000000ff) >> 0;
+		rx_fl_h = (f & 0x0000ff00) >> 8;
+		rx_fh_l = (f & 0x00ff0000) >> 16;
+		rx_fh_h = (f & 0xff000000) >> 24;
+
+		f = currentTxFrequency * 1.6f;
+		tx_fl_l = (f & 0x000000ff) >> 0;
+		tx_fl_h = (f & 0x0000ff00) >> 8;
+		tx_fh_l = (f & 0x00ff0000) >> 16;
+		tx_fh_h = (f & 0xff000000) >> 24;
+
+		if (currentMode==RADIO_MODE_DIGITAL)
+		{
+			terminate_digital();
+		}
 
 		if (currentBandWidthIs25kHz)
 		{
@@ -184,9 +232,11 @@ void trxSetFrequency(int frequency)
 			write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x30, 0x40, 0x06 | squelch); // RX off
 		}
 		write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x05, 0x87, 0x63); // select 'normal' frequency mode
-		write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x29, fh_h, fh_l);
-		write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x2a, fl_h, fl_l);
+
+		write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x29, rx_fh_h, rx_fh_l);
+		write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x2a, rx_fl_h, rx_fl_l);
 		write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x49, 0x0C, 0x15); // setting SQ open and shut threshold
+
 		if (currentBandWidthIs25kHz)
 		{
 			// 25 kHz settings
@@ -201,67 +251,122 @@ void trxSetFrequency(int frequency)
 		trxUpdateC6000Calibration();
 		trxUpdateAT1846SCalibration();
 
-		if (trxCheckFrequencyIsVHF(currentFrequency))
+		if (!txPAEnabled)
 		{
-			GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 1);
-			GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 0);
+			if (trxCheckFrequencyIsUHF(currentRxFrequency))
+			{
+				GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 0);
+				GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 1);
+			}
+			else
+			{
+				GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 1);
+				GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 0);
+			}
 		}
-		else if (trxCheckFrequencyIsUHF(currentFrequency))
+		else
 		{
-			GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 0);
-			GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 1);
+			//SEGGER_RTT_printf(0, "ERROR Cant enable Rx when PA active\n");
+		}
+
+		if (currentMode==RADIO_MODE_DIGITAL)
+		{
+			init_digital();
 		}
 	}
 }
 
 int trxGetFrequency()
 {
-	return currentFrequency;
+	if (trxIsTransmitting)
+	{
+		return currentTxFrequency;
+	}
+	else
+	{
+		return currentRxFrequency;
+	}
 }
 
 void trx_setRX()
 {
-	// MUX for RX
-	GPIO_PinWrite(GPIO_TX_audio_mux, Pin_TX_audio_mux, 0);
-
-	// RX Antenna
-    GPIO_PinWrite(GPIO_RF_ant_switch, Pin_RF_ant_switch, 0);
-
-	// AT1846 RX + unmute
-	set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0x00);
-	set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0x20); // RX
-
-	// RX amp on
-	if (trxCheckFrequencyIsVHF(currentFrequency))
+//	set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0x00);
+	if (currentMode == RADIO_MODE_ANALOG)
 	{
-		GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 1);
-		GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 0);
+		trx_activateRx();
 	}
-	else if (trxCheckFrequencyIsUHF(currentFrequency))
-	{
-		GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 0);
-		GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 1);
-	}
+
 }
 
 void trx_setTX()
 {
-	// MUX for TX
-	if (currentMode == RADIO_MODE_ANALOG)
-	{
-		GPIO_PinWrite(GPIO_TX_audio_mux, Pin_TX_audio_mux, 0);
-	}
-	else
-	{
-		GPIO_PinWrite(GPIO_TX_audio_mux, Pin_TX_audio_mux, 1);
-	}
+	trxIsTransmitting=true;
 
-	// RX amp off
+	// RX pre-amp off
 	GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 0);
 	GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 0);
 
-	// AT1846 TX + mute
-	set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0x00);
+//	set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0x00);
+	if (currentMode == RADIO_MODE_ANALOG)
+	{
+		trx_activateTx();
+	}
+
+}
+
+void trx_activateRx()
+{
+	//SEGGER_RTT_printf(0, "trx_activateRx\n");
+    DAC_SetBufferValue(DAC0, 0U, 0U);// PA drive power to zero
+
+    // Possibly quicker to turn them both off, than to check which on is on and turn that one off
+	GPIO_PinWrite(GPIO_VHF_TX_amp_power, Pin_VHF_TX_amp_power, 0);// VHF PA off
+	GPIO_PinWrite(GPIO_UHF_TX_amp_power, Pin_UHF_TX_amp_power, 0);// UHF PA off
+
+    GPIO_PinWrite(GPIO_RF_ant_switch, Pin_RF_ant_switch, ANTENNA_SWITCH_RX);
+	txPAEnabled=false;
+
+
+    if (trxCheckFrequencyIsUHF(currentRxFrequency))
+	{
+		GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 0);// VHF pre-amp off
+		GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 1);// UHF pre-amp on
+	}
+    else
+	{
+		GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 1);// VHF pre-amp on
+		GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 0);// UHF pre-amp off
+	}
+
+	if (currentBandWidthIs25kHz)
+	{
+		write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x30, 0x70, 0x06); 		// 25 kHz settings // RX off
+	}
+	else
+	{
+		write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x30, 0x40, 0x06); 		// 12.5 kHz settings // RX off
+	}
+
+	write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x29, rx_fh_h, rx_fh_l);
+	write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x2a, rx_fl_h, rx_fl_l);
+
+	if (currentBandWidthIs25kHz)
+	{
+		write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x30, 0x70, 0x26); // 25 kHz settings // RX on
+	}
+	else
+	{
+		write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x30, 0x40, 0x26); // 12.5 kHz settings // RX on
+	}
+}
+
+void trx_activateTx()
+{
+	txPAEnabled=true;
+	write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x29, tx_fh_h, tx_fh_l);
+	write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x2a, tx_fl_h, tx_fl_l);
+
+	set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0x00); // Clear Tx and Rx bits
 	if (currentMode == RADIO_MODE_ANALOG)
 	{
 		set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0x40); // analog TX
@@ -271,44 +376,29 @@ void trx_setTX()
 		set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0xC0); // digital TX
 	}
 
-	// TX Antenna
-    GPIO_PinWrite(GPIO_RF_ant_switch, Pin_RF_ant_switch, 1);
-}
+    GPIO_PinWrite(GPIO_RF_ant_switch, Pin_RF_ant_switch, ANTENNA_SWITCH_TX);
 
-void trx_deactivateTX()
-{
-	// PA power off
-    DAC_SetBufferValue(DAC0, 0U, 0U);
-
-	// TX preamp off
-	GPIO_PinWrite(GPIO_VHF_TX_amp_power, Pin_VHF_TX_amp_power, 0);
-	GPIO_PinWrite(GPIO_UHF_TX_amp_power, Pin_UHF_TX_amp_power, 0);
-}
-
-void trx_activateTX()
-{
-	// TX preamp on
-	if (trxCheckFrequencyIsVHF(currentFrequency))
+	// TX PA on
+	if (trxCheckFrequencyIsUHF(currentTxFrequency))
 	{
-		GPIO_PinWrite(GPIO_VHF_TX_amp_power, Pin_VHF_TX_amp_power, 1);
-		GPIO_PinWrite(GPIO_UHF_TX_amp_power, Pin_UHF_TX_amp_power, 0);
-	}
-	else if (trxCheckFrequencyIsUHF(currentFrequency))
-	{
-		GPIO_PinWrite(GPIO_VHF_TX_amp_power, Pin_VHF_TX_amp_power, 0);
+		GPIO_PinWrite(GPIO_VHF_TX_amp_power, Pin_VHF_TX_amp_power, 0);// I can't see why this would be needed. Its probably just for safety.
 		GPIO_PinWrite(GPIO_UHF_TX_amp_power, Pin_UHF_TX_amp_power, 1);
 	}
-
-	// PA power off
-    DAC_SetBufferValue(DAC0, 0U, nonVolatileSettings.txPower);
+	else
+	{
+		GPIO_PinWrite(GPIO_UHF_TX_amp_power, Pin_UHF_TX_amp_power, 0);// I can't see why this would be needed. Its probably just for safety.
+		GPIO_PinWrite(GPIO_VHF_TX_amp_power, Pin_VHF_TX_amp_power, 1);
+	}
+    DAC_SetBufferValue(DAC0, 0U, nonVolatileSettings.txPower);	// PA drive to appropriate level
 }
 
 void trxSetPower(uint32_t powerVal)
 {
-	if (powerVal<4096)
+	if (powerVal>4095)
 	{
-		nonVolatileSettings.txPower = powerVal;
+		powerVal=4095;
 	}
+	nonVolatileSettings.txPower = powerVal;
 }
 
 uint16_t trxGetPower()
@@ -318,34 +408,37 @@ uint16_t trxGetPower()
 
 void trxCalcBandAndFrequencyOffset(int *band_offset, int *freq_offset)
 {
-	if (trxCheckFrequencyIsVHF(currentFrequency))
+// NOTE. For crossband duplex DMR, the calibration potentially needs to be changed every time the Tx/Rx is switched over on each 30ms cycle
+// But at the moment this is an unnecessary complication and I'll just use the Rx frequency to get the calibration offsets
+
+	if (trxCheckFrequencyIsUHF(currentRxFrequency))
 	{
-		*band_offset=0x00000070;
-		if (currentFrequency<1380000)
+		*band_offset=0x00000000;
+		if (currentRxFrequency<4100000)
 		{
 			*freq_offset=0x00000000;
 		}
-		else if (currentFrequency<1425000)
+		else if (currentRxFrequency<4200000)
 		{
 			*freq_offset=0x00000001;
 		}
-		else if (currentFrequency<1475000)
+		else if (currentRxFrequency<4300000)
 		{
 			*freq_offset=0x00000002;
 		}
-		else if (currentFrequency<1525000)
+		else if (currentRxFrequency<4400000)
 		{
 			*freq_offset=0x00000003;
 		}
-		else if (currentFrequency<1575000)
+		else if (currentRxFrequency<4500000)
 		{
 			*freq_offset=0x00000004;
 		}
-		else if (currentFrequency<1625000)
+		else if (currentRxFrequency<4600000)
 		{
 			*freq_offset=0x00000005;
 		}
-		else if (currentFrequency<1685000)
+		else if (currentRxFrequency<4700000)
 		{
 			*freq_offset=0x00000006;
 		}
@@ -354,34 +447,34 @@ void trxCalcBandAndFrequencyOffset(int *band_offset, int *freq_offset)
 			*freq_offset=0x00000007;
 		}
 	}
-	else if (trxCheckFrequencyIsUHF(currentFrequency))
+	else
 	{
-		*band_offset=0x00000000;
-		if (currentFrequency<4100000)
+		*band_offset=0x00000070;
+		if (currentRxFrequency<1380000)
 		{
 			*freq_offset=0x00000000;
 		}
-		else if (currentFrequency<4200000)
+		else if (currentRxFrequency<1425000)
 		{
 			*freq_offset=0x00000001;
 		}
-		else if (currentFrequency<4300000)
+		else if (currentRxFrequency<1475000)
 		{
 			*freq_offset=0x00000002;
 		}
-		else if (currentFrequency<4400000)
+		else if (currentRxFrequency<1525000)
 		{
 			*freq_offset=0x00000003;
 		}
-		else if (currentFrequency<4500000)
+		else if (currentRxFrequency<1575000)
 		{
 			*freq_offset=0x00000004;
 		}
-		else if (currentFrequency<4600000)
+		else if (currentRxFrequency<1625000)
 		{
 			*freq_offset=0x00000005;
 		}
-		else if (currentFrequency<4700000)
+		else if (currentRxFrequency<1685000)
 		{
 			*freq_offset=0x00000006;
 		}
@@ -534,7 +627,7 @@ int trxGetDMRColourCode()
 
 int trxGetDMRTimeSlot()
 {
-	return ((currentChannelData->flag2 & 0x40) >> 6) + 1;
+	return ((currentChannelData->flag2 & 0x40)!=0);
 }
 
 void trxSetTxCTCSS(int toneFreqX10)

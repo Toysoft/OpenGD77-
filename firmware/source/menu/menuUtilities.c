@@ -21,9 +21,12 @@
 
 static void updateScreen();
 static void handleEvent(int buttons, int keys, int events);
-static const int NUM_MENUS=7;
 static bool	doFactoryReset;
-static const int MAX_SAFE_POWER = 3400;// Note 3000 gives about 5.5W on 144Mhz on one of Roger's radios.
+static const int MAX_POWER = 4100;// Max DAC value is actually 4096 but no one should need to drive the PA that hard, so I rounded this down to 4000
+enum UTILITIES_MENU_LIST { UTILITIES_MENU_POWER = 0, UTILITIES_MENU_TIMEOUT_BEEP,UTILITIES_MENU_FACTORY_RESET,UTILITIES_MENU_USE_CALIBRATION,
+							UTILITIES_MENU_TX_FREQ_LIMITS,UTILITIES_MENU_BEEP_VOLUME,
+							NUM_UTILITIES_MENU_ITEMS};
+
 
 int menuUtilities(int buttons, int keys, int events, bool isFirstRun)
 {
@@ -56,72 +59,62 @@ static void updateScreen()
 		mNum = gMenusCurrentItemIndex+i;
 		if (mNum<0)
 		{
-			mNum = NUM_MENUS + mNum;
+			mNum = NUM_UTILITIES_MENU_ITEMS + mNum;
 		}
-		if (mNum >= NUM_MENUS)
+		if (mNum >= NUM_UTILITIES_MENU_ITEMS)
 		{
-			mNum = mNum - NUM_MENUS;
+			mNum = mNum - NUM_UTILITIES_MENU_ITEMS;
 		}
 
 		switch(mNum)
 		{
-		case 0:
-			sprintf(buf,"Power %d",trxGetPower());
-			break;
-		case 1:
-			if (open_squelch)
-			{
-				strcpy(buf,"SQ:OFF");
-			}
-			else
-			{
-				strcpy(buf,"SQ:ON");
-			}
-			break;
-		case 2:
-			if (nonVolatileSettings.txTimeoutBeepX5Secs!=0)
-			{
-				sprintf(buf,"Timeout beep:%d",nonVolatileSettings.txTimeoutBeepX5Secs * 5);
-			}
-			else
-			{
-				strcpy(buf,"Timeout beep:OFF");
-			}
-			break;
-		case 3:
-			if (doFactoryReset==true)
-			{
-				strcpy(buf,"Fact Reset:YES");
-			}
-			else
-			{
-				strcpy(buf,"Fact Reset:NO");
-			}
-			break;
-		case 4:
-			if (nonVolatileSettings.useCalibration!=0)
-			{
-				strcpy(buf,"Calibration:ON");
-			}
-			else
-			{
-				strcpy(buf,"Calibration:OFF");
-			}
-			break;
-		case 5:// Tx Freq limits
-			if (nonVolatileSettings.txFreqLimited!=0)
-			{
-				strcpy(buf,"Band Limits:ON");
-			}
-			else
-			{
-				strcpy(buf,"Band Limits:OFF");
-			}
-			break;
-		case 6:// Beep volume reduction
-			sprintf(buf,"Beep vol:%ddB", (2 - nonVolatileSettings.beepVolumeDivider)*3);
-			soundBeepVolumeDivider = nonVolatileSettings.beepVolumeDivider;
-			break;
+			case UTILITIES_MENU_POWER:
+				sprintf(buf,"Power %d",trxGetPower());
+				break;
+			case UTILITIES_MENU_TIMEOUT_BEEP:
+				if (nonVolatileSettings.txTimeoutBeepX5Secs!=0)
+				{
+					sprintf(buf,"Timeout beep:%d",nonVolatileSettings.txTimeoutBeepX5Secs * 5);
+				}
+				else
+				{
+					strcpy(buf,"Timeout beep:OFF");
+				}
+				break;
+			case UTILITIES_MENU_FACTORY_RESET:
+				if (doFactoryReset==true)
+				{
+					strcpy(buf,"Fact Reset:YES");
+				}
+				else
+				{
+					strcpy(buf,"Fact Reset:NO");
+				}
+				break;
+			case UTILITIES_MENU_USE_CALIBRATION:
+				if (nonVolatileSettings.useCalibration!=0)
+				{
+					strcpy(buf,"Calibration:ON");
+				}
+				else
+				{
+					strcpy(buf,"Calibration:OFF");
+				}
+				break;
+			case UTILITIES_MENU_TX_FREQ_LIMITS:// Tx Freq limits
+				if (nonVolatileSettings.txFreqLimited!=0)
+				{
+					strcpy(buf,"Band Limits:ON");
+				}
+				else
+				{
+					strcpy(buf,"Band Limits:OFF");
+				}
+				break;
+			case UTILITIES_MENU_BEEP_VOLUME:// Beep volume reduction
+				sprintf(buf,"Beep vol:%ddB", (2 - nonVolatileSettings.beepVolumeDivider)*3);
+				soundBeepVolumeDivider = nonVolatileSettings.beepVolumeDivider;
+				break;
 		}
 		if (gMenusCurrentItemIndex==mNum)
 		{
@@ -142,7 +135,7 @@ static void handleEvent(int buttons, int keys, int events)
 	if ((keys & KEY_DOWN)!=0 && gMenusEndIndex!=0)
 	{
 		gMenusCurrentItemIndex++;
-		if (gMenusCurrentItemIndex>=NUM_MENUS)
+		if (gMenusCurrentItemIndex>=NUM_UTILITIES_MENU_ITEMS)
 		{
 			gMenusCurrentItemIndex=0;
 		}
@@ -152,44 +145,41 @@ static void handleEvent(int buttons, int keys, int events)
 		gMenusCurrentItemIndex--;
 		if (gMenusCurrentItemIndex<0)
 		{
-			gMenusCurrentItemIndex=NUM_MENUS-1;
+			gMenusCurrentItemIndex=NUM_UTILITIES_MENU_ITEMS-1;
 		}
 	}
 	else if ((keys & KEY_RIGHT)!=0)
 	{
 		switch(gMenusCurrentItemIndex)
 		{
-			case 1:
-				open_squelch = 1;
+			case UTILITIES_MENU_POWER:
+				if (buttons && BUTTON_SK2)
+				{
+					powerChangeValue=10;
+				}
+				tmpPower = trxGetPower() + powerChangeValue;
+
+				if (tmpPower<=MAX_POWER)
+				{
+					trxSetPower(tmpPower);
+				}
 				break;
-			case 2:
+			case UTILITIES_MENU_TIMEOUT_BEEP:
 				if (nonVolatileSettings.txTimeoutBeepX5Secs < 4)
 				{
 					nonVolatileSettings.txTimeoutBeepX5Secs++;
 				}
 				break;
-			case 0:
-				if (buttons && BUTTON_SK2)
-				{
-					powerChangeValue=1;
-				}
-				tmpPower = trxGetPower() + powerChangeValue;
-
-				if (tmpPower<=MAX_SAFE_POWER)
-				{
-					trxSetPower(tmpPower);
-				}
-				break;
-			case 3:
+			case UTILITIES_MENU_FACTORY_RESET:
 				doFactoryReset = true;
 				break;
-			case 4:
+			case UTILITIES_MENU_USE_CALIBRATION:
 				nonVolatileSettings.useCalibration=0x01;
 				break;
-			case 5:
+			case UTILITIES_MENU_TX_FREQ_LIMITS:
 				nonVolatileSettings.txFreqLimited=0x01;
 				break;
-			case 6:
+			case UTILITIES_MENU_BEEP_VOLUME:
 				if (nonVolatileSettings.beepVolumeDivider>0)
 				{
 					nonVolatileSettings.beepVolumeDivider--;
@@ -202,35 +192,39 @@ static void handleEvent(int buttons, int keys, int events)
 
 		switch(gMenusCurrentItemIndex)
 		{
-			case 1:
-				open_squelch = 0;
+			case UTILITIES_MENU_POWER:
+				{
+					uint32_t pwr = trxGetPower();
+					if (pwr==4095)
+					{
+						pwr = 4100;// round up for display purposes
+					}
+					if (buttons && BUTTON_SK2)
+					{
+						powerChangeValue=10;
+					}
+					if (pwr >= powerChangeValue)
+					{
+						trxSetPower(pwr- powerChangeValue);
+					}
+				}
 				break;
-			case 2:
+			case UTILITIES_MENU_TIMEOUT_BEEP:
 				if (nonVolatileSettings.txTimeoutBeepX5Secs>0)
 				{
 					nonVolatileSettings.txTimeoutBeepX5Secs--;
 				}
 				break;
-			case 0:
-				if (buttons && BUTTON_SK2)
-				{
-					powerChangeValue=1;
-				}
-				if (trxGetPower() >= powerChangeValue)
-				{
-					trxSetPower(trxGetPower() - powerChangeValue);
-				}
-				break;
-			case 3:
+			case UTILITIES_MENU_FACTORY_RESET:
 				doFactoryReset = false;
 				break;
-			case 4:
+			case UTILITIES_MENU_USE_CALIBRATION:
 				nonVolatileSettings.useCalibration=0x00;
 				break;
-			case 5:
+			case UTILITIES_MENU_TX_FREQ_LIMITS:
 				nonVolatileSettings.txFreqLimited=0x00;
 				break;
-			case 6:
+			case UTILITIES_MENU_BEEP_VOLUME:
 				if (nonVolatileSettings.beepVolumeDivider<10)
 				{
 					nonVolatileSettings.beepVolumeDivider++;

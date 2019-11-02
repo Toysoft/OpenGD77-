@@ -16,8 +16,8 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <hardware/fw_HR-C6000.h>
 #include "fw_sound.h"
-#include "fw_HR-C6000.h"
 #include "fw_settings.h"
 
 TaskHandle_t fwBeepTaskHandle;
@@ -217,17 +217,15 @@ uint8_t spi_sound3[WAV_BUFFER_SIZE*2];
 uint8_t spi_sound4[WAV_BUFFER_SIZE*2];
 
 volatile bool g_TX_SAI_in_use = false;
-volatile bool g_RX_SAI_in_use = false;
+
 
 uint8_t *spi_soundBuf;
 sai_transfer_t xfer;
 
 void init_sound()
 {
-	taskENTER_CRITICAL();
+
     g_TX_SAI_in_use = false;
-    g_RX_SAI_in_use = false;
-	taskEXIT_CRITICAL();
     SAI_TxSoftwareReset(I2S0, kSAI_ResetAll);
 	SAI_TxEnable(I2S0, true);
     SAI_RxSoftwareReset(I2S0, kSAI_ResetAll);
@@ -235,9 +233,7 @@ void init_sound()
 	spi_soundBuf=NULL;
 	wavbuffer_read_idx = 0;
 	wavbuffer_write_idx = 0;
-	taskENTER_CRITICAL();
 	wavbuffer_count = 0;
-	taskEXIT_CRITICAL();
 }
 
 void terminate_sound()
@@ -280,17 +276,7 @@ void retrieve_soundbuffer()
 
 	if (tmp_wavbuffer_count>0)
 	{
-#if false
-		// There is no need to make a copy of the current wave buffer to send it to the encoded,
-		// just pass a pointer to the wave buffer in question
-		taskENTER_CRITICAL();
-		for (int wav_idx=0;wav_idx<WAV_BUFFER_SIZE;wav_idx++)
-		{
 
-			tmp_wavbuffer[wav_idx]=wavbuffer[wavbuffer_read_idx][wav_idx];
-		}
-		taskEXIT_CRITICAL();
-#endif
 		currentWaveBuffer = (uint8_t *)audioAndHotspotDataBuffer.wavbuffer[wavbuffer_read_idx];// cast just to prevent compiler warning
 		wavbuffer_read_idx++;
 		if (wavbuffer_read_idx>=WAV_BUFFER_COUNT)
@@ -351,6 +337,7 @@ void send_sound_data()
 	}
 }
 
+
 // This function is used during transmission.
 void receive_sound_data()
 {
@@ -361,6 +348,7 @@ void receive_sound_data()
 
 	if (wavbuffer_count<WAV_BUFFER_COUNT)
 	{
+		// spi_soundBuf == NULL  happens the first time through there is no previously sampled buffer to load into the wave buffer
 		if (spi_soundBuf!=NULL)
 		{
 			for (int i=0; i<(WAV_BUFFER_SIZE/2); i++)
@@ -370,11 +358,13 @@ void receive_sound_data()
 			}
 
 			wavbuffer_write_idx++;
+
 			if (wavbuffer_write_idx>=WAV_BUFFER_COUNT)
 			{
 				wavbuffer_write_idx=0;
 			}
 			wavbuffer_count++;
+
 		}
 
 		switch(g_SAI_RX_Handle.queueUser)
@@ -400,36 +390,17 @@ void receive_sound_data()
 		xfer.dataSize = WAV_BUFFER_SIZE*2;
 
 		SAI_TransferReceiveEDMA(I2S0, &g_SAI_RX_Handle, &xfer);
-
-		g_RX_SAI_in_use = true;
 	}
 }
 
 void tick_RXsoundbuffer()
 {
-	taskENTER_CRITICAL();
-	bool tmp_g_TX_SAI_in_use = g_TX_SAI_in_use;
-	taskEXIT_CRITICAL();
-    if (!tmp_g_TX_SAI_in_use)
+    if (!g_TX_SAI_in_use)
     {
-    	taskENTER_CRITICAL();
     	send_sound_data();
-    	taskEXIT_CRITICAL();
     }
 }
 
-void tick_TXsoundbuffer()
-{
-	taskENTER_CRITICAL();
-	bool tmp_g_RX_SAI_in_use = g_RX_SAI_in_use;
-	taskEXIT_CRITICAL();
-    if (!tmp_g_RX_SAI_in_use)
-    {
-    	taskENTER_CRITICAL();
-    	receive_sound_data();
-    	taskEXIT_CRITICAL();
-    }
-}
 
 void tick_melody()
 {
@@ -442,7 +413,7 @@ void tick_melody()
 			{
 				if (trxGetMode() == RADIO_MODE_ANALOG)
 				{
-					GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 0);// Mute the speaker, otherwise there will be a burst of squelch noise until the next tick in HR-C6000
+					GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);// Mute the speaker, otherwise there will be a burst of squelch noise until the next tick in HR-C6000
 				    GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 1);// Set the audio path to AT1846 -> audio amp.
 				}
 				else
@@ -450,7 +421,7 @@ void tick_melody()
 					// only mute the speaker if in DMR and not receiving
 					if (slot_state !=DMR_STATE_RX_1 && slot_state !=DMR_STATE_RX_2)
 					{
-						GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 0);
+						GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
 					}
 				}
 			    set_melody(NULL);
@@ -459,7 +430,7 @@ void tick_melody()
 			{
 				if (melody_idx==0)
 				{
-				    GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 1);// enable the speaker (audio amplifier)
+				    GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1);// enable the speaker (audio amplifier)
 					if (trxGetMode() == RADIO_MODE_ANALOG)
 					{
 					    GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 0);// set the audio mux   HR-C6000 -> audio amp

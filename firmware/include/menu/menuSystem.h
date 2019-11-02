@@ -83,6 +83,9 @@ enum MENU_SCREENS { MENU_SPLASH_SCREEN=0,
 					MENU_CHANNEL_DETAILS,
 					MENU_HOTSPOT_MODE,
 					MENU_CPS,
+					MENU_CHANNEL_QUICK_MENU,
+					MENU_VFO_QUICK_MENU
+
 };
 
 extern int gMenusCurrentItemIndex;

@@ -50,13 +50,13 @@ void fw_init_common()
 	GPIO_PinWrite(GPIO_Keep_Power_On, Pin_Keep_Power_On, 1);
 
     // Speaker mute and RX/TX mux init
-    PORT_SetPinMux(Port_speaker_mute, Pin_speaker_mute, kPORT_MuxAsGpio);
+    PORT_SetPinMux(Port_audio_amp_enable, Pin_audio_amp_enable, kPORT_MuxAsGpio);
     PORT_SetPinMux(Port_RX_audio_mux, Pin_RX_audio_mux, kPORT_MuxAsGpio);
     PORT_SetPinMux(Port_TX_audio_mux, Pin_TX_audio_mux, kPORT_MuxAsGpio);
-    GPIO_PinInit(GPIO_speaker_mute, Pin_speaker_mute, &pin_config_output);
+    GPIO_PinInit(GPIO_audio_amp_enable, Pin_audio_amp_enable, &pin_config_output);
     GPIO_PinInit(GPIO_RX_audio_mux, Pin_RX_audio_mux, &pin_config_output);
     GPIO_PinInit(GPIO_TX_audio_mux, Pin_TX_audio_mux, &pin_config_output);
-    GPIO_PinWrite(GPIO_speaker_mute, Pin_speaker_mute, 0);
+    GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
     GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 0);
     GPIO_PinWrite(GPIO_TX_audio_mux, Pin_TX_audio_mux, 0);
 

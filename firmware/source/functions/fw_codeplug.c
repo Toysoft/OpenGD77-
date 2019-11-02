@@ -16,8 +16,8 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 #include <fw_codeplug.h>
-#include "fw_EEPROM.h"
-#include "fw_SPI_Flash.h"
+#include <hardware/fw_EEPROM.h>
+#include <hardware/fw_SPI_Flash.h>
 
 const int CODEPLUG_ADDR_EX_ZONE_BASIC = 0x8000;
 const int CODEPLUG_ADDR_EX_ZONE_INUSE_PACKED_DATA =  0x8010;
@@ -263,7 +263,7 @@ bool codeplugChannelSaveDataForIndex(int index, struct_codeplugChannel_t *channe
 	index--; // I think the channel index numbers start from 1 not zero.
 	if (index<128)
 	{
-		EEPROM_Write(CODEPLUG_ADDR_CHANNEL_EEPROM + index*sizeof(struct_codeplugChannel_t),(uint8_t *)channelBuf,sizeof(struct_codeplugChannel_t));
+		retVal = EEPROM_Write(CODEPLUG_ADDR_CHANNEL_EEPROM + index*sizeof(struct_codeplugChannel_t),(uint8_t *)channelBuf,sizeof(struct_codeplugChannel_t));
 	}
 	else
 	{
@@ -383,6 +383,12 @@ int codeplugGetUserDMRID()
 	int dmrId;
 	EEPROM_Read(CODEPLUG_ADDR_USER_DMRID,(uint8_t *)&dmrId,4);
 	return bcd2int(byteSwap32(dmrId));
+}
+
+void codeplugSetUserDMRID(uint32_t dmrId)
+{
+	dmrId = byteSwap32(int2bcd(dmrId));
+	EEPROM_Write(CODEPLUG_ADDR_USER_DMRID,(uint8_t *)&dmrId,4);
 }
 
 // Max length the user can enter is 8. Hence buf must be 16 chars to allow for the termination

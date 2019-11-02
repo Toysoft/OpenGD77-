@@ -16,13 +16,13 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <hardware/fw_EEPROM.h>
+#include <hardware/fw_HR-C6000.h>
+#include <hardware/fw_SPI_Flash.h>
 #include <menu/menuSystem.h>
 #include "menu/menuUtilityQSOData.h"
 #include "fw_trx.h"
-#include "fw_EEPROM.h"
-#include "fw_SPI_Flash.h"
 #include "fw_settings.h"
-#include "fw_HR-C6000.h"
 
 void updateLastHeardList(int id,int talkGroup);
 
@@ -35,6 +35,8 @@ LinkItem_t *LinkHead = callsList;
 int numLastHeard=0;
 int menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 int qsodata_timer;
+int RssiUpdateCounter;
+const int RSSI_UPDATE_COUNTER_RELOAD = 500;
 
 uint32_t menuUtilityReceivedPcId 	= 0;// No current Private call awaiting acceptance
 uint32_t menuUtilityTgBeforePcMode 	= 0;// No TG saved, prior to a Private call being accepted.
@@ -82,8 +84,13 @@ LinkItem_t * findInList(int id)
     return NULL;
 }
 
-uint32_t lastID=0;
+volatile uint32_t lastID=0;// This needs to be volatile as lastHeardClearLastID() is called from an ISR
 uint32_t lastTG=0;
+
+void lastHeardClearLastID()
+{
+	lastID=0;
+}
 
 bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 {
@@ -135,7 +142,10 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 
 					item->prev=NULL;// change the items prev to NULL now we are at teh top of the list
 					LinkHead = item;// Change the global for the head of the link to the item that is to be at the top of the list.
-					menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;// flag that the display needs to update
+					if (item->talkGroupOrPcId!=0)
+					{
+						menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;// flag that the display needs to update
+					}
 				}
 			}
 			else
@@ -161,7 +171,10 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 				item->talkGroupOrPcId =  talkGroupOrPcId;
 				lastTG = talkGroupOrPcId;
 				memset(item->talkerAlias,0,32);// Clear any TA data
-				menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;// flag that the display needs to update
+				if (item->talkGroupOrPcId!=0)
+				{
+					menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;// flag that the display needs to update
+				}
 			}
 		}
 		else // update TG even if the DMRID did not change
@@ -217,7 +230,7 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 		}
 		if (LinkHead->talkerAlias[TAOffset] == 0x00 && TABlockLen!=0)
 		{
-			memcpy(&LinkHead->talkerAlias[TAOffset],&DMR_frame_buffer[TAStartPos],TABlockLen);// Brandmeister seems to send callsign as 6 chars only
+			memcpy(&LinkHead->talkerAlias[TAOffset],(uint8_t *)&DMR_frame_buffer[TAStartPos],TABlockLen);// Brandmeister seems to send callsign as 6 chars only
 			menuDisplayQSODataState=QSO_DISPLAY_CALLER_DATA;
 		}
 	}
@@ -391,6 +404,11 @@ void menuUtilityRenderHeader()
 	const int Y_OFFSET = 2;
 	char buffer[24];
 
+	if (!trxIsTransmitting)
+	{
+		drawRSSIBarGraph();
+	}
+
 	switch(trxGetMode())
 	{
 		case RADIO_MODE_ANALOG:
@@ -415,7 +433,7 @@ void menuUtilityRenderHeader()
 			}
 			else
 			{
-				sprintf(buffer, "DMR TS%d%s",trxGetDMRTimeSlot(),
+				sprintf(buffer, "DMR TS%d%s",trxGetDMRTimeSlot()+1,
 						(trxGetMode() == RADIO_MODE_DIGITAL && settingsPrivateCallMuteMode == true)?" MUTE":"");
 			}
 			break;
@@ -425,7 +443,7 @@ void menuUtilityRenderHeader()
 
 
 
-	int  batteryPerentage = (int)(((battery_voltage - CUTOFF_VOLTAGE_UPPER_HYST) * 100) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));
+	int  batteryPerentage = (int)(((averageBatteryVoltage - CUTOFF_VOLTAGE_UPPER_HYST) * 100) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));
 	if (batteryPerentage>100)
 	{
 		batteryPerentage=100;
@@ -434,8 +452,9 @@ void menuUtilityRenderHeader()
 	{
 		batteryPerentage=0;
 	}
-	if (settingsUsbMode == USB_MODE_HOTSPOT)
+	if (settingsUsbMode == USB_MODE_HOTSPOT || trxGetMode() == RADIO_MODE_ANALOG)
 	{
+		// In hotspot mode the CC is show as part of the rest of the display and in Analogue mode the CC is meaningless
 		sprintf(buffer,"%d%%",batteryPerentage);
 	}
 	else
@@ -444,4 +463,36 @@ void menuUtilityRenderHeader()
 	}
 
 	UC1701_printCore(0,Y_OFFSET,buffer,UC1701_FONT_6X8,2,false);// Display battery percentage at the right
+}
+
+void drawRSSIBarGraph()
+{
+	int dBm,barGraphLength;
+
+	UC1701_fillRect(0, 10,128,4,true);
+
+	if (trxCheckFrequencyIsUHF(trxGetFrequency()))
+	{
+		// Use fixed point maths to scale the RSSI value to dBm, based on data from VK4JWT and VK7ZJA
+		dBm = -151 + trxRxSignal;// Note no the RSSI value on UHF does not need to be scaled like it does on VHF
+	}
+	else
+	{
+		// VHF
+		// Use fixed point maths to scale the RSSI value to dBm, based on data from VK4JWT and VK7ZJA
+		dBm = -164 + ((trxRxSignal * 32) / 27);
+	}
+
+	barGraphLength = ((dBm + 130) * 24)/10;
+	if (barGraphLength<0)
+	{
+		barGraphLength=0;
+	}
+
+	if (barGraphLength>123)
+	{
+		barGraphLength=123;
+	}
+	UC1701_fillRect(0, 10,barGraphLength,4,false);
+	trxRxSignal=0;
 }

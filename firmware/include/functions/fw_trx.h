@@ -29,27 +29,28 @@ extern const int RADIO_UHF_MAX;
 
 enum RADIO_MODE { RADIO_MODE_NONE,RADIO_MODE_ANALOG,RADIO_MODE_DIGITAL};
 enum DMR_ADMIT_CRITERIA { ADMIT_CRITERIA_ALWAYS,ADMIT_CRITERIA_CHANNEL_FREE,ADMIT_CRITERIA_COLOR_CODE};
+enum DMR_MODE {DMR_MODE_ACTIVE,DMR_MODE_PASSIVE};
 
-
-extern bool open_squelch;
-extern bool HR_C6000_datalogging;
+extern int trxDMRMode;
 
 extern volatile bool trxIsTransmitting;
 extern uint32_t trxTalkGroupOrPcId;
 extern uint32_t trxDMRID;
 extern int trx_measure_count;
 extern int txstopdelay;
+extern volatile uint8_t trxRxSignal;
+extern volatile uint8_t trxRxNoise;
 
 void trx_check_analog_squelch();
 int	trxGetMode();
 int	trxGetBandwidthIs25kHz();
 int	trxGetFrequency();
 void trxSetModeAndBandwidth(int mode, bool bandwidthIs25kHz);
-void trxSetFrequency(int frequency);
+void trxSetFrequency(int fRx,int fTx);
 void trx_setRX();
 void trx_setTX();
-void trx_deactivateTX();
-void trx_activateTX();
+void trx_activateRx();
+void trx_activateTx();
 void trxSetPower(uint32_t powerVal);
 uint16_t trxGetPower();
 void trxUpdateC6000Calibration();
@@ -65,5 +66,5 @@ void trxSetRxCTCSS(int toneFreqX10);
 bool trxCheckCTCSSFlag();
 bool trxCheckFrequencyInAmateurBand(int tmp_frequency);
 bool trxCheckFrequencyIsSupportedByTheRadioHardware(int frequency);
-
+void trxReadRSSIAndNoise();
 #endif /* _FW_TRX_H_ */

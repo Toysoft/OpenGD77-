@@ -18,6 +18,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 #include <dmr/DMREmbeddedData.h>
+#include <hardware/fw_HR-C6000.h>
 #include "fw_sound.h"
 #include "fw_calibration.h"
 #include "menu/menuSystem.h"
@@ -26,7 +27,6 @@
 #include "fw_settings.h"
 #include "fw_usb_com.h"
 #include "fw_trx.h"
-#include "fw_HR-C6000.h"
 #include "dmr/DMRFullLC.h"
 #include "dmr/DMRShortLC.h"
 #include "dmr/DMRSlotType.h"
@@ -65,7 +65,7 @@
 #define PROTOCOL_VERSION    1U
 
 #define MMDVM_HEADER_LENGTH  4U
-const char * HOTSPOT_VERSION_STRING = "OpenGD77 Hotspot v0.0.6";
+const char * HOTSPOT_VERSION_STRING = "OpenGD77 Hotspot v0.0.51";
 const int LOWEST_POWER_SETTING = 775;
 
 const uint8_t MMDVM_VOICE_SYNC_PATTERN = 0x20U;
@@ -78,12 +78,12 @@ const uint8_t START_FRAME_PATTERN[] = {0xFF,0x57,0xD7,0x5D,0xF5,0xD9};
 const uint8_t END_FRAME_PATTERN[] 	= {0x5D,0x7F,0x77,0xFD,0x75,0x79};
 const uint32_t HOTSPOT_BUFFER_LENGTH = 0xA0;
 
-static uint32_t freq_rx;
-static uint32_t freq_tx;
-static uint8_t rf_power;
+uint32_t freq_rx;
+uint32_t freq_tx;
+uint8_t rf_power;
 uint32_t savedTGorPC;
-static int savedPower;
-static uint8_t hotspotTxLC[9];
+int savedPower;
+uint8_t hotspotTxLC[9];
 static bool startedEmbeddedSearch = false;
 
 volatile int usbComSendBufWritePosition = 0;
@@ -93,18 +93,18 @@ volatile usb_status_t lastUSBSerialTxStatus = kStatus_USB_Success;
 volatile int  	rfFrameBufReadIdx=0;
 volatile int  	rfFrameBufWriteIdx=0;
 volatile int	rfFrameBufCount=0;
-static uint8_t lastRxState=HOTSPOT_RX_IDLE;
+uint8_t lastRxState=HOTSPOT_RX_IDLE;
 const int TX_BUFFERING_TIMEOUT = 5000;// 500mS
-static int timeoutCounter;
+int timeoutCounter;
 
-static volatile enum
+volatile enum
 {
 	MMDVMHOST_RX_READY,
 	MMDVMHOST_RX_BUSY,
 	MMDVMHOST_RX_ERROR
 } MMDVMHostRxState;
 
-static volatile enum MMDVM_STATE {
+volatile enum MMDVM_STATE {
   STATE_IDLE      = 0,
   STATE_DSTAR     = 1,
   STATE_DMR       = 2,
@@ -123,7 +123,7 @@ static volatile enum MMDVM_STATE {
   STATE_POCSAGCAL = 101
 } modemState = STATE_IDLE;
 
-static volatile enum { HOTSPOT_STATE_NOT_CONNECTED,
+volatile enum { HOTSPOT_STATE_NOT_CONNECTED,
 				HOTSPOT_STATE_INITIALISE,
 				HOTSPOT_STATE_RX_START,
 				HOTSPOT_STATE_RX_PROCESS,
@@ -154,9 +154,9 @@ static calibrationPowerValues_t powerSettings;
 static void updateScreen(int rxState);
 static void handleEvent(int buttons, int keys, int events);
 void handleHotspotRequest();
-
 /*
- * Uncomment if needed when debugging
+ *
+ //Enable when debugging
 static void displayDataBytes(uint8_t *buf, int len)
 {
 	for (int i=0;i<len;i++)
@@ -243,7 +243,7 @@ static void enableTransmission()
 	GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 	GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 1);
 
-	trxSetFrequency(freq_tx);
+	//trxSetFrequency(freq_tx);
 	txstopdelay=0;
 	trxIsTransmitting=true;
 	trx_setTX();
@@ -254,9 +254,9 @@ static void disableTransmission()
 	SEGGER_RTT_printf(0, "Disable Transmission\n");
 
 	GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
-	trx_deactivateTX();
+	trx_activateRx();
 	trx_setRX();
-	trxSetFrequency(freq_rx);
+	//trxSetFrequency(freq_rx);
 
 }
 
@@ -587,7 +587,7 @@ static void hotspotStateMachine()
 				disableTransmission();
 			}
 
-			trxSetFrequency(freq_rx);
+			trxSetFrequency(freq_rx,freq_tx);
 			wavbuffer_read_idx=0;
 			wavbuffer_write_idx=0;
 			wavbuffer_count=0;
@@ -872,7 +872,7 @@ static void handleEvent(int buttons, int keys, int events)
 		if (trxIsTransmitting)
 		{
 			trxIsTransmitting = false;
-			trx_deactivateTX();
+			trx_activateRx();
 			trx_setRX();
 
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
@@ -886,6 +886,15 @@ static void handleEvent(int buttons, int keys, int events)
 		menuSystemPopAllAndDisplayRootMenu();
 		return;
 	}
+/*
+	if (hotspotState == HOTSPOT_STATE_RX_START)
+	{
+		if ((buttons & BUTTON_PTT)!=0)
+		{
+			SEGGER_RTT_printf(0, "BUTTON_PTT\r\n");
+		}
+	}
+	*/
 }
 
 static uint8_t setFreq(volatile const uint8_t* data, uint8_t length)
@@ -895,9 +904,8 @@ const int BAN1_MIN  = 14580000;
 const int BAN1_MAX  = 14600000;
 const int BAN2_MIN  = 43500000;
 const int BAN2_MAX  = 43800000;
-uint32_t fRx,fTx;
 
-	SEGGER_RTT_printf(0, "setFreq\n");
+	SEGGER_RTT_printf(0, "setFreq\r\n");
 	hotspotState = HOTSPOT_STATE_INITIALISE;
 //	displayLightOverrideTimeout(-1);// turn the backlight on permanently
 
@@ -912,37 +920,41 @@ uint32_t fRx,fTx;
 		rf_power = data[9U];// 255 = max power
 	}
 
-	fRx = (data[1U] << 0 | data[2U] << 8  | data[3U] << 16 | data[4U] << 24)/100;
-	fTx = (data[5U] << 0 | data[6U] << 8  | data[7U] << 16 | data[8U] << 24)/100;
+	freq_rx  = data[1U] << 0;
+	freq_rx |= data[2U] << 8;
+	freq_rx |= data[3U] << 16;
+	freq_rx |= data[4U] << 24;
+	freq_rx= freq_rx / 100;
 
-//	SEGGER_RTT_printf(0, "Tx freq = %d, Rx freq = %d, Power = %d\n",fRx,fRx,rf_power);
+	freq_tx  = data[5U] << 0;
+	freq_tx |= data[6U] << 8;
+	freq_tx |= data[7U] << 16;
+	freq_tx |= data[8U] << 24;
+	freq_tx=freq_tx / 100;
 
+	SEGGER_RTT_printf(0, "Tx freq = %d, Rx freq = %d, Power = %d\n",freq_tx,freq_rx,rf_power);
 
-	if ((fTx>= BAN1_MIN && fTx <= BAN1_MAX) || (fTx>= BAN2_MIN && fTx <= BAN2_MAX))
+	calibrationGetPowerForFrequency(freq_tx, &powerSettings);
+	if (rf_power!=255)
+	{
+
+		nonVolatileSettings.txPower = ((powerSettings.highPower-LOWEST_POWER_SETTING) * rf_power)/255 + LOWEST_POWER_SETTING ;
+		SEGGER_RTT_printf(0, "Power = %d\n",nonVolatileSettings.txPower);
+	}
+
+	if ((freq_tx>= BAN1_MIN && freq_tx <= BAN1_MAX) || (freq_tx>= BAN2_MIN && freq_tx <= BAN2_MAX))
 	{
 		return 4U;// invalid frequency
 	}
 
-	if (trxCheckFrequencyInAmateurBand(fRx) && trxCheckFrequencyInAmateurBand(fTx))
+	if (trxCheckFrequencyInAmateurBand(freq_rx) && trxCheckFrequencyInAmateurBand(freq_tx))
 	{
-		freq_rx = fRx;
-		freq_tx = fTx;
-
-		trxSetFrequency(freq_rx);
+		trxSetFrequency(freq_rx,freq_tx);
 	}
 	else
 	{
 		return 4U;// invalid frequency
 	}
-
-	calibrationGetPowerForFrequency(freq_tx, &powerSettings);
-	if (rf_power!=255)
-	{
-		nonVolatileSettings.txPower = ((powerSettings.highPower-LOWEST_POWER_SETTING) * rf_power)/255 + LOWEST_POWER_SETTING ;
-		//SEGGER_RTT_printf(0, "Power = %d\n",nonVolatileSettings.txPower);
-	}
-
-
   return 0x00;
 }
 
@@ -987,14 +999,14 @@ static void getStatus()
 	buf[11U] = 0U;// no NXDN
 	buf[12U] = 0U;// no POCSAG
 
-	//SEGGER_RTT_printf(0, "getStatus buffers=%d\n",s_ComBuf[8U]);
+	//SEGGER_RTT_printf(0, "getStatus buffers=%d\r\n",s_ComBuf[8U]);
 
 	enqueueUSBData(buf,buf[1U]);
 }
 
 static uint8_t setConfig(volatile const uint8_t* data, uint8_t length)
 {
-	//SEGGER_RTT_printf(0, "setConfig \n");
+	SEGGER_RTT_printf(0, "setConfig \r\n");
 
   uint8_t txDelay = data[2U];
   if (txDelay > 50U)
@@ -1027,7 +1039,7 @@ static uint8_t setConfig(volatile const uint8_t* data, uint8_t length)
 
 uint8_t setMode(volatile const uint8_t* data, uint8_t length)
 {
-	//SEGGER_RTT_printf(0, "MMDVM SetMode len:%d %02X %02X %02X %02X %02X %02X %02X %02X\n",length,data[0U],data[1U],data[2U],data[3U],data[4U],data[5U],data[6U],data[7U]);
+	SEGGER_RTT_printf(0, "MMDVM SetMode len:%d %02X %02X %02X %02X %02X %02X %02X %02X\r\n",length,data[0U],data[1U],data[2U],data[3U],data[4U],data[5U],data[6U],data[7U]);
 
 	if (modemState == data[0U])
 	{
@@ -1083,7 +1095,7 @@ static void handleDMRShortLC()
 void handleHotspotRequest()
 {
 	int err;
-//	SEGGER_RTT_printf(0, "handleHotspotRequest 0x%0x 0x%0x 0x%0x\n",com_requestbuffer[0],com_requestbuffer[1],com_requestbuffer[2]);
+//	SEGGER_RTT_printf(0, "handleHotspotRequest 0x%0x 0x%0x 0x%0x\r\n",com_requestbuffer[0],com_requestbuffer[1],com_requestbuffer[2]);
 	if (com_requestbuffer[0]==MMDVM_FRAME_START)
 	{
 		//SEGGER_RTT_printf(0, "MMDVM %02x\n",com_requestbuffer[2]);
@@ -1134,78 +1146,78 @@ void handleHotspotRequest()
 				break;
 
 			case MMDVM_CAL_DATA:
-				//SEGGER_RTT_printf(0, "MMDVM_CAL_DATA\n");
+				SEGGER_RTT_printf(0, "MMDVM_CAL_DATA\r\n");
 				sendACK();
 				break;
 			case MMDVM_RSSI_DATA:
-				//SEGGER_RTT_printf(0, "MMDVM_RSSI_DATA\n");
+				SEGGER_RTT_printf(0, "MMDVM_RSSI_DATA\r\n");
 				sendACK();
 				break;
 			case MMDVM_SEND_CWID:
-				//SEGGER_RTT_printf(0, "MMDVM_SEND_CWID\n");
+				SEGGER_RTT_printf(0, "MMDVM_SEND_CWID\r\n");
 				sendACK();
 				break;
 			case MMDVM_DMR_DATA1:
-				//SEGGER_RTT_printf(0, "MMDVM_DMR_DATA1\n");
+				SEGGER_RTT_printf(0, "MMDVM_DMR_DATA1\r\n");
 				hotspotModeReceiveNetFrame((uint8_t *)com_requestbuffer,1);
 
 				break;
 			case MMDVM_DMR_LOST1:
-				//SEGGER_RTT_printf(0, "MMDVM_DMR_LOST1\n");
+				SEGGER_RTT_printf(0, "MMDVM_DMR_LOST1\r\n");
 				sendACK();
 				break;
 			case MMDVM_DMR_DATA2:
-				//SEGGER_RTT_printf(0, "MMDVM_DMR_DATA2\n");
+				//SEGGER_RTT_printf(0, "MMDVM_DMR_DATA2\r\n");
 				hotspotModeReceiveNetFrame((uint8_t *)com_requestbuffer,2);
 				break;
 			case MMDVM_DMR_LOST2:
-				//SEGGER_RTT_printf(0, "MMDVM_DMR_LOST2\n");
+				SEGGER_RTT_printf(0, "MMDVM_DMR_LOST2\r\n");
 				sendACK();
 				break;
 			case MMDVM_DMR_SHORTLC:
-				//SEGGER_RTT_printf(0, "MMDVM_DMR_SHORTLC\n");
+				SEGGER_RTT_printf(0, "MMDVM_DMR_SHORTLC\r\n");
 				handleDMRShortLC();
 				sendACK();
 				break;
 			case MMDVM_DMR_START:
-				//SEGGER_RTT_printf(0, "MMDVM_DMR_START\n");
+				SEGGER_RTT_printf(0, "MMDVM_DMR_START\r\n");
 				sendACK();
 				break;
 			case MMDVM_DMR_ABORT:
-				//SEGGER_RTT_printf(0, "MMDVM_DMR_ABORT\n");
+				SEGGER_RTT_printf(0, "MMDVM_DMR_ABORT\r\n");
 				sendACK();
 				break;
 			case MMDVM_SERIAL:
-				//SEGGER_RTT_printf(0, "MMDVM_SERIAL\n");
+				SEGGER_RTT_printf(0, "MMDVM_SERIAL\r\n");
 				//displayDataBytes(com_requestbuffer, com_requestbuffer[1]);
 				sendACK();
 				break;
 			case MMDVM_TRANSPARENT:
-				//SEGGER_RTT_printf(0, "MMDVM_TRANSPARENT\n");
+				SEGGER_RTT_printf(0, "MMDVM_TRANSPARENT\r\n");
 				sendACK();
 				break;
 			case MMDVM_QSO_INFO:
-				//SEGGER_RTT_printf(0, "MMDVM_QSO_INFO\n");
+				SEGGER_RTT_printf(0, "MMDVM_QSO_INFO\r\n");
 				sendACK();
 				break;
 			case MMDVM_DEBUG1:
-				//SEGGER_RTT_printf(0, "MMDVM_DEBUG1\n");
+				SEGGER_RTT_printf(0, "MMDVM_DEBUG1\r\n");
 				sendACK();
 				break;
 			case MMDVM_DEBUG2:
-				//SEGGER_RTT_printf(0, "MMDVM_DEBUG2\n");
+				SEGGER_RTT_printf(0, "MMDVM_DEBUG2\r\n");
 				sendACK();
 				break;
 			case MMDVM_DEBUG3:
-				//SEGGER_RTT_printf(0, "MMDVM_DEBUG3\n");
+				SEGGER_RTT_printf(0, "MMDVM_DEBUG3\r\n");
 				sendACK();
 				break;
 			case MMDVM_DEBUG4:
-				//SEGGER_RTT_printf(0, "MMDVM_DEBUG4\n");
+				SEGGER_RTT_printf(0, "MMDVM_DEBUG4\r\n");
 				sendACK();
 				break;
 			case MMDVM_DEBUG5:
-				//SEGGER_RTT_printf(0, "MMDVM_DEBUG5\n");
+				SEGGER_RTT_printf(0, "MMDVM_DEBUG5\r\n");
 				sendACK();
 				break;
 			case MMDVM_ACK:
@@ -1216,7 +1228,7 @@ void handleHotspotRequest()
 				SEGGER_RTT_printf(0, "MMDVMHost returned NAK\n");
 				break;
 			default:
-				//SEGGER_RTT_printf(0, "Unhandled command type %d\n",com_requestbuffer[2]);
+				SEGGER_RTT_printf(0, "Unhandled command type %d\n",com_requestbuffer[2]);
 				sendNAK(com_requestbuffer[2]);
 				break;
 		}

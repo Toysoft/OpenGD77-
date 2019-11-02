@@ -28,9 +28,11 @@ volatile bool alive_maintask;
 volatile bool alive_beeptask;
 volatile bool alive_hrc6000task;
 
+float averageBatteryVoltage;
 int battery_voltage = 0;
 int battery_voltage_tick = 0;
 static bool reboot=false;
+static const int AVERAGE_BATTERY_VOLTAGE_SAMPLE_WINDOW = 30.0f;
 
 void init_watchdog()
 {
@@ -50,6 +52,7 @@ void init_watchdog()
     alive_hrc6000task = false;
 
 	battery_voltage=get_battery_voltage();
+	averageBatteryVoltage = battery_voltage;
 	battery_voltage_tick=0;
 
 	xTaskCreate(fw_watchdog_task,                        /* pointer to the task */
@@ -81,8 +84,10 @@ void fw_watchdog_task()
     }
 }
 
+
 void tick_watchdog()
 {
+
 	watchdog_refresh_tick++;
 	if (watchdog_refresh_tick==200)
 	{
@@ -103,9 +108,11 @@ void tick_watchdog()
 		if (battery_voltage!=tmp_battery_voltage)
 		{
 			battery_voltage=tmp_battery_voltage;
+			averageBatteryVoltage = (averageBatteryVoltage * (AVERAGE_BATTERY_VOLTAGE_SAMPLE_WINDOW-1) + battery_voltage) / AVERAGE_BATTERY_VOLTAGE_SAMPLE_WINDOW;
 		}
 		battery_voltage_tick=0;
 	}
+	trigger_adc();// need the ADC value next time though, so request conversion now, so that its ready by the time we need it
 }
 
 void watchdogReboot()
