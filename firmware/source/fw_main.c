@@ -76,7 +76,7 @@ void fw_main_task()
 	}
     settingsLoadSettings();
 
-	fw_init_display();
+	fw_init_display(nonVolatileSettings.displayInverseVideo);
 
     // Init SPI
     init_SPI();

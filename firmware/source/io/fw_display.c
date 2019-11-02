@@ -29,7 +29,7 @@
 	#include "fsl_ftm.h"
 #endif
 
-void fw_init_display()
+void fw_init_display(bool isInverseColour)
 {
     PORT_SetPinMux(Port_Display_CS, Pin_Display_CS, kPORT_MuxAsGpio);
     PORT_SetPinMux(Port_Display_RST, Pin_Display_RST, kPORT_MuxAsGpio);
@@ -79,7 +79,7 @@ void fw_init_display()
 	GPIO_PinWrite(GPIO_Display_RST, Pin_Display_RST, 1);
 	vTaskDelay(portTICK_PERIOD_MS * 5);
 
-    UC1701_begin(nonVolatileSettings.displayInverseVideo);
+    UC1701_begin(isInverseColour);
 }
 
 void fw_displayEnableBacklight(bool onof)

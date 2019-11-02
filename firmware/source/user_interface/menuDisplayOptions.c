@@ -161,14 +161,7 @@ static void handleEvent(int buttons, int keys, int events)
 				break;
 			case DISPLAY_MENU_COLOUR_INVERT:
 				inverseVideo=!inverseVideo;
-				if (!inverseVideo)
-				{
-					fw_init_display();// Need to perform a full reset on the display to change back to non-inverted
-				}
-				else
-				{
-					UC1701_setInverseVideo(inverseVideo);
-				}
+				fw_init_display(inverseVideo);// Need to perform a full reset on the display to change back to non-inverted
 				break;
 		}
 	}
@@ -208,14 +201,7 @@ static void handleEvent(int buttons, int keys, int events)
 				break;
 			case DISPLAY_MENU_COLOUR_INVERT:
 				inverseVideo=!inverseVideo;
-				if (!inverseVideo)
-				{
-					fw_init_display();// Need to perform a full reset on the display to change back to non-inverted
-				}
-				else
-				{
-					UC1701_setInverseVideo(inverseVideo);
-				}
+				fw_init_display(inverseVideo);// Need to perform a full reset on the display to change back to non-inverted
 				break;
 		}
 	}
@@ -224,7 +210,7 @@ static void handleEvent(int buttons, int keys, int events)
 		nonVolatileSettings.displayInverseVideo = inverseVideo;
 		nonVolatileSettings.displayContrast = contrast;
 		nonVolatileSettings.backLightTimeout = backLightTimeout;
-		UC1701_begin(nonVolatileSettings.displayInverseVideo);
+		fw_init_display(nonVolatileSettings.displayInverseVideo);// Need to perform a full reset on the display to change back to non-inverted
 		menuSystemPopAllAndDisplayRootMenu();
 		return;
 	}
@@ -232,11 +218,7 @@ static void handleEvent(int buttons, int keys, int events)
 	{
 		if (nonVolatileSettings.displayContrast != contrast || nonVolatileSettings.displayInverseVideo != inverseVideo)
 		{
-			if (nonVolatileSettings.displayInverseVideo)
-			{
-				fw_init_display();// Need to perform a full reset on the display to change back to non-inverted
-			}
-			UC1701_begin(nonVolatileSettings.displayInverseVideo);
+			fw_init_display(nonVolatileSettings.displayInverseVideo);// Need to perform a full reset on the display to change back to non-inverted
 		}
 		nonVolatileSettings.displayBacklightPercentage = originalBrightness;
 
