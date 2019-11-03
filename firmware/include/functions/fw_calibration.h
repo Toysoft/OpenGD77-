@@ -34,6 +34,13 @@ typedef struct calibrationPowerValues
 	uint32_t highPower;
 } calibrationPowerValues_t;
 
+typedef struct calibrationRSSIMeter
+{
+	uint8_t minVal;
+	uint8_t rangeVal;
+} calibrationRSSIMeter_t;
+
+
 /*
 extern calibrationStruct_t calibrationVHF;
 extern calibrationStruct_t calibrationUHF;

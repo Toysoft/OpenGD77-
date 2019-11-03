@@ -17,7 +17,10 @@
  */
 #include <user_interface/menuSystem.h>
 #include <user_interface/menuUtilityQSOData.h>
+#include "fw_calibration.h"
+#include "fw_settings.h"
 
+static calibrationRSSIMeter_t rssiCalibration;
 static void updateScreen();
 static void handleEvent(int buttons, int keys, int events);
 
@@ -26,6 +29,7 @@ int menuRSSIScreen(int buttons, int keys, int events, bool isFirstRun)
 	if (isFirstRun)
 	{
 		RssiUpdateCounter = RSSI_UPDATE_COUNTER_RELOAD;
+		calibrationGetRSSIMeterParams(currentChannelData->rxFreq,&rssiCalibration);
 	}
 	else
 	{
