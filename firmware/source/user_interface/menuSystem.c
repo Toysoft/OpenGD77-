@@ -45,6 +45,7 @@ int menuCredits(int buttons, int keys, int events, bool isFirstRun);
 int menuChannelDetails(int buttons, int keys, int events, bool isFirstRun);
 int menuHotspotMode(int buttons, int keys, int events, bool isFirstRun);
 int menuCPS(int buttons, int keys, int events, bool isFirstRun);
+int menuLockScreen(int buttons, int keys, int events, bool isFirstRun);
 
 
 /*
@@ -73,6 +74,10 @@ const menuItemNew_t * menusData[] = { 	NULL,// splash
 										NULL,// Credits
 										NULL,// Channel Details
 										NULL,// hotspot mode
+										NULL,// CPS
+										NULL,// ChannelModeQuickMenu
+										NULL,// VFOModeQuickMenu
+										NULL,// LockScreen
 								};
 
 const MenuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
@@ -95,13 +100,17 @@ const MenuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
 												menuHotspotMode,
 												menuCPS,
 												menuChannelModeQuickMenu,
-												menuVFOModeQuickMenu};
+												menuVFOModeQuickMenu,
+												menuLockScreen};
 
 void menuSystemPushNewMenu(int menuNumber)
 {
-	menuControlData.stackPosition++;
-	menuControlData.stack[menuControlData.stackPosition] = menuNumber;
-	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true);
+	if (menuControlData.stackPosition < 15 && menuControlData.stack[menuControlData.stackPosition] != menuNumber)
+	{
+		menuControlData.stackPosition++;
+		menuControlData.stack[menuControlData.stackPosition] = menuNumber;
+		menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0, 0, 0, true);
+	}
 }
 void menuSystemPopPreviousMenu()
 {

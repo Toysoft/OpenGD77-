@@ -155,13 +155,28 @@ void fw_main_task()
         	fw_check_button_event(&buttons, &button_event);// Read button state and event
         	fw_check_key_event(&keys, &key_event);// Read keyboard state and event
 
-    		if (fw_key_check(keys, KEY_STAR, KEY_MOD_DOWN | KEY_MOD_LONG))
-    		{
-        	    set_melody(melody_sk1_beep);
-    		}
-        	if ((keys & KEY_MOD_PRESS) == 0) {
-        		key_event = EVENT_KEY_NONE;
-        	}
+			if (key_event == EVENT_KEY_CHANGE && KEYCHECK(keys, KEY_LOCK) && KEYCHECK_LONGDOWN(keys))
+			{
+				keypadLocked = !keypadLocked;
+				if (keypadLocked) {
+            	    menuSystemPopAllAndDisplayRootMenu();
+    				menuSystemPushNewMenu(MENU_LOCK_SCREEN);
+				} else {
+    				menuSystemPushNewMenu(MENU_LOCK_SCREEN);
+				}
+				key_event = EVENT_KEY_NONE;
+			}
+
+        	if (key_event == EVENT_KEY_CHANGE && keypadLocked) {
+				key_event = EVENT_KEY_NONE;
+				if (!KEYCHECK(keys, KEY_LOCK)) {
+					menuSystemPushNewMenu(MENU_LOCK_SCREEN);
+				}
+			}
+
+        	if (key_event == EVENT_KEY_CHANGE && (keys & KEY_MOD_PRESS) == 0) {   // Remove after changing key handling in user interface
+				key_event = EVENT_KEY_NONE;
+			}
 
         	if (key_event==EVENT_KEY_CHANGE)
         	{

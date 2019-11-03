@@ -71,6 +71,8 @@
 #define KEY_STAR  0x00008000
 #define KEY_HASH  0x00020000
 
+#define KEY_LOCK  0x00100000    // GREEN + STAR
+
 //#define KEY_UP    '^'
 //#define KEY_DOWN  0x0a
 //#define KEY_LEFT  '<'
@@ -103,6 +105,17 @@
 #define KEY_DEBOUNCE_COUNTER   20
 #define KEY_REPEAT_COUNTER     3000
 #define KEY_LONG_PRESS_COUNTER 5000
+
+#define KEYCHECK(keys,k) (((keys) & 0xffffff) == (k))
+#define KEYCHECK_MOD(keys, mod) (((keys) & (mod)) == (mod))
+
+#define KEYCHECK_UP(keys)       KEYCHECK_MOD(keys, KEY_MOD_UP)
+#define KEYCHECK_DOWN(keys)     KEYCHECK_MOD(keys, KEY_MOD_DOWN)
+#define KEYCHECK_PRESS(keys)    KEYCHECK_MOD(keys, KEY_MOD_PRESS)
+#define KEYCHECK_LONGDOWN(keys) KEYCHECK_MOD(keys, KEY_MOD_DOWN | KEY_MOD_LONG)
+
+extern volatile bool keypadLocked;
+
 
 void fw_init_keyboard();
 uint8_t fw_read_keyboard_col();

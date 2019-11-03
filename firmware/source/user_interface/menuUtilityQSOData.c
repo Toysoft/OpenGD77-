@@ -425,6 +425,10 @@ void menuUtilityRenderHeader()
 			{
 				strcat(buffer,"R");
 			}
+			if (keypadLocked)
+			{
+				strcat(buffer," L");
+			}
 			break;
 		case RADIO_MODE_DIGITAL:
 			if (settingsUsbMode == USB_MODE_HOTSPOT)
@@ -433,8 +437,9 @@ void menuUtilityRenderHeader()
 			}
 			else
 			{
-				sprintf(buffer, "DMR TS%d%s",trxGetDMRTimeSlot()+1,
-						(trxGetMode() == RADIO_MODE_DIGITAL && settingsPrivateCallMuteMode == true)?" MUTE":"");
+				sprintf(buffer, "DMR TS%d%s%s",trxGetDMRTimeSlot()+1,
+						(trxGetMode() == RADIO_MODE_DIGITAL && settingsPrivateCallMuteMode == true)?" MUTE":"",
+								(keypadLocked)?" L":"");
 			}
 			break;
 	}

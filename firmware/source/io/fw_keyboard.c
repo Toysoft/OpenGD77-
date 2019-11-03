@@ -23,9 +23,12 @@ static uint32_t old_keyboard_state;
 static bool keypress_long;
 static uint32_t keyDebounceState;
 static int keyDebounceCounter;
-static volatile uint32_t keyLongCounter;
-static volatile uint32_t keyRepeatCounter;
+static uint32_t keyLongCounter;
+static uint32_t keyRepeatCounter;
 static uint32_t keyRepeatSpeed;
+static uint32_t keyHandled;
+
+volatile bool keypadLocked = false;
 
 static const uint32_t keyMap[] =
 {
@@ -66,6 +69,7 @@ void fw_init_keyboard()
 	keyDebounceState = 0;
 	keyDebounceCounter = 0;
 	keyLongCounter = 0;
+	keyHandled = 0;
 }
 
 uint8_t fw_read_keyboard_col()
@@ -132,6 +136,10 @@ uint32_t fw_scan_key(uint32_t keys)
 	int numKeys = 0;
 	uint8_t scan;
 
+	if (keys == (KEY_GREEN | KEY_STAR)) {
+		return KEY_LOCK;
+	}
+
 	for (col = 0; col < 4; col++)
 	{
 		scan = keys & 0x1f;
@@ -175,10 +183,9 @@ void fw_check_key_event(uint32_t *keys, int *event)
 		if (keyDebounceCounter > KEY_DEBOUNCE_COUNTER)
 		{
 			keyDebounceCounter = 0;
-			if (old_keyboard_state == 0xffffffffU)
-			{
-				if (scancode == 0)
-				{
+            if (keyHandled != 0 && keyHandled != scancode) {
+				if (scancode == 0) {
+					keyHandled = 0;
 					old_keyboard_state = 0;
 				}
 				*keys = 0;
@@ -190,11 +197,13 @@ void fw_check_key_event(uint32_t *keys, int *event)
 				if (*keys == -1)
 				{
 					keyLongCounter = 0;
-					old_keyboard_state = 0xffffffffU;
+					keyHandled = 0xffffffffU;
 					*keys = 0;
 				}
 				else
 				{
+					keyHandled = scancode;
+
 					if (*keys != 0)
 					{
 						if (keyLongCounter == 0)
