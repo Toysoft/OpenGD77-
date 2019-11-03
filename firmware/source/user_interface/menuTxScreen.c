@@ -165,14 +165,14 @@ static void handleEvent(int buttons, int keys, int events)
 	if ((buttons & BUTTON_PTT) != 0 && trxIsTransmitting && trxGetMode() == RADIO_MODE_ANALOG)
 	{
 		if (transmitTone) {
-			if ((keys & KEY_LEFT) == 0) {
+			if ((buttons & BUTTON_SK1) == 0) {
 				transmitTone = false;
 				taskENTER_CRITICAL();
 				trxSelectVoiceChannel(AT1846_VOICE_CHANNEL_MIC);
 				taskEXIT_CRITICAL();
 			}
 		} else {
-			if ((keys & KEY_LEFT) != 0) {
+			if ((buttons & BUTTON_SK1) != 0) {
 				transmitTone = true;
 				taskENTER_CRITICAL();
 				trxSetTone1(1750);
