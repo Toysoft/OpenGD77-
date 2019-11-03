@@ -33,7 +33,6 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-
 		transmitTone = false;
 		settingsPrivateCallMuteMode = false;
 		if ((currentChannelData->flag4 & 0x04) == 0x00 && (  trxCheckFrequencyInAmateurBand(currentChannelData->txFreq) || nonVolatileSettings.txFreqLimited == 0x00))
@@ -165,19 +164,15 @@ static void handleEvent(int buttons, int keys, int events)
 	if ((buttons & BUTTON_PTT) != 0 && trxIsTransmitting && trxGetMode() == RADIO_MODE_ANALOG)
 	{
 		if (transmitTone) {
-			if ((buttons & BUTTON_SK1) == 0) {
+			if ((buttons & BUTTON_SK2) == 0) {
 				transmitTone = false;
-				taskENTER_CRITICAL();
 				trxSelectVoiceChannel(AT1846_VOICE_CHANNEL_MIC);
-				taskEXIT_CRITICAL();
 			}
 		} else {
-			if ((buttons & BUTTON_SK1) != 0) {
+			if ((buttons & BUTTON_SK2) != 0) {
 				transmitTone = true;
-				taskENTER_CRITICAL();
 				trxSetTone1(1750);
 				trxSelectVoiceChannel(AT1846_VOICE_CHANNEL_TONE1);
-				taskEXIT_CRITICAL();
 			}
 		}
 	}

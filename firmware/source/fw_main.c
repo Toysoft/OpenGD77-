@@ -182,11 +182,11 @@ void fw_main_task()
 
         		if ((	(buttons & BUTTON_PTT)!=0) &&
         				(slot_state==DMR_STATE_IDLE || trxDMRMode == DMR_MODE_PASSIVE) &&
-						(trxGetMode()!=RADIO_MODE_NONE) &&
-						(settingsUsbMode != USB_MODE_HOTSPOT) &&
-						(menuSystemGetCurrentMenuNumber() != MENU_POWER_OFF) &&
-						(menuSystemGetCurrentMenuNumber() != MENU_SPLASH_SCREEN)
-						)
+						trxGetMode()!=RADIO_MODE_NONE &&
+						settingsUsbMode != USB_MODE_HOTSPOT &&
+						menuSystemGetCurrentMenuNumber() != MENU_POWER_OFF &&
+						menuSystemGetCurrentMenuNumber() != MENU_SPLASH_SCREEN &&
+						menuSystemGetCurrentMenuNumber() != MENU_TX_SCREEN )
         		{
         			menuSystemPushNewMenu(MENU_TX_SCREEN);
         		}
