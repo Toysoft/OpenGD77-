@@ -15,8 +15,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-#include <menu/menuSystem.h>
-#include <menu/menuHotspot.h>
+#include <user_interface/menuHotspot.h>
+#include <user_interface/menuSystem.h>
 #include "fw_usb_com.h"
 #include "fw_settings.h"
 #include "fw_wdog.h"
