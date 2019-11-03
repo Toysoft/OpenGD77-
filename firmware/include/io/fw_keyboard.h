@@ -94,11 +94,14 @@
 #define KEY_MOD_DOWN  0x01000000
 #define KEY_MOD_UP    0x02000000
 #define KEY_MOD_LONG  0x04000000
+#define KEY_MOD_PRESS 0x08000000
+
 
 #define EVENT_KEY_NONE   0
 #define EVENT_KEY_CHANGE 1
 
 #define KEY_DEBOUNCE_COUNTER   20
+#define KEY_REPEAT_COUNTER     3000
 #define KEY_LONG_PRESS_COUNTER 5000
 
 void fw_init_keyboard();

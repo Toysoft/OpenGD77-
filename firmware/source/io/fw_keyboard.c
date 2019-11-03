@@ -23,7 +23,9 @@ static uint32_t old_keyboard_state;
 static bool keypress_long;
 static uint32_t keyDebounceState;
 static int keyDebounceCounter;
-static uint32_t keyPitTimer;
+static volatile uint32_t keyLongCounter;
+static volatile uint32_t keyRepeatCounter;
+static uint32_t keyRepeatSpeed;
 
 static const uint32_t keyMap[] =
 {
@@ -63,7 +65,7 @@ void fw_init_keyboard()
 	old_keyboard_state = 0;
 	keyDebounceState = 0;
 	keyDebounceCounter = 0;
-	keyPitTimer = 0;
+	keyLongCounter = 0;
 }
 
 uint8_t fw_read_keyboard_col()
@@ -187,7 +189,7 @@ void fw_check_key_event(uint32_t *keys, int *event)
 
 				if (*keys == -1)
 				{
-					keyPitTimer = 0;
+					keyLongCounter = 0;
 					old_keyboard_state = 0xffffffffU;
 					*keys = 0;
 				}
@@ -195,15 +197,17 @@ void fw_check_key_event(uint32_t *keys, int *event)
 				{
 					if (*keys != 0)
 					{
-						if (keyPitTimer == 0)
+						if (keyLongCounter == 0)
 						{
-							keyPitTimer = PITCounter;
-							mod = KEY_MOD_DOWN;
+							keyLongCounter = PITCounter;
+							keyRepeatCounter = PITCounter;
+							keyRepeatSpeed = KEY_LONG_PRESS_COUNTER + KEY_REPEAT_COUNTER;
+							mod = KEY_MOD_DOWN | KEY_MOD_PRESS;
 							keypress_long = false;
 						}
 						else
 						{
-							if (PITCounter - keyPitTimer > KEY_LONG_PRESS_COUNTER)
+							if (PITCounter - keyLongCounter > KEY_LONG_PRESS_COUNTER)
 							{
 								mod = KEY_MOD_LONG;
 								if (keypress_long == false)
@@ -211,12 +215,20 @@ void fw_check_key_event(uint32_t *keys, int *event)
 									mod |= KEY_MOD_DOWN;
 								}
 								keypress_long = true;
+								*event = EVENT_KEY_CHANGE;
+							}
+							if (PITCounter - keyRepeatCounter > keyRepeatSpeed)
+							{
+								mod |= KEY_MOD_PRESS;
+								keyRepeatCounter = PITCounter;
+								keyRepeatSpeed = KEY_REPEAT_COUNTER;
+								*event = EVENT_KEY_CHANGE;
 							}
 						}
 					}
 					else
 					{
-						if (keyPitTimer > 0)
+						if (keyLongCounter > 0)
 						{
 							mod = KEY_MOD_UP;
 							if (keypress_long == true)
@@ -224,7 +236,7 @@ void fw_check_key_event(uint32_t *keys, int *event)
 								mod |= KEY_MOD_LONG;
 							}
 						}
-						keyPitTimer = 0;
+						keyLongCounter = 0;
 					}
 
 					if (old_keyboard_state != *keys)

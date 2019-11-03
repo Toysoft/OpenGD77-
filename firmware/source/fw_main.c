@@ -159,7 +159,7 @@ void fw_main_task()
     		{
         	    set_melody(melody_sk1_beep);
     		}
-        	if ((keys & KEY_MOD_UP) == 0 || (keys & KEY_MOD_LONG) != 0) {
+        	if ((keys & KEY_MOD_PRESS) == 0) {
         		key_event = EVENT_KEY_NONE;
         	}
 
