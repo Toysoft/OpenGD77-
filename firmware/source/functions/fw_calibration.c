@@ -205,4 +205,25 @@ bool calibrationGetPowerForFrequency(int freq, calibrationPowerValues_t *powerSe
 	return true;
 }
 
+bool calibrationGetRSSIMeterParams(int freq, calibrationRSSIMeter_t *rssiMeterValues)
+{
+	int address;
 
+	if (trxCheckFrequencyIsUHF(freq))
+	{
+		address = 0x8F053;
+	}
+	else
+	{
+		address = 0x8F0C3;
+	}
+
+	if (SPI_Flash_read(address,(uint8_t *)rssiMeterValues,2))
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}

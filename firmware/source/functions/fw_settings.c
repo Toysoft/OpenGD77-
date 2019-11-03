@@ -18,9 +18,9 @@
  */
 
 #include <hardware/fw_EEPROM.h>
+#include <user_interface/menuSystem.h>
 #include "fw_settings.h"
 #include "fw_trx.h"
-#include "menu/menuSystem.h"
 #include "fw_codeplug.h"
 #include "fw_sound.h"
 

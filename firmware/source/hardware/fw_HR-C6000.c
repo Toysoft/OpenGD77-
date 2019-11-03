@@ -19,10 +19,10 @@
  */
 
 #include <hardware/fw_HR-C6000.h>
-#include "menu/menuUtilityQSOData.h"
 #include "fw_settings.h"
-#include "menu/menuHotspot.h"
 #include <SeggerRTT/RTT/SEGGER_RTT.h>
+#include <user_interface/menuHotspot.h>
+#include <user_interface/menuUtilityQSOData.h>
 #include "fw_trx.h"
 
 
