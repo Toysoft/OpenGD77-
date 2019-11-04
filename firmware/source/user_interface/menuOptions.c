@@ -240,6 +240,7 @@ static void handleEvent(int buttons, int keys, int events)
 				{
 					nonVolatileSettings.beepVolumeDivider++;
 				}
+				break;
 			case OPTIONS_MIC_GAIN_DMR:// DMR Mic gain
 				if (nonVolatileSettings.micGainDMR>0)
 				{
