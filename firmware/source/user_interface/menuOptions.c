@@ -139,7 +139,7 @@ static void handleEvent(int buttons, int keys, int events)
 	if ((keys & KEY_DOWN)!=0 && gMenusEndIndex!=0)
 	{
 		gMenusCurrentItemIndex++;
-		if (gMenusCurrentItemIndex>=NUM_OPTIONS_MENU_ITEMS)
+		if (gMenusCurrentItemIndex >= NUM_OPTIONS_MENU_ITEMS)
 		{
 			gMenusCurrentItemIndex=0;
 		}
@@ -147,9 +147,9 @@ static void handleEvent(int buttons, int keys, int events)
 	else if ((keys & KEY_UP)!=0)
 	{
 		gMenusCurrentItemIndex--;
-		if (gMenusCurrentItemIndex<0)
+		if (gMenusCurrentItemIndex < 0)
 		{
-			gMenusCurrentItemIndex=NUM_OPTIONS_MENU_ITEMS-1;
+			gMenusCurrentItemIndex = NUM_OPTIONS_MENU_ITEMS-1;
 		}
 	}
 	else if ((keys & KEY_RIGHT)!=0)
