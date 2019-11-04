@@ -21,6 +21,7 @@
 
 #define NUM_LASTHEARD_STORED 16
 extern const int QSO_TIMER_TIMEOUT;
+extern const int TX_TIMER_Y_OFFSET;
 
 typedef struct dmrIdDataStruct
 {
@@ -61,4 +62,5 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer);
 bool menuUtilityHandlePrivateCallActions(int buttons, int keys, int events);
 void lastHeardClearLastID();
 void drawRSSIBarGraph();
+void drawDMRMicLevelBarGraph();
 #endif

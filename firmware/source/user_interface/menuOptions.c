@@ -116,7 +116,7 @@ static void updateScreen()
 				soundBeepVolumeDivider = nonVolatileSettings.beepVolumeDivider;
 				break;
 			case OPTIONS_MIC_GAIN_DMR:// DMR Mic gain
-				sprintf(buf,"DMR mic gain:%d",nonVolatileSettings.micGainDMR);
+				sprintf(buf,"DMR mic:%ddB",(nonVolatileSettings.micGainDMR-11)*3);
 				break;
 
 		}
@@ -240,6 +240,7 @@ static void handleEvent(int buttons, int keys, int events)
 				{
 					nonVolatileSettings.beepVolumeDivider++;
 				}
+				break;
 			case OPTIONS_MIC_GAIN_DMR:// DMR Mic gain
 				if (nonVolatileSettings.micGainDMR>0)
 				{
