@@ -491,7 +491,7 @@ void trxUpdateC6000Calibration()
 	int band_offset=0x00000000;
 	int freq_offset=0x00000000;
 
-	if (nonVolatileSettings.useCalibration==0)
+	if (nonVolatileSettings.useCalibration==false)
 	{
 		return;
 	}
@@ -529,7 +529,7 @@ void trxUpdateAT1846SCalibration()
 	int band_offset=0x00000000;
 	int freq_offset=0x00000000;
 
-	if (nonVolatileSettings.useCalibration==0)
+	if (nonVolatileSettings.useCalibration==false)
 	{
 		return;
 	}

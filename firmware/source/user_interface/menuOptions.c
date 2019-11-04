@@ -24,7 +24,7 @@ static void handleEvent(int buttons, int keys, int events);
 static bool	doFactoryReset;
 static const int MAX_POWER = 4100;// Max DAC value is actually 4096 but no one should need to drive the PA that hard, so I rounded this down to 4000
 enum OPTIONS_MENU_LIST { OPTIONS_MENU_POWER = 0, OPTIONS_MENU_TIMEOUT_BEEP,OPTIONS_MENU_FACTORY_RESET,OPTIONS_MENU_USE_CALIBRATION,
-							OPTIONS_MENU_TX_FREQ_LIMITS,OPTIONS_MENU_BEEP_VOLUME,
+							OPTIONS_MENU_TX_FREQ_LIMITS,OPTIONS_MENU_BEEP_VOLUME,OPTIONS_MIC_GAIN_DMR,
 							NUM_OPTIONS_MENU_ITEMS};
 
 
@@ -92,7 +92,7 @@ static void updateScreen()
 				}
 				break;
 			case OPTIONS_MENU_USE_CALIBRATION:
-				if (nonVolatileSettings.useCalibration!=0)
+				if (nonVolatileSettings.useCalibration)
 				{
 					strcpy(buf,"Calibration:ON");
 				}
@@ -102,7 +102,7 @@ static void updateScreen()
 				}
 				break;
 			case OPTIONS_MENU_TX_FREQ_LIMITS:// Tx Freq limits
-				if (nonVolatileSettings.txFreqLimited!=0)
+				if (nonVolatileSettings.txFreqLimited)
 				{
 					strcpy(buf,"Band Limits:ON");
 				}
@@ -115,6 +115,10 @@ static void updateScreen()
 				sprintf(buf,"Beep vol:%ddB", (2 - nonVolatileSettings.beepVolumeDivider)*3);
 				soundBeepVolumeDivider = nonVolatileSettings.beepVolumeDivider;
 				break;
+			case OPTIONS_MIC_GAIN_DMR:// DMR Mic gain
+				sprintf(buf,"DMR mic gain:%d",nonVolatileSettings.micGainDMR);
+				break;
+
 		}
 		if (gMenusCurrentItemIndex==mNum)
 		{
@@ -174,15 +178,22 @@ static void handleEvent(int buttons, int keys, int events)
 				doFactoryReset = true;
 				break;
 			case OPTIONS_MENU_USE_CALIBRATION:
-				nonVolatileSettings.useCalibration=0x01;
+				nonVolatileSettings.useCalibration=true;
 				break;
 			case OPTIONS_MENU_TX_FREQ_LIMITS:
-				nonVolatileSettings.txFreqLimited=0x01;
+				nonVolatileSettings.txFreqLimited=true;
 				break;
 			case OPTIONS_MENU_BEEP_VOLUME:
 				if (nonVolatileSettings.beepVolumeDivider>0)
 				{
 					nonVolatileSettings.beepVolumeDivider--;
+				}
+				break;
+			case OPTIONS_MIC_GAIN_DMR:// DMR Mic gain
+				if (nonVolatileSettings.micGainDMR<15 )
+				{
+					nonVolatileSettings.micGainDMR++;
+					setMicGainDMR(nonVolatileSettings.micGainDMR);
 				}
 				break;
 		}
@@ -219,16 +230,23 @@ static void handleEvent(int buttons, int keys, int events)
 				doFactoryReset = false;
 				break;
 			case OPTIONS_MENU_USE_CALIBRATION:
-				nonVolatileSettings.useCalibration=0x00;
+				nonVolatileSettings.useCalibration=false;
 				break;
 			case OPTIONS_MENU_TX_FREQ_LIMITS:
-				nonVolatileSettings.txFreqLimited=0x00;
+				nonVolatileSettings.txFreqLimited=false;
 				break;
 			case OPTIONS_MENU_BEEP_VOLUME:
 				if (nonVolatileSettings.beepVolumeDivider<10)
 				{
 					nonVolatileSettings.beepVolumeDivider++;
 				}
+			case OPTIONS_MIC_GAIN_DMR:// DMR Mic gain
+				if (nonVolatileSettings.micGainDMR>0)
+				{
+					nonVolatileSettings.micGainDMR--;
+					setMicGainDMR(nonVolatileSettings.micGainDMR);
+				}
+				break;
 		}
 	}
 	else if ((keys & KEY_GREEN)!=0)
