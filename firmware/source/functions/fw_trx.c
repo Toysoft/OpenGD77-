@@ -62,6 +62,9 @@ volatile uint8_t trxRxNoise;
 int trxDMRMode = DMR_MODE_ACTIVE;// Active is for simplex
 static volatile bool txPAEnabled=false;
 
+const int trxDTMFfreq1[] = { 1336, 1209, 1336, 1477, 1209, 1336, 1477, 1209, 1336, 1477, 1633, 1633, 1633, 1633, 1209, 1477 };
+const int trxDTMFfreq2[] = {  941,  697,  697,  697,  770,  770,  770,  852,  852,  852,  697,  770,  852,  941,  941,  941 };
+
 int	trxGetMode()
 {
 	return currentMode;
@@ -679,18 +682,22 @@ bool trxCheckCTCSSFlag()
 }
 
 void trxSelectVoiceChannel(uint8_t channel) {
-	switch (channel) {
+	switch (channel)
+	{
 	case AT1846_VOICE_CHANNEL_TONE1:
 	case AT1846_VOICE_CHANNEL_TONE2:
 		set_clear_I2C_reg_2byte_with_mask(0x79, 0xff, 0xff, 0xc0, 0x00); // Select single tone
-		set_clear_I2C_reg_2byte_with_mask(0x7a, 0x7f, 0xff, 0x40, 0x00); // Disable DTMF, enable single tone
+//		set_clear_I2C_reg_2byte_with_mask(0x7a, 0x7f, 0xff, 0x40, 0x00); // Disable DTMF, enable single tone FOR RECEIVE
+		set_clear_I2C_reg_2byte_with_mask(0x57, 0xff, 0xfe, 0x00, 0x01); // Audio feedback
 		break;
 	case AT1846_VOICE_CHANNEL_DTMF:
 		set_clear_I2C_reg_2byte_with_mask(0x79, 0x3f, 0xff, 0x00, 0x00); // Select single tone
-		set_clear_I2C_reg_2byte_with_mask(0x7a, 0x3f, 0xff, 0x80, 0x00); // Enable DTMF, disable single tone
+//		set_clear_I2C_reg_2byte_with_mask(0x7a, 0x3f, 0xff, 0x80, 0x00); // Enable DTMF, disable single tone FOR RECEIVE
+		set_clear_I2C_reg_2byte_with_mask(0x57, 0xff, 0xfe, 0x00, 0x01); // Audio feedback
 		break;
 	default:
-		set_clear_I2C_reg_2byte_with_mask(0x7a, 0x7f, 0xff, 0x00, 0x00); // Disable DTMF, disable single tone
+//		set_clear_I2C_reg_2byte_with_mask(0x7a, 0x7f, 0xff, 0x00, 0x00); // Disable DTMF, disable single tone FOR RECEIVE
+		set_clear_I2C_reg_2byte_with_mask(0x57, 0xff, 0xfe, 0x00, 0x00); // Audio feedback off
 		break;
 	}
 	set_clear_I2C_reg_2byte_with_mask(0x3a, 0x8f, 0xff, channel, 0x00);
@@ -710,3 +717,11 @@ void trxSetTone2(int toneFreq)
 	write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x36, (toneFreq >> 8) & 0xff,	(toneFreq & 0xff));   // tone2_freq
 }
 
+void trxSetDTMF(int code)
+{
+	if (code < 16)
+	{
+		trxSetTone1(trxDTMFfreq1[code]);
+		trxSetTone2(trxDTMFfreq2[code]);
+	}
+}

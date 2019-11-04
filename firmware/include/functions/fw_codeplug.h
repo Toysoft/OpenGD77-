@@ -81,6 +81,18 @@ typedef struct struct_codeplugContact
 	uint16_t flags; // probably used for call type, but possibly can be re-purposed
 } struct_codeplugContact_t;
 
+typedef struct struct_codeplugDTMFContact
+{
+	char name[16];
+	uint8_t code[16];
+} struct_codeplugDTMFContact_t;
+
+typedef struct struct_codeplugDTMFContactList
+{
+	struct_codeplugDTMFContact_t contacts[32];
+	int numContacts;
+} struct_codeplugDTMFContactList_t;
+
 /*
  * deprecated. Use our own non volatile storage instead
  *
@@ -97,6 +109,7 @@ int int2bcd(int i);
 
 void codeplugRxGroupGetDataForIndex(int index, struct_codeplugRxGroup_t *rxGroupBuf);
 void codeplugContactGetDataForIndex(int index, struct_codeplugContact_t *contact);
+void codeplugDTMFContactGetDataForIndex(struct_codeplugDTMFContactList_t *contactList);
 int codeplugGetUserDMRID();
 void codeplugSetUserDMRID(uint32_t dmrId);
 void codeplugGetRadioName(char *buf);

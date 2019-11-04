@@ -70,5 +70,6 @@ void trxReadRSSIAndNoise();
 void trxSelectVoiceChannel(uint8_t channel);
 void trxSetTone1(int toneFreq);
 void trxSetTone2(int toneFreq);
+void trxSetDTMF(int code);
 
 #endif /* _FW_TRX_H_ */
