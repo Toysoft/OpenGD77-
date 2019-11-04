@@ -691,7 +691,7 @@ void trxSelectVoiceChannel(uint8_t channel) {
 		set_clear_I2C_reg_2byte_with_mask(0x57, 0xff, 0xfe, 0x00, 0x01); // Audio feedback
 		break;
 	case AT1846_VOICE_CHANNEL_DTMF:
-		set_clear_I2C_reg_2byte_with_mask(0x79, 0x3f, 0xff, 0x00, 0x00); // Select single tone
+		set_clear_I2C_reg_2byte_with_mask(0x79, 0xff, 0xff, 0xc0, 0x00); // Select single tone
 //		set_clear_I2C_reg_2byte_with_mask(0x7a, 0x3f, 0xff, 0x80, 0x00); // Enable DTMF, disable single tone FOR RECEIVE
 		set_clear_I2C_reg_2byte_with_mask(0x57, 0xff, 0xfe, 0x00, 0x01); // Audio feedback
 		break;

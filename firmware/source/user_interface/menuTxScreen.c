@@ -142,6 +142,8 @@ static void updateScreen()
 
 static void handleEvent(int buttons, int keys, int events)
 {
+	int keyval;
+
 	if ((buttons & BUTTON_PTT) == 0
 			|| (currentChannelData->tot != 0 && timeInSeconds == 0))
 	{
@@ -173,7 +175,8 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 		}
 	}
-	if ((buttons & BUTTON_PTT) != 0 && trxIsTransmitting && trxGetMode() == RADIO_MODE_ANALOG)
+	if ((buttons & BUTTON_PTT) != 0 && trxIsTransmitting
+			&& trxGetMode() == RADIO_MODE_ANALOG && !transmitTone)
 	{
 		if ((buttons & BUTTON_SK2) != 0)
 		{
@@ -181,80 +184,82 @@ static void handleEvent(int buttons, int keys, int events)
 			trxSetTone1(1750);
 			trxSelectVoiceChannel(AT1846_VOICE_CHANNEL_TONE1);
 		}
-
-		int keyval = 99;
-		if ((keys& KEY_1)!=0)
+		else
 		{
-			keyval=1;
-		}
-		if ((keys& KEY_2)!=0)
-		{
-			keyval=2;
-		}
-		if ((keys& KEY_3)!=0)
-		{
-			keyval=3;
-		}
-		if ((keys& KEY_4)!=0)
-		{
-			keyval=4;
-		}
-		if ((keys& KEY_5)!=0)
-		{
-			keyval=5;
-		}
-		if ((keys& KEY_6)!=0)
-		{
-			keyval=6;
-		}
-		if ((keys& KEY_7)!=0)
-		{
-			keyval=7;
-		}
-		if ((keys& KEY_8)!=0)
-		{
-			keyval=8;
-		}
-		if ((keys& KEY_9)!=0)
-		{
-			keyval=9;
-		}
-		if ((keys& KEY_0)!=0)
-		{
-			keyval=0;
-		}
-		if ((keys& KEY_LEFT)!=0)
-		{
-			keyval=10;
-		}
-		if ((keys& KEY_RIGHT)!=0)
-		{
-			keyval=11;
-		}
-		if ((keys& KEY_UP)!=0)
-		{
-			keyval=12;
-		}
-		if ((keys& KEY_DOWN)!=0)
-		{
-			keyval=13;
-		}
-		if ((keys& KEY_STAR)!=0)
-		{
-			keyval=14;
-		}
-		if ((keys& KEY_HASH)!=0)
-		{
-			keyval=15;
-		}
-		if (keyval != 99) {
-			trxSetDTMF(keyval);
-			transmitTone = true;
-			trxSelectVoiceChannel(AT1846_VOICE_CHANNEL_DTMF);
-
+			keyval = 99;
+			if ((keys & KEY_1) != 0)
+			{
+				keyval = 1;
+			}
+			if ((keys & KEY_2) != 0)
+			{
+				keyval = 2;
+			}
+			if ((keys & KEY_3) != 0)
+			{
+				keyval = 3;
+			}
+			if ((keys & KEY_4) != 0)
+			{
+				keyval = 4;
+			}
+			if ((keys & KEY_5) != 0)
+			{
+				keyval = 5;
+			}
+			if ((keys & KEY_6) != 0)
+			{
+				keyval = 6;
+			}
+			if ((keys & KEY_7) != 0)
+			{
+				keyval = 7;
+			}
+			if ((keys & KEY_8) != 0)
+			{
+				keyval = 8;
+			}
+			if ((keys & KEY_9) != 0)
+			{
+				keyval = 9;
+			}
+			if ((keys & KEY_0) != 0)
+			{
+				keyval = 0;
+			}
+			if ((keys & KEY_LEFT) != 0)  // A
+			{
+				keyval = 10;
+			}
+			if ((keys & KEY_RIGHT) != 0) // B
+			{
+				keyval = 11;
+			}
+			if ((keys & KEY_UP) != 0)    // C
+			{
+				keyval = 12;
+			}
+			if ((keys & KEY_DOWN) != 0)  // D
+			{
+				keyval = 13;
+			}
+			if ((keys & KEY_STAR) != 0)
+			{
+				keyval = 14;
+			}
+			if ((keys & KEY_HASH) != 0)
+			{
+				keyval = 15;
+			}
+			if (keyval != 99)
+			{
+				trxSetDTMF(keyval);
+				transmitTone = true;
+				trxSelectVoiceChannel(AT1846_VOICE_CHANNEL_DTMF);
+			}
 		}
 	}
-	if (transmitTone && (buttons & BUTTON_SK2) == 0)
+	if (transmitTone && (buttons & BUTTON_SK2) == 0 && (keys == 0))
 	{
 		transmitTone = false;
 		trxSelectVoiceChannel(AT1846_VOICE_CHANNEL_MIC);
