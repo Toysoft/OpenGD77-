@@ -158,18 +158,26 @@ void fw_main_task()
 			if (key_event == EVENT_KEY_CHANGE && KEYCHECK(keys, KEY_LOCK) && KEYCHECK_LONGDOWN(keys))
 			{
 				keypadLocked = !keypadLocked;
-				if (keypadLocked) {
-            	    menuSystemPopAllAndDisplayRootMenu();
-    				menuSystemPushNewMenu(MENU_LOCK_SCREEN);
-				} else {
-    				menuSystemPushNewMenu(MENU_LOCK_SCREEN);
+				if (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN)
+				{
+					if (keypadLocked)
+					{
+						menuSystemPopAllAndDisplayRootMenu();
+						menuSystemPushNewMenu(MENU_LOCK_SCREEN);
+					}
+					else
+					{
+						menuSystemPushNewMenu(MENU_LOCK_SCREEN);
+					}
 				}
 				key_event = EVENT_KEY_NONE;
 			}
 
-        	if (key_event == EVENT_KEY_CHANGE && keypadLocked) {
+			if (key_event == EVENT_KEY_CHANGE && keypadLocked)
+			{
 				key_event = EVENT_KEY_NONE;
-				if (!KEYCHECK(keys, KEY_LOCK)) {
+				if (!KEYCHECK(keys, KEY_LOCK) && menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN)
+				{
 					menuSystemPushNewMenu(MENU_LOCK_SCREEN);
 				}
 			}

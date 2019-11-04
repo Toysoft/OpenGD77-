@@ -105,12 +105,13 @@ const MenuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
 
 void menuSystemPushNewMenu(int menuNumber)
 {
-	if (menuControlData.stackPosition < 15 && menuControlData.stack[menuControlData.stackPosition] != menuNumber)
+	if (menuControlData.stackPosition < 15)
 	{
-	menuControlData.stackPosition++;
-	menuControlData.stack[menuControlData.stackPosition] = menuNumber;
-	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true);
-}
+		menuControlData.stackPosition++;
+		menuControlData.stack[menuControlData.stackPosition] = menuNumber;
+		menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,
+				0, 0, true);
+	}
 }
 void menuSystemPopPreviousMenu()
 {
