@@ -27,12 +27,13 @@ static void handleEvent(int buttons, int keys, int events);
 static const int PIT_COUNTS_PER_SECOND = 10000;
 static int timeInSeconds;
 static uint32_t nextSecondPIT;
+static bool transmitTone;
 
 int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-
+		transmitTone = false;
 		settingsPrivateCallMuteMode = false;
 		if ((currentChannelData->flag4 & 0x04) == 0x00 && (  trxCheckFrequencyInAmateurBand(currentChannelData->txFreq) || nonVolatileSettings.txFreqLimited == 0x00))
 		{
@@ -106,6 +107,7 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 
 				nextSecondPIT = PITCounter + PIT_COUNTS_PER_SECOND;
 			}
+
 		}
 		handleEvent(buttons, keys, events);
 	}
@@ -134,6 +136,7 @@ static void handleEvent(int buttons, int keys, int events)
 		if (trxIsTransmitting)
 		{
 			trxIsTransmitting=false;
+			transmitTone = false;
 			if (trxGetMode() == RADIO_MODE_ANALOG)
 			{
 				// In analog mode. Stop transmitting immediately
@@ -155,6 +158,21 @@ static void handleEvent(int buttons, int keys, int events)
 			{
 				GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
 				menuSystemPopPreviousMenu();
+			}
+		}
+	}
+	if ((buttons & BUTTON_PTT) != 0 && trxIsTransmitting && trxGetMode() == RADIO_MODE_ANALOG)
+	{
+		if (transmitTone) {
+			if ((buttons & BUTTON_SK2) == 0) {
+				transmitTone = false;
+				trxSelectVoiceChannel(AT1846_VOICE_CHANNEL_MIC);
+			}
+		} else {
+			if ((buttons & BUTTON_SK2) != 0) {
+				transmitTone = true;
+				trxSetTone1(1750);
+				trxSelectVoiceChannel(AT1846_VOICE_CHANNEL_TONE1);
 			}
 		}
 	}
