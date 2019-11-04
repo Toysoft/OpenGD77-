@@ -111,11 +111,14 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 			}
 			else
 			{
-				if (micLevelUpdateCounter-- == 0)
+				if (trxGetMode() == RADIO_MODE_DIGITAL)
 				{
-					drawDMRMicLevelBarGraph();
-					UC1701RenderRows(0,3);
-					micLevelUpdateCounter=100;
+					if (micLevelUpdateCounter-- == 0)
+					{
+						drawDMRMicLevelBarGraph();
+						UC1701RenderRows(1,2);
+						micLevelUpdateCounter=100;
+					}
 				}
 			}
 
