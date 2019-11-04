@@ -23,10 +23,13 @@
 #include <user_interface/menuUtilityQSOData.h>
 #include "fw_trx.h"
 #include "fw_settings.h"
+#include <math.h>
 
 void updateLastHeardList(int id,int talkGroup);
 
 const int QSO_TIMER_TIMEOUT = 2400;
+const int TX_TIMER_Y_OFFSET = 7;
+static const int BAR_Y_POS = 10;
 
 static const int DMRID_MEMORY_STORAGE_START = 0x30000;
 static const int DMRID_HEADER_LENGTH = 0x0C;
@@ -408,6 +411,14 @@ void menuUtilityRenderHeader()
 	{
 		drawRSSIBarGraph();
 	}
+	else
+	{
+		if (trxGetMode() == RADIO_MODE_DIGITAL)
+		{
+			drawDMRMicLevelBarGraph();
+		}
+	}
+
 
 	switch(trxGetMode())
 	{
@@ -427,6 +438,8 @@ void menuUtilityRenderHeader()
 			}
 			break;
 		case RADIO_MODE_DIGITAL:
+
+
 			if (settingsUsbMode == USB_MODE_HOTSPOT)
 			{
 				sprintf(buffer, "DMR");
@@ -469,7 +482,7 @@ void drawRSSIBarGraph()
 {
 	int dBm,barGraphLength;
 
-	UC1701_fillRect(0, 10,128,4,true);
+	UC1701_fillRect(0, BAR_Y_POS,128,4,true);
 
 	if (trxCheckFrequencyIsUHF(trxGetFrequency()))
 	{
@@ -493,6 +506,20 @@ void drawRSSIBarGraph()
 	{
 		barGraphLength=123;
 	}
-	UC1701_fillRect(0, 10,barGraphLength,4,false);
+	UC1701_fillRect(0, BAR_Y_POS,barGraphLength,4,false);
 	trxRxSignal=0;
+}
+
+void drawDMRMicLevelBarGraph()
+{
+	float barGraphLength = sqrt(micAudioSamplesTotal)*1.5;
+
+	UC1701_fillRect(0, BAR_Y_POS,128,3,true);
+
+	if (barGraphLength > 127)
+	{
+		barGraphLength = 127;
+	}
+
+	UC1701_fillRect(0, BAR_Y_POS,(int)barGraphLength,3,false);
 }

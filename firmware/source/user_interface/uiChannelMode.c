@@ -134,7 +134,6 @@ static void loadChannelData(bool useChannelDataInMemory)
 
 void menuChannelModeUpdateScreen(int txTimeSecs)
 {
-	const int TX_TIMER_Y_OFFSET = 4;
 	char nameBuf[17];
 	int channelNumber;
 	char buffer[32];
@@ -198,7 +197,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				{
 					codeplugUtilConvertBufToString(contactData.name,nameBuf,16);
 				}
-				UC1701_printCentered(16 + verticalPositionOffset, (char *)nameBuf,UC1701_FONT_GD77_8x16);
+				UC1701_printCentered(18 + verticalPositionOffset, (char *)nameBuf,UC1701_FONT_GD77_8x16);
 			}
 			else if(displaySquelch && !trxIsTransmitting)
 			{

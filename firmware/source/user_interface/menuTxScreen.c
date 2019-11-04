@@ -28,6 +28,7 @@ static const int PIT_COUNTS_PER_SECOND = 10000;
 static int timeInSeconds;
 static uint32_t nextSecondPIT;
 static bool transmitTone;
+static int micLevelUpdateCounter=100;
 
 int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 {
@@ -35,6 +36,7 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 	{
 		transmitTone = false;
 		settingsPrivateCallMuteMode = false;
+		micLevelUpdateCounter=100;
 		if ((currentChannelData->flag4 & 0x04) == 0x00 && (  trxCheckFrequencyInAmateurBand(currentChannelData->txFreq) || nonVolatileSettings.txFreqLimited == false))
 		{
 			nextSecondPIT = PITCounter + PIT_COUNTS_PER_SECOND;
@@ -106,6 +108,15 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 				}
 
 				nextSecondPIT = PITCounter + PIT_COUNTS_PER_SECOND;
+			}
+			else
+			{
+				if (micLevelUpdateCounter-- == 0)
+				{
+					drawDMRMicLevelBarGraph();
+					UC1701RenderRows(0,3);
+					micLevelUpdateCounter=100;
+				}
 			}
 
 		}

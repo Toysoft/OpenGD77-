@@ -135,7 +135,6 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 
 void menuVFOModeUpdateScreen(int txTimeSecs)
 {
-	const int TX_TIMER_Y_OFFSET = 4;
 	int val_before_dp;
 	int val_after_dp;
 
@@ -172,10 +171,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 
 				if (trxIsTransmitting)
 				{
-//					sprintf(buffer,"%dmW",((nonVolatileSettings.txPower-790)*50)/23);// Approximate calculation.
-//					UC1701_printCentered(0, buffer,UC1701_FONT_6X8);
-
-					UC1701_printCentered(32,buffer,UC1701_FONT_GD77_8x16);
+					UC1701_printCentered(34,buffer,UC1701_FONT_GD77_8x16);
 				}
 				else
 				{
