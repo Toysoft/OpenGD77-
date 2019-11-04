@@ -23,12 +23,12 @@ static void updateScreen();
 static void handleEvent(int buttons, int keys, int events);
 static bool	doFactoryReset;
 static const int MAX_POWER = 4100;// Max DAC value is actually 4096 but no one should need to drive the PA that hard, so I rounded this down to 4000
-enum UTILITIES_MENU_LIST { UTILITIES_MENU_POWER = 0, UTILITIES_MENU_TIMEOUT_BEEP,UTILITIES_MENU_FACTORY_RESET,UTILITIES_MENU_USE_CALIBRATION,
-							UTILITIES_MENU_TX_FREQ_LIMITS,UTILITIES_MENU_BEEP_VOLUME,
-							NUM_UTILITIES_MENU_ITEMS};
+enum OPTIONS_MENU_LIST { OPTIONS_MENU_POWER = 0, OPTIONS_MENU_TIMEOUT_BEEP,OPTIONS_MENU_FACTORY_RESET,OPTIONS_MENU_USE_CALIBRATION,
+							OPTIONS_MENU_TX_FREQ_LIMITS,OPTIONS_MENU_BEEP_VOLUME,OPTIONS_MIC_GAIN_DMR,
+							NUM_OPTIONS_MENU_ITEMS};
 
 
-int menuUtilities(int buttons, int keys, int events, bool isFirstRun)
+int menuOptions(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -51,7 +51,7 @@ static void updateScreen()
 	int mNum=0;
 	char buf[17];
 	UC1701_clearBuf();
-	UC1701_printCentered(0, "Utilities",UC1701_FONT_GD77_8x16);
+	UC1701_printCentered(0, "Options",UC1701_FONT_GD77_8x16);
 
 	// Can only display 3 of the options at a time menu at -1, 0 and +1
 	for(int i=-1;i<=1;i++)
@@ -59,19 +59,19 @@ static void updateScreen()
 		mNum = gMenusCurrentItemIndex+i;
 		if (mNum<0)
 		{
-			mNum = NUM_UTILITIES_MENU_ITEMS + mNum;
+			mNum = NUM_OPTIONS_MENU_ITEMS + mNum;
 		}
-		if (mNum >= NUM_UTILITIES_MENU_ITEMS)
+		if (mNum >= NUM_OPTIONS_MENU_ITEMS)
 		{
-			mNum = mNum - NUM_UTILITIES_MENU_ITEMS;
+			mNum = mNum - NUM_OPTIONS_MENU_ITEMS;
 		}
 
 		switch(mNum)
 		{
-			case UTILITIES_MENU_POWER:
+			case OPTIONS_MENU_POWER:
 				sprintf(buf,"Power %d",trxGetPower());
 				break;
-			case UTILITIES_MENU_TIMEOUT_BEEP:
+			case OPTIONS_MENU_TIMEOUT_BEEP:
 				if (nonVolatileSettings.txTimeoutBeepX5Secs!=0)
 				{
 					sprintf(buf,"Timeout beep:%d",nonVolatileSettings.txTimeoutBeepX5Secs * 5);
@@ -81,7 +81,7 @@ static void updateScreen()
 					strcpy(buf,"Timeout beep:OFF");
 				}
 				break;
-			case UTILITIES_MENU_FACTORY_RESET:
+			case OPTIONS_MENU_FACTORY_RESET:
 				if (doFactoryReset==true)
 				{
 					strcpy(buf,"Fact Reset:YES");
@@ -91,8 +91,8 @@ static void updateScreen()
 					strcpy(buf,"Fact Reset:NO");
 				}
 				break;
-			case UTILITIES_MENU_USE_CALIBRATION:
-				if (nonVolatileSettings.useCalibration!=0)
+			case OPTIONS_MENU_USE_CALIBRATION:
+				if (nonVolatileSettings.useCalibration)
 				{
 					strcpy(buf,"Calibration:ON");
 				}
@@ -101,8 +101,8 @@ static void updateScreen()
 					strcpy(buf,"Calibration:OFF");
 				}
 				break;
-			case UTILITIES_MENU_TX_FREQ_LIMITS:// Tx Freq limits
-				if (nonVolatileSettings.txFreqLimited!=0)
+			case OPTIONS_MENU_TX_FREQ_LIMITS:// Tx Freq limits
+				if (nonVolatileSettings.txFreqLimited)
 				{
 					strcpy(buf,"Band Limits:ON");
 				}
@@ -111,10 +111,14 @@ static void updateScreen()
 					strcpy(buf,"Band Limits:OFF");
 				}
 				break;
-			case UTILITIES_MENU_BEEP_VOLUME:// Beep volume reduction
+			case OPTIONS_MENU_BEEP_VOLUME:// Beep volume reduction
 				sprintf(buf,"Beep vol:%ddB", (2 - nonVolatileSettings.beepVolumeDivider)*3);
 				soundBeepVolumeDivider = nonVolatileSettings.beepVolumeDivider;
 				break;
+			case OPTIONS_MIC_GAIN_DMR:// DMR Mic gain
+				sprintf(buf,"DMR mic gain:%d",nonVolatileSettings.micGainDMR);
+				break;
+
 		}
 		if (gMenusCurrentItemIndex==mNum)
 		{
@@ -135,7 +139,7 @@ static void handleEvent(int buttons, int keys, int events)
 	if ((keys & KEY_DOWN)!=0 && gMenusEndIndex!=0)
 	{
 		gMenusCurrentItemIndex++;
-		if (gMenusCurrentItemIndex>=NUM_UTILITIES_MENU_ITEMS)
+		if (gMenusCurrentItemIndex >= NUM_OPTIONS_MENU_ITEMS)
 		{
 			gMenusCurrentItemIndex=0;
 		}
@@ -143,16 +147,16 @@ static void handleEvent(int buttons, int keys, int events)
 	else if ((keys & KEY_UP)!=0)
 	{
 		gMenusCurrentItemIndex--;
-		if (gMenusCurrentItemIndex<0)
+		if (gMenusCurrentItemIndex < 0)
 		{
-			gMenusCurrentItemIndex=NUM_UTILITIES_MENU_ITEMS-1;
+			gMenusCurrentItemIndex = NUM_OPTIONS_MENU_ITEMS-1;
 		}
 	}
 	else if ((keys & KEY_RIGHT)!=0)
 	{
 		switch(gMenusCurrentItemIndex)
 		{
-			case UTILITIES_MENU_POWER:
+			case OPTIONS_MENU_POWER:
 				if (buttons && BUTTON_SK2)
 				{
 					powerChangeValue=10;
@@ -164,25 +168,32 @@ static void handleEvent(int buttons, int keys, int events)
 					trxSetPower(tmpPower);
 				}
 				break;
-			case UTILITIES_MENU_TIMEOUT_BEEP:
+			case OPTIONS_MENU_TIMEOUT_BEEP:
 				if (nonVolatileSettings.txTimeoutBeepX5Secs < 4)
 				{
 					nonVolatileSettings.txTimeoutBeepX5Secs++;
 				}
 				break;
-			case UTILITIES_MENU_FACTORY_RESET:
+			case OPTIONS_MENU_FACTORY_RESET:
 				doFactoryReset = true;
 				break;
-			case UTILITIES_MENU_USE_CALIBRATION:
-				nonVolatileSettings.useCalibration=0x01;
+			case OPTIONS_MENU_USE_CALIBRATION:
+				nonVolatileSettings.useCalibration=true;
 				break;
-			case UTILITIES_MENU_TX_FREQ_LIMITS:
-				nonVolatileSettings.txFreqLimited=0x01;
+			case OPTIONS_MENU_TX_FREQ_LIMITS:
+				nonVolatileSettings.txFreqLimited=true;
 				break;
-			case UTILITIES_MENU_BEEP_VOLUME:
+			case OPTIONS_MENU_BEEP_VOLUME:
 				if (nonVolatileSettings.beepVolumeDivider>0)
 				{
 					nonVolatileSettings.beepVolumeDivider--;
+				}
+				break;
+			case OPTIONS_MIC_GAIN_DMR:// DMR Mic gain
+				if (nonVolatileSettings.micGainDMR<15 )
+				{
+					nonVolatileSettings.micGainDMR++;
+					setMicGainDMR(nonVolatileSettings.micGainDMR);
 				}
 				break;
 		}
@@ -192,7 +203,7 @@ static void handleEvent(int buttons, int keys, int events)
 
 		switch(gMenusCurrentItemIndex)
 		{
-			case UTILITIES_MENU_POWER:
+			case OPTIONS_MENU_POWER:
 				{
 					uint32_t pwr = trxGetPower();
 					if (pwr==4095)
@@ -209,26 +220,33 @@ static void handleEvent(int buttons, int keys, int events)
 					}
 				}
 				break;
-			case UTILITIES_MENU_TIMEOUT_BEEP:
+			case OPTIONS_MENU_TIMEOUT_BEEP:
 				if (nonVolatileSettings.txTimeoutBeepX5Secs>0)
 				{
 					nonVolatileSettings.txTimeoutBeepX5Secs--;
 				}
 				break;
-			case UTILITIES_MENU_FACTORY_RESET:
+			case OPTIONS_MENU_FACTORY_RESET:
 				doFactoryReset = false;
 				break;
-			case UTILITIES_MENU_USE_CALIBRATION:
-				nonVolatileSettings.useCalibration=0x00;
+			case OPTIONS_MENU_USE_CALIBRATION:
+				nonVolatileSettings.useCalibration=false;
 				break;
-			case UTILITIES_MENU_TX_FREQ_LIMITS:
-				nonVolatileSettings.txFreqLimited=0x00;
+			case OPTIONS_MENU_TX_FREQ_LIMITS:
+				nonVolatileSettings.txFreqLimited=false;
 				break;
-			case UTILITIES_MENU_BEEP_VOLUME:
+			case OPTIONS_MENU_BEEP_VOLUME:
 				if (nonVolatileSettings.beepVolumeDivider<10)
 				{
 					nonVolatileSettings.beepVolumeDivider++;
 				}
+			case OPTIONS_MIC_GAIN_DMR:// DMR Mic gain
+				if (nonVolatileSettings.micGainDMR>0)
+				{
+					nonVolatileSettings.micGainDMR--;
+					setMicGainDMR(nonVolatileSettings.micGainDMR);
+				}
+				break;
 		}
 	}
 	else if ((keys & KEY_GREEN)!=0)

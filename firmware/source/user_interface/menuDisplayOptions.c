@@ -112,7 +112,7 @@ static void handleEvent(int buttons, int keys, int events)
 	if ((keys & KEY_DOWN)!=0 && gMenusEndIndex!=0)
 	{
 		gMenusCurrentItemIndex++;
-		if (gMenusCurrentItemIndex > NUM_DISPLAY_MENU_ITEMS)
+		if (gMenusCurrentItemIndex >= NUM_DISPLAY_MENU_ITEMS)
 		{
 			gMenusCurrentItemIndex = 0;
 		}

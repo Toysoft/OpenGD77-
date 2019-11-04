@@ -30,7 +30,7 @@ const int BAND_UHF_MIN 	= 4300000;
 const int BAND_UHF_MAX 	= 4500000;
 
 static const int STORAGE_BASE_ADDRESS 		= 0x6000;
-static const int STORAGE_MAGIC_NUMBER 		= 0x4720;
+static const int STORAGE_MAGIC_NUMBER 		= 0x4721;
 
 settingsStruct_t nonVolatileSettings;
 struct_codeplugChannel_t *currentChannelData;
@@ -114,16 +114,17 @@ void settingsRestoreDefaultSettings()
 	nonVolatileSettings.displayContrast = 0x12;
 	nonVolatileSettings.initialMenuNumber=MENU_VFO_MODE;
 	nonVolatileSettings.displayBacklightPercentage=100U;// 100% brightness
-	nonVolatileSettings.displayInverseVideo=0;// Not inverse video
+	nonVolatileSettings.displayInverseVideo=false;// Not inverse video
+	nonVolatileSettings.useCalibration = true;// enable the new calibration system
+	nonVolatileSettings.txFreqLimited = true;// Limit Tx frequency to US Amateur bands
 	// DAC value for txPower: original firmware LOW => about 1600-1700 / original firmware HIGH => about 2900-3000
 	// e.g. external flash power low = 0x67 => 0x0670 (value << 4) => decimal 1648
 	// e.g. external flash power high = 0xb8 => 0x0b80 (value << 4) => decimal 2944
 	nonVolatileSettings.txPower=1600;// intialized to about original firmware LOW
 	nonVolatileSettings.overrideTG=0;// 0 = No override
-	nonVolatileSettings.useCalibration = 0x01;// enable the new calibration system
-	nonVolatileSettings.txFreqLimited = 0x01;// Limit Tx frequency to US Amateur bands
 	nonVolatileSettings.txTimeoutBeepX5Secs = 0;
 	nonVolatileSettings.beepVolumeDivider = 1;// no reduction in volume
+	nonVolatileSettings.micGainDMR = 11;// Normal value used by the official firmware
 	settingsInitVFOChannel();
 	currentChannelData = &nonVolatileSettings.vfoChannel;// Set the current channel data to point to the VFO data since the default screen will be the VFO
 

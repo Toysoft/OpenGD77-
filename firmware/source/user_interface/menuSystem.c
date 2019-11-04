@@ -39,7 +39,7 @@ int menuNumericalEntry(int buttons, int keys, int events, bool isFirstRun);
 int menuTxScreen(int buttons, int keys, int events, bool isFirstRun);
 int menuRSSIScreen(int buttons, int keys, int events, bool isFirstRun);
 int menuLastHeard(int buttons, int keys, int events, bool isFirstRun);
-int menuUtilities(int buttons, int keys, int events, bool isFirstRun);
+int menuOptions(int buttons, int keys, int events, bool isFirstRun);
 int menuDisplayOptions(int buttons, int keys, int events, bool isFirstRun);
 int menuCredits(int buttons, int keys, int events, bool isFirstRun);
 int menuChannelDetails(int buttons, int keys, int events, bool isFirstRun);
@@ -70,14 +70,14 @@ const menuItemNew_t * menusData[] = { 	NULL,// splash
 										NULL,// Tx
 										NULL,// RSSI
 										NULL,// LastHeard
+										NULL,// Options
 										NULL,// Display options
 										NULL,// Credits
 										NULL,// Channel Details
 										NULL,// hotspot mode
 										NULL,// CPS
-										NULL,// ChannelModeQuickMenu
-										NULL,// VFOModeQuickMenu
-										NULL,// LockScreen
+										NULL,// Quick menu - Channel
+										NULL,// Quick menu - VFO
 								};
 
 const MenuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
@@ -93,7 +93,7 @@ const MenuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
 												menuTxScreen,
 												menuRSSIScreen,
 												menuLastHeard,
-												menuUtilities,
+												menuOptions,
 												menuDisplayOptions,
 												menuCredits,
 												menuChannelDetails,
@@ -107,10 +107,10 @@ void menuSystemPushNewMenu(int menuNumber)
 {
 	if (menuControlData.stackPosition < 15 && menuControlData.stack[menuControlData.stackPosition] != menuNumber)
 	{
-		menuControlData.stackPosition++;
-		menuControlData.stack[menuControlData.stackPosition] = menuNumber;
-		menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0, 0, 0, true);
-	}
+	menuControlData.stackPosition++;
+	menuControlData.stack[menuControlData.stackPosition] = menuNumber;
+	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true);
+}
 }
 void menuSystemPopPreviousMenu()
 {
@@ -129,8 +129,6 @@ void menuSystemPopAllAndDisplaySpecificRootMenu(int newRootMenu)
 	menuControlData.stackPosition=0;
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true);
 }
-
-
 
 void menuSystemSetCurrentMenu(int menuNumber)
 {
@@ -192,13 +190,12 @@ const char menuStringTable[32][16] = { "",//0
 										 "Firmware info",//16
 										 "RSSI",//17
 										 "Last heard",//18
-										 "Utilities",//19
+										 "Options",//19
 										 "Display options",//20
 										 "Credits",//21
 										 "Channel details",//22
 										 "Hotspot mode",//23
 };
-
 
 const menuItemNew_t menuDataMainMenu[] = {
 	{9,9},// number of menus
@@ -208,7 +205,7 @@ const menuItemNew_t menuDataMainMenu[] = {
 	{ 15, MENU_BATTERY },
 	{ 18, MENU_LAST_HEARD },
 	{ 16, MENU_FIRMWARE_INFO },
-	{ 19, MENU_UTILITIES },
+	{ 19, MENU_OPTIONS },
 	{ 20, MENU_DISPLAY},
 	{ 22, MENU_CHANNEL_DETAILS},
 };
@@ -229,10 +226,7 @@ const menuItemNew_t menuDataContactContact [] = {
 	{ 14, -1 }// Quick Test
 };
 
-
-
 int menuDisplayList(int buttons, int keys, int events, bool isFirstRun)
 {
 	return 0;
 }
-

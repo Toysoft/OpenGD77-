@@ -35,7 +35,7 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 	{
 		transmitTone = false;
 		settingsPrivateCallMuteMode = false;
-		if ((currentChannelData->flag4 & 0x04) == 0x00 && (  trxCheckFrequencyInAmateurBand(currentChannelData->txFreq) || nonVolatileSettings.txFreqLimited == 0x00))
+		if ((currentChannelData->flag4 & 0x04) == 0x00 && (  trxCheckFrequencyInAmateurBand(currentChannelData->txFreq) || nonVolatileSettings.txFreqLimited == false))
 		{
 			nextSecondPIT = PITCounter + PIT_COUNTS_PER_SECOND;
 			timeInSeconds = currentChannelData->tot*15;
