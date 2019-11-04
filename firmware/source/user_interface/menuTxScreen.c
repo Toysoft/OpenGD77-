@@ -178,8 +178,7 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 		}
 	}
-	if ((buttons & BUTTON_PTT) != 0 && trxIsTransmitting
-			&& trxGetMode() == RADIO_MODE_ANALOG && !transmitTone)
+	if (!transmitTone && (buttons & BUTTON_PTT) != 0 && trxIsTransmitting && trxGetMode() == RADIO_MODE_ANALOG)
 	{
 		if ((buttons & BUTTON_SK2) != 0)
 		{
@@ -190,6 +189,10 @@ static void handleEvent(int buttons, int keys, int events)
 		else
 		{
 			keyval = 99;
+			if ((keys & KEY_0) != 0)
+			{
+				keyval = 0;
+			}
 			if ((keys & KEY_1) != 0)
 			{
 				keyval = 1;
@@ -225,10 +228,6 @@ static void handleEvent(int buttons, int keys, int events)
 			if ((keys & KEY_9) != 0)
 			{
 				keyval = 9;
-			}
-			if ((keys & KEY_0) != 0)
-			{
-				keyval = 0;
 			}
 			if ((keys & KEY_LEFT) != 0)  // A
 			{
