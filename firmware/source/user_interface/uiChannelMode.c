@@ -345,12 +345,10 @@ static void handleEvent(int buttons, int keys, int events)
 				if ( (contactData.reserve1 & 0x02) !=0 )
 				{
 					currentChannelData->flag2 = currentChannelData->flag2 | 0x40;
-					channelScreenChannelData.flag2 = channelScreenChannelData.flag2 | ~0x40;
 				}
 				else
 				{
 					currentChannelData->flag2 = currentChannelData->flag2 & ~0x40;
-					channelScreenChannelData.flag2 = channelScreenChannelData.flag2 & ~0x40;
 				}
 			}
 
@@ -399,12 +397,10 @@ static void handleEvent(int buttons, int keys, int events)
 				if ( (contactData.reserve1 & 0x02) !=0 )
 				{
 					currentChannelData->flag2 = currentChannelData->flag2 | 0x40;
-					channelScreenChannelData.flag2 = channelScreenChannelData.flag2 | ~0x40;
 				}
 				else
 				{
 					currentChannelData->flag2 = currentChannelData->flag2 & ~0x40;
-					channelScreenChannelData.flag2 = channelScreenChannelData.flag2 & ~0x40;
 				}
 			}
 			nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
@@ -461,12 +457,10 @@ static void handleEvent(int buttons, int keys, int events)
 				if (currentChannelData->flag2 & 0x40)
 				{
 					currentChannelData->flag2 = currentChannelData->flag2 & ~0x40;
-					channelScreenChannelData.flag2 = channelScreenChannelData.flag2 & ~0x40;
 				}
 				else
 				{
 					currentChannelData->flag2 = currentChannelData->flag2 | 0x40;
-					channelScreenChannelData.flag2 = channelScreenChannelData.flag2 | 0x40;
 				}
 			//	init_digital();
 				clearActiveDMRID();
