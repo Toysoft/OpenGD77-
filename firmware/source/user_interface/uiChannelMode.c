@@ -121,6 +121,19 @@ static void loadChannelData(bool useChannelDataInMemory)
 
 		codeplugRxGroupGetDataForIndex(channelScreenChannelData.rxGroupList,&rxGroupData);
 		codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
+		if ((contactData.reserve1 & 0x01) == 0x00)
+		{
+			if ( (contactData.reserve1 & 0x02) !=0 )
+			{
+				currentChannelData->flag2 = currentChannelData->flag2 | 0x40;
+				channelScreenChannelData.flag2 = channelScreenChannelData.flag2 | ~0x40;
+			}
+			else
+			{
+				currentChannelData->flag2 = currentChannelData->flag2 & ~0x40;
+				channelScreenChannelData.flag2 = channelScreenChannelData.flag2 & ~0x40;
+			}
+		}
 		if (nonVolatileSettings.overrideTG == 0)
 		{
 			trxTalkGroupOrPcId = contactData.tgNumber;
@@ -326,7 +339,19 @@ static void handleEvent(int buttons, int keys, int events)
 				nonVolatileSettings.currentIndexInTRxGroupList =  0;
 			}
 			codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
-
+			if ((contactData.reserve1 & 0x01) == 0x00)
+			{
+				if ( (contactData.reserve1 & 0x02) !=0 )
+				{
+					currentChannelData->flag2 = currentChannelData->flag2 | 0x40;
+					channelScreenChannelData.flag2 = channelScreenChannelData.flag2 | ~0x40;
+				}
+				else
+				{
+					currentChannelData->flag2 = currentChannelData->flag2 & ~0x40;
+					channelScreenChannelData.flag2 = channelScreenChannelData.flag2 & ~0x40;
+				}
+			}
 			nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
 			trxTalkGroupOrPcId = contactData.tgNumber;
 			lastHeardClearLastID();
@@ -366,6 +391,19 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 
 			codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
+			if ((contactData.reserve1 & 0x01) == 0x00)
+			{
+				if ( (contactData.reserve1 & 0x02) !=0 )
+				{
+					currentChannelData->flag2 = currentChannelData->flag2 | 0x40;
+					channelScreenChannelData.flag2 = channelScreenChannelData.flag2 | ~0x40;
+				}
+				else
+				{
+					currentChannelData->flag2 = currentChannelData->flag2 & ~0x40;
+					channelScreenChannelData.flag2 = channelScreenChannelData.flag2 & ~0x40;
+				}
+			}
 			nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
 			trxTalkGroupOrPcId = contactData.tgNumber;
 			lastHeardClearLastID();

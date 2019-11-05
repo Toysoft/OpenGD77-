@@ -191,12 +191,20 @@ void fw_main_task()
         		if (keys!=0)
         		{
             	    set_melody(melody_key_beep);
-        		}
+				}
+
+    			if (menuDisplayLightTimer == 0 && nonVolatileSettings.backLightTimeout != 0)
+    			{
+    				key_event = EVENT_KEY_NONE;
+    				displayLightTrigger();
+    			}
         	}
 
-        	if (button_event==EVENT_BUTTON_CHANGE)
-        	{
-        		/*
+
+
+			if (button_event == EVENT_BUTTON_CHANGE)
+			{
+				/*
         		if ((buttons & BUTTON_SK1)!=0)
         		{
             	    set_melody(melody_sk1_beep);
