@@ -76,9 +76,12 @@ typedef struct struct_codeplugRxGroup
 
 typedef struct struct_codeplugContact
 {
-	char name[16];
-	uint32_t tgNumber;
-	uint32_t flags; // probably used for call type, but possibly can be re-purposed
+	char 		name[16];
+	uint32_t 	tgNumber;
+	uint8_t		callType;
+	uint8_t		callRxTone;
+	uint8_t		ringStyle;
+	uint8_t		reserve1;
 } struct_codeplugContact_t;
 
 /*
