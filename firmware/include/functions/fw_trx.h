@@ -40,6 +40,7 @@ extern int trx_measure_count;
 extern int txstopdelay;
 extern volatile uint8_t trxRxSignal;
 extern volatile uint8_t trxRxNoise;
+extern volatile bool trxIsTransmittingTone;
 
 void trx_check_analog_squelch();
 int	trxGetMode();
@@ -70,5 +71,6 @@ void trxReadRSSIAndNoise();
 void trxSelectVoiceChannel(uint8_t channel);
 void trxSetTone1(int toneFreq);
 void trxSetTone2(int toneFreq);
+void trxSetDTMF(int code);
 
 #endif /* _FW_TRX_H_ */
