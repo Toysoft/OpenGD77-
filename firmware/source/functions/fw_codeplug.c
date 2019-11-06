@@ -35,6 +35,10 @@ const int CODEPLUG_RX_GROUP_LEN = 0x50;
 const int CODEPLUG_ADDR_CONTACTS = 0x87620;
 const int CODEPLUG_CONTACTS_LEN = 0x18;
 
+const int CODEPLUG_ADDR_DTMF_CONTACTS = 0x02f88;
+const int CODEPLUG_DTMF_CONTACTS_LEN = 0x10;
+const int CODEPLUG_DTMF_CONTACTS_MAX_COUNT = 32;
+
 const int CODEPLUG_ADDR_USER_DMRID = 0x00E8;
 const int CODEPLUG_ADDR_USER_CALLSIGN = 0x00E0;
 
@@ -377,6 +381,24 @@ void codeplugContactGetDataForIndex(int index, struct_codeplugContact_t *contact
 	SPI_Flash_read(CODEPLUG_ADDR_CONTACTS + index*sizeof(struct_codeplugContact_t),(uint8_t *)contact,sizeof(struct_codeplugContact_t));
 	contact->tgNumber = bcd2int(byteSwap32(contact->tgNumber));
 }
+
+void codeplugDTMFContactGetDataForIndex(struct_codeplugDTMFContactList_t *contactList)
+{
+	int i;
+
+	EEPROM_Read(CODEPLUG_ADDR_DTMF_CONTACTS,(uint8_t *)contactList, sizeof(struct_codeplugContact_t) * CODEPLUG_DTMF_CONTACTS_MAX_COUNT);
+
+	for(i=0;i<CODEPLUG_DTMF_CONTACTS_MAX_COUNT;i++)
+	{
+		// Empty contact names contain 0xFF
+		if (contactList->contacts->name[0] == 0xff)
+		{
+			break;
+		}
+	}
+	contactList->numContacts = i;
+}
+
 
 int codeplugGetUserDMRID()
 {

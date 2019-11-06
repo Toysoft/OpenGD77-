@@ -155,19 +155,20 @@ void fw_main_task()
         	fw_check_button_event(&buttons, &button_event);// Read button state and event
         	fw_check_key_event(&keys, &key_event);// Read keyboard state and event
 
-        	if (key_event==EVENT_KEY_CHANGE)
-        	{
-        		if (keys!=0)
-        		{
-            	    set_melody(melody_key_beep);
+			if (key_event == EVENT_KEY_CHANGE)
+			{
+				if (keys != 0 && (buttons & BUTTON_PTT) == 0)
+				{
+					set_melody(melody_key_beep);
 				}
 
-    			if (menuDisplayLightTimer == 0 && nonVolatileSettings.backLightTimeout != 0)
-    			{
-    				key_event = EVENT_KEY_NONE;
-    				displayLightTrigger();
-    			}
-        	}
+				if (menuDisplayLightTimer == 0
+						&& nonVolatileSettings.backLightTimeout != 0)
+				{
+					key_event = EVENT_KEY_NONE;
+					displayLightTrigger();
+				}
+			}
 
 
 
