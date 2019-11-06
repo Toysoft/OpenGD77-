@@ -28,6 +28,7 @@ volatile bool trxIsTransmitting = false;
 uint32_t trxTalkGroupOrPcId = 9;// Set to local TG just in case there is some problem with it not being loaded
 uint32_t trxDMRID = 0;// Set ID to 0. Not sure if its valid. This value needs to be loaded from the codeplug.
 int txstopdelay = 0;
+volatile bool trxIsTransmittingTone = false;
 
 const int RADIO_VHF_MIN			=	1340000;
 const int RADIO_VHF_MAX			=	1740000;
@@ -178,7 +179,7 @@ void trx_check_analog_squelch()
 				displayLightTrigger();
 			}
 		}
-		else
+		else if (trxIsTransmittingTone == false)
 		{
 			GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0); // speaker off
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
@@ -688,6 +689,10 @@ void trxSelectVoiceChannel(uint8_t channel) {
 	case AT1846_VOICE_CHANNEL_TONE2:
 	case AT1846_VOICE_CHANNEL_DTMF:
 		set_clear_I2C_reg_2byte_with_mask(0x79, 0xff, 0xff, 0xc0, 0x00); // Select single tone
+		set_clear_I2C_reg_2byte_with_mask(0x57, 0xff, 0xfe, 0x00, 0x01); // Audio feedback on
+		break;
+	default:
+		set_clear_I2C_reg_2byte_with_mask(0x57, 0xff, 0xfe, 0x00, 0x00); // Audio feedback off
 		break;
 	}
 	set_clear_I2C_reg_2byte_with_mask(0x3a, 0x8f, 0xff, channel, 0x00);
