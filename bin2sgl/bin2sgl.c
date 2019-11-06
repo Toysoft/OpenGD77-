@@ -2890,7 +2890,7 @@ static int ConvertBinFile(const char *inFile)
      }
      else
      {
-	  strcat(outFile, ".sql");
+	  strcat(outFile, ".sgl");
      }
      
      //printf("Input file: '%s'\nOutput file: '%s'\n", inFile, outFile);
