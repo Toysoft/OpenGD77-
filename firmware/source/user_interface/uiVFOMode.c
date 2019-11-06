@@ -455,10 +455,14 @@ static void handleEvent(int buttons, int keys, int events)
 		{
 			if (trxGetMode() == RADIO_MODE_DIGITAL)
 			{
-				currentIndexInTRxGroup++;
-				if (currentIndexInTRxGroup > (rxGroupData.NOT_IN_MEMORY_numTGsInGroup -1))
+				if (nonVolatileSettings.overrideTG == 0)
 				{
-					currentIndexInTRxGroup =  0;
+					currentIndexInTRxGroup++;
+					if (currentIndexInTRxGroup
+							> (rxGroupData.NOT_IN_MEMORY_numTGsInGroup - 1))
+					{
+						currentIndexInTRxGroup = 0;
+					}
 				}
 				codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
 				if ((contactData.reserve1 & 0x01) == 0x00)
@@ -503,10 +507,14 @@ static void handleEvent(int buttons, int keys, int events)
 			if (trxGetMode() == RADIO_MODE_DIGITAL)
 			{
 				// To Do change TG in on same channel freq
-				currentIndexInTRxGroup--;
-				if (currentIndexInTRxGroup < 0)
+				if (nonVolatileSettings.overrideTG == 0)
 				{
-					currentIndexInTRxGroup =  rxGroupData.NOT_IN_MEMORY_numTGsInGroup - 1;
+					currentIndexInTRxGroup--;
+					if (currentIndexInTRxGroup < 0)
+					{
+						currentIndexInTRxGroup =
+								rxGroupData.NOT_IN_MEMORY_numTGsInGroup - 1;
+					}
 				}
 
 				codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);

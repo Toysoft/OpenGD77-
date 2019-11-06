@@ -333,10 +333,14 @@ static void handleEvent(int buttons, int keys, int events)
 	{
 		if (trxGetMode() == RADIO_MODE_DIGITAL)
 		{
-			nonVolatileSettings.currentIndexInTRxGroupList++;
-			if (nonVolatileSettings.currentIndexInTRxGroupList > (rxGroupData.NOT_IN_MEMORY_numTGsInGroup -1))
+			if (nonVolatileSettings.overrideTG == 0)
 			{
-				nonVolatileSettings.currentIndexInTRxGroupList =  0;
+				nonVolatileSettings.currentIndexInTRxGroupList++;
+				if (nonVolatileSettings.currentIndexInTRxGroupList
+						> (rxGroupData.NOT_IN_MEMORY_numTGsInGroup - 1))
+				{
+					nonVolatileSettings.currentIndexInTRxGroupList = 0;
+				}
 			}
 			codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
 
@@ -384,10 +388,14 @@ static void handleEvent(int buttons, int keys, int events)
 		if (trxGetMode() == RADIO_MODE_DIGITAL)
 		{
 			// To Do change TG in on same channel freq
-			nonVolatileSettings.currentIndexInTRxGroupList--;
-			if (nonVolatileSettings.currentIndexInTRxGroupList < 0)
+			if (nonVolatileSettings.overrideTG == 0)
 			{
-				nonVolatileSettings.currentIndexInTRxGroupList =  rxGroupData.NOT_IN_MEMORY_numTGsInGroup - 1;
+				nonVolatileSettings.currentIndexInTRxGroupList--;
+				if (nonVolatileSettings.currentIndexInTRxGroupList < 0)
+				{
+					nonVolatileSettings.currentIndexInTRxGroupList =
+							rxGroupData.NOT_IN_MEMORY_numTGsInGroup - 1;
+				}
 			}
 
 			codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
