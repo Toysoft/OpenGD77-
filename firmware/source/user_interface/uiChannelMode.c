@@ -121,6 +121,19 @@ static void loadChannelData(bool useChannelDataInMemory)
 
 		codeplugRxGroupGetDataForIndex(channelScreenChannelData.rxGroupList,&rxGroupData);
 		codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
+
+		if ((contactData.reserve1 & 0x01) == 0x00)
+		{
+			if ( (contactData.reserve1 & 0x02) !=0 )
+			{
+				channelScreenChannelData.flag2 = channelScreenChannelData.flag2 | ~0x40;
+			}
+			else
+			{
+				channelScreenChannelData.flag2 = channelScreenChannelData.flag2 & ~0x40;
+			}
+		}
+
 		if (nonVolatileSettings.overrideTG == 0)
 		{
 			trxTalkGroupOrPcId = contactData.tgNumber;
@@ -327,6 +340,18 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 			codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
 
+			if ((contactData.reserve1 & 0x01) == 0x00)
+			{
+				if ( (contactData.reserve1 & 0x02) !=0 )
+				{
+					currentChannelData->flag2 = currentChannelData->flag2 | 0x40;
+				}
+				else
+				{
+					currentChannelData->flag2 = currentChannelData->flag2 & ~0x40;
+				}
+			}
+
 			nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
 			trxTalkGroupOrPcId = contactData.tgNumber;
 			lastHeardClearLastID();
@@ -366,6 +391,18 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 
 			codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
+
+			if ((contactData.reserve1 & 0x01) == 0x00)
+			{
+				if ( (contactData.reserve1 & 0x02) !=0 )
+				{
+					currentChannelData->flag2 = currentChannelData->flag2 | 0x40;
+				}
+				else
+				{
+					currentChannelData->flag2 = currentChannelData->flag2 & ~0x40;
+				}
+			}
 			nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
 			trxTalkGroupOrPcId = contactData.tgNumber;
 			lastHeardClearLastID();
@@ -420,12 +457,10 @@ static void handleEvent(int buttons, int keys, int events)
 				if (currentChannelData->flag2 & 0x40)
 				{
 					currentChannelData->flag2 = currentChannelData->flag2 & ~0x40;
-					channelScreenChannelData.flag2 = channelScreenChannelData.flag2 & ~0x40;
 				}
 				else
 				{
 					currentChannelData->flag2 = currentChannelData->flag2 | 0x40;
-					channelScreenChannelData.flag2 = channelScreenChannelData.flag2 | 0x40;
 				}
 			//	init_digital();
 				clearActiveDMRID();
@@ -582,7 +617,7 @@ static void handleEvent(int buttons, int keys, int events)
 
 // Quick Menu functions
 
-enum CHANNEL_SCREEN_QUICK_MENU_ITEMS { CH_SCREEN_QUICK_MENU_COPY2VFO = 0, CH_SCREEN_QUICK_MENU_UNUSED_1,CH_SCREEN_QUICK_MENU_UNUSED_2,
+enum CHANNEL_SCREEN_QUICK_MENU_ITEMS { CH_SCREEN_QUICK_MENU_COPY2VFO = 0, CH_SCREEN_QUICK_MENU_COPY_FROM_VFO,CH_SCREEN_QUICK_MENU_UNUSED_2,
 									NUM_CH_SCREEN_QUICK_MENU_ITEMS};// The last item in the list is used so that we automatically get a total number of items in the list
 
 static void updateQuickMenuScreen()
@@ -608,20 +643,11 @@ static void updateQuickMenuScreen()
 		switch(mNum)
 		{
 			case CH_SCREEN_QUICK_MENU_COPY2VFO:
-				strcpy(buf,"CH --> VFO");
+				strcpy(buf,"Channel --> VFO");
 				break;
-				/*
-			case CH_SCREEN_QUICK_MENU_TX_SWAP_RX:
-				if (isTxRxFreqSwap)
-				{
-					strcpy(buf,"Tx<-->RX:ON");
-				}
-				else
-				{
-					strcpy(buf,"Tx<-->RX:OFF");
-				}
+			case CH_SCREEN_QUICK_MENU_COPY_FROM_VFO:
+				strcpy(buf,"VFO --> Channel");
 				break;
-				*/
 			default:
 				strcpy(buf,"");
 				break;
@@ -664,8 +690,12 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 		switch(gMenusCurrentItemIndex)
 		{
 			case CH_SCREEN_QUICK_MENU_COPY2VFO:
-				memcpy(&nonVolatileSettings.vfoChannel,&channelScreenChannelData,sizeof(struct_codeplugChannel_t));
+				memcpy(&nonVolatileSettings.vfoChannel.rxFreq,&channelScreenChannelData.rxFreq,sizeof(struct_codeplugChannel_t) - 16);// Don't copy the name of channel, which are in the first 16 bytes
 				menuSystemPopAllAndDisplaySpecificRootMenu(MENU_VFO_MODE);
+				break;
+			case CH_SCREEN_QUICK_MENU_COPY_FROM_VFO:
+				memcpy(&channelScreenChannelData.rxFreq,&nonVolatileSettings.vfoChannel.rxFreq,sizeof(struct_codeplugChannel_t)- 16);// Don't copy the name of the vfo, which are in the first 16 bytes
+				menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
 				break;
 		}
 		return;
@@ -686,32 +716,6 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 			gMenusCurrentItemIndex=NUM_CH_SCREEN_QUICK_MENU_ITEMS-1;
 		}
 	}
-	else if ((keys & KEY_RIGHT)!=0)
-		{
-			switch(gMenusCurrentItemIndex)
-			{
-				case CH_SCREEN_QUICK_MENU_COPY2VFO:
-					break;
-					/*
-				case CH_SCREEN_QUICK_MENU_TX_SWAP_RX:
-					handleTxRxFreqToggle();
-					break;
-					*/
-			}
-		}
-		else if ((keys & KEY_LEFT)!=0)
-		{
-			switch(gMenusCurrentItemIndex)
-			{
-				case CH_SCREEN_QUICK_MENU_COPY2VFO:
-					break;
-					/*
-				case CH_SCREEN_QUICK_MENU_TX_SWAP_RX:
-					handleTxRxFreqToggle();
-					break;
-					*/
-			}
-		}
 	updateQuickMenuScreen();
 }
 
