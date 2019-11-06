@@ -2902,7 +2902,7 @@ static int ConvertBinFile(const char *inFile)
 	  return -1;
      
      
-     size_t len = (sizeof(Header318_0x0807) / sizeof(uint8_t));
+     size_t len = (sizeof(Header318_0x0807) / sizeof(Header318_0x0807[0]));
      ssize_t wlen = write(outFD, &Header318_0x0807[0], len);
 
      //printf("Writing data...\n");
