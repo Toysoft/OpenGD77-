@@ -456,9 +456,10 @@ static void handleEvent(int buttons, int keys, int events)
 		{
 			if (buttons & BUTTON_SK2)
 			{
-				if (nonVolatileSettings.txPowerSetting < 7)
+				if (nonVolatileSettings.txPowerLevel < 7)
 				{
-					nonVolatileSettings.txPowerSetting++;
+					nonVolatileSettings.txPowerLevel++;
+					trxSetPowerFromLevel(nonVolatileSettings.txPowerLevel);
 					menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 					menuChannelModeUpdateScreen(0);
 				}
@@ -519,9 +520,10 @@ static void handleEvent(int buttons, int keys, int events)
 		{
 			if (buttons & BUTTON_SK2)
 			{
-				if (nonVolatileSettings.txPowerSetting > 0)
+				if (nonVolatileSettings.txPowerLevel > 0)
 				{
-					nonVolatileSettings.txPowerSetting--;
+					nonVolatileSettings.txPowerLevel--;
+					trxSetPowerFromLevel(nonVolatileSettings.txPowerLevel);
 					menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 					menuChannelModeUpdateScreen(0);
 				}

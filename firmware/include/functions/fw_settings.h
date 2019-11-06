@@ -46,13 +46,12 @@ typedef struct settingsStruct
 	bool			displayInverseVideo;
 	bool			useCalibration;
 	bool			txFreqLimited;
-	uint16_t		txPower;
+	uint16_t		txPowerLevel;
 	struct_codeplugChannel_t vfoChannel;
 	uint32_t		overrideTG;
 	uint8_t			txTimeoutBeepX5Secs;
 	uint8_t			beepVolumeDivider;
 	uint8_t			micGainDMR;
-	uint8_t			txPowerSetting;
 } settingsStruct_t;
 
 extern settingsStruct_t nonVolatileSettings;

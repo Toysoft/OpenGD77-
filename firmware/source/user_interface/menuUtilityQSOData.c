@@ -44,7 +44,7 @@ const int RSSI_UPDATE_COUNTER_RELOAD = 500;
 uint32_t menuUtilityReceivedPcId 	= 0;// No current Private call awaiting acceptance
 uint32_t menuUtilityTgBeforePcMode 	= 0;// No TG saved, prior to a Private call being accepted.
 
-static char *POWER_LEVELS[]={"250mW","500mW","750mW","1W","2W","3W","4W","5W"};
+char *POWER_LEVELS[]={"250mW","500mW","750mW","1W","2W","3W","4W","5W"};
 
 void lastheardInitList()
 {
@@ -456,7 +456,7 @@ void menuUtilityRenderHeader()
 
 	UC1701_printAt(0,Y_OFFSET, buffer,UC1701_FONT_6X8);
 
-	UC1701_printCentered(Y_OFFSET,POWER_LEVELS[nonVolatileSettings.txPowerSetting],UC1701_FONT_6X8);
+	UC1701_printCentered(Y_OFFSET,POWER_LEVELS[nonVolatileSettings.txPowerLevel],UC1701_FONT_6X8);
 
 
 	int  batteryPerentage = (int)(((averageBatteryVoltage - CUTOFF_VOLTAGE_UPPER_HYST) * 100) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));

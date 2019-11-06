@@ -29,6 +29,7 @@ uint32_t trxTalkGroupOrPcId = 9;// Set to local TG just in case there is some pr
 uint32_t trxDMRID = 0;// Set ID to 0. Not sure if its valid. This value needs to be loaded from the codeplug.
 int txstopdelay = 0;
 volatile bool trxIsTransmittingTone = false;
+uint16_t txPower;
 
 const int RADIO_VHF_MIN			=	1340000;
 const int RADIO_VHF_MAX			=	1740000;
@@ -65,6 +66,8 @@ static volatile bool txPAEnabled=false;
 
 const int trxDTMFfreq1[] = { 1336, 1209, 1336, 1477, 1209, 1336, 1477, 1209, 1336, 1477, 1633, 1633, 1633, 1633, 1209, 1477 };
 const int trxDTMFfreq2[] = {  941,  697,  697,  697,  770,  770,  770,  852,  852,  852,  697,  770,  852,  941,  941,  941 };
+
+calibrationPowerValues_t trxPowerSettings;
 
 int	trxGetMode()
 {
@@ -193,6 +196,9 @@ void trxSetFrequency(int fRx,int fTx)
 {
 	if (currentRxFrequency!=fRx || currentTxFrequency!=fTx)
 	{
+		calibrationGetPowerForFrequency(fTx, &trxPowerSettings);
+		trxSetPowerFromLevel(nonVolatileSettings.txPowerLevel);
+
 		currentRxFrequency=fRx;
 		currentTxFrequency=fTx;
 
@@ -394,21 +400,47 @@ void trx_activateTx()
 		GPIO_PinWrite(GPIO_UHF_TX_amp_power, Pin_UHF_TX_amp_power, 0);// I can't see why this would be needed. Its probably just for safety.
 		GPIO_PinWrite(GPIO_VHF_TX_amp_power, Pin_VHF_TX_amp_power, 1);
 	}
-    DAC_SetBufferValue(DAC0, 0U, nonVolatileSettings.txPower);	// PA drive to appropriate level
+    DAC_SetBufferValue(DAC0, 0U, txPower);	// PA drive to appropriate level
 }
 
-void trxSetPower(uint32_t powerVal)
+void trxSetPowerFromLevel(int powerLevel)
 {
+	uint16_t powerVal=1400;// Default to around 1W
+	int stepPerWatt = (trxPowerSettings.highPower - trxPowerSettings.lowPower)/4;
+
+	switch(powerLevel)
+	{
+		case 0:// 250mW
+			powerVal = trxPowerSettings.lowPower - 500;
+			break;
+		case 1:// 500mW
+			powerVal = trxPowerSettings.lowPower - 300;
+			break;
+		case 2:// 750mW
+			powerVal = trxPowerSettings.lowPower - 150;
+			break;
+		case 3:// 1W
+		case 4:// 2W
+		case 5:// 3W
+		case 6:// 4W
+		case 7:// 5W
+			powerVal = ((powerLevel - 3) * stepPerWatt) + trxPowerSettings.lowPower;
+			break;
+		case 8:// 5W+
+			powerVal=4095;
+			break;
+	}
+
 	if (powerVal>4095)
 	{
 		powerVal=4095;
 	}
-	nonVolatileSettings.txPower = powerVal;
+	txPower = powerVal;
 }
 
 uint16_t trxGetPower()
 {
-	return nonVolatileSettings.txPower;
+	return txPower;
 }
 
 void trxCalcBandAndFrequencyOffset(int *band_offset, int *freq_offset)

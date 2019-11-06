@@ -23,7 +23,7 @@ static void updateScreen();
 static void handleEvent(int buttons, int keys, int events);
 static bool	doFactoryReset;
 static const int MAX_POWER = 4100;// Max DAC value is actually 4096 but no one should need to drive the PA that hard, so I rounded this down to 4000
-enum OPTIONS_MENU_LIST { OPTIONS_MENU_POWER = 0, OPTIONS_MENU_TIMEOUT_BEEP,OPTIONS_MENU_FACTORY_RESET,OPTIONS_MENU_USE_CALIBRATION,
+enum OPTIONS_MENU_LIST { OPTIONS_MENU_TIMEOUT_BEEP=0,OPTIONS_MENU_FACTORY_RESET,OPTIONS_MENU_USE_CALIBRATION,
 							OPTIONS_MENU_TX_FREQ_LIMITS,OPTIONS_MENU_BEEP_VOLUME,OPTIONS_MIC_GAIN_DMR,
 							NUM_OPTIONS_MENU_ITEMS};
 
@@ -67,10 +67,11 @@ static void updateScreen()
 		}
 
 		switch(mNum)
-		{
+		{/*
 			case OPTIONS_MENU_POWER:
 				sprintf(buf,"Power %d",trxGetPower());
 				break;
+				*/
 			case OPTIONS_MENU_TIMEOUT_BEEP:
 				if (nonVolatileSettings.txTimeoutBeepX5Secs!=0)
 				{
@@ -156,6 +157,7 @@ static void handleEvent(int buttons, int keys, int events)
 	{
 		switch(gMenusCurrentItemIndex)
 		{
+		/*
 			case OPTIONS_MENU_POWER:
 				if (buttons && BUTTON_SK2)
 				{
@@ -168,6 +170,7 @@ static void handleEvent(int buttons, int keys, int events)
 					trxSetPower(tmpPower);
 				}
 				break;
+				*/
 			case OPTIONS_MENU_TIMEOUT_BEEP:
 				if (nonVolatileSettings.txTimeoutBeepX5Secs < 4)
 				{
@@ -202,7 +205,7 @@ static void handleEvent(int buttons, int keys, int events)
 	{
 
 		switch(gMenusCurrentItemIndex)
-		{
+		{/*
 			case OPTIONS_MENU_POWER:
 				{
 					uint32_t pwr = trxGetPower();
@@ -219,7 +222,7 @@ static void handleEvent(int buttons, int keys, int events)
 						trxSetPower(pwr- powerChangeValue);
 					}
 				}
-				break;
+				break;*/
 			case OPTIONS_MENU_TIMEOUT_BEEP:
 				if (nonVolatileSettings.txTimeoutBeepX5Secs>0)
 				{
