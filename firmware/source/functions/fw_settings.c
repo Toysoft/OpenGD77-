@@ -51,6 +51,12 @@ bool settingsLoadSettings()
 	{
 		settingsRestoreDefaultSettings();
 	}
+	// new setting will probably result in the value being 255.
+	if (nonVolatileSettings.txPowerSetting > 7)
+	{
+		nonVolatileSettings.txPowerSetting=3;// 1 W
+	}
+
 	trxDMRID = codeplugGetUserDMRID();
 
 	// Added this parameter without changing the magic number, so need to check for default / invalid numbers
@@ -125,6 +131,7 @@ void settingsRestoreDefaultSettings()
 	nonVolatileSettings.txTimeoutBeepX5Secs = 0;
 	nonVolatileSettings.beepVolumeDivider = 1;// no reduction in volume
 	nonVolatileSettings.micGainDMR = 11;// Normal value used by the official firmware
+	nonVolatileSettings.txPowerSetting=3;// 1 W
 	settingsInitVFOChannel();
 	currentChannelData = &nonVolatileSettings.vfoChannel;// Set the current channel data to point to the VFO data since the default screen will be the VFO
 
