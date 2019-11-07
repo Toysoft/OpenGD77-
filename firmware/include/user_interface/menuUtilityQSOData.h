@@ -46,7 +46,7 @@ enum QSO_DISPLAY_STATE
 	QSO_DISPLAY_CALLER_DATA
 };
 
-extern char *POWER_LEVELS[];
+extern const char *POWER_LEVELS[];
 extern LinkItem_t *LinkHead;
 extern int menuDisplayQSODataState;
 extern int qsodata_timer;

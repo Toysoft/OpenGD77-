@@ -852,7 +852,7 @@ static void updateScreen(int rxCommandState)
 			}
 			sprintf(buffer,"%dmW" , powermW) ;
 			*/
-			UC1701_printCore(0, 32, POWER_LEVELS[nonVolatileSettings.txPowerLevel], UC1701_FONT_GD77_8x16, 2, false);
+			UC1701_printCore(0, 32, (char *)POWER_LEVELS[nonVolatileSettings.txPowerLevel], UC1701_FONT_GD77_8x16, 2, false);
 		}
 		val_before_dp = freq_rx/10000;
 		val_after_dp = freq_rx - val_before_dp*10000;
