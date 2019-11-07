@@ -21,6 +21,7 @@
 
 #include "fw_sound.h"
 #include "fw_i2c.h"
+#include "fw_calibration.h"
 
 extern const int RADIO_VHF_MIN;
 extern const int RADIO_VHF_MAX;
@@ -40,6 +41,9 @@ extern int trx_measure_count;
 extern int txstopdelay;
 extern volatile uint8_t trxRxSignal;
 extern volatile uint8_t trxRxNoise;
+extern volatile bool trxIsTransmittingTone;
+extern uint16_t txPower;
+extern calibrationPowerValues_t trxPowerSettings;
 
 void trx_check_analog_squelch();
 int	trxGetMode();
@@ -51,7 +55,7 @@ void trx_setRX();
 void trx_setTX();
 void trx_activateRx();
 void trx_activateTx();
-void trxSetPower(uint32_t powerVal);
+void trxSetPowerFromLevel(int powerLevel);
 uint16_t trxGetPower();
 void trxUpdateC6000Calibration();
 void trxUpdateAT1846SCalibration();
@@ -70,5 +74,6 @@ void trxReadRSSIAndNoise();
 void trxSelectVoiceChannel(uint8_t channel);
 void trxSetTone1(int toneFreq);
 void trxSetTone2(int toneFreq);
+void trxSetDTMF(int code);
 
 #endif /* _FW_TRX_H_ */

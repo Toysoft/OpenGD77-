@@ -18,8 +18,6 @@
 #include <user_interface/menuSystem.h>
 #include "fw_trx.h"
 
-
-static void handleEvent(int buttons, int keys, int events);
 static void handleTick();
 
 static int mode=0;

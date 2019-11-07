@@ -73,7 +73,8 @@ int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 				if (RssiUpdateCounter-- == 0)
 				{
 					drawRSSIBarGraph();
-					UC1701_render();
+					UC1701RenderRows(1,2);// Only render the second row which contains the bar graph, as there is no need to redraw the rest of the screen
+					//UC1701_render();
 					RssiUpdateCounter = RSSI_UPDATE_COUNTER_RELOAD;
 				}
 			}
@@ -327,107 +328,139 @@ static void handleEvent(int buttons, int keys, int events)
 			return;
 		}
 	}
-
-
-	if ((keys & KEY_RIGHT)!=0)
+	else if ((keys & KEY_RIGHT)!=0)
 	{
-		if (trxGetMode() == RADIO_MODE_DIGITAL)
+		if (buttons & BUTTON_SK2)
 		{
-			nonVolatileSettings.currentIndexInTRxGroupList++;
-			if (nonVolatileSettings.currentIndexInTRxGroupList > (rxGroupData.NOT_IN_MEMORY_numTGsInGroup -1))
+			if (nonVolatileSettings.txPowerLevel < 7)
 			{
-				nonVolatileSettings.currentIndexInTRxGroupList =  0;
+				nonVolatileSettings.txPowerLevel++;
+				trxSetPowerFromLevel(nonVolatileSettings.txPowerLevel);
+				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+				menuChannelModeUpdateScreen(0);
 			}
-			codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
-
-			if ((contactData.reserve1 & 0x01) == 0x00)
-			{
-				if ( (contactData.reserve1 & 0x02) !=0 )
-				{
-					currentChannelData->flag2 = currentChannelData->flag2 | 0x40;
-				}
-				else
-				{
-					currentChannelData->flag2 = currentChannelData->flag2 & ~0x40;
-				}
-			}
-
-			nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
-			trxTalkGroupOrPcId = contactData.tgNumber;
-			lastHeardClearLastID();
-			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-			menuChannelModeUpdateScreen(0);
 		}
 		else
 		{
-			if(currentChannelData->sql==0)			//If we were using default squelch level
+			if (trxGetMode() == RADIO_MODE_DIGITAL)
 			{
-				currentChannelData->sql=10;			//start the adjustment from that point.
+				if (nonVolatileSettings.overrideTG == 0)
+				{
+					nonVolatileSettings.currentIndexInTRxGroupList++;
+					if (nonVolatileSettings.currentIndexInTRxGroupList
+							> (rxGroupData.NOT_IN_MEMORY_numTGsInGroup - 1))
+					{
+						nonVolatileSettings.currentIndexInTRxGroupList = 0;
+					}
+				}
+				codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
+
+				if ((contactData.reserve1 & 0x01) == 0x00)
+				{
+					if ( (contactData.reserve1 & 0x02) !=0 )
+					{
+						currentChannelData->flag2 = currentChannelData->flag2 | 0x40;
+					}
+					else
+					{
+						currentChannelData->flag2 = currentChannelData->flag2 & ~0x40;
+					}
+				}
+
+				nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
+				trxTalkGroupOrPcId = contactData.tgNumber;
+				lastHeardClearLastID();
+				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+				menuChannelModeUpdateScreen(0);
 			}
 			else
 			{
-				if (currentChannelData->sql < CODEPLUG_MAX_VARIABLE_SQUELCH)
-
+				if(currentChannelData->sql==0)			//If we were using default squelch level
 				{
-					currentChannelData->sql++;
+					currentChannelData->sql=10;			//start the adjustment from that point.
 				}
-			}
+				else
+				{
+					if (currentChannelData->sql < CODEPLUG_MAX_VARIABLE_SQUELCH)
 
-			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-			displaySquelch=true;
-			menuChannelModeUpdateScreen(0);
+					{
+						currentChannelData->sql++;
+					}
+				}
+
+				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+				displaySquelch=true;
+				menuChannelModeUpdateScreen(0);
+			}
 		}
 
 	}
 	else if ((keys & KEY_LEFT)!=0)
 	{
-		if (trxGetMode() == RADIO_MODE_DIGITAL)
+		if (buttons & BUTTON_SK2)
 		{
-			// To Do change TG in on same channel freq
-			nonVolatileSettings.currentIndexInTRxGroupList--;
-			if (nonVolatileSettings.currentIndexInTRxGroupList < 0)
+			if (nonVolatileSettings.txPowerLevel > 0)
 			{
-				nonVolatileSettings.currentIndexInTRxGroupList =  rxGroupData.NOT_IN_MEMORY_numTGsInGroup - 1;
+				nonVolatileSettings.txPowerLevel--;
+				trxSetPowerFromLevel(nonVolatileSettings.txPowerLevel);
+				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+				menuChannelModeUpdateScreen(0);
 			}
-
-			codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
-
-			if ((contactData.reserve1 & 0x01) == 0x00)
-			{
-				if ( (contactData.reserve1 & 0x02) !=0 )
-				{
-					currentChannelData->flag2 = currentChannelData->flag2 | 0x40;
-				}
-				else
-				{
-					currentChannelData->flag2 = currentChannelData->flag2 & ~0x40;
-				}
-			}
-			nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
-			trxTalkGroupOrPcId = contactData.tgNumber;
-			lastHeardClearLastID();
-			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-			menuChannelModeUpdateScreen(0);
 		}
 		else
-		{
-			if(currentChannelData->sql==0)			//If we were using default squelch level
 			{
-				currentChannelData->sql=10;			//start the adjustment from that point.
+			if (trxGetMode() == RADIO_MODE_DIGITAL)
+			{
+				// To Do change TG in on same channel freq
+				if (nonVolatileSettings.overrideTG == 0)
+				{
+					nonVolatileSettings.currentIndexInTRxGroupList--;
+					if (nonVolatileSettings.currentIndexInTRxGroupList < 0)
+					{
+						nonVolatileSettings.currentIndexInTRxGroupList =
+								rxGroupData.NOT_IN_MEMORY_numTGsInGroup - 1;
+					}
+				}
+
+				codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
+
+				if ((contactData.reserve1 & 0x01) == 0x00)
+				{
+					if ( (contactData.reserve1 & 0x02) !=0 )
+					{
+						currentChannelData->flag2 = currentChannelData->flag2 | 0x40;
+					}
+					else
+					{
+						currentChannelData->flag2 = currentChannelData->flag2 & ~0x40;
+					}
+				}
+				nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
+				trxTalkGroupOrPcId = contactData.tgNumber;
+				lastHeardClearLastID();
+				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+				menuChannelModeUpdateScreen(0);
 			}
 			else
 			{
-				if (currentChannelData->sql > CODEPLUG_MIN_VARIABLE_SQUELCH)
+				if(currentChannelData->sql==0)			//If we were using default squelch level
 				{
-					currentChannelData->sql--;
+					currentChannelData->sql=10;			//start the adjustment from that point.
 				}
+				else
+				{
+					if (currentChannelData->sql > CODEPLUG_MIN_VARIABLE_SQUELCH)
+					{
+						currentChannelData->sql--;
+					}
+				}
+
+				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+				displaySquelch=true;
+				menuChannelModeUpdateScreen(0);
 			}
 
-			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-			displaySquelch=true;
-			menuChannelModeUpdateScreen(0);
 		}
-
 	}
 	else if ((keys & KEY_STAR)!=0)
 	{

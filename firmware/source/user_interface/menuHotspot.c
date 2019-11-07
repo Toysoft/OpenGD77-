@@ -149,8 +149,6 @@ const uint8_t DMR_AUDIO_SEQ_SYNC[6][7] = {  {0x07U, 0xF0U, 0x00U, 0x00U, 0x00U, 
 const uint8_t DMR_AUDIO_SEQ_MASK[]  = 		{0x0FU, 0xF0U, 0x00U, 0x00U, 0x00U, 0x0FU, 0xF0U};
 const uint8_t DMR_EMBED_SEQ_MASK[]  = 		{0x00U, 0x0FU, 0xFFU, 0xFFU, 0xFFU, 0xF0U, 0x00U};
 
-static calibrationPowerValues_t powerSettings;
-
 static void updateScreen(int rxState);
 static void handleEvent(int buttons, int keys, int events);
 void handleHotspotRequest();
@@ -749,7 +747,6 @@ int menuHotspotMode(int buttons, int keys, int events, bool isFirstRun)
 	if (isFirstRun)
 	{
 		hotspotState = HOTSPOT_STATE_NOT_CONNECTED;
-		savedPower = nonVolatileSettings.txPower;
 		//nonVolatileSettings.txPower=1800;// Set around 1W
 		savedTGorPC = trxTalkGroupOrPcId;// Save the current TG or PC
 		trxTalkGroupOrPcId=0;
@@ -847,13 +844,15 @@ static void updateScreen(int rxCommandState)
 		{
 			sprintf(buffer,"CC:%d" ,  trxGetDMRColourCode());//, trxGetDMRTimeSlot()+1) ;
 			UC1701_printCore(0, 32, buffer, UC1701_FONT_GD77_8x16, 0, false);
+			/*
 			int powermW =  (5000 * ((int)nonVolatileSettings.txPower - LOWEST_POWER_SETTING)) / ((int)powerSettings.highPower - LOWEST_POWER_SETTING);
 			if (powermW < 0)
 			{
 				powermW=0;
 			}
 			sprintf(buffer,"%dmW" , powermW) ;
-			UC1701_printCore(0, 32, buffer, UC1701_FONT_GD77_8x16, 2, false);
+			*/
+			UC1701_printCore(0, 32, (char *)POWER_LEVELS[nonVolatileSettings.txPowerLevel], UC1701_FONT_GD77_8x16, 2, false);
 		}
 		val_before_dp = freq_rx/10000;
 		val_after_dp = freq_rx - val_before_dp*10000;
@@ -879,7 +878,7 @@ static void handleEvent(int buttons, int keys, int events)
 			GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
 		}
 		trxTalkGroupOrPcId = savedTGorPC;// restore the current TG or PC
-		nonVolatileSettings.txPower = savedPower;// restore power setting
+// OLD TX POWER CONTROL		nonVolatileSettings.txPower = savedPower;// restore power setting
 		trxDMRID = codeplugGetUserDMRID();
 		settingsUsbMode = USB_MODE_CPS;
 
@@ -934,12 +933,11 @@ const int BAN2_MAX  = 43800000;
 
 	SEGGER_RTT_printf(0, "Tx freq = %d, Rx freq = %d, Power = %d\n",freq_tx,freq_rx,rf_power);
 
-	calibrationGetPowerForFrequency(freq_tx, &powerSettings);
+
 	if (rf_power!=255)
 	{
-
-		nonVolatileSettings.txPower = ((powerSettings.highPower-LOWEST_POWER_SETTING) * rf_power)/255 + LOWEST_POWER_SETTING ;
-		SEGGER_RTT_printf(0, "Power = %d\n",nonVolatileSettings.txPower);
+		txPower = ((trxPowerSettings.highPower-LOWEST_POWER_SETTING) * rf_power)/255 + LOWEST_POWER_SETTING ;
+		SEGGER_RTT_printf(0, "Power = %d\n",rf_power/255);
 	}
 
 	if ((freq_tx>= BAN1_MIN && freq_tx <= BAN1_MAX) || (freq_tx>= BAN2_MIN && freq_tx <= BAN2_MAX))

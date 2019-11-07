@@ -46,7 +46,7 @@ typedef struct settingsStruct
 	bool			displayInverseVideo;
 	bool			useCalibration;
 	bool			txFreqLimited;
-	uint16_t		txPower;
+	uint16_t		txPowerLevel;
 	struct_codeplugChannel_t vfoChannel;
 	uint32_t		overrideTG;
 	uint8_t			txTimeoutBeepX5Secs;

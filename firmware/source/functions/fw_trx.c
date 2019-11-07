@@ -28,6 +28,8 @@ volatile bool trxIsTransmitting = false;
 uint32_t trxTalkGroupOrPcId = 9;// Set to local TG just in case there is some problem with it not being loaded
 uint32_t trxDMRID = 0;// Set ID to 0. Not sure if its valid. This value needs to be loaded from the codeplug.
 int txstopdelay = 0;
+volatile bool trxIsTransmittingTone = false;
+uint16_t txPower;
 
 const int RADIO_VHF_MIN			=	1340000;
 const int RADIO_VHF_MAX			=	1740000;
@@ -61,6 +63,11 @@ volatile uint8_t trxRxNoise;
 
 int trxDMRMode = DMR_MODE_ACTIVE;// Active is for simplex
 static volatile bool txPAEnabled=false;
+
+const int trxDTMFfreq1[] = { 1336, 1209, 1336, 1477, 1209, 1336, 1477, 1209, 1336, 1477, 1633, 1633, 1633, 1633, 1209, 1477 };
+const int trxDTMFfreq2[] = {  941,  697,  697,  697,  770,  770,  770,  852,  852,  852,  697,  770,  852,  941,  941,  941 };
+
+calibrationPowerValues_t trxPowerSettings;
 
 int	trxGetMode()
 {
@@ -175,7 +182,7 @@ void trx_check_analog_squelch()
 				displayLightTrigger();
 			}
 		}
-		else
+		else if (trxIsTransmittingTone == false)
 		{
 			GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0); // speaker off
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
@@ -189,6 +196,9 @@ void trxSetFrequency(int fRx,int fTx)
 {
 	if (currentRxFrequency!=fRx || currentTxFrequency!=fTx)
 	{
+		calibrationGetPowerForFrequency(fTx, &trxPowerSettings);
+		trxSetPowerFromLevel(nonVolatileSettings.txPowerLevel);
+
 		currentRxFrequency=fRx;
 		currentTxFrequency=fTx;
 
@@ -390,21 +400,47 @@ void trx_activateTx()
 		GPIO_PinWrite(GPIO_UHF_TX_amp_power, Pin_UHF_TX_amp_power, 0);// I can't see why this would be needed. Its probably just for safety.
 		GPIO_PinWrite(GPIO_VHF_TX_amp_power, Pin_VHF_TX_amp_power, 1);
 	}
-    DAC_SetBufferValue(DAC0, 0U, nonVolatileSettings.txPower);	// PA drive to appropriate level
+    DAC_SetBufferValue(DAC0, 0U, txPower);	// PA drive to appropriate level
 }
 
-void trxSetPower(uint32_t powerVal)
+void trxSetPowerFromLevel(int powerLevel)
 {
+	uint16_t powerVal=1400;// Default to around 1W
+	int stepPerWatt = (trxPowerSettings.highPower - trxPowerSettings.lowPower)/4;
+
+	switch(powerLevel)
+	{
+		case 0:// 250mW
+			powerVal = trxPowerSettings.lowPower - 500;
+			break;
+		case 1:// 500mW
+			powerVal = trxPowerSettings.lowPower - 300;
+			break;
+		case 2:// 750mW
+			powerVal = trxPowerSettings.lowPower - 150;
+			break;
+		case 3:// 1W
+		case 4:// 2W
+		case 5:// 3W
+		case 6:// 4W
+		case 7:// 5W
+			powerVal = ((powerLevel - 3) * stepPerWatt) + trxPowerSettings.lowPower;
+			break;
+		case 8:// 5W+
+			powerVal=4095;
+			break;
+	}
+
 	if (powerVal>4095)
 	{
 		powerVal=4095;
 	}
-	nonVolatileSettings.txPower = powerVal;
+	txPower = powerVal;
 }
 
 uint16_t trxGetPower()
 {
-	return nonVolatileSettings.txPower;
+	return txPower;
 }
 
 void trxCalcBandAndFrequencyOffset(int *band_offset, int *freq_offset)
@@ -679,18 +715,16 @@ bool trxCheckCTCSSFlag()
 }
 
 void trxSelectVoiceChannel(uint8_t channel) {
-	switch (channel) {
+	switch (channel)
+	{
 	case AT1846_VOICE_CHANNEL_TONE1:
 	case AT1846_VOICE_CHANNEL_TONE2:
-		set_clear_I2C_reg_2byte_with_mask(0x79, 0xff, 0xff, 0xc0, 0x00); // Select single tone
-		set_clear_I2C_reg_2byte_with_mask(0x7a, 0x7f, 0xff, 0x40, 0x00); // Disable DTMF, enable single tone
-		break;
 	case AT1846_VOICE_CHANNEL_DTMF:
-		set_clear_I2C_reg_2byte_with_mask(0x79, 0x3f, 0xff, 0x00, 0x00); // Select single tone
-		set_clear_I2C_reg_2byte_with_mask(0x7a, 0x3f, 0xff, 0x80, 0x00); // Enable DTMF, disable single tone
+		set_clear_I2C_reg_2byte_with_mask(0x79, 0xff, 0xff, 0xc0, 0x00); // Select single tone
+		set_clear_I2C_reg_2byte_with_mask(0x57, 0xff, 0xfe, 0x00, 0x01); // Audio feedback on
 		break;
 	default:
-		set_clear_I2C_reg_2byte_with_mask(0x7a, 0x7f, 0xff, 0x00, 0x00); // Disable DTMF, disable single tone
+		set_clear_I2C_reg_2byte_with_mask(0x57, 0xff, 0xfe, 0x00, 0x00); // Audio feedback off
 		break;
 	}
 	set_clear_I2C_reg_2byte_with_mask(0x3a, 0x8f, 0xff, channel, 0x00);
@@ -699,14 +733,20 @@ void trxSelectVoiceChannel(uint8_t channel) {
 void trxSetTone1(int toneFreq)
 {
 	toneFreq = toneFreq * 10;
-
 	write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x35, (toneFreq >> 8) & 0xff,	(toneFreq & 0xff));   // tone1_freq
 }
 
 void trxSetTone2(int toneFreq)
 {
 	toneFreq = toneFreq * 10;
-
 	write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x36, (toneFreq >> 8) & 0xff,	(toneFreq & 0xff));   // tone2_freq
 }
 
+void trxSetDTMF(int code)
+{
+	if (code < 16)
+	{
+		trxSetTone1(trxDTMFfreq1[code]);
+		trxSetTone2(trxDTMFfreq2[code]);
+	}
+}

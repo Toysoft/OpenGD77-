@@ -44,6 +44,8 @@ const int RSSI_UPDATE_COUNTER_RELOAD = 500;
 uint32_t menuUtilityReceivedPcId 	= 0;// No current Private call awaiting acceptance
 uint32_t menuUtilityTgBeforePcMode 	= 0;// No TG saved, prior to a Private call being accepted.
 
+const char *POWER_LEVELS[]={"250mW","500mW","750mW","1W","2W","3W","4W","5W"};
+
 void lastheardInitList()
 {
     LinkHead = callsList;
@@ -321,6 +323,20 @@ bool menuUtilityHandlePrivateCallActions(int buttons, int keys, int events)
 	}
 	return false;// The event has not been handled
 }
+static void displayChannelNameOrRxFrequency(char *buffer)
+{
+	if (menuSystemGetCurrentMenuNumber() == MENU_CHANNEL_MODE)
+	{
+		codeplugUtilConvertBufToString(currentChannelData->name,buffer,16);
+	}
+	else
+	{
+		int val_before_dp = currentChannelData->rxFreq/10000;
+		int val_after_dp = currentChannelData->rxFreq - val_before_dp*10000;
+		sprintf(buffer,"%d.%04d MHz",val_before_dp, val_after_dp);
+	}
+	UC1701_printCentered(52,buffer,UC1701_FONT_6X8);
+}
 
 void menuUtilityRenderQSOData()
 {
@@ -370,6 +386,7 @@ void menuUtilityRenderQSOData()
 		{
 			sprintf(buffer,"%s", currentRec.text);
 			UC1701_printCentered(32, buffer,UC1701_FONT_GD77_8x16);
+			displayChannelNameOrRxFrequency(buffer);
 		}
 		else
 		{
@@ -390,6 +407,7 @@ void menuUtilityRenderQSOData()
 				else
 				{
 					UC1701_printCentered(32,LinkHead->talkerAlias,UC1701_FONT_GD77_8x16);
+					displayChannelNameOrRxFrequency(buffer);
 				}
 			}
 			else
@@ -397,6 +415,7 @@ void menuUtilityRenderQSOData()
 				// No talker alias. So we can only show the ID.
 				sprintf(buffer,"ID: %d", LinkHead->id);
 				UC1701_printCentered(32, buffer,UC1701_FONT_GD77_8x16);
+				displayChannelNameOrRxFrequency(buffer);
 			}
 		}
 	}
@@ -450,15 +469,15 @@ void menuUtilityRenderHeader()
 			}
 			else
 			{
-				sprintf(buffer, "DMR TS%d%s%s",trxGetDMRTimeSlot()+1,
-						(trxGetMode() == RADIO_MODE_DIGITAL && settingsPrivateCallMuteMode == true)?" MUTE":"",
-								(keypadLocked)?" L":"");
+				sprintf(buffer, "DMR TS%d",trxGetDMRTimeSlot()+1);
+//						(trxGetMode() == RADIO_MODE_DIGITAL && settingsPrivateCallMuteMode == true)?" MUTE":"");
 			}
 			break;
 	}
 
 	UC1701_printAt(0,Y_OFFSET, buffer,UC1701_FONT_6X8);
 
+	UC1701_printCentered(Y_OFFSET,(char *)POWER_LEVELS[nonVolatileSettings.txPowerLevel],UC1701_FONT_6X8);
 
 
 	int  batteryPerentage = (int)(((averageBatteryVoltage - CUTOFF_VOLTAGE_UPPER_HYST) * 100) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));
@@ -477,7 +496,7 @@ void menuUtilityRenderHeader()
 	}
 	else
 	{
-		sprintf(buffer,"CC%d %d%%",trxGetDMRColourCode(),batteryPerentage);
+		sprintf(buffer,"C%d %d%%",trxGetDMRColourCode(),batteryPerentage);
 	}
 
 	UC1701_printCore(0,Y_OFFSET,buffer,UC1701_FONT_6X8,2,false);// Display battery percentage at the right
