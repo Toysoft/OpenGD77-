@@ -21,9 +21,10 @@ static void updateScreen();
 static void handleEvent(int buttons, int keys, int events);
 static void scrollDownOneLine();
 
-#define CREDIT_TEXT_LENGTH 33
-static const int NUM_LINES_PER_SCREEN = 7;
-static const char creditTexts[][CREDIT_TEXT_LENGTH] = {"Conceived & developed","by","Kai DG4KLU","with help from","Roger VK3KYY","Colin G4EML"};
+//#define CREDIT_TEXT_LENGTH 33
+static const int NUM_LINES_PER_SCREEN = 6;
+const int NUM_CREDITS = 4;
+static const char *creditTexts[] = {"Kai DG4KLU","Roger VK3KYY","Colin G4EML","Alex DL4LEX"};
 static int currentDisplayIndex=0;
 
 int menuCredits(int buttons, int keys, int events, bool isFirstRun)
@@ -54,14 +55,13 @@ int menuCredits(int buttons, int keys, int events, bool isFirstRun)
 
 static void updateScreen()
 {
-	int numCredits = sizeof(creditTexts)/CREDIT_TEXT_LENGTH;
 	UC1701_clearBuf();
 
 	UC1701_printCentered(0,	"OpenGD77",UC1701_FONT_GD77_8x16);
 
 	for(int i=0;i<6;i++)
 	{
-		if ((i+currentDisplayIndex) < numCredits)
+		if ((i+currentDisplayIndex) < NUM_CREDITS)
 		{
 			UC1701_printCentered(i*8 + 16,(char *)creditTexts[i+currentDisplayIndex],0);
 		}
@@ -72,8 +72,7 @@ static void updateScreen()
 
 static void scrollDownOneLine()
 {
-	int numCredits = sizeof(creditTexts)/CREDIT_TEXT_LENGTH;
-	if (currentDisplayIndex < (numCredits - NUM_LINES_PER_SCREEN) )
+	if (currentDisplayIndex < (NUM_CREDITS - NUM_LINES_PER_SCREEN) )
 	{
 		currentDisplayIndex++;
 	}
