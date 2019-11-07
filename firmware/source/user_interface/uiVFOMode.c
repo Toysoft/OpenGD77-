@@ -461,7 +461,7 @@ static void handleEvent(int buttons, int keys, int events)
 					nonVolatileSettings.txPowerLevel++;
 					trxSetPowerFromLevel(nonVolatileSettings.txPowerLevel);
 					menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-					menuChannelModeUpdateScreen(0);
+					menuVFOModeUpdateScreen(0);
 				}
 			}
 			else
@@ -525,7 +525,7 @@ static void handleEvent(int buttons, int keys, int events)
 					nonVolatileSettings.txPowerLevel--;
 					trxSetPowerFromLevel(nonVolatileSettings.txPowerLevel);
 					menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-					menuChannelModeUpdateScreen(0);
+					menuVFOModeUpdateScreen(0);
 				}
 			}
 			else
