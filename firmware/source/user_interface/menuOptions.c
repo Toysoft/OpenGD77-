@@ -22,7 +22,6 @@
 static void updateScreen();
 static void handleEvent(int buttons, int keys, int events);
 static bool	doFactoryReset;
-static const int MAX_POWER = 4100;// Max DAC value is actually 4096 but no one should need to drive the PA that hard, so I rounded this down to 4000
 enum OPTIONS_MENU_LIST { OPTIONS_MENU_TIMEOUT_BEEP=0,OPTIONS_MENU_FACTORY_RESET,OPTIONS_MENU_USE_CALIBRATION,
 							OPTIONS_MENU_TX_FREQ_LIMITS,OPTIONS_MENU_BEEP_VOLUME,OPTIONS_MIC_GAIN_DMR,
 							NUM_OPTIONS_MENU_ITEMS};
@@ -67,11 +66,7 @@ static void updateScreen()
 		}
 
 		switch(mNum)
-		{/*
-			case OPTIONS_MENU_POWER:
-				sprintf(buf,"Power %d",trxGetPower());
-				break;
-				*/
+		{
 			case OPTIONS_MENU_TIMEOUT_BEEP:
 				if (nonVolatileSettings.txTimeoutBeepX5Secs!=0)
 				{
@@ -135,8 +130,6 @@ static void updateScreen()
 
 static void handleEvent(int buttons, int keys, int events)
 {
-	int tmpPower;
-	int powerChangeValue=100;
 	if ((keys & KEY_DOWN)!=0 && gMenusEndIndex!=0)
 	{
 		gMenusCurrentItemIndex++;
@@ -157,20 +150,6 @@ static void handleEvent(int buttons, int keys, int events)
 	{
 		switch(gMenusCurrentItemIndex)
 		{
-		/*
-			case OPTIONS_MENU_POWER:
-				if (buttons && BUTTON_SK2)
-				{
-					powerChangeValue=10;
-				}
-				tmpPower = trxGetPower() + powerChangeValue;
-
-				if (tmpPower<=MAX_POWER)
-				{
-					trxSetPower(tmpPower);
-				}
-				break;
-				*/
 			case OPTIONS_MENU_TIMEOUT_BEEP:
 				if (nonVolatileSettings.txTimeoutBeepX5Secs < 4)
 				{
@@ -205,24 +184,7 @@ static void handleEvent(int buttons, int keys, int events)
 	{
 
 		switch(gMenusCurrentItemIndex)
-		{/*
-			case OPTIONS_MENU_POWER:
-				{
-					uint32_t pwr = trxGetPower();
-					if (pwr==4095)
-					{
-						pwr = 4100;// round up for display purposes
-					}
-					if (buttons && BUTTON_SK2)
-					{
-						powerChangeValue=10;
-					}
-					if (pwr >= powerChangeValue)
-					{
-						trxSetPower(pwr- powerChangeValue);
-					}
-				}
-				break;*/
+		{
 			case OPTIONS_MENU_TIMEOUT_BEEP:
 				if (nonVolatileSettings.txTimeoutBeepX5Secs>0)
 				{
