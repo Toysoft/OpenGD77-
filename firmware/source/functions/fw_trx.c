@@ -23,6 +23,7 @@
 #include "fw_settings.h"
 #include "fw_calibration.h"
 
+
 int trx_measure_count = 0;
 volatile bool trxIsTransmitting = false;
 uint32_t trxTalkGroupOrPcId = 9;// Set to local TG just in case there is some problem with it not being loaded
@@ -63,6 +64,8 @@ volatile uint8_t trxRxNoise;
 
 int trxDMRMode = DMR_MODE_ACTIVE;// Active is for simplex
 static volatile bool txPAEnabled=false;
+
+static int trxCurrentDMRTimeSlot;
 
 const int trxDTMFfreq1[] = { 1336, 1209, 1336, 1477, 1209, 1336, 1477, 1209, 1336, 1477, 1633, 1633, 1633, 1633, 1209, 1477 };
 const int trxDTMFfreq2[] = {  941,  697,  697,  697,  770,  770,  770,  852,  852,  852,  697,  770,  852,  941,  941,  941 };
@@ -664,7 +667,32 @@ int trxGetDMRColourCode()
 
 int trxGetDMRTimeSlot()
 {
-	return ((currentChannelData->flag2 & 0x40)!=0);
+	return trxCurrentDMRTimeSlot;
+	//return ((currentChannelData->flag2 & 0x40)!=0);
+}
+
+void trxSetDMRTimeSlot(int timeslot)
+{
+	trxCurrentDMRTimeSlot = timeslot;
+}
+
+void trxUpdateTsForCurrentChannelWithSpecifiedContact(struct_codeplugContact_t *contactData)
+{
+	if ((contactData->reserve1 & 0x01) == 0x00)
+	{
+		if ( (contactData->reserve1 & 0x02) !=0 )
+		{
+			trxCurrentDMRTimeSlot = 1;
+		}
+		else
+		{
+			trxCurrentDMRTimeSlot = 0;
+		}
+	}
+	else
+	{
+		trxCurrentDMRTimeSlot = ((currentChannelData->flag2 & 0x40)!=0);
+	}
 }
 
 void trxSetTxCTCSS(int toneFreqX10)

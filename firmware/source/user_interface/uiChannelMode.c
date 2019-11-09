@@ -39,7 +39,7 @@ int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 	if (isFirstRun)
 	{
 		nonVolatileSettings.initialMenuNumber = MENU_CHANNEL_MODE;// This menu.
-
+		currentChannelData = &channelScreenChannelData;// Need to set this as currentChannelData is used by functions called by loadChannelData()
 		lastHeardClearLastID();
 
 		if (channelScreenChannelData.rxFreq != 0)
@@ -53,7 +53,7 @@ int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 			codeplugUtilConvertBufToString(currentZone.name,currentZoneName,16);// need to convert to zero terminated string
 			loadChannelData(false);
 		}
-		currentChannelData = &channelScreenChannelData;
+
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		RssiUpdateCounter = RSSI_UPDATE_COUNTER_RELOAD;
 		menuChannelModeUpdateScreen(0);
@@ -123,17 +123,7 @@ static void loadChannelData(bool useChannelDataInMemory)
 		codeplugRxGroupGetDataForIndex(channelScreenChannelData.rxGroupList,&rxGroupData);
 		codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
 
-		if ((contactData.reserve1 & 0x01) == 0x00)
-		{
-			if ( (contactData.reserve1 & 0x02) !=0 )
-			{
-				channelScreenChannelData.flag2 = channelScreenChannelData.flag2 | ~0x40;
-			}
-			else
-			{
-				channelScreenChannelData.flag2 = channelScreenChannelData.flag2 & ~0x40;
-			}
-		}
+		trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
 
 		if (nonVolatileSettings.overrideTG == 0)
 		{
@@ -355,17 +345,7 @@ static void handleEvent(int buttons, int keys, int events)
 				}
 				codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
 
-				if ((contactData.reserve1 & 0x01) == 0x00)
-				{
-					if ( (contactData.reserve1 & 0x02) !=0 )
-					{
-						currentChannelData->flag2 = currentChannelData->flag2 | 0x40;
-					}
-					else
-					{
-						currentChannelData->flag2 = currentChannelData->flag2 & ~0x40;
-					}
-				}
+				trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
 
 				nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
 				trxTalkGroupOrPcId = contactData.tgNumber;
@@ -424,17 +404,8 @@ static void handleEvent(int buttons, int keys, int events)
 
 				codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
 
-				if ((contactData.reserve1 & 0x01) == 0x00)
-				{
-					if ( (contactData.reserve1 & 0x02) !=0 )
-					{
-						currentChannelData->flag2 = currentChannelData->flag2 | 0x40;
-					}
-					else
-					{
-						currentChannelData->flag2 = currentChannelData->flag2 & ~0x40;
-					}
-				}
+				trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
+
 				nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
 				trxTalkGroupOrPcId = contactData.tgNumber;
 				lastHeardClearLastID();

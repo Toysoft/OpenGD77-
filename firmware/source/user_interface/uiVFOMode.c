@@ -77,37 +77,18 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 				if (currentChannelData->rxGroupList != 0)
 				{
 					codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
-					if ((contactData.reserve1 & 0x01) == 0x00)
-					{
-						if ( (contactData.reserve1 & 0x02) !=0 )
-						{
-							currentChannelData->flag2 = currentChannelData->flag2 | 0x40;
-						}
-						else
-						{
-							currentChannelData->flag2 = currentChannelData->flag2 & ~0x40;
-						}
-					}
+
 					// Check whether the contact data seems valid
 					if (contactData.name[0] == 0 || contactData.tgNumber ==0 || contactData.tgNumber > 9999999)
 					{
 						nonVolatileSettings.overrideTG = 9;// If the VFO does not have an Rx Group list assigned to it. We can't get a TG from the codeplug. So use TG 9.
 						trxTalkGroupOrPcId = nonVolatileSettings.overrideTG;
+						trxSetDMRTimeSlot(((currentChannelData->flag2 & 0x40)!=0));
 					}
 					else
 					{
 						trxTalkGroupOrPcId = contactData.tgNumber;
-						if ((contactData.reserve1 & 0x01) == 0x00)
-						{
-							if ( (contactData.reserve1 & 0x02) !=0 )
-							{
-								currentChannelData->flag2 = currentChannelData->flag2 | 0x40;
-							}
-							else
-							{
-								currentChannelData->flag2 = currentChannelData->flag2 & ~0x40;
-							}
-						}
+						trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
 					}
 				}
 				else
@@ -478,17 +459,9 @@ static void handleEvent(int buttons, int keys, int events)
 						}
 					}
 					codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
-					if ((contactData.reserve1 & 0x01) == 0x00)
-					{
-						if ( (contactData.reserve1 & 0x02) !=0 )
-						{
-							currentChannelData->flag2 = currentChannelData->flag2 | 0x40;
-						}
-						else
-						{
-							currentChannelData->flag2 = currentChannelData->flag2 & ~0x40;
-						}
-					}
+
+					trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
+
 					nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
 					trxTalkGroupOrPcId = contactData.tgNumber;
 					lastHeardClearLastID();
@@ -546,17 +519,9 @@ static void handleEvent(int buttons, int keys, int events)
 					codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
 					nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
 					trxTalkGroupOrPcId = contactData.tgNumber;
-					if ((contactData.reserve1 & 0x01) == 0x00)
-					{
-						if ( (contactData.reserve1 & 0x02) !=0 )
-						{
-							currentChannelData->flag2 = currentChannelData->flag2 | 0x40;
-						}
-						else
-						{
-							currentChannelData->flag2 = currentChannelData->flag2 & ~0x40;
-						}
-					}
+
+					trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
+
 					lastHeardClearLastID();
 					menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 					menuVFOModeUpdateScreen(0);

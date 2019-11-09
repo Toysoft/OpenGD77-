@@ -22,6 +22,7 @@
 #include "fw_sound.h"
 #include "fw_i2c.h"
 #include "fw_calibration.h"
+#include "fw_codeplug.h"
 
 extern const int RADIO_VHF_MIN;
 extern const int RADIO_VHF_MAX;
@@ -62,6 +63,7 @@ void trxUpdateAT1846SCalibration();
 void trxSetDMRColourCode(int colourCode);
 int trxGetDMRColourCode();
 int trxGetDMRTimeSlot();
+void trxSetDMRTimeSlot(int timeslot);
 bool trxCheckFrequencyIsVHF(int frequency);
 bool trxCheckFrequencyIsUHF(int frequency);
 bool trxCheckFrequency(int tmp_frequency);
@@ -75,5 +77,5 @@ void trxSelectVoiceChannel(uint8_t channel);
 void trxSetTone1(int toneFreq);
 void trxSetTone2(int toneFreq);
 void trxSetDTMF(int code);
-
+// Can't seem to get this to compile :-(    void trxUpdateTsForCurrentChannelWithSpecifiedContact(struct_codeplugContact_t *contactData)
 #endif /* _FW_TRX_H_ */
