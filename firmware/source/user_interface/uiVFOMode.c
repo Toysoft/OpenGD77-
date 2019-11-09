@@ -694,50 +694,42 @@ int tmp_frequencyRx;
 }
 
 // Quick Menu functions
-enum VFO_SCREEN_QUICK_MENU_ITEMS { VFO_SCREEN_QUICK_MENU_TX_SWAP_RX = 0,	VFO_SCREEN_QUICK_MENU_BOTH_TO_RX , VFO_SCREEN_QUICK_MENU_BOTH_TO_TX,
-									NUM_VFO_SCREEN_QUICK_MENU_ITEMS};// The last item in the list is used so that we automatically get a total number of items in the list
+enum VFO_SCREEN_QUICK_MENU_ITEMS { VFO_SCREEN_QUICK_MENU_TX_SWAP_RX = 0, VFO_SCREEN_QUICK_MENU_BOTH_TO_RX, VFO_SCREEN_QUICK_MENU_BOTH_TO_TX,
+	NUM_VFO_SCREEN_QUICK_MENU_ITEMS };// The last item in the list is used so that we automatically get a total number of items in the list
 
 static void updateQuickMenuScreen()
 {
-	int mNum=0;
+	int mNum = 0;
 	char buf[17];
 
 	UC1701_clearBuf();
-	UC1701_printCentered(0, "Quick menu",UC1701_FONT_GD77_8x16);
-	for(int i=-1;i<=1;i++)
+	UC1701_printCentered(0, "Quick menu", UC1701_FONT_GD77_8x16);
+
+	for(int i = -1; i <= 1; i++)
 	{
-		mNum = gMenusCurrentItemIndex+i;
-		if (mNum<0)
-		{
-			mNum = NUM_VFO_SCREEN_QUICK_MENU_ITEMS + mNum;
-		}
-		if (mNum >= NUM_VFO_SCREEN_QUICK_MENU_ITEMS)
-		{
-			mNum = mNum - NUM_VFO_SCREEN_QUICK_MENU_ITEMS;
-		}
+		mNum = menuGetMenuOffset(NUM_VFO_SCREEN_QUICK_MENU_ITEMS, i);
 
 		switch(mNum)
 		{
 			case VFO_SCREEN_QUICK_MENU_BOTH_TO_RX:
-				strcpy(buf,"Rx --> Tx");
+				strcpy(buf, "Rx --> Tx");
 				break;
 			case VFO_SCREEN_QUICK_MENU_TX_SWAP_RX:
-				strcpy(buf,"Tx <--> Rx");
+				strcpy(buf, "Tx <--> Rx");
 				break;
 			case VFO_SCREEN_QUICK_MENU_BOTH_TO_TX:
-				strcpy(buf,"Tx --> Rx");
+				strcpy(buf, "Tx --> Rx");
 				break;
 			default:
-				strcpy(buf,"");
-				break;
+				strcpy(buf, "");
 		}
 
-		if (gMenusCurrentItemIndex==mNum)
+		if (gMenusCurrentItemIndex == mNum)
 		{
-			UC1701_fillRect(0,(i+2)*16,128,16,false);
+			UC1701_fillRect(0, (i + 2) * 16, 128, 16, false);
 		}
 
-		UC1701_printCore(0,(i+2)*16,buf,UC1701_FONT_GD77_8x16,0,(gMenusCurrentItemIndex==mNum));
+		UC1701_printCore(0, (i + 2) * 16, buf, UC1701_FONT_GD77_8x16, 0, (gMenusCurrentItemIndex == mNum));
 	}
 
 	UC1701_render();
@@ -779,20 +771,12 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_DOWN)!=0)
 	{
-		gMenusCurrentItemIndex++;
-		if (gMenusCurrentItemIndex >= NUM_VFO_SCREEN_QUICK_MENU_ITEMS)
-		{
-			gMenusCurrentItemIndex=0;
-		}
+		MENU_INC(gMenusCurrentItemIndex, NUM_VFO_SCREEN_QUICK_MENU_ITEMS);
 		updateQuickMenuScreen();
 	}
 	else if ((keys & KEY_UP)!=0)
 	{
-		gMenusCurrentItemIndex--;
-		if (gMenusCurrentItemIndex<0)
-		{
-			gMenusCurrentItemIndex=NUM_VFO_SCREEN_QUICK_MENU_ITEMS - 1;
-		}
+		MENU_DEC(gMenusCurrentItemIndex, NUM_VFO_SCREEN_QUICK_MENU_ITEMS);
 		updateQuickMenuScreen();
 	}
 }
