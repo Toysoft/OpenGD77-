@@ -77,5 +77,6 @@ void trxSelectVoiceChannel(uint8_t channel);
 void trxSetTone1(int toneFreq);
 void trxSetTone2(int toneFreq);
 void trxSetDTMF(int code);
-// Can't seem to get this to compile :-(    void trxUpdateTsForCurrentChannelWithSpecifiedContact(struct_codeplugContact_t *contactData)
+void trxUpdateTsForCurrentChannelWithSpecifiedContact(struct_codeplugContact_t *contactData);
+
 #endif /* _FW_TRX_H_ */

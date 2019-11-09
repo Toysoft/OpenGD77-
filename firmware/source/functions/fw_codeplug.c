@@ -15,9 +15,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-#include <fw_codeplug.h>
+
+#include <stdint.h>
+#include <stdio.h>
 #include <hardware/fw_EEPROM.h>
 #include <hardware/fw_SPI_Flash.h>
+#include "fw_codeplug.h"
+#include "fw_trx.h"
 
 const int CODEPLUG_ADDR_EX_ZONE_BASIC = 0x8000;
 const int CODEPLUG_ADDR_EX_ZONE_INUSE_PACKED_DATA =  0x8010;
