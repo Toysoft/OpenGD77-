@@ -201,7 +201,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				{
 					codeplugUtilConvertBufToString(contactData.name,nameBuf,16);
 				}
-				UC1701_printCentered(18 + verticalPositionOffset, (char *)nameBuf,UC1701_FONT_GD77_8x16);
+				UC1701_printCentered(CONTACT_Y_POS + verticalPositionOffset, (char *)nameBuf,UC1701_FONT_GD77_8x16);
 			}
 			else if(displaySquelch && !trxIsTransmitting)
 			{

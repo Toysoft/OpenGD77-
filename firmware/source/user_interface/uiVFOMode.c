@@ -177,7 +177,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 				}
 				else
 				{
-					UC1701_printCentered(16,buffer,UC1701_FONT_GD77_8x16);
+					UC1701_printCentered(CONTACT_Y_POS,buffer,UC1701_FONT_GD77_8x16);
 				}
 			}
 			else if(displaySquelch)
