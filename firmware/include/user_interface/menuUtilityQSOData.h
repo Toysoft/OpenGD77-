@@ -22,6 +22,7 @@
 #define NUM_LASTHEARD_STORED 16
 extern const int QSO_TIMER_TIMEOUT;
 extern const int TX_TIMER_Y_OFFSET;
+extern const int CONTACT_Y_POS;
 
 typedef struct dmrIdDataStruct
 {

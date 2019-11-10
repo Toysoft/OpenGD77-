@@ -47,34 +47,29 @@ static void updateScreen()
 	const int headerOffset = 12;
 	int rPos;
 	struct_codeplugZone_t zoneBuf;
+
 	UC1701_clearBuf();
-	UC1701_printCentered(0, "Zones",UC1701_FONT_GD77_8x16);
-	for(int i=-1; i <= 1;i++)
+	UC1701_printCentered(0, "Zones", UC1701_FONT_GD77_8x16);
+
+	for(int i = -1; i <= 1; i++)
 	{
-		if (gMenusEndIndex <= (i+1))
+		if (gMenusEndIndex <= (i + 1))
 		{
 			break;
 		}
-		rPos= i + gMenusCurrentItemIndex;
-		if (rPos >= gMenusEndIndex)
-		{
-			rPos=0;
-		}
-		if (rPos<0)
-		{
-			rPos = gMenusEndIndex+rPos;
-		}
+
+		rPos = menuGetMenuOffset(gMenusEndIndex, i);
+
 		if (rPos == gMenusCurrentItemIndex)
 		{
 			UC1701_fillRoundRect(0,1+headerOffset+((i+1)*16),128,16,2,true);
 		}
 
-		codeplugZoneGetDataForNumber(rPos,&zoneBuf);
-		codeplugUtilConvertBufToString(zoneBuf.name,nameBuf,16);// need to convert to zero terminated string
+		codeplugZoneGetDataForNumber(rPos, &zoneBuf);
+		codeplugUtilConvertBufToString(zoneBuf.name, nameBuf, 16);// need to convert to zero terminated string
 
-		UC1701_printCore(5,(i+1)*16 + (headerOffset) ,(char *)nameBuf, UC1701_FONT_GD77_8x16,0,(rPos==gMenusCurrentItemIndex));
+		UC1701_printCore(5, (i + 1) * 16 + (headerOffset), (char *)nameBuf, UC1701_FONT_GD77_8x16, 0, (rPos == gMenusCurrentItemIndex));
 	}
-
 
 	UC1701_render();
 	displayLightTrigger();
@@ -84,19 +79,11 @@ static void handleEvent(int buttons, int keys, int events)
 {
 	if ((keys & KEY_DOWN)!=0)
 	{
-		gMenusCurrentItemIndex++;
-		if (gMenusCurrentItemIndex >= gMenusEndIndex)
-		{
-			gMenusCurrentItemIndex=0;
-		}
+		MENU_INC(gMenusCurrentItemIndex, gMenusEndIndex);
 	}
 	else if ((keys & KEY_UP)!=0)
 	{
-		gMenusCurrentItemIndex--;
-		if (gMenusCurrentItemIndex < 0)
-		{
-			gMenusCurrentItemIndex=gMenusEndIndex-1;
-		}
+		MENU_DEC(gMenusCurrentItemIndex, gMenusEndIndex);
 	}
 	else if ((keys & KEY_GREEN)!=0)
 	{

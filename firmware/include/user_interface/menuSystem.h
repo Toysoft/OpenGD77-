@@ -19,6 +19,10 @@
 #define _FW_MENUSYSTEM_H_
 #include "fw_main.h"
 
+#define MENU_MAX_DISPLAYED_ENTRIES 3
+#define MENU_INC(O, M) do { O = (O + 1) % M; } while(0)
+#define MENU_DEC(O, M) do { O = (O + M - 1) % M; } while(0)
+
 extern int menuDisplayLightTimer;
 extern int menuTimer;
 
@@ -38,6 +42,8 @@ typedef struct menuItemNew
 } menuItemNew_t;
 
 extern menuControlDataStruct_t menuControlData;
+
+int menuGetMenuOffset(int maxMenuEntries, int loopOffset);
 
 void menuChannelModeUpdateScreen(int txTimeSecs);
 void menuVFOModeUpdateScreen(int txTimeSecs);

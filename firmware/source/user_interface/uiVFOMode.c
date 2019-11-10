@@ -77,37 +77,18 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 				if (currentChannelData->rxGroupList != 0)
 				{
 					codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
-					if ((contactData.reserve1 & 0x01) == 0x00)
-					{
-						if ( (contactData.reserve1 & 0x02) !=0 )
-						{
-							currentChannelData->flag2 = currentChannelData->flag2 | 0x40;
-						}
-						else
-						{
-							currentChannelData->flag2 = currentChannelData->flag2 & ~0x40;
-						}
-					}
+
 					// Check whether the contact data seems valid
 					if (contactData.name[0] == 0 || contactData.tgNumber ==0 || contactData.tgNumber > 9999999)
 					{
 						nonVolatileSettings.overrideTG = 9;// If the VFO does not have an Rx Group list assigned to it. We can't get a TG from the codeplug. So use TG 9.
 						trxTalkGroupOrPcId = nonVolatileSettings.overrideTG;
+						trxSetDMRTimeSlot(((currentChannelData->flag2 & 0x40)!=0));
 					}
 					else
 					{
 						trxTalkGroupOrPcId = contactData.tgNumber;
-						if ((contactData.reserve1 & 0x01) == 0x00)
-						{
-							if ( (contactData.reserve1 & 0x02) !=0 )
-							{
-								currentChannelData->flag2 = currentChannelData->flag2 | 0x40;
-							}
-							else
-							{
-								currentChannelData->flag2 = currentChannelData->flag2 & ~0x40;
-							}
-						}
+						trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
 					}
 				}
 				else
@@ -196,7 +177,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 				}
 				else
 				{
-					UC1701_printCentered(16,buffer,UC1701_FONT_GD77_8x16);
+					UC1701_printCentered(CONTACT_Y_POS,buffer,UC1701_FONT_GD77_8x16);
 				}
 			}
 			else if(displaySquelch)
@@ -478,17 +459,9 @@ static void handleEvent(int buttons, int keys, int events)
 						}
 					}
 					codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
-					if ((contactData.reserve1 & 0x01) == 0x00)
-					{
-						if ( (contactData.reserve1 & 0x02) !=0 )
-						{
-							currentChannelData->flag2 = currentChannelData->flag2 | 0x40;
-						}
-						else
-						{
-							currentChannelData->flag2 = currentChannelData->flag2 & ~0x40;
-						}
-					}
+
+					trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
+
 					nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
 					trxTalkGroupOrPcId = contactData.tgNumber;
 					lastHeardClearLastID();
@@ -546,17 +519,9 @@ static void handleEvent(int buttons, int keys, int events)
 					codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
 					nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
 					trxTalkGroupOrPcId = contactData.tgNumber;
-					if ((contactData.reserve1 & 0x01) == 0x00)
-					{
-						if ( (contactData.reserve1 & 0x02) !=0 )
-						{
-							currentChannelData->flag2 = currentChannelData->flag2 | 0x40;
-						}
-						else
-						{
-							currentChannelData->flag2 = currentChannelData->flag2 & ~0x40;
-						}
-					}
+
+					trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
+
 					lastHeardClearLastID();
 					menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 					menuVFOModeUpdateScreen(0);
@@ -694,50 +659,42 @@ int tmp_frequencyRx;
 }
 
 // Quick Menu functions
-enum VFO_SCREEN_QUICK_MENU_ITEMS { VFO_SCREEN_QUICK_MENU_TX_SWAP_RX = 0,	VFO_SCREEN_QUICK_MENU_BOTH_TO_RX , VFO_SCREEN_QUICK_MENU_BOTH_TO_TX,
-									NUM_VFO_SCREEN_QUICK_MENU_ITEMS};// The last item in the list is used so that we automatically get a total number of items in the list
+enum VFO_SCREEN_QUICK_MENU_ITEMS { VFO_SCREEN_QUICK_MENU_TX_SWAP_RX = 0, VFO_SCREEN_QUICK_MENU_BOTH_TO_RX, VFO_SCREEN_QUICK_MENU_BOTH_TO_TX,
+	NUM_VFO_SCREEN_QUICK_MENU_ITEMS };// The last item in the list is used so that we automatically get a total number of items in the list
 
 static void updateQuickMenuScreen()
 {
-	int mNum=0;
+	int mNum = 0;
 	char buf[17];
 
 	UC1701_clearBuf();
-	UC1701_printCentered(0, "Quick menu",UC1701_FONT_GD77_8x16);
-	for(int i=-1;i<=1;i++)
+	UC1701_printCentered(0, "Quick menu", UC1701_FONT_GD77_8x16);
+
+	for(int i = -1; i <= 1; i++)
 	{
-		mNum = gMenusCurrentItemIndex+i;
-		if (mNum<0)
-		{
-			mNum = NUM_VFO_SCREEN_QUICK_MENU_ITEMS + mNum;
-		}
-		if (mNum >= NUM_VFO_SCREEN_QUICK_MENU_ITEMS)
-		{
-			mNum = mNum - NUM_VFO_SCREEN_QUICK_MENU_ITEMS;
-		}
+		mNum = menuGetMenuOffset(NUM_VFO_SCREEN_QUICK_MENU_ITEMS, i);
 
 		switch(mNum)
 		{
 			case VFO_SCREEN_QUICK_MENU_BOTH_TO_RX:
-				strcpy(buf,"Rx --> Tx");
+				strcpy(buf, "Rx --> Tx");
 				break;
 			case VFO_SCREEN_QUICK_MENU_TX_SWAP_RX:
-				strcpy(buf,"Tx <--> Rx");
+				strcpy(buf, "Tx <--> Rx");
 				break;
 			case VFO_SCREEN_QUICK_MENU_BOTH_TO_TX:
-				strcpy(buf,"Tx --> Rx");
+				strcpy(buf, "Tx --> Rx");
 				break;
 			default:
-				strcpy(buf,"");
-				break;
+				strcpy(buf, "");
 		}
 
-		if (gMenusCurrentItemIndex==mNum)
+		if (gMenusCurrentItemIndex == mNum)
 		{
 			UC1701_fillRoundRect(0,(i+2)*16,128,16,2,true);
 		}
 
-		UC1701_printCore(0,(i+2)*16,buf,UC1701_FONT_GD77_8x16,0,(gMenusCurrentItemIndex==mNum));
+		UC1701_printCore(0, (i + 2) * 16, buf, UC1701_FONT_GD77_8x16, 0, (gMenusCurrentItemIndex == mNum));
 	}
 
 	UC1701_render();
@@ -779,20 +736,12 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_DOWN)!=0)
 	{
-		gMenusCurrentItemIndex++;
-		if (gMenusCurrentItemIndex >= NUM_VFO_SCREEN_QUICK_MENU_ITEMS)
-		{
-			gMenusCurrentItemIndex=0;
-		}
+		MENU_INC(gMenusCurrentItemIndex, NUM_VFO_SCREEN_QUICK_MENU_ITEMS);
 		updateQuickMenuScreen();
 	}
 	else if ((keys & KEY_UP)!=0)
 	{
-		gMenusCurrentItemIndex--;
-		if (gMenusCurrentItemIndex<0)
-		{
-			gMenusCurrentItemIndex=NUM_VFO_SCREEN_QUICK_MENU_ITEMS - 1;
-		}
+		MENU_DEC(gMenusCurrentItemIndex, NUM_VFO_SCREEN_QUICK_MENU_ITEMS);
 		updateQuickMenuScreen();
 	}
 }

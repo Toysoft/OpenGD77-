@@ -55,52 +55,45 @@ int menuDisplayOptions(int buttons, int keys, int events, bool isFirstRun)
 
 static void updateScreen()
 {
-	int mNum=0;
+	int mNum = 0;
 	char buf[17];
+
 	UC1701_clearBuf();
-	UC1701_printCentered(0, "Display options",UC1701_FONT_GD77_8x16);
+	UC1701_printCentered(0, "Display options", UC1701_FONT_GD77_8x16);
 
 	// Can only display 3 of the options at a time menu at -1, 0 and +1
-	for(int i=-1;i<=1;i++)
+	for(int i = -1; i <= 1; i++)
 	{
-		mNum = gMenusCurrentItemIndex+i;
-		if (mNum<0)
-		{
-			mNum = NUM_DISPLAY_MENU_ITEMS + mNum;
-		}
-		if (mNum >= NUM_DISPLAY_MENU_ITEMS)
-		{
-			mNum = mNum - NUM_DISPLAY_MENU_ITEMS;
-		}
+		mNum = menuGetMenuOffset(NUM_DISPLAY_MENU_ITEMS, i);
 
 		switch(mNum)
 		{
 			case DISPLAY_MENU_BRIGHTNESS:
-				sprintf(buf,"Brightness %d%%",nonVolatileSettings.displayBacklightPercentage);
+				sprintf(buf, "Brightness %d%%", nonVolatileSettings.displayBacklightPercentage);
 				break;
 			case DISPLAY_MENU_CONTRAST:
-				sprintf(buf,"Contrast %d",contrast);
+				sprintf(buf, "Contrast %d", contrast);
 				break;
 			case DISPLAY_MENU_TIMEOUT:
-				sprintf(buf,"Timeout %d",backLightTimeout);
+				sprintf(buf, "Timeout %d", backLightTimeout);
 				break;
 			case DISPLAY_MENU_COLOUR_INVERT:
 				if (inverseVideo)
 				{
-					strcpy(buf,"Color:Invert");
+					strcpy(buf, "Color:Invert");
 				}
 				else
 				{
-					strcpy(buf,"Color:Normal");
+					strcpy(buf, "Color:Normal");
 				}
 				break;
 		}
-		if (gMenusCurrentItemIndex==mNum)
+		if (gMenusCurrentItemIndex == mNum)
 		{
 			UC1701_fillRoundRect(0,(i+2)*16,128,16,2,true);
 		}
 
-		UC1701_printCore(0,(i+2)*16,buf,UC1701_FONT_GD77_8x16,0,(gMenusCurrentItemIndex==mNum));
+		UC1701_printCore(0, (i + 2) * 16, buf, UC1701_FONT_GD77_8x16, 0, (gMenusCurrentItemIndex == mNum));
 	}
 
 	UC1701_render();
@@ -111,19 +104,11 @@ static void handleEvent(int buttons, int keys, int events)
 {
 	if ((keys & KEY_DOWN)!=0 && gMenusEndIndex!=0)
 	{
-		gMenusCurrentItemIndex++;
-		if (gMenusCurrentItemIndex >= NUM_DISPLAY_MENU_ITEMS)
-		{
-			gMenusCurrentItemIndex = 0;
-		}
+		MENU_INC(gMenusCurrentItemIndex, NUM_DISPLAY_MENU_ITEMS);
 	}
 	else if ((keys & KEY_UP)!=0)
 	{
-		gMenusCurrentItemIndex--;
-		if (gMenusCurrentItemIndex < 0)
-		{
-			gMenusCurrentItemIndex=NUM_DISPLAY_MENU_ITEMS - 1;
-		}
+		MENU_DEC(gMenusCurrentItemIndex, NUM_DISPLAY_MENU_ITEMS);
 	}
 	else if ((keys & KEY_RIGHT)!=0)
 	{

@@ -47,81 +47,73 @@ int menuOptions(int buttons, int keys, int events, bool isFirstRun)
 
 static void updateScreen()
 {
-	int mNum=0;
+	int mNum = 0;
 	char buf[17];
 	UC1701_clearBuf();
-	UC1701_printCentered(0, "Options",UC1701_FONT_GD77_8x16);
+	UC1701_printCentered(0, "Options", UC1701_FONT_GD77_8x16);
 
 	// Can only display 3 of the options at a time menu at -1, 0 and +1
-	for(int i=-1;i<=1;i++)
+	for(int i = -1; i <= 1; i++)
 	{
-		mNum = gMenusCurrentItemIndex+i;
-		if (mNum<0)
-		{
-			mNum = NUM_OPTIONS_MENU_ITEMS + mNum;
-		}
-		if (mNum >= NUM_OPTIONS_MENU_ITEMS)
-		{
-			mNum = mNum - NUM_OPTIONS_MENU_ITEMS;
-		}
+		mNum = menuGetMenuOffset(NUM_OPTIONS_MENU_ITEMS, i);
 
 		switch(mNum)
 		{
 			case OPTIONS_MENU_TIMEOUT_BEEP:
-				if (nonVolatileSettings.txTimeoutBeepX5Secs!=0)
+				if (nonVolatileSettings.txTimeoutBeepX5Secs != 0)
 				{
-					sprintf(buf,"Timeout beep:%d",nonVolatileSettings.txTimeoutBeepX5Secs * 5);
+					sprintf(buf, "Timeout beep:%d", nonVolatileSettings.txTimeoutBeepX5Secs * 5);
 				}
 				else
 				{
-					strcpy(buf,"Timeout beep:OFF");
+					strcpy(buf, "Timeout beep:OFF");
 				}
 				break;
 			case OPTIONS_MENU_FACTORY_RESET:
-				if (doFactoryReset==true)
+				if (doFactoryReset == true)
 				{
-					strcpy(buf,"Fact Reset:YES");
+					strcpy(buf, "Fact Reset:YES");
 				}
 				else
 				{
-					strcpy(buf,"Fact Reset:NO");
+					strcpy(buf, "Fact Reset:NO");
 				}
 				break;
 			case OPTIONS_MENU_USE_CALIBRATION:
 				if (nonVolatileSettings.useCalibration)
 				{
-					strcpy(buf,"Calibration:ON");
+					strcpy(buf, "Calibration:ON");
 				}
 				else
 				{
-					strcpy(buf,"Calibration:OFF");
+					strcpy(buf, "Calibration:OFF");
 				}
 				break;
 			case OPTIONS_MENU_TX_FREQ_LIMITS:// Tx Freq limits
 				if (nonVolatileSettings.txFreqLimited)
 				{
-					strcpy(buf,"Band Limits:ON");
+					strcpy(buf, "Band Limits:ON");
 				}
 				else
 				{
-					strcpy(buf,"Band Limits:OFF");
+					strcpy(buf, "Band Limits:OFF");
 				}
 				break;
 			case OPTIONS_MENU_BEEP_VOLUME:// Beep volume reduction
-				sprintf(buf,"Beep vol:%ddB", (2 - nonVolatileSettings.beepVolumeDivider)*3);
+				sprintf(buf, "Beep vol:%ddB", (2 - nonVolatileSettings.beepVolumeDivider) * 3);
 				soundBeepVolumeDivider = nonVolatileSettings.beepVolumeDivider;
 				break;
 			case OPTIONS_MIC_GAIN_DMR:// DMR Mic gain
-				sprintf(buf,"DMR mic:%ddB",(nonVolatileSettings.micGainDMR-11)*3);
+				sprintf(buf, "DMR mic:%ddB", (nonVolatileSettings.micGainDMR - 11) * 3);
 				break;
 
 		}
-		if (gMenusCurrentItemIndex==mNum)
+		if (gMenusCurrentItemIndex == mNum)
 		{
 			UC1701_fillRoundRect(0,(i+2)*16,128,16,2,true);
 		}
 
-		UC1701_printCore(0,(i+2)*16,buf,UC1701_FONT_GD77_8x16,0,(gMenusCurrentItemIndex==mNum));
+		UC1701_printCore(0, (i + 2) * 16, buf, UC1701_FONT_GD77_8x16, 0, (gMenusCurrentItemIndex == mNum));
 	}
 
 	UC1701_render();
@@ -132,19 +124,11 @@ static void handleEvent(int buttons, int keys, int events)
 {
 	if ((keys & KEY_DOWN)!=0 && gMenusEndIndex!=0)
 	{
-		gMenusCurrentItemIndex++;
-		if (gMenusCurrentItemIndex >= NUM_OPTIONS_MENU_ITEMS)
-		{
-			gMenusCurrentItemIndex=0;
-		}
+		MENU_INC(gMenusCurrentItemIndex, NUM_OPTIONS_MENU_ITEMS);
 	}
 	else if ((keys & KEY_UP)!=0)
 	{
-		gMenusCurrentItemIndex--;
-		if (gMenusCurrentItemIndex < 0)
-		{
-			gMenusCurrentItemIndex = NUM_OPTIONS_MENU_ITEMS-1;
-		}
+		MENU_DEC(gMenusCurrentItemIndex, NUM_OPTIONS_MENU_ITEMS);
 	}
 	else if ((keys & KEY_RIGHT)!=0)
 	{
