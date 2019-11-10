@@ -26,6 +26,7 @@
 
 #include "FreeRTOS.h"
 #include "task.h"
+#include <math.h>
 #include "fw_common.h"
 
 #define UC1701_FONT_6X8 				0
@@ -37,12 +38,37 @@
 void UC1701_begin(bool isInverted);
 void UC1701_clearBuf();
 void UC1701_render();
-void UC1701RenderRows(int startRow,int endRow);
-void UC1701_printCentered(uint8_t y, char *text,int fontSize);
-void UC1701_printAt(uint8_t x, uint8_t y, char *text,int fontSize);
-int UC1701_printCore(int x, int y, char *szMsg, int iSize, int alignment, bool isInverted);
-int UC1701_setPixel(int x, int y, bool color);
-void UC1701_fillRect(int x,int y,int width,int height,bool isInverted);
+void UC1701RenderRows(int16_t startRow, int16_t endRow);
+void UC1701_printCentered(uint8_t y, char *text, int16_t fontSize);
+void UC1701_printAt(uint8_t x, uint8_t y, char *text, int16_t fontSize);
+int UC1701_printCore(int16_t x, int16_t y, char *szMsg, int16_t iSize, int16_t alignment, bool isInverted);
+
+int16_t UC1701_setPixel(int16_t x, int16_t y, bool color);
+
+void UC1701_drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, bool color);
+void UC1701_drawFastVLine(int16_t x, int16_t y, int16_t h, bool color);
+void UC1701_drawFastHLine(int16_t x, int16_t y, int16_t w, bool color);
+
+void UC1701_drawCircle(int16_t x0, int16_t y0, int16_t r, bool color);
+void UC1701_fillCircle(int16_t x0, int16_t y0, int16_t r, bool color);
+
+void UC1701_drawellipse(int16_t x0, int16_t y0, int16_t x1, int16_t y1, bool color);
+
+void UC1701_drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, bool color);
+void UC1701_fillTriangle ( int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, bool color);
+
+void UC1701_fillArc(uint16_t x, uint16_t y, uint16_t radius, uint16_t thickness, float start, float end, bool color);
+
+void UC1701_drawRoundRect(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r, bool color);
+void UC1701_fillRoundRect(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r, bool color);
+
+void UC1701_drawRect(int16_t x, int16_t y, int16_t w, int16_t h, bool color);
+void UC1701_fillRect(int16_t x, int16_t y, int16_t width, int16_t height, bool isInverted);
+
+void UC1701_drawBitmap(int16_t x, int16_t y, uint8_t *bitmap, int16_t w, int16_t h, bool color);
+void UC1701_drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, bool color);
+
+
 void UC1701_setContrast(uint8_t contrast);
 void UC1701_setInverseVideo(bool isInverted);
 

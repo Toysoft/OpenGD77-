@@ -56,7 +56,7 @@ static void updateScreen()
 
 			if (rPos == gMenusCurrentItemIndex)
 			{
-				UC1701_fillRect(0, 2 + headerOffset + ((i + 1) * 16), 128, 16, false);
+				UC1701_fillRoundRect(0, 1+headerOffset+((i+1)*16),128,16,2,true);
 			}
 
 		UC1701_printCore(5, (i + 1) * 16 + (headerOffset) ,(char *)menuStringTable[gMenuCurrentMenuList[rPos].stringNumber], UC1701_FONT_GD77_8x16, 0, (rPos == gMenusCurrentItemIndex));

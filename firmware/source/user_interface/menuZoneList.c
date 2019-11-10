@@ -62,7 +62,7 @@ static void updateScreen()
 
 		if (rPos == gMenusCurrentItemIndex)
 		{
-			UC1701_fillRect(0, 2 + headerOffset + ((i + 1) * 16), 128, 16, false);
+			UC1701_fillRoundRect(0,1+headerOffset+((i+1)*16),128,16,2,true);
 		}
 
 		codeplugZoneGetDataForNumber(rPos, &zoneBuf);
