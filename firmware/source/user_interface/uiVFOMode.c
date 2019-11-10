@@ -377,14 +377,7 @@ static void handleEvent(int buttons, int keys, int events)
 				if (trxGetMode() == RADIO_MODE_DIGITAL)
 				{
 					// Toggle TimeSlot
-					if (currentChannelData->flag2 & 0x40)
-					{
-						currentChannelData->flag2 = currentChannelData->flag2 & ~0x40;
-					}
-					else
-					{
-						currentChannelData->flag2 = currentChannelData->flag2 | 0x40;
-					}
+					trxSetDMRTimeSlot(1-trxGetDMRTimeSlot());
 
 					//init_digital();
 					clearActiveDMRID();
