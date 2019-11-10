@@ -71,7 +71,7 @@
 #define KEY_STAR  0x00008000
 #define KEY_HASH  0x00020000
 
-#define KEY_LOCK  0x00100000    // GREEN + STAR
+#define KEY_GREENSTAR  0x00100000    // GREEN + STAR
 
 //#define KEY_UP    '^'
 //#define KEY_DOWN  0x0a

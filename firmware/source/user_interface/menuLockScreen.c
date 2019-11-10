@@ -46,7 +46,7 @@ static void updateScreen()
 	UC1701_clearBuf();
 	if (keypadLocked) {
 		UC1701_printCentered(10, "Keypad locked",UC1701_FONT_GD77_8x16);
-		UC1701_printCentered(30, "Long press *",UC1701_FONT_6X8);
+		UC1701_printCentered(30, "Press SK2 + *",UC1701_FONT_6X8);
 		UC1701_printCentered(38, "to unlock",UC1701_FONT_6X8);
 	} else {
 		UC1701_printCentered(10, "Unlocked",UC1701_FONT_GD77_8x16);
@@ -62,5 +62,11 @@ static void handleEvent(int buttons, int keys, int events)
 	{
 		menuSystemPopPreviousMenu();
 		lockDisplay = false;
+	}
+	if ((keys & KEY_STAR) != 0 && (buttons & BUTTON_SK2) != 0)
+	{
+		keypadLocked = false;
+		menuSystemPopAllAndDisplayRootMenu();
+		menuSystemPushNewMenu(MENU_LOCK_SCREEN);
 	}
 }

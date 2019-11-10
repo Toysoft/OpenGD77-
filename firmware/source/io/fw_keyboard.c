@@ -136,8 +136,8 @@ uint32_t fw_scan_key(uint32_t keys)
 	int numKeys = 0;
 	uint8_t scan;
 
-	if (keys == (KEY_GREEN | KEY_STAR)) {
-		return KEY_LOCK;
+	if (keys == (KEY_GREEN | KEY_STAR)) {     // Just an example
+		return KEY_GREENSTAR;
 	}
 
 	for (col = 0; col < 4; col++)

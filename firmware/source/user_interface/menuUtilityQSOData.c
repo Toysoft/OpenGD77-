@@ -457,10 +457,6 @@ void menuUtilityRenderHeader()
 			{
 				strcat(buffer,"R");
 			}
-			if (keypadLocked)
-			{
-				strcat(buffer," L");
-			}
 			break;
 		case RADIO_MODE_DIGITAL:
 
@@ -475,6 +471,10 @@ void menuUtilityRenderHeader()
 //						(trxGetMode() == RADIO_MODE_DIGITAL && settingsPrivateCallMuteMode == true)?" MUTE":"");
 			}
 			break;
+	}
+	if (keypadLocked)
+	{
+		strcat(buffer," L");
 	}
 
 	UC1701_printAt(0,Y_OFFSET, buffer,UC1701_FONT_6X8);
