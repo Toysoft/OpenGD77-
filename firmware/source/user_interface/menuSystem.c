@@ -231,3 +231,30 @@ int menuDisplayList(int buttons, int keys, int events, bool isFirstRun)
 {
 	return 0;
 }
+
+int menuGetMenuOffset(int maxMenuEntries, int loopOffset)
+{
+     int offset = gMenusCurrentItemIndex + loopOffset;
+
+     if (offset < 0)
+     {
+	  if ((maxMenuEntries == 1) && (maxMenuEntries < MENU_MAX_DISPLAYED_ENTRIES))
+	       offset = MENU_MAX_DISPLAYED_ENTRIES - 1;
+	  else
+	       offset = maxMenuEntries + offset;
+     }
+
+     if (maxMenuEntries < MENU_MAX_DISPLAYED_ENTRIES)
+     {
+	  if (loopOffset == 1)
+	       offset = MENU_MAX_DISPLAYED_ENTRIES - 1;
+     }
+     else
+     {
+	  if (offset >= maxMenuEntries)
+	       offset = offset - maxMenuEntries;
+     }
+
+     return offset;
+}
+

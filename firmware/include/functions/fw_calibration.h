@@ -40,6 +40,15 @@ typedef struct calibrationRSSIMeter
 	uint8_t rangeVal;
 } calibrationRSSIMeter_t;
 
+typedef struct deviationToneStruct
+{
+	uint8_t dtmf;
+	uint8_t tone;
+	uint8_t ctcss_wide;
+	uint8_t ctcss_narrow;
+	uint8_t dcs_wide;
+	uint8_t dcs_narrow;
+} deviationToneStruct_t;
 
 /*
 extern calibrationStruct_t calibrationVHF;
@@ -74,6 +83,16 @@ extern const int NUM_PA_DRIVE_INDEXES;
 
 #define EXT_squelch_th 0x0008F03f
 
+#define EXT_uhf_dev_tone          0x0008F05E
+#define EXT_vhf_dev_tone          0x0008F0CE
+
+#define CAL_DEV_DTMF			0
+#define CAL_DEV_TONE			1
+#define CAL_DEV_CTCSS_WIDE		2
+#define CAL_DEV_CTCSS_NARROW	3
+#define CAL_DEV_DCS_WIDE		4
+#define CAL_DEV_DCS_NARROW		5
+
 void read_val_DACDATA_shift(int offset, uint8_t* val_shift);
 void read_val_twopoint_mod(int offset, uint8_t* val_0x47, uint8_t* val_0x48);
 void read_val_Q_MOD2_offset(int offset, uint8_t* val_0x04);
@@ -86,6 +105,7 @@ void read_val_padrv_ibit(int offset, uint8_t* value);
 
 void read_val_xmitter_dev_wideband(int offset, uint16_t* value);
 void read_val_xmitter_dev_narrowband(int offset, uint16_t* value);
+void read_val_dev_tone(int freq, int index, uint8_t *value);
 
 void read_val_dac_vgain_analog(int offset, uint8_t* value);
 void read_val_volume_analog(int offset, uint8_t* value);

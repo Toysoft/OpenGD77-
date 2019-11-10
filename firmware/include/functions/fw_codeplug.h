@@ -17,7 +17,8 @@
  */
 #ifndef _FW_MENU_LEGACY_CODEPLUG_UTILS_H_
 #define _FW_MENU_LEGACY_CODEPLUG_UTILS_H_
-#include "fw_main.h"
+
+#include "fw_common.h"
 
 extern const int CODEPLUG_MAX_VARIABLE_SQUELCH;
 extern const int CODEPLUG_MIN_VARIABLE_SQUELCH;

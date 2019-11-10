@@ -23,6 +23,7 @@
 #include "fw_settings.h"
 #include "fw_calibration.h"
 
+
 int trx_measure_count = 0;
 volatile bool trxIsTransmitting = false;
 uint32_t trxTalkGroupOrPcId = 9;// Set to local TG just in case there is some problem with it not being loaded
@@ -61,8 +62,13 @@ static uint8_t tx_fh_h;
 volatile uint8_t trxRxSignal;
 volatile uint8_t trxRxNoise;
 
+static uint8_t trxSaveVoiceGainTx = 0xff;
+static uint16_t trxSaveDeviation = 0xff;
+
 int trxDMRMode = DMR_MODE_ACTIVE;// Active is for simplex
 static volatile bool txPAEnabled=false;
+
+static int trxCurrentDMRTimeSlot;
 
 const int trxDTMFfreq1[] = { 1336, 1209, 1336, 1477, 1209, 1336, 1477, 1209, 1336, 1477, 1633, 1633, 1633, 1633, 1209, 1477 };
 const int trxDTMFfreq2[] = {  941,  697,  697,  697,  770,  770,  770,  852,  852,  852,  697,  770,  852,  941,  941,  941 };
@@ -664,7 +670,32 @@ int trxGetDMRColourCode()
 
 int trxGetDMRTimeSlot()
 {
-	return ((currentChannelData->flag2 & 0x40)!=0);
+	return trxCurrentDMRTimeSlot;
+	//return ((currentChannelData->flag2 & 0x40)!=0);
+}
+
+void trxSetDMRTimeSlot(int timeslot)
+{
+	trxCurrentDMRTimeSlot = timeslot;
+}
+
+void trxUpdateTsForCurrentChannelWithSpecifiedContact(struct_codeplugContact_t *contactData)
+{
+	if ((contactData->reserve1 & 0x01) == 0x00)
+	{
+		if ( (contactData->reserve1 & 0x02) !=0 )
+		{
+			trxCurrentDMRTimeSlot = 1;
+		}
+		else
+		{
+			trxCurrentDMRTimeSlot = 0;
+		}
+	}
+	else
+	{
+		trxCurrentDMRTimeSlot = ((currentChannelData->flag2 & 0x40)!=0);
+	}
 }
 
 void trxSetTxCTCSS(int toneFreqX10)
@@ -714,7 +745,35 @@ bool trxCheckCTCSSFlag()
 	return (FlagsH & 0x01);
 }
 
+void trxUpdateDeviation(int channel)
+{
+	uint8_t deviation;
+
+	if (nonVolatileSettings.useCalibration == false)
+	{
+		return;
+	}
+
+	switch (channel)
+	{
+	case AT1846_VOICE_CHANNEL_TONE1:
+	case AT1846_VOICE_CHANNEL_TONE2:
+		read_val_dev_tone(currentTxFrequency, CAL_DEV_TONE, &deviation);
+		deviation &= 0x7f;
+		I2C_AT1846_set_register_with_mask(0x59, 0x003f, deviation, 6); // Tone deviation value
+		break;
+	case AT1846_VOICE_CHANNEL_DTMF:
+		read_val_dev_tone(currentTxFrequency, CAL_DEV_DTMF, &deviation);
+		deviation &= 0x7f;
+		I2C_AT1846_set_register_with_mask(0x59, 0x003f, deviation, 6); // Tone deviation value
+		break;
+	}
+}
+
 void trxSelectVoiceChannel(uint8_t channel) {
+	uint8_t valh;
+	uint8_t vall;
+
 	switch (channel)
 	{
 	case AT1846_VOICE_CHANNEL_TONE1:
@@ -722,9 +781,27 @@ void trxSelectVoiceChannel(uint8_t channel) {
 	case AT1846_VOICE_CHANNEL_DTMF:
 		set_clear_I2C_reg_2byte_with_mask(0x79, 0xff, 0xff, 0xc0, 0x00); // Select single tone
 		set_clear_I2C_reg_2byte_with_mask(0x57, 0xff, 0xfe, 0x00, 0x01); // Audio feedback on
+
+		read_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x41, &valh, &trxSaveVoiceGainTx);
+		trxSaveVoiceGainTx &= 0x7f;
+
+		read_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x59, &valh, &vall);
+		trxSaveDeviation = (vall + (valh<<8)) >> 6;
+
+		trxUpdateDeviation(channel);
+
+		set_clear_I2C_reg_2byte_with_mask(0x41, 0xff, 0x80, 0x00, 0x05);
 		break;
 	default:
 		set_clear_I2C_reg_2byte_with_mask(0x57, 0xff, 0xfe, 0x00, 0x00); // Audio feedback off
+		if (trxSaveVoiceGainTx != 0xff)
+		{
+			I2C_AT1846_set_register_with_mask(0x41, 0xFF80, trxSaveVoiceGainTx, 0);
+		}
+		if (trxSaveDeviation != 0xFF)
+		{
+			I2C_AT1846_set_register_with_mask(0x59, 0x003f, trxSaveDeviation, 6);
+		}
 		break;
 	}
 	set_clear_I2C_reg_2byte_with_mask(0x3a, 0x8f, 0xff, channel, 0x00);

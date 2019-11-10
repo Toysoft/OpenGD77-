@@ -39,7 +39,7 @@ int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 	if (isFirstRun)
 	{
 		nonVolatileSettings.initialMenuNumber = MENU_CHANNEL_MODE;// This menu.
-
+		currentChannelData = &channelScreenChannelData;// Need to set this as currentChannelData is used by functions called by loadChannelData()
 		lastHeardClearLastID();
 
 		if (channelScreenChannelData.rxFreq != 0)
@@ -53,7 +53,7 @@ int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 			codeplugUtilConvertBufToString(currentZone.name,currentZoneName,16);// need to convert to zero terminated string
 			loadChannelData(false);
 		}
-		currentChannelData = &channelScreenChannelData;
+
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		RssiUpdateCounter = RSSI_UPDATE_COUNTER_RELOAD;
 		menuChannelModeUpdateScreen(0);
@@ -123,17 +123,7 @@ static void loadChannelData(bool useChannelDataInMemory)
 		codeplugRxGroupGetDataForIndex(channelScreenChannelData.rxGroupList,&rxGroupData);
 		codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
 
-		if ((contactData.reserve1 & 0x01) == 0x00)
-		{
-			if ( (contactData.reserve1 & 0x02) !=0 )
-			{
-				channelScreenChannelData.flag2 = channelScreenChannelData.flag2 | ~0x40;
-			}
-			else
-			{
-				channelScreenChannelData.flag2 = channelScreenChannelData.flag2 & ~0x40;
-			}
-		}
+		trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
 
 		if (nonVolatileSettings.overrideTG == 0)
 		{
@@ -211,7 +201,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				{
 					codeplugUtilConvertBufToString(contactData.name,nameBuf,16);
 				}
-				UC1701_printCentered(18 + verticalPositionOffset, (char *)nameBuf,UC1701_FONT_GD77_8x16);
+				UC1701_printCentered(CONTACT_Y_POS + verticalPositionOffset, (char *)nameBuf,UC1701_FONT_GD77_8x16);
 			}
 			else if(displaySquelch && !trxIsTransmitting)
 			{
@@ -355,17 +345,7 @@ static void handleEvent(int buttons, int keys, int events)
 				}
 				codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
 
-				if ((contactData.reserve1 & 0x01) == 0x00)
-				{
-					if ( (contactData.reserve1 & 0x02) !=0 )
-					{
-						currentChannelData->flag2 = currentChannelData->flag2 | 0x40;
-					}
-					else
-					{
-						currentChannelData->flag2 = currentChannelData->flag2 & ~0x40;
-					}
-				}
+				trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
 
 				nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
 				trxTalkGroupOrPcId = contactData.tgNumber;
@@ -424,17 +404,8 @@ static void handleEvent(int buttons, int keys, int events)
 
 				codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
 
-				if ((contactData.reserve1 & 0x01) == 0x00)
-				{
-					if ( (contactData.reserve1 & 0x02) !=0 )
-					{
-						currentChannelData->flag2 = currentChannelData->flag2 | 0x40;
-					}
-					else
-					{
-						currentChannelData->flag2 = currentChannelData->flag2 & ~0x40;
-					}
-				}
+				trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
+
 				nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
 				trxTalkGroupOrPcId = contactData.tgNumber;
 				lastHeardClearLastID();
@@ -486,16 +457,9 @@ static void handleEvent(int buttons, int keys, int events)
 			if (trxGetMode() == RADIO_MODE_DIGITAL)
 			{
 				// Toggle timeslot
+				trxSetDMRTimeSlot(1-trxGetDMRTimeSlot());
 
-				if (currentChannelData->flag2 & 0x40)
-				{
-					currentChannelData->flag2 = currentChannelData->flag2 & ~0x40;
-				}
-				else
-				{
-					currentChannelData->flag2 = currentChannelData->flag2 | 0x40;
-				}
-			//	init_digital();
+				//	init_digital();
 				clearActiveDMRID();
 				lastHeardClearLastID();
 				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
@@ -650,48 +614,39 @@ static void handleEvent(int buttons, int keys, int events)
 
 // Quick Menu functions
 
-enum CHANNEL_SCREEN_QUICK_MENU_ITEMS { CH_SCREEN_QUICK_MENU_COPY2VFO = 0, CH_SCREEN_QUICK_MENU_COPY_FROM_VFO,CH_SCREEN_QUICK_MENU_UNUSED_2,
-									NUM_CH_SCREEN_QUICK_MENU_ITEMS};// The last item in the list is used so that we automatically get a total number of items in the list
+enum CHANNEL_SCREEN_QUICK_MENU_ITEMS { CH_SCREEN_QUICK_MENU_COPY2VFO = 0, CH_SCREEN_QUICK_MENU_COPY_FROM_VFO,
+	NUM_CH_SCREEN_QUICK_MENU_ITEMS };// The last item in the list is used so that we automatically get a total number of items in the list
 
 static void updateQuickMenuScreen()
 {
-	int mNum=0;
+	int mNum = 0;
 	char buf[17];
 
-
 	UC1701_clearBuf();
-	UC1701_printCentered(0, "Quick menu",UC1701_FONT_GD77_8x16);
-	for(int i=-1;i<=1;i++)
+	UC1701_printCentered(0, "Quick menu", UC1701_FONT_GD77_8x16);
+
+	for(int i =- 1; i <= 1; i++)
 	{
-		mNum = gMenusCurrentItemIndex+i;
-		if (mNum<0)
-		{
-			mNum = NUM_CH_SCREEN_QUICK_MENU_ITEMS + mNum;
-		}
-		if (mNum >= NUM_CH_SCREEN_QUICK_MENU_ITEMS)
-		{
-			mNum = mNum - NUM_CH_SCREEN_QUICK_MENU_ITEMS;
-		}
+		mNum = menuGetMenuOffset(NUM_CH_SCREEN_QUICK_MENU_ITEMS, i);
 
 		switch(mNum)
 		{
 			case CH_SCREEN_QUICK_MENU_COPY2VFO:
-				strcpy(buf,"Channel --> VFO");
+				strcpy(buf, "Channel --> VFO");
 				break;
 			case CH_SCREEN_QUICK_MENU_COPY_FROM_VFO:
-				strcpy(buf,"VFO --> Channel");
+				strcpy(buf, "VFO --> Channel");
 				break;
 			default:
-				strcpy(buf,"");
-				break;
+				strcpy(buf, "");
 		}
 
-		if (gMenusCurrentItemIndex==mNum)
+		if (gMenusCurrentItemIndex == mNum)
 		{
-			UC1701_fillRect(0,(i+2)*16,128,16,false);
+			UC1701_fillRoundRect(0,(i+2)*16,128,16,2,true);
 		}
 
-		UC1701_printCore(0,(i+2)*16,buf,UC1701_FONT_GD77_8x16,0,(gMenusCurrentItemIndex==mNum));
+		UC1701_printCore(5, (i + 2) * 16, buf, UC1701_FONT_GD77_8x16, 0, (gMenusCurrentItemIndex == mNum));
 	}
 
 	UC1701_render();
@@ -735,20 +690,13 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_DOWN)!=0)
 	{
-		gMenusCurrentItemIndex++;
-		if (gMenusCurrentItemIndex>=NUM_CH_SCREEN_QUICK_MENU_ITEMS)
-		{
-			gMenusCurrentItemIndex=0;
-		}
+		MENU_INC(gMenusCurrentItemIndex, NUM_CH_SCREEN_QUICK_MENU_ITEMS);
 	}
 	else if ((keys & KEY_UP)!=0)
 	{
-		gMenusCurrentItemIndex--;
-		if (gMenusCurrentItemIndex<0)
-		{
-			gMenusCurrentItemIndex=NUM_CH_SCREEN_QUICK_MENU_ITEMS-1;
-		}
+		MENU_DEC(gMenusCurrentItemIndex, NUM_CH_SCREEN_QUICK_MENU_ITEMS);
 	}
+
 	updateQuickMenuScreen();
 }
 

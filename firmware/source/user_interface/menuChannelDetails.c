@@ -72,127 +72,119 @@ int menuChannelDetails(int buttons, int keys, int events, bool isFirstRun)
 
 static void updateScreen()
 {
-	int mNum=0;
+	int mNum = 0;
 	char buf[17];
 	int tmpVal;
 
 	UC1701_clearBuf();
-	UC1701_printCentered(0, "Channel info",UC1701_FONT_GD77_8x16);
+	UC1701_printCentered(0, "Channel info", UC1701_FONT_GD77_8x16);
 
 	// Can only display 3 of the options at a time menu at -1, 0 and +1
-	for(int i=-1;i<=1;i++)
+	for(int i = -1; i <= 1; i++)
 	{
-		mNum = gMenusCurrentItemIndex+i;
-		if (mNum<0)
-		{
-			mNum = NUM_CH_DETAILS_ITEMS + mNum;
-		}
-		if (mNum >= NUM_CH_DETAILS_ITEMS)
-		{
-			mNum = mNum - NUM_CH_DETAILS_ITEMS;
-		}
+		mNum = menuGetMenuOffset(NUM_CH_DETAILS_ITEMS, i);
 
 		switch(mNum)
 		{
 			case CH_DETAILS_MODE:
 				if (tmpChannel.chMode == RADIO_MODE_ANALOG)
 				{
-					strcpy(buf,"Mode:FM");
+					strcpy(buf, "Mode:FM");
 				}
 				else
 				{
-					sprintf(buf,"Mode:DMR");
+					sprintf(buf, "Mode:DMR");
 				}
 				break;
 			break;
 			case CH_DETAILS_DMR_CC:
-				if (tmpChannel.chMode==RADIO_MODE_ANALOG)
+				if (tmpChannel.chMode == RADIO_MODE_ANALOG)
 				{
-					strcpy(buf,"Color Code:N/A");
+					strcpy(buf, "Color Code:N/A");
 				}
 				else
 				{
-					sprintf(buf,"Color Code:%d",tmpChannel.rxColor);
+					sprintf(buf, "Color Code:%d", tmpChannel.rxColor);
 				}
 				break;
 			case CH_DETAILS_DMR_TS:
-				if (tmpChannel.chMode==RADIO_MODE_ANALOG)
+				if (tmpChannel.chMode == RADIO_MODE_ANALOG)
 				{
-					strcpy(buf,"Timeslot:N/A");
+					strcpy(buf, "Timeslot:N/A");
 				}
 				else
 				{
-					sprintf(buf,"Timeslot:%d",((tmpChannel.flag2 & 0x40) >> 6) + 1);
+					sprintf(buf, "Timeslot:%d", ((tmpChannel.flag2 & 0x40) >> 6) + 1);
 				}
 				break;
 			case CH_DETAILS_RXCTCSS:
-				if (tmpChannel.chMode==RADIO_MODE_ANALOG)
+				if (tmpChannel.chMode == RADIO_MODE_ANALOG)
 				{
-					if (tmpChannel.txTone==CTCSS_TONE_NONE)
+					if (tmpChannel.txTone == CTCSS_TONE_NONE)
 					{
-						strcpy(buf,"Tx CTCSS:None");
+						strcpy(buf, "Tx CTCSS:None");
 					}
 					else
 					{
-						sprintf(buf,"Tx CTCSS:%d.%dHz",tmpChannel.txTone/10 ,tmpChannel.txTone%10 );
+						sprintf(buf, "Tx CTCSS:%d.%dHz", tmpChannel.txTone / 10 , tmpChannel.txTone % 10 );
 					}
 				}
 				else
 				{
-					strcpy(buf,"Tx CTCSS:N/A");
+					strcpy(buf, "Tx CTCSS:N/A");
 				}
 				break;
 			case CH_DETAILS_TXCTCSS:
-				if (tmpChannel.chMode==RADIO_MODE_ANALOG)
+				if (tmpChannel.chMode == RADIO_MODE_ANALOG)
 				{
-					if (tmpChannel.rxTone==CTCSS_TONE_NONE)
+					if (tmpChannel.rxTone == CTCSS_TONE_NONE)
 					{
-						strcpy(buf,"Rx CTCSS:None");
+						strcpy(buf, "Rx CTCSS:None");
 					}
 					else
 					{
-						sprintf(buf,"Rx CTCSS:%d.%dHz",tmpChannel.rxTone/10 ,tmpChannel.rxTone%10 );
+						sprintf(buf, "Rx CTCSS:%d.%dHz", tmpChannel.rxTone / 10 ,tmpChannel.rxTone % 10 );
 					}
 				}
 				else
 				{
-					strcpy(buf,"Rx CTCSS:N/A");
+					strcpy(buf, "Rx CTCSS:N/A");
 				}
 				break;
 			case CH_DETAILS_BANDWIDTH:
 				// Bandwidth
-				if (tmpChannel.chMode==RADIO_MODE_DIGITAL)
+				if (tmpChannel.chMode == RADIO_MODE_DIGITAL)
 				{
-					strcpy(buf,"Bandwidth:N/A");
+					strcpy(buf, "Bandwidth:N/A");
 				}
 				else
 				{
-					sprintf(buf,"Bandwidth:%s",((tmpChannel.flag4 & 0x02) == 0x02)?"25kHz":"12.5kHz");
+					sprintf(buf, "Bandwidth:%s", ((tmpChannel.flag4 & 0x02) == 0x02) ? "25kHz" : "12.5kHz");
 				}
 				break;
 			case CH_DETAILS_FREQ_STEP:
-				tmpVal = VFO_FREQ_STEP_TABLE[(tmpChannel.VFOflag5 >> 4)]/10;
-				sprintf(buf,"Step:%d.%dkHz",tmpVal, VFO_FREQ_STEP_TABLE[(tmpChannel.VFOflag5 >> 4)] - (tmpVal*10));
+				tmpVal = VFO_FREQ_STEP_TABLE[(tmpChannel.VFOflag5 >> 4)] / 10;
+				sprintf(buf, "Step:%d.%dkHz", tmpVal, VFO_FREQ_STEP_TABLE[(tmpChannel.VFOflag5 >> 4)] - (tmpVal * 10));
 				break;
 			case CH_DETAILS_TOT:// TOT
-				if (tmpChannel.tot!=0)
+				if (tmpChannel.tot != 0)
 				{
-					sprintf(buf,"TOT:%d",tmpChannel.tot * 15);
+					sprintf(buf, "TOT:%d", tmpChannel.tot * 15);
 				}
 				else
 				{
-					strcpy(buf,"TOT:OFF");
+					strcpy(buf, "TOT:OFF");
 				}
 				break;
 
 		}
 
-		if (gMenusCurrentItemIndex==mNum)
+		if (gMenusCurrentItemIndex == mNum)
 		{
-			UC1701_fillRect(0,(i+2)*16,128,16,false);
+			UC1701_fillRoundRect(0,(i+2)*16,128,16,2,true);
 		}
 
-		UC1701_printCore(0,(i+2)*16,buf,UC1701_FONT_GD77_8x16,0,(gMenusCurrentItemIndex==mNum));
+		UC1701_printCore(0, (i + 2) * 16, buf, UC1701_FONT_GD77_8x16, 0, (gMenusCurrentItemIndex == mNum));
 	}
 
 	UC1701_render();
@@ -205,19 +197,11 @@ static void handleEvent(int buttons, int keys, int events)
 
 	if ((keys & KEY_DOWN)!=0)
 	{
-		gMenusCurrentItemIndex++;
-		if (gMenusCurrentItemIndex>=NUM_CH_DETAILS_ITEMS)
-		{
-			gMenusCurrentItemIndex=0;
-		}
+		MENU_INC(gMenusCurrentItemIndex, NUM_CH_DETAILS_ITEMS);
 	}
 	else if ((keys & KEY_UP)!=0)
 	{
-		gMenusCurrentItemIndex--;
-		if (gMenusCurrentItemIndex<0)
-		{
-			gMenusCurrentItemIndex=NUM_CH_DETAILS_ITEMS-1;
-		}
+		MENU_DEC(gMenusCurrentItemIndex, NUM_CH_DETAILS_ITEMS);
 	}
 	else if ((keys & KEY_RIGHT)!=0)
 	{

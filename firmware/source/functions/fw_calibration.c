@@ -105,6 +105,21 @@ void read_val_xmitter_dev_narrowband(int offset, uint16_t* value)
 	*value=buffer[0] + ((buffer[1] & 0x03) << 8);
 }
 
+void read_val_dev_tone(int freq, int index, uint8_t *value)
+{
+	int address;
+
+	if (trxCheckFrequencyIsUHF(freq))
+	{
+		address = EXT_uhf_dev_tone+index;
+	}
+	else
+	{
+		address = EXT_vhf_dev_tone+index;
+	}
+	SPI_Flash_read(address, value, 1);
+}
+
 void read_val_dac_vgain_analog(int offset, uint8_t* value)
 {
 	uint8_t buffer[1];
