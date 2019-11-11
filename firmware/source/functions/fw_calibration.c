@@ -206,11 +206,11 @@ bool calibrationGetPowerForFrequency(int freq, calibrationPowerValues_t *powerSe
 
 	if (trxCheckFrequencyIsUHF(freq))
 	{
-		address = POWER_CALIBRATION_ADDRESS_UHF_400MHZ + ((freq - RADIO_UHF_MIN) / 50000) * 2;
+		address = POWER_CALIBRATION_ADDRESS_UHF_400MHZ + ((freq - RADIO_UHF_MIN) / 500000) * 2;
 	}
 	else
 	{
-		address = POWER_CALIBRATION_ADDRESS_VHF_135MHZ + ((freq - RADIO_VHF_MIN) / 50000)  * 2;
+		address = POWER_CALIBRATION_ADDRESS_VHF_135MHZ + ((freq - RADIO_VHF_MIN) / 500000)  * 2;
 	}
 
 	SPI_Flash_read(address,buffer,2);

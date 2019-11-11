@@ -32,15 +32,15 @@ int txstopdelay = 0;
 volatile bool trxIsTransmittingTone = false;
 uint16_t txPower;
 
-const int RADIO_VHF_MIN			=	1340000;
-const int RADIO_VHF_MAX			=	1740000;
-const int RADIO_UHF_MIN			=	4000000;
-const int RADIO_UHF_MAX			=	5200000;
+const int RADIO_VHF_MIN			=	13400000;
+const int RADIO_VHF_MAX			=	17400000;
+const int RADIO_UHF_MIN			=	40000000;
+const int RADIO_UHF_MAX			=	52000000;
 
 static int currentMode = RADIO_MODE_NONE;
 static bool currentBandWidthIs25kHz = BANDWIDTH_12P5KHZ;
-static int currentRxFrequency = 1440000;
-static int currentTxFrequency = 1440000;
+static int currentRxFrequency = 14400000;
+static int currentTxFrequency = 14400000;
 static int currentCC = 1;
 static uint8_t squelch = 0x00;
 static bool rxCTCSSactive = false;
@@ -220,13 +220,13 @@ void trxSetFrequency(int fRx,int fTx)
 			trxDMRMode = DMR_MODE_PASSIVE;
 		}
 
-		uint32_t f = currentRxFrequency * 1.6f;
+		uint32_t f = currentRxFrequency * 0.16f;
 		rx_fl_l = (f & 0x000000ff) >> 0;
 		rx_fl_h = (f & 0x0000ff00) >> 8;
 		rx_fh_l = (f & 0x00ff0000) >> 16;
 		rx_fh_h = (f & 0xff000000) >> 24;
 
-		f = currentTxFrequency * 1.6f;
+		f = currentTxFrequency * 0.16f;
 		tx_fl_l = (f & 0x000000ff) >> 0;
 		tx_fl_h = (f & 0x0000ff00) >> 8;
 		tx_fh_l = (f & 0x00ff0000) >> 16;

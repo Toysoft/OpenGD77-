@@ -24,7 +24,7 @@
 
 enum VFO_SELECTED_FREQUENCY_INPUT  {VFO_SELECTED_FREQUENCY_INPUT_RX , VFO_SELECTED_FREQUENCY_INPUT_TX};
 
-static char freq_enter_digits[7] = { '-', '-', '-', '-', '-', '-', '-' };
+static char freq_enter_digits[8] = { '-', '-', '-', '-', '-', '-', '-', '-' };
 static int freq_enter_idx = 0;
 static int selectedFreq = VFO_SELECTED_FREQUENCY_INPUT_RX;
 
@@ -193,9 +193,9 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 			{
 				if (!trxIsTransmitting)
 				{
-					val_before_dp = currentChannelData->rxFreq/10000;
-					val_after_dp = currentChannelData->rxFreq - val_before_dp*10000;
-					sprintf(buffer,"%cR %d.%04d MHz", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_RX)?'>':' ',val_before_dp, val_after_dp);
+					val_before_dp = currentChannelData->rxFreq/100000;
+					val_after_dp = currentChannelData->rxFreq - val_before_dp*100000;
+					sprintf(buffer,"%cR %d.%05d MHz", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_RX)?'>':' ',val_before_dp, val_after_dp);
 					UC1701_printCentered(32, buffer,UC1701_FONT_GD77_8x16);
 				}
 				else
@@ -204,14 +204,14 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					UC1701_printCentered(TX_TIMER_Y_OFFSET, buffer,UC1701_FONT_16x32);
 				}
 
-				val_before_dp = currentChannelData->txFreq/10000;
-				val_after_dp = currentChannelData->txFreq - val_before_dp*10000;
-				sprintf(buffer,"%cT %d.%04d MHz", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX || trxIsTransmitting)?'>':' ',val_before_dp, val_after_dp);
+				val_before_dp = currentChannelData->txFreq/100000;
+				val_after_dp = currentChannelData->txFreq - val_before_dp*100000;
+				sprintf(buffer,"%cT %d.%05d MHz", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX || trxIsTransmitting)?'>':' ',val_before_dp, val_after_dp);
 				UC1701_printCentered(48, buffer,UC1701_FONT_GD77_8x16);
 			}
 			else
 			{
-				sprintf(buffer,"%c%c%c.%c%c%c%c MHz", freq_enter_digits[0], freq_enter_digits[1], freq_enter_digits[2], freq_enter_digits[3], freq_enter_digits[4], freq_enter_digits[5], freq_enter_digits[6] );
+				sprintf(buffer,"%c%c%c.%c%c%c%c%c MHz", freq_enter_digits[0], freq_enter_digits[1], freq_enter_digits[2], freq_enter_digits[3], freq_enter_digits[4], freq_enter_digits[5], freq_enter_digits[6], freq_enter_digits[7] );
 				if (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX)
 				{
 					UC1701_printCentered(48, buffer,UC1701_FONT_GD77_8x16);
@@ -238,7 +238,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 
 static void reset_freq_enter_digits()
 {
-	for (int i=0;i<7;i++)
+	for (int i=0;i<8;i++)
 	{
 		freq_enter_digits[i]='-';
 	}
@@ -248,7 +248,7 @@ static void reset_freq_enter_digits()
 static int read_freq_enter_digits()
 {
 	int result=0;
-	for (int i=0;i<7;i++)
+	for (int i=0;i<8;i++)
 	{
 		result=result*10;
 		if ((freq_enter_digits[i]>='0') && (freq_enter_digits[i]<='9'))
@@ -554,7 +554,7 @@ static void handleEvent(int buttons, int keys, int events)
     		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		}
 	}
-	if (freq_enter_idx<7)
+	if (freq_enter_idx<8)
 	{
 		char c='\0';
 		if ((keys & KEY_0)!=0)
@@ -601,7 +601,7 @@ static void handleEvent(int buttons, int keys, int events)
 		{
 			freq_enter_digits[freq_enter_idx]=c;
 			freq_enter_idx++;
-			if (freq_enter_idx==7)
+			if (freq_enter_idx==8)
 			{
 				int tmp_frequency=read_freq_enter_digits();
 				if (trxCheckFrequencyIsSupportedByTheRadioHardware(tmp_frequency))
