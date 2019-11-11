@@ -166,7 +166,7 @@ void fw_main_task()
 					}
 				}
 				if (button_event == EVENT_BUTTON_CHANGE
-						&& (buttons & BUTTON_PTT) == 0)
+						&& (buttons & BUTTON_ORANGE) != 0)
 				{
 					button_event = EVENT_BUTTON_NONE;
 					if (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN)

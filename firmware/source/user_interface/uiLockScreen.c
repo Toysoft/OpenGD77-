@@ -22,6 +22,7 @@ static void updateScreen();
 static void handleEvent(int buttons, int keys, int events);
 
 static bool lockDisplay = false;
+static int uiLockLastKey;
 
 int menuLockScreen(int buttons, int keys, int events, bool isFirstRun)
 {
@@ -29,6 +30,7 @@ int menuLockScreen(int buttons, int keys, int events, bool isFirstRun)
 	{
 		menuTimer = 1000;
 		updateScreen();
+		uiLockLastKey = keys;
 	}
 	else
 	{
@@ -44,9 +46,10 @@ static void updateScreen()
 
 	codeplugGetBootItemTexts(line1,line2);
 	UC1701_clearBuf();
+	UC1701_drawRoundRect(4, 4, 120, 56, 5, true);
 	if (keypadLocked) {
 		UC1701_printCentered(10, "Keypad locked",UC1701_FONT_GD77_8x16);
-		UC1701_printCentered(30, "Press SK2 + *",UC1701_FONT_6X8);
+		UC1701_printCentered(30, "Press Green, *",UC1701_FONT_6X8);
 		UC1701_printCentered(38, "to unlock",UC1701_FONT_6X8);
 	} else {
 		UC1701_printCentered(10, "Unlocked",UC1701_FONT_GD77_8x16);
@@ -63,7 +66,12 @@ static void handleEvent(int buttons, int keys, int events)
 		menuSystemPopPreviousMenu();
 		lockDisplay = false;
 	}
-	if ((keys & KEY_STAR) != 0 && (buttons & BUTTON_SK2) != 0)
+	if ((keys & KEY_GREEN) != 0)
+	{
+		uiLockLastKey = keys;
+		return;
+	}
+	if ((uiLockLastKey & KEY_GREEN) != 0 && (keys & KEY_STAR) != 0)
 	{
 		keypadLocked = false;
 		menuSystemPopAllAndDisplayRootMenu();
