@@ -67,10 +67,10 @@ static void updateScreen()
 		}
 
 		UC1701_clearBuf();
-		UC1701_printCentered(0, "RSSI",UC1701_FONT_GD77_8x16);
+		menuDisplayTitle("RSSI");
 
 		sprintf(buffer,"%d", trxRxSignal);
-		UC1701_printCore(0,0,buffer,UC1701_FONT_GD77_8x16,2,false);
+		UC1701_printCore(0, 3, buffer, UC1701_FONT_8X8, 2, false);
 
 		sprintf(buffer,"%ddBm", dBm);
 		UC1701_printCentered(20, buffer,UC1701_FONT_GD77_8x16);

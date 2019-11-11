@@ -43,6 +43,8 @@ typedef struct menuItemNew
 
 extern menuControlDataStruct_t menuControlData;
 
+void menuDisplayTitle(char *title);
+void menuDisplayEntry(int loopOffset, int focusedItem, char *entryText);
 int menuGetMenuOffset(int maxMenuEntries, int loopOffset);
 
 void menuChannelModeUpdateScreen(int txTimeSecs);
