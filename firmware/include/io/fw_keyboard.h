@@ -74,6 +74,8 @@
 #define EVENT_KEY_NONE   0
 #define EVENT_KEY_CHANGE 1
 
+extern volatile bool keypadLocked;
+
 void fw_init_keyboard();
 uint8_t fw_read_keyboard_col();
 uint32_t fw_read_keyboard();

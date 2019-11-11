@@ -155,21 +155,52 @@ void fw_main_task()
         	fw_check_button_event(&buttons, &button_event);// Read button state and event
         	fw_check_key_event(&keys, &key_event);// Read keyboard state and event
 
+			if (keypadLocked)
+			{
+				if (key_event == EVENT_KEY_CHANGE)
+				{
+					key_event = EVENT_KEY_NONE;
+					keys = 0;
+					if (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN)
+					{
+						menuSystemPushNewMenu(MENU_LOCK_SCREEN);
+					}
+				}
+				if (button_event == EVENT_BUTTON_CHANGE
+						&& (buttons & BUTTON_ORANGE) != 0)
+				{
+					button_event = EVENT_BUTTON_NONE;
+					buttons = 0;
+					if (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN)
+					{
+						menuSystemPushNewMenu(MENU_LOCK_SCREEN);
+					}
+				}
+			}
 			if (key_event == EVENT_KEY_CHANGE)
 			{
 				if (keys != 0 && (buttons & BUTTON_PTT) == 0)
 				{
 					set_melody(melody_key_beep);
 				}
-
-				if (menuDisplayLightTimer == 0
-						&& nonVolatileSettings.backLightTimeout != 0)
+			}
+			if (menuDisplayLightTimer == 0
+					&& nonVolatileSettings.backLightTimeout != 0)
+			{
+				if (key_event == EVENT_KEY_CHANGE)
 				{
 					key_event = EVENT_KEY_NONE;
+					keys = 0;
 					displayLightTrigger();
 				}
-			}
+				if (button_event == EVENT_BUTTON_CHANGE && (buttons & BUTTON_ORANGE) != 0)
+				{
+					button_event = EVENT_BUTTON_NONE;
+					buttons = 0;
+					displayLightTrigger();
+				}
 
+			}
 
 
 			if (button_event == EVENT_BUTTON_CHANGE)
