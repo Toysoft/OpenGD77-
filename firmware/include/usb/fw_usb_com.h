@@ -43,5 +43,6 @@ void send_packet(uint8_t val_0x82, uint8_t val_0x86, int ram);
 void send_packet_big(uint8_t val_0x82, uint8_t val_0x86, int ram1, int ram2);
 void add_to_commbuffer(uint8_t value);
 void USB_DEBUG_PRINT(char *str);
+void USB_DEBUG_printf(const char *format, ...);
 
 #endif /* _FW_USB_COM_H_ */
