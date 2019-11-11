@@ -44,12 +44,11 @@ int menuZoneList(int buttons, int keys, int events, bool isFirstRun)
 static void updateScreen()
 {
 	char nameBuf[17];
-	const int headerOffset = 12;
-	int rPos;
+	int mNum;
 	struct_codeplugZone_t zoneBuf;
 
 	UC1701_clearBuf();
-	UC1701_printCentered(0, "Zones", UC1701_FONT_GD77_8x16);
+	menuDisplayTitle("Zones");
 
 	for(int i = -1; i <= 1; i++)
 	{
@@ -58,17 +57,12 @@ static void updateScreen()
 			break;
 		}
 
-		rPos = menuGetMenuOffset(gMenusEndIndex, i);
+		mNum = menuGetMenuOffset(gMenusEndIndex, i);
 
-		if (rPos == gMenusCurrentItemIndex)
-		{
-			UC1701_fillRoundRect(0,1+headerOffset+((i+1)*16),128,16,2,true);
-		}
-
-		codeplugZoneGetDataForNumber(rPos, &zoneBuf);
+		codeplugZoneGetDataForNumber(mNum, &zoneBuf);
 		codeplugUtilConvertBufToString(zoneBuf.name, nameBuf, 16);// need to convert to zero terminated string
 
-		UC1701_printCore(5, (i + 1) * 16 + (headerOffset), (char *)nameBuf, UC1701_FONT_GD77_8x16, 0, (rPos == gMenusCurrentItemIndex));
+		menuDisplayEntry(i, mNum, (char* )nameBuf);
 	}
 
 	UC1701_render();

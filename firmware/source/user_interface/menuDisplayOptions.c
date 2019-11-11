@@ -59,7 +59,7 @@ static void updateScreen()
 	char buf[17];
 
 	UC1701_clearBuf();
-	UC1701_printCentered(0, "Display options", UC1701_FONT_GD77_8x16);
+	menuDisplayTitle("Display options");
 
 	// Can only display 3 of the options at a time menu at -1, 0 and +1
 	for(int i = -1; i <= 1; i++)
@@ -88,12 +88,8 @@ static void updateScreen()
 				}
 				break;
 		}
-		if (gMenusCurrentItemIndex == mNum)
-		{
-			UC1701_fillRoundRect(0,(i+2)*16,128,16,2,true);
-		}
 
-		UC1701_printCore(0, (i + 2) * 16, buf, UC1701_FONT_GD77_8x16, 0, (gMenusCurrentItemIndex == mNum));
+		menuDisplayEntry(i, mNum, buf);
 	}
 
 	UC1701_render();
