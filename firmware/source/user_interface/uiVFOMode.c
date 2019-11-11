@@ -332,17 +332,23 @@ static void handleEvent(int buttons, int keys, int events)
 	{
 		if (menuUtilityHandlePrivateCallActions(buttons,keys,events))
 		{
+			reset_freq_enter_digits();
 			return;
 		}
 		if (buttons & BUTTON_SK2 )
 		{
 			menuSystemPushNewMenu(MENU_CHANNEL_DETAILS);
+			reset_freq_enter_digits();
+			return;
 		}
 		else
 		{
-			menuSystemPushNewMenu(MENU_MAIN_MENU);
+			if (freq_enter_idx == 0)
+			{
+				menuSystemPushNewMenu(MENU_MAIN_MENU);
+				return;
+			}
 		}
-		return;
 	}
 	else if ((keys & KEY_HASH)!=0)
 	{
@@ -552,6 +558,21 @@ static void handleEvent(int buttons, int keys, int events)
 			reset_freq_enter_digits();
     	    set_melody(melody_NACK_beep);
     		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+		}
+		else if ((keys & KEY_GREEN) != 0)
+		{
+			int tmp_frequency=read_freq_enter_digits();
+			if (trxCheckFrequencyIsSupportedByTheRadioHardware(tmp_frequency))
+			{
+				update_frequency(tmp_frequency);
+				reset_freq_enter_digits();
+//	        	    set_melody(melody_ACK_beep);
+			}
+			else
+			{
+        	    set_melody(melody_ERROR_beep);
+			}
+			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		}
 	}
 	if (freq_enter_idx<7)
