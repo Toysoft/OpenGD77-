@@ -20,7 +20,7 @@
 #include "fw_usb_com.h"
 #include "fw_settings.h"
 #include "fw_wdog.h"
-
+#include <stdarg.h>
 
 
 static void handleCPSRequest();
@@ -335,4 +335,16 @@ void USB_DEBUG_PRINT(char *str)
 {
 	strcpy((char*)usbComSendBuf,str);
 	USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, usbComSendBuf, strlen(str));
+}
+
+void USB_DEBUG_printf(const char *format, ...) {
+	  char buf[80];
+
+	  va_list params;
+
+	  va_start(params, format);
+	  vsnprintf(buf, 77, format, params);
+	  strcat(buf, "\n");
+	  va_end(params);
+	  USB_DEBUG_PRINT(buf);
 }

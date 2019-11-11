@@ -19,6 +19,7 @@
 #include "fw_keyboard.h"
 
 static uint32_t old_keyboard_state;
+volatile bool keypadLocked = false;
 
 void fw_init_keyboard()
 {

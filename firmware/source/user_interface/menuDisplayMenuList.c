@@ -90,6 +90,13 @@ static void handleEvent(int buttons, int keys, int events)
 		menuSystemPopPreviousMenu();
 		return;
 	}
+	else if ((keys & KEY_STAR)!=0 && (menuSystemGetCurrentMenuNumber() == MENU_MAIN_MENU))
+	{
+		keypadLocked = true;
+		menuSystemPopAllAndDisplayRootMenu();
+		menuSystemPushNewMenu(MENU_LOCK_SCREEN);
+		return;
+	}
 
 	updateScreen();
 }

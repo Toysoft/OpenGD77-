@@ -700,6 +700,22 @@ void trxUpdateTsForCurrentChannelWithSpecifiedContact(struct_codeplugContact_t *
 
 void trxSetTxCTCSS(int toneFreqX10)
 {
+	uint8_t ctcss_dev;
+
+	if (currentBandWidthIs25kHz)
+	{
+		// 25 kHz settings
+		read_val_dev_tone(currentTxFrequency, CAL_DEV_CTCSS_WIDE, &ctcss_dev);
+		ctcss_dev &= 0x3f;
+		I2C_AT1846_set_register_with_mask(0x59, 0xffc0, ctcss_dev, 0);
+	}
+	else
+	{
+		// 12.5 kHz settings
+		read_val_dev_tone(currentTxFrequency, CAL_DEV_CTCSS_NARROW, &ctcss_dev);
+		ctcss_dev &= 0x3f;
+		I2C_AT1846_set_register_with_mask(0x59, 0xffc0, ctcss_dev, 0);
+	}
 	if (toneFreqX10 == 0xFFFF)
 	{
 		// tone value of 0xffff in the codeplug seem to be a flag that no tone has been selected
