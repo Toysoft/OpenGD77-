@@ -472,6 +472,10 @@ void menuUtilityRenderHeader()
 			}
 			break;
 	}
+	if (keypadLocked)
+	{
+		strcat(buffer," L");
+	}
 
 	UC1701_printAt(0,Y_OFFSET, buffer,UC1701_FONT_6X8);
 

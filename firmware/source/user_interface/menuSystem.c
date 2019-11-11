@@ -45,6 +45,7 @@ int menuCredits(int buttons, int keys, int events, bool isFirstRun);
 int menuChannelDetails(int buttons, int keys, int events, bool isFirstRun);
 int menuHotspotMode(int buttons, int keys, int events, bool isFirstRun);
 int menuCPS(int buttons, int keys, int events, bool isFirstRun);
+int menuLockScreen(int buttons, int keys, int events, bool isFirstRun);
 
 
 /*
@@ -77,6 +78,7 @@ const menuItemNew_t * menusData[] = { 	NULL,// splash
 										NULL,// CPS
 										NULL,// Quick menu - Channel
 										NULL,// Quick menu - VFO
+										NULL,// Lock screen
 								};
 
 const MenuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
@@ -99,7 +101,8 @@ const MenuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
 												menuHotspotMode,
 												menuCPS,
 												menuChannelModeQuickMenu,
-												menuVFOModeQuickMenu};
+												menuVFOModeQuickMenu,
+                                                menuLockScreen};
 
 void menuSystemPushNewMenu(int menuNumber)
 {
