@@ -37,7 +37,7 @@ static int CTCSSRxIndex=0;
 static int CTCSSTxIndex=0;
 static struct_codeplugChannel_t tmpChannel;// update a temporary copy of the channel and only write back if green menu is pressed
 
-enum CHANNEL_DETAILS_DISPLAY_LIST { CH_DETAILS_MODE = 0, CH_DETAILS_DMR_CC, CH_DETAILS_DMR_TS,CH_DETAILS_RXCTCSS, CH_DETAILS_TXCTCSS , CH_DETAILS_BANDWIDTH,
+enum CHANNEL_DETAILS_DISPLAY_LIST { CH_DETAILS_MODE = 0, CH_DETAILS_DMR_CC, CH_DETAILS_DMR_TS,CH_DETAILS_RXCTCSS, CH_DETAILS_TXCTCSS , CH_DETAILS_RXFREQ, CH_DETAILS_TXFREQ, CH_DETAILS_BANDWIDTH,
 									CH_DETAILS_FREQ_STEP, CH_DETAILS_TOT,
 									NUM_CH_DETAILS_ITEMS};// The last item in the list is used so that we automatically get a total number of items in the list
 
@@ -75,6 +75,8 @@ static void updateScreen()
 	int mNum = 0;
 	char buf[17];
 	int tmpVal;
+	int val_before_dp;
+	int val_after_dp;
 
 	UC1701_clearBuf();
 	UC1701_printCentered(0, "Channel info", UC1701_FONT_GD77_8x16);
@@ -150,6 +152,16 @@ static void updateScreen()
 				{
 					strcpy(buf, "Rx CTCSS:N/A");
 				}
+				break;
+			case CH_DETAILS_RXFREQ:
+				val_before_dp = tmpChannel.rxFreq / 10000;
+				val_after_dp = tmpChannel.rxFreq - val_before_dp * 10000;
+				sprintf(buf, "RX: %d.%04d MHz", val_before_dp, val_after_dp);
+				break;
+			case CH_DETAILS_TXFREQ:
+				val_before_dp = tmpChannel.txFreq / 10000;
+				val_after_dp = tmpChannel.txFreq - val_before_dp * 10000;
+				sprintf(buf, "TX: %d.%04d MHz", val_before_dp, val_after_dp);
 				break;
 			case CH_DETAILS_BANDWIDTH:
 				// Bandwidth
