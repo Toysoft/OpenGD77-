@@ -409,6 +409,11 @@ void trx_activateTx()
     DAC_SetBufferValue(DAC0, 0U, txPower);	// PA drive to appropriate level
 }
 
+void trxSetPowerFromMMDVMHostByte(uint8_t pwr)
+{
+	txPower = ((pwr * (trxPowerSettings.highPower - trxPowerSettings.lowPower - 500)) / 255) + (trxPowerSettings.lowPower - 500);
+}
+
 void trxSetPowerFromLevel(int powerLevel)
 {
 	uint16_t powerVal=1400;// Default to around 1W
