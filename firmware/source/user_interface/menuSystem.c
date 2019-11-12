@@ -229,6 +229,22 @@ int menuDisplayList(int buttons, int keys, int events, bool isFirstRun)
 	return 0;
 }
 
+void menuDisplayTitle(char *title)
+{
+	UC1701_drawFastHLine(0, 13, 128, true);
+	UC1701_printCore(0, 3, title, UC1701_FONT_8X8, 1, false);
+}
+
+void menuDisplayEntry(int loopOffset, int focusedItem, char *entryText)
+{
+	bool focused = (focusedItem == gMenusCurrentItemIndex);
+
+	if (focused)
+		UC1701_fillRoundRect(0, (loopOffset + 2) * 16, 128, 16, 2, true);
+
+	UC1701_printCore(0, (loopOffset + 2) * 16, entryText, UC1701_FONT_GD77_8x16, 0, focused);
+}
+
 int menuGetMenuOffset(int maxMenuEntries, int loopOffset)
 {
      int offset = gMenusCurrentItemIndex + loopOffset;
