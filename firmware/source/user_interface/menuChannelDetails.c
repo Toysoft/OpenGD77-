@@ -154,14 +154,14 @@ static void updateScreen()
 				}
 				break;
 			case CH_DETAILS_RXFREQ:
-				val_before_dp = tmpChannel.rxFreq / 10000;
-				val_after_dp = tmpChannel.rxFreq - val_before_dp * 10000;
-				sprintf(buf, "RX: %d.%04d MHz", val_before_dp, val_after_dp);
+				val_before_dp = tmpChannel.rxFreq / 100000;
+				val_after_dp = tmpChannel.rxFreq - val_before_dp * 100000;
+				sprintf(buf, "RX:%d.%05dMHz", val_before_dp, val_after_dp);
 				break;
 			case CH_DETAILS_TXFREQ:
-				val_before_dp = tmpChannel.txFreq / 10000;
-				val_after_dp = tmpChannel.txFreq - val_before_dp * 10000;
-				sprintf(buf, "TX: %d.%04d MHz", val_before_dp, val_after_dp);
+				val_before_dp = tmpChannel.txFreq / 100000;
+				val_after_dp = tmpChannel.txFreq - val_before_dp * 100000;
+				sprintf(buf, "TX:%d.%05dMHz", val_before_dp, val_after_dp);
 				break;
 			case CH_DETAILS_BANDWIDTH:
 				// Bandwidth
