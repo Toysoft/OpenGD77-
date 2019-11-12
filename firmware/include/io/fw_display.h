@@ -43,7 +43,7 @@
 #define GPIO_Display_SDA 	GPIOC
 #define Pin_Display_SDA		12
 
-void fw_init_display();
+void fw_init_display(bool isInverseColour);
 
 void fw_displayEnableBacklight(bool onof);
 

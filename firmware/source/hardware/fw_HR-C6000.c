@@ -19,10 +19,10 @@
  */
 
 #include <hardware/fw_HR-C6000.h>
-#include "menu/menuUtilityQSOData.h"
 #include "fw_settings.h"
-#include "menu/menuHotspot.h"
 #include <SeggerRTT/RTT/SEGGER_RTT.h>
+#include <user_interface/menuHotspot.h>
+#include <user_interface/menuUtilityQSOData.h>
 #include "fw_trx.h"
 
 
@@ -288,7 +288,12 @@ void SPI_C6000_postinit()
 	write_SPI_page_reg_byte_SPI0(0x04, 0x01, 0x70);  //Set 2 Point Mod, Swap Rx I and Q, Rx Mode IF
 	write_SPI_page_reg_byte_SPI0(0x04, 0x10, 0x6E);  //Set DMR, Tier2, Timeslot mode, Layer2, Repeater, Aligned, Slot 1
 	write_SPI_page_reg_byte_SPI0(0x04, 0x00, 0x3F);  //Reset DMR Protocol and Physical layer modules.
-	write_SPI_page_reg_byte_SPI0(0x04, 0xE4, 0x4B);  //CODEC   LineOut Gain 2dB, Mic Stage 1 Gain 0dB, Mic Stage 2 Gain 33dB
+	write_SPI_page_reg_byte_SPI0(0x04, 0xE4, 0x40 + nonVolatileSettings.micGainDMR);  //CODEC   LineOut Gain 2dB, Mic Stage 1 Gain 0dB, Mic Stage 2 Gain default is 11 =  33dB
+}
+
+void setMicGainDMR(uint8_t gain)
+{
+	write_SPI_page_reg_byte_SPI0(0x04, 0xE4, 0x40 + gain);  //CODEC   LineOut Gain 2dB, Mic Stage 1 Gain 0dB, Mic Stage 2 Gain default is 11 =  33dB
 }
 
 void PORTC_IRQHandler(void)

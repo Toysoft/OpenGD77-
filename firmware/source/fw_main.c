@@ -16,9 +16,9 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <user_interface/menuSystem.h>
+#include <user_interface/menuUtilityQSOData.h>
 #include "fw_main.h"
-#include "menu/menuSystem.h"
-#include "menu/menuUtilityQSOData.h"
 #include "fw_settings.h"
 
 #if defined(USE_SEGGER_RTT)
@@ -76,7 +76,7 @@ void fw_main_task()
 	}
     settingsLoadSettings();
 
-	fw_init_display();
+	fw_init_display(nonVolatileSettings.displayInverseVideo);
 
     // Init SPI
     init_SPI();
@@ -155,17 +155,57 @@ void fw_main_task()
         	fw_check_button_event(&buttons, &button_event);// Read button state and event
         	fw_check_key_event(&keys, &key_event);// Read keyboard state and event
 
-        	if (key_event==EVENT_KEY_CHANGE)
-        	{
-        		if (keys!=0)
-        		{
-            	    set_melody(melody_key_beep);
-        		}
-        	}
+			if (keypadLocked)
+			{
+				if (key_event == EVENT_KEY_CHANGE)
+				{
+					key_event = EVENT_KEY_NONE;
+					keys = 0;
+					if (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN)
+					{
+						menuSystemPushNewMenu(MENU_LOCK_SCREEN);
+					}
+				}
+				if (button_event == EVENT_BUTTON_CHANGE
+						&& (buttons & BUTTON_ORANGE) != 0)
+				{
+					button_event = EVENT_BUTTON_NONE;
+					buttons = 0;
+					if (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN)
+					{
+						menuSystemPushNewMenu(MENU_LOCK_SCREEN);
+					}
+				}
+			}
+			if (key_event == EVENT_KEY_CHANGE)
+			{
+				if (keys != 0 && (buttons & BUTTON_PTT) == 0)
+				{
+					set_melody(melody_key_beep);
+				}
+			}
+			if (menuDisplayLightTimer == 0
+					&& nonVolatileSettings.backLightTimeout != 0)
+			{
+				if (key_event == EVENT_KEY_CHANGE)
+				{
+					key_event = EVENT_KEY_NONE;
+					keys = 0;
+					displayLightTrigger();
+				}
+				if (button_event == EVENT_BUTTON_CHANGE && (buttons & BUTTON_ORANGE) != 0)
+				{
+					button_event = EVENT_BUTTON_NONE;
+					buttons = 0;
+					displayLightTrigger();
+				}
 
-        	if (button_event==EVENT_BUTTON_CHANGE)
-        	{
-        		/*
+			}
+
+
+			if (button_event == EVENT_BUTTON_CHANGE)
+			{
+				/*
         		if ((buttons & BUTTON_SK1)!=0)
         		{
             	    set_melody(melody_sk1_beep);
@@ -182,11 +222,11 @@ void fw_main_task()
 
         		if ((	(buttons & BUTTON_PTT)!=0) &&
         				(slot_state==DMR_STATE_IDLE || trxDMRMode == DMR_MODE_PASSIVE) &&
-						(trxGetMode()!=RADIO_MODE_NONE) &&
-						(settingsUsbMode != USB_MODE_HOTSPOT) &&
-						(menuSystemGetCurrentMenuNumber() != MENU_POWER_OFF) &&
-						(menuSystemGetCurrentMenuNumber() != MENU_SPLASH_SCREEN)
-						)
+						trxGetMode()!=RADIO_MODE_NONE &&
+						settingsUsbMode != USB_MODE_HOTSPOT &&
+						menuSystemGetCurrentMenuNumber() != MENU_POWER_OFF &&
+						menuSystemGetCurrentMenuNumber() != MENU_SPLASH_SCREEN &&
+						menuSystemGetCurrentMenuNumber() != MENU_TX_SCREEN )
         		{
         			menuSystemPushNewMenu(MENU_TX_SCREEN);
         		}

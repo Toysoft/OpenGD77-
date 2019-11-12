@@ -105,6 +105,21 @@ void read_val_xmitter_dev_narrowband(int offset, uint16_t* value)
 	*value=buffer[0] + ((buffer[1] & 0x03) << 8);
 }
 
+void read_val_dev_tone(int freq, int index, uint8_t *value)
+{
+	int address;
+
+	if (trxCheckFrequencyIsUHF(freq))
+	{
+		address = EXT_uhf_dev_tone+index;
+	}
+	else
+	{
+		address = EXT_vhf_dev_tone+index;
+	}
+	SPI_Flash_read(address, value, 1);
+}
+
 void read_val_dac_vgain_analog(int offset, uint8_t* value)
 {
 	uint8_t buffer[1];
@@ -205,4 +220,25 @@ bool calibrationGetPowerForFrequency(int freq, calibrationPowerValues_t *powerSe
 	return true;
 }
 
+bool calibrationGetRSSIMeterParams(int freq, calibrationRSSIMeter_t *rssiMeterValues)
+{
+	int address;
 
+	if (trxCheckFrequencyIsUHF(freq))
+	{
+		address = 0x8F053;
+	}
+	else
+	{
+		address = 0x8F0C3;
+	}
+
+	if (SPI_Flash_read(address,(uint8_t *)rssiMeterValues,2))
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}

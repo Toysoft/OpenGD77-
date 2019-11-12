@@ -17,7 +17,8 @@
  */
 #ifndef _FW_MENU_LEGACY_CODEPLUG_UTILS_H_
 #define _FW_MENU_LEGACY_CODEPLUG_UTILS_H_
-#include "fw_main.h"
+
+#include "fw_common.h"
 
 extern const int CODEPLUG_MAX_VARIABLE_SQUELCH;
 extern const int CODEPLUG_MIN_VARIABLE_SQUELCH;
@@ -76,10 +77,25 @@ typedef struct struct_codeplugRxGroup
 
 typedef struct struct_codeplugContact
 {
-	char name[16];
-	uint32_t tgNumber;
-	uint16_t flags; // probably used for call type, but possibly can be re-purposed
+	char 		name[16];
+	uint32_t 	tgNumber;
+	uint8_t		callType;
+	uint8_t		callRxTone;
+	uint8_t		ringStyle;
+	uint8_t		reserve1;
 } struct_codeplugContact_t;
+
+typedef struct struct_codeplugDTMFContact
+{
+	char name[16];
+	uint8_t code[16];
+} struct_codeplugDTMFContact_t;
+
+typedef struct struct_codeplugDTMFContactList
+{
+	struct_codeplugDTMFContact_t contacts[32];
+	int numContacts;
+} struct_codeplugDTMFContactList_t;
 
 /*
  * deprecated. Use our own non volatile storage instead
@@ -97,6 +113,7 @@ int int2bcd(int i);
 
 void codeplugRxGroupGetDataForIndex(int index, struct_codeplugRxGroup_t *rxGroupBuf);
 void codeplugContactGetDataForIndex(int index, struct_codeplugContact_t *contact);
+void codeplugDTMFContactGetDataForIndex(struct_codeplugDTMFContactList_t *contactList);
 int codeplugGetUserDMRID();
 void codeplugSetUserDMRID(uint32_t dmrId);
 void codeplugGetRadioName(char *buf);
