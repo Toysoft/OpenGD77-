@@ -133,6 +133,11 @@ static void loadChannelData(bool useChannelDataInMemory)
 		{
 			trxTalkGroupOrPcId = nonVolatileSettings.overrideTG;
 		}
+
+		if ((nonVolatileSettings.tsManualOverride & 0x0F) != 0)
+		{
+			trxSetDMRTimeSlot ((nonVolatileSettings.tsManualOverride & 0x0F) -1);
+		}
 	}
 }
 
@@ -343,6 +348,8 @@ static void handleEvent(int buttons, int keys, int events)
 						nonVolatileSettings.currentIndexInTRxGroupList = 0;
 					}
 				}
+				nonVolatileSettings.tsManualOverride &= 0xF0; // remove TS override for channel
+
 				codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
 
 				trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
@@ -401,7 +408,7 @@ static void handleEvent(int buttons, int keys, int events)
 								rxGroupData.NOT_IN_MEMORY_numTGsInGroup - 1;
 					}
 				}
-
+				nonVolatileSettings.tsManualOverride &= 0xF0; // remove TS override from channel
 				codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
 
 				trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
@@ -458,6 +465,8 @@ static void handleEvent(int buttons, int keys, int events)
 			{
 				// Toggle timeslot
 				trxSetDMRTimeSlot(1-trxGetDMRTimeSlot());
+				nonVolatileSettings.tsManualOverride &= 0xF0;// Clear lower nibble value
+				nonVolatileSettings.tsManualOverride |= (trxGetDMRTimeSlot()+1);// Store manual TS override
 
 				//	init_digital();
 				clearActiveDMRID();
@@ -485,6 +494,7 @@ static void handleEvent(int buttons, int keys, int events)
 				nonVolatileSettings.currentZone--;
 			}
 			nonVolatileSettings.overrideTG = 0; // remove any TG override
+			nonVolatileSettings.tsManualOverride &= 0xF0; // remove TS override from channel
 			nonVolatileSettings.currentChannelIndexInZone = 0;// Since we are switching zones the channel index should be reset
 			channelScreenChannelData.rxFreq=0x00; // Flag to the Channel screeen that the channel data is now invalid and needs to be reloaded
 			menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
@@ -527,6 +537,7 @@ static void handleEvent(int buttons, int keys, int events)
 				nonVolatileSettings.currentZone = 0;
 			}
 			nonVolatileSettings.overrideTG = 0; // remove any TG override
+			nonVolatileSettings.tsManualOverride &= 0xF0; // remove TS override from channel
 			nonVolatileSettings.currentChannelIndexInZone = 0;// Since we are switching zones the channel index should be reset
 			channelScreenChannelData.rxFreq=0x00; // Flag to the Channel screen that the channel data is now invalid and needs to be reloaded
 			menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);

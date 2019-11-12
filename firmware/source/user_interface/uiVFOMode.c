@@ -95,10 +95,17 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 				{
 					nonVolatileSettings.overrideTG = 9;// If the VFO does not have an Rx Group list assigned to it. We can't get a TG from the codeplug. So use TG 9.
 				}
+
+
 			}
 			else
 			{
 				trxTalkGroupOrPcId = nonVolatileSettings.overrideTG;
+			}
+
+			if ((nonVolatileSettings.tsManualOverride & 0xF0) != 0)
+			{
+				trxSetDMRTimeSlot(((nonVolatileSettings.tsManualOverride & 0xF0)>>4) - 1);
 			}
 		}
 		lastHeardClearLastID();
@@ -384,6 +391,8 @@ static void handleEvent(int buttons, int keys, int events)
 				{
 					// Toggle TimeSlot
 					trxSetDMRTimeSlot(1-trxGetDMRTimeSlot());
+					nonVolatileSettings.tsManualOverride &= 0x0F;// Clear upper nibble value
+					nonVolatileSettings.tsManualOverride |= (trxGetDMRTimeSlot()+1)<<4;// Store manual TS override for VFO in upper nibble
 
 					//init_digital();
 					clearActiveDMRID();
@@ -457,6 +466,8 @@ static void handleEvent(int buttons, int keys, int events)
 							currentIndexInTRxGroup = 0;
 						}
 					}
+					nonVolatileSettings.tsManualOverride &= 0x0F; // remove TS override for VFO
+
 					codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
 
 					trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
@@ -514,7 +525,7 @@ static void handleEvent(int buttons, int keys, int events)
 									rxGroupData.NOT_IN_MEMORY_numTGsInGroup - 1;
 						}
 					}
-
+					nonVolatileSettings.tsManualOverride &= 0x0F; // remove TS override for VFO
 					codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
 					nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
 					trxTalkGroupOrPcId = contactData.tgNumber;

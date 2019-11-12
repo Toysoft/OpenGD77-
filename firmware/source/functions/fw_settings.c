@@ -30,7 +30,7 @@ const int BAND_UHF_MIN 	= 4300000;
 const int BAND_UHF_MAX 	= 4500000;
 
 static const int STORAGE_BASE_ADDRESS 		= 0x6000;
-static const int STORAGE_MAGIC_NUMBER 		= 0x4722;
+static const int STORAGE_MAGIC_NUMBER 		= 0x4723;
 
 settingsStruct_t nonVolatileSettings;
 struct_codeplugChannel_t *currentChannelData;
@@ -126,6 +126,7 @@ void settingsRestoreDefaultSettings()
 	nonVolatileSettings.txTimeoutBeepX5Secs = 0;
 	nonVolatileSettings.beepVolumeDivider = 1;// no reduction in volume
 	nonVolatileSettings.micGainDMR = 11;// Normal value used by the official firmware
+	nonVolatileSettings.tsManualOverride = 0; // No manual TS override using the Star key
 
 	settingsInitVFOChannel();
 	currentChannelData = &nonVolatileSettings.vfoChannel;// Set the current channel data to point to the VFO data since the default screen will be the VFO
