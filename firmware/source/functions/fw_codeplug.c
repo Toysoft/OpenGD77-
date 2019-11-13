@@ -52,7 +52,7 @@ const int CODEPLUG_ADDR_VFO_A_CHANNEL = 0x7590;
 
 const int MAX_CHANNELS_PER_ZONE = 16;
 
-const int VFO_FREQ_STEP_TABLE[8] = {25,50,65,100,125,250,300,500};
+const int VFO_FREQ_STEP_TABLE[8] = {250,500,625,1000,1250,2500,3000,5000};
 
 const int CODEPLUG_MAX_VARIABLE_SQUELCH = 21;
 const int CODEPLUG_MIN_VARIABLE_SQUELCH = 1;
@@ -230,8 +230,8 @@ void codeplugChannelGetDataForIndex(int index, struct_codeplugChannel_t *channel
 
 	channelBuf->chMode = (channelBuf->chMode==0)?RADIO_MODE_ANALOG:RADIO_MODE_DIGITAL;
 	// Convert the the legacy codeplug tx and rx freq values into normal integers
-	channelBuf->txFreq = bcd2int(channelBuf->txFreq)/10;
-	channelBuf->rxFreq = bcd2int(channelBuf->rxFreq)/10;
+	channelBuf->txFreq = bcd2int(channelBuf->txFreq);
+	channelBuf->rxFreq = bcd2int(channelBuf->rxFreq);
 	if (channelBuf->rxTone != 0xffff)
 	{
 		channelBuf->rxTone = bcd2int(channelBuf->rxTone);
