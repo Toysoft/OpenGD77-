@@ -444,6 +444,6 @@ void codeplugVFO_A_ChannelData(struct_codeplugChannel_t *vfoBuf)
 
 	// Convert the the legacy codeplug tx and rx freq values into normal integers
 	vfoBuf->chMode = (vfoBuf->chMode==0)?RADIO_MODE_ANALOG:RADIO_MODE_DIGITAL;
-	vfoBuf->txFreq = bcd2int(vfoBuf->txFreq)/10;
-	vfoBuf->rxFreq = bcd2int(vfoBuf->rxFreq)/10;
+	vfoBuf->txFreq = bcd2int(vfoBuf->txFreq);
+	vfoBuf->rxFreq = bcd2int(vfoBuf->rxFreq);
 }
