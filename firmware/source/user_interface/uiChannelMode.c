@@ -121,7 +121,15 @@ static void loadChannelData(bool useChannelDataInMemory)
 		trxSetDMRColourCode(channelScreenChannelData.rxColor);
 
 		codeplugRxGroupGetDataForIndex(channelScreenChannelData.rxGroupList,&rxGroupData);
-		codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
+		// Check if this channel has an Rx Group
+		if (rxGroupData.name[0]!=0)
+		{
+			codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
+		}
+		else
+		{
+			codeplugContactGetDataForIndex(channelScreenChannelData.contact,&contactData);
+		}
 
 		trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
 
@@ -350,7 +358,10 @@ static void handleEvent(int buttons, int keys, int events)
 				}
 				nonVolatileSettings.tsManualOverride &= 0xF0; // remove TS override for channel
 
-				codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
+				if (rxGroupData.name[0]!=0)
+				{
+					codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
+				}
 
 				trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
 
@@ -409,8 +420,10 @@ static void handleEvent(int buttons, int keys, int events)
 					}
 				}
 				nonVolatileSettings.tsManualOverride &= 0xF0; // remove TS override from channel
-				codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
-
+				if (rxGroupData.name[0]!=0)
+				{
+					codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
+				}
 				trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
 
 				nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden

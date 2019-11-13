@@ -76,7 +76,15 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 			{
 				if (currentChannelData->rxGroupList != 0)
 				{
-					codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
+					// Check if this channel has an Rx Group
+					if (rxGroupData.name[0]!=0)
+					{
+						codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
+					}
+					else
+					{
+						codeplugContactGetDataForIndex(currentChannelData->contact,&contactData);
+					}
 
 					// Check whether the contact data seems valid
 					if (contactData.name[0] == 0 || contactData.tgNumber ==0 || contactData.tgNumber > 9999999)
@@ -468,7 +476,15 @@ static void handleEvent(int buttons, int keys, int events)
 					}
 					nonVolatileSettings.tsManualOverride &= 0x0F; // remove TS override for VFO
 
-					codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
+					// Check if this channel has an Rx Group
+					if (rxGroupData.name[0]!=0)
+					{
+						codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
+					}
+					else
+					{
+						codeplugContactGetDataForIndex(currentChannelData->contact,&contactData);
+					}
 
 					trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
 
@@ -526,7 +542,17 @@ static void handleEvent(int buttons, int keys, int events)
 						}
 					}
 					nonVolatileSettings.tsManualOverride &= 0x0F; // remove TS override for VFO
-					codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
+
+					// Check if this channel has an Rx Group
+					if (rxGroupData.name[0]!=0)
+					{
+						codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
+					}
+					else
+					{
+						codeplugContactGetDataForIndex(currentChannelData->contact,&contactData);
+					}
+
 					nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
 					trxTalkGroupOrPcId = contactData.tgNumber;
 
