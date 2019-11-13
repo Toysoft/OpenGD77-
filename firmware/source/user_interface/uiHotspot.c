@@ -922,8 +922,8 @@ uint32_t fRx,fTx;
 		rf_power = data[9U];// 255 = max power
 	}
 
-	fRx = (data[1U] << 0 | data[2U] << 8  | data[3U] << 16 | data[4U] << 24)/100;
-	fTx = (data[5U] << 0 | data[6U] << 8  | data[7U] << 16 | data[8U] << 24)/100;
+	fRx = (data[1U] << 0 | data[2U] << 8  | data[3U] << 16 | data[4U] << 24)/10;
+	fTx = (data[5U] << 0 | data[6U] << 8  | data[7U] << 16 | data[8U] << 24)/10;
 
 //	SEGGER_RTT_printf(0, "Tx freq = %d, Rx freq = %d, Power = %d\n",fRx,fRx,rf_power);
 
