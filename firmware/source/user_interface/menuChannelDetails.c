@@ -175,8 +175,15 @@ static void updateScreen()
 				}
 				break;
 			case CH_DETAILS_FREQ_STEP:
-				tmpVal = VFO_FREQ_STEP_TABLE[(tmpChannel.VFOflag5 >> 4)] / 100;
-				sprintf(buf, "Step:%d.%02dkHz", tmpVal, VFO_FREQ_STEP_TABLE[(tmpChannel.VFOflag5 >> 4)] - (tmpVal * 100));
+				if (tmpChannel.chMode == RADIO_MODE_DIGITAL)
+				{
+					strcpy(buf, "Step:N/A");
+				}
+				else
+				{
+					tmpVal = VFO_FREQ_STEP_TABLE[(tmpChannel.VFOflag5 >> 4)] / 100;
+					sprintf(buf, "Step:%d.%02dkHz", tmpVal, VFO_FREQ_STEP_TABLE[(tmpChannel.VFOflag5 >> 4)] - (tmpVal * 100));
+				}
 				break;
 			case CH_DETAILS_TOT:// TOT
 				if (tmpChannel.tot != 0)
@@ -263,9 +270,9 @@ static void handleEvent(int buttons, int keys, int events)
 				break;
 			case CH_DETAILS_FREQ_STEP:
 				tmpVal = (tmpChannel.VFOflag5>>4)+1;
-				if (tmpVal>15)
+				if (tmpVal>7)
 				{
-					tmpVal=15;
+					tmpVal=7;
 				}
 				tmpChannel.VFOflag5 &= 0x0F;
 				tmpChannel.VFOflag5 |= tmpVal<<4;
