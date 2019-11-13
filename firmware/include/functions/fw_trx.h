@@ -43,7 +43,6 @@ extern int txstopdelay;
 extern volatile uint8_t trxRxSignal;
 extern volatile uint8_t trxRxNoise;
 extern volatile bool trxIsTransmittingTone;
-extern uint16_t txPower;
 extern calibrationPowerValues_t trxPowerSettings;
 
 void trx_check_analog_squelch();
