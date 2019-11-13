@@ -30,7 +30,8 @@ uint32_t trxTalkGroupOrPcId = 9;// Set to local TG just in case there is some pr
 uint32_t trxDMRID = 0;// Set ID to 0. Not sure if its valid. This value needs to be loaded from the codeplug.
 int txstopdelay = 0;
 volatile bool trxIsTransmittingTone = false;
-uint16_t txPower;
+static uint16_t txPower;
+static bool analogSignalReceived = false;
 
 const int RADIO_VHF_MIN			=	13400000;
 const int RADIO_VHF_MAX			=	17400000;
@@ -156,6 +157,7 @@ void trxReadRSSIAndNoise()
 	read_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x1b,(uint8_t *)&trxRxSignal,(uint8_t *)&trxRxNoise);
 }
 
+
 void trx_check_analog_squelch()
 {
 	trx_measure_count++;
@@ -181,17 +183,26 @@ void trx_check_analog_squelch()
 
 		if (trxRxNoise < squelch)
 		{
-			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
-			if(!rxCTCSSactive || (rxCTCSSactive & trxCheckCTCSSFlag()))
+			if (!analogSignalReceived)
 			{
-				GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1); // speaker on
-				displayLightTrigger();
+				analogSignalReceived = true;
+				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
+				if(!rxCTCSSactive || (rxCTCSSactive & trxCheckCTCSSFlag()))
+				{
+
+					GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1); // speaker on
+					displayLightTrigger();
+				}
 			}
 		}
-		else if (trxIsTransmittingTone == false)
+		else
 		{
-			GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0); // speaker off
-			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
+			analogSignalReceived = false;
+			if (trxIsTransmittingTone == false)
+			{
+				GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0); // speaker off
+				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
+			}
 		}
 
     	trx_measure_count=0;
