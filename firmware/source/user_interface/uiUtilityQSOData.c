@@ -333,9 +333,9 @@ static void displayChannelNameOrRxFrequency(char *buffer)
 	}
 	else
 	{
-		int val_before_dp = currentChannelData->rxFreq/10000;
-		int val_after_dp = currentChannelData->rxFreq - val_before_dp*10000;
-		sprintf(buffer,"%d.%04d MHz",val_before_dp, val_after_dp);
+		int val_before_dp = currentChannelData->rxFreq/100000;
+		int val_after_dp = currentChannelData->rxFreq - val_before_dp*100000;
+		sprintf(buffer,"%d.%05d MHz",val_before_dp, val_after_dp);
 	}
 	UC1701_printCentered(52,buffer,UC1701_FONT_6X8);
 }

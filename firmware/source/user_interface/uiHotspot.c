@@ -828,8 +828,8 @@ static void updateScreen(int rxCommandState)
 		}
 		UC1701_printCentered(32, buffer,UC1701_FONT_GD77_8x16);
 
-		val_before_dp = freq_tx/10000;
-		val_after_dp = freq_tx - val_before_dp*10000;
+		val_before_dp = freq_tx/100000;
+		val_after_dp = freq_tx - val_before_dp*100000;
 		sprintf(buffer,"T %d.%04d MHz",val_before_dp, val_after_dp);
 	}
 	else

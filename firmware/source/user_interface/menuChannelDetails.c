@@ -154,14 +154,14 @@ static void updateScreen()
 				}
 				break;
 			case CH_DETAILS_RXFREQ:
-				val_before_dp = tmpChannel.rxFreq / 10000;
-				val_after_dp = tmpChannel.rxFreq - val_before_dp * 10000;
-				sprintf(buf, "RX: %d.%04d MHz", val_before_dp, val_after_dp);
+				val_before_dp = tmpChannel.rxFreq / 100000;
+				val_after_dp = tmpChannel.rxFreq - val_before_dp * 100000;
+				sprintf(buf, "RX:%d.%05dMHz", val_before_dp, val_after_dp);
 				break;
 			case CH_DETAILS_TXFREQ:
-				val_before_dp = tmpChannel.txFreq / 10000;
-				val_after_dp = tmpChannel.txFreq - val_before_dp * 10000;
-				sprintf(buf, "TX: %d.%04d MHz", val_before_dp, val_after_dp);
+				val_before_dp = tmpChannel.txFreq / 100000;
+				val_after_dp = tmpChannel.txFreq - val_before_dp * 100000;
+				sprintf(buf, "TX:%d.%05dMHz", val_before_dp, val_after_dp);
 				break;
 			case CH_DETAILS_BANDWIDTH:
 				// Bandwidth
@@ -175,8 +175,15 @@ static void updateScreen()
 				}
 				break;
 			case CH_DETAILS_FREQ_STEP:
-				tmpVal = VFO_FREQ_STEP_TABLE[(tmpChannel.VFOflag5 >> 4)] / 10;
-				sprintf(buf, "Step:%d.%dkHz", tmpVal, VFO_FREQ_STEP_TABLE[(tmpChannel.VFOflag5 >> 4)] - (tmpVal * 10));
+				if (tmpChannel.chMode == RADIO_MODE_DIGITAL)
+				{
+					strcpy(buf, "Step:N/A");
+				}
+				else
+				{
+					tmpVal = VFO_FREQ_STEP_TABLE[(tmpChannel.VFOflag5 >> 4)] / 100;
+					sprintf(buf, "Step:%d.%02dkHz", tmpVal, VFO_FREQ_STEP_TABLE[(tmpChannel.VFOflag5 >> 4)] - (tmpVal * 100));
+				}
 				break;
 			case CH_DETAILS_TOT:// TOT
 				if (tmpChannel.tot != 0)
@@ -263,9 +270,9 @@ static void handleEvent(int buttons, int keys, int events)
 				break;
 			case CH_DETAILS_FREQ_STEP:
 				tmpVal = (tmpChannel.VFOflag5>>4)+1;
-				if (tmpVal>15)
+				if (tmpVal>7)
 				{
-					tmpVal=15;
+					tmpVal=7;
 				}
 				tmpChannel.VFOflag5 &= 0x0F;
 				tmpChannel.VFOflag5 |= tmpVal<<4;
