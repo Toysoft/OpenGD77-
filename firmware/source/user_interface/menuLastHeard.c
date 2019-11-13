@@ -57,7 +57,7 @@ static void updateScreen()
 	LinkItem_t *item = LinkHead;
 
 	UC1701_clearBuf();
-	UC1701_printCentered(0, "Last heard",UC1701_FONT_GD77_8x16);
+	menuDisplayTitle("Last heard");
 
 	// skip over the first gMenusCurrentItemIndex in the listing
 	for(int i=0;i<gMenusCurrentItemIndex;i++)

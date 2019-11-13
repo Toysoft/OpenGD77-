@@ -44,22 +44,16 @@ int menuDisplayMenuList(int buttons, int keys, int events, bool isFirstRun)
 
 static void updateScreen()
 {
-	const int headerOffset = 12;
-	int rPos;
+	int mNum;
 
 	UC1701_clearBuf();
-	UC1701_printCentered(0, "Menu", UC1701_FONT_GD77_8x16);
+	menuDisplayTitle("Menu");
 
 	for(int i = -1; i <= 1 ; i++)
-		{
-			rPos = menuGetMenuOffset(gMenusEndIndex, i);
+	{
+		mNum = menuGetMenuOffset(gMenusEndIndex, i);
 
-			if (rPos == gMenusCurrentItemIndex)
-			{
-				UC1701_fillRoundRect(0, 1+headerOffset+((i+1)*16),128,16,2,true);
-			}
-
-		UC1701_printCore(5, (i + 1) * 16 + (headerOffset) ,(char *)menuStringTable[gMenuCurrentMenuList[rPos].stringNumber], UC1701_FONT_GD77_8x16, 0, (rPos == gMenusCurrentItemIndex));
+		menuDisplayEntry(i, mNum, (char *)menuStringTable[gMenuCurrentMenuList[mNum].stringNumber]);
 	}
 
 

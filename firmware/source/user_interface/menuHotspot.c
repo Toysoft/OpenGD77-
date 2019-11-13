@@ -793,8 +793,7 @@ static void updateScreen(int rxCommandState)
 
 	UC1701_clearBuf();
 	menuUtilityRenderHeader();
-	UC1701_printCentered(0, "Hotspot",UC1701_FONT_GD77_8x16);
-
+	menuDisplayTitle("Hotspot");
 
 	if (trxIsTransmitting)
 	{

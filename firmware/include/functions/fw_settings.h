@@ -52,6 +52,7 @@ typedef struct settingsStruct
 	uint8_t			txTimeoutBeepX5Secs;
 	uint8_t			beepVolumeDivider;
 	uint8_t			micGainDMR;
+	uint8_t			tsManualOverride;
 } settingsStruct_t;
 
 extern settingsStruct_t nonVolatileSettings;

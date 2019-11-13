@@ -95,10 +95,17 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 				{
 					nonVolatileSettings.overrideTG = 9;// If the VFO does not have an Rx Group list assigned to it. We can't get a TG from the codeplug. So use TG 9.
 				}
+
+
 			}
 			else
 			{
 				trxTalkGroupOrPcId = nonVolatileSettings.overrideTG;
+			}
+
+			if ((nonVolatileSettings.tsManualOverride & 0xF0) != 0)
+			{
+				trxSetDMRTimeSlot(((nonVolatileSettings.tsManualOverride & 0xF0)>>4) - 1);
 			}
 		}
 		lastHeardClearLastID();
@@ -384,6 +391,8 @@ static void handleEvent(int buttons, int keys, int events)
 				{
 					// Toggle TimeSlot
 					trxSetDMRTimeSlot(1-trxGetDMRTimeSlot());
+					nonVolatileSettings.tsManualOverride &= 0x0F;// Clear upper nibble value
+					nonVolatileSettings.tsManualOverride |= (trxGetDMRTimeSlot()+1)<<4;// Store manual TS override for VFO in upper nibble
 
 					//init_digital();
 					clearActiveDMRID();
@@ -457,6 +466,8 @@ static void handleEvent(int buttons, int keys, int events)
 							currentIndexInTRxGroup = 0;
 						}
 					}
+					nonVolatileSettings.tsManualOverride &= 0x0F; // remove TS override for VFO
+
 					codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
 
 					trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
@@ -514,7 +525,7 @@ static void handleEvent(int buttons, int keys, int events)
 									rxGroupData.NOT_IN_MEMORY_numTGsInGroup - 1;
 						}
 					}
-
+					nonVolatileSettings.tsManualOverride &= 0x0F; // remove TS override for VFO
 					codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
 					nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
 					trxTalkGroupOrPcId = contactData.tgNumber;
@@ -682,7 +693,7 @@ static void updateQuickMenuScreen()
 	char buf[17];
 
 	UC1701_clearBuf();
-	UC1701_printCentered(0, "Quick menu", UC1701_FONT_GD77_8x16);
+	menuDisplayTitle("Quick Menu");
 
 	for(int i = -1; i <= 1; i++)
 	{
@@ -703,12 +714,7 @@ static void updateQuickMenuScreen()
 				strcpy(buf, "");
 		}
 
-		if (gMenusCurrentItemIndex == mNum)
-		{
-			UC1701_fillRoundRect(0,(i+2)*16,128,16,2,true);
-		}
-
-		UC1701_printCore(5, (i + 2) * 16, buf, UC1701_FONT_GD77_8x16, 0, (gMenusCurrentItemIndex == mNum));
+		menuDisplayEntry(i, mNum, buf);
 	}
 
 	UC1701_render();
