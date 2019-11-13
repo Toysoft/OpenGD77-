@@ -875,6 +875,7 @@ static void handleEvent(int buttons, int keys, int events)
 {
 	if ((keys & KEY_RED)!=0)
 	{
+		enableHotspot = false;
 		if (trxIsTransmitting)
 		{
 			trxIsTransmitting = false;
