@@ -861,8 +861,8 @@ static void updateScreen(int rxCommandState)
 
 			UC1701_printCore(0, 32, (char *)POWER_LEVELS[hotspotPowerLevel], UC1701_FONT_GD77_8x16, 2, false);
 		}
-		val_before_dp = freq_rx/10000;
-		val_after_dp = freq_rx - val_before_dp*10000;
+		val_before_dp = freq_rx/100000;
+		val_after_dp = freq_rx - val_before_dp*100000;
 		sprintf(buffer,"R %d.%04d MHz",val_before_dp, val_after_dp);
 	}
 	UC1701_printCentered(48, buffer,UC1701_FONT_GD77_8x16);
