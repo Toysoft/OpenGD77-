@@ -161,6 +161,7 @@ int UC1701_printCore(int16_t x, int16_t y, char *szMsg, int16_t iSize, int16_t a
 	int16_t charHeightPixels;
 	int16_t bytesPerChar;
 	int16_t startCode;
+	int16_t endCode;
 	uint8_t *currentFont;
 	uint8_t *writePos;
 	uint8_t *readPos;
@@ -191,6 +192,7 @@ int UC1701_printCore(int16_t x, int16_t y, char *szMsg, int16_t iSize, int16_t a
     }
 
     startCode   		= currentFont[2];  // get first defined character
+    endCode 	  		= currentFont[3];  // get last defined character
     charWidthPixels   	= currentFont[4];  // width in pixel of one char
     charHeightPixels  	= currentFont[5];  // page count per char
     bytesPerChar 		= currentFont[7];  // bytes per char
@@ -220,7 +222,13 @@ int UC1701_printCore(int16_t x, int16_t y, char *szMsg, int16_t iSize, int16_t a
 
 	for (i=0; i<sLen; i++)
 	{
-		currentCharData = (uint8_t *)&currentFont[8 + ((szMsg[i] - startCode) * bytesPerChar)];
+		uint16_t charOffset = (szMsg[i] - startCode);
+
+		// End boundary checking.
+		if (charOffset > endCode)
+			continue;
+
+		currentCharData = (uint8_t *)&currentFont[8 + (charOffset * bytesPerChar)];
 
 		for(int16_t row=0;row < charHeightPixels / 8 ;row++)
 		{
