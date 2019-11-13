@@ -62,8 +62,6 @@ void fw_main_task()
     // Init I2C
     init_I2C0a();
     setup_I2C0();
-
-
 	fw_init_common();
 	fw_init_buttons();
 	fw_init_LEDs();
@@ -138,6 +136,11 @@ void fw_main_task()
     lastheardInitList();
     menuInitMenuSystem();
 
+    if (buttons & BUTTON_SK1)
+    {
+    	enableHotspot = true;
+    }
+
     while (1U)
     {
     	taskENTER_CRITICAL();
@@ -199,27 +202,10 @@ void fw_main_task()
 					buttons = 0;
 					displayLightTrigger();
 				}
-
 			}
-
 
 			if (button_event == EVENT_BUTTON_CHANGE)
 			{
-				/*
-        		if ((buttons & BUTTON_SK1)!=0)
-        		{
-            	    set_melody(melody_sk1_beep);
-        		}
-        		else if ((buttons & BUTTON_SK2)!=0)
-        		{
-            	    set_melody(melody_sk2_beep);
-        		}
-        		else if ((buttons & BUTTON_ORANGE)!=0)
-        		{
-            	    set_melody(melody_orange_beep);
-        		}
-        		*/
-
         		if ((	(buttons & BUTTON_PTT)!=0) &&
         				(slot_state==DMR_STATE_IDLE || trxDMRMode == DMR_MODE_PASSIVE) &&
 						trxGetMode()!=RADIO_MODE_NONE &&
@@ -234,10 +220,8 @@ void fw_main_task()
 
     		if (!trxIsTransmitting && updateLastHeard==true)
     		{
-    //	    	taskENTER_CRITICAL();
     			lastHeardListUpdate((uint8_t *)DMR_frame_buffer);
     			updateLastHeard=false;
-    //	    	taskEXIT_CRITICAL();
     		}
 
         	menuSystemCallCurrentMenuTick(buttons,keys,(button_event<<1) | key_event);
@@ -280,10 +264,8 @@ void fw_main_task()
     				fw_displayEnableBacklight(false);
     			}
     		}
-
     		tick_melody();
     	}
-
 		vTaskDelay(0);
     }
 }

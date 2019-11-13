@@ -59,6 +59,7 @@ extern settingsStruct_t nonVolatileSettings;
 extern struct_codeplugChannel_t *currentChannelData;
 extern struct_codeplugChannel_t channelScreenChannelData;
 extern int settingsUsbMode;
+extern bool enableHotspot;
 
 bool settingsSaveSettings();
 bool settingsLoadSettings();
