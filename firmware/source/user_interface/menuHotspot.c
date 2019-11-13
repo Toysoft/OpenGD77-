@@ -65,8 +65,7 @@
 #define PROTOCOL_VERSION    1U
 
 #define MMDVM_HEADER_LENGTH  4U
-const char * HOTSPOT_VERSION_STRING = "OpenGD77 Hotspot v0.0.6";
-const int LOWEST_POWER_SETTING = 775;
+const char * HOTSPOT_VERSION_STRING = "OpenGD77 Hotspot v0.0.7";
 
 const uint8_t MMDVM_VOICE_SYNC_PATTERN = 0x20U;
 
@@ -95,6 +94,8 @@ volatile int	rfFrameBufCount=0;
 static uint8_t lastRxState=HOTSPOT_RX_IDLE;
 const int TX_BUFFERING_TIMEOUT = 5000;// 500mS
 static int timeoutCounter;
+static int savedPowerLevel=-1;// no power level saved yet
+static int hotspotPowerLevel=0;// no power level saved yet
 
 static volatile enum
 {
@@ -748,7 +749,7 @@ int menuHotspotMode(int buttons, int keys, int events, bool isFirstRun)
 	if (isFirstRun)
 	{
 		hotspotState = HOTSPOT_STATE_NOT_CONNECTED;
-		//nonVolatileSettings.txPower=1800;// Set around 1W
+
 		savedTGorPC = trxTalkGroupOrPcId;// Save the current TG or PC
 		trxTalkGroupOrPcId=0;
 
@@ -793,8 +794,21 @@ static void updateScreen(int rxCommandState)
 	dmrIdDataStruct_t currentRec;
 
 	UC1701_clearBuf();
-	menuUtilityRenderHeader();
-	menuDisplayTitle("Hotspot");
+	UC1701_printAt(0,0, "DMR Hotspot",UC1701_FONT_GD77_8x16);
+	int  batteryPerentage = (int)(((averageBatteryVoltage - CUTOFF_VOLTAGE_UPPER_HYST) * 100) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));
+	if (batteryPerentage>100)
+	{
+		batteryPerentage=100;
+	}
+	if (batteryPerentage<0)
+	{
+		batteryPerentage=0;
+	}
+
+	sprintf(buffer,"%d%%",batteryPerentage);
+
+	UC1701_printCore(0,4,buffer,UC1701_FONT_6X8,2,false);// Display battery percentage at the right
+
 
 	if (trxIsTransmitting)
 	{
@@ -844,15 +858,8 @@ static void updateScreen(int rxCommandState)
 		{
 			sprintf(buffer,"CC:%d" ,  trxGetDMRColourCode());//, trxGetDMRTimeSlot()+1) ;
 			UC1701_printCore(0, 32, buffer, UC1701_FONT_GD77_8x16, 0, false);
-			/*
-			int powermW =  (5000 * ((int)nonVolatileSettings.txPower - LOWEST_POWER_SETTING)) / ((int)powerSettings.highPower - LOWEST_POWER_SETTING);
-			if (powermW < 0)
-			{
-				powermW=0;
-			}
-			sprintf(buffer,"%dmW" , powermW) ;
-			*/
-			UC1701_printCore(0, 32, (char *)POWER_LEVELS[nonVolatileSettings.txPowerLevel], UC1701_FONT_GD77_8x16, 2, false);
+
+			UC1701_printCore(0, 32, (char *)POWER_LEVELS[hotspotPowerLevel], UC1701_FONT_GD77_8x16, 2, false);
 		}
 		val_before_dp = freq_rx/10000;
 		val_after_dp = freq_rx - val_before_dp*10000;
@@ -878,7 +885,11 @@ static void handleEvent(int buttons, int keys, int events)
 			GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
 		}
 		trxTalkGroupOrPcId = savedTGorPC;// restore the current TG or PC
-// OLD TX POWER CONTROL		nonVolatileSettings.txPower = savedPower;// restore power setting
+		if (savedPowerLevel!=-1)
+		{
+			trxSetPowerFromLevel(savedPowerLevel);
+		}
+
 		trxDMRID = codeplugGetUserDMRID();
 		settingsUsbMode = USB_MODE_CPS;
 
@@ -934,11 +945,20 @@ uint32_t fRx,fTx;
 		return 4U;// invalid frequency
 	}
 
+	hotspotPowerLevel = nonVolatileSettings.txPowerLevel;
 	if (rf_power!=255)
 	{
-		trxSetPowerFromMMDVMHostByte(rf_power);
-//		nonVolatileSettings.txPower = ((powerSettings.highPower-LOWEST_POWER_SETTING) * rf_power)/255 + LOWEST_POWER_SETTING ;
-		//SEGGER_RTT_printf(0, "Power = %d\n",nonVolatileSettings.txPower);
+		savedPowerLevel = nonVolatileSettings.txPowerLevel;
+
+		if (rf_power<50)
+		{
+			hotspotPowerLevel = rf_power/16;
+		}
+		else
+		{
+			hotspotPowerLevel = (rf_power/50)+2;
+		}
+		trxSetPowerFromLevel(hotspotPowerLevel);
 	}
 
 
