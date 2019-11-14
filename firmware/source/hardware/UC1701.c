@@ -226,7 +226,7 @@ int UC1701_printCore(int16_t x, int16_t y, char *szMsg, int16_t iSize, int16_t a
 
 		// End boundary checking.
 		if (charOffset > endCode)
-			continue;
+			charOffset = (63 - startCode); // Substitute unsupported ASCII code by a question mark
 
 		currentCharData = (uint8_t *)&currentFont[8 + (charOffset * bytesPerChar)];
 
