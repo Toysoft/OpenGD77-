@@ -241,9 +241,7 @@ static void enableTransmission()
 	GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 	GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 1);
 
-	trxSetFrequency(freq_rx,freq_tx);
 	txstopdelay=0;
-	trxIsTransmitting=true;
 	trx_setTX();
 }
 
@@ -256,7 +254,7 @@ static void disableTransmission()
 	taskENTER_CRITICAL();
 	trx_activateRx();
 	taskEXIT_CRITICAL();
-	trxSetFrequency(freq_rx,freq_tx);
+	//trxSetFrequency(freq_rx,freq_tx);
 
 }
 
@@ -587,7 +585,6 @@ static void hotspotStateMachine()
 				disableTransmission();
 			}
 
-			trxSetFrequency(freq_rx,freq_tx);
 			wavbuffer_read_idx=0;
 			wavbuffer_write_idx=0;
 			wavbuffer_count=0;
@@ -753,10 +750,9 @@ int menuHotspotMode(int buttons, int keys, int events, bool isFirstRun)
 		savedTGorPC = trxTalkGroupOrPcId;// Save the current TG or PC
 		trxTalkGroupOrPcId=0;
 
-		trxSetModeAndBandwidth(RADIO_MODE_DIGITAL,trxGetBandwidthIs25kHz());// hotspot mode is for DMR i.e Digital mode
+		trxSetModeAndBandwidth(RADIO_MODE_DIGITAL,false);// hotspot mode is for DMR i.e Digital mode
 
-		freq_rx = currentChannelData->rxFreq;
-		freq_tx = currentChannelData->txFreq;
+		freq_tx = freq_rx = 43000000;
 		settingsUsbMode = USB_MODE_HOTSPOT;
 		MMDVMHostRxState = MMDVMHOST_RX_READY; // We have not sent anything to MMDVMHost, so it can't be busy yet.
 		UC1701_clearBuf();
@@ -782,9 +778,6 @@ int menuHotspotMode(int buttons, int keys, int events, bool isFirstRun)
 
 	return 0;
 }
-
-
-
 
 static void updateScreen(int rxCommandState)
 {
@@ -875,7 +868,7 @@ static void handleEvent(int buttons, int keys, int events)
 {
 	if ((keys & KEY_RED)!=0)
 	{
-		enableHotspot = false;
+		//enableHotspot = false;
 		if (trxIsTransmitting)
 		{
 			trxIsTransmitting = false;
@@ -938,8 +931,11 @@ uint32_t fRx,fTx;
 	{
 		freq_rx = fRx;
 		freq_tx = fTx;
-
-		trxSetFrequency(freq_rx,freq_tx);
+		if (freq_rx!=freq_tx)
+		{
+			freq_rx = (freq_rx + freq_tx)/2;
+		}
+		trxSetFrequency(freq_rx,freq_rx);
 	}
 	else
 	{
