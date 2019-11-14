@@ -187,6 +187,10 @@ void fw_main_task()
 					set_melody(melody_key_beep);
 				}
 			}
+/*
+ * This code ignores the keypress if the display is not lit, however this functionality is proving to be a problem for things like entering a TG
+ * I think it needs to be removed until a better solution can be found
+ *
 			if (menuDisplayLightTimer == 0
 					&& nonVolatileSettings.backLightTimeout != 0)
 			{
@@ -203,7 +207,7 @@ void fw_main_task()
 					displayLightTrigger();
 				}
 			}
-
+*/
 			if (button_event == EVENT_BUTTON_CHANGE)
 			{
         		if ((	(buttons & BUTTON_PTT)!=0) &&
