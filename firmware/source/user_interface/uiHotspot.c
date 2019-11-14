@@ -65,7 +65,7 @@
 #define PROTOCOL_VERSION    1U
 
 #define MMDVM_HEADER_LENGTH  4U
-const char * HOTSPOT_VERSION_STRING = "OpenGD77 Hotspot v0.0.7";
+const char * HOTSPOT_VERSION_STRING = "OpenGD77 Hotspot v0.0.71";
 
 const uint8_t MMDVM_VOICE_SYNC_PATTERN = 0x20U;
 
