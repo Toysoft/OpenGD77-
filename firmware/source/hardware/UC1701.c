@@ -222,11 +222,13 @@ int UC1701_printCore(int16_t x, int16_t y, char *szMsg, int16_t iSize, int16_t a
 
 	for (i=0; i<sLen; i++)
 	{
-		uint16_t charOffset = (szMsg[i] - startCode);
+		uint32_t charOffset = (szMsg[i] - startCode);
 
 		// End boundary checking.
 		if (charOffset > endCode)
-			continue;
+		{
+			charOffset = ('?' - startCode); // Substitute unsupported ASCII code by a question mark
+		}
 
 		currentCharData = (uint8_t *)&currentFont[8 + (charOffset * bytesPerChar)];
 
