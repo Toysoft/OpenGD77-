@@ -178,7 +178,8 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					{
 						dmrIdDataStruct_t currentRec;
 						dmrIDLookup((trxTalkGroupOrPcId & 0x00FFFFFF),&currentRec);
-						sprintf(buffer,"%s",currentRec.text);
+						snprintf(buffer, 20, "%s",currentRec.text);
+						buffer[20] = 0;
 					}
 				}
 				else
