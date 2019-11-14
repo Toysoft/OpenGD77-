@@ -351,7 +351,8 @@ void menuUtilityRenderQSOData()
 	{
 		// Its a Private call
 		dmrIDLookup( (LinkHead->id & 0xFFFFFF),&currentRec);
-		sprintf(buffer,"%s", currentRec.text);
+		snprintf(buffer, 20, "%s", currentRec.text);
+		buffer[20] = 0;
 		UC1701_printCentered(16, buffer,UC1701_FONT_GD77_8x16);
 
 		// Are we already in PC mode to this caller ?
@@ -386,7 +387,8 @@ void menuUtilityRenderQSOData()
 		// first check if we have this ID in the DMR ID data
 		if (dmrIDLookup( LinkHead->id,&currentRec))
 		{
-			sprintf(buffer,"%s", currentRec.text);
+			snprintf(buffer, 20, "%s", currentRec.text);
+			buffer[20] = 0;
 			UC1701_printCentered(32, buffer,UC1701_FONT_GD77_8x16);
 			displayChannelNameOrRxFrequency(buffer);
 		}
