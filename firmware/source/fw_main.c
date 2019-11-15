@@ -208,8 +208,12 @@ void fw_main_task()
 				}
 			}
 */
+
+
+
 			if (button_event == EVENT_BUTTON_CHANGE)
 			{
+				displayLightTrigger();
         		if ((	(buttons & BUTTON_PTT)!=0) &&
         				(slot_state==DMR_STATE_IDLE || trxDMRMode == DMR_MODE_PASSIVE) &&
 						trxGetMode()!=RADIO_MODE_NONE &&
