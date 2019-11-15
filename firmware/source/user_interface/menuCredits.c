@@ -24,7 +24,7 @@ static void scrollDownOneLine();
 //#define CREDIT_TEXT_LENGTH 33
 static const int NUM_LINES_PER_SCREEN = 6;
 const int NUM_CREDITS = 6;
-static const char *creditTexts[] = {"Roger VK3KYY","Kai DG4KLU","Jason VK7ZJA","Alex DL4LEX","Daniel F1RBM","Colin G4EML"};
+static const char *creditTexts[] = {"Roger VK3KYY","Kai DG4KLU","Jason VK7ZJA","Alex DL4LEX","Daniel F1RMB","Colin G4EML"};
 static int currentDisplayIndex=0;
 
 int menuCredits(int buttons, int keys, int events, bool isFirstRun)
