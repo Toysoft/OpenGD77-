@@ -209,6 +209,11 @@ void trx_check_analog_squelch()
 	}
 }
 
+void trxsetDMRMode(int dmrMode)
+{
+	trxDMRMode = dmrMode;
+}
+
 void trxSetFrequency(int fRx,int fTx)
 {
 	if (currentRxFrequency!=fRx || currentTxFrequency!=fTx)

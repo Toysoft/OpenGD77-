@@ -931,11 +931,14 @@ uint32_t fRx,fTx;
 	{
 		freq_rx = fRx;
 		freq_tx = fTx;
-		if (freq_rx!=freq_tx)
+	/*
+	 *  if (freq_rx!=freq_tx)
 		{
 			freq_rx = (freq_rx + freq_tx)/2;
 		}
-		trxSetFrequency(freq_rx,freq_rx);
+		*/
+		trxSetFrequency(freq_rx,freq_tx);
+		trxsetDMRMode(DMR_MODE_ACTIVE);// Override the default assumptions about DMR mode based on frequency
 	}
 	else
 	{
@@ -943,6 +946,8 @@ uint32_t fRx,fTx;
 	}
 
 	hotspotPowerLevel = nonVolatileSettings.txPowerLevel;
+	// If the power level sent by MMDVMHost is 255 it means the user has left the setting at 100% and potentially does not realise that there is even a setting for this
+	// As the GD-77 can't be run at full power, this power level will be ignored and instead the level specified for normal operation will be used.
 	if (rf_power!=255)
 	{
 		savedPowerLevel = nonVolatileSettings.txPowerLevel;

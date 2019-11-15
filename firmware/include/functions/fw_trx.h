@@ -77,5 +77,6 @@ void trxSetTone1(int toneFreq);
 void trxSetTone2(int toneFreq);
 void trxSetDTMF(int code);
 void trxUpdateTsForCurrentChannelWithSpecifiedContact(struct_codeplugContact_t *contactData);
+void trxsetDMRMode(int dmrMode);
 
 #endif /* _FW_TRX_H_ */
