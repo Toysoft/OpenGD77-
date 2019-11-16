@@ -97,7 +97,7 @@ static int getNextContact(int curidx, int dir, struct_codeplugContact_t *contact
 			idx = 1024;
 		}
 		codeplugContactGetDataForIndex(idx, contact);
-	} while ((curidx != idx) && ((*contact).tgNumber == 0));
+	} while ((curidx != idx) && ((*contact).name[0] == 0xff));
 
 	return idx;
 }
