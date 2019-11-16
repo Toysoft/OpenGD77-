@@ -144,6 +144,7 @@ static void handleEvent(int buttons, int keys, int events)
 		pcIdx = 0;
 		if ((buttons & BUTTON_SK2)!= 0  && gMenusCurrentItemIndex == 2)
 		{
+			digits[0] = 0x00;
 			gMenusCurrentItemIndex = 3;
 		}
 		else
