@@ -31,7 +31,7 @@ extern const int RADIO_UHF_MAX;
 
 enum RADIO_MODE { RADIO_MODE_NONE,RADIO_MODE_ANALOG,RADIO_MODE_DIGITAL};
 enum DMR_ADMIT_CRITERIA { ADMIT_CRITERIA_ALWAYS,ADMIT_CRITERIA_CHANNEL_FREE,ADMIT_CRITERIA_COLOR_CODE};
-enum DMR_MODE {DMR_MODE_ACTIVE,DMR_MODE_PASSIVE};
+enum DMR_MODE {DMR_MODE_AUTO,DMR_MODE_ACTIVE,DMR_MODE_PASSIVE};
 
 extern int trxDMRMode;
 
@@ -50,7 +50,7 @@ int	trxGetMode();
 int	trxGetBandwidthIs25kHz();
 int	trxGetFrequency();
 void trxSetModeAndBandwidth(int mode, bool bandwidthIs25kHz);
-void trxSetFrequency(int fRx,int fTx);
+void trxSetFrequency(int fRx,int fTx, int dmrMode);
 void trx_setRX();
 void trx_setTX();
 void trx_activateRx();
@@ -77,6 +77,5 @@ void trxSetTone1(int toneFreq);
 void trxSetTone2(int toneFreq);
 void trxSetDTMF(int code);
 void trxUpdateTsForCurrentChannelWithSpecifiedContact(struct_codeplugContact_t *contactData);
-void trxsetDMRMode(int dmrMode);
 
 #endif /* _FW_TRX_H_ */

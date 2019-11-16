@@ -54,7 +54,7 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 		currentChannelData = &nonVolatileSettings.vfoChannel;
 		settingsCurrentChannelNumber = -1;// This is not a regular channel. Its the special VFO channel!
 
-		trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq);
+		trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq,DMR_MODE_AUTO);
 		if (currentChannelData->chMode == RADIO_MODE_ANALOG)
 		{
 			trxSetModeAndBandwidth(currentChannelData->chMode, ((currentChannelData->flag4 & 0x02) == 0x02));
@@ -282,7 +282,7 @@ static void update_frequency(int frequency)
 		if (trxCheckFrequencyIsSupportedByTheRadioHardware(frequency))
 		{
 			currentChannelData->txFreq = frequency;
-			trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq);
+			trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq,DMR_MODE_AUTO);
 			set_melody(melody_ACK_beep);
 		}
 	}
@@ -293,7 +293,7 @@ static void update_frequency(int frequency)
 		{
 			currentChannelData->rxFreq = frequency;
 			currentChannelData->txFreq = currentChannelData->txFreq + deltaFrequency;
-			trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq);
+			trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq,DMR_MODE_AUTO);
 
 			if (!trxCheckFrequencyIsSupportedByTheRadioHardware(currentChannelData->txFreq))
 			{
@@ -701,7 +701,7 @@ int tmp_frequencyRx;
 		currentChannelData->rxFreq =  tmp_frequencyRx;
 		if (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_RX)
 		{
-			trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq);
+			trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq,DMR_MODE_AUTO);
 		}
 	}
 	else
@@ -761,7 +761,7 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 		{
 			case VFO_SCREEN_QUICK_MENU_BOTH_TO_RX:
 				currentChannelData->txFreq = currentChannelData->rxFreq;
-				trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq);
+				trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq,DMR_MODE_AUTO);
 				menuSystemPopPreviousMenu();
 				break;
 			case VFO_SCREEN_QUICK_MENU_TX_SWAP_RX:
@@ -769,13 +769,13 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 					int tmpFreq = currentChannelData->txFreq;
 					currentChannelData->txFreq = currentChannelData->rxFreq;
 					currentChannelData->rxFreq =  tmpFreq;
-					trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq);
+					trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq,DMR_MODE_AUTO);
 					menuSystemPopPreviousMenu();
 				}
 				break;
 			case VFO_SCREEN_QUICK_MENU_BOTH_TO_TX:
 				currentChannelData->rxFreq = currentChannelData->txFreq;
-				trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq);
+				trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq,DMR_MODE_AUTO);
 				menuSystemPopPreviousMenu();
 				break;
 		}

@@ -107,7 +107,7 @@ static void loadChannelData(bool useChannelDataInMemory)
 		}
 	}
 
-	trxSetFrequency(channelScreenChannelData.rxFreq,channelScreenChannelData.txFreq);
+	trxSetFrequency(channelScreenChannelData.rxFreq,channelScreenChannelData.txFreq,DMR_MODE_AUTO);
 
 	if (channelScreenChannelData.chMode == RADIO_MODE_ANALOG)
 	{

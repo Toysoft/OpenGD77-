@@ -159,9 +159,9 @@ static void displayDataBytes(uint8_t *buf, int len)
 {
 	for (int i=0;i<len;i++)
 	{
-    	SEGGER_RTT_printf(0, " %02x", buf[i]);
+    	//SEGGER_RTT_printf(0, " %02x", buf[i]);
 	}
-	SEGGER_RTT_printf(0, "\n");
+	//SEGGER_RTT_printf(0, "\n");
 }
 */
 
@@ -206,7 +206,7 @@ static void processUSBDataQueue()
 		}
 		else
 		{
-			SEGGER_RTT_printf(0, "USB Send Fail\n");
+			//SEGGER_RTT_printf(0, "USB Send Fail\n");
 		}
 	}
 }
@@ -214,7 +214,7 @@ static void processUSBDataQueue()
 static void sendACK()
 {
 	uint8_t buf[4];
-//	SEGGER_RTT_printf(0, "sendACK\n");
+//	//SEGGER_RTT_printf(0, "sendACK\n");
 	buf[0U] = MMDVM_FRAME_START;
 	buf[1U] = 4U;
 	buf[2U] = MMDVM_ACK;
@@ -225,7 +225,7 @@ static void sendACK()
 static void sendNAK(uint8_t err)
 {
 	uint8_t buf[5];
-	SEGGER_RTT_printf(0, "sendNAK\n");
+	//SEGGER_RTT_printf(0, "sendNAK\n");
 	buf[0U] = MMDVM_FRAME_START;
 	buf[1U] = 5U;
 	buf[2U] = MMDVM_NAK;
@@ -236,7 +236,7 @@ static void sendNAK(uint8_t err)
 
 static void enableTransmission()
 {
-	SEGGER_RTT_printf(0, "Enable Transmission\n");
+	//SEGGER_RTT_printf(0, "Enable Transmission\n");
 
 	GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 	GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 1);
@@ -247,7 +247,7 @@ static void enableTransmission()
 
 static void disableTransmission()
 {
-	SEGGER_RTT_printf(0, "Disable Transmission\n");
+	//SEGGER_RTT_printf(0, "Disable Transmission\n");
 
 	GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
 	// Need to wrap this in Task Critical to avoid bus contention on the I2C bus.
@@ -381,42 +381,42 @@ int getEmbeddedData(uint8_t *com_requestbuffer)
 		{
 			case FLCO_GROUP:
 				DMREmbeddedData_getLC(&lc);
-				SEGGER_RTT_printf(0, "Emb Group  FID:%d FLCO:%d PF:%d R:%d dstId:%d src:Id:%d options:0x%02x\n",lc.FID,lc.FLCO,lc.PF,lc.R,lc.dstId,lc.srcId,lc.options);
+				//SEGGER_RTT_printf(0, "Emb Group  FID:%d FLCO:%d PF:%d R:%d dstId:%d src:Id:%d options:0x%02x\n",lc.FID,lc.FLCO,lc.PF,lc.R,lc.dstId,lc.srcId,lc.options);
 				//displayDataBytes(hotspotTxLC,9);
 				break;
 			case FLCO_USER_USER:
 				DMREmbeddedData_getLC(&lc);
-				SEGGER_RTT_printf(0, "Emb User  FID:%d FLCO:%d PF:%d R:%d dstId:%d src:Id:%d options:0x%02x\n",lc.FID,lc.FLCO,lc.PF,lc.R,lc.dstId,lc.srcId,lc.options);
+				//SEGGER_RTT_printf(0, "Emb User  FID:%d FLCO:%d PF:%d R:%d dstId:%d src:Id:%d options:0x%02x\n",lc.FID,lc.FLCO,lc.PF,lc.R,lc.dstId,lc.srcId,lc.options);
 				//displayDataBytes(hotspotTxLC,9);
 				break;
 
 			case FLCO_GPS_INFO:
-				SEGGER_RTT_printf(0, "Emb GPS\n");
+				//SEGGER_RTT_printf(0, "Emb GPS\n");
 				//displayDataBytes(hotspotTxLC,9);
 				break;
 
 			case FLCO_TALKER_ALIAS_HEADER:
-				SEGGER_RTT_printf(0, "Emb FLCO_TALKER_ALIAS_HEADER\n");
+				//SEGGER_RTT_printf(0, "Emb FLCO_TALKER_ALIAS_HEADER\n");
 				//displayDataBytes(hotspotTxLC,9);
 				break;
 
 			case FLCO_TALKER_ALIAS_BLOCK1:
-				SEGGER_RTT_printf(0, "Emb FLCO_TALKER_ALIAS_BLOCK1\n");
+				//SEGGER_RTT_printf(0, "Emb FLCO_TALKER_ALIAS_BLOCK1\n");
 				//displayDataBytes(hotspotTxLC,9);
 				break;
 
 			case FLCO_TALKER_ALIAS_BLOCK2:
-				SEGGER_RTT_printf(0, "Emb FLCO_TALKER_ALIAS_BLOCK2\n");
+				//SEGGER_RTT_printf(0, "Emb FLCO_TALKER_ALIAS_BLOCK2\n");
 				//displayDataBytes(hotspotTxLC,9);
 				break;
 
 			case FLCO_TALKER_ALIAS_BLOCK3:
-				SEGGER_RTT_printf(0, "Emb FLCO_TALKER_ALIAS_BLOCK3\n");
+				//SEGGER_RTT_printf(0, "Emb FLCO_TALKER_ALIAS_BLOCK3\n");
 				//displayDataBytes(hotspotTxLC,9);
 				break;
 
 			default:
-				SEGGER_RTT_printf(0, "Emb UNKNOWN TYPE\n");
+				//SEGGER_RTT_printf(0, "Emb UNKNOWN TYPE\n");
 				break;
 		}
 		*/
@@ -433,13 +433,13 @@ static void storeNetFrame(uint8_t *com_requestbuffer)
 	//SEGGER_RTT_printf(0, "storeNetFrame\n");
 	if (memcmp((uint8_t *)&com_requestbuffer[18],END_FRAME_PATTERN,6)==0)
 	{
-		SEGGER_RTT_printf(0, "END_FRAME_PATTERN %d\n",wavbuffer_count);
+		//SEGGER_RTT_printf(0, "END_FRAME_PATTERN %d\n",wavbuffer_count);
 		return;
 	}
 
 	if (memcmp((uint8_t *)&com_requestbuffer[18],START_FRAME_PATTERN,6)==0)
 	{
-		SEGGER_RTT_printf(0, "START_FRAME_PATTERN %d\n",wavbuffer_count);
+		//SEGGER_RTT_printf(0, "START_FRAME_PATTERN %d\n",wavbuffer_count);
 		return;
 	}
 
@@ -450,7 +450,7 @@ static void storeNetFrame(uint8_t *com_requestbuffer)
 			(hotspotTxLC[0]==0 || hotspotTxLC[0]==3) &&
 			(hotspotState != HOTSPOT_STATE_TX_START_BUFFERING && hotspotState != HOTSPOT_STATE_TRANSMITTING))
 	{
-		SEGGER_RTT_printf(0, "LATE START -> HOTSPOT_STATE_TX_BUFFERING\n");
+		//SEGGER_RTT_printf(0, "LATE START -> HOTSPOT_STATE_TX_BUFFERING\n");
 		timeoutCounter=TX_BUFFERING_TIMEOUT;// set buffering timeout
 		hotspotState = HOTSPOT_STATE_TX_START_BUFFERING;
 	}
@@ -461,7 +461,7 @@ static void storeNetFrame(uint8_t *com_requestbuffer)
 	{
 		if (wavbuffer_count>=HOTSPOT_BUFFER_COUNT)
 		{
-			SEGGER_RTT_printf(0, "------------------------------ Buffer overflow ---------------------------\n");
+			//SEGGER_RTT_printf(0, "------------------------------ Buffer overflow ---------------------------\n");
 		}
 
 		//displayDataBytes(com_requestbuffer, 16);
@@ -485,48 +485,44 @@ static void storeNetFrame(uint8_t *com_requestbuffer)
 bool hotspotModeReceiveNetFrame(uint8_t *com_requestbuffer, int timeSlot)
 {
 	DMRLC_T lc;
-	bool lcDecodeOK;
-//	uint32_t colorCode,dataType;
-
 	lc.srcId=0;// zero these values as they are checked later in the function, but only updated if the data type is DT_VOICE_LC_HEADER
 	lc.dstId=0;
 
-
-	lcDecodeOK = DMRFullLC_decode(com_requestbuffer + MMDVM_HEADER_LENGTH, DT_VOICE_LC_HEADER,&lc);// Need to decode the frame to get the source and destination
+	DMRFullLC_decode(com_requestbuffer + MMDVM_HEADER_LENGTH, DT_VOICE_LC_HEADER,&lc);// Need to decode the frame to get the source and destination
 	/*	DMRSlotType_decode(com_requestbuffer + MMDVM_HEADER_LENGTH,&colorCode,&dataType);
 	//SEGGER_RTT_printf(0, "SlotType:$d %d\n",dataType,colorCode);
 	switch(dataType)
 	{
 
 		case DT_VOICE_LC_HEADER:
-			SEGGER_RTT_printf(0, "DT_VOICE_LC_HEADER\n");
+			//SEGGER_RTT_printf(0, "DT_VOICE_LC_HEADER\n");
 			break;
 		case DT_TERMINATOR_WITH_LC:
-			SEGGER_RTT_printf(0, "DT_TERMINATOR_WITH_LC\n");
+			//SEGGER_RTT_printf(0, "DT_TERMINATOR_WITH_LC\n");
 			//trxTalkGroupOrPcId  = 0;
 			//trxDMRID = 0;
 			break;
 
 		case DT_VOICE_PI_HEADER:
-			SEGGER_RTT_printf(0, "DT_VOICE_PI_HEADER\n");
+			//SEGGER_RTT_printf(0, "DT_VOICE_PI_HEADER\n");
 			break;
 		case DT_CSBK:
-			SEGGER_RTT_printf(0, "DT_CSBK\n");
+			//SEGGER_RTT_printf(0, "DT_CSBK\n");
 			break;
 		case DT_DATA_HEADER:
-			SEGGER_RTT_printf(0, "DT_DATA_HEADER\n",);
+			//SEGGER_RTT_printf(0, "DT_DATA_HEADER\n",);
 			break;
 		case DT_RATE_12_DATA:
-			SEGGER_RTT_printf(0, "DT_RATE_12_DATA\n");
+			//SEGGER_RTT_printf(0, "DT_RATE_12_DATA\n");
 			break;
 		case DT_RATE_34_DATA:
-			SEGGER_RTT_printf(0, "DT_RATE_34_DATA\n",);
+			//SEGGER_RTT_printf(0, "DT_RATE_34_DATA\n",);
 			break;
 		case DT_IDLE:
-			SEGGER_RTT_printf(0, "DT_IDLE\n");
+			//SEGGER_RTT_printf(0, "DT_IDLE\n");
 			break;
 		case DT_RATE_1_DATA:
-			SEGGER_RTT_printf(0, "DT_RATE_1_DATA\n");
+			//SEGGER_RTT_printf(0, "DT_RATE_1_DATA\n");
 			break;
 		default:
 			//SEGGER_RTT_printf(0, "Frame dataType %d\n",dataType);
@@ -541,10 +537,10 @@ bool hotspotModeReceiveNetFrame(uint8_t *com_requestbuffer, int timeSlot)
 
 		if (hotspotState != HOTSPOT_STATE_TX_START_BUFFERING)
 		{
-			SEGGER_RTT_printf(0, "Net frame LC_decodOK:%d FID:%d FLCO:%d PF:%d R:%d dstId:%d src:Id:%d options:0x%02x\n",lcDecodeOK,lc.FID,lc.FLCO,lc.PF,lc.R,lc.dstId,lc.srcId,lc.options);
+			//SEGGER_RTT_printf(0, "Net frame LC_decodOK:%d FID:%d FLCO:%d PF:%d R:%d dstId:%d src:Id:%d options:0x%02x\n",lcDecodeOK,lc.FID,lc.FLCO,lc.PF,lc.R,lc.dstId,lc.srcId,lc.options);
 			memcpy(hotspotTxLC,lc.rawData,9);//Hotspot uses LC Data bytes rather than the src and dst ID's for the embed data
 			// the Src and Dst Id's have been sent, and we are in RX mode then an incoming Net normally arrives next
-			SEGGER_RTT_printf(0,"hospot state %d -> HOTSPOT_STATE_TX_BUFFERING\n");
+			//SEGGER_RTT_printf(0,"hospot state %d -> HOTSPOT_STATE_TX_BUFFERING\n");
 			timeoutCounter=TX_BUFFERING_TIMEOUT;
 			hotspotState = HOTSPOT_STATE_TX_START_BUFFERING;
 
@@ -573,10 +569,10 @@ static void hotspotStateMachine()
 			wavbuffer_write_idx=0;
 			wavbuffer_count=0;
 			hotspotState = HOTSPOT_STATE_RX_START;
-			SEGGER_RTT_printf(0, "STATE_INITIALISE -> STATE_RX\n");
+			//SEGGER_RTT_printf(0, "STATE_INITIALISE -> STATE_RX\n");
 			break;
 		case HOTSPOT_STATE_RX_START:
-			SEGGER_RTT_printf(0, "STATE_RX_START\n");
+			//SEGGER_RTT_printf(0, "STATE_RX_START\n");
 
 			// force immediate shutdown of Tx if we get here and the tx is on for some reason.
 			if (trxIsTransmitting)
@@ -603,13 +599,13 @@ static void hotspotStateMachine()
         			switch(rx_command)
 					{
 						case HOTSPOT_RX_START:
-							SEGGER_RTT_printf(0, "RX_START\n",rx_command,wavbuffer_count);
+							//SEGGER_RTT_printf(0, "RX_START\n",rx_command,wavbuffer_count);
 		        			updateScreen(rx_command);
 							sendVoiceHeaderLC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
 							lastRxState = HOTSPOT_RX_START;
 							break;
 						case HOTSPOT_RX_START_LATE:
-							SEGGER_RTT_printf(0, "RX_START_LATE\n");
+							//SEGGER_RTT_printf(0, "RX_START_LATE\n");
 		        			updateScreen(rx_command);
 							sendVoiceHeaderLC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
 							lastRxState = HOTSPOT_RX_START_LATE;
@@ -620,14 +616,15 @@ static void hotspotStateMachine()
 							lastRxState = HOTSPOT_RX_AUDIO_FRAME;
 							break;
 						case HOTSPOT_RX_STOP:
-							SEGGER_RTT_printf(0, "RX_STOP\n");
+							//SEGGER_RTT_printf(0, "RX_STOP\n");
 		        			updateScreen(rx_command);
 							sendTerminator_LC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
 							lastRxState = HOTSPOT_RX_STOP;
 							hotspotState = HOTSPOT_STATE_RX_END;
 							break;
 						case HOTSPOT_RX_IDLE_OR_REPEAT:
-							SEGGER_RTT_printf(0, "RX_IDLE_OR_REPEAT\n");/*
+							//SEGGER_RTT_printf(0, "RX_IDLE_OR_REPEAT\n");
+							/*
 							switch(lastRxState)
 							{
 								case HOTSPOT_RX_START:
@@ -637,14 +634,14 @@ static void hotspotStateMachine()
 									sendTerminator_LC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_read_idx]);
 									break;
 								default:
-									SEGGER_RTT_printf(0, "ERROR: Unkown HOTSPOT_RX_IDLE_OR_REPEAT\n");
+									//SEGGER_RTT_printf(0, "ERROR: Unkown HOTSPOT_RX_IDLE_OR_REPEAT\n");
 									break;
 							}
 							*/
 							break;
 
 						default:
-							SEGGER_RTT_printf(0, "ERROR: Unkown Hotspot RX state\n");
+							//SEGGER_RTT_printf(0, "ERROR: Unkown Hotspot RX state\n");
 							break;
 					}
 
@@ -678,14 +675,14 @@ static void hotspotStateMachine()
 				wavbuffer_write_idx=0;
 				wavbuffer_count=0;
 				hotspotState = HOTSPOT_STATE_TX_SHUTDOWN;
-				SEGGER_RTT_printf(0, "modemState == STATE_IDLE: TX_START_BUFFERING -> HOTSPOT_STATE_TX_SHUTDOWN\n");
+				//SEGGER_RTT_printf(0, "modemState == STATE_IDLE: TX_START_BUFFERING -> HOTSPOT_STATE_TX_SHUTDOWN\n");
 			}
 			else
 			{
 				if (wavbuffer_count > TX_BUFFER_MIN_BEFORE_TRANSMISSION)
 				{
 					hotspotState = HOTSPOT_STATE_TRANSMITTING;
-					SEGGER_RTT_printf(0, "TX_START_BUFFERING -> TRANSMITTING %d\n",wavbuffer_count);
+					//SEGGER_RTT_printf(0, "TX_START_BUFFERING -> TRANSMITTING %d\n",wavbuffer_count);
 					enableTransmission();
 					updateScreen(HOTSPOT_RX_IDLE);
 				}
@@ -694,7 +691,7 @@ static void hotspotStateMachine()
 					if (--timeoutCounter==0)
 					{
 						hotspotState = HOTSPOT_STATE_INITIALISE;
-						SEGGER_RTT_printf(0, "Timeout while buffering TX_START_BUFFERING -> HOTSPOT_STATE_INITIALISE\n");
+						//SEGGER_RTT_printf(0, "Timeout while buffering TX_START_BUFFERING -> HOTSPOT_STATE_INITIALISE\n");
 					}
 				}
 				}
@@ -704,7 +701,7 @@ static void hotspotStateMachine()
 			if (wavbuffer_count == 0 || modemState == STATE_IDLE)
 			{
 				hotspotState = HOTSPOT_STATE_TX_SHUTDOWN;
-				SEGGER_RTT_printf(0, "TRANSMITTING -> TX_SHUTDOWN %d %d\n",wavbuffer_count,modemState);
+				//SEGGER_RTT_printf(0, "TRANSMITTING -> TX_SHUTDOWN %d %d\n",wavbuffer_count,modemState);
 				trxIsTransmitting = false;
 			}
 			break;
@@ -715,7 +712,7 @@ static void hotspotStateMachine()
 				if (wavbuffer_count>0)
 				{
 					// restart
-					SEGGER_RTT_printf(0, "Restarting transmission %d\n",wavbuffer_count);
+					//SEGGER_RTT_printf(0, "Restarting transmission %d\n",wavbuffer_count);
 					enableTransmission();
 					timeoutCounter=TX_BUFFERING_TIMEOUT;
 					hotspotState = HOTSPOT_STATE_TX_START_BUFFERING;
@@ -727,7 +724,7 @@ static void hotspotStateMachine()
 				{
 					disableTransmission();
 					hotspotState = HOTSPOT_STATE_RX_START;
-					SEGGER_RTT_printf(0, "TX_SHUTDOWN -> STATE_RX\n");
+					//SEGGER_RTT_printf(0, "TX_SHUTDOWN -> STATE_RX\n");
 					updateScreen(HOTSPOT_RX_IDLE);
 
 					/*
@@ -901,7 +898,7 @@ const int BAN2_MIN  = 43500000;
 const int BAN2_MAX  = 43800000;
 uint32_t fRx,fTx;
 
-	SEGGER_RTT_printf(0, "setFreq\n");
+	//SEGGER_RTT_printf(0, "setFreq\n");
 	hotspotState = HOTSPOT_STATE_INITIALISE;
 //	displayLightOverrideTimeout(-1);// turn the backlight on permanently
 
@@ -919,7 +916,7 @@ uint32_t fRx,fTx;
 	fRx = (data[1U] << 0 | data[2U] << 8  | data[3U] << 16 | data[4U] << 24)/10;
 	fTx = (data[5U] << 0 | data[6U] << 8  | data[7U] << 16 | data[8U] << 24)/10;
 
-//	SEGGER_RTT_printf(0, "Tx freq = %d, Rx freq = %d, Power = %d\n",fRx,fRx,rf_power);
+//	//SEGGER_RTT_printf(0, "Tx freq = %d, Rx freq = %d, Power = %d\n",fRx,fRx,rf_power);
 
 
 	if ((fTx>= BAN1_MIN && fTx <= BAN1_MAX) || (fTx>= BAN2_MIN && fTx <= BAN2_MAX))
@@ -931,14 +928,7 @@ uint32_t fRx,fTx;
 	{
 		freq_rx = fRx;
 		freq_tx = fTx;
-	/*
-	 *  if (freq_rx!=freq_tx)
-		{
-			freq_rx = (freq_rx + freq_tx)/2;
-		}
-		*/
-		trxSetFrequency(freq_rx,freq_tx);
-		trxsetDMRMode(DMR_MODE_ACTIVE);// Override the default assumptions about DMR mode based on frequency
+		trxSetFrequency(freq_rx,freq_tx,DMR_MODE_ACTIVE);// Override the default assumptions about DMR mode based on frequency
 	}
 	else
 	{
@@ -979,7 +969,7 @@ static bool hasTXOverflow()
 static void getStatus()
 {
 	uint8_t buf[16];
-//	SEGGER_RTT_printf(0, "getStatus\n");
+//	//SEGGER_RTT_printf(0, "getStatus\n");
   // Send all sorts of interesting internal values
 	buf[0U]  = MMDVM_FRAME_START;
 	buf[1U]  = 13U;
@@ -1098,13 +1088,13 @@ static void handleDMRShortLC()
 {
 //	uint8_t LCBuf[5];
 //	DMRShortLC_decode((uint8_t *) com_requestbuffer + 3U,LCBuf);
-//	SEGGER_RTT_printf(0, "MMDVM ShortLC\n %02X %02X %02X %02X %02X\n",LCBuf[0U],LCBuf[1U],LCBuf[2U],LCBuf[3U],LCBuf[4U],LCBuf[5U]);
+//	//SEGGER_RTT_printf(0, "MMDVM ShortLC\n %02X %02X %02X %02X %02X\n",LCBuf[0U],LCBuf[1U],LCBuf[2U],LCBuf[3U],LCBuf[4U],LCBuf[5U]);
 }
 
 void handleHotspotRequest()
 {
 	int err;
-//	SEGGER_RTT_printf(0, "handleHotspotRequest 0x%0x 0x%0x 0x%0x\n",com_requestbuffer[0],com_requestbuffer[1],com_requestbuffer[2]);
+//	//SEGGER_RTT_printf(0, "handleHotspotRequest 0x%0x 0x%0x 0x%0x\n",com_requestbuffer[0],com_requestbuffer[1],com_requestbuffer[2]);
 	if (com_requestbuffer[0]==MMDVM_FRAME_START)
 	{
 		//SEGGER_RTT_printf(0, "MMDVM %02x\n",com_requestbuffer[2]);
@@ -1234,7 +1224,7 @@ void handleHotspotRequest()
 				break;
 			case MMDVM_NAK:
 				MMDVMHostRxState = MMDVMHOST_RX_ERROR;
-				SEGGER_RTT_printf(0, "MMDVMHost returned NAK\n");
+				//SEGGER_RTT_printf(0, "MMDVMHost returned NAK\n");
 				break;
 			default:
 				//SEGGER_RTT_printf(0, "Unhandled command type %d\n",com_requestbuffer[2]);
@@ -1244,6 +1234,6 @@ void handleHotspotRequest()
 	}
 	else
 	{
-		SEGGER_RTT_printf(0, "Invalid MMDVM header byte %d\n",com_requestbuffer[0]);
+		//SEGGER_RTT_printf(0, "Invalid MMDVM header byte %d\n",com_requestbuffer[0]);
 	}
 }
