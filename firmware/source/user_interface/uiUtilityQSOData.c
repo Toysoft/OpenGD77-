@@ -447,6 +447,10 @@ void menuUtilityRenderHeader()
 	{
 		case RADIO_MODE_ANALOG:
 			strcpy(buffer, "FM");
+			if (!trxGetBandwidthIs25kHz())
+			{
+				strcat(buffer,"N");
+			}
 			if ((currentChannelData->txTone!=65535)||(currentChannelData->rxTone!=65535))
 			{
 				strcat(buffer," C");
