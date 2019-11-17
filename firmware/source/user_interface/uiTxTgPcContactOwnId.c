@@ -19,20 +19,24 @@
 #include <user_interface/menuSystem.h>
 #include <user_interface/menuUtilityQSOData.h>
 #include "fw_settings.h"
+#include "fw_codeplug.h"
 
 static char digits[9];
+static int pcIdx;
+static struct_codeplugContact_t contact;
 static void updateScreen();
 static void handleEvent(int buttons, int keys, int events);
 
-static const char *menuName[]={"TG entry","PC entry","User DMR ID"};
-
+static const char *menuName[] = { "TG entry", "PC entry", "Contact", "User DMR ID" };
+enum DISPLAY_MENU_LIST { ENTRY_TG = 0, ENTRY_PC, ENTRY_SELECT_CONTACT, ENTRY_USER_DMR_ID, NUM_ENTRY_ITEMS};
 // public interface
 int menuNumericalEntry(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		gMenusCurrentItemIndex=0;
+		gMenusCurrentItemIndex=ENTRY_TG;
 		digits[0]=0x00;
+		pcIdx = 0;
 		updateScreen();
 	}
 	else
@@ -52,14 +56,50 @@ int menuNumericalEntry(int buttons, int keys, int events, bool isFirstRun)
 
 static void updateScreen()
 {
+	char buf[17];
+
 	UC1701_clearBuf();
 
 	UC1701_printCentered(8, (char *)menuName[gMenusCurrentItemIndex],UC1701_FONT_GD77_8x16);
 
-	UC1701_printCentered(32, (char *)digits,UC1701_FONT_GD77_8x16);
+	if (pcIdx == 0)
+	{
+		UC1701_printCentered(32, (char *)digits,UC1701_FONT_GD77_8x16);
+	}
+	else
+	{
+		codeplugUtilConvertBufToString(contact.name, buf, 16);
+		UC1701_printCentered(32, buf, UC1701_FONT_GD77_8x16);
+		UC1701_printCentered(52, (char *)digits,UC1701_FONT_6X8);
+	}
 	displayLightTrigger();
 
 	UC1701_render();
+}
+
+static int getNextContact(int curidx, int dir, struct_codeplugContact_t *contact)
+{
+	int idx = curidx;
+
+	do {
+		idx += dir;
+		if (idx >= 1024) {
+			if (curidx == 0) {
+				idx = 0;
+				break;
+			}
+			idx = 1;
+		} else if (idx ==0) {
+			if (curidx == 0) {
+				idx = 0;
+				break;
+			}
+			idx = 1024;
+		}
+		codeplugContactGetDataForIndex(idx, contact);
+	} while ((curidx != idx) && ((*contact).name[0] == 0xff));
+
+	return idx;
 }
 
 static void handleEvent(int buttons, int keys, int events)
@@ -71,15 +111,14 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_GREEN)!=0)
 	{
-		if (gMenusCurrentItemIndex!=2)
+		if (gMenusCurrentItemIndex != ENTRY_USER_DMR_ID)
 		{
 			uint32_t saveTrxTalkGroupOrPcId = trxTalkGroupOrPcId;
 			trxTalkGroupOrPcId = atoi(digits);
 			nonVolatileSettings.overrideTG = trxTalkGroupOrPcId;
-			if (gMenusCurrentItemIndex == 1)
+			if (gMenusCurrentItemIndex == ENTRY_PC || (pcIdx != 0 && contact.callType == 0x01))
 			{
 				// Private Call
-
 
 				if ((saveTrxTalkGroupOrPcId >> 24) != PC_CALL_FLAG)
 				{
@@ -102,26 +141,46 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_HASH)!=0)
 	{
-		if ((buttons & BUTTON_SK2)!= 0  && gMenusCurrentItemIndex == 1)
+		pcIdx = 0;
+		if ((buttons & BUTTON_SK2)!= 0  && gMenusCurrentItemIndex == ENTRY_SELECT_CONTACT)
 		{
-			gMenusCurrentItemIndex = 2;
+			digits[0] = 0x00;
+			gMenusCurrentItemIndex = ENTRY_USER_DMR_ID;
 		}
 		else
 		{
 			gMenusCurrentItemIndex++;
-			if (gMenusCurrentItemIndex > 1)
+			if (gMenusCurrentItemIndex > ENTRY_SELECT_CONTACT)
 			{
-				gMenusCurrentItemIndex = 0;
+				gMenusCurrentItemIndex = ENTRY_TG;
+			} else if (gMenusCurrentItemIndex == ENTRY_SELECT_CONTACT)
+			{
+				pcIdx = getNextContact(0, 1, &contact);
+				if (pcIdx != 0 ) {
+					itoa(contact.tgNumber, digits, 10);
+				}
 			}
 		}
 
 		updateScreen();
 	}
+	if (gMenusCurrentItemIndex == ENTRY_SELECT_CONTACT) {
+		int idx = pcIdx;
 
-	if (strlen(digits)<7)
-	{
-		char c[2]={0,0};
-		if ((keys & KEY_0)!=0)
+		if ((keys & KEY_DOWN) != 0) {
+			idx = getNextContact(pcIdx, 1, &contact);
+		} else if ((keys & KEY_UP) != 0) {
+			idx = getNextContact(pcIdx, -1, &contact);
+		}
+		if (pcIdx != idx ) {
+			pcIdx = idx;
+			itoa(contact.tgNumber, digits, 10);
+			updateScreen();
+		}
+	}
+	else if (strlen(digits) < 7) {
+		char c[2] = {0, 0};
+		if ((keys & KEY_0) != 0)
 		{
 			c[0]='0';
 		}
