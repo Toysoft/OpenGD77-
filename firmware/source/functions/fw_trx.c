@@ -186,13 +186,12 @@ void trx_check_analog_squelch()
 			if (!analogSignalReceived)
 			{
 				analogSignalReceived = true;
+				displayLightTrigger();
 				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
-				if(!rxCTCSSactive || (rxCTCSSactive & trxCheckCTCSSFlag()))
-				{
-
-					GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1); // speaker on
-					displayLightTrigger();
-				}
+			}
+			if(!rxCTCSSactive || (rxCTCSSactive & trxCheckCTCSSFlag()))
+			{
+				GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1); // speaker on
 			}
 		}
 		else
