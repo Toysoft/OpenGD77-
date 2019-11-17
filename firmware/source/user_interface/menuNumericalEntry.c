@@ -28,13 +28,13 @@ static void updateScreen();
 static void handleEvent(int buttons, int keys, int events);
 
 static const char *menuName[] = { "TG entry", "PC entry", "Contact", "User DMR ID" };
-
+enum DISPLAY_MENU_LIST { ENTRY_TG = 0, ENTRY_PC, ENTRY_SELECT_CONTACT, ENTRY_USER_DMR_ID, NUM_ENTRY_ITEMS};
 // public interface
 int menuNumericalEntry(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		gMenusCurrentItemIndex=0;
+		gMenusCurrentItemIndex=ENTRY_TG;
 		digits[0]=0x00;
 		pcIdx = 0;
 		updateScreen();
@@ -111,12 +111,12 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_GREEN)!=0)
 	{
-		if (gMenusCurrentItemIndex!=3)
+		if (gMenusCurrentItemIndex != ENTRY_USER_DMR_ID)
 		{
 			uint32_t saveTrxTalkGroupOrPcId = trxTalkGroupOrPcId;
 			trxTalkGroupOrPcId = atoi(digits);
 			nonVolatileSettings.overrideTG = trxTalkGroupOrPcId;
-			if (gMenusCurrentItemIndex == 1 || (pcIdx != 0 && contact.callType == 0x01))
+			if (gMenusCurrentItemIndex == ENTRY_PC || (pcIdx != 0 && contact.callType == 0x01))
 			{
 				// Private Call
 
@@ -142,18 +142,18 @@ static void handleEvent(int buttons, int keys, int events)
 	else if ((keys & KEY_HASH)!=0)
 	{
 		pcIdx = 0;
-		if ((buttons & BUTTON_SK2)!= 0  && gMenusCurrentItemIndex == 2)
+		if ((buttons & BUTTON_SK2)!= 0  && gMenusCurrentItemIndex == ENTRY_SELECT_CONTACT)
 		{
 			digits[0] = 0x00;
-			gMenusCurrentItemIndex = 3;
+			gMenusCurrentItemIndex = ENTRY_USER_DMR_ID;
 		}
 		else
 		{
 			gMenusCurrentItemIndex++;
-			if (gMenusCurrentItemIndex > 2)
+			if (gMenusCurrentItemIndex > ENTRY_SELECT_CONTACT)
 			{
-				gMenusCurrentItemIndex = 0;
-			} else if (gMenusCurrentItemIndex == 2)
+				gMenusCurrentItemIndex = ENTRY_TG;
+			} else if (gMenusCurrentItemIndex == ENTRY_SELECT_CONTACT)
 			{
 				pcIdx = getNextContact(0, 1, &contact);
 				if (pcIdx != 0 ) {
@@ -164,12 +164,12 @@ static void handleEvent(int buttons, int keys, int events)
 
 		updateScreen();
 	}
-	if (gMenusCurrentItemIndex == 2) {
+	if (gMenusCurrentItemIndex == ENTRY_SELECT_CONTACT) {
 		int idx = pcIdx;
 
-		if ((keys & KEY_RIGHT) != 0) {
+		if ((keys & KEY_DOWN) != 0) {
 			idx = getNextContact(pcIdx, 1, &contact);
-		} else if ((keys & KEY_LEFT) != 0) {
+		} else if ((keys & KEY_UP) != 0) {
 			idx = getNextContact(pcIdx, -1, &contact);
 		}
 		if (pcIdx != idx ) {
