@@ -45,7 +45,7 @@ int menuBattery(int buttons, int keys, int events, bool isFirstRun)
 
 static void updateScreen()
 {
-	const int MAX_BATTERY_BAR_HEIGHT = 37;
+	const int MAX_BATTERY_BAR_HEIGHT = 36;
 	char buffer[8];
 
 	UC1701_clearBuf();
@@ -64,7 +64,7 @@ static void updateScreen()
 	}
 
 	// Inner body frame
-	UC1701_drawRoundRect(97, 20, 26, 43, 3, true);
+	UC1701_drawRoundRect(97, 20, 26, 42, 3, true);
 	// Outer body frame
 	UC1701_drawRoundRect(96, 19, 28, 44, 3, true);
 	// Positive pole frame

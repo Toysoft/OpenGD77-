@@ -28,8 +28,8 @@
 void updateLastHeardList(int id,int talkGroup);
 
 const int QSO_TIMER_TIMEOUT = 2400;
-const int TX_TIMER_Y_OFFSET = 7;
-const int CONTACT_Y_POS = 18;
+const int TX_TIMER_Y_OFFSET = 8;
+const int CONTACT_Y_POS = 16;
 static const int BAR_Y_POS = 10;
 
 
@@ -377,11 +377,11 @@ void menuUtilityRenderQSOData()
 		if (tg != trxTalkGroupOrPcId)
 		{
 			UC1701_fillRect(0,16,128,16,false);// fill background with black
-			UC1701_printCore(0, 16, buffer,UC1701_FONT_GD77_8x16,1,true);// draw the text in inverse video
+			UC1701_printCore(0, CONTACT_Y_POS, buffer,UC1701_FONT_GD77_8x16,1,true);// draw the text in inverse video
 		}
 		else
 		{
-			UC1701_printCentered(16, buffer,UC1701_FONT_GD77_8x16);
+			UC1701_printCentered(CONTACT_Y_POS, buffer,UC1701_FONT_GD77_8x16);
 		}
 
 		// first check if we have this ID in the DMR ID data
