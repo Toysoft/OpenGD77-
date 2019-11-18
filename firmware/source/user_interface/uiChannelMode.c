@@ -93,16 +93,24 @@ uint16_t byteSwap16(uint16_t in)
 
 static void loadChannelData(bool useChannelDataInMemory)
 {
+
+	if (strcmp(currentZoneName,"All Channels")==0)
+	{
+		settingsCurrentChannelNumber = nonVolatileSettings.currentChannelIndexInAllZone;
+	}
+	else
+	{
+		settingsCurrentChannelNumber = currentZone.channels[nonVolatileSettings.currentChannelIndexInZone];
+	}
+
 	if (!useChannelDataInMemory)
 	{
 		if (strcmp(currentZoneName,"All Channels")==0)
 		{
-			settingsCurrentChannelNumber = nonVolatileSettings.currentChannelIndexInAllZone;
 			codeplugChannelGetDataForIndex(nonVolatileSettings.currentChannelIndexInAllZone,&channelScreenChannelData);
 		}
 		else
 		{
-			settingsCurrentChannelNumber = currentZone.channels[nonVolatileSettings.currentChannelIndexInZone];
 			codeplugChannelGetDataForIndex(currentZone.channels[nonVolatileSettings.currentChannelIndexInZone],&channelScreenChannelData);
 		}
 	}
@@ -704,19 +712,6 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 				break;
 			case CH_SCREEN_QUICK_MENU_COPY_FROM_VFO:
 				memcpy(&channelScreenChannelData.rxFreq,&nonVolatileSettings.vfoChannel.rxFreq,sizeof(struct_codeplugChannel_t)- 16);// Don't copy the name of the vfo, which are in the first 16 bytes
-
-				// update the settingsCurrentChannelNumber if its set to -1 (VFO)
-				if (settingsCurrentChannelNumber==-1)
-				{
-					if (strcmp(currentZoneName,"All Channels")==0)
-					{
-						settingsCurrentChannelNumber = nonVolatileSettings.currentChannelIndexInAllZone;
-					}
-					else
-					{
-						settingsCurrentChannelNumber = currentZone.channels[nonVolatileSettings.currentChannelIndexInZone];
-					}
-				}
 
 				codeplugChannelSaveDataForIndex(settingsCurrentChannelNumber,&channelScreenChannelData);
 
