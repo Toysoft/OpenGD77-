@@ -349,18 +349,12 @@ static void handleEvent(int buttons, int keys, int events)
 	else if ((keys & KEY_GREEN)!=0)
 	{
 		memcpy(currentChannelData,&tmpChannel,sizeof(struct_codeplugChannel_t));
-		if (buttons & BUTTON_SK2 )
+
+		// settingsCurrentChannelNumber is -1 when in VFO mode
+		// But the VFO is stored in the nonVolatile settings, and not saved back to the codeplug
+		if (settingsCurrentChannelNumber != -1 )
 		{
-			// Function button is also pressed, so these changes need to be saved back to the codeplug
-			// settingsCurrentChannelNumber is -1 when in VFO mode
-			if (settingsCurrentChannelNumber != -1 )
-			{
-				codeplugChannelSaveDataForIndex(settingsCurrentChannelNumber,currentChannelData);
-			}
-			else
-			{
-				// Its the VFO, which is in the nonVolatile settings and doesn't need to be updated unless it needs to be read back into the CPS
-			}
+			codeplugChannelSaveDataForIndex(settingsCurrentChannelNumber,currentChannelData);
 		}
 
 		menuSystemPopAllAndDisplayRootMenu();
