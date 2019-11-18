@@ -40,9 +40,10 @@ int menuFirmwareInfoScreen(int buttons, int keys, int events, bool isFirstRun)
 static void updateScreen()
 {
 	UC1701_clearBuf();
-	UC1701_printCentered(12, "OpenGD77",UC1701_FONT_8x16);
-	UC1701_printCentered(32,(char *)FIRMWARE_VERSION_STRING,UC1701_FONT_8x16);
-	UC1701_printCentered(48,__DATE__,UC1701_FONT_8x16);
+	UC1701_printCentered(8, "OpenGD77",UC1701_FONT_8x16);
+	UC1701_printCentered(34, "Built",UC1701_FONT_8x8);
+	UC1701_printCentered(44,__TIME__,UC1701_FONT_8x8);
+	UC1701_printCentered(54,__DATE__,UC1701_FONT_8x8);
 	UC1701_render();
 	displayLightTrigger();
 }
