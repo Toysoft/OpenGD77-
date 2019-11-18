@@ -189,17 +189,17 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 
 				if (trxIsTransmitting)
 				{
-					UC1701_printCentered(34,buffer,UC1701_FONT_GD77_8x16);
+					UC1701_printCentered(34,buffer,UC1701_FONT_8x16);
 				}
 				else
 				{
-					UC1701_printCentered(CONTACT_Y_POS,buffer,UC1701_FONT_GD77_8x16);
+					UC1701_printCentered(CONTACT_Y_POS,buffer,UC1701_FONT_8x16);
 				}
 			}
 			else if(displaySquelch)
 			{
 				sprintf(buffer,"Squelch");
-				UC1701_printAt(0,16,buffer,UC1701_FONT_GD77_8x16);
+				UC1701_printAt(0,16,buffer,UC1701_FONT_8x16);
 				int bargraph= 1 + ((currentChannelData->sql-1)*5)/2 ;
 				UC1701_fillRect(62,21,bargraph,8,false);
 				displaySquelch=false;
@@ -212,7 +212,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					val_before_dp = currentChannelData->rxFreq/100000;
 					val_after_dp = currentChannelData->rxFreq - val_before_dp*100000;
 					sprintf(buffer,"%cR %d.%05d MHz", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_RX)?'>':' ',val_before_dp, val_after_dp);
-					UC1701_printCentered(32, buffer,UC1701_FONT_GD77_8x16);
+					UC1701_printCentered(32, buffer,UC1701_FONT_8x16);
 				}
 				else
 				{
@@ -223,18 +223,18 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 				val_before_dp = currentChannelData->txFreq/100000;
 				val_after_dp = currentChannelData->txFreq - val_before_dp*100000;
 				sprintf(buffer,"%cT %d.%05d MHz", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX || trxIsTransmitting)?'>':' ',val_before_dp, val_after_dp);
-				UC1701_printCentered(48, buffer,UC1701_FONT_GD77_8x16);
+				UC1701_printCentered(48, buffer,UC1701_FONT_8x16);
 			}
 			else
 			{
 				sprintf(buffer,"%c%c%c.%c%c%c%c%c MHz", freq_enter_digits[0], freq_enter_digits[1], freq_enter_digits[2], freq_enter_digits[3], freq_enter_digits[4], freq_enter_digits[5], freq_enter_digits[6], freq_enter_digits[7] );
 				if (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX)
 				{
-					UC1701_printCentered(48, buffer,UC1701_FONT_GD77_8x16);
+					UC1701_printCentered(48, buffer,UC1701_FONT_8x16);
 				}
 				else
 				{
-					UC1701_printCentered(32, buffer,UC1701_FONT_GD77_8x16);
+					UC1701_printCentered(32, buffer,UC1701_FONT_8x16);
 				}
 			}
 

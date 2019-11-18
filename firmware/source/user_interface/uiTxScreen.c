@@ -63,11 +63,11 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 			UC1701_printCentered(4, "ERROR",UC1701_FONT_16x32);
 			if ((currentChannelData->flag4 & 0x04) !=0x00)
 			{
-				UC1701_printCentered(40, "Rx only",UC1701_FONT_GD77_8x16);
+				UC1701_printCentered(40, "Rx only",UC1701_FONT_8x16);
 			}
 			else
 			{
-				UC1701_printCentered(40, "OUT OF BAND",UC1701_FONT_GD77_8x16);
+				UC1701_printCentered(40, "OUT OF BAND",UC1701_FONT_8x16);
 			}
 			UC1701_render();
 			displayLightOverrideTimeout(-1);

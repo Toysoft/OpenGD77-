@@ -348,7 +348,7 @@ const uint8_t font_8x8[] = {
 
 #if 1
 
-const uint8_t font_gd77_8x16[] = {
+const uint8_t font_8x16[] = {
    0x00, 0x00, // Ignored.
    32        , // first char ASCII code.
    126       , // last char ASCII code.

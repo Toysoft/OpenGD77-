@@ -337,7 +337,7 @@ static void displayChannelNameOrRxFrequency(char *buffer)
 		int val_after_dp = currentChannelData->rxFreq - val_before_dp*100000;
 		sprintf(buffer,"%d.%05d MHz",val_before_dp, val_after_dp);
 	}
-	UC1701_printCentered(52,buffer,UC1701_FONT_6X8);
+	UC1701_printCentered(52,buffer,UC1701_FONT_6x8);
 }
 
 void menuUtilityRenderQSOData()
@@ -353,20 +353,20 @@ void menuUtilityRenderQSOData()
 		dmrIDLookup( (LinkHead->id & 0xFFFFFF),&currentRec);
 		snprintf(buffer, 20, "%s", currentRec.text);
 		buffer[20] = 0;
-		UC1701_printCentered(16, buffer,UC1701_FONT_GD77_8x16);
+		UC1701_printCentered(16, buffer,UC1701_FONT_8x16);
 
 		// Are we already in PC mode to this caller ?
 		if (trxTalkGroupOrPcId != (LinkHead->id | (PC_CALL_FLAG<<24)))
 		{
 			// No either we are not in PC mode or not on a Private Call to this station
-			UC1701_printCentered(32, "Accept call?",UC1701_FONT_GD77_8x16);
-			UC1701_printCentered(48, "YES          NO",UC1701_FONT_GD77_8x16);
+			UC1701_printCentered(32, "Accept call?",UC1701_FONT_8x16);
+			UC1701_printCentered(48, "YES          NO",UC1701_FONT_8x16);
 			menuUtilityReceivedPcId = LinkHead->id | (PC_CALL_FLAG<<24);
 		    set_melody(melody_private_call);
 		}
 		else
 		{
-			UC1701_printCentered(32, "Private call",UC1701_FONT_GD77_8x16);
+			UC1701_printCentered(32, "Private call",UC1701_FONT_8x16);
 		}
 	}
 	else
@@ -377,11 +377,11 @@ void menuUtilityRenderQSOData()
 		if (tg != trxTalkGroupOrPcId)
 		{
 			UC1701_fillRect(0,16,128,16,false);// fill background with black
-			UC1701_printCore(0, CONTACT_Y_POS, buffer,UC1701_FONT_GD77_8x16,1,true);// draw the text in inverse video
+			UC1701_printCore(0, CONTACT_Y_POS, buffer,UC1701_FONT_8x16,1,true);// draw the text in inverse video
 		}
 		else
 		{
-			UC1701_printCentered(CONTACT_Y_POS, buffer,UC1701_FONT_GD77_8x16);
+			UC1701_printCentered(CONTACT_Y_POS, buffer,UC1701_FONT_8x16);
 		}
 
 		// first check if we have this ID in the DMR ID data
@@ -389,7 +389,7 @@ void menuUtilityRenderQSOData()
 		{
 			snprintf(buffer, 20, "%s", currentRec.text);
 			buffer[20] = 0;
-			UC1701_printCentered(32, buffer,UC1701_FONT_GD77_8x16);
+			UC1701_printCentered(32, buffer,UC1701_FONT_8x16);
 			displayChannelNameOrRxFrequency(buffer);
 		}
 		else
@@ -402,15 +402,15 @@ void menuUtilityRenderQSOData()
 					// More than 1 line wide of text, so we need to split onto 2 lines.
 					memcpy(buffer,LinkHead->talkerAlias,6);
 					buffer[6]=0x00;
-					UC1701_printCentered(32, buffer,UC1701_FONT_GD77_8x16);
+					UC1701_printCentered(32, buffer,UC1701_FONT_8x16);
 
 					memcpy(buffer,&LinkHead->talkerAlias[6],16);
 					buffer[16]=0x00;
-					UC1701_printAt(0,48,buffer,UC1701_FONT_GD77_8x16);
+					UC1701_printAt(0,48,buffer,UC1701_FONT_8x16);
 				}
 				else
 				{
-					UC1701_printCentered(32,LinkHead->talkerAlias,UC1701_FONT_GD77_8x16);
+					UC1701_printCentered(32,LinkHead->talkerAlias,UC1701_FONT_8x16);
 					displayChannelNameOrRxFrequency(buffer);
 				}
 			}
@@ -418,7 +418,7 @@ void menuUtilityRenderQSOData()
 			{
 				// No talker alias. So we can only show the ID.
 				sprintf(buffer,"ID: %d", LinkHead->id);
-				UC1701_printCentered(32, buffer,UC1701_FONT_GD77_8x16);
+				UC1701_printCentered(32, buffer,UC1701_FONT_8x16);
 				displayChannelNameOrRxFrequency(buffer);
 			}
 		}
@@ -483,9 +483,9 @@ void menuUtilityRenderHeader()
 		strcat(buffer," L");
 	}
 
-	UC1701_printAt(0,Y_OFFSET, buffer,UC1701_FONT_6X8);
+	UC1701_printAt(0,Y_OFFSET, buffer,UC1701_FONT_6x8);
 
-	UC1701_printCentered(Y_OFFSET,(char *)POWER_LEVELS[nonVolatileSettings.txPowerLevel],UC1701_FONT_6X8);
+	UC1701_printCentered(Y_OFFSET,(char *)POWER_LEVELS[nonVolatileSettings.txPowerLevel],UC1701_FONT_6x8);
 
 
 	int  batteryPerentage = (int)(((averageBatteryVoltage - CUTOFF_VOLTAGE_UPPER_HYST) * 100) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));
@@ -507,7 +507,7 @@ void menuUtilityRenderHeader()
 		sprintf(buffer,"C%d %d%%",trxGetDMRColourCode(),batteryPerentage);
 	}
 
-	UC1701_printCore(0,Y_OFFSET,buffer,UC1701_FONT_6X8,2,false);// Display battery percentage at the right
+	UC1701_printCore(0,Y_OFFSET,buffer,UC1701_FONT_6x8,2,false);// Display battery percentage at the right
 }
 
 void drawRSSIBarGraph()
