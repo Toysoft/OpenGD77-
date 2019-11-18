@@ -370,9 +370,14 @@ static void handleEvent(int buttons, int keys, int events)
 	{
 		if (trxGetMode() == RADIO_MODE_DIGITAL)
 		{
-			menuSystemPushNewMenu(MENU_NUMERICAL_ENTRY);
-			return;
+			if ((buttons & BUTTON_SK2) != 0)
+			{
+				menuSystemPushNewMenu(MENU_CONTACT_LIST);
+			} else {
+				menuSystemPushNewMenu(MENU_NUMERICAL_ENTRY);
+			}
 		}
+		return;
 	}
 
 	if (freq_enter_idx==0)

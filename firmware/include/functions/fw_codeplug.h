@@ -75,6 +75,10 @@ typedef struct struct_codeplugRxGroup
 	int	NOT_IN_MEMORY_numTGsInGroup;// NOT IN THE
 } struct_codeplugRxGroup_t;
 
+#define CODEPLUG_CALLTYPE_TG  0
+#define CODEPLUG_CALLTYPE_PC  1
+#define CODEPLUG_CALLTYPE_ALL 2
+
 typedef struct struct_codeplugContact
 {
 	char 		name[16];
@@ -122,7 +126,7 @@ void codeplugVFO_A_ChannelData(struct_codeplugChannel_t *vfoBuf);
 bool codeplugChannelIndexIsValid(int index);
 bool codeplugChannelSaveDataForIndex(int index, struct_codeplugChannel_t *channelBuf);
 
-int codeplugContactsGetCount();
-void codeplugContactGetDataForNumber(int index, struct_codeplugContact_t *contact);
+int codeplugContactsGetCount(int callType);
+void codeplugContactGetDataForNumber(int index, int callType, struct_codeplugContact_t *contact);
 
 #endif

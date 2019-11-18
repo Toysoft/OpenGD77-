@@ -24,12 +24,16 @@
 static void updateScreen();
 static void handleEvent(int buttons, int keys, int events);
 static struct_codeplugContact_t contact;
+static int contactCallType;
+
+enum CONTACT_CALLTYPE_SELECT { CONTACT_CALLTYPE_TG=0, CONTACT_CALLTYPE_PC };
 
 int menuContactList(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		gMenusEndIndex = codeplugContactsGetCount();
+		contactCallType = CONTACT_CALLTYPE_TG;
+		gMenusEndIndex = codeplugContactsGetCount(CODEPLUG_CALLTYPE_TG);
 		gMenusCurrentItemIndex = 1;
 
 		updateScreen();
@@ -50,24 +54,31 @@ static void updateScreen()
 	int mNum;
 
 	UC1701_clearBuf();
-	menuDisplayTitle("Contact List");
+	if (contactCallType == CONTACT_CALLTYPE_TG) {
+		UC1701_printCentered(0, "Group Call", UC1701_FONT_8x16);
+	} else {
+		UC1701_printCentered(0, "Private Call", UC1701_FONT_8x16);
+	}
 
-	for(int i = -1; i <= 1; i++)
+	if (gMenusEndIndex == 0)
 	{
-		if (gMenusEndIndex <= (i + 1))
-		{
-			break;
-		}
+		UC1701_printCentered(48, "Empty List", UC1701_FONT_8x16);
+	} else {
+		for (int i = -1; i <= 1; i++) {
+			if (gMenusEndIndex <= (i + 1)) {
+				break;
+			}
 
-		mNum = menuGetMenuOffset(gMenusEndIndex, i);
-		if (mNum == 0) {
-			codeplugContactGetDataForNumber(gMenusEndIndex, &contact);
-		} else {
-			codeplugContactGetDataForNumber(mNum, &contact);
-		}
+			mNum = menuGetMenuOffset(gMenusEndIndex, i);
+			if (mNum == 0) {
+				codeplugContactGetDataForNumber(gMenusEndIndex, contactCallType, &contact);
+			} else {
+				codeplugContactGetDataForNumber(mNum, contactCallType, &contact);
+			}
 
-		codeplugUtilConvertBufToString(contact.name, nameBuf, 16);// need to convert to zero terminated string
-		menuDisplayEntry(i, mNum, (char* )nameBuf);
+			codeplugUtilConvertBufToString(contact.name, nameBuf, 16); // need to convert to zero terminated string
+			menuDisplayEntry(i, mNum, (char*) nameBuf);
+		}
 	}
 	UC1701_render();
 	displayLightTrigger();
@@ -83,13 +94,23 @@ static void handleEvent(int buttons, int keys, int events)
 	{
 		MENU_DEC(gMenusCurrentItemIndex, gMenusEndIndex);
 	}
+	else if ((keys & KEY_HASH) != 0)
+	{
+		if (contactCallType == CONTACT_CALLTYPE_TG) {
+			contactCallType = CONTACT_CALLTYPE_PC;
+		} else {
+			contactCallType = CONTACT_CALLTYPE_TG;
+		}
+		gMenusEndIndex = codeplugContactsGetCount(contactCallType);
+		gMenusCurrentItemIndex = 1;
+	}
 	else if ((keys & KEY_GREEN)!=0)
 	{
-		uint32_t saveTrxTalkGroupOrPcId = trxTalkGroupOrPcId;
-		codeplugContactGetDataForNumber(gMenusCurrentItemIndex, &contact);
+		codeplugContactGetDataForNumber(gMenusCurrentItemIndex, contactCallType, &contact);
 
+		uint32_t saveTrxTalkGroupOrPcId = trxTalkGroupOrPcId;
 		nonVolatileSettings.overrideTG = contact.tgNumber;
-		if (contact.callType == 0x01)
+		if (contact.callType == CONTACT_CALLTYPE_PC)
 		{
 			// Private Call
 

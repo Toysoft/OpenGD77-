@@ -379,7 +379,7 @@ void codeplugRxGroupGetDataForIndex(int index, struct_codeplugRxGroup_t *rxGroup
 	rxGroupBuf->NOT_IN_MEMORY_numTGsInGroup = i;
 }
 
-int codeplugContactsGetCount()
+int codeplugContactsGetCount(int callType) // 0:TG 1:PC
 {
 	struct_codeplugContact_t contact;
 	int numContacts=0;
@@ -387,19 +387,19 @@ int codeplugContactsGetCount()
 	for (int i = 1; i <= 1024; i++)
 	{
 		codeplugContactGetDataForIndex(i, &contact);
-		if (contact.name[0] != 0xff) {
+		if (contact.name[0] != 0xff && contact.callType == callType) {
 			numContacts++;
 		}
 	}
 	return numContacts;
 }
 
-void codeplugContactGetDataForNumber(int index, struct_codeplugContact_t *contact)
+void codeplugContactGetDataForNumber(int index, int callType, struct_codeplugContact_t *contact)
 {
 	for (int i = 1; i <= 1024; i++)
 	{
 		codeplugContactGetDataForIndex(i, contact);
-		if (contact->name[0] != 0xff) {
+		if (contact->name[0] != 0xff && contact->callType == callType) {
 			index--;
 		}
 		if (index == 0) {
