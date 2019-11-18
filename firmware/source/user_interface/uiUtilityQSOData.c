@@ -28,7 +28,7 @@
 void updateLastHeardList(int id,int talkGroup);
 
 const int QSO_TIMER_TIMEOUT = 2400;
-const int TX_TIMER_Y_OFFSET = 9;
+const int TX_TIMER_Y_OFFSET = 8;
 const int CONTACT_Y_POS = 16;
 static const int BAR_Y_POS = 10;
 
