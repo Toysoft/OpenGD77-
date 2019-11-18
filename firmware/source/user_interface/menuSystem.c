@@ -46,7 +46,7 @@ int menuChannelDetails(int buttons, int keys, int events, bool isFirstRun);
 int menuHotspotMode(int buttons, int keys, int events, bool isFirstRun);
 int menuCPS(int buttons, int keys, int events, bool isFirstRun);
 int menuLockScreen(int buttons, int keys, int events, bool isFirstRun);
-
+int menuContactList(int buttons, int keys, int events, bool isFirstRun);
 
 /*
  * ---------------------- IMPORTANT ----------------------------
@@ -79,6 +79,7 @@ const menuItemNew_t * menusData[] = { 	NULL,// splash
 										NULL,// Quick menu - Channel
 										NULL,// Quick menu - VFO
 										NULL,// Lock screen
+										NULL,// Contact List
 								};
 
 const MenuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
@@ -102,7 +103,8 @@ const MenuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
 												menuCPS,
 												menuChannelModeQuickMenu,
 												menuVFOModeQuickMenu,
-                                                menuLockScreen};
+                                                menuLockScreen,
+												menuContactList};
 
 void menuSystemPushNewMenu(int menuNumber)
 {
@@ -171,7 +173,7 @@ void menuInitMenuSystem()
 
 const char menuStringTable[32][16] = { "",//0
                                          "Menu",//1
-                                         "Contact",//2
+                                         "Contacts",//2
                                          "Message",//3
                                          "Call Logs",//4
                                          "Set",//5
@@ -193,6 +195,7 @@ const char menuStringTable[32][16] = { "",//0
 										 "Credits",//21
 										 "Channel details",//22
 										 "Hotspot mode",//23
+										 "Contact List",//24
 };
 
 const menuItemNew_t menuDataMainMenu[] = {
@@ -201,6 +204,7 @@ const menuItemNew_t menuDataMainMenu[] = {
 	{ 6, MENU_ZONE_LIST },
 	{ 17, MENU_RSSI_SCREEN },
 	{ 15, MENU_BATTERY },
+	{ 2, MENU_CONTACTS_MENU },
 	{ 18, MENU_LAST_HEARD },
 	{ 16, MENU_FIRMWARE_INFO },
 	{ 19, MENU_OPTIONS },
@@ -208,10 +212,9 @@ const menuItemNew_t menuDataMainMenu[] = {
 	{ 22, MENU_CHANNEL_DETAILS},
 };
 const menuItemNew_t menuDataContact[] = {
-	{ 3, 3 } ,// length
-	{ 2, -1 },// Contact
+	{ 2, 2 } ,// length
 	{ 7 , -1 },// New Contact
-	{ 8, -1 } // Manual Dial
+	{ 24, MENU_CONTACT_LIST },// Contacts List
 };
 
 const menuItemNew_t menuDataContactContact [] = {
