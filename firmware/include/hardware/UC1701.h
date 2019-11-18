@@ -29,19 +29,22 @@
 #include <math.h>
 #include "fw_common.h"
 
-#define UC1701_FONT_6X8 				0
-#define UC1701_FONT_6X8_bold			1
-#define UC1701_FONT_8X8 				2
-#define UC1701_FONT_GD77_8x16 			3
-#define UC1701_FONT_16x32 				4
+typedef enum
+{
+	UC1701_FONT_6x8 = 0,
+	UC1701_FONT_6x8_BOLD,
+	UC1701_FONT_8x8,
+	UC1701_FONT_8x16,
+	UC1701_FONT_16x32
+} UC1701_Font_t;
 
 void UC1701_begin(bool isInverted);
 void UC1701_clearBuf();
 void UC1701_render();
 void UC1701RenderRows(int16_t startRow, int16_t endRow);
-void UC1701_printCentered(uint8_t y, char *text, int16_t fontSize);
-void UC1701_printAt(uint8_t x, uint8_t y, char *text, int16_t fontSize);
-int UC1701_printCore(int16_t x, int16_t y, char *szMsg, int16_t iSize, int16_t alignment, bool isInverted);
+void UC1701_printCentered(uint8_t y, char *text, UC1701_Font_t fontSize);
+void UC1701_printAt(uint8_t x, uint8_t y, char *text, UC1701_Font_t fontSize);
+int UC1701_printCore(int16_t x, int16_t y, char *szMsg, UC1701_Font_t fontSize, int16_t alignment, bool isInverted);
 
 int16_t UC1701_setPixel(int16_t x, int16_t y, bool color);
 

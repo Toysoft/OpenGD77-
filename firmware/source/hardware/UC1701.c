@@ -153,7 +153,7 @@ static inline bool checkWritePos(uint8_t * writePos)
 }
 #endif
 
-int UC1701_printCore(int16_t x, int16_t y, char *szMsg, int16_t iSize, int16_t alignment, bool isInverted)
+int UC1701_printCore(int16_t x, int16_t y, char *szMsg, UC1701_Font_t fontSize, int16_t alignment, bool isInverted)
 {
 	int16_t i, sLen;
 	uint8_t *currentCharData;
@@ -168,19 +168,19 @@ int UC1701_printCore(int16_t x, int16_t y, char *szMsg, int16_t iSize, int16_t a
 
     sLen = strlen(szMsg);
 
-    switch(iSize)
+    switch(fontSize)
     {
-    	case UC1701_FONT_6X8:
+    	case UC1701_FONT_6x8:
     		currentFont = (uint8_t *) font_6x8;
     		break;
-    	case UC1701_FONT_6X8_bold:
+    	case UC1701_FONT_6x8_BOLD:
 			currentFont = (uint8_t *) font_6x8_bold;
     		break;
-    	case UC1701_FONT_8X8:
+    	case UC1701_FONT_8x8:
     		currentFont = (uint8_t *) font_8x8;
     		break;
-    	case UC1701_FONT_GD77_8x16:
-    		currentFont = (uint8_t *) font_gd77_8x16;
+    	case UC1701_FONT_8x16:
+    		currentFont = (uint8_t *) font_8x16;
 			break;
     	case UC1701_FONT_16x32:
     		currentFont = (uint8_t *) font_16x32;
@@ -364,12 +364,12 @@ void UC1701_clearBuf()
 	memset(screenBuf,0x00,1024);
 }
 
-void UC1701_printCentered(uint8_t y, char *text, int16_t fontSize)
+void UC1701_printCentered(uint8_t y, char *text, UC1701_Font_t fontSize)
 {
 	UC1701_printCore(0, y, text, fontSize, 1, false);
 }
 
-void UC1701_printAt(uint8_t x, uint8_t y, char *text, int16_t fontSize)
+void UC1701_printAt(uint8_t x, uint8_t y, char *text, UC1701_Font_t fontSize)
 {
 	UC1701_printCore(x, y, text, fontSize, 0, false);
 }

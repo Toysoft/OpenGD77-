@@ -183,18 +183,18 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 					{
 						sprintf(nameBuf,"CH %d",channelNumber);
 					}
-					UC1701_printCentered(50 , (char *)nameBuf,UC1701_FONT_6X8);
+					UC1701_printCentered(50 , (char *)nameBuf,UC1701_FONT_6x8);
 				}
 				else
 				{
 					snprintf(nameBuf, 16, "%s",currentZoneName);
 					nameBuf[16] = 0;
-					UC1701_printCentered(50, (char *)nameBuf,UC1701_FONT_6X8);
+					UC1701_printCentered(50, (char *)nameBuf,UC1701_FONT_6x8);
 				}
 			}
 
 			codeplugUtilConvertBufToString(channelScreenChannelData.name,nameBuf,16);
-			UC1701_printCentered(32 + verticalPositionOffset, (char *)nameBuf,UC1701_FONT_GD77_8x16);
+			UC1701_printCentered(32 + verticalPositionOffset, (char *)nameBuf,UC1701_FONT_8x16);
 
 			if (trxGetMode() == RADIO_MODE_DIGITAL)
 			{
@@ -216,12 +216,12 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				{
 					codeplugUtilConvertBufToString(contactData.name,nameBuf,16);
 				}
-				UC1701_printCentered(CONTACT_Y_POS + verticalPositionOffset, (char *)nameBuf,UC1701_FONT_GD77_8x16);
+				UC1701_printCentered(CONTACT_Y_POS + verticalPositionOffset, (char *)nameBuf,UC1701_FONT_8x16);
 			}
 			else if(displaySquelch && !trxIsTransmitting)
 			{
 				sprintf(buffer,"Squelch");
-				UC1701_printAt(0,16,buffer,UC1701_FONT_GD77_8x16);
+				UC1701_printAt(0,16,buffer,UC1701_FONT_8x16);
 				int bargraph= 1 + ((currentChannelData->sql-1)*5)/2 ;
 				UC1701_fillRect(62,21,bargraph,8,false);
 				displaySquelch=false;

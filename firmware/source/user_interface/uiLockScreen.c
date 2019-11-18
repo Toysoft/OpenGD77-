@@ -45,11 +45,11 @@ static void updateScreen()
 	UC1701_clearBuf();
 	UC1701_drawRoundRect(4, 4, 120, 56, 5, true);
 	if (keypadLocked) {
-		UC1701_printCentered(10, "Keypad locked",UC1701_FONT_GD77_8x16);
-		UC1701_printCentered(30, "Press Blue + *",UC1701_FONT_6X8);
-		UC1701_printCentered(38, "to unlock",UC1701_FONT_6X8);
+		UC1701_printCentered(10, "Keypad locked",UC1701_FONT_8x16);
+		UC1701_printCentered(30, "Press Blue + *",UC1701_FONT_6x8);
+		UC1701_printCentered(38, "to unlock",UC1701_FONT_6x8);
 	} else {
-		UC1701_printCentered(20, "Unlocked",UC1701_FONT_GD77_8x16);
+		UC1701_printCentered(20, "Unlocked",UC1701_FONT_8x16);
 	}
 	UC1701_render();
 	displayLightTrigger();

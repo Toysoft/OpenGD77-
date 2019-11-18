@@ -60,17 +60,17 @@ static void updateScreen()
 
 	UC1701_clearBuf();
 
-	UC1701_printCentered(8, (char *)menuName[gMenusCurrentItemIndex],UC1701_FONT_GD77_8x16);
+	UC1701_printCentered(8, (char *)menuName[gMenusCurrentItemIndex],UC1701_FONT_8x16);
 
 	if (pcIdx == 0)
 	{
-		UC1701_printCentered(32, (char *)digits,UC1701_FONT_GD77_8x16);
+		UC1701_printCentered(32, (char *)digits,UC1701_FONT_8x16);
 	}
 	else
 	{
 		codeplugUtilConvertBufToString(contact.name, buf, 16);
-		UC1701_printCentered(32, buf, UC1701_FONT_GD77_8x16);
-		UC1701_printCentered(52, (char *)digits,UC1701_FONT_6X8);
+		UC1701_printCentered(32, buf, UC1701_FONT_8x16);
+		UC1701_printCentered(52, (char *)digits,UC1701_FONT_6x8);
 	}
 	displayLightTrigger();
 

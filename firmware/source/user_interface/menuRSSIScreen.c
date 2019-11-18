@@ -70,10 +70,10 @@ static void updateScreen()
 		menuDisplayTitle("RSSI");
 
 		sprintf(buffer,"%d", trxRxSignal);
-		UC1701_printCore(0, 3, buffer, UC1701_FONT_8X8, 2, false);
+		UC1701_printCore(0, 3, buffer, UC1701_FONT_8x8, 2, false);
 
 		sprintf(buffer,"%ddBm", dBm);
-		UC1701_printCentered(20, buffer,UC1701_FONT_GD77_8x16);
+		UC1701_printCentered(20, buffer,UC1701_FONT_8x16);
 
 		barGraphLength = ((dBm + 130) * 24)/10;
 		if (barGraphLength<0)
@@ -87,7 +87,7 @@ static void updateScreen()
 		}
 		UC1701_fillRect(4, 40,barGraphLength,8,false);
 
-		UC1701_printCore(5,50,"S1  S3  S5  S7  S9",UC1701_FONT_6X8,0,false);
+		UC1701_printCore(5,50,"S1  S3  S5  S7  S9",UC1701_FONT_6x8,0,false);
 		UC1701_render();
 		displayLightTrigger();
 		trxRxSignal=0;
