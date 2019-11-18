@@ -24,6 +24,7 @@
 
 static void handleEvent(int buttons, int keys, int events);
 static void loadChannelData(bool useChannelDataInMemory);
+static void scanning(void);
 static struct_codeplugZone_t currentZone;
 static struct_codeplugRxGroup_t rxGroupData;
 static struct_codeplugContact_t contactData;
@@ -33,6 +34,10 @@ static bool displaySquelch=false;
 int currentChannelNumber=0;
 static bool isDisplayingQSOData=false;
 static bool isTxRxFreqSwap=false;
+static bool scanActive=false;
+static int scanTimer=0;
+static int scanPause=3000;				//time to wait after channel goes clear.
+static int scanInterval=100;			//time between each scan step.
 
 int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 {
@@ -41,6 +46,7 @@ int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 		nonVolatileSettings.initialMenuNumber = MENU_CHANNEL_MODE;// This menu.
 		currentChannelData = &channelScreenChannelData;// Need to set this as currentChannelData is used by functions called by loadChannelData()
 		lastHeardClearLastID();
+		scanActive=false;
 
 		if (channelScreenChannelData.rxFreq != 0)
 		{
@@ -77,6 +83,10 @@ int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 					//UC1701_render();
 					RssiUpdateCounter = RSSI_UPDATE_COUNTER_RELOAD;
 				}
+			}
+			if(scanActive)
+			{
+				scanning();
 			}
 		}
 		else
@@ -260,6 +270,7 @@ static void handleEvent(int buttons, int keys, int events)
 	{
 		if (buttons & BUTTON_ORANGE)
 		{
+			scanActive=false;
 			if (buttons & BUTTON_SK2)
 			{
 				settingsPrivateCallMuteMode = !settingsPrivateCallMuteMode;// Toggle PC mute only mode
@@ -273,10 +284,16 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 			return;
 		}
+		if(buttons & BUTTON_SK1)
+			{
+			scanActive=!scanActive;
+			scanTimer=0;
+			}
 	}
 
 	if ((keys & KEY_GREEN)!=0)
 	{
+		scanActive=false;
 		if (menuUtilityHandlePrivateCallActions(buttons,keys,events))
 		{
 			return;
@@ -309,6 +326,7 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_HASH)!=0)
 	{
+		scanActive=false;
 		if (trxGetMode() == RADIO_MODE_DIGITAL)
 		{
 			menuSystemPushNewMenu(MENU_NUMERICAL_ENTRY);
@@ -317,6 +335,7 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_RED)!=0)
 	{
+		scanActive=false;
 		if (menuUtilityHandlePrivateCallActions(buttons,keys,events))
 		{
 			return;
@@ -335,6 +354,7 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_RIGHT)!=0)
 	{
+		scanActive=false;
 		if (buttons & BUTTON_SK2)
 		{
 			if (nonVolatileSettings.txPowerLevel < 7)
@@ -397,6 +417,7 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_LEFT)!=0)
 	{
+		scanActive=false;
 		if (buttons & BUTTON_SK2)
 		{
 			if (nonVolatileSettings.txPowerLevel > 0)
@@ -457,6 +478,7 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_STAR)!=0)
 	{
+		scanActive=false;
 		// Toggle TimeSlot
 		if (buttons & BUTTON_SK2 )
 		{
@@ -497,6 +519,7 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_DOWN)!=0)
 	{
+		scanActive=false;
 		if (buttons & BUTTON_SK2)
 		{
 			int numZones = codeplugZonesGetCount();
@@ -545,6 +568,7 @@ static void handleEvent(int buttons, int keys, int events)
 	{
 		if (buttons & BUTTON_SK2)
 		{
+			scanActive=false;
 			int numZones = codeplugZonesGetCount();
 
 			nonVolatileSettings.currentZone++;
@@ -630,6 +654,7 @@ static void handleEvent(int buttons, int keys, int events)
 
 		if (keyval<10)
 		{
+			scanActive=false;
 			directChannelNumber=(directChannelNumber*10) + keyval;
 			if(directChannelNumber>1024) directChannelNumber=0;
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
@@ -737,3 +762,31 @@ int menuChannelModeQuickMenu(int buttons, int keys, int events, bool isFirstRun)
 	}
 	return 0;
 }
+
+//Scan Mode
+
+static void scanning(void)
+{
+	if(trxIsTransmitting)						//stop scanning if we press the PTT
+	{
+		scanActive=false;
+	}
+	if (GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable)==1) 				// if speaker on we must be receiving a signal
+	{
+		scanTimer=scanPause;				//start delay
+	}
+
+	if(scanTimer>0)
+	{
+		scanTimer--;
+	}
+	else
+	{
+		trx_measure_count=0;				//needed to allow time for Rx to settle after channel change.
+		handleEvent(0,KEY_UP,0);			//Increment the channel
+		scanTimer=scanInterval;
+	}
+
+
+}
+
