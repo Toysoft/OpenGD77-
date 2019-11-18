@@ -255,8 +255,8 @@ bool codeplugChannelSaveDataForIndex(int index, struct_codeplugChannel_t *channe
 
 	channelBuf->chMode = (channelBuf->chMode==RADIO_MODE_ANALOG)?0:1;
 	// Convert the the legacy codeplug tx and rx freq values into normal integers
-	channelBuf->txFreq = int2bcd(channelBuf->txFreq*10);
-	channelBuf->rxFreq = int2bcd(channelBuf->rxFreq*10);
+	channelBuf->txFreq = int2bcd(channelBuf->txFreq);
+	channelBuf->rxFreq = int2bcd(channelBuf->rxFreq);
 	if (channelBuf->rxTone != 0xffff)
 	{
 		channelBuf->rxTone = int2bcd(channelBuf->rxTone);
@@ -348,8 +348,8 @@ bool codeplugChannelSaveDataForIndex(int index, struct_codeplugChannel_t *channe
 
 	channelBuf->chMode = (channelBuf->chMode==0)?RADIO_MODE_ANALOG:RADIO_MODE_DIGITAL;
 	// Convert the the legacy codeplug tx and rx freq values into normal integers
-	channelBuf->txFreq = bcd2int(channelBuf->txFreq)/10;
-	channelBuf->rxFreq = bcd2int(channelBuf->rxFreq)/10;
+	channelBuf->txFreq = bcd2int(channelBuf->txFreq);
+	channelBuf->rxFreq = bcd2int(channelBuf->rxFreq);
 	if (channelBuf->rxTone != 0xffff)
 	{
 		channelBuf->rxTone = bcd2int(channelBuf->rxTone);
