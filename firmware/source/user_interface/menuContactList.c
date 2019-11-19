@@ -26,6 +26,7 @@ static void handleEvent(int buttons, int keys, int events);
 static struct_codeplugContact_t contact;
 static int contactCallType;
 
+static const char *calltypeName[] = { "Group Call", "Private Call" };
 enum CONTACT_CALLTYPE_SELECT { CONTACT_CALLTYPE_TG=0, CONTACT_CALLTYPE_PC };
 
 int menuContactList(int buttons, int keys, int events, bool isFirstRun)
@@ -54,11 +55,9 @@ static void updateScreen()
 	int mNum;
 
 	UC1701_clearBuf();
-	if (contactCallType == CONTACT_CALLTYPE_TG) {
-		UC1701_printCentered(0, "Group Call", UC1701_FONT_8x16);
-	} else {
-		UC1701_printCentered(0, "Private Call", UC1701_FONT_8x16);
-	}
+	menuDisplayTitle( (char *)calltypeName[contactCallType]);
+
+//	UC1701_printCentered(0, (char *)calltypeName[contactCallType], UC1701_FONT_8x16);
 
 	if (gMenusEndIndex == 0)
 	{
@@ -107,20 +106,7 @@ static void handleEvent(int buttons, int keys, int events)
 	else if ((keys & KEY_GREEN)!=0)
 	{
 		codeplugContactGetDataForNumber(gMenusCurrentItemIndex, contactCallType, &contact);
-
-		uint32_t saveTrxTalkGroupOrPcId = trxTalkGroupOrPcId;
-		nonVolatileSettings.overrideTG = contact.tgNumber;
-		if (contact.callType == CONTACT_CALLTYPE_PC)
-		{
-			// Private Call
-
-			if ((saveTrxTalkGroupOrPcId >> 24) != PC_CALL_FLAG)
-			{
-				// if the current Tx TG is a TalkGroup then save it so it can be stored after the end of the private call
-				menuUtilityTgBeforePcMode = saveTrxTalkGroupOrPcId;
-			}
-			nonVolatileSettings.overrideTG |= (PC_CALL_FLAG << 24);
-		}
+		setOverrideTGorPC(contact.tgNumber, contact.callType == CONTACT_CALLTYPE_PC);
 
 		menuSystemPopAllAndDisplayRootMenu();
 		return;
