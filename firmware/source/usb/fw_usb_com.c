@@ -193,23 +193,23 @@ static void handleCPSRequest()
 				break;
 			case 1:
 				// Clear CPS screen
-				menuCPSUpdate(0,0,0,0,0,0,NULL);
+				menuCPSUpdate(0,0,0,UC1701_FONT_6x8,UC1701_TEXT_ALIGN_LEFT,0,NULL);
 				break;
 			case 2:
 				// Write a line of text to CPS screen
-				menuCPSUpdate(1,com_requestbuffer[2],com_requestbuffer[3],com_requestbuffer[4],com_requestbuffer[5],com_requestbuffer[6],(char *)&com_requestbuffer[7]);
+				menuCPSUpdate(1,com_requestbuffer[2],com_requestbuffer[3],(UC1701_Font_t)com_requestbuffer[4],(UC1701_Text_Align_t)com_requestbuffer[5],com_requestbuffer[6],(char *)&com_requestbuffer[7]);
 				break;
 			case 3:
 				// Render CPS screen
-				menuCPSUpdate(2,0,0,0,0,0,NULL);
+				menuCPSUpdate(2,0,0,UC1701_FONT_6x8,UC1701_TEXT_ALIGN_LEFT,0,NULL);
 				break;
 			case 4:
 				// Turn on the display backlight
-				menuCPSUpdate(3,0,0,0,0,0,NULL);
+				menuCPSUpdate(3,0,0,UC1701_FONT_6x8,UC1701_TEXT_ALIGN_LEFT,0,NULL);
 				break;
 			case 5:
 				// Close
-				menuCPSUpdate(6,0,0,0,0,0,NULL);
+				menuCPSUpdate(6,0,0,UC1701_FONT_6x8,UC1701_TEXT_ALIGN_LEFT,0,NULL);
 				break;
 			case 6:
 				{
@@ -235,11 +235,11 @@ static void handleCPSRequest()
 							break;
 						case 3:
 							// flash green LED
-							menuCPSUpdate(4,0,0,0,0,0,NULL);
+							menuCPSUpdate(4,0,0,UC1701_FONT_6x8,UC1701_TEXT_ALIGN_LEFT,0,NULL);
 							break;
 						case 4:
 							// flash red LED
-							menuCPSUpdate(5,0,0,0,0,0,NULL);
+							menuCPSUpdate(5,0,0,UC1701_FONT_6x8,UC1701_TEXT_ALIGN_LEFT,0,NULL);
 							break;
 						default:
 							break;

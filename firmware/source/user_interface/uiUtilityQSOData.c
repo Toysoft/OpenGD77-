@@ -377,7 +377,7 @@ void menuUtilityRenderQSOData()
 		if (tg != trxTalkGroupOrPcId)
 		{
 			UC1701_fillRect(0,16,128,16,false);// fill background with black
-			UC1701_printCore(0, CONTACT_Y_POS, buffer,UC1701_FONT_8x16,1,true);// draw the text in inverse video
+			UC1701_printCore(0, CONTACT_Y_POS, buffer,UC1701_FONT_8x16,UC1701_TEXT_ALIGN_CENTER,true);// draw the text in inverse video
 		}
 		else
 		{
@@ -507,7 +507,7 @@ void menuUtilityRenderHeader()
 		sprintf(buffer,"C%d %d%%",trxGetDMRColourCode(),batteryPerentage);
 	}
 
-	UC1701_printCore(0,Y_OFFSET,buffer,UC1701_FONT_6x8,2,false);// Display battery percentage at the right
+	UC1701_printCore(0,Y_OFFSET,buffer,UC1701_FONT_6x8,UC1701_TEXT_ALIGN_RIGHT,false);// Display battery percentage at the right
 }
 
 void drawRSSIBarGraph()
