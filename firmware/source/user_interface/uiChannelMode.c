@@ -782,18 +782,18 @@ int menuChannelModeQuickMenu(int buttons, int keys, int events, bool isFirstRun)
 
 static void scanning(void)
 {
-	if(trxIsTransmitting)						//stop scanning if we press the PTT
+	if(trxIsTransmitting)															//stop scanning if we press the PTT
 	{
 		scanActive=false;
 		return;
 	}
 
-	if((scanState==0) & (scanTimer==10))							    //after initial settling time
+	if((scanState==0) & (scanTimer==10))							    			//after initial settling time
 	{
 		if(trx_carrier_detected())												 	//test for presence of RF Carrier
 		{
-			scanTimer=scanShortPause;				//start short delay to allow full detection of signal
-			scanState=1;						//state 1 = pause and test for valid signal that produces audio
+			scanTimer=scanShortPause;												//start short delay to allow full detection of signal
+			scanState=1;															//state 1 = pause and test for valid signal that produces audio
 		}
 	}
 
@@ -801,7 +801,7 @@ static void scanning(void)
 	{
 	    if (GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable)==1)	    	// if speaker on we must be receiving a signal
 	    {
-	    	scanTimer=scanPause;				//extend the time before resuming scan.
+	    	scanTimer=scanPause;													//extend the time before resuming scan.
 	    }
 	}
 
@@ -811,10 +811,18 @@ static void scanning(void)
 	}
 	else
 	{
-		trx_measure_count=0;				//needed to allow time for Rx to settle after channel change.
-		handleEvent(0,KEY_UP,0);			//Increment the channel
-		scanTimer=scanInterval;
-		scanState=0;						//state 0 = settling and test for carrier present.
+		trx_measure_count=0;														//needed to allow time for Rx to settle after channel change.
+			handleEvent(0,KEY_UP,0);												//Increment the channel
+		if(channelScreenChannelData.flag4 & 0x20)									//if this channel has the skip bit set
+		{
+			scanTimer=10;															//skip over it quickly. (immediate selection of another channel seems to cause crashes)
+		}
+		else
+		{
+			scanTimer=scanInterval;
+			scanState=0;															//state 0 = settling and test for carrier present.
+		}
+
 	}
 
 
