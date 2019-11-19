@@ -74,11 +74,11 @@
 #define KEY_GREENSTAR  0x00100000    // GREEN + STAR
 
 //#define KEY_UP    '^'
-//#define KEY_DOWN  0x0a
+//#define KEY_DOWN  'v'
 //#define KEY_LEFT  '<'
 //#define KEY_RIGHT '>'
-//#define KEY_GREEN 0x0d
-//#define KEY_RED   0x1b
+//#define KEY_GREEN 'g'
+//#define KEY_RED   'r'
 //#define KEY_0     '0'
 //#define KEY_1     '1'
 //#define KEY_2     '2'
@@ -122,6 +122,5 @@ uint8_t fw_read_keyboard_col();
 uint32_t fw_read_keyboard();
 void fw_check_key_event(uint32_t *keys, int *event);
 uint32_t fw_scan_key(uint32_t keys);
-bool fw_key_check(uint32_t keys, uint32_t key, uint32_t mod);
 
 #endif /* _FW_KEYBOARD_H_ */
