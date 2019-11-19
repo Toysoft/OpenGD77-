@@ -18,7 +18,7 @@
 
 #include "fw_LEDs.h"
 
-void fw_init_LEDs()
+void fw_init_LEDs(void)
 {
     PORT_SetPinMux(Port_LEDgreen, Pin_LEDgreen, kPORT_MuxAsGpio);
     PORT_SetPinMux(Port_LEDred, Pin_LEDred, kPORT_MuxAsGpio);

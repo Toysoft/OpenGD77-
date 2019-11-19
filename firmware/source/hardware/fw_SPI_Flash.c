@@ -19,12 +19,12 @@
 #include <hardware/fw_SPI_Flash.h>
 
 // private functions
-static bool spi_flash_busy();
+static bool spi_flash_busy(void);
 static void spi_flash_transfer_buf(uint8_t *inBuf,uint8_t *outBuf,int size);
 static uint8_t spi_flash_transfer(uint8_t c);
 static void spi_flash_setWriteEnable(bool cmd);
-static void spi_flash_enable();
-static void spi_flash_disable();
+static void spi_flash_enable(void);
+static void spi_flash_disable(void);
 uint8_t SPI_Flash_sectorbuffer[4096];
 
 
@@ -56,7 +56,7 @@ uint8_t SPI_Flash_sectorbuffer[4096];
 #define SR1_WEN_MASK	0x02
 #define WINBOND_MANUF	0xef
   
-bool SPI_Flash_init()
+bool SPI_Flash_init(void)
 {
 	int partNumber;
     PORT_SetPinMux(Port_SPI_FLASH_CS_U, Pin_SPI_FLASH_CS_U, kPORT_MuxAsGpio);//CS
@@ -106,7 +106,7 @@ bool SPI_Flash_read(uint32_t addr,uint8_t *dataBuf,int size)
   return true;
 }
 
-int SPI_Flash_readStatusRegister()
+int SPI_Flash_readStatusRegister(void)
 {
   int r1,r2;
 
@@ -121,7 +121,7 @@ int SPI_Flash_readStatusRegister()
   return (((uint16_t)r2)<<8)|r1;
 }
 
-int SPI_Flash_readManufacturer()
+int SPI_Flash_readManufacturer(void)
 {
   uint8_t commandBuf[4]= {R_JEDEC_ID,0x00,0x00,0x00} ;
   spi_flash_enable();
@@ -130,7 +130,7 @@ int SPI_Flash_readManufacturer()
   return commandBuf[1];
 }
 
-int SPI_Flash_readPartID()
+int SPI_Flash_readPartID(void)
 {
   uint8_t commandBuf[4]= {R_JEDEC_ID,0x00,0x00,0x00} ;
   spi_flash_enable();
@@ -189,12 +189,12 @@ bool SPI_Flash_eraseSector(uint32_t addr_start)
 	return !isBusy;// If still busy after
 }
 
-static void spi_flash_enable()
+static void spi_flash_enable(void)
 {
 	GPIO_PinWrite(GPIO_SPI_FLASH_CS_U, Pin_SPI_FLASH_CS_U, 0);
 }
 
-static void spi_flash_disable()
+static void spi_flash_disable(void)
 {
 	GPIO_PinWrite(GPIO_SPI_FLASH_CS_U, Pin_SPI_FLASH_CS_U, 1);
 }
@@ -232,7 +232,7 @@ static void spi_flash_transfer_buf(uint8_t *inBuf,uint8_t *outBuf,int size)
 	}
 }
 
-static bool spi_flash_busy()
+static bool spi_flash_busy(void)
 {
   uint8_t r1;
   spi_flash_enable();

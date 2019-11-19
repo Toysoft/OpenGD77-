@@ -18,7 +18,7 @@
 #include <user_interface/menuSystem.h>
 #include "fw_settings.h"
 
-static void updateScreen();
+static void updateScreen(void);
 static void handleEvent(int buttons, int keys, int events);
 
 int menuSplashScreen(int buttons, int keys, int events, bool isFirstRun)
@@ -35,7 +35,7 @@ int menuSplashScreen(int buttons, int keys, int events, bool isFirstRun)
 	return 0;
 }
 
-static void updateScreen()
+static void updateScreen(void)
 {
 	char line1[16];
 	char line2[16];

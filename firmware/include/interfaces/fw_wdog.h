@@ -31,9 +31,9 @@ extern int battery_voltage;
 extern int battery_voltage_tick;
 extern float averageBatteryVoltage;
 
-void init_watchdog();
-void fw_watchdog_task();
-void tick_watchdog();
-void watchdogReboot();
+void init_watchdog(void);
+void fw_watchdog_task(void *data);
+void tick_watchdog(void);
+void watchdogReboot(void);
 
 #endif /* _FW_WDOG_H_ */

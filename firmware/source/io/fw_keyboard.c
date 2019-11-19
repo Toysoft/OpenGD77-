@@ -21,7 +21,7 @@
 static uint32_t old_keyboard_state;
 volatile bool keypadLocked = false;
 
-void fw_init_keyboard()
+void fw_init_keyboard(void)
 {
     // column lines
     PORT_SetPinMux(Port_Key_Col0, Pin_Key_Col0, kPORT_MuxAsGpio);
@@ -52,7 +52,7 @@ void fw_init_keyboard()
     old_keyboard_state = 0;
 }
 
-uint8_t fw_read_keyboard_col()
+uint8_t fw_read_keyboard_col(void)
 {
 	uint8_t result=0;
 	if (GPIO_PinRead(GPIO_Key_Row0, Pin_Key_Row0)==0)
@@ -78,7 +78,7 @@ uint8_t fw_read_keyboard_col()
 	return result;
 }
 
-uint32_t fw_read_keyboard()
+uint32_t fw_read_keyboard(void)
 {
     GPIO_PinInit(GPIO_Key_Col3, Pin_Key_Col3, &pin_config_output);
 	GPIO_PinWrite(GPIO_Key_Col3, Pin_Key_Col3, 0);

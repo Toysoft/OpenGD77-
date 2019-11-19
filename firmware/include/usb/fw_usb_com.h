@@ -38,7 +38,7 @@ extern volatile int com_request;
 extern volatile uint8_t com_requestbuffer[COM_REQUESTBUFFER_SIZE];
 extern USB_DMA_NONINIT_DATA_ALIGN(USB_DATA_ALIGN_SIZE) uint8_t usbComSendBuf[COM_BUFFER_SIZE];
 
-void tick_com_request();
+void tick_com_request(void);
 void send_packet(uint8_t val_0x82, uint8_t val_0x86, int ram);
 void send_packet_big(uint8_t val_0x82, uint8_t val_0x86, int ram1, int ram2);
 void add_to_commbuffer(uint8_t value);

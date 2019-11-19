@@ -36,8 +36,8 @@ static bool displaySquelch=false;
 
 // internal prototypes
 static void handleEvent(int buttons, int keys, int events);
-static void reset_freq_enter_digits();
-static int read_freq_enter_digits();
+static void reset_freq_enter_digits(void);
+static int read_freq_enter_digits(void);
 static void update_frequency(int tmp_frequency);
 static void stepFrequency(int increment);
 static bool isDisplayingQSOData=false;
@@ -252,7 +252,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 	menuDisplayQSODataState = QSO_DISPLAY_IDLE;
 }
 
-static void reset_freq_enter_digits()
+static void reset_freq_enter_digits(void)
 {
 	for (int i=0;i<8;i++)
 	{
@@ -261,7 +261,7 @@ static void reset_freq_enter_digits()
 	freq_enter_idx = 0;
 }
 
-static int read_freq_enter_digits()
+static int read_freq_enter_digits(void)
 {
 	int result=0;
 	for (int i=0;i<8;i++)
@@ -714,7 +714,7 @@ int tmp_frequencyRx;
 enum VFO_SCREEN_QUICK_MENU_ITEMS { VFO_SCREEN_QUICK_MENU_TX_SWAP_RX = 0, VFO_SCREEN_QUICK_MENU_BOTH_TO_RX, VFO_SCREEN_QUICK_MENU_BOTH_TO_TX,
 	NUM_VFO_SCREEN_QUICK_MENU_ITEMS };// The last item in the list is used so that we automatically get a total number of items in the list
 
-static void updateQuickMenuScreen()
+static void updateQuickMenuScreen(void)
 {
 	int mNum = 0;
 	char buf[17];

@@ -51,16 +51,16 @@ void menuChannelModeUpdateScreen(int txTimeSecs);
 void menuVFOModeUpdateScreen(int txTimeSecs);
 void menuCPSUpdate(int command,int x, int y, int iSize, int alignment, bool isInverted,char *szMsg);
 
-void menuInitMenuSystem();
-void displayLightTrigger();
+void menuInitMenuSystem(void);
+void displayLightTrigger(void);
 void displayLightOverrideTimeout(int timeout);
 void menuSystemPushNewMenu(int menuNumber);
 
 void menuSystemSetCurrentMenu(int menuNumber);
-int menuSystemGetCurrentMenuNumber();
+int menuSystemGetCurrentMenuNumber(void);
 
-void menuSystemPopPreviousMenu();
-void menuSystemPopAllAndDisplayRootMenu();
+void menuSystemPopPreviousMenu(void);
+void menuSystemPopAllAndDisplayRootMenu(void);
 void menuSystemPopAllAndDisplaySpecificRootMenu(int newRootMenu);
 
 void menuSystemCallCurrentMenuTick(int buttons, int keys, int events);

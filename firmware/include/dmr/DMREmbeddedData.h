@@ -25,10 +25,10 @@
 
 void DMREmbeddedData_setLC(const DMRLC_T * lc);
 unsigned char DMREmbeddedData_getData(unsigned char* data, unsigned char n);
-void DMREmbeddedData_initEmbeddedDataBuffers();
+void DMREmbeddedData_initEmbeddedDataBuffers(void);
 bool DMREmbeddedData_addData(const unsigned char* data, unsigned char lcss);
 unsigned char DMREmbeddedData_getData(unsigned char* data, unsigned char n);
 bool DMREmbeddedData_getLC(DMRLC_T * lc);
-int DMREmbeddedData_getFLCO();
+int DMREmbeddedData_getFLCO(void);
 bool DMREmbeddedData_getRawData(unsigned char* data);
 #endif

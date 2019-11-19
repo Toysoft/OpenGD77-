@@ -83,19 +83,19 @@ extern volatile bool g_TX_SAI_in_use;
 extern uint8_t *spi_soundBuf;
 extern sai_transfer_t xfer;
 
-void init_sound();
-void terminate_sound();
+void init_sound(void);
+void terminate_sound(void);
 void set_melody(const int *melody);
 int get_freq(int tone);
 void create_song(const uint8_t *melody);
-void fw_init_beep_task();
-void send_sound_data();
-void receive_sound_data();
-void store_soundbuffer();
-void retrieve_soundbuffer();
-void tick_RXsoundbuffer();
+void fw_init_beep_task(void);
+void send_sound_data(void);
+void receive_sound_data(void);
+void store_soundbuffer(void);
+void retrieve_soundbuffer(void);
+void tick_RXsoundbuffer(void);
 
-void tick_melody();
-void fw_beep_task();
+void tick_melody(void);
+void fw_beep_task(void *data);
 
 #endif /* _FW_SOUND_H_ */

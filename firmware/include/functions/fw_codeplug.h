@@ -103,7 +103,7 @@ typedef struct struct_codeplugDTMFContactList
 void codeplugZoneGetSelected(int *selectedZone,int *selectedChannel);
 void codeplugZoneSetSelected(int selectedZone,int selectedChannel);
  */
-int codeplugZonesGetCount();
+int codeplugZonesGetCount(void);
 void codeplugZoneGetDataForNumber(int indexNum,struct_codeplugZone_t *returnBuf);
 void codeplugChannelGetDataForIndex(int index, struct_codeplugChannel_t *channelBuf);
 void codeplugUtilConvertBufToString(char *inBuf,char *outBuf,int len);
@@ -114,7 +114,7 @@ int int2bcd(int i);
 void codeplugRxGroupGetDataForIndex(int index, struct_codeplugRxGroup_t *rxGroupBuf);
 void codeplugContactGetDataForIndex(int index, struct_codeplugContact_t *contact);
 void codeplugDTMFContactGetDataForIndex(struct_codeplugDTMFContactList_t *contactList);
-int codeplugGetUserDMRID();
+int codeplugGetUserDMRID(void);
 void codeplugSetUserDMRID(uint32_t dmrId);
 void codeplugGetRadioName(char *buf);
 void codeplugGetBootItemTexts(char *line1, char *line2);

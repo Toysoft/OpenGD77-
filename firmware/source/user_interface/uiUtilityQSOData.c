@@ -48,7 +48,7 @@ uint32_t menuUtilityTgBeforePcMode 	= 0;// No TG saved, prior to a Private call 
 
 const char *POWER_LEVELS[]={"250mW","500mW","750mW","1W","2W","3W","4W","5W"};
 
-void lastheardInitList()
+void lastheardInitList(void)
 {
     LinkHead = callsList;
 
@@ -94,7 +94,7 @@ LinkItem_t * findInList(int id)
 volatile uint32_t lastID=0;// This needs to be volatile as lastHeardClearLastID() is called from an ISR
 uint32_t lastTG=0;
 
-void lastHeardClearLastID()
+void lastHeardClearLastID(void)
 {
 	lastID=0;
 }
@@ -340,7 +340,7 @@ static void displayChannelNameOrRxFrequency(char *buffer)
 	UC1701_printCentered(52,buffer,UC1701_FONT_6x8);
 }
 
-void menuUtilityRenderQSOData()
+void menuUtilityRenderQSOData(void)
 {
 	char buffer[32];// buffer passed to the DMR ID lookup function, needs to be large enough to hold worst case text length that is returned. Currently 16+1
 	dmrIdDataStruct_t currentRec;
@@ -425,7 +425,7 @@ void menuUtilityRenderQSOData()
 	}
 }
 
-void menuUtilityRenderHeader()
+void menuUtilityRenderHeader(void)
 {
 	const int Y_OFFSET = 2;
 	char buffer[24];
@@ -510,7 +510,7 @@ void menuUtilityRenderHeader()
 	UC1701_printCore(0,Y_OFFSET,buffer,UC1701_FONT_6x8,2,false);// Display battery percentage at the right
 }
 
-void drawRSSIBarGraph()
+void drawRSSIBarGraph(void)
 {
 	int dBm,barGraphLength;
 
@@ -542,7 +542,7 @@ void drawRSSIBarGraph()
 	trxRxSignal=0;
 }
 
-void drawDMRMicLevelBarGraph()
+void drawDMRMicLevelBarGraph(void)
 {
 	float barGraphLength = sqrt(micAudioSamplesTotal)*1.5;
 

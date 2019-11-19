@@ -67,6 +67,6 @@ extern gpio_pin_config_t pin_config_output;
 #define GPIO_VHF_TX_amp_power GPIOE
 #define Pin_VHF_TX_amp_power  3
 
-void fw_init_common();
+void fw_init_common(void);
 
 #endif /* _FW_COMMON_H_ */

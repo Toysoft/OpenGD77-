@@ -23,7 +23,7 @@
 #include "fw_codeplug.h"
 #include "fw_settings.h"
 
-static void updateScreen();
+static void updateScreen(void);
 static void handleEvent(int buttons, int keys, int events);
 static const int CTCSS_TONE_NONE = 65535;
 static const unsigned int CTCSSTones[]={65535,625,670,693,719,744,770,797,825,854,
@@ -70,7 +70,7 @@ int menuChannelDetails(int buttons, int keys, int events, bool isFirstRun)
 	return 0;
 }
 
-static void updateScreen()
+static void updateScreen(void)
 {
 	int mNum = 0;
 	char buf[17];

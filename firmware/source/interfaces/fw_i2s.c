@@ -27,7 +27,7 @@ edma_handle_t g_EDMA_RX_Handle;
 sai_edma_handle_t g_SAI_TX_Handle;
 sai_edma_handle_t g_SAI_RX_Handle;
 
-void init_I2S()
+void init_I2S(void)
 {
     /* PORTA16 is configured as I2S_FS*/
     PORT_SetPinMux(Port_I2S_FS_C6000, Pin_I2S_FS_C6000, kPORT_MuxAlt6);
@@ -56,7 +56,7 @@ void SAI_RX_Callback(I2S_Type *base, sai_edma_handle_t *handle, status_t status,
 	receive_sound_data();
 }
 
-void setup_I2S()
+void setup_I2S(void)
 {
 	sai_config_t s_TxConfig;
 	sai_config_t s_RxConfig;

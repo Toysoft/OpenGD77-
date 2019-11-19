@@ -18,7 +18,7 @@
 #include <user_interface/menuSystem.h>
 #include "fw_main.h"
 
-static void updateScreen();
+static void updateScreen(void);
 static void handleEvent(int buttons, int keys, int events);
 
 int menuDisplayMenuList(int buttons, int keys, int events, bool isFirstRun)
@@ -42,7 +42,7 @@ int menuDisplayMenuList(int buttons, int keys, int events, bool isFirstRun)
 	return 0;
 }
 
-static void updateScreen()
+static void updateScreen(void)
 {
 	int mNum;
 

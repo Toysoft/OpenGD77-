@@ -19,7 +19,7 @@
 #include "fw_settings.h"
 #include "fw_wdog.h"
 
-static void updateScreen();
+static void updateScreen(void);
 static void handleEvent(int buttons, int keys, int events);
 static bool	doFactoryReset;
 enum OPTIONS_MENU_LIST { OPTIONS_MENU_TIMEOUT_BEEP=0,OPTIONS_MENU_FACTORY_RESET,OPTIONS_MENU_USE_CALIBRATION,
@@ -45,7 +45,7 @@ int menuOptions(int buttons, int keys, int events, bool isFirstRun)
 	return 0;
 }
 
-static void updateScreen()
+static void updateScreen(void)
 {
 	int mNum = 0;
 	char buf[17];

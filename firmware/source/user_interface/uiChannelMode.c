@@ -651,7 +651,7 @@ static void handleEvent(int buttons, int keys, int events)
 enum CHANNEL_SCREEN_QUICK_MENU_ITEMS { CH_SCREEN_QUICK_MENU_COPY2VFO = 0, CH_SCREEN_QUICK_MENU_COPY_FROM_VFO,
 	NUM_CH_SCREEN_QUICK_MENU_ITEMS };// The last item in the list is used so that we automatically get a total number of items in the list
 
-static void updateQuickMenuScreen()
+static void updateQuickMenuScreen(void)
 {
 	int mNum = 0;
 	char buf[17];

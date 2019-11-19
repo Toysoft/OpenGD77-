@@ -17,7 +17,7 @@
  */
 #include <user_interface/menuSystem.h>
 
-static void updateScreen();
+static void updateScreen(void);
 static void handleEvent(int buttons, int keys, int events);
 
 int menuFirmwareInfoScreen(int buttons, int keys, int events, bool isFirstRun)
@@ -37,7 +37,7 @@ int menuFirmwareInfoScreen(int buttons, int keys, int events, bool isFirstRun)
 	return 0;
 }
 
-static void updateScreen()
+static void updateScreen(void)
 {
 	char buf[17];
 

@@ -61,9 +61,9 @@ extern struct_codeplugChannel_t channelScreenChannelData;
 extern int settingsUsbMode;
 extern bool enableHotspot;
 
-bool settingsSaveSettings();
-bool settingsLoadSettings();
-void settingsRestoreDefaultSettings();
-void settingsInitVFOChannel();
+bool settingsSaveSettings(void);
+bool settingsLoadSettings(void);
+void settingsRestoreDefaultSettings(void);
+void settingsInitVFOChannel(void);
 
 #endif

@@ -110,12 +110,12 @@ void menuSystemPushNewMenu(int menuNumber)
 	menuControlData.stack[menuControlData.stackPosition] = menuNumber;
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true);
 }
-void menuSystemPopPreviousMenu()
+void menuSystemPopPreviousMenu(void)
 {
 	menuControlData.stackPosition--;
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true);
 }
-void menuSystemPopAllAndDisplayRootMenu()
+void menuSystemPopAllAndDisplayRootMenu(void)
 {
 	menuControlData.stackPosition=0;
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true);
@@ -133,7 +133,7 @@ void menuSystemSetCurrentMenu(int menuNumber)
 	menuControlData.stack[menuControlData.stackPosition]  = menuNumber;
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true);
 }
-int menuSystemGetCurrentMenuNumber()
+int menuSystemGetCurrentMenuNumber(void)
 {
 	return menuControlData.stack[menuControlData.stackPosition];
 }
@@ -143,7 +143,7 @@ void menuSystemCallCurrentMenuTick(int buttons, int keys, int events)
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](buttons,keys,events,false);
 }
 
-void displayLightTrigger()
+void displayLightTrigger(void)
 {
 	menuDisplayLightTimer = nonVolatileSettings.backLightTimeout * 1000;
 	fw_displayEnableBacklight(true);
@@ -162,7 +162,7 @@ int gMenusStartIndex;// as above
 int gMenusEndIndex;// as above
 
 
-void menuInitMenuSystem()
+void menuInitMenuSystem(void)
 {
 	menuDisplayLightTimer = -1;
 	menuControlData.stack[menuControlData.stackPosition]  = MENU_SPLASH_SCREEN;// set the very first screen as the splash screen

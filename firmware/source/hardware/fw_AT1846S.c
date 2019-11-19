@@ -150,7 +150,7 @@ void I2C_AT1846S_send_Settings(const uint8_t settings[][3],int numSettings)
 	}
 }
 
-void I2C_AT1846S_init()
+void I2C_AT1846S_init(void)
 {
 	// --- start of AT1846_init()
 	write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x30, 0x00, 0x01); // Soft reset
@@ -173,12 +173,12 @@ void I2C_AT1846S_init()
 	vTaskDelay(portTICK_PERIOD_MS * 200);
 }
 
-void I2C_AT1846_Postinit()
+void I2C_AT1846_Postinit(void)
 {
 	I2C_AT1846S_send_Settings(AT1846PostinitSettings,sizeof(AT1846PostinitSettings)/AT1846_BYTES_PER_COMMAND);
 }
 
-void I2C_AT1846_SetBandwidth()
+void I2C_AT1846_SetBandwidth(void)
 {
 	if (trxGetBandwidthIs25kHz())
 	{
@@ -196,7 +196,7 @@ void I2C_AT1846_SetBandwidth()
 	}
 }
 
-void I2C_AT1846_SetMode()
+void I2C_AT1846_SetMode(void)
 {
 	if (trxGetMode() == RADIO_MODE_ANALOG)
 	{

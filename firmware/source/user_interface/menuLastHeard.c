@@ -19,7 +19,7 @@
 #include <user_interface/menuUtilityQSOData.h>
 const int LAST_HEARD_NUM_LINES_ON_DISPLAY = 3;
 
-static void updateScreen();
+static void updateScreen(void);
 static void handleEvent(int buttons, int keys, int events);
 
 int menuLastHeard(int buttons, int keys, int events, bool isFirstRun)
@@ -49,7 +49,7 @@ int menuLastHeard(int buttons, int keys, int events, bool isFirstRun)
 	return 0;
 }
 
-static void updateScreen()
+static void updateScreen(void)
 {
 	char buffer[17];
 	dmrIdDataStruct_t foundRecord;

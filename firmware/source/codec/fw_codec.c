@@ -28,7 +28,7 @@ short bitbuffer_decode[49];
 char ambe_d[49];
 short bitbuffer_encode[72];
 
-void init_codec()
+void init_codec(void)
 {
 	memcpy(ambebuffer_decode,ambebuffer_decode_init,0x7ec);
 	memcpy(ambebuffer_encode,ambebuffer_encode_init,0x2000);

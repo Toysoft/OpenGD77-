@@ -24,7 +24,7 @@
 static char digits[9];
 static int pcIdx;
 static struct_codeplugContact_t contact;
-static void updateScreen();
+static void updateScreen(void);
 static void handleEvent(int buttons, int keys, int events);
 
 static const char *menuName[] = { "TG entry", "PC entry", "Contact", "User DMR ID" };
@@ -54,7 +54,7 @@ int menuNumericalEntry(int buttons, int keys, int events, bool isFirstRun)
 }
 
 
-static void updateScreen()
+static void updateScreen(void)
 {
 	char buf[17];
 

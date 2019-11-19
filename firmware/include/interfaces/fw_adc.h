@@ -34,9 +34,9 @@ extern volatile uint32_t adc0_dp1;
 extern volatile uint32_t adc0_dp2;
 extern volatile uint32_t adc0_dp3;
 
-void trigger_adc();
-void adc_init();
+void trigger_adc(void);
+void adc_init(void);
 void ADC0_IRQHandler(void);
-int get_battery_voltage();
+int get_battery_voltage(void);
 
 #endif /* _FW_ADC_H_ */

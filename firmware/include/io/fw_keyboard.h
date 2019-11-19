@@ -76,9 +76,9 @@
 
 extern volatile bool keypadLocked;
 
-void fw_init_keyboard();
-uint8_t fw_read_keyboard_col();
-uint32_t fw_read_keyboard();
+void fw_init_keyboard(void);
+uint8_t fw_read_keyboard_col(void);
+uint32_t fw_read_keyboard(void);
 void fw_check_key_event(uint32_t *keys, int *event);
 
 #endif /* _FW_KEYBOARD_H_ */
