@@ -157,6 +157,36 @@ void trxReadRSSIAndNoise()
 	read_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x1b,(uint8_t *)&trxRxSignal,(uint8_t *)&trxRxNoise);
 }
 
+int trx_carrier_detected()
+{
+	uint8_t squelch=45;
+
+	trxReadRSSIAndNoise();
+
+	// check for variable squelch control
+	if (currentChannelData->sql!=0)
+	{
+		if (currentChannelData->sql==1)
+		{
+			//open_squelch = true;
+		}
+		else
+		{
+			squelch =  70 - (((currentChannelData->sql-1)*11)>>2);
+			//open_squelch = false;
+		}
+	}
+
+	if (trxRxNoise < squelch)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+
+}
 
 void trx_check_analog_squelch()
 {
