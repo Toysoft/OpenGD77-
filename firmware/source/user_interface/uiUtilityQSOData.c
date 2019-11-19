@@ -55,16 +55,16 @@ static char *chomp(char *str)
 {
 	char *sp = str, *ep = str;
 
-	while(*ep != '\0')
+	while (*ep != '\0')
 		ep++;
 
-	if (*ep == '\0')
-		ep--;
 
 	// Spaces at the end
-	while(ep > str)
+	while (ep > str)
 	{
-		if(*ep == ' ')
+		if (*ep == '\0')
+			;
+		else if (*ep == ' ')
 			*ep = '\0';
 		else
 			break;
@@ -73,7 +73,7 @@ static char *chomp(char *str)
 	}
 
 	// Spaces at the beginning
-	while(*sp == ' ')
+	while (*sp == ' ')
 		sp++;
 
 	return sp;
