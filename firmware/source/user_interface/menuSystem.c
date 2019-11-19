@@ -242,7 +242,7 @@ int menuDisplayList(int buttons, int keys, int events, bool isFirstRun)
 void menuDisplayTitle(char *title)
 {
 	UC1701_drawFastHLine(0, 13, 128, true);
-	UC1701_printCore(0, 3, title, UC1701_FONT_8x8, 1, false);
+	UC1701_printCore(0, 3, title, UC1701_FONT_8x8, UC1701_TEXT_ALIGN_CENTER, false);
 }
 
 void menuDisplayEntry(int loopOffset, int focusedItem, char *entryText)
@@ -252,7 +252,7 @@ void menuDisplayEntry(int loopOffset, int focusedItem, char *entryText)
 	if (focused)
 		UC1701_fillRoundRect(0, (loopOffset + 2) * 16, 128, 16, 2, true);
 
-	UC1701_printCore(0, (loopOffset + 2) * 16, entryText, UC1701_FONT_8x16, 0, focused);
+	UC1701_printCore(0, (loopOffset + 2) * 16, entryText, UC1701_FONT_8x16, UC1701_TEXT_ALIGN_LEFT, focused);
 }
 
 int menuGetMenuOffset(int maxMenuEntries, int loopOffset)
