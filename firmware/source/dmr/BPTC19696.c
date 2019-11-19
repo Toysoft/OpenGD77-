@@ -28,13 +28,13 @@ static bool BPTC19696_rawData[196];
 static bool BPTC19696_deInterData[196];
 
 static void BPTC19696_decodeExtractBinary(const unsigned char* in);
-static void BPTC19696_decodeErrorCheck();
-static void BPTC19696_decodeDeInterleave();
+static void BPTC19696_decodeErrorCheck(void);
+static void BPTC19696_decodeDeInterleave(void);
 static void BPTC19696_decodeExtractData(unsigned char* data);
 
 static void BPTC19696_encodeExtractData(const unsigned char* in);
-static void BPTC19696_encodeInterleave();
-static void BPTC19696_encodeErrorCheck();
+static void BPTC19696_encodeInterleave(void);
+static void BPTC19696_encodeErrorCheck(void);
 static void BPTC19696_encodeExtractBinary(unsigned char* data);
 
 #if false // debug only
@@ -51,7 +51,7 @@ void debugBitPatterns(bool *data)
 }
 #endif
 
-void BPTC19696_init()
+void BPTC19696_init(void)
 {
 	memset(BPTC19696_rawData,0,sizeof(BPTC19696_rawData));
 	memset(BPTC19696_deInterData,0,sizeof(BPTC19696_deInterData));
@@ -128,7 +128,7 @@ static void BPTC19696_decodeExtractBinary(const unsigned char* in)
 }
 
 // Deinterleave the raw data
-static void BPTC19696_decodeDeInterleave()
+static void BPTC19696_decodeDeInterleave(void)
 {
 	for (unsigned int i = 0U; i < 196U; i++)
 	{
@@ -146,7 +146,7 @@ static void BPTC19696_decodeDeInterleave()
 }
 
 // Check each row with a Hamming (15,11,3) code and each column with a Hamming (13,9,3) code
-static void BPTC19696_decodeErrorCheck()
+static void BPTC19696_decodeErrorCheck(void)
 {
 	bool fixing;
 	unsigned int count = 0U;
@@ -299,7 +299,7 @@ static void BPTC19696_encodeExtractData(const unsigned char* in)
 }
 
 // Check each row with a Hamming (15,11,3) code and each column with a Hamming (13,9,3) code
-static void BPTC19696_encodeErrorCheck()
+static void BPTC19696_encodeErrorCheck(void)
 {
 
 	// Run through each of the 9 rows containing data
@@ -328,7 +328,7 @@ static void BPTC19696_encodeErrorCheck()
 }
 
 // Interleave the raw data
-static void BPTC19696_encodeInterleave()
+static void BPTC19696_encodeInterleave(void)
 {
 	for (unsigned int i = 0U; i < 196U; i++)
 		BPTC19696_rawData[i] = false;

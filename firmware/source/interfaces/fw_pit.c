@@ -26,7 +26,7 @@ volatile uint32_t timer_keypad;
 volatile uint32_t timer_keyrepeat;
 volatile uint32_t PITCounter;
 
-void init_pit()
+void init_pit(void)
 {
 	taskENTER_CRITICAL();
 	timer_maintask=0;

@@ -36,7 +36,6 @@ static const uint32_t keyMap[] = {
 		KEY_7, KEY_8, KEY_9, KEY_DOWN, 0,
 		KEY_STAR, KEY_0, KEY_HASH, KEY_RED, 0 };
 
-
 void fw_init_keyboard(void)
 {
     // column lines

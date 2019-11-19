@@ -31,7 +31,7 @@ extern volatile uint32_t timer_watchdogtask;
 extern volatile uint32_t timer_keypad;
 extern volatile uint32_t PITCounter;
 
-void init_pit();
+void init_pit(void);
 void PIT0_IRQHandler(void);
 
 #endif /* _FW_PIT_H_ */

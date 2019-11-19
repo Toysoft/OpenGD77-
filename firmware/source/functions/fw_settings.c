@@ -40,12 +40,12 @@ int settingsCurrentChannelNumber=0;
 bool settingsPrivateCallMuteMode = false;
 bool enableHotspot = false;
 
-bool settingsSaveSettings()
+bool settingsSaveSettings(void)
 {
 	return EEPROM_Write(STORAGE_BASE_ADDRESS, (uint8_t*)&nonVolatileSettings, sizeof(settingsStruct_t));
 }
 
-bool settingsLoadSettings()
+bool settingsLoadSettings(void)
 {
 	bool readOK = EEPROM_Read(STORAGE_BASE_ADDRESS, (uint8_t*)&nonVolatileSettings, sizeof(settingsStruct_t));
 	if (nonVolatileSettings.magicNumber != STORAGE_MAGIC_NUMBER || readOK != true)
@@ -71,7 +71,7 @@ bool settingsLoadSettings()
 	return readOK;
 }
 
-void settingsInitVFOChannel()
+void settingsInitVFOChannel(void)
 {
 	codeplugVFO_A_ChannelData(&nonVolatileSettings.vfoChannel);
 
@@ -105,7 +105,7 @@ void settingsInitVFOChannel()
 
 }
 
-void settingsRestoreDefaultSettings()
+void settingsRestoreDefaultSettings(void)
 {
 	nonVolatileSettings.magicNumber=STORAGE_MAGIC_NUMBER;
 	nonVolatileSettings.currentChannelIndexInZone = 0;

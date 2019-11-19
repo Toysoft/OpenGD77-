@@ -135,7 +135,7 @@ void UC1701RenderRows(int16_t startRow, int16_t endRow)
 	taskEXIT_CRITICAL();
 }
 
-void UC1701_render()
+void UC1701_render(void)
 {
 	UC1701RenderRows(0,8);
 }
@@ -359,7 +359,7 @@ void UC1701_setContrast(uint8_t contrast)
 	UC1701_setCommandMode(false);
 }
 
-void UC1701_clearBuf()
+void UC1701_clearBuf(void)
 {
 	memset(screenBuf,0x00,1024);
 }
@@ -467,7 +467,7 @@ void UC1701_drawCircle(int16_t x0, int16_t y0, int16_t r, bool color)
 	}
 }
 
-void UC1701_drawCircleHelper( int16_t x0, int16_t y0, int16_t r, uint8_t cornername, bool color)
+void UC1701_drawCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername, bool color)
 {
 	int16_t f     = 1 - r;
 	int16_t ddF_x = 1;

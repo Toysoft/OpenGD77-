@@ -51,7 +51,7 @@ extern edma_handle_t g_EDMA_RX_Handle;
 extern sai_edma_handle_t g_SAI_TX_Handle;
 extern sai_edma_handle_t g_SAI_RX_Handle;
 
-void init_I2S();
-void setup_I2S();
+void init_I2S(void);
+void setup_I2S(void);
 
 #endif /* _FW_I2S_H_ */

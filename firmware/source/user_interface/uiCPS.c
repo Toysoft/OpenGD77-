@@ -18,7 +18,7 @@
 #include <user_interface/menuSystem.h>
 #include "fw_trx.h"
 
-static void handleTick();
+static void handleTick(void);
 
 static int mode=0;
 static uint32_t nextPIT;
@@ -86,7 +86,7 @@ void menuCPSUpdate(int command,int x, int y, UC1701_Font_t fontSize, UC1701_Text
 	}
 }
 
-static void handleTick()
+static void handleTick(void)
 {
 	switch(mode)
 	{

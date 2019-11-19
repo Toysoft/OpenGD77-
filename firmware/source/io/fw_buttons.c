@@ -20,7 +20,7 @@
 
 static uint32_t old_button_state;
 
-void fw_init_buttons()
+void fw_init_buttons(void)
 {
     PORT_SetPinMux(Port_PTT, Pin_PTT, kPORT_MuxAsGpio);
     PORT_SetPinMux(Port_SK1, Pin_SK1, kPORT_MuxAsGpio);
@@ -35,7 +35,7 @@ void fw_init_buttons()
     old_button_state = 0;
 }
 
-uint32_t fw_read_buttons()
+uint32_t fw_read_buttons(void)
 {
 	uint32_t result = 0;
 	if (GPIO_PinRead(GPIO_PTT, Pin_PTT)==0)

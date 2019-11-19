@@ -18,7 +18,7 @@
 
 #include "fw_dac.h"
 
-void dac_init()
+void dac_init(void)
 {
     dac_config_t dacConfigStruct;
     DAC_GetDefaultConfig(&dacConfigStruct);

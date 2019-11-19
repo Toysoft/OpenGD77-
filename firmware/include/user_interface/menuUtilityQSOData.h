@@ -56,15 +56,15 @@ extern uint32_t menuUtilityTgBeforePcMode;
 extern int RssiUpdateCounter;
 extern const int RSSI_UPDATE_COUNTER_RELOAD;
 
-bool dmrIDLookup( int targetId,dmrIdDataStruct_t *foundRecord);
-void menuUtilityRenderQSOData();
-void menuUtilityRenderHeader();
-void lastheardInitList();
+bool dmrIDLookup(int targetId, dmrIdDataStruct_t *foundRecord);
+void menuUtilityRenderQSOData(void);
+void menuUtilityRenderHeader(void);
+void lastheardInitList(void);
 bool lastHeardListUpdate(uint8_t *dmrDataBuffer);
 bool menuUtilityHandlePrivateCallActions(int buttons, int keys, int events);
-void lastHeardClearLastID();
-void drawRSSIBarGraph();
-void drawDMRMicLevelBarGraph();
+void lastHeardClearLastID(void);
+void drawRSSIBarGraph(void);
+void drawDMRMicLevelBarGraph(void);
 void setOverrideTGorPC(int tgOrPc, bool privateCall);
 
 #endif

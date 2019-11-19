@@ -20,7 +20,7 @@
 #include "fw_main.h"
 #include "fw_settings.h"
 
-static void updateScreen();
+static void updateScreen(void);
 static void handleEvent(int buttons, int keys, int events);
 
 int menuZoneList(int buttons, int keys, int events, bool isFirstRun)
@@ -41,7 +41,7 @@ int menuZoneList(int buttons, int keys, int events, bool isFirstRun)
 	return 0;
 }
 
-static void updateScreen()
+static void updateScreen(void)
 {
 	char nameBuf[17];
 	int mNum;

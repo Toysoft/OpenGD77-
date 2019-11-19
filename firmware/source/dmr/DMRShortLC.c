@@ -28,12 +28,12 @@
 
 
 static void DMRShortLC_decodeExtractBinary(const unsigned char* in);
-static bool DMRShortLC_decodeErrorCheck();
-static void DMRShortLC_decodeDeInterleave();
+static bool DMRShortLC_decodeErrorCheck(void);
+static void DMRShortLC_decodeDeInterleave(void);
 static void DMRShortLC_decodeExtractData(unsigned char* data);
 static void DMRShortLC_encodeExtractData(const unsigned char* in);
-static void DMRShortLC_encodeInterleave();
-static void DMRShortLC_encodeErrorCheck();
+static void DMRShortLC_encodeInterleave(void);
+static void DMRShortLC_encodeErrorCheck(void);
 static void DMRShortLC_encodeExtractBinary(unsigned char* data);
 
 static bool DMRShortLC_rawData[196];
@@ -91,7 +91,7 @@ static void DMRShortLC_decodeExtractBinary(const unsigned char* in)
 }
 
 // Deinterleave the raw data
-static void DMRShortLC_decodeDeInterleave()
+static void DMRShortLC_decodeDeInterleave(void)
 {
 	for (unsigned int i = 0U; i < 68U; i++)
 		DMRShortLC_deInterData[i] = false;
@@ -107,7 +107,7 @@ static void DMRShortLC_decodeDeInterleave()
 }
 
 // Check each row with a Hamming (17,12,3) code and each column with a parity bit
-static bool DMRShortLC_decodeErrorCheck()
+static bool DMRShortLC_decodeErrorCheck(void)
 {
 	// Run through each of the 3 rows containing data
 	Hamming_decode17123(DMRShortLC_deInterData + 0U);
@@ -177,7 +177,7 @@ static void DMRShortLC_encodeExtractData(const unsigned char* in)
 }
 
 // Check each row with a Hamming (17,12,3) code and each column with a parity bit
-static void DMRShortLC_encodeErrorCheck()
+static void DMRShortLC_encodeErrorCheck(void)
 {
 	// Run through each of the 3 rows containing data
 	Hamming_encode17123(DMRShortLC_deInterData + 0U);
@@ -190,7 +190,7 @@ static void DMRShortLC_encodeErrorCheck()
 }
 
 // Interleave the raw data
-static void DMRShortLC_encodeInterleave()
+static void DMRShortLC_encodeInterleave(void)
 {
 	for (unsigned int i = 0U; i < 72U; i++)
 		DMRShortLC_rawData[i] = false;

@@ -76,12 +76,12 @@ const int trxDTMFfreq2[] = {  941,  697,  697,  697,  770,  770,  770,  852,  85
 
 calibrationPowerValues_t trxPowerSettings;
 
-int	trxGetMode()
+int	trxGetMode(void)
 {
 	return currentMode;
 }
 
-int	trxGetBandwidthIs25kHz()
+int	trxGetBandwidthIs25kHz(void)
 {
 	return currentBandWidthIs25kHz;
 }
@@ -152,7 +152,7 @@ bool trxCheckFrequencyInAmateurBand(int tmp_frequency)
 	return ((tmp_frequency>=BAND_VHF_MIN) && (tmp_frequency<=BAND_VHF_MAX)) || ((tmp_frequency>=BAND_UHF_MIN) && (tmp_frequency<=BAND_UHF_MAX));
 }
 
-void trxReadRSSIAndNoise()
+void trxReadRSSIAndNoise(void)
 {
 	read_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x1b,(uint8_t *)&trxRxSignal,(uint8_t *)&trxRxNoise);
 }
@@ -188,7 +188,7 @@ int trx_carrier_detected()
 
 }
 
-void trx_check_analog_squelch()
+void trx_check_analog_squelch(void)
 {
 	trx_measure_count++;
 	if (trx_measure_count==50)
@@ -339,7 +339,7 @@ void trxSetFrequency(int fRx,int fTx, int dmrMode)
 	}
 }
 
-int trxGetFrequency()
+int trxGetFrequency(void)
 {
 	if (trxIsTransmitting)
 	{
@@ -351,7 +351,7 @@ int trxGetFrequency()
 	}
 }
 
-void trx_setRX()
+void trx_setRX(void)
 {
 //	set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0x00);
 	if (currentMode == RADIO_MODE_ANALOG)
@@ -361,7 +361,7 @@ void trx_setRX()
 
 }
 
-void trx_setTX()
+void trx_setTX(void)
 {
 	trxIsTransmitting=true;
 
@@ -377,7 +377,7 @@ void trx_setTX()
 
 }
 
-void trx_activateRx()
+void trx_activateRx(void)
 {
 	//SEGGER_RTT_printf(0, "trx_activateRx\n");
     DAC_SetBufferValue(DAC0, 0U, 0U);// PA drive power to zero
@@ -423,7 +423,7 @@ void trx_activateRx()
 	}
 }
 
-void trx_activateTx()
+void trx_activateTx(void)
 {
 	txPAEnabled=true;
 	write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x29, tx_fh_h, tx_fh_l);
@@ -491,7 +491,7 @@ void trxSetPowerFromLevel(int powerLevel)
 	txPower = powerVal;
 }
 
-uint16_t trxGetPower()
+uint16_t trxGetPower(void)
 {
 	return txPower;
 }
@@ -575,7 +575,7 @@ void trxCalcBandAndFrequencyOffset(int *band_offset, int *freq_offset)
 	}
 }
 
-void trxUpdateC6000Calibration()
+void trxUpdateC6000Calibration(void)
 {
 	int band_offset=0x00000000;
 	int freq_offset=0x00000000;
@@ -613,7 +613,7 @@ void I2C_AT1846_set_register_with_mask(uint8_t reg, uint16_t mask, uint16_t valu
 	set_clear_I2C_reg_2byte_with_mask(reg, (mask & 0xff00) >> 8, (mask & 0x00ff) >> 0, ((value << shift) & 0xff00) >> 8, ((value << shift) & 0x00ff) >> 0);
 }
 
-void trxUpdateAT1846SCalibration()
+void trxUpdateAT1846SCalibration(void)
 {
 	int band_offset=0x00000000;
 	int freq_offset=0x00000000;
@@ -710,12 +710,12 @@ void trxSetDMRColourCode(int colourCode)
 	currentCC = colourCode;
 }
 
-int trxGetDMRColourCode()
+int trxGetDMRColourCode(void)
 {
 	return currentCC;
 }
 
-int trxGetDMRTimeSlot()
+int trxGetDMRTimeSlot(void)
 {
 	return trxCurrentDMRTimeSlot;
 	//return ((currentChannelData->flag2 & 0x40)!=0);
@@ -804,7 +804,7 @@ void trxSetRxCTCSS(int toneFreqX10)
 	}
 }
 
-bool trxCheckCTCSSFlag()
+bool trxCheckCTCSSFlag(void)
 {
 	uint8_t FlagsH;
 	uint8_t FlagsL;

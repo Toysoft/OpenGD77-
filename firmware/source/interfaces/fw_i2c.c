@@ -20,7 +20,7 @@
 
 uint8_t i2c_master_buff[I2C_DATA_LENGTH];
 
-void init_I2C0a()
+void init_I2C0a(void)
 {
     // I2C0a to AT24C512 EEPROM & AT1846S
     const port_pin_config_t porte24_config = {/* Internal pull-up resistor is enabled */
@@ -58,7 +58,7 @@ void init_I2C0a()
     NVIC_SetPriority(I2C0_IRQn, 3);
 }
 
-void init_I2C0b()
+void init_I2C0b(void)
 {
 	// I2C0b to ALPU-MP-1413
     const port_pin_config_t portb2_config = {/* Internal pull-up resistor is enabled */
@@ -96,7 +96,7 @@ void init_I2C0b()
     NVIC_SetPriority(I2C0_IRQn, 3);
 }
 
-void setup_I2C0()
+void setup_I2C0(void)
 {
     i2c_master_config_t masterConfig;
 
@@ -112,7 +112,7 @@ void setup_I2C0()
 	I2C_MasterInit(I2C0, &masterConfig, CLOCK_GetFreq(I2C0_CLK_SRC));
 }
 
-void clear_I2C_buffer()
+void clear_I2C_buffer(void)
 {
     for (uint32_t i = 0; i < I2C_DATA_LENGTH; i++)
     {

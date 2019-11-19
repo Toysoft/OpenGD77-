@@ -73,21 +73,21 @@ enum DMR_SLOT_STATE { DMR_STATE_IDLE, DMR_STATE_RX_1, DMR_STATE_RX_2, DMR_STATE_
 
 enum WakingMode { WAKING_MODE_NONE, WAKING_MODE_WAITING, WAKING_MODE_FAILED };
 
-void SPI_HR_C6000_init();
-void SPI_C6000_postinit();
+void SPI_HR_C6000_init(void);
+void SPI_C6000_postinit(void);
 void PORTC_IRQHandler(void);
-void init_HR_C6000_interrupts();
-void init_digital_state();
-void init_digital_DMR_RX();
-void init_digital();
-void terminate_digital();
-void init_hrc6000_task();
-void fw_hrc6000_task();
-void tick_HR_C6000();
+void init_HR_C6000_interrupts(void);
+void init_digital_state(void);
+void init_digital_DMR_RX(void);
+void init_digital(void);
+void terminate_digital(void);
+void init_hrc6000_task(void);
+void fw_hrc6000_task(void *data);
+void tick_HR_C6000(void);
 
-void clearIsWakingState();
-int getIsWakingState();
-void clearActiveDMRID();
+void clearIsWakingState(void);
+int getIsWakingState(void);
+void clearActiveDMRID(void);
 void setMicGainDMR(uint8_t gain);
 
 #endif /* _FW_HR_C6000_H_ */

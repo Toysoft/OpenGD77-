@@ -28,6 +28,6 @@
 #define GPIO_LEDred		GPIOC
 #define Pin_LEDred		14
 
-void fw_init_LEDs();
+void fw_init_LEDs(void);
 
 #endif /* _FW_LEDS_H_ */

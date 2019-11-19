@@ -25,6 +25,7 @@
 static char digits[9];
 static int pcIdx;
 static struct_codeplugContact_t contact;
+
 static void updateCursor(void);
 static void updateScreen(void);
 static void handleEvent(int buttons, int keys, int events);

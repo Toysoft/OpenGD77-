@@ -35,10 +35,10 @@ static bool 	DMREmbeddedData_m_data[72];
 static int		DMREmbeddedData_m_FLCO;
 static bool		DMREmbeddedData_m_valid;
 
-static void DMREmbeddedData_decodeEmbeddedData();
-static void DMREmbeddedData_encodeEmbeddedData();
+static void DMREmbeddedData_decodeEmbeddedData(void);
+static void DMREmbeddedData_encodeEmbeddedData(void);
 
-void DMREmbeddedData_initEmbeddedDataBuffers()
+void DMREmbeddedData_initEmbeddedDataBuffers(void)
 {
 	memset(DMREmbeddedData_m_raw,0,sizeof(DMREmbeddedData_m_raw));
 	memset(DMREmbeddedData_m_data,0,sizeof(DMREmbeddedData_m_data));
@@ -123,7 +123,7 @@ void DMREmbeddedData_setLC(const DMRLC_T * lc)
 	DMREmbeddedData_encodeEmbeddedData();
 }
 
-void DMREmbeddedData_encodeEmbeddedData()
+void DMREmbeddedData_encodeEmbeddedData(void)
 {
 	unsigned int crc;
 	CRC_encodeFiveBit(DMREmbeddedData_m_data, &crc);
@@ -214,7 +214,7 @@ unsigned char DMREmbeddedData_getData(unsigned char* data, unsigned char n)
 }
 
 // Unpack and error check an embedded LC
-static void DMREmbeddedData_decodeEmbeddedData()
+static void DMREmbeddedData_decodeEmbeddedData(void)
 {
 	// The data is unpacked downwards in columns
 	bool data[128U];
@@ -294,17 +294,17 @@ bool DMREmbeddedData_getLC(DMRLC_T * lc)
 	return true;
 }
 
-bool DMREmbeddedData_isValid()
+bool DMREmbeddedData_isValid(void)
 {
 	return DMREmbeddedData_m_valid;
 }
 
-int DMREmbeddedData_getFLCO()
+int DMREmbeddedData_getFLCO(void)
 {
 	return DMREmbeddedData_m_FLCO;
 }
 
-void DMREmbeddedData_reset()
+void DMREmbeddedData_reset(void)
 {
 	m_state = LCS_NONE;
 	DMREmbeddedData_m_valid = false;

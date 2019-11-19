@@ -98,18 +98,18 @@ volatile int lastTimeCode=0;
 static volatile uint8_t previousLCBuf[12];
 volatile bool updateLastHeard=false;
 
-static bool callAcceptFilter();
-static void setupPcOrTGHeader();
-static inline void HRC6000SysInterruptHandler();
-static inline void HRC6000TimeslotInterruptHandler();
-static inline void HRC6000RxInterruptHandler();
-static inline void HRC6000TxInterruptHandler();
-static void HRC6000TransitionToTx();
-static void triggerQSOdataDisplay();
+static bool callAcceptFilter(void);
+static void setupPcOrTGHeader(void);
+static inline void HRC6000SysInterruptHandler(void);
+static inline void HRC6000TimeslotInterruptHandler(void);
+static inline void HRC6000RxInterruptHandler(void);
+static inline void HRC6000TxInterruptHandler(void);
+static void HRC6000TransitionToTx(void);
+static void triggerQSOdataDisplay(void);
 
 enum RXSyncClass { SYNC_CLASS_HEADER = 0, SYNC_CLASS_VOICE = 1, SYNC_CLASS_DATA = 2, SYNC_CLASS_RC = 3};
 
-void SPI_HR_C6000_init()
+void SPI_HR_C6000_init(void)
 {
     // C6000 interrupts
     PORT_SetPinMux(Port_INT_C6000_RF_RX, Pin_INT_C6000_RF_RX, kPORT_MuxAsGpio);
@@ -233,7 +233,7 @@ void SPI_HR_C6000_init()
 	// ------ end spi_more_init
 }
 
-void SPI_C6000_postinit()
+void SPI_C6000_postinit(void)
 {
 	write_SPI_page_reg_byte_SPI0(0x04, 0x04, 0xE8);  //Set Mod2 output offset
 	write_SPI_page_reg_byte_SPI0(0x04, 0x46, 0x37);  //Set Mod1 Amplitude
@@ -328,7 +328,7 @@ void PORTC_IRQHandler(void)
 }
 
 
-inline static void HRC6000SysSendRejectedInt()
+inline static void HRC6000SysSendRejectedInt(void)
 {
 	/*
 		Bit7: In DMR mode: indicates that the transmission request rejects the interrupt without a sub-status register.
@@ -337,7 +337,7 @@ inline static void HRC6000SysSendRejectedInt()
 //	SEGGER_RTT_printf(0, "%d SYS_INT_SEND_REQUEST_REJECTED\n",PITCounter);
 }
 
-inline static void HRC6000SysSendStartInt()
+inline static void HRC6000SysSendStartInt(void)
 {
 /*
 		Bit6: In DMR mode: indicates the start of transmission; in MSK mode: indicates that the ping-pong buffer is half-full interrupted.
@@ -375,7 +375,7 @@ inline static void HRC6000SysSendStartInt()
 	*/
 }
 
-inline static void HRC6000SysSendEndInt()
+inline static void HRC6000SysSendEndInt(void)
 {
 	/*
 		Bit5: In DMR mode: indicates the end of transmission; in MSK mode: indicates the end of	transmission.
@@ -417,7 +417,7 @@ inline static void HRC6000SysSendEndInt()
 	*/
 }
 
-inline static void HRC6000SysPostAccessInt()
+inline static void HRC6000SysPostAccessInt(void)
 {
 	/*
 	Bit4:
@@ -457,7 +457,7 @@ inline static void HRC6000SysPostAccessInt()
 }
 
 
-inline static void HRC6000SysReceivedDataInt()
+inline static void HRC6000SysReceivedDataInt(void)
 {
 	//SEGGER_RTT_printf(0, "%d SYS_INT_RECEIVED_DATA\n",PITCounter);
 	/*
@@ -615,13 +615,13 @@ inline static void HRC6000SysReceivedDataInt()
 	lastTimeCode = timeCode;
 }
 
-inline static void HRC6000SysReceivedInformationInt()
+inline static void HRC6000SysReceivedInformationInt(void)
 {
 	//SEGGER_RTT_printf(0, "%d SYS_INT_RECEIVED_INFORMATION\n",PITCounter);
 
 }
 
-inline static void HRC6000SysAbnormalExitInt()
+inline static void HRC6000SysAbnormalExitInt(void)
 {
 	read_SPI_page_reg_byte_SPI0(0x04, 0x98, &tmp_val_0x98);
 //	SEGGER_RTT_printf(0, "%d SYS_INT_ABNORMAL_EXIT 0x%02x\n",PITCounter,tmp_val_0x98);
@@ -633,7 +633,7 @@ inline static void HRC6000SysAbnormalExitInt()
 	*/
 }
 
-inline static void HRC6000SysPhysicalLayerInt()
+inline static void HRC6000SysPhysicalLayerInt(void)
 {
 //	SEGGER_RTT_printf(0, "%d SYS_INT_PHYSICAL_LAYER 0x02\n",PITCounter);
 	/*
@@ -646,7 +646,7 @@ inline static void HRC6000SysPhysicalLayerInt()
 	*/
 }
 
-inline static void HRC6000SysInterruptHandler()
+inline static void HRC6000SysInterruptHandler(void)
 {
 	read_SPI_page_reg_byte_SPI0(0x04, 0x82, &tmp_val_0x82);  //Read Interrupt Flag Register1
 	//SEGGER_RTT_printf(0, "SYS\t0x%02x\n",tmp_val_0x82);
@@ -755,7 +755,7 @@ inline static void HRC6000SysInterruptHandler()
 	timer_hrc6000task=0;
 }
 
-static void HRC6000TransitionToTx()
+static void HRC6000TransitionToTx(void)
 {
 	GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
 	GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
@@ -766,7 +766,7 @@ static void HRC6000TransitionToTx()
 	slot_state = DMR_STATE_TX_START_1;
 }
 
-inline static void HRC6000TimeslotInterruptHandler()
+inline static void HRC6000TimeslotInterruptHandler(void)
 {
 	//SEGGER_RTT_printf(0, "TS\tS:%d\tTC:%d\n",slot_state,timeCode);
 	// RX/TX state machine
@@ -1036,20 +1036,20 @@ inline static void HRC6000TimeslotInterruptHandler()
 	timer_hrc6000task=0;// I don't think this actually does anything. Its probably redundant legacy code
 }
 
-void HRC6000RxInterruptHandler()
+void HRC6000RxInterruptHandler(void)
 {
 	//SEGGER_RTT_printf(0, "RxISR\t%d\n",PITCounter);
 	trx_activateRx();
 }
 
-void HRC6000TxInterruptHandler()
+void HRC6000TxInterruptHandler(void)
 {
 	//SEGGER_RTT_printf(0, "TxISR\t%d \n",PITCounter);
 	trx_activateTx();
 }
 
 
-void init_HR_C6000_interrupts()
+void init_HR_C6000_interrupts(void)
 {
 	init_digital_state();
 
@@ -1061,7 +1061,7 @@ void init_HR_C6000_interrupts()
     NVIC_SetPriority(PORTC_IRQn, 3);
 }
 
-void init_digital_state()
+void init_digital_state(void)
 {
 	int_timeout=0;
 	slot_state = DMR_STATE_IDLE;
@@ -1070,7 +1070,7 @@ void init_digital_state()
 	qsodata_timer = 0;
 }
 
-void init_digital_DMR_RX()
+void init_digital_DMR_RX(void)
 {
 	write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xC3);  //Enable DMR Tx, DMR Rx, Passive Timing, Normal mode
 	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x20);  //Set Sync Fail Bit (Reset?))
@@ -1079,7 +1079,7 @@ void init_digital_DMR_RX()
 	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);  //Receive during next Timeslot
 }
 
-void init_digital()
+void init_digital(void)
 {
 	GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
     GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
@@ -1089,7 +1089,7 @@ void init_digital()
 	init_codec();
 }
 
-void terminate_digital()
+void terminate_digital(void)
 {
 	GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
     GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
@@ -1097,7 +1097,7 @@ void terminate_digital()
     NVIC_DisableIRQ(PORTC_IRQn);
 }
 
-void triggerQSOdataDisplay()
+void triggerQSOdataDisplay(void)
 {
 	// If this is the start of a newly received signal, we always need to trigger the display to show this, even if its the same station calling again.
 	// Of if the display is holding on the PC accept text and the incoming call is not a PC
@@ -1115,7 +1115,7 @@ void triggerQSOdataDisplay()
 	qsodata_timer=QSO_TIMER_TIMEOUT;
 }
 
-void init_hrc6000_task()
+void init_hrc6000_task(void)
 {
 	xTaskCreate(fw_hrc6000_task,                        /* pointer to the task */
 				"fw hrc6000 task",                      /* task name for kernel awareness debugging */
@@ -1126,7 +1126,7 @@ void init_hrc6000_task()
 				);
 }
 
-void fw_hrc6000_task()
+void fw_hrc6000_task(void *data)
 {
     while (1U)
     {
@@ -1202,7 +1202,7 @@ void setupPcOrTGHeader()
 	write_SPI_page_reg_bytearray_SPI0(0x02, 0x00, spi_tx, 0x0c);
 }
 
-bool callAcceptFilter()
+bool callAcceptFilter(void)
 {
 	 if (settingsUsbMode == USB_MODE_HOTSPOT)
 	 {
@@ -1223,7 +1223,7 @@ bool callAcceptFilter()
 }
 
 
-void tick_HR_C6000()
+void tick_HR_C6000(void)
 {
 	if (trxIsTransmitting==true  && (isWaking == WAKING_MODE_NONE))
 	{
@@ -1406,17 +1406,17 @@ void tick_HR_C6000()
 
 // RC. I had to use accessor functions for the isWaking flag
 // because the compiler seems to have problems with volatile vars as externs used by other parts of the firmware (the Tx Screen)
-void clearIsWakingState()
+void clearIsWakingState(void)
 {
 	isWaking = WAKING_MODE_NONE;
 }
 
-int getIsWakingState()
+int getIsWakingState(void)
 {
 	return isWaking;
 }
 
-void clearActiveDMRID()
+void clearActiveDMRID(void)
 {
 	memset((uint8_t *)previousLCBuf,0x00,12);
 	memset((uint8_t *)DMR_frame_buffer,0x00,12);

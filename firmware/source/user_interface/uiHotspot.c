@@ -151,7 +151,7 @@ const uint8_t DMR_EMBED_SEQ_MASK[]  = 		{0x00U, 0x0FU, 0xFFU, 0xFFU, 0xFFU, 0xF0
 
 static void updateScreen(int rxState);
 static void handleEvent(int buttons, int keys, int events);
-void handleHotspotRequest();
+void handleHotspotRequest(void);
 /*
  *
  //Enable when debugging
@@ -185,7 +185,7 @@ static void enqueueUSBData(uint8_t *buff,int length)
 	usbComSendBufCount++;
 }
 
-static void processUSBDataQueue()
+static void processUSBDataQueue(void)
 {
 	if (usbComSendBufCount!=0)
 	{
@@ -211,7 +211,7 @@ static void processUSBDataQueue()
 	}
 }
 
-static void sendACK()
+static void sendACK(void)
 {
 	uint8_t buf[4];
 //	//SEGGER_RTT_printf(0, "sendACK\n");
@@ -234,7 +234,7 @@ static void sendNAK(uint8_t err)
 	enqueueUSBData(buf,5);
 }
 
-static void enableTransmission()
+static void enableTransmission(void)
 {
 	//SEGGER_RTT_printf(0, "Enable Transmission\n");
 
@@ -245,7 +245,7 @@ static void enableTransmission()
 	trx_setTX();
 }
 
-static void disableTransmission()
+static void disableTransmission(void)
 {
 	//SEGGER_RTT_printf(0, "Disable Transmission\n");
 
@@ -557,7 +557,7 @@ bool hotspotModeReceiveNetFrame(uint8_t *com_requestbuffer, int timeSlot)
 
 
 
-static void hotspotStateMachine()
+static void hotspotStateMachine(void)
 {
 	switch(hotspotState)
 	{
@@ -957,16 +957,16 @@ uint32_t fRx,fTx;
   return 0x00;
 }
 
-static bool hasRXOverflow()
+static bool hasRXOverflow(void)
 {
 	return false;// TO DO.
 }
-static bool hasTXOverflow()
+static bool hasTXOverflow(void)
 {
 	return false;// TO DO.
 }
 
-static void getStatus()
+static void getStatus(void)
 {
 	uint8_t buf[16];
 //	//SEGGER_RTT_printf(0, "getStatus\n");
@@ -1073,7 +1073,7 @@ uint8_t setMode(volatile const uint8_t* data, uint8_t length)
   return 0U;
 }
 
-static void getVersion()
+static void getVersion(void)
 {
 	uint8_t buf[64];
 	buf[0U]  = MMDVM_FRAME_START;
@@ -1084,14 +1084,14 @@ static void getVersion()
 	enqueueUSBData(buf,buf[1]);
 }
 
-static void handleDMRShortLC()
+static void handleDMRShortLC(void)
 {
 //	uint8_t LCBuf[5];
 //	DMRShortLC_decode((uint8_t *) com_requestbuffer + 3U,LCBuf);
 //	//SEGGER_RTT_printf(0, "MMDVM ShortLC\n %02X %02X %02X %02X %02X\n",LCBuf[0U],LCBuf[1U],LCBuf[2U],LCBuf[3U],LCBuf[4U],LCBuf[5U]);
 }
 
-void handleHotspotRequest()
+void handleHotspotRequest(void)
 {
 	int err;
 //	//SEGGER_RTT_printf(0, "handleHotspotRequest 0x%0x 0x%0x 0x%0x\n",com_requestbuffer[0],com_requestbuffer[1],com_requestbuffer[2]);

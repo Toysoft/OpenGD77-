@@ -23,7 +23,7 @@ uint8_t SPI_masterSendBuffer_SPI0[SPI_DATA_LENGTH] = {0};
 uint8_t spi_masterReceiveBuffer_SPI1[SPI_DATA_LENGTH] = {0};
 uint8_t SPI_masterSendBuffer_SPI1[SPI_DATA_LENGTH] = {0};
 
-void init_SPI()
+void init_SPI(void)
 {
     /* PORTD0 is configured as SPI0_CS0 */
     PORT_SetPinMux(Port_SPI_CS_C6000_U, Pin_SPI_CS_C6000_U, kPORT_MuxAlt2);
@@ -53,7 +53,7 @@ void init_SPI()
     NVIC_SetPriority(SPI1_IRQn, 3);
 }
 
-void setup_SPI0()
+void setup_SPI0(void)
 {
     dspi_master_config_t masterConfig_SPI0;
 
@@ -79,7 +79,7 @@ void setup_SPI0()
 	DSPI_MasterInit(SPI0, &masterConfig_SPI0, CLOCK_GetFreq(DSPI0_CLK_SRC));
 }
 
-void setup_SPI1()
+void setup_SPI1(void)
 {
     dspi_master_config_t masterConfig_SPI1;
 
@@ -105,7 +105,7 @@ void setup_SPI1()
 	DSPI_MasterInit(SPI1, &masterConfig_SPI1, CLOCK_GetFreq(DSPI1_CLK_SRC));
 }
 
-void clear_SPI_buffer_SPI0()
+void clear_SPI_buffer_SPI0(void)
 {
     for (uint32_t i = 0; i < SPI_DATA_LENGTH; i++)
     {
@@ -259,7 +259,7 @@ int read_SPI_page_reg_bytearray_SPI0(uint8_t page, uint8_t reg,volatile uint8_t*
 	return kStatus_Success;
 }
 
-void clear_SPI_buffer_SPI1()
+void clear_SPI_buffer_SPI1(void)
 {
     for (uint32_t i = 0; i < SPI_DATA_LENGTH; i++)
     {

@@ -198,7 +198,7 @@ void create_song(const uint8_t *melody)
 	}
 }
 
-void fw_init_beep_task()
+void fw_init_beep_task(void)
 {
 	taskENTER_CRITICAL();
 	sine_beep_freq = 0;
@@ -233,7 +233,7 @@ volatile bool g_TX_SAI_in_use = false;
 uint8_t *spi_soundBuf;
 sai_transfer_t xfer;
 
-void init_sound()
+void init_sound(void)
 {
 
     g_TX_SAI_in_use = false;
@@ -247,13 +247,13 @@ void init_sound()
 	wavbuffer_count = 0;
 }
 
-void terminate_sound()
+void terminate_sound(void)
 {
     SAI_TransferTerminateSendEDMA(I2S0, &g_SAI_TX_Handle);
     SAI_TransferTerminateSendEDMA(I2S0, &g_SAI_RX_Handle);
 }
 
-void store_soundbuffer()
+void store_soundbuffer(void)
 {
 	taskENTER_CRITICAL();
 	int tmp_wavbuffer_count = wavbuffer_count;
@@ -279,7 +279,7 @@ void store_soundbuffer()
 	}
 }
 
-void retrieve_soundbuffer()
+void retrieve_soundbuffer(void)
 {
 	taskENTER_CRITICAL();
 	int tmp_wavbuffer_count = wavbuffer_count;
@@ -303,7 +303,7 @@ void retrieve_soundbuffer()
 
 
 // This function is used when receiving
-void send_sound_data()
+void send_sound_data(void)
 {
 	if (wavbuffer_count>0)
 	{
@@ -350,7 +350,7 @@ void send_sound_data()
 
 
 // This function is used during transmission.
-void receive_sound_data()
+void receive_sound_data(void)
 {
 	if (trxIsTransmitting==false)
 	{
@@ -415,7 +415,7 @@ void receive_sound_data()
 	}
 }
 
-void tick_RXsoundbuffer()
+void tick_RXsoundbuffer(void)
 {
     if (!g_TX_SAI_in_use)
     {
@@ -424,7 +424,7 @@ void tick_RXsoundbuffer()
 }
 
 
-void tick_melody()
+void tick_melody(void)
 {
 	taskENTER_CRITICAL();
 	if (melody_play!=NULL)
@@ -468,7 +468,7 @@ void tick_melody()
 }
 
 
-void fw_beep_task()
+void fw_beep_task(void *data)
 {
 	// beep mode stuff
 	uint8_t tmp_val;

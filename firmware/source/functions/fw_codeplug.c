@@ -105,7 +105,7 @@ void codeplugUtilConvertBufToString(char *inBuf,char *outBuf,int len)
 	return;
 }
 
-int codeplugZonesGetCount()
+int codeplugZonesGetCount(void)
 {
 	uint8_t buf[CODEPLUG_ADDR_EX_ZONE_INUSE_PACKED_DATA_SIZE];
 	int numZones = 0;
@@ -433,7 +433,7 @@ void codeplugDTMFContactGetDataForIndex(struct_codeplugDTMFContactList_t *contac
 }
 
 
-int codeplugGetUserDMRID()
+int codeplugGetUserDMRID(void)
 {
 	int dmrId;
 	EEPROM_Read(CODEPLUG_ADDR_USER_DMRID,(uint8_t *)&dmrId,4);

@@ -30,7 +30,7 @@ gpio_pin_config_t pin_config_output =
 	0
 };
 
-void fw_init_common()
+void fw_init_common(void)
 {
     CLOCK_EnableClock(kCLOCK_PortA);
     CLOCK_EnableClock(kCLOCK_PortB);

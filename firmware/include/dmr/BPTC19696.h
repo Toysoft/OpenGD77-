@@ -24,6 +24,6 @@
 
 void BPTC19696_decode(const unsigned char* in, unsigned char* out);
 void BPTC19696_encode(const unsigned char* in, unsigned char* out);
-void BPTC19696_init();
+void BPTC19696_init(void);
 
 #endif

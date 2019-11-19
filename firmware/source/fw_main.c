@@ -25,12 +25,12 @@
 #include <SeggerRTT/RTT/SEGGER_RTT.h>
 #endif
 
-void fw_main_task();
+void fw_main_task(void *data);
 
 const char *FIRMWARE_VERSION_STRING = "VK3KYY";//"V0.3.5";
 TaskHandle_t fwMainTaskHandle;
 
-void fw_init()
+void fw_init(void)
 {
 	xTaskCreate(fw_main_task,                        /* pointer to the task */
 				"fw main task",                      /* task name for kernel awareness debugging */
@@ -43,14 +43,14 @@ void fw_init()
     vTaskStartScheduler();
 }
 
-static void show_lowbattery()
+static void show_lowbattery(void)
 {
 	UC1701_clearBuf();
 	UC1701_printCentered(32, "LOW BATTERY !!!", UC1701_FONT_8x16);
 	UC1701_render();
 }
 
-void fw_main_task()
+void fw_main_task(void *data)
 {
 	uint32_t keys;
 	int key_event;
