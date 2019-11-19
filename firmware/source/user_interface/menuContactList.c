@@ -27,14 +27,13 @@ static struct_codeplugContact_t contact;
 static int contactCallType;
 
 static const char *calltypeName[] = { "Group Call", "Private Call" };
-enum CONTACT_CALLTYPE_SELECT { CONTACT_CALLTYPE_TG=0, CONTACT_CALLTYPE_PC, CONTACT_CALLTYPE_ALL };
+enum CONTACT_CALLTYPE_SELECT { CONTACT_CALLTYPE_TG=0, CONTACT_CALLTYPE_PC };
 
 int menuContactList(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		contactCallType = CONTACT_CALLTYPE_TG;
-		gMenusEndIndex = codeplugContactsGetCount(CONTACT_CALLTYPE_TG);
+		gMenusEndIndex = codeplugContactsGetCount(contactCallType);
 		gMenusCurrentItemIndex = 1;
 
 		updateScreen();
@@ -56,8 +55,6 @@ static void updateScreen()
 
 	UC1701_clearBuf();
 	menuDisplayTitle( (char *)calltypeName[contactCallType]);
-
-//	UC1701_printCentered(0, (char *)calltypeName[contactCallType], UC1701_FONT_8x16);
 
 	if (gMenusEndIndex == 0)
 	{

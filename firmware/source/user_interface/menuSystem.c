@@ -212,10 +212,12 @@ const menuItemNew_t menuDataMainMenu[] = {
 	{ 22, MENU_CHANNEL_DETAILS},
 };
 const menuItemNew_t menuDataContact[] = {
-	{ 3, 3 } ,// length
-	{ 7 , -1 },// New Contact
+	{ 3, 1 } ,// length
+	//{ 7 , -1 },// New Contact
+	{ 0, MENU_CONTACT_LIST },// Contacts List
 	{ 24, MENU_CONTACT_LIST },// Contacts List
-	{ 11, MENU_NUMERICAL_ENTRY},// Manual Dial
+	{ 0, MENU_CONTACT_LIST },// Contacts List
+	//{ 11, MENU_NUMERICAL_ENTRY},// Manual Dial
 };
 
 const menuItemNew_t menuDataContactContact [] = {
