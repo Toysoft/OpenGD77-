@@ -30,17 +30,18 @@ uint32_t trxTalkGroupOrPcId = 9;// Set to local TG just in case there is some pr
 uint32_t trxDMRID = 0;// Set ID to 0. Not sure if its valid. This value needs to be loaded from the codeplug.
 int txstopdelay = 0;
 volatile bool trxIsTransmittingTone = false;
-uint16_t txPower;
+static uint16_t txPower;
+static bool analogSignalReceived = false;
 
-const int RADIO_VHF_MIN			=	1340000;
-const int RADIO_VHF_MAX			=	1740000;
-const int RADIO_UHF_MIN			=	4000000;
-const int RADIO_UHF_MAX			=	5200000;
+const int RADIO_VHF_MIN			=	13400000;
+const int RADIO_VHF_MAX			=	17400000;
+const int RADIO_UHF_MIN			=	40000000;
+const int RADIO_UHF_MAX			=	52000000;
 
 static int currentMode = RADIO_MODE_NONE;
 static bool currentBandWidthIs25kHz = BANDWIDTH_12P5KHZ;
-static int currentRxFrequency = 1440000;
-static int currentTxFrequency = 1440000;
+static int currentRxFrequency = 14400000;
+static int currentTxFrequency = 14400000;
 static int currentCC = 1;
 static uint8_t squelch = 0x00;
 static bool rxCTCSSactive = false;
@@ -156,6 +157,7 @@ void trxReadRSSIAndNoise()
 	read_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x1b,(uint8_t *)&trxRxSignal,(uint8_t *)&trxRxNoise);
 }
 
+
 void trx_check_analog_squelch()
 {
 	trx_measure_count++;
@@ -181,24 +183,32 @@ void trx_check_analog_squelch()
 
 		if (trxRxNoise < squelch)
 		{
-			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
+			if (!analogSignalReceived)
+			{
+				analogSignalReceived = true;
+				displayLightTrigger();
+				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
+			}
 			if(!rxCTCSSactive || (rxCTCSSactive & trxCheckCTCSSFlag()))
 			{
 				GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1); // speaker on
-				displayLightTrigger();
 			}
 		}
-		else if (trxIsTransmittingTone == false)
+		else
 		{
-			GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0); // speaker off
-			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
+			analogSignalReceived = false;
+			if (trxIsTransmittingTone == false)
+			{
+				GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0); // speaker off
+				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
+			}
 		}
 
     	trx_measure_count=0;
 	}
 }
 
-void trxSetFrequency(int fRx,int fTx)
+void trxSetFrequency(int fRx,int fTx, int dmrMode)
 {
 	if (currentRxFrequency!=fRx || currentTxFrequency!=fTx)
 	{
@@ -208,25 +218,32 @@ void trxSetFrequency(int fRx,int fTx)
 		currentRxFrequency=fRx;
 		currentTxFrequency=fTx;
 
-		// Most DMR radios determine whether to use Active or Passive DMR depending on whether the Tx and Rx freq are the same
-		// This prevents split simplex operation, but since no other radio appears to support split freq simplex
-		// Its easier to do things the same way as othe radios, and revisit this again in the future if split freq simplex is required.
-		if (currentRxFrequency == currentTxFrequency)
+		if (dmrMode==DMR_MODE_AUTO)
 		{
-			trxDMRMode = DMR_MODE_ACTIVE;
+			// Most DMR radios determine whether to use Active or Passive DMR depending on whether the Tx and Rx freq are the same
+			// This prevents split simplex operation, but since no other radio appears to support split freq simplex
+			// Its easier to do things the same way as othe radios, and revisit this again in the future if split freq simplex is required.
+			if (currentRxFrequency == currentTxFrequency)
+			{
+				trxDMRMode = DMR_MODE_ACTIVE;
+			}
+			else
+			{
+				trxDMRMode = DMR_MODE_PASSIVE;
+			}
 		}
 		else
 		{
-			trxDMRMode = DMR_MODE_PASSIVE;
+			trxDMRMode = dmrMode;
 		}
 
-		uint32_t f = currentRxFrequency * 1.6f;
+		uint32_t f = currentRxFrequency * 0.16f;
 		rx_fl_l = (f & 0x000000ff) >> 0;
 		rx_fl_h = (f & 0x0000ff00) >> 8;
 		rx_fh_l = (f & 0x00ff0000) >> 16;
 		rx_fh_h = (f & 0xff000000) >> 24;
 
-		f = currentTxFrequency * 1.6f;
+		f = currentTxFrequency * 0.16f;
 		tx_fl_l = (f & 0x000000ff) >> 0;
 		tx_fl_h = (f & 0x0000ff00) >> 8;
 		tx_fh_l = (f & 0x00ff0000) >> 16;
@@ -681,20 +698,42 @@ void trxSetDMRTimeSlot(int timeslot)
 
 void trxUpdateTsForCurrentChannelWithSpecifiedContact(struct_codeplugContact_t *contactData)
 {
-	if ((contactData->reserve1 & 0x01) == 0x00)
+	bool hasManualTsOverride = false;
+
+	// nonVolatileSettings.tsManualOverride stores separate TS overrides for VFO and Channel mode
+	// Lower nibble is the Channel screen override and upper nibble if the VFO
+	if (nonVolatileSettings.initialMenuNumber == MENU_CHANNEL_MODE)
 	{
-		if ( (contactData->reserve1 & 0x02) !=0 )
+		if ((nonVolatileSettings.tsManualOverride & 0x0F) != 0)
 		{
-			trxCurrentDMRTimeSlot = 1;
-		}
-		else
-		{
-			trxCurrentDMRTimeSlot = 0;
+			hasManualTsOverride = true;
 		}
 	}
 	else
 	{
-		trxCurrentDMRTimeSlot = ((currentChannelData->flag2 & 0x40)!=0);
+		if ((nonVolatileSettings.tsManualOverride & 0xF0) != 0)
+		{
+			hasManualTsOverride = true;
+		}
+	}
+
+	if (!hasManualTsOverride)
+	{
+		if ((contactData->reserve1 & 0x01) == 0x00)
+		{
+			if ( (contactData->reserve1 & 0x02) !=0 )
+			{
+				trxCurrentDMRTimeSlot = 1;
+			}
+			else
+			{
+				trxCurrentDMRTimeSlot = 0;
+			}
+		}
+		else
+		{
+			trxCurrentDMRTimeSlot = ((currentChannelData->flag2 & 0x40)!=0);
+		}
 	}
 }
 

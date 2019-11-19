@@ -93,21 +93,29 @@ uint16_t byteSwap16(uint16_t in)
 
 static void loadChannelData(bool useChannelDataInMemory)
 {
+
+	if (strcmp(currentZoneName,"All Channels")==0)
+	{
+		settingsCurrentChannelNumber = nonVolatileSettings.currentChannelIndexInAllZone;
+	}
+	else
+	{
+		settingsCurrentChannelNumber = currentZone.channels[nonVolatileSettings.currentChannelIndexInZone];
+	}
+
 	if (!useChannelDataInMemory)
 	{
 		if (strcmp(currentZoneName,"All Channels")==0)
 		{
-			settingsCurrentChannelNumber = nonVolatileSettings.currentChannelIndexInAllZone;
 			codeplugChannelGetDataForIndex(nonVolatileSettings.currentChannelIndexInAllZone,&channelScreenChannelData);
 		}
 		else
 		{
-			settingsCurrentChannelNumber = currentZone.channels[nonVolatileSettings.currentChannelIndexInZone];
 			codeplugChannelGetDataForIndex(currentZone.channels[nonVolatileSettings.currentChannelIndexInZone],&channelScreenChannelData);
 		}
 	}
 
-	trxSetFrequency(channelScreenChannelData.rxFreq,channelScreenChannelData.txFreq);
+	trxSetFrequency(channelScreenChannelData.rxFreq,channelScreenChannelData.txFreq,DMR_MODE_AUTO);
 
 	if (channelScreenChannelData.chMode == RADIO_MODE_ANALOG)
 	{
@@ -121,7 +129,15 @@ static void loadChannelData(bool useChannelDataInMemory)
 		trxSetDMRColourCode(channelScreenChannelData.rxColor);
 
 		codeplugRxGroupGetDataForIndex(channelScreenChannelData.rxGroupList,&rxGroupData);
-		codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
+		// Check if this channel has an Rx Group
+		if (rxGroupData.name[0]!=0)
+		{
+			codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
+		}
+		else
+		{
+			codeplugContactGetDataForIndex(channelScreenChannelData.contact,&contactData);
+		}
 
 		trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
 
@@ -132,6 +148,11 @@ static void loadChannelData(bool useChannelDataInMemory)
 		else
 		{
 			trxTalkGroupOrPcId = nonVolatileSettings.overrideTG;
+		}
+
+		if ((nonVolatileSettings.tsManualOverride & 0x0F) != 0)
+		{
+			trxSetDMRTimeSlot ((nonVolatileSettings.tsManualOverride & 0x0F) -1);
 		}
 	}
 }
@@ -170,17 +191,18 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 					{
 						sprintf(nameBuf,"CH %d",channelNumber);
 					}
-					UC1701_printCentered(50 , (char *)nameBuf,UC1701_FONT_6X8);
+					UC1701_printCentered(50 , (char *)nameBuf,UC1701_FONT_6x8);
 				}
 				else
 				{
-					sprintf(nameBuf,"%s",currentZoneName);
-					UC1701_printCentered(50, (char *)nameBuf,UC1701_FONT_6X8);
+					snprintf(nameBuf, 16, "%s",currentZoneName);
+					nameBuf[16] = 0;
+					UC1701_printCentered(50, (char *)nameBuf,UC1701_FONT_6x8);
 				}
 			}
 
 			codeplugUtilConvertBufToString(channelScreenChannelData.name,nameBuf,16);
-			UC1701_printCentered(32 + verticalPositionOffset, (char *)nameBuf,UC1701_FONT_GD77_8x16);
+			UC1701_printCentered(32 + verticalPositionOffset, (char *)nameBuf,UC1701_FONT_8x16);
 
 			if (trxGetMode() == RADIO_MODE_DIGITAL)
 			{
@@ -194,19 +216,20 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 					{
 						dmrIdDataStruct_t currentRec;
 						dmrIDLookup((trxTalkGroupOrPcId & 0x00FFFFFF),&currentRec);
-						sprintf(nameBuf,"%s",currentRec.text);
+						snprintf(nameBuf, 16, "%s",currentRec.text);
+						nameBuf[16] = 0;
 					}
 				}
 				else
 				{
 					codeplugUtilConvertBufToString(contactData.name,nameBuf,16);
 				}
-				UC1701_printCentered(CONTACT_Y_POS + verticalPositionOffset, (char *)nameBuf,UC1701_FONT_GD77_8x16);
+				UC1701_printCentered(CONTACT_Y_POS + verticalPositionOffset, (char *)nameBuf,UC1701_FONT_8x16);
 			}
 			else if(displaySquelch && !trxIsTransmitting)
 			{
 				sprintf(buffer,"Squelch");
-				UC1701_printAt(0,16,buffer,UC1701_FONT_GD77_8x16);
+				UC1701_printAt(0,16,buffer,UC1701_FONT_8x16);
 				int bargraph= 1 + ((currentChannelData->sql-1)*5)/2 ;
 				UC1701_fillRect(62,21,bargraph,8,false);
 				displaySquelch=false;
@@ -343,7 +366,12 @@ static void handleEvent(int buttons, int keys, int events)
 						nonVolatileSettings.currentIndexInTRxGroupList = 0;
 					}
 				}
-				codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
+				nonVolatileSettings.tsManualOverride &= 0xF0; // remove TS override for channel
+
+				if (rxGroupData.name[0]!=0)
+				{
+					codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
+				}
 
 				trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
 
@@ -401,9 +429,11 @@ static void handleEvent(int buttons, int keys, int events)
 								rxGroupData.NOT_IN_MEMORY_numTGsInGroup - 1;
 					}
 				}
-
-				codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
-
+				nonVolatileSettings.tsManualOverride &= 0xF0; // remove TS override from channel
+				if (rxGroupData.name[0]!=0)
+				{
+					codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
+				}
 				trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
 
 				nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
@@ -458,6 +488,8 @@ static void handleEvent(int buttons, int keys, int events)
 			{
 				// Toggle timeslot
 				trxSetDMRTimeSlot(1-trxGetDMRTimeSlot());
+				nonVolatileSettings.tsManualOverride &= 0xF0;// Clear lower nibble value
+				nonVolatileSettings.tsManualOverride |= (trxGetDMRTimeSlot()+1);// Store manual TS override
 
 				//	init_digital();
 				clearActiveDMRID();
@@ -485,6 +517,7 @@ static void handleEvent(int buttons, int keys, int events)
 				nonVolatileSettings.currentZone--;
 			}
 			nonVolatileSettings.overrideTG = 0; // remove any TG override
+			nonVolatileSettings.tsManualOverride &= 0xF0; // remove TS override from channel
 			nonVolatileSettings.currentChannelIndexInZone = 0;// Since we are switching zones the channel index should be reset
 			channelScreenChannelData.rxFreq=0x00; // Flag to the Channel screeen that the channel data is now invalid and needs to be reloaded
 			menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
@@ -527,6 +560,7 @@ static void handleEvent(int buttons, int keys, int events)
 				nonVolatileSettings.currentZone = 0;
 			}
 			nonVolatileSettings.overrideTG = 0; // remove any TG override
+			nonVolatileSettings.tsManualOverride &= 0xF0; // remove TS override from channel
 			nonVolatileSettings.currentChannelIndexInZone = 0;// Since we are switching zones the channel index should be reset
 			channelScreenChannelData.rxFreq=0x00; // Flag to the Channel screen that the channel data is now invalid and needs to be reloaded
 			menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
@@ -623,7 +657,7 @@ static void updateQuickMenuScreen()
 	char buf[17];
 
 	UC1701_clearBuf();
-	UC1701_printCentered(0, "Quick menu", UC1701_FONT_GD77_8x16);
+	menuDisplayTitle("Quick Menu");
 
 	for(int i =- 1; i <= 1; i++)
 	{
@@ -641,12 +675,7 @@ static void updateQuickMenuScreen()
 				strcpy(buf, "");
 		}
 
-		if (gMenusCurrentItemIndex == mNum)
-		{
-			UC1701_fillRoundRect(0,(i+2)*16,128,16,2,true);
-		}
-
-		UC1701_printCore(5, (i + 2) * 16, buf, UC1701_FONT_GD77_8x16, 0, (gMenusCurrentItemIndex == mNum));
+		menuDisplayEntry(i, mNum, buf);
 	}
 
 	UC1701_render();
@@ -683,6 +712,9 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 				break;
 			case CH_SCREEN_QUICK_MENU_COPY_FROM_VFO:
 				memcpy(&channelScreenChannelData.rxFreq,&nonVolatileSettings.vfoChannel.rxFreq,sizeof(struct_codeplugChannel_t)- 16);// Don't copy the name of the vfo, which are in the first 16 bytes
+
+				codeplugChannelSaveDataForIndex(settingsCurrentChannelNumber,&channelScreenChannelData);
+
 				menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
 				break;
 		}

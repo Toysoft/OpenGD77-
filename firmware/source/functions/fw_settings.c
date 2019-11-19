@@ -24,13 +24,13 @@
 #include "fw_codeplug.h"
 #include "fw_sound.h"
 
-const int BAND_VHF_MIN 	= 1440000;
-const int BAND_VHF_MAX 	= 1480000;
-const int BAND_UHF_MIN 	= 4300000;
-const int BAND_UHF_MAX 	= 4500000;
+const int BAND_VHF_MIN 	= 14400000;
+const int BAND_VHF_MAX 	= 14800000;
+const int BAND_UHF_MIN 	= 43000000;
+const int BAND_UHF_MAX 	= 45000000;
 
 static const int STORAGE_BASE_ADDRESS 		= 0x6000;
-static const int STORAGE_MAGIC_NUMBER 		= 0x4722;
+static const int STORAGE_MAGIC_NUMBER 		= 0x4724;
 
 settingsStruct_t nonVolatileSettings;
 struct_codeplugChannel_t *currentChannelData;
@@ -38,6 +38,7 @@ struct_codeplugChannel_t channelScreenChannelData={.rxFreq=0};
 int settingsUsbMode = USB_MODE_CPS;
 int settingsCurrentChannelNumber=0;
 bool settingsPrivateCallMuteMode = false;
+bool enableHotspot = false;
 
 bool settingsSaveSettings()
 {
@@ -126,6 +127,7 @@ void settingsRestoreDefaultSettings()
 	nonVolatileSettings.txTimeoutBeepX5Secs = 0;
 	nonVolatileSettings.beepVolumeDivider = 1;// no reduction in volume
 	nonVolatileSettings.micGainDMR = 11;// Normal value used by the official firmware
+	nonVolatileSettings.tsManualOverride = 0; // No manual TS override using the Star key
 
 	settingsInitVFOChannel();
 	currentChannelData = &nonVolatileSettings.vfoChannel;// Set the current channel data to point to the VFO data since the default screen will be the VFO

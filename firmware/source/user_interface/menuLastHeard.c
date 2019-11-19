@@ -57,7 +57,7 @@ static void updateScreen()
 	LinkItem_t *item = LinkHead;
 
 	UC1701_clearBuf();
-	UC1701_printCentered(0, "Last heard",UC1701_FONT_GD77_8x16);
+	menuDisplayTitle("Last heard");
 
 	// skip over the first gMenusCurrentItemIndex in the listing
 	for(int i=0;i<gMenusCurrentItemIndex;i++)
@@ -68,7 +68,7 @@ static void updateScreen()
 	{
 		if (dmrIDLookup(item->id,&foundRecord))
 		{
-			UC1701_printCentered(16+(numDisplayed*16), foundRecord.text,UC1701_FONT_GD77_8x16);
+			UC1701_printCentered(16+(numDisplayed*16), foundRecord.text,UC1701_FONT_8x16);
 		}
 		else
 		{
@@ -81,7 +81,7 @@ static void updateScreen()
 			{
 				sprintf(buffer,"ID:%d",item->id);
 			}
-			UC1701_printCentered(16+(numDisplayed*16), buffer,UC1701_FONT_GD77_8x16);
+			UC1701_printCentered(16+(numDisplayed*16), buffer,UC1701_FONT_8x16);
 		}
 
 		numDisplayed++;

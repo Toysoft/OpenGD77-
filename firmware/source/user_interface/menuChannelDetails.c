@@ -37,7 +37,7 @@ static int CTCSSRxIndex=0;
 static int CTCSSTxIndex=0;
 static struct_codeplugChannel_t tmpChannel;// update a temporary copy of the channel and only write back if green menu is pressed
 
-enum CHANNEL_DETAILS_DISPLAY_LIST { CH_DETAILS_MODE = 0, CH_DETAILS_DMR_CC, CH_DETAILS_DMR_TS,CH_DETAILS_RXCTCSS, CH_DETAILS_TXCTCSS , CH_DETAILS_BANDWIDTH,
+enum CHANNEL_DETAILS_DISPLAY_LIST { CH_DETAILS_MODE = 0, CH_DETAILS_DMR_CC, CH_DETAILS_DMR_TS,CH_DETAILS_RXCTCSS, CH_DETAILS_TXCTCSS , CH_DETAILS_RXFREQ, CH_DETAILS_TXFREQ, CH_DETAILS_BANDWIDTH,
 									CH_DETAILS_FREQ_STEP, CH_DETAILS_TOT,
 									NUM_CH_DETAILS_ITEMS};// The last item in the list is used so that we automatically get a total number of items in the list
 
@@ -75,9 +75,11 @@ static void updateScreen()
 	int mNum = 0;
 	char buf[17];
 	int tmpVal;
+	int val_before_dp;
+	int val_after_dp;
 
 	UC1701_clearBuf();
-	UC1701_printCentered(0, "Channel info", UC1701_FONT_GD77_8x16);
+	menuDisplayTitle("Channel details");
 
 	// Can only display 3 of the options at a time menu at -1, 0 and +1
 	for(int i = -1; i <= 1; i++)
@@ -151,6 +153,16 @@ static void updateScreen()
 					strcpy(buf, "Rx CTCSS:N/A");
 				}
 				break;
+			case CH_DETAILS_RXFREQ:
+				val_before_dp = tmpChannel.rxFreq / 100000;
+				val_after_dp = tmpChannel.rxFreq - val_before_dp * 100000;
+				sprintf(buf, "RX:%d.%05dMHz", val_before_dp, val_after_dp);
+				break;
+			case CH_DETAILS_TXFREQ:
+				val_before_dp = tmpChannel.txFreq / 100000;
+				val_after_dp = tmpChannel.txFreq - val_before_dp * 100000;
+				sprintf(buf, "TX:%d.%05dMHz", val_before_dp, val_after_dp);
+				break;
 			case CH_DETAILS_BANDWIDTH:
 				// Bandwidth
 				if (tmpChannel.chMode == RADIO_MODE_DIGITAL)
@@ -163,8 +175,8 @@ static void updateScreen()
 				}
 				break;
 			case CH_DETAILS_FREQ_STEP:
-				tmpVal = VFO_FREQ_STEP_TABLE[(tmpChannel.VFOflag5 >> 4)] / 10;
-				sprintf(buf, "Step:%d.%dkHz", tmpVal, VFO_FREQ_STEP_TABLE[(tmpChannel.VFOflag5 >> 4)] - (tmpVal * 10));
+					tmpVal = VFO_FREQ_STEP_TABLE[(tmpChannel.VFOflag5 >> 4)] / 100;
+					sprintf(buf, "Step:%d.%02dkHz", tmpVal, VFO_FREQ_STEP_TABLE[(tmpChannel.VFOflag5 >> 4)] - (tmpVal * 100));
 				break;
 			case CH_DETAILS_TOT:// TOT
 				if (tmpChannel.tot != 0)
@@ -179,12 +191,7 @@ static void updateScreen()
 
 		}
 
-		if (gMenusCurrentItemIndex == mNum)
-		{
-			UC1701_fillRoundRect(0,(i+2)*16,128,16,2,true);
-		}
-
-		UC1701_printCore(0, (i + 2) * 16, buf, UC1701_FONT_GD77_8x16, 0, (gMenusCurrentItemIndex == mNum));
+		menuDisplayEntry(i, mNum, buf);
 	}
 
 	UC1701_render();
@@ -256,9 +263,9 @@ static void handleEvent(int buttons, int keys, int events)
 				break;
 			case CH_DETAILS_FREQ_STEP:
 				tmpVal = (tmpChannel.VFOflag5>>4)+1;
-				if (tmpVal>15)
+				if (tmpVal>7)
 				{
-					tmpVal=15;
+					tmpVal=7;
 				}
 				tmpChannel.VFOflag5 &= 0x0F;
 				tmpChannel.VFOflag5 |= tmpVal<<4;
@@ -342,18 +349,12 @@ static void handleEvent(int buttons, int keys, int events)
 	else if ((keys & KEY_GREEN)!=0)
 	{
 		memcpy(currentChannelData,&tmpChannel,sizeof(struct_codeplugChannel_t));
-		if (buttons & BUTTON_SK2 )
+
+		// settingsCurrentChannelNumber is -1 when in VFO mode
+		// But the VFO is stored in the nonVolatile settings, and not saved back to the codeplug
+		if (settingsCurrentChannelNumber != -1 )
 		{
-			// Function button is also pressed, so these changes need to be saved back to the codeplug
-			// settingsCurrentChannelNumber is -1 when in VFO mode
-			if (settingsCurrentChannelNumber != -1 )
-			{
-				codeplugChannelSaveDataForIndex(settingsCurrentChannelNumber,currentChannelData);
-			}
-			else
-			{
-				// Its the VFO, which is in the nonVolatile settings and doesn't need to be updated unless it needs to be read back into the CPS
-			}
+			codeplugChannelSaveDataForIndex(settingsCurrentChannelNumber,currentChannelData);
 		}
 
 		menuSystemPopAllAndDisplayRootMenu();

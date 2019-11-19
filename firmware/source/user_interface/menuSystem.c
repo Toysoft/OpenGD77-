@@ -78,6 +78,7 @@ const menuItemNew_t * menusData[] = { 	NULL,// splash
 										NULL,// CPS
 										NULL,// Quick menu - Channel
 										NULL,// Quick menu - VFO
+										NULL,// Lock screen
 								};
 
 const MenuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
@@ -101,14 +102,14 @@ const MenuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
 												menuCPS,
 												menuChannelModeQuickMenu,
 												menuVFOModeQuickMenu,
-												menuLockScreen};
+                                                menuLockScreen};
 
 void menuSystemPushNewMenu(int menuNumber)
 {
 	if (menuControlData.stackPosition < 15)
 	{
-		menuControlData.stackPosition++;
-		menuControlData.stack[menuControlData.stackPosition] = menuNumber;
+	menuControlData.stackPosition++;
+	menuControlData.stack[menuControlData.stackPosition] = menuNumber;
 		menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,
 				0, 0, true);
 	}
@@ -230,6 +231,22 @@ const menuItemNew_t menuDataContactContact [] = {
 int menuDisplayList(int buttons, int keys, int events, bool isFirstRun)
 {
 	return 0;
+}
+
+void menuDisplayTitle(char *title)
+{
+	UC1701_drawFastHLine(0, 13, 128, true);
+	UC1701_printCore(0, 3, title, UC1701_FONT_8x8, 1, false);
+}
+
+void menuDisplayEntry(int loopOffset, int focusedItem, char *entryText)
+{
+	bool focused = (focusedItem == gMenusCurrentItemIndex);
+
+	if (focused)
+		UC1701_fillRoundRect(0, (loopOffset + 2) * 16, 128, 16, 2, true);
+
+	UC1701_printCore(0, (loopOffset + 2) * 16, entryText, UC1701_FONT_8x16, 0, focused);
 }
 
 int menuGetMenuOffset(int maxMenuEntries, int loopOffset)

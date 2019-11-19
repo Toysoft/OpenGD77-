@@ -43,6 +43,8 @@ typedef struct menuItemNew
 
 extern menuControlDataStruct_t menuControlData;
 
+void menuDisplayTitle(char *title);
+void menuDisplayEntry(int loopOffset, int focusedItem, char *entryText);
 int menuGetMenuOffset(int maxMenuEntries, int loopOffset);
 
 void menuChannelModeUpdateScreen(int txTimeSecs);
@@ -91,8 +93,7 @@ enum MENU_SCREENS { MENU_SPLASH_SCREEN=0,
 					MENU_CPS,
 					MENU_CHANNEL_QUICK_MENU,
 					MENU_VFO_QUICK_MENU,
-					MENU_LOCK_SCREEN
-
+					MENU_LOCK_SCREEN,
 };
 
 extern int gMenusCurrentItemIndex;

@@ -46,7 +46,7 @@ void fw_init()
 static void show_lowbattery()
 {
 	UC1701_clearBuf();
-	UC1701_printCentered(32, "LOW BATTERY !!!", UC1701_FONT_GD77_8x16);
+	UC1701_printCentered(32, "LOW BATTERY !!!", UC1701_FONT_8x16);
 	UC1701_render();
 }
 
@@ -62,8 +62,6 @@ void fw_main_task()
     // Init I2C
     init_I2C0a();
     setup_I2C0();
-
-
 	fw_init_common();
 	fw_init_buttons();
 	fw_init_LEDs();
@@ -138,6 +136,11 @@ void fw_main_task()
     lastheardInitList();
     menuInitMenuSystem();
 
+    if (buttons & BUTTON_SK1)
+    {
+    	enableHotspot = true;
+    }
+
     while (1U)
     {
     	taskENTER_CRITICAL();
@@ -180,40 +183,62 @@ void fw_main_task()
 				key_event = EVENT_KEY_NONE;
 			}
 
+			if (keypadLocked)
+			{
+				if (key_event == EVENT_KEY_CHANGE)
+				{
+					key_event = EVENT_KEY_NONE;
+					keys = 0;
+					if (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN)
+					{
+						menuSystemPushNewMenu(MENU_LOCK_SCREEN);
+					}
+				}
+				if (button_event == EVENT_BUTTON_CHANGE
+						&& (buttons & BUTTON_ORANGE) != 0)
+				{
+					button_event = EVENT_BUTTON_NONE;
+					buttons = 0;
+					if (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN)
+					{
+						menuSystemPushNewMenu(MENU_LOCK_SCREEN);
+					}
+				}
+			}
 			if (key_event == EVENT_KEY_CHANGE)
 			{
 				if (keys != 0 && (buttons & BUTTON_PTT) == 0)
 				{
 					set_melody(melody_key_beep);
 				}
-
-				if (menuDisplayLightTimer == 0
-						&& nonVolatileSettings.backLightTimeout != 0)
+			}
+/*
+ * This code ignores the keypress if the display is not lit, however this functionality is proving to be a problem for things like entering a TG
+ * I think it needs to be removed until a better solution can be found
+ *
+			if (menuDisplayLightTimer == 0
+					&& nonVolatileSettings.backLightTimeout != 0)
+			{
+				if (key_event == EVENT_KEY_CHANGE)
 				{
 					key_event = EVENT_KEY_NONE;
+					keys = 0;
+					displayLightTrigger();
+				}
+				if (button_event == EVENT_BUTTON_CHANGE && (buttons & BUTTON_ORANGE) != 0)
+				{
+					button_event = EVENT_BUTTON_NONE;
+					buttons = 0;
 					displayLightTrigger();
 				}
 			}
+*/
 
 
 
 			if (button_event == EVENT_BUTTON_CHANGE)
 			{
-				/*
-        		if ((buttons & BUTTON_SK1)!=0)
-        		{
-            	    set_melody(melody_sk1_beep);
-        		}
-        		else if ((buttons & BUTTON_SK2)!=0)
-        		{
-            	    set_melody(melody_sk2_beep);
-        		}
-        		else if ((buttons & BUTTON_ORANGE)!=0)
-        		{
-            	    set_melody(melody_orange_beep);
-        		}
-        		*/
-
+				displayLightTrigger();
         		if ((	(buttons & BUTTON_PTT)!=0) &&
         				(slot_state==DMR_STATE_IDLE || trxDMRMode == DMR_MODE_PASSIVE) &&
 						trxGetMode()!=RADIO_MODE_NONE &&
@@ -228,10 +253,8 @@ void fw_main_task()
 
     		if (!trxIsTransmitting && updateLastHeard==true)
     		{
-    //	    	taskENTER_CRITICAL();
     			lastHeardListUpdate((uint8_t *)DMR_frame_buffer);
     			updateLastHeard=false;
-    //	    	taskEXIT_CRITICAL();
     		}
 
         	menuSystemCallCurrentMenuTick(buttons,keys,(button_event<<1) | key_event);
@@ -274,10 +297,8 @@ void fw_main_task()
     				fw_displayEnableBacklight(false);
     			}
     		}
-
     		tick_melody();
     	}
-
 		vTaskDelay(0);
     }
 }

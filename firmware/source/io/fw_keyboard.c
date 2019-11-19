@@ -39,33 +39,33 @@ KEY_STAR, KEY_0, KEY_HASH, KEY_RED, 0 };
 
 void fw_init_keyboard()
 {
-	// column lines
-	PORT_SetPinMux(Port_Key_Col0, Pin_Key_Col0, kPORT_MuxAsGpio);
-	PORT_SetPinMux(Port_Key_Col1, Pin_Key_Col1, kPORT_MuxAsGpio);
-	PORT_SetPinMux(Port_Key_Col2, Pin_Key_Col2, kPORT_MuxAsGpio);
-	PORT_SetPinMux(Port_Key_Col3, Pin_Key_Col3, kPORT_MuxAsGpio);
+    // column lines
+    PORT_SetPinMux(Port_Key_Col0, Pin_Key_Col0, kPORT_MuxAsGpio);
+    PORT_SetPinMux(Port_Key_Col1, Pin_Key_Col1, kPORT_MuxAsGpio);
+    PORT_SetPinMux(Port_Key_Col2, Pin_Key_Col2, kPORT_MuxAsGpio);
+    PORT_SetPinMux(Port_Key_Col3, Pin_Key_Col3, kPORT_MuxAsGpio);
 
-	// row lines
-	PORT_SetPinMux(Port_Key_Row0, Pin_Key_Row0, kPORT_MuxAsGpio);
-	PORT_SetPinMux(Port_Key_Row1, Pin_Key_Row1, kPORT_MuxAsGpio);
-	PORT_SetPinMux(Port_Key_Row2, Pin_Key_Row2, kPORT_MuxAsGpio);
-	PORT_SetPinMux(Port_Key_Row3, Pin_Key_Row3, kPORT_MuxAsGpio);
-	PORT_SetPinMux(Port_Key_Row4, Pin_Key_Row4, kPORT_MuxAsGpio);
+    // row lines
+    PORT_SetPinMux(Port_Key_Row0, Pin_Key_Row0, kPORT_MuxAsGpio);
+    PORT_SetPinMux(Port_Key_Row1, Pin_Key_Row1, kPORT_MuxAsGpio);
+    PORT_SetPinMux(Port_Key_Row2, Pin_Key_Row2, kPORT_MuxAsGpio);
+    PORT_SetPinMux(Port_Key_Row3, Pin_Key_Row3, kPORT_MuxAsGpio);
+    PORT_SetPinMux(Port_Key_Row4, Pin_Key_Row4, kPORT_MuxAsGpio);
 
-	// column lines
-	GPIO_PinInit(GPIO_Key_Col0, Pin_Key_Col0, &pin_config_input);
-	GPIO_PinInit(GPIO_Key_Col1, Pin_Key_Col1, &pin_config_input);
-	GPIO_PinInit(GPIO_Key_Col2, Pin_Key_Col2, &pin_config_input);
-	GPIO_PinInit(GPIO_Key_Col3, Pin_Key_Col3, &pin_config_input);
+    // column lines
+    GPIO_PinInit(GPIO_Key_Col0, Pin_Key_Col0, &pin_config_input);
+    GPIO_PinInit(GPIO_Key_Col1, Pin_Key_Col1, &pin_config_input);
+    GPIO_PinInit(GPIO_Key_Col2, Pin_Key_Col2, &pin_config_input);
+    GPIO_PinInit(GPIO_Key_Col3, Pin_Key_Col3, &pin_config_input);
 
-	// row lines
-	GPIO_PinInit(GPIO_Key_Row0, Pin_Key_Row0, &pin_config_input);
-	GPIO_PinInit(GPIO_Key_Row1, Pin_Key_Row1, &pin_config_input);
-	GPIO_PinInit(GPIO_Key_Row2, Pin_Key_Row2, &pin_config_input);
-	GPIO_PinInit(GPIO_Key_Row3, Pin_Key_Row3, &pin_config_input);
-	GPIO_PinInit(GPIO_Key_Row4, Pin_Key_Row4, &pin_config_input);
+    // row lines
+    GPIO_PinInit(GPIO_Key_Row0, Pin_Key_Row0, &pin_config_input);
+    GPIO_PinInit(GPIO_Key_Row1, Pin_Key_Row1, &pin_config_input);
+    GPIO_PinInit(GPIO_Key_Row2, Pin_Key_Row2, &pin_config_input);
+    GPIO_PinInit(GPIO_Key_Row3, Pin_Key_Row3, &pin_config_input);
+    GPIO_PinInit(GPIO_Key_Row4, Pin_Key_Row4, &pin_config_input);
 
-	old_keyboard_state = 0;
+    old_keyboard_state = 0;
 	keyDebounceState = 0;
 	keyDebounceCounter = 0;
 	keyLongCounter = 0;
@@ -74,58 +74,58 @@ void fw_init_keyboard()
 
 uint8_t fw_read_keyboard_col()
 {
-	uint8_t result = 0;
+	uint8_t result=0;
 
-	if (GPIO_PinRead(GPIO_Key_Row0, Pin_Key_Row0) == 0)
+	if (GPIO_PinRead(GPIO_Key_Row0, Pin_Key_Row0)==0)
 	{
-		result |= 0x01;
+		result|=0x01;
 	}
-	if (GPIO_PinRead(GPIO_Key_Row1, Pin_Key_Row1) == 0)
+	if (GPIO_PinRead(GPIO_Key_Row1, Pin_Key_Row1)==0)
 	{
-		result |= 0x02;
+		result|=0x02;
 	}
-	if (GPIO_PinRead(GPIO_Key_Row2, Pin_Key_Row2) == 0)
+	if (GPIO_PinRead(GPIO_Key_Row2, Pin_Key_Row2)==0)
 	{
-		result |= 0x04;
+		result|=0x04;
 	}
-	if (GPIO_PinRead(GPIO_Key_Row3, Pin_Key_Row3) == 0)
+	if (GPIO_PinRead(GPIO_Key_Row3, Pin_Key_Row3)==0)
 	{
-		result |= 0x08;
+		result|=0x08;
 	}
-	if (GPIO_PinRead(GPIO_Key_Row4, Pin_Key_Row4) == 0)
+	if (GPIO_PinRead(GPIO_Key_Row4, Pin_Key_Row4)==0)
 	{
-		result |= 0x10;
+		result|=0x10;
 	}
 	return result;
 }
 
 uint32_t fw_read_keyboard()
 {
-	GPIO_PinInit(GPIO_Key_Col3, Pin_Key_Col3, &pin_config_output);
+    GPIO_PinInit(GPIO_Key_Col3, Pin_Key_Col3, &pin_config_output);
 	GPIO_PinWrite(GPIO_Key_Col3, Pin_Key_Col3, 0);
-	uint32_t result = fw_read_keyboard_col();
+	uint32_t result=fw_read_keyboard_col();
 	GPIO_PinWrite(GPIO_Key_Col3, Pin_Key_Col3, 1);
-	GPIO_PinInit(GPIO_Key_Col3, Pin_Key_Col3, &pin_config_input);
+    GPIO_PinInit(GPIO_Key_Col3, Pin_Key_Col3, &pin_config_input);
 
-	GPIO_PinInit(GPIO_Key_Col2, Pin_Key_Col2, &pin_config_output);
+    GPIO_PinInit(GPIO_Key_Col2, Pin_Key_Col2, &pin_config_output);
 	GPIO_PinWrite(GPIO_Key_Col2, Pin_Key_Col2, 0);
-	result = (result << 5) | fw_read_keyboard_col();
+	result=(result<<5)|fw_read_keyboard_col();
 	GPIO_PinWrite(GPIO_Key_Col2, Pin_Key_Col2, 1);
-	GPIO_PinInit(GPIO_Key_Col2, Pin_Key_Col2, &pin_config_input);
+    GPIO_PinInit(GPIO_Key_Col2, Pin_Key_Col2, &pin_config_input);
 
-	GPIO_PinInit(GPIO_Key_Col1, Pin_Key_Col1, &pin_config_output);
+    GPIO_PinInit(GPIO_Key_Col1, Pin_Key_Col1, &pin_config_output);
 	GPIO_PinWrite(GPIO_Key_Col1, Pin_Key_Col1, 0);
-	result = (result << 5) | fw_read_keyboard_col();
+	result=(result<<5)|fw_read_keyboard_col();
 	GPIO_PinWrite(GPIO_Key_Col1, Pin_Key_Col1, 1);
-	GPIO_PinInit(GPIO_Key_Col1, Pin_Key_Col1, &pin_config_input);
+    GPIO_PinInit(GPIO_Key_Col1, Pin_Key_Col1, &pin_config_input);
 
-	GPIO_PinInit(GPIO_Key_Col0, Pin_Key_Col0, &pin_config_output);
+    GPIO_PinInit(GPIO_Key_Col0, Pin_Key_Col0, &pin_config_output);
 	GPIO_PinWrite(GPIO_Key_Col0, Pin_Key_Col0, 0);
-	result = (result << 5) | fw_read_keyboard_col();
+	result=(result<<5)|fw_read_keyboard_col();
 	GPIO_PinWrite(GPIO_Key_Col0, Pin_Key_Col0, 1);
-	GPIO_PinInit(GPIO_Key_Col0, Pin_Key_Col0, &pin_config_input);
+    GPIO_PinInit(GPIO_Key_Col0, Pin_Key_Col0, &pin_config_input);
 
-	return result;
+    return result;
 }
 
 uint32_t fw_scan_key(uint32_t keys)
@@ -248,13 +248,13 @@ void fw_check_key_event(uint32_t *keys, int *event)
 						keyLongCounter = 0;
 					}
 
-					if (old_keyboard_state != *keys)
-					{
+	if (old_keyboard_state!=*keys)
+	{
 						*event = EVENT_KEY_CHANGE;
 						tmpKeys = old_keyboard_state;
-						old_keyboard_state = *keys;
+		old_keyboard_state=*keys;
 						if (mod == KEY_MOD_UP)
-						{
+	{
 							*keys = tmpKeys;
 						}
 					}

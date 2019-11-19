@@ -52,12 +52,14 @@ typedef struct settingsStruct
 	uint8_t			txTimeoutBeepX5Secs;
 	uint8_t			beepVolumeDivider;
 	uint8_t			micGainDMR;
+	uint8_t			tsManualOverride;
 } settingsStruct_t;
 
 extern settingsStruct_t nonVolatileSettings;
 extern struct_codeplugChannel_t *currentChannelData;
 extern struct_codeplugChannel_t channelScreenChannelData;
 extern int settingsUsbMode;
+extern bool enableHotspot;
 
 bool settingsSaveSettings();
 bool settingsLoadSettings();

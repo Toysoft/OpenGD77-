@@ -45,17 +45,17 @@ int menuBattery(int buttons, int keys, int events, bool isFirstRun)
 
 static void updateScreen()
 {
-	const int MAX_BATTERY_BAR_HEIGHT = 39;
+	const int MAX_BATTERY_BAR_HEIGHT = 36;
 	char buffer[8];
 
 	UC1701_clearBuf();
-	UC1701_printCentered(0, "Battery",UC1701_FONT_GD77_8x16);
+	menuDisplayTitle("Battery");
 
 	int val1 = averageBatteryVoltage/10;
 	int val2 = averageBatteryVoltage - (val1 * 10);
 
 	sprintf(buffer,"%d.%dV", val1, val2);
-	UC1701_printAt(24, 18, buffer, UC1701_FONT_16x32);
+	UC1701_printAt(20, 22, buffer, UC1701_FONT_16x32);
 	uint32_t h = (uint32_t)(((averageBatteryVoltage - CUTOFF_VOLTAGE_UPPER_HYST) * MAX_BATTERY_BAR_HEIGHT) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));
 
 	if (h > MAX_BATTERY_BAR_HEIGHT)
@@ -64,13 +64,13 @@ static void updateScreen()
 	}
 
 	// Inner body frame
-	UC1701_drawRoundRect(97, 15, 26, 45, 3, true);
+	UC1701_drawRoundRect(97, 20, 26, 42, 3, true);
 	// Outer body frame
-	UC1701_drawRoundRect(96, 14, 28, 47, 3, true);
+	UC1701_drawRoundRect(96, 19, 28, 44, 3, true);
 	// Positive pole frame
-	UC1701_fillRoundRect(96+9, 10, 10, 6, 2, true);
+	UC1701_fillRoundRect(96+9, 15, 10, 6, 2, true);
 	// Level
-	UC1701_fillRoundRect(100, 18 + MAX_BATTERY_BAR_HEIGHT - h , 20, h, 2, true);
+	UC1701_fillRoundRect(100, 23 + MAX_BATTERY_BAR_HEIGHT - h , 20, h, 2, true);
 
 	UC1701_render();
 	displayLightTrigger();

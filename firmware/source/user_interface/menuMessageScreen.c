@@ -44,8 +44,7 @@ static void updateScreen()
 //	char buffer[8];
 
 	UC1701_clearBuf();
-	UC1701_printCentered(0, "Message",UC1701_FONT_GD77_8x16);
-
+	menuDisplayTitle("Message");
 
 	UC1701_render();
 	displayLightTrigger();

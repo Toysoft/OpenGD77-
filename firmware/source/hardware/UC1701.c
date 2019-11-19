@@ -153,7 +153,7 @@ static inline bool checkWritePos(uint8_t * writePos)
 }
 #endif
 
-int UC1701_printCore(int16_t x, int16_t y, char *szMsg, int16_t iSize, int16_t alignment, bool isInverted)
+int UC1701_printCore(int16_t x, int16_t y, char *szMsg, UC1701_Font_t fontSize, int16_t alignment, bool isInverted)
 {
 	int16_t i, sLen;
 	uint8_t *currentCharData;
@@ -161,25 +161,26 @@ int UC1701_printCore(int16_t x, int16_t y, char *szMsg, int16_t iSize, int16_t a
 	int16_t charHeightPixels;
 	int16_t bytesPerChar;
 	int16_t startCode;
+	int16_t endCode;
 	uint8_t *currentFont;
 	uint8_t *writePos;
 	uint8_t *readPos;
 
     sLen = strlen(szMsg);
 
-    switch(iSize)
+    switch(fontSize)
     {
-    	case UC1701_FONT_6X8:
+    	case UC1701_FONT_6x8:
     		currentFont = (uint8_t *) font_6x8;
     		break;
-    	case UC1701_FONT_6X8_bold:
+    	case UC1701_FONT_6x8_BOLD:
 			currentFont = (uint8_t *) font_6x8_bold;
     		break;
-    	case UC1701_FONT_8X8:
+    	case UC1701_FONT_8x8:
     		currentFont = (uint8_t *) font_8x8;
     		break;
-    	case UC1701_FONT_GD77_8x16:
-    		currentFont = (uint8_t *) font_gd77_8x16;
+    	case UC1701_FONT_8x16:
+    		currentFont = (uint8_t *) font_8x16;
 			break;
     	case UC1701_FONT_16x32:
     		currentFont = (uint8_t *) font_16x32;
@@ -191,6 +192,7 @@ int UC1701_printCore(int16_t x, int16_t y, char *szMsg, int16_t iSize, int16_t a
     }
 
     startCode   		= currentFont[2];  // get first defined character
+    endCode 	  		= currentFont[3];  // get last defined character
     charWidthPixels   	= currentFont[4];  // width in pixel of one char
     charHeightPixels  	= currentFont[5];  // page count per char
     bytesPerChar 		= currentFont[7];  // bytes per char
@@ -220,7 +222,15 @@ int UC1701_printCore(int16_t x, int16_t y, char *szMsg, int16_t iSize, int16_t a
 
 	for (i=0; i<sLen; i++)
 	{
-		currentCharData = (uint8_t *)&currentFont[8 + ((szMsg[i] - startCode) * bytesPerChar)];
+		uint32_t charOffset = (szMsg[i] - startCode);
+
+		// End boundary checking.
+		if (charOffset > endCode)
+		{
+			charOffset = ('?' - startCode); // Substitute unsupported ASCII code by a question mark
+		}
+
+		currentCharData = (uint8_t *)&currentFont[8 + (charOffset * bytesPerChar)];
 
 		for(int16_t row=0;row < charHeightPixels / 8 ;row++)
 		{
@@ -354,12 +364,12 @@ void UC1701_clearBuf()
 	memset(screenBuf,0x00,1024);
 }
 
-void UC1701_printCentered(uint8_t y, char *text, int16_t fontSize)
+void UC1701_printCentered(uint8_t y, char *text, UC1701_Font_t fontSize)
 {
 	UC1701_printCore(0, y, text, fontSize, 1, false);
 }
 
-void UC1701_printAt(uint8_t x, uint8_t y, char *text, int16_t fontSize)
+void UC1701_printAt(uint8_t x, uint8_t y, char *text, UC1701_Font_t fontSize)
 {
 	UC1701_printCore(x, y, text, fontSize, 0, false);
 }
