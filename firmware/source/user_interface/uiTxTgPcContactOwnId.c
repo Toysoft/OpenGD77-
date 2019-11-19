@@ -20,12 +20,16 @@
 #include <user_interface/menuUtilityQSOData.h>
 #include "fw_settings.h"
 #include "fw_codeplug.h"
+#include "fw_ticks.h"
 
 static char digits[9];
 static int pcIdx;
 static struct_codeplugContact_t contact;
-static void updateScreen();
+static void updateCursor(void);
+static void updateScreen(void);
 static void handleEvent(int buttons, int keys, int events);
+
+static const uint32_t CURSOR_UPDATE_TIMEOUT = 1000;
 
 static const char *menuName[] = { "TG entry", "PC entry", "Contact", "User DMR ID" };
 enum DISPLAY_MENU_LIST { ENTRY_TG = 0, ENTRY_PC, ENTRY_SELECT_CONTACT, ENTRY_USER_DMR_ID, NUM_ENTRY_ITEMS};
@@ -41,9 +45,10 @@ int menuNumericalEntry(int buttons, int keys, int events, bool isFirstRun)
 	}
 	else
 	{
-		if (events==0)
+		if (events == EVENT_BUTTON_NONE)
 		{
 			//updateScreen();
+			updateCursor();
 		}
 		else
 		{
@@ -53,14 +58,43 @@ int menuNumericalEntry(int buttons, int keys, int events, bool isFirstRun)
 	return 0;
 }
 
+void updateCursor(void)
+{
+	size_t sLen;
 
-static void updateScreen()
+	// Display blinking cursor only when digits could be entered.
+	if ((gMenusCurrentItemIndex != ENTRY_SELECT_CONTACT) && ((sLen = strlen(digits)) < 7))
+	{
+		static uint32_t lastBlink = 0;
+		static bool     blink = false;
+		uint32_t        m = fw_millis();
+
+		if ((m - lastBlink) > CURSOR_UPDATE_TIMEOUT)
+		{
+			sLen *= 8;
+
+			UC1701_printCore((((128 - sLen) >> 1) + sLen), 32, "_", UC1701_FONT_8x16, 0, blink);
+
+			blink = !blink;
+			lastBlink = m;
+
+			UC1701_render();
+		}
+	}
+}
+
+static void updateScreen(void)
 {
 	char buf[17];
+	size_t sLen = strlen(menuName[gMenusCurrentItemIndex]) * 8;
+	int16_t y = 8;
 
 	UC1701_clearBuf();
 
-	UC1701_printCentered(8, (char *)menuName[gMenusCurrentItemIndex],UC1701_FONT_8x16);
+	UC1701_drawRoundRectWithDropShadow(2, y - 1, (128 - 6), 21, 3, true);
+
+	// Not really centered, off by 2 pixels
+	UC1701_printAt(((128 - sLen) >> 1) - 2, y, (char *)menuName[gMenusCurrentItemIndex], UC1701_FONT_8x16);
 
 	if (pcIdx == 0)
 	{
@@ -281,5 +315,7 @@ static void handleEvent(int buttons, int keys, int events)
 		{
 			updateScreen();
 		}
+
+		updateCursor();
 	}
 }
