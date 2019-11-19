@@ -36,8 +36,11 @@ static bool isDisplayingQSOData=false;
 static bool isTxRxFreqSwap=false;
 static bool scanActive=false;
 static int scanTimer=0;
-static int scanPause=3000;				//time to wait after channel goes clear.
-static int scanInterval=100;			//time between each scan step.
+static int scanState=0;					//state flag for scan routine
+static int scanShortPause=500;			//time to wait after carrier detected to allow time for full signal detection. (CTCSS or DMR)
+static int scanPause=5000;				//time to wait after valid signal is detected.
+static int scanInterval=50;			    //time between each scan step
+
 
 int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 {
@@ -296,6 +299,7 @@ static void handleEvent(int buttons, int keys, int events)
 			{
 			scanActive=!scanActive;
 			scanTimer=0;
+			scanState=0;
 			}
 	}
 
@@ -781,10 +785,24 @@ static void scanning(void)
 	if(trxIsTransmitting)						//stop scanning if we press the PTT
 	{
 		scanActive=false;
+		return;
 	}
-	if (GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable)==1) 				// if speaker on we must be receiving a signal
+
+	if((scanState==0) & (scanTimer==10))							    //after initial settling time
 	{
-		scanTimer=scanPause;				//start delay
+		if(trx_carrier_detected())												 	//test for presence of RF Carrier
+		{
+			scanTimer=scanShortPause;				//start short delay to allow full detection of signal
+			scanState=1;						//state 1 = pause and test for valid signal that produces audio
+		}
+	}
+
+	if(scanState==1)
+	{
+	    if (GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable)==1)	    	// if speaker on we must be receiving a signal
+	    {
+	    	scanTimer=scanPause;				//extend the time before resuming scan.
+	    }
 	}
 
 	if(scanTimer>0)
@@ -796,6 +814,7 @@ static void scanning(void)
 		trx_measure_count=0;				//needed to allow time for Rx to settle after channel change.
 		handleEvent(0,KEY_UP,0);			//Increment the channel
 		scanTimer=scanInterval;
+		scanState=0;						//state 0 = settling and test for carrier present.
 	}
 
 
