@@ -24,7 +24,6 @@
 static uint32_t old_keyboard_state;
 static uint32_t keyDebounceScancode;
 static int keyDebounceCounter;
-static uint32_t keyHandled;
 static uint8_t keyState;
 
 enum KEY_STATE { KEY_IDLE=0, KEY_DEBOUNCE, KEY_PRESS, KEY_HOLD, KEY_REPEAT, KEY_WAIT_RELEASED };
@@ -69,7 +68,6 @@ void fw_init_keyboard(void)
     old_keyboard_state = 0;
 	keyDebounceScancode = 0;
 	keyDebounceCounter = 0;
-	keyHandled = 0;
 	keyState = KEY_IDLE;
 }
 
