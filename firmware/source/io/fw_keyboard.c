@@ -21,10 +21,12 @@
 #include "fw_usb_com.h"
 
 static uint32_t old_keyboard_state;
-static bool keypress_long;
-static uint32_t keyDebounceState;
+static uint32_t keyDebounceScancode;
 static int keyDebounceCounter;
 static uint32_t keyHandled;
+static uint8_t keyState;
+
+enum KEY_STATE { KEY_IDLE=0, KEY_DEBOUNCE, KEY_PRESS, KEY_HOLD, KEY_REPEAT, KEY_WAIT_RELEASED };
 
 volatile bool keypadLocked = false;
 
@@ -33,6 +35,7 @@ static const uint32_t keyMap[] = {
 		KEY_4, KEY_5, KEY_6, KEY_UP, KEY_LEFT,
 		KEY_7, KEY_8, KEY_9, KEY_DOWN, 0,
 		KEY_STAR, KEY_0, KEY_HASH, KEY_RED, 0 };
+
 
 void fw_init_keyboard()
 {
@@ -63,9 +66,10 @@ void fw_init_keyboard()
     GPIO_PinInit(GPIO_Key_Row4, Pin_Key_Row4, &pin_config_input);
 
     old_keyboard_state = 0;
-	keyDebounceState = 0;
+	keyDebounceScancode = 0;
 	keyDebounceCounter = 0;
 	keyHandled = 0;
+	keyState = KEY_IDLE;
 }
 
 inline uint8_t fw_read_keyboard_col()
@@ -125,115 +129,111 @@ uint32_t fw_scan_key(uint32_t keys)
 
 void fw_check_key_event(uint32_t *keys, int *event)
 {
-	uint32_t mod = 0x0U;
-	uint32_t tmpKeys;
 	uint32_t scancode = fw_read_keyboard();
 
 	*event = EVENT_KEY_NONE;
-	if (keyDebounceState != scancode)
-	{
-		keyDebounceCounter = 0;
-		keyDebounceState = scancode;
+	*keys = 0;
+
+	if (scancode != 0) {
+		*keys = fw_scan_key(scancode);
 	}
-	else
-	{
-		if (keyDebounceCounter > KEY_DEBOUNCE_COUNTER)
-		{
-            if (keyHandled != 0 && keyHandled != scancode) {
-    			keyDebounceCounter = 0;
-				if (scancode == 0) {
-					keyHandled = 0;
-					old_keyboard_state = 0;
-				}
-				*keys = 0;
+
+	switch (keyState) {
+	case KEY_IDLE:
+		if (scancode != 0) {
+			keyState = KEY_DEBOUNCE;
+			keyDebounceCounter = 0;
+			keyDebounceScancode = scancode;
+			old_keyboard_state = 0;
+		}
+		break;
+	case KEY_DEBOUNCE:
+		keyDebounceCounter++;
+		if (keyDebounceCounter>KEY_DEBOUNCE_COUNTER && keyDebounceScancode == scancode) {
+			if (*keys == -1) {
+				keyState = KEY_WAIT_RELEASED;
+			} else {
+				keyState = KEY_PRESS;
 			}
-			else
+		} else if (keyDebounceScancode != scancode) {
+			keyState = KEY_IDLE;
+		}
+		*keys = 0;
+		break;
+	case  KEY_PRESS:
+		if (*keys == -1) {
+			keyState = KEY_WAIT_RELEASED;
+			*keys=0;
+		} else {
+			taskENTER_CRITICAL();
+			timer_keylong=KEY_LONG_PRESS_COUNTER;
+			taskEXIT_CRITICAL();
+
+			old_keyboard_state = *keys;
+			*keys |= KEY_MOD_DOWN | KEY_MOD_PRESS;
+			*event = EVENT_KEY_CHANGE;
+			keyState = KEY_HOLD;
+		}
+		break;
+	case KEY_HOLD:
+		if (*keys == -1) {
+			keyState = KEY_WAIT_RELEASED;
+			*keys=0;
+		} else if (*keys == 0) {
+			*keys = old_keyboard_state | KEY_MOD_UP;
+			*event = EVENT_KEY_CHANGE;
+			keyState = KEY_IDLE;
+		} else {
+			taskENTER_CRITICAL();
+			uint32_t tmp_timer_keylong=timer_keylong;
+			taskEXIT_CRITICAL();
+
+			old_keyboard_state = *keys;
+			if (tmp_timer_keylong == 0)
 			{
 				taskENTER_CRITICAL();
-				uint32_t tmp_timer_keyrepeat=timer_keyrepeat;
-				uint32_t tmp_timer_keylong=timer_keylong;
+				timer_keyrepeat=KEY_REPEAT_COUNTER;
+				taskEXIT_CRITICAL();
+				*keys |= KEY_MOD_LONG | KEY_MOD_DOWN;
+				*event = EVENT_KEY_CHANGE;
+				keyState = KEY_REPEAT;
+			}
+		}
+		break;
+	case KEY_REPEAT:
+		if (*keys == -1) {
+			keyState = KEY_WAIT_RELEASED;
+			*keys=0;
+		} else if (*keys == 0) {
+			*keys = old_keyboard_state | KEY_MOD_UP;
+			*event = EVENT_KEY_CHANGE;
+			keyState = KEY_IDLE;
+		} else {
+			taskENTER_CRITICAL();
+			uint32_t tmp_timer_keyrepeat=timer_keyrepeat;
+			taskEXIT_CRITICAL();
+
+			*keys |= KEY_MOD_LONG;
+			if (tmp_timer_keyrepeat == 0)
+			{
+				taskENTER_CRITICAL();
+				timer_keyrepeat=KEY_REPEAT_COUNTER;
 				taskEXIT_CRITICAL();
 
-				*keys = fw_scan_key(scancode);
-
-				if (*keys == -1)
-				{
-					taskENTER_CRITICAL();
-					timer_keylong=0;
-					timer_keyrepeat=0;
-					taskEXIT_CRITICAL();
-
-					keyHandled = 0xffffffffU;
-					*keys = 0;
-				}
-				else
-				{
-					keyHandled = scancode;
-
-					if (*keys != 0)
-					{
-						if (tmp_timer_keylong == 0)
-						{
-							taskENTER_CRITICAL();
-							timer_keylong=KEY_LONG_PRESS_COUNTER;
-							timer_keyrepeat=KEY_LONG_PRESS_COUNTER + KEY_REPEAT_COUNTER;
-							taskEXIT_CRITICAL();
-							mod = KEY_MOD_DOWN | KEY_MOD_PRESS;
-							keypress_long = false;
-						}
-						else
-						{
-							if (tmp_timer_keylong == 1)
-							{
-								mod = KEY_MOD_LONG;
-								if (keypress_long == false)
-								{
-									mod |= KEY_MOD_DOWN;
-								}
-								keypress_long = true;
-								*event = EVENT_KEY_CHANGE;
-							}
-							if (tmp_timer_keyrepeat == 0)
-							{
-								mod |= KEY_MOD_PRESS;
-								taskENTER_CRITICAL();
-								timer_keyrepeat=KEY_REPEAT_COUNTER;
-								taskEXIT_CRITICAL();
-								*event = EVENT_KEY_CHANGE;
-							}
-						}
-					}
-					else
-					{
-						if (tmp_timer_keylong > 0 || keypress_long == true)
-						{
-							mod = KEY_MOD_UP;
-							if (keypress_long == true)
-							{
-								mod |= KEY_MOD_LONG;
-							}
-						}
-						taskENTER_CRITICAL();
-						timer_keylong=0;
-						timer_keyrepeat=0;
-						taskEXIT_CRITICAL();
-					}
-
-					if (old_keyboard_state!=*keys)
-					{
-						*event = EVENT_KEY_CHANGE;
-						tmpKeys = old_keyboard_state;
-						old_keyboard_state=*keys;
-						if (mod == KEY_MOD_UP)
-						{
-							*keys = tmpKeys;
-						}
-					}
-					*keys = *keys | mod;
+				if (KEYCHECK(*keys, KEY_LEFT) || KEYCHECK(*keys,KEY_RIGHT) ||
+						KEYCHECK(*keys, KEY_UP) || KEYCHECK(*keys, KEY_DOWN)) {
+					*keys |= KEY_MOD_PRESS;
 				}
 			}
-		} else {
-			keyDebounceCounter++;
+			*event = EVENT_KEY_CHANGE;
 		}
+		break;
+	case KEY_WAIT_RELEASED:
+		if (scancode == 0) {
+			keyState = KEY_IDLE;
+		}
+		*keys = 0;
+		break;
 	}
+
 }

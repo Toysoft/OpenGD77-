@@ -69,7 +69,7 @@ void PIT0_IRQHandler(void)
 	{
 		timer_watchdogtask--;
 	}
-	if (timer_keylong>1)
+	if (timer_keylong>0)
 	{
 		timer_keylong--;
 	}

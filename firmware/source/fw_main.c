@@ -205,7 +205,7 @@ void fw_main_task()
 					}
 				}
 			}
-			if (key_event == EVENT_KEY_CHANGE)
+			if (key_event == EVENT_KEY_CHANGE && KEYCHECK_PRESS(keys))
 			{
 				if (keys != 0 && (buttons & BUTTON_PTT) == 0)
 				{
