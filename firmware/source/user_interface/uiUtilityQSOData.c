@@ -58,6 +58,9 @@ static char *chomp(char *str)
 	while(*ep != '\0')
 		ep++;
 
+	if (*ep == '\0')
+		ep--;
+
 	// Spaces at the end
 	while(ep > str)
 	{
