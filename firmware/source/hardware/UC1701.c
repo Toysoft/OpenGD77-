@@ -923,16 +923,6 @@ void UC1701_fillRoundRect(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r,
 }
 
 /*
- *
- */
-void UC1701_drawRoundRectWithDropShadow(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r, bool color)
-{
-	UC1701_fillRoundRect(x + 2, y, w, h, r, color); // Shadow
-	UC1701_fillRoundRect(x, y - 2, w, h, r, !color); // Empty box
-	UC1701_drawRoundRect(x, y - 2, w, h, r, color); // Outline
-}
-
-/*
  * Draw a rectangle
  */
 void UC1701_drawRect(int16_t x, int16_t y, int16_t w, int16_t h, bool color)
@@ -1008,16 +998,6 @@ void UC1701_fillRect(int16_t x, int16_t y, int16_t width, int16_t height, bool i
 			}
 		}
 	}
-}
-
-/*
- *
- */
-void UC1701_drawRectWithDropShadow(int16_t x, int16_t y, int16_t w, int16_t h, bool color)
-{
-	UC1701_fillRect(x + 2, y, w, h, !color); // Shadow
-	UC1701_fillRect(x, y - 2, w, h, color); // Empty box
-	UC1701_drawRect(x, y - 2, w, h, color); // Outline
 }
 
 /*

@@ -64,11 +64,9 @@ void UC1701_fillArc(uint16_t x, uint16_t y, uint16_t radius, uint16_t thickness,
 
 void UC1701_drawRoundRect(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r, bool color);
 void UC1701_fillRoundRect(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r, bool color);
-void UC1701_drawRoundRectWithDropShadow(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r, bool color);
 
 void UC1701_drawRect(int16_t x, int16_t y, int16_t w, int16_t h, bool color);
 void UC1701_fillRect(int16_t x, int16_t y, int16_t width, int16_t height, bool isInverted);
-void UC1701_drawRectWithDropShadow(int16_t x, int16_t y, int16_t w, int16_t h, bool color);
 
 void UC1701_drawBitmap(int16_t x, int16_t y, uint8_t *bitmap, int16_t w, int16_t h, bool color);
 void UC1701_drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, bool color);
