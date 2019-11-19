@@ -677,7 +677,7 @@ static void handleEvent(int buttons, int keys, int events)
 
 // Quick Menu functions
 
-enum CHANNEL_SCREEN_QUICK_MENU_ITEMS { CH_SCREEN_SCAN=0, CH_SCREEN_QUICK_MENU_COPY2VFO, CH_SCREEN_QUICK_MENU_COPY_FROM_VFO,
+enum CHANNEL_SCREEN_QUICK_MENU_ITEMS { CH_SCREEN_QUICK_MENU_SCAN=0, CH_SCREEN_QUICK_MENU_COPY2VFO, CH_SCREEN_QUICK_MENU_COPY_FROM_VFO,
 	NUM_CH_SCREEN_QUICK_MENU_ITEMS };// The last item in the list is used so that we automatically get a total number of items in the list
 
 static void updateQuickMenuScreen()
@@ -694,7 +694,7 @@ static void updateQuickMenuScreen()
 
 		switch(mNum)
 		{
-			case CH_SCREEN_SCAN:
+			case CH_SCREEN_QUICK_MENU_SCAN:
 				strcpy(buf, "Scan");
 				break;
 			case CH_SCREEN_QUICK_MENU_COPY2VFO:
@@ -738,7 +738,7 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 	{
 		switch(gMenusCurrentItemIndex)
 		{
-			case CH_SCREEN_SCAN:
+			case CH_SCREEN_QUICK_MENU_SCAN:
 				scanActive=true;
 				scanTimer=500;
 				scanState=0;
