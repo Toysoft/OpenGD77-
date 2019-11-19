@@ -104,6 +104,8 @@ static int getNextContact(int curidx, int dir, struct_codeplugContact_t *contact
 
 static void handleEvent(int buttons, int keys, int events)
 {
+	size_t sLen;
+
 	if ((keys & KEY_RED)!=0)
 	{
 		menuSystemPopPreviousMenu();
@@ -164,7 +166,8 @@ static void handleEvent(int buttons, int keys, int events)
 
 		updateScreen();
 	}
-	if (gMenusCurrentItemIndex == ENTRY_SELECT_CONTACT) {
+	if (gMenusCurrentItemIndex == ENTRY_SELECT_CONTACT)
+	{
 		int idx = pcIdx;
 
 		if ((keys & KEY_DOWN) != 0) {
@@ -178,56 +181,104 @@ static void handleEvent(int buttons, int keys, int events)
 			updateScreen();
 		}
 	}
-	else if (strlen(digits) < 7) {
-		char c[2] = {0, 0};
-		if ((keys & KEY_0) != 0)
+	else if ((sLen = strlen(digits)) <= 7)
+	{
+		bool refreshScreen = false;
+
+		// Inc / Dec entered value.
+		if (((keys & KEY_UP) != 0) || ((keys & KEY_DOWN) != 0))
 		{
-			c[0]='0';
+			if (strlen(digits))
+			{
+				unsigned long int ccs7 = strtoul(digits, NULL, 10);
+
+				if (((keys & KEY_UP) != 0))
+				{
+					if (ccs7 < 9999999)
+						ccs7++;
+
+					refreshScreen = true;
+				}
+				else
+				{
+					if (ccs7 > 0)
+						ccs7--;
+
+					refreshScreen = true;
+				}
+
+				if (refreshScreen)
+				{
+					sprintf(digits, "%lu", ccs7);
+				}
+			}
+		} // Delete a digit
+		else if ((keys & KEY_LEFT) != 0)
+		{
+			if ((sLen = strlen(digits)) > 0)
+			{
+				digits[sLen - 1] = 0;
+				refreshScreen = true;
+			}
 		}
-		else if ((keys & KEY_1)!=0)
+		else
 		{
-			c[0]='1';
+			// Add a digit
+			if (sLen < 7)
+			{
+				char c[2] = {0, 0};
+
+				if ((keys & KEY_0) != 0)
+				{
+					c[0]='0';
+				}
+				else if ((keys & KEY_1)!=0)
+				{
+					c[0]='1';
+				}
+				else if ((keys & KEY_2)!=0)
+				{
+					c[0]='2';
+				}
+				else if ((keys & KEY_3)!=0)
+				{
+					c[0]='3';
+				}
+				else if ((keys & KEY_4)!=0)
+				{
+					c[0]='4';
+				}
+				else if ((keys & KEY_5)!=0)
+				{
+					c[0]='5';
+				}
+				else if ((keys & KEY_6)!=0)
+				{
+					c[0]='6';
+				}
+				else if ((keys & KEY_7)!=0)
+				{
+					c[0]='7';
+				}
+				else if ((keys & KEY_8)!=0)
+				{
+					c[0]='8';
+				}
+				else if ((keys & KEY_9)!=0)
+				{
+					c[0]='9';
+				}
+
+				if (c[0]!=0)
+				{
+					strcat(digits,c);
+					refreshScreen = true;
+				}
+			}
 		}
-		else if ((keys & KEY_2)!=0)
+
+		if (refreshScreen)
 		{
-			c[0]='2';
-		}
-		else if ((keys & KEY_3)!=0)
-		{
-			c[0]='3';
-		}
-		else if ((keys & KEY_4)!=0)
-		{
-			c[0]='4';
-		}
-		else if ((keys & KEY_5)!=0)
-		{
-			c[0]='5';
-		}
-		else if ((keys & KEY_6)!=0)
-		{
-			c[0]='6';
-		}
-		else if ((keys & KEY_7)!=0)
-		{
-			c[0]='7';
-		}
-		else if ((keys & KEY_8)!=0)
-		{
-			c[0]='8';
-		}
-		else if ((keys & KEY_9)!=0)
-		{
-			c[0]='9';
-		}
-		else if ((keys & KEY_LEFT)!=0 && strlen(digits)>0)
-		{
-			digits[strlen(digits)-1]=0;
-			updateScreen();
-		}
-		if (c[0]!=0)
-		{
-			strcat(digits,c);
 			updateScreen();
 		}
 	}
