@@ -248,7 +248,11 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				displaySquelch=false;
 			}
 
+			if (!((scanActive) & (scanState==0)))
+			{
 			displayLightTrigger();
+			}
+
 			UC1701_render();
 			break;
 
