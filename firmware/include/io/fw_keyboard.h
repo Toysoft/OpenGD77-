@@ -98,13 +98,10 @@
 #define KEY_MOD_LONG  0x04000000
 #define KEY_MOD_PRESS 0x08000000
 
-
 #define EVENT_KEY_NONE   0
 #define EVENT_KEY_CHANGE 1
 
 #define KEY_DEBOUNCE_COUNTER   20
-#define KEY_REPEAT_COUNTER     3000
-#define KEY_LONG_PRESS_COUNTER 5000
 
 #define KEYCHECK(keys,k) (((keys) & 0xffffff) == (k))
 #define KEYCHECK_MOD(keys, mod) (((keys) & (mod)) == (mod))
@@ -117,9 +114,9 @@
 extern volatile bool keypadLocked;
 
 
-void fw_init_keyboard();
-uint8_t fw_read_keyboard_col();
-uint32_t fw_read_keyboard();
+void fw_init_keyboard(void);
+uint8_t fw_read_keyboard_col(void);
+uint32_t fw_read_keyboard(void);
 void fw_check_key_event(uint32_t *keys, int *event);
 uint32_t fw_scan_key(uint32_t keys);
 

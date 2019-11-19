@@ -18,6 +18,7 @@
 
 #include "fw_keyboard.h"
 #include "fw_pit.h"
+#include "fw_settings.h"
 #include "fw_usb_com.h"
 
 static uint32_t old_keyboard_state;
@@ -37,7 +38,7 @@ static const uint32_t keyMap[] = {
 		KEY_STAR, KEY_0, KEY_HASH, KEY_RED, 0 };
 
 
-void fw_init_keyboard()
+void fw_init_keyboard(void)
 {
     // column lines
     PORT_SetPinMux(Port_Key_Col0, Pin_Key_Col0, kPORT_MuxAsGpio);
@@ -72,12 +73,12 @@ void fw_init_keyboard()
 	keyState = KEY_IDLE;
 }
 
-inline uint8_t fw_read_keyboard_col()
+inline uint8_t fw_read_keyboard_col(void)
 {
 	return ~((GPIOB->PDIR)>>19) & 0x1f;
 }
 
-uint32_t fw_read_keyboard()
+uint32_t fw_read_keyboard(void)
 {
 	uint32_t result = 0;
 
@@ -130,6 +131,9 @@ uint32_t fw_scan_key(uint32_t keys)
 void fw_check_key_event(uint32_t *keys, int *event)
 {
 	uint32_t scancode = fw_read_keyboard();
+	uint32_t tmp_timer_keypad;
+	uint32_t keypadTimerLong = nonVolatileSettings.keypadTimerLong * 1000;
+	uint32_t keypadTimerRepeat = nonVolatileSettings.keypadTimerRepeat * 1000;
 
 	*event = EVENT_KEY_NONE;
 	*keys = 0;
@@ -166,7 +170,7 @@ void fw_check_key_event(uint32_t *keys, int *event)
 			*keys=0;
 		} else {
 			taskENTER_CRITICAL();
-			timer_keylong=KEY_LONG_PRESS_COUNTER;
+			timer_keypad=keypadTimerLong;
 			taskEXIT_CRITICAL();
 
 			old_keyboard_state = *keys;
@@ -185,15 +189,16 @@ void fw_check_key_event(uint32_t *keys, int *event)
 			keyState = KEY_IDLE;
 		} else {
 			taskENTER_CRITICAL();
-			uint32_t tmp_timer_keylong=timer_keylong;
+			tmp_timer_keypad=timer_keypad;
 			taskEXIT_CRITICAL();
 
 			old_keyboard_state = *keys;
-			if (tmp_timer_keylong == 0)
+			if (tmp_timer_keypad == 0)
 			{
 				taskENTER_CRITICAL();
-				timer_keyrepeat=KEY_REPEAT_COUNTER;
+				timer_keypad=keypadTimerRepeat;
 				taskEXIT_CRITICAL();
+
 				*keys |= KEY_MOD_LONG | KEY_MOD_DOWN;
 				*event = EVENT_KEY_CHANGE;
 				keyState = KEY_REPEAT;
@@ -210,14 +215,14 @@ void fw_check_key_event(uint32_t *keys, int *event)
 			keyState = KEY_IDLE;
 		} else {
 			taskENTER_CRITICAL();
-			uint32_t tmp_timer_keyrepeat=timer_keyrepeat;
+			tmp_timer_keypad=timer_keypad;
 			taskEXIT_CRITICAL();
 
 			*keys |= KEY_MOD_LONG;
-			if (tmp_timer_keyrepeat == 0)
+			if (tmp_timer_keypad == 0)
 			{
 				taskENTER_CRITICAL();
-				timer_keyrepeat=KEY_REPEAT_COUNTER;
+				timer_keypad=keypadTimerRepeat;
 				taskEXIT_CRITICAL();
 
 				if (KEYCHECK(*keys, KEY_LEFT) || KEYCHECK(*keys,KEY_RIGHT) ||
