@@ -32,7 +32,8 @@ float averageBatteryVoltage;
 int battery_voltage = 0;
 int battery_voltage_tick = 0;
 static bool reboot=false;
-static const int AVERAGE_BATTERY_VOLTAGE_SAMPLE_WINDOW = 30.0f;
+static const int BATTERY_VOLTAGE_TICK_RELOAD = 2000;
+static const int AVERAGE_BATTERY_VOLTAGE_SAMPLE_WINDOW = 60.0f;// 120 secs = Sample window * BATTERY_VOLTAGE_TICK_RELOAD in milliseconds
 
 void init_watchdog()
 {
@@ -102,7 +103,7 @@ void tick_watchdog()
 	}
 
 	battery_voltage_tick++;
-	if (battery_voltage_tick==2000)
+	if (battery_voltage_tick == BATTERY_VOLTAGE_TICK_RELOAD)
 	{
 		int tmp_battery_voltage = get_battery_voltage();
 		if (battery_voltage!=tmp_battery_voltage)
