@@ -122,4 +122,7 @@ void codeplugVFO_A_ChannelData(struct_codeplugChannel_t *vfoBuf);
 bool codeplugChannelIndexIsValid(int index);
 bool codeplugChannelSaveDataForIndex(int index, struct_codeplugChannel_t *channelBuf);
 
+int codeplugContactsGetCount(int callType);
+void codeplugContactGetDataForNumber(int index, int callType, struct_codeplugContact_t *contact);
+
 #endif

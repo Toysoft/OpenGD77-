@@ -797,7 +797,7 @@ static void updateScreen(int rxCommandState)
 
 	sprintf(buffer,"%d%%",batteryPerentage);
 
-	UC1701_printCore(0,4,buffer,UC1701_FONT_6x8,2,false);// Display battery percentage at the right
+	UC1701_printCore(0,4,buffer,UC1701_FONT_6x8,UC1701_TEXT_ALIGN_RIGHT,false);// Display battery percentage at the right
 
 
 	if (trxIsTransmitting)
@@ -847,9 +847,9 @@ static void updateScreen(int rxCommandState)
 		else
 		{
 			sprintf(buffer,"CC:%d" ,  trxGetDMRColourCode());//, trxGetDMRTimeSlot()+1) ;
-			UC1701_printCore(0, 32, buffer, UC1701_FONT_8x16, 0, false);
+			UC1701_printCore(0, 32, buffer, UC1701_FONT_8x16, UC1701_TEXT_ALIGN_LEFT, false);
 
-			UC1701_printCore(0, 32, (char *)POWER_LEVELS[hotspotPowerLevel], UC1701_FONT_8x16, 2, false);
+			UC1701_printCore(0, 32, (char *)POWER_LEVELS[hotspotPowerLevel], UC1701_FONT_8x16, UC1701_TEXT_ALIGN_RIGHT, false);
 		}
 		val_before_dp = freq_rx/100000;
 		val_after_dp = freq_rx - val_before_dp*100000;

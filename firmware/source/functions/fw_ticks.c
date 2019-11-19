@@ -16,22 +16,11 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef _FW_PIT_H_
-#define _FW_PIT_H_
+#include "fw_ticks.h"
 
-#include "FreeRTOS.h"
-#include "task.h"
 
-#include "fsl_pit.h"
+uint32_t fw_millis(void)
+{
+	return xTaskGetTickCount();
+}
 
-extern volatile uint32_t timer_maintask;
-extern volatile uint32_t timer_beeptask;
-extern volatile uint32_t timer_hrc6000task;
-extern volatile uint32_t timer_watchdogtask;
-extern volatile uint32_t timer_keypad;
-extern volatile uint32_t PITCounter;
-
-void init_pit(void);
-void PIT0_IRQHandler(void);
-
-#endif /* _FW_PIT_H_ */

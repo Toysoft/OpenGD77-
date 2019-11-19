@@ -70,7 +70,7 @@ static void updateScreen(void)
 		menuDisplayTitle("RSSI");
 
 		sprintf(buffer,"%d", trxRxSignal);
-		UC1701_printCore(0, 3, buffer, UC1701_FONT_8x8, 2, false);
+		UC1701_printCore(0, 3, buffer, UC1701_FONT_8x8, UC1701_TEXT_ALIGN_RIGHT, false);
 
 		sprintf(buffer,"%ddBm", dBm);
 		UC1701_printCentered(20, buffer,UC1701_FONT_8x16);
@@ -87,7 +87,7 @@ static void updateScreen(void)
 		}
 		UC1701_fillRect(4, 40,barGraphLength,8,false);
 
-		UC1701_printCore(5,50,"S1  S3  S5  S7  S9",UC1701_FONT_6x8,0,false);
+		UC1701_printCore(5,50,"S1  S3  S5  S7  S9",UC1701_FONT_6x8,UC1701_TEXT_ALIGN_LEFT,false);
 		UC1701_render();
 		displayLightTrigger();
 		trxRxSignal=0;

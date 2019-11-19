@@ -51,7 +51,7 @@ int menuCPS(int buttons, int keys, int events, bool isFirstRun)
 	return 0;
 }
 
-void menuCPSUpdate(int command,int x, int y, int iSize, int alignment, bool isInverted,char *szMsg)
+void menuCPSUpdate(int command,int x, int y, UC1701_Font_t fontSize, UC1701_Text_Align_t alignment, bool isInverted,char *szMsg)
 {
 	switch(command)
 	{
@@ -59,7 +59,7 @@ void menuCPSUpdate(int command,int x, int y, int iSize, int alignment, bool isIn
 			UC1701_clearBuf();
 			break;
 		case 1:
-			UC1701_printCore(x, y, szMsg,iSize, alignment, isInverted);
+			UC1701_printCore(x, y, szMsg, fontSize, alignment, isInverted);
 			break;
 		case 2:
 			UC1701_render();

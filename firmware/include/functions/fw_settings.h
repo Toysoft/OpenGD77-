@@ -53,6 +53,8 @@ typedef struct settingsStruct
 	uint8_t			beepVolumeDivider;
 	uint8_t			micGainDMR;
 	uint8_t			tsManualOverride;
+	uint16_t		keypadTimerLong;
+	uint16_t		keypadTimerRepeat;
 } settingsStruct_t;
 
 extern settingsStruct_t nonVolatileSettings;

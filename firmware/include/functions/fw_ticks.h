@@ -15,23 +15,17 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
+#ifndef _FW_TICKS_H_
+#define _FW_TICKS_H_
 
-#ifndef _FW_PIT_H_
-#define _FW_PIT_H_
+#include <stdint.h>
+#include <stdio.h>
 
 #include "FreeRTOS.h"
 #include "task.h"
 
-#include "fsl_pit.h"
+uint32_t fw_millis(void);
 
-extern volatile uint32_t timer_maintask;
-extern volatile uint32_t timer_beeptask;
-extern volatile uint32_t timer_hrc6000task;
-extern volatile uint32_t timer_watchdogtask;
-extern volatile uint32_t timer_keypad;
-extern volatile uint32_t PITCounter;
 
-void init_pit(void);
-void PIT0_IRQHandler(void);
+#endif /* _FW_TICKS_H_ */
 
-#endif /* _FW_PIT_H_ */

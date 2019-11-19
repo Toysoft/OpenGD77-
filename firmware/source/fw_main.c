@@ -153,10 +153,35 @@ void fw_main_task(void *data)
     	    alive_maintask=true;
         	taskEXIT_CRITICAL();
 
-        	tick_com_request();
+			tick_com_request();
 
-        	fw_check_button_event(&buttons, &button_event);// Read button state and event
-        	fw_check_key_event(&keys, &key_event);// Read keyboard state and event
+			fw_check_button_event(&buttons, &button_event); // Read button state and event
+			fw_check_key_event(&keys, &key_event); // Read keyboard state and event
+
+			if (keypadLocked)
+			{
+				if (key_event == EVENT_KEY_CHANGE)
+				{
+					key_event = EVENT_KEY_NONE;
+					if (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN)
+					{
+						menuSystemPushNewMenu(MENU_LOCK_SCREEN);
+					}
+				}
+				if (button_event == EVENT_BUTTON_CHANGE
+						&& (buttons & BUTTON_ORANGE) != 0)
+				{
+					button_event = EVENT_BUTTON_NONE;
+					if (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN)
+					{
+						menuSystemPushNewMenu(MENU_LOCK_SCREEN);
+					}
+				}
+			}
+
+			if (key_event == EVENT_KEY_CHANGE && (keys & KEY_MOD_PRESS) == 0) {   // Remove after changing key handling in user interface
+				key_event = EVENT_KEY_NONE;
+			}
 
 			if (keypadLocked)
 			{
@@ -180,7 +205,7 @@ void fw_main_task(void *data)
 					}
 				}
 			}
-			if (key_event == EVENT_KEY_CHANGE)
+			if (key_event == EVENT_KEY_CHANGE && KEYCHECK_PRESS(keys))
 			{
 				if (keys != 0 && (buttons & BUTTON_PTT) == 0)
 				{
