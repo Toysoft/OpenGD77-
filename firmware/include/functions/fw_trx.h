@@ -45,6 +45,7 @@ extern volatile uint8_t trxRxNoise;
 extern volatile bool trxIsTransmittingTone;
 extern calibrationPowerValues_t trxPowerSettings;
 
+int trx_carrier_detected(void);
 void trx_check_analog_squelch(void);
 int	trxGetMode(void);
 int	trxGetBandwidthIs25kHz(void);
