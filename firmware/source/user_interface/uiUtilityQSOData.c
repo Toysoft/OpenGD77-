@@ -48,6 +48,36 @@ uint32_t menuUtilityTgBeforePcMode 	= 0;// No TG saved, prior to a Private call 
 
 const char *POWER_LEVELS[]={"250mW","500mW","750mW","1W","2W","3W","4W","5W"};
 
+/*
+ * Remove space at the end of the array, and return pointer to first non space character
+ */
+static char *chomp(char *str)
+{
+	char *sp = str, *ep = str;
+
+	while (*ep != '\0')
+		ep++;
+
+	// Spaces at the end
+	while (ep > str)
+	{
+		if (*ep == '\0')
+			;
+		else if (*ep == ' ')
+			*ep = '\0';
+		else
+			break;
+
+		ep--;
+	}
+
+	// Spaces at the beginning
+	while (*sp == ' ')
+		sp++;
+
+	return sp;
+}
+
 void lastheardInitList()
 {
     LinkHead = callsList;
@@ -402,15 +432,16 @@ void menuUtilityRenderQSOData()
 					// More than 1 line wide of text, so we need to split onto 2 lines.
 					memcpy(buffer,LinkHead->talkerAlias,6);
 					buffer[6]=0x00;
-					UC1701_printCentered(32, buffer,UC1701_FONT_8x16);
+
+					UC1701_printCentered(32, chomp(buffer), UC1701_FONT_8x16);
 
 					memcpy(buffer,&LinkHead->talkerAlias[6],16);
 					buffer[16]=0x00;
-					UC1701_printAt(0,48,buffer,UC1701_FONT_8x16);
+					UC1701_printAt(0,48, chomp(buffer),UC1701_FONT_8x16);
 				}
 				else
 				{
-					UC1701_printCentered(32,LinkHead->talkerAlias,UC1701_FONT_8x16);
+					UC1701_printCentered(32, chomp(LinkHead->talkerAlias),UC1701_FONT_8x16);
 					displayChannelNameOrRxFrequency(buffer);
 				}
 			}
