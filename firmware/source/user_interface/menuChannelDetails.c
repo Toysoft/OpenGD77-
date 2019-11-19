@@ -38,7 +38,7 @@ static int CTCSSTxIndex=0;
 static struct_codeplugChannel_t tmpChannel;// update a temporary copy of the channel and only write back if green menu is pressed
 
 enum CHANNEL_DETAILS_DISPLAY_LIST { CH_DETAILS_MODE = 0, CH_DETAILS_DMR_CC, CH_DETAILS_DMR_TS,CH_DETAILS_RXCTCSS, CH_DETAILS_TXCTCSS , CH_DETAILS_RXFREQ, CH_DETAILS_TXFREQ, CH_DETAILS_BANDWIDTH,
-									CH_DETAILS_FREQ_STEP, CH_DETAILS_TOT,
+									CH_DETAILS_FREQ_STEP, CH_DETAILS_TOT, CH_DETAILS_SKIP,
 									NUM_CH_DETAILS_ITEMS};// The last item in the list is used so that we automatically get a total number of items in the list
 
 int menuChannelDetails(int buttons, int keys, int events, bool isFirstRun)
@@ -188,6 +188,10 @@ static void updateScreen()
 					strcpy(buf, "TOT:OFF");
 				}
 				break;
+			case CH_DETAILS_SKIP:
+							// Scan Skip Channel (Using CPS Auto Scan flag)
+				sprintf(buf, "Skip:%s", ((tmpChannel.flag4 & 0x20) == 0x20) ? "Yes" : "No");
+				break;
 
 		}
 
@@ -276,6 +280,9 @@ static void handleEvent(int buttons, int keys, int events)
 					tmpChannel.tot++;
 				}
 				break;
+			case CH_DETAILS_SKIP:
+				tmpChannel.flag4 |= 0x20;// set Channel Skip bit (was Auto Scan)
+				break;
 		}
 	}
 	else if ((keys & KEY_LEFT)!=0)
@@ -343,6 +350,9 @@ static void handleEvent(int buttons, int keys, int events)
 				{
 					tmpChannel.tot--;
 				}
+				break;
+			case CH_DETAILS_SKIP:
+				tmpChannel.flag4 &= ~0x20;// clear Channel Skip Bit (was Auto Scan bit)
 				break;
 		}
 	}

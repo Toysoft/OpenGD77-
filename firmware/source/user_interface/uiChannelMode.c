@@ -24,6 +24,7 @@
 
 static void handleEvent(int buttons, int keys, int events);
 static void loadChannelData(bool useChannelDataInMemory);
+static void scanning(void);
 static struct_codeplugZone_t currentZone;
 static struct_codeplugRxGroup_t rxGroupData;
 static struct_codeplugContact_t contactData;
@@ -33,6 +34,13 @@ static bool displaySquelch=false;
 int currentChannelNumber=0;
 static bool isDisplayingQSOData=false;
 static bool isTxRxFreqSwap=false;
+static bool scanActive=false;
+static int scanTimer=0;
+static int scanState=0;					//state flag for scan routine
+static int scanShortPause=500;			//time to wait after carrier detected to allow time for full signal detection. (CTCSS or DMR)
+static int scanPause=5000;				//time to wait after valid signal is detected.
+static int scanInterval=50;			    //time between each scan step
+
 
 int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 {
@@ -77,6 +85,10 @@ int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 					//UC1701_render();
 					RssiUpdateCounter = RSSI_UPDATE_COUNTER_RELOAD;
 				}
+			}
+			if(scanActive)
+			{
+				scanning();
 			}
 		}
 		else
@@ -235,7 +247,11 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				displaySquelch=false;
 			}
 
+			if (!((scanActive) & (scanState==0)))
+			{
 			displayLightTrigger();
+			}
+
 			UC1701_render();
 			break;
 
@@ -264,10 +280,12 @@ static void handleEvent(int buttons, int keys, int events)
 		return;
 	}
 
+
 	if (events & 0x02)
 	{
 		if (buttons & BUTTON_ORANGE)
 		{
+			scanActive=false;
 			if (buttons & BUTTON_SK2)
 			{
 				settingsPrivateCallMuteMode = !settingsPrivateCallMuteMode;// Toggle PC mute only mode
@@ -281,6 +299,7 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 			return;
 		}
+
 	}
 
 	if ((keys & KEY_GREEN)!=0)
@@ -317,6 +336,7 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_HASH)!=0)
 	{
+		scanActive=false;
 		if (trxGetMode() == RADIO_MODE_DIGITAL)
 		{
 			if ((buttons & BUTTON_SK2) != 0)
@@ -330,6 +350,7 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_RED)!=0)
 	{
+		scanActive=false;
 		if (menuUtilityHandlePrivateCallActions(buttons,keys,events))
 		{
 			return;
@@ -348,6 +369,7 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_RIGHT)!=0)
 	{
+		scanActive=false;
 		if (buttons & BUTTON_SK2)
 		{
 			if (nonVolatileSettings.txPowerLevel < 7)
@@ -410,6 +432,7 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_LEFT)!=0)
 	{
+		scanActive=false;
 		if (buttons & BUTTON_SK2)
 		{
 			if (nonVolatileSettings.txPowerLevel > 0)
@@ -470,6 +493,7 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_STAR)!=0)
 	{
+		scanActive=false;
 		// Toggle TimeSlot
 		if (buttons & BUTTON_SK2 )
 		{
@@ -510,6 +534,7 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_DOWN)!=0)
 	{
+		scanActive=false;
 		if (buttons & BUTTON_SK2)
 		{
 			int numZones = codeplugZonesGetCount();
@@ -558,6 +583,7 @@ static void handleEvent(int buttons, int keys, int events)
 	{
 		if (buttons & BUTTON_SK2)
 		{
+			scanActive=false;
 			int numZones = codeplugZonesGetCount();
 
 			nonVolatileSettings.currentZone++;
@@ -592,6 +618,8 @@ static void handleEvent(int buttons, int keys, int events)
 						nonVolatileSettings.currentChannelIndexInZone = 0;
 				}
 			}
+			scanTimer=500;
+			scanState=0;
 		}
 		loadChannelData(false);
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
@@ -643,6 +671,7 @@ static void handleEvent(int buttons, int keys, int events)
 
 		if (keyval<10)
 		{
+			scanActive=false;
 			directChannelNumber=(directChannelNumber*10) + keyval;
 			if(directChannelNumber>1024) directChannelNumber=0;
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
@@ -653,7 +682,7 @@ static void handleEvent(int buttons, int keys, int events)
 
 // Quick Menu functions
 
-enum CHANNEL_SCREEN_QUICK_MENU_ITEMS { CH_SCREEN_QUICK_MENU_COPY2VFO = 0, CH_SCREEN_QUICK_MENU_COPY_FROM_VFO,
+enum CHANNEL_SCREEN_QUICK_MENU_ITEMS { CH_SCREEN_QUICK_MENU_SCAN=0, CH_SCREEN_QUICK_MENU_COPY2VFO, CH_SCREEN_QUICK_MENU_COPY_FROM_VFO,
 	NUM_CH_SCREEN_QUICK_MENU_ITEMS };// The last item in the list is used so that we automatically get a total number of items in the list
 
 static void updateQuickMenuScreen()
@@ -670,6 +699,9 @@ static void updateQuickMenuScreen()
 
 		switch(mNum)
 		{
+			case CH_SCREEN_QUICK_MENU_SCAN:
+				strcpy(buf, "Scan");
+				break;
 			case CH_SCREEN_QUICK_MENU_COPY2VFO:
 				strcpy(buf, "Channel --> VFO");
 				break;
@@ -711,6 +743,12 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 	{
 		switch(gMenusCurrentItemIndex)
 		{
+			case CH_SCREEN_QUICK_MENU_SCAN:
+				scanActive=true;
+				scanTimer=500;
+				scanState=0;
+				menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
+				break;
 			case CH_SCREEN_QUICK_MENU_COPY2VFO:
 				memcpy(&nonVolatileSettings.vfoChannel.rxFreq,&channelScreenChannelData.rxFreq,sizeof(struct_codeplugChannel_t) - 16);// Don't copy the name of channel, which are in the first 16 bytes
 				menuSystemPopAllAndDisplaySpecificRootMenu(MENU_VFO_MODE);
@@ -753,3 +791,54 @@ int menuChannelModeQuickMenu(int buttons, int keys, int events, bool isFirstRun)
 	}
 	return 0;
 }
+
+//Scan Mode
+
+static void scanning(void)
+{
+	if(trxIsTransmitting)															//stop scanning if we press the PTT
+	{
+		scanActive=false;
+		return;
+	}
+
+	if((scanState==0) & (scanTimer==10))							    			//after initial settling time
+	{
+		if(trx_carrier_detected())												 	//test for presence of RF Carrier
+		{
+			scanTimer=scanShortPause;												//start short delay to allow full detection of signal
+			scanState=1;															//state 1 = pause and test for valid signal that produces audio
+		}
+	}
+
+	if(scanState==1)
+	{
+	    if (GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable)==1)	    	// if speaker on we must be receiving a signal
+	    {
+	    	scanTimer=scanPause;													//extend the time before resuming scan.
+	    }
+	}
+
+	if(scanTimer>0)
+	{
+		scanTimer--;
+	}
+	else
+	{
+		trx_measure_count=0;														//needed to allow time for Rx to settle after channel change.
+			handleEvent(0,KEY_UP,0);												//Increment the channel
+		if(channelScreenChannelData.flag4 & 0x20)									//if this channel has the skip bit set
+		{
+			scanTimer=10;															//skip over it quickly. (immediate selection of another channel seems to cause crashes)
+		}
+		else
+		{
+			scanTimer=scanInterval;
+			scanState=0;															//state 0 = settling and test for carrier present.
+		}
+
+	}
+
+
+}
+
