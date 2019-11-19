@@ -555,3 +555,19 @@ void drawDMRMicLevelBarGraph()
 
 	UC1701_fillRect(0, BAR_Y_POS,(int)barGraphLength,3,false);
 }
+
+void setOverrideTGorPC(int tgOrPc, bool privateCall) {
+	uint32_t saveTrxTalkGroupOrPcId = trxTalkGroupOrPcId;
+	nonVolatileSettings.overrideTG = tgOrPc;
+	if (privateCall == true)
+	{
+		// Private Call
+
+		if ((saveTrxTalkGroupOrPcId >> 24) != PC_CALL_FLAG)
+		{
+			// if the current Tx TG is a TalkGroup then save it so it can be stored after the end of the private call
+			menuUtilityTgBeforePcMode = saveTrxTalkGroupOrPcId;
+		}
+		nonVolatileSettings.overrideTG |= (PC_CALL_FLAG << 24);
+	}
+}

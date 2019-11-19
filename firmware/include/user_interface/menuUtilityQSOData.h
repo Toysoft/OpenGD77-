@@ -65,4 +65,6 @@ bool menuUtilityHandlePrivateCallActions(int buttons, int keys, int events);
 void lastHeardClearLastID();
 void drawRSSIBarGraph();
 void drawDMRMicLevelBarGraph();
+void setOverrideTGorPC(int tgOrPc, bool privateCall);
+
 #endif
