@@ -49,7 +49,6 @@ int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 		nonVolatileSettings.initialMenuNumber = MENU_CHANNEL_MODE;// This menu.
 		currentChannelData = &channelScreenChannelData;// Need to set this as currentChannelData is used by functions called by loadChannelData()
 		lastHeardClearLastID();
-		scanActive=false;
 
 		if (channelScreenChannelData.rxFreq != 0)
 		{
@@ -281,6 +280,7 @@ static void handleEvent(int buttons, int keys, int events)
 		return;
 	}
 
+
 	if (events & 0x02)
 	{
 		if (buttons & BUTTON_ORANGE)
@@ -299,17 +299,11 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 			return;
 		}
-		if(buttons & BUTTON_SK1)
-			{
-			scanActive=!scanActive;
-			scanTimer=0;
-			scanState=0;
-			}
+
 	}
 
 	if ((keys & KEY_GREEN)!=0)
 	{
-		scanActive=false;
 		if (menuUtilityHandlePrivateCallActions(buttons,keys,events))
 		{
 			return;
@@ -619,6 +613,8 @@ static void handleEvent(int buttons, int keys, int events)
 						nonVolatileSettings.currentChannelIndexInZone = 0;
 				}
 			}
+			scanTimer=500;
+			scanState=0;
 		}
 		loadChannelData(false);
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
@@ -681,7 +677,7 @@ static void handleEvent(int buttons, int keys, int events)
 
 // Quick Menu functions
 
-enum CHANNEL_SCREEN_QUICK_MENU_ITEMS { CH_SCREEN_QUICK_MENU_COPY2VFO = 0, CH_SCREEN_QUICK_MENU_COPY_FROM_VFO,
+enum CHANNEL_SCREEN_QUICK_MENU_ITEMS { CH_SCREEN_SCAN=0, CH_SCREEN_QUICK_MENU_COPY2VFO, CH_SCREEN_QUICK_MENU_COPY_FROM_VFO,
 	NUM_CH_SCREEN_QUICK_MENU_ITEMS };// The last item in the list is used so that we automatically get a total number of items in the list
 
 static void updateQuickMenuScreen()
@@ -698,6 +694,9 @@ static void updateQuickMenuScreen()
 
 		switch(mNum)
 		{
+			case CH_SCREEN_SCAN:
+				strcpy(buf, "Scan");
+				break;
 			case CH_SCREEN_QUICK_MENU_COPY2VFO:
 				strcpy(buf, "Channel --> VFO");
 				break;
@@ -739,6 +738,12 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 	{
 		switch(gMenusCurrentItemIndex)
 		{
+			case CH_SCREEN_SCAN:
+				scanActive=true;
+				scanTimer=500;
+				scanState=0;
+				menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
+				break;
 			case CH_SCREEN_QUICK_MENU_COPY2VFO:
 				memcpy(&nonVolatileSettings.vfoChannel.rxFreq,&channelScreenChannelData.rxFreq,sizeof(struct_codeplugChannel_t) - 16);// Don't copy the name of channel, which are in the first 16 bytes
 				menuSystemPopAllAndDisplaySpecificRootMenu(MENU_VFO_MODE);
