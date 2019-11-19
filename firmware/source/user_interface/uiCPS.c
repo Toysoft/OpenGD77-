@@ -51,7 +51,7 @@ int menuCPS(int buttons, int keys, int events, bool isFirstRun)
 	return 0;
 }
 
-void menuCPSUpdate(int command,int x, int y, int iSize, int alignment, bool isInverted,char *szMsg)
+void menuCPSUpdate(int command,int x, int y, int iSize, UC1701_Text_Align_t alignment, bool isInverted,char *szMsg)
 {
 	switch(command)
 	{

@@ -38,13 +38,20 @@ typedef enum
 	UC1701_FONT_16x32
 } UC1701_Font_t;
 
+typedef enum
+{
+	UC1701_TEXT_ALIGN_LEFT = 0,
+	UC1701_TEXT_ALIGN_CENTER,
+	UC1701_TEXT_ALIGN_RIGHT
+} UC1701_Text_Align_t;
+
 void UC1701_begin(bool isInverted);
 void UC1701_clearBuf();
 void UC1701_render();
 void UC1701RenderRows(int16_t startRow, int16_t endRow);
 void UC1701_printCentered(uint8_t y, char *text, UC1701_Font_t fontSize);
 void UC1701_printAt(uint8_t x, uint8_t y, char *text, UC1701_Font_t fontSize);
-int UC1701_printCore(int16_t x, int16_t y, char *szMsg, UC1701_Font_t fontSize, int16_t alignment, bool isInverted);
+int UC1701_printCore(int16_t x, int16_t y, char *szMsg, UC1701_Font_t fontSize, UC1701_Text_Align_t alignment, bool isInverted);
 
 int16_t UC1701_setPixel(int16_t x, int16_t y, bool color);
 

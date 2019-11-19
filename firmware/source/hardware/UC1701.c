@@ -153,7 +153,7 @@ static inline bool checkWritePos(uint8_t * writePos)
 }
 #endif
 
-int UC1701_printCore(int16_t x, int16_t y, char *szMsg, UC1701_Font_t fontSize, int16_t alignment, bool isInverted)
+int UC1701_printCore(int16_t x, int16_t y, char *szMsg, UC1701_Font_t fontSize, UC1701_Text_Align_t alignment, bool isInverted)
 {
 	int16_t i, sLen;
 	uint8_t *currentCharData;
@@ -209,13 +209,13 @@ int UC1701_printCore(int16_t x, int16_t y, char *szMsg, UC1701_Font_t fontSize, 
 
 	switch(alignment)
 	{
-		case 0:
+		case UC1701_TEXT_ALIGN_LEFT:
 			// left aligned, do nothing.
 			break;
-		case 1:// Align centre
+		case UC1701_TEXT_ALIGN_CENTER:
 			x = (128 - (charWidthPixels * sLen))/2;
 			break;
-		case 2:// align right
+		case UC1701_TEXT_ALIGN_RIGHT:
 			x = 128 - (charWidthPixels * sLen);
 			break;
 	}
@@ -366,12 +366,12 @@ void UC1701_clearBuf()
 
 void UC1701_printCentered(uint8_t y, char *text, UC1701_Font_t fontSize)
 {
-	UC1701_printCore(0, y, text, fontSize, 1, false);
+	UC1701_printCore(0, y, text, fontSize, UC1701_TEXT_ALIGN_CENTER, false);
 }
 
 void UC1701_printAt(uint8_t x, uint8_t y, char *text, UC1701_Font_t fontSize)
 {
-	UC1701_printCore(x, y, text, fontSize, 0, false);
+	UC1701_printCore(x, y, text, fontSize, UC1701_TEXT_ALIGN_LEFT, false);
 }
 
 // Bresenham's algorithm - thx wikpedia
