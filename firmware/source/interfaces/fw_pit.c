@@ -22,15 +22,19 @@ volatile uint32_t timer_maintask;
 volatile uint32_t timer_beeptask;
 volatile uint32_t timer_hrc6000task;
 volatile uint32_t timer_watchdogtask;
+volatile uint32_t timer_keypad;
+volatile uint32_t timer_keyrepeat;
 volatile uint32_t PITCounter;
 
-void init_pit()
+void init_pit(void)
 {
 	taskENTER_CRITICAL();
 	timer_maintask=0;
 	timer_beeptask=0;
 	timer_hrc6000task=0;
 	timer_watchdogtask=0;
+	timer_keypad=0;
+	timer_keyrepeat=0;
 	taskEXIT_CRITICAL();
 
 	pit_config_t pitConfig;
@@ -64,6 +68,10 @@ void PIT0_IRQHandler(void)
 	if (timer_watchdogtask>0)
 	{
 		timer_watchdogtask--;
+	}
+	if (timer_keypad>0)
+	{
+		timer_keypad--;
 	}
 
     /* Clear interrupt flag.*/

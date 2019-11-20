@@ -70,18 +70,18 @@ extern uint8_t SPI_masterSendBuffer_SPI1[SPI_DATA_LENGTH];
 #define GPIO_SPI_DO_C6000_U  GPIOD
 #define Pin_SPI_DO_C6000_U   3
 
-void init_SPI();
-void setup_SPI0();
-void setup_SPI1();
+void init_SPI(void);
+void setup_SPI0(void);
+void setup_SPI1(void);
 
-void clear_SPI_buffer_SPI0();
+void clear_SPI_buffer_SPI0(void);
 int write_SPI_page_reg_byte_SPI0(uint8_t page, uint8_t reg, uint8_t val);
 int read_SPI_page_reg_byte_SPI0(uint8_t page, uint8_t reg, volatile uint8_t* val);
 int set_clear_SPI_page_reg_byte_with_mask_SPI0(uint8_t page, uint8_t reg, uint8_t mask, uint8_t val);
 int write_SPI_page_reg_bytearray_SPI0(uint8_t page, uint8_t reg, const uint8_t* values, uint8_t length);
 int read_SPI_page_reg_bytearray_SPI0(uint8_t page, uint8_t reg, volatile uint8_t* values, uint8_t length);
 
-void clear_SPI_buffer_SPI1();
+void clear_SPI_buffer_SPI1(void);
 int write_SPI_page_reg_byte_SPI1(uint8_t page, uint8_t reg, uint8_t val);
 int read_SPI_page_reg_byte_SPI1(uint8_t page, uint8_t reg, uint8_t* val);
 int set_clear_SPI_page_reg_byte_with_mask_SPI1(uint8_t page, uint8_t reg, uint8_t mask, uint8_t val);

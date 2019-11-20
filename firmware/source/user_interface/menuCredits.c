@@ -17,7 +17,7 @@
  */
 #include <user_interface/menuSystem.h>
 
-static void updateScreen();
+static void updateScreen(void);
 static void handleEvent(int buttons, int keys, int events);
 static void scrollDownOneLine();
 
@@ -53,7 +53,7 @@ int menuCredits(int buttons, int keys, int events, bool isFirstRun)
 	return 0;
 }
 
-static void updateScreen()
+static void updateScreen(void)
 {
 	UC1701_clearBuf();
 	menuDisplayTitle("OpenGD77");
@@ -69,7 +69,7 @@ static void updateScreen()
 	displayLightTrigger();
 }
 
-static void scrollDownOneLine()
+static void scrollDownOneLine(void)
 {
 	if (currentDisplayIndex < (NUM_CREDITS - NUM_LINES_PER_SCREEN) )
 	{

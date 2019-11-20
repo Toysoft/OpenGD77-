@@ -21,7 +21,7 @@
 #include "fw_settings.h"
 
 
-static void updateScreen();
+static void updateScreen(void);
 static void handleEvent(int buttons, int keys, int events);
 
 static const int PIT_COUNTS_PER_SECOND = 10000;
@@ -34,6 +34,7 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
+		uiChannelModeScanActive=false;
 		trxIsTransmittingTone = false;
 		settingsPrivateCallMuteMode = false;
 		micLevelUpdateCounter=100;
@@ -128,7 +129,7 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 	return 0;
 }
 
-static void updateScreen()
+static void updateScreen(void)
 {
 	menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 	if (menuControlData.stack[0]==MENU_VFO_MODE)

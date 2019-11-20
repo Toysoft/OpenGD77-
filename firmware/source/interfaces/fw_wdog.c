@@ -35,7 +35,7 @@ static bool reboot=false;
 static const int BATTERY_VOLTAGE_TICK_RELOAD = 2000;
 static const int AVERAGE_BATTERY_VOLTAGE_SAMPLE_WINDOW = 60.0f;// 120 secs = Sample window * BATTERY_VOLTAGE_TICK_RELOAD in milliseconds
 
-void init_watchdog()
+void init_watchdog(void)
 {
     wdog_config_t config;
     WDOG_GetDefaultConfig(&config);
@@ -65,7 +65,7 @@ void init_watchdog()
 				);
 }
 
-void fw_watchdog_task()
+void fw_watchdog_task(void *data)
 {
     while (1U)
     {
@@ -86,7 +86,7 @@ void fw_watchdog_task()
 }
 
 
-void tick_watchdog()
+void tick_watchdog(void)
 {
 
 	watchdog_refresh_tick++;
@@ -116,7 +116,7 @@ void tick_watchdog()
 	trigger_adc();// need the ADC value next time though, so request conversion now, so that its ready by the time we need it
 }
 
-void watchdogReboot()
+void watchdogReboot(void)
 {
 	reboot=true;
 }

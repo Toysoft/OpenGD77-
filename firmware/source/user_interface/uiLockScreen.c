@@ -18,7 +18,7 @@
 #include <user_interface/menuSystem.h>
 #include "fw_settings.h"
 
-static void updateScreen();
+static void updateScreen(void);
 static void handleEvent(int buttons, int keys, int events);
 
 static bool lockDisplay = false;
@@ -40,7 +40,7 @@ int menuLockScreen(int buttons, int keys, int events, bool isFirstRun)
 	return 0;
 }
 
-static void updateScreen()
+static void updateScreen(void)
 {
 	UC1701_clearBuf();
 	UC1701_drawRoundRect(4, 4, 120, 56, 5, true);

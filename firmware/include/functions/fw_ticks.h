@@ -15,28 +15,17 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
+#ifndef _FW_TICKS_H_
+#define _FW_TICKS_H_
 
-#ifndef _FW_ADC_H_
-#define _FW_ADC_H_
+#include <stdint.h>
+#include <stdio.h>
 
 #include "FreeRTOS.h"
 #include "task.h"
 
-#include "fsl_adc16.h"
+uint32_t fw_millis(void);
 
-extern const int CUTOFF_VOLTAGE_UPPER_HYST;
-extern const int CUTOFF_VOLTAGE_LOWER_HYST;
-extern const int BATTERY_MAX_VOLTAGE;
 
-extern volatile uint32_t adc_channel;
-extern volatile uint32_t adc0_dp0;
-extern volatile uint32_t adc0_dp1;
-extern volatile uint32_t adc0_dp2;
-extern volatile uint32_t adc0_dp3;
+#endif /* _FW_TICKS_H_ */
 
-void trigger_adc(void);
-void adc_init(void);
-void ADC0_IRQHandler(void);
-int get_battery_voltage(void);
-
-#endif /* _FW_ADC_H_ */

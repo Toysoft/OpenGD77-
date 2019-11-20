@@ -43,12 +43,12 @@
 extern uint8_t SPI_Flash_sectorbuffer[4096];
 
 // Public functions
-bool SPI_Flash_init();
+bool SPI_Flash_init(void);
 bool SPI_Flash_read(uint32_t addrress,uint8_t *buf,int size);
 bool SPI_Flash_writePage(uint32_t address,uint8_t *dataBuf);// page is 256 bytes
 bool SPI_Flash_eraseSector(uint32_t address);// sector is 16 pages  = 4k bytes
-int SPI_Flash_readManufacturer();// Not necessarily Winbond !
-int SPI_Flash_readPartID();// Should be 4014 for 1M or 4017 for 8M
-int SPI_Flash_readStatusRegister();// May come in handy
+int SPI_Flash_readManufacturer(void);// Not necessarily Winbond !
+int SPI_Flash_readPartID(void);// Should be 4014 for 1M or 4017 for 8M
+int SPI_Flash_readStatusRegister(void);// May come in handy
 
 #endif /* _SPI_FLASH_H_ */

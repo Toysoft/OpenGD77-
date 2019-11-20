@@ -135,7 +135,7 @@ void UC1701RenderRows(int16_t startRow, int16_t endRow)
 	taskEXIT_CRITICAL();
 }
 
-void UC1701_render()
+void UC1701_render(void)
 {
 	UC1701RenderRows(0,8);
 }
@@ -153,7 +153,7 @@ static inline bool checkWritePos(uint8_t * writePos)
 }
 #endif
 
-int UC1701_printCore(int16_t x, int16_t y, char *szMsg, UC1701_Font_t fontSize, int16_t alignment, bool isInverted)
+int UC1701_printCore(int16_t x, int16_t y, char *szMsg, UC1701_Font_t fontSize, UC1701_Text_Align_t alignment, bool isInverted)
 {
 	int16_t i, sLen;
 	uint8_t *currentCharData;
@@ -209,13 +209,13 @@ int UC1701_printCore(int16_t x, int16_t y, char *szMsg, UC1701_Font_t fontSize, 
 
 	switch(alignment)
 	{
-		case 0:
+		case UC1701_TEXT_ALIGN_LEFT:
 			// left aligned, do nothing.
 			break;
-		case 1:// Align centre
+		case UC1701_TEXT_ALIGN_CENTER:
 			x = (128 - (charWidthPixels * sLen))/2;
 			break;
-		case 2:// align right
+		case UC1701_TEXT_ALIGN_RIGHT:
 			x = 128 - (charWidthPixels * sLen);
 			break;
 	}
@@ -359,19 +359,19 @@ void UC1701_setContrast(uint8_t contrast)
 	UC1701_setCommandMode(false);
 }
 
-void UC1701_clearBuf()
+void UC1701_clearBuf(void)
 {
 	memset(screenBuf,0x00,1024);
 }
 
 void UC1701_printCentered(uint8_t y, char *text, UC1701_Font_t fontSize)
 {
-	UC1701_printCore(0, y, text, fontSize, 1, false);
+	UC1701_printCore(0, y, text, fontSize, UC1701_TEXT_ALIGN_CENTER, false);
 }
 
 void UC1701_printAt(uint8_t x, uint8_t y, char *text, UC1701_Font_t fontSize)
 {
-	UC1701_printCore(x, y, text, fontSize, 0, false);
+	UC1701_printCore(x, y, text, fontSize, UC1701_TEXT_ALIGN_LEFT, false);
 }
 
 // Bresenham's algorithm - thx wikpedia
@@ -467,7 +467,7 @@ void UC1701_drawCircle(int16_t x0, int16_t y0, int16_t r, bool color)
 	}
 }
 
-void UC1701_drawCircleHelper( int16_t x0, int16_t y0, int16_t r, uint8_t cornername, bool color)
+void UC1701_drawCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername, bool color)
 {
 	int16_t f     = 1 - r;
 	int16_t ddF_x = 1;
@@ -764,7 +764,7 @@ void UC1701_fillArc(uint16_t x, uint16_t y, uint16_t radius, uint16_t thickness,
  * ***** End of Arc related functions *****
  */
 
-void UC1701_drawellipse(int16_t x0, int16_t y0, int16_t x1, int16_t y1, bool color)
+void UC1701_drawEllipse(int16_t x0, int16_t y0, int16_t x1, int16_t y1, bool color)
 {
   int16_t a = abs(x1 - x0), b = abs(y1 - y0), b1 = b & 1; /* values of diameter */
   long dx = 4 * (1 - a) * b * b, dy = 4 * (b1 + 1) * a * a; /* error increment */
@@ -923,6 +923,16 @@ void UC1701_fillRoundRect(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r,
 }
 
 /*
+ *
+ */
+void UC1701_drawRoundRectWithDropShadow(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r, bool color)
+{
+	UC1701_fillRoundRect(x + 2, y, w, h, r, color); // Shadow
+	UC1701_fillRoundRect(x, y - 2, w, h, r, !color); // Empty box
+	UC1701_drawRoundRect(x, y - 2, w, h, r, color); // Outline
+}
+
+/*
  * Draw a rectangle
  */
 void UC1701_drawRect(int16_t x, int16_t y, int16_t w, int16_t h, bool color)
@@ -998,6 +1008,16 @@ void UC1701_fillRect(int16_t x, int16_t y, int16_t width, int16_t height, bool i
 			}
 		}
 	}
+}
+
+/*
+ *
+ */
+void UC1701_drawRectWithDropShadow(int16_t x, int16_t y, int16_t w, int16_t h, bool color)
+{
+	UC1701_fillRect(x + 2, y, w, h, !color); // Shadow
+	UC1701_fillRect(x, y - 2, w, h, color); // Empty box
+	UC1701_drawRect(x, y - 2, w, h, color); // Outline
 }
 
 /*

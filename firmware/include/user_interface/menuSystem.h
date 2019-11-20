@@ -23,6 +23,7 @@
 #define MENU_INC(O, M) do { O = (O + 1) % M; } while(0)
 #define MENU_DEC(O, M) do { O = (O + M - 1) % M; } while(0)
 
+extern bool uiChannelModeScanActive;
 extern int menuDisplayLightTimer;
 extern int menuTimer;
 
@@ -49,18 +50,18 @@ int menuGetMenuOffset(int maxMenuEntries, int loopOffset);
 
 void menuChannelModeUpdateScreen(int txTimeSecs);
 void menuVFOModeUpdateScreen(int txTimeSecs);
-void menuCPSUpdate(int command,int x, int y, int iSize, int alignment, bool isInverted,char *szMsg);
+void menuCPSUpdate(int command,int x, int y, UC1701_Font_t fontSize, UC1701_Text_Align_t alignment, bool isInverted,char *szMsg);
 
-void menuInitMenuSystem();
-void displayLightTrigger();
+void menuInitMenuSystem(void);
+void displayLightTrigger(void);
 void displayLightOverrideTimeout(int timeout);
 void menuSystemPushNewMenu(int menuNumber);
 
 void menuSystemSetCurrentMenu(int menuNumber);
-int menuSystemGetCurrentMenuNumber();
+int menuSystemGetCurrentMenuNumber(void);
 
-void menuSystemPopPreviousMenu();
-void menuSystemPopAllAndDisplayRootMenu();
+void menuSystemPopPreviousMenu(void);
+void menuSystemPopAllAndDisplayRootMenu(void);
 void menuSystemPopAllAndDisplaySpecificRootMenu(int newRootMenu);
 
 void menuSystemCallCurrentMenuTick(int buttons, int keys, int events);
@@ -94,6 +95,7 @@ enum MENU_SCREENS { MENU_SPLASH_SCREEN=0,
 					MENU_CHANNEL_QUICK_MENU,
 					MENU_VFO_QUICK_MENU,
 					MENU_LOCK_SCREEN,
+					MENU_CONTACT_LIST,
 };
 
 extern int gMenusCurrentItemIndex;

@@ -46,7 +46,7 @@ int menuChannelDetails(int buttons, int keys, int events, bool isFirstRun);
 int menuHotspotMode(int buttons, int keys, int events, bool isFirstRun);
 int menuCPS(int buttons, int keys, int events, bool isFirstRun);
 int menuLockScreen(int buttons, int keys, int events, bool isFirstRun);
-
+int menuContactList(int buttons, int keys, int events, bool isFirstRun);
 
 /*
  * ---------------------- IMPORTANT ----------------------------
@@ -79,6 +79,7 @@ const menuItemNew_t * menusData[] = { 	NULL,// splash
 										NULL,// Quick menu - Channel
 										NULL,// Quick menu - VFO
 										NULL,// Lock screen
+										NULL,// Contact List
 								};
 
 const MenuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
@@ -102,20 +103,25 @@ const MenuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
 												menuCPS,
 												menuChannelModeQuickMenu,
 												menuVFOModeQuickMenu,
-                                                menuLockScreen};
+                                                menuLockScreen,
+												menuContactList};
 
 void menuSystemPushNewMenu(int menuNumber)
 {
+	if (menuControlData.stackPosition < 15)
+	{
 	menuControlData.stackPosition++;
 	menuControlData.stack[menuControlData.stackPosition] = menuNumber;
-	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true);
+		menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,
+				0, 0, true);
+	}
 }
-void menuSystemPopPreviousMenu()
+void menuSystemPopPreviousMenu(void)
 {
 	menuControlData.stackPosition--;
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true);
 }
-void menuSystemPopAllAndDisplayRootMenu()
+void menuSystemPopAllAndDisplayRootMenu(void)
 {
 	menuControlData.stackPosition=0;
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true);
@@ -133,7 +139,7 @@ void menuSystemSetCurrentMenu(int menuNumber)
 	menuControlData.stack[menuControlData.stackPosition]  = menuNumber;
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true);
 }
-int menuSystemGetCurrentMenuNumber()
+int menuSystemGetCurrentMenuNumber(void)
 {
 	return menuControlData.stack[menuControlData.stackPosition];
 }
@@ -143,7 +149,7 @@ void menuSystemCallCurrentMenuTick(int buttons, int keys, int events)
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](buttons,keys,events,false);
 }
 
-void displayLightTrigger()
+void displayLightTrigger(void)
 {
 	menuDisplayLightTimer = nonVolatileSettings.backLightTimeout * 1000;
 	fw_displayEnableBacklight(true);
@@ -162,7 +168,7 @@ int gMenusStartIndex;// as above
 int gMenusEndIndex;// as above
 
 
-void menuInitMenuSystem()
+void menuInitMenuSystem(void)
 {
 	menuDisplayLightTimer = -1;
 	menuControlData.stack[menuControlData.stackPosition]  = MENU_SPLASH_SCREEN;// set the very first screen as the splash screen
@@ -171,7 +177,7 @@ void menuInitMenuSystem()
 
 const char menuStringTable[32][16] = { "",//0
                                          "Menu",//1
-                                         "Contact",//2
+                                         "Contacts",//2
                                          "Message",//3
                                          "Call Logs",//4
                                          "Set",//5
@@ -193,6 +199,7 @@ const char menuStringTable[32][16] = { "",//0
 										 "Credits",//21
 										 "Channel details",//22
 										 "Hotspot mode",//23
+										 "Contact List",//24
 };
 
 const menuItemNew_t menuDataMainMenu[] = {
@@ -201,6 +208,7 @@ const menuItemNew_t menuDataMainMenu[] = {
 	{ 6, MENU_ZONE_LIST },
 	{ 17, MENU_RSSI_SCREEN },
 	{ 15, MENU_BATTERY },
+	{ 2, MENU_CONTACTS_MENU },
 	{ 18, MENU_LAST_HEARD },
 	{ 16, MENU_FIRMWARE_INFO },
 	{ 19, MENU_OPTIONS },
@@ -208,10 +216,12 @@ const menuItemNew_t menuDataMainMenu[] = {
 	{ 22, MENU_CHANNEL_DETAILS},
 };
 const menuItemNew_t menuDataContact[] = {
-	{ 3, 3 } ,// length
-	{ 2, -1 },// Contact
-	{ 7 , -1 },// New Contact
-	{ 8, -1 } // Manual Dial
+	{ 3, 1 } ,// length
+	//{ 7 , -1 },// New Contact
+	{ 0, MENU_CONTACT_LIST },// Contacts List
+	{ 24, MENU_CONTACT_LIST },// Contacts List
+	{ 0, MENU_CONTACT_LIST },// Contacts List
+	//{ 11, MENU_NUMERICAL_ENTRY},// Manual Dial
 };
 
 const menuItemNew_t menuDataContactContact [] = {
@@ -232,7 +242,7 @@ int menuDisplayList(int buttons, int keys, int events, bool isFirstRun)
 void menuDisplayTitle(char *title)
 {
 	UC1701_drawFastHLine(0, 13, 128, true);
-	UC1701_printCore(0, 3, title, UC1701_FONT_8x8, 1, false);
+	UC1701_printCore(0, 3, title, UC1701_FONT_8x8, UC1701_TEXT_ALIGN_CENTER, false);
 }
 
 void menuDisplayEntry(int loopOffset, int focusedItem, char *entryText)
@@ -242,7 +252,7 @@ void menuDisplayEntry(int loopOffset, int focusedItem, char *entryText)
 	if (focused)
 		UC1701_fillRoundRect(0, (loopOffset + 2) * 16, 128, 16, 2, true);
 
-	UC1701_printCore(0, (loopOffset + 2) * 16, entryText, UC1701_FONT_8x16, 0, focused);
+	UC1701_printCore(0, (loopOffset + 2) * 16, entryText, UC1701_FONT_8x16, UC1701_TEXT_ALIGN_LEFT, focused);
 }
 
 int menuGetMenuOffset(int maxMenuEntries, int loopOffset)

@@ -22,7 +22,7 @@
 #include "fw_wdog.h"
 #include <stdarg.h>
 
-static void handleCPSRequest();
+static void handleCPSRequest(void);
 
 volatile uint8_t com_buffer[COM_BUFFER_SIZE];
 int com_buffer_write_idx = 0;
@@ -33,7 +33,7 @@ volatile uint8_t com_requestbuffer[COM_REQUESTBUFFER_SIZE];
 USB_DMA_NONINIT_DATA_ALIGN(USB_DATA_ALIGN_SIZE) uint8_t usbComSendBuf[COM_BUFFER_SIZE];//DATA_BUFF_SIZE
 int sector = -1;
 
-void tick_com_request()
+void tick_com_request(void)
 {
 		switch (settingsUsbMode)
 		{
@@ -58,7 +58,7 @@ void tick_com_request()
 	}
 }
 
-static void handleCPSRequest()
+static void handleCPSRequest(void)
 {
 	//Handle read
 	if (com_requestbuffer[0]=='R') // 'R' read data (com_requestbuffer[1]: 1 => external flash, 2 => EEPROM)
@@ -193,23 +193,23 @@ static void handleCPSRequest()
 				break;
 			case 1:
 				// Clear CPS screen
-				menuCPSUpdate(0,0,0,0,0,0,NULL);
+				menuCPSUpdate(0,0,0,UC1701_FONT_6x8,UC1701_TEXT_ALIGN_LEFT,0,NULL);
 				break;
 			case 2:
 				// Write a line of text to CPS screen
-				menuCPSUpdate(1,com_requestbuffer[2],com_requestbuffer[3],com_requestbuffer[4],com_requestbuffer[5],com_requestbuffer[6],(char *)&com_requestbuffer[7]);
+				menuCPSUpdate(1,com_requestbuffer[2],com_requestbuffer[3],(UC1701_Font_t)com_requestbuffer[4],(UC1701_Text_Align_t)com_requestbuffer[5],com_requestbuffer[6],(char *)&com_requestbuffer[7]);
 				break;
 			case 3:
 				// Render CPS screen
-				menuCPSUpdate(2,0,0,0,0,0,NULL);
+				menuCPSUpdate(2,0,0,UC1701_FONT_6x8,UC1701_TEXT_ALIGN_LEFT,0,NULL);
 				break;
 			case 4:
 				// Turn on the display backlight
-				menuCPSUpdate(3,0,0,0,0,0,NULL);
+				menuCPSUpdate(3,0,0,UC1701_FONT_6x8,UC1701_TEXT_ALIGN_LEFT,0,NULL);
 				break;
 			case 5:
 				// Close
-				menuCPSUpdate(6,0,0,0,0,0,NULL);
+				menuCPSUpdate(6,0,0,UC1701_FONT_6x8,UC1701_TEXT_ALIGN_LEFT,0,NULL);
 				break;
 			case 6:
 				{
@@ -235,11 +235,11 @@ static void handleCPSRequest()
 							break;
 						case 3:
 							// flash green LED
-							menuCPSUpdate(4,0,0,0,0,0,NULL);
+							menuCPSUpdate(4,0,0,UC1701_FONT_6x8,UC1701_TEXT_ALIGN_LEFT,0,NULL);
 							break;
 						case 4:
 							// flash red LED
-							menuCPSUpdate(5,0,0,0,0,0,NULL);
+							menuCPSUpdate(5,0,0,UC1701_FONT_6x8,UC1701_TEXT_ALIGN_LEFT,0,NULL);
 							break;
 						default:
 							break;

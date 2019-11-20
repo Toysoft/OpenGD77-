@@ -17,7 +17,7 @@
  */
 #include <user_interface/menuSystem.h>
 
-static void updateScreen();
+static void updateScreen(void);
 static void handleEvent(int buttons, int keys, int events);
 static int updateCounter;
 
@@ -43,7 +43,7 @@ int menuBattery(int buttons, int keys, int events, bool isFirstRun)
 	return 0;
 }
 
-static void updateScreen()
+static void updateScreen(void)
 {
 	const int MAX_BATTERY_BAR_HEIGHT = 36;
 	char buffer[8];

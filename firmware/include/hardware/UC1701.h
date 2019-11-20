@@ -38,13 +38,20 @@ typedef enum
 	UC1701_FONT_16x32
 } UC1701_Font_t;
 
+typedef enum
+{
+	UC1701_TEXT_ALIGN_LEFT = 0,
+	UC1701_TEXT_ALIGN_CENTER,
+	UC1701_TEXT_ALIGN_RIGHT
+} UC1701_Text_Align_t;
+
 void UC1701_begin(bool isInverted);
-void UC1701_clearBuf();
-void UC1701_render();
+void UC1701_clearBuf(void);
+void UC1701_render(void);
 void UC1701RenderRows(int16_t startRow, int16_t endRow);
 void UC1701_printCentered(uint8_t y, char *text, UC1701_Font_t fontSize);
 void UC1701_printAt(uint8_t x, uint8_t y, char *text, UC1701_Font_t fontSize);
-int UC1701_printCore(int16_t x, int16_t y, char *szMsg, UC1701_Font_t fontSize, int16_t alignment, bool isInverted);
+int UC1701_printCore(int16_t x, int16_t y, char *szMsg, UC1701_Font_t fontSize, UC1701_Text_Align_t alignment, bool isInverted);
 
 int16_t UC1701_setPixel(int16_t x, int16_t y, bool color);
 
@@ -55,7 +62,7 @@ void UC1701_drawFastHLine(int16_t x, int16_t y, int16_t w, bool color);
 void UC1701_drawCircle(int16_t x0, int16_t y0, int16_t r, bool color);
 void UC1701_fillCircle(int16_t x0, int16_t y0, int16_t r, bool color);
 
-void UC1701_drawellipse(int16_t x0, int16_t y0, int16_t x1, int16_t y1, bool color);
+void UC1701_drawEllipse(int16_t x0, int16_t y0, int16_t x1, int16_t y1, bool color);
 
 void UC1701_drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, bool color);
 void UC1701_fillTriangle ( int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, bool color);
@@ -64,9 +71,11 @@ void UC1701_fillArc(uint16_t x, uint16_t y, uint16_t radius, uint16_t thickness,
 
 void UC1701_drawRoundRect(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r, bool color);
 void UC1701_fillRoundRect(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r, bool color);
+void UC1701_drawRoundRectWithDropShadow(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r, bool color);
 
 void UC1701_drawRect(int16_t x, int16_t y, int16_t w, int16_t h, bool color);
 void UC1701_fillRect(int16_t x, int16_t y, int16_t width, int16_t height, bool isInverted);
+void UC1701_drawRectWithDropShadow(int16_t x, int16_t y, int16_t w, int16_t h, bool color);
 
 void UC1701_drawBitmap(int16_t x, int16_t y, uint8_t *bitmap, int16_t w, int16_t h, bool color);
 void UC1701_drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, bool color);

@@ -21,6 +21,6 @@
 
 #include "fsl_dac.h"
 
-void dac_init();
+void dac_init(void);
 
 #endif /* _FW_DAC_H_ */

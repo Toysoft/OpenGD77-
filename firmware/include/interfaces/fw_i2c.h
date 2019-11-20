@@ -31,6 +31,7 @@
 
 #define I2C_DATA_LENGTH (32)  /* MAX is 256 */
 extern uint8_t i2c_master_buff[I2C_DATA_LENGTH];
+extern volatile int isI2cInUse;
 
 // I2C0a to AT24C512 EEPROM & AT1846S
 // OUT/ON E24 - I2C SCL to AT24C512 EEPROM & AT1846S
@@ -52,11 +53,11 @@ extern uint8_t i2c_master_buff[I2C_DATA_LENGTH];
 #define GPIO_I2C0b_SDA     GPIOB
 #define Pin_I2C0b_SDA	   3
 
-void init_I2C0a();
-void init_I2C0b();
-void setup_I2C0();
+void init_I2C0a(void);
+void init_I2C0b(void);
+void setup_I2C0(void);
 
-void clear_I2C_buffer();
+void clear_I2C_buffer(void);
 int write_I2C_reg_2byte(uint8_t addr, uint8_t reg, uint8_t val1, uint8_t val2);
 int read_I2C_reg_2byte(uint8_t addr, uint8_t reg, uint8_t* val1, uint8_t* val2);
 int set_clear_I2C_reg_2byte_with_mask(uint8_t reg, uint8_t mask1, uint8_t mask2, uint8_t val1, uint8_t val2);

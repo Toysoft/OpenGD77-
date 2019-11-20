@@ -53,6 +53,8 @@ typedef struct settingsStruct
 	uint8_t			beepVolumeDivider;
 	uint8_t			micGainDMR;
 	uint8_t			tsManualOverride;
+	uint16_t		keypadTimerLong;
+	uint16_t		keypadTimerRepeat;
 } settingsStruct_t;
 
 extern settingsStruct_t nonVolatileSettings;
@@ -61,9 +63,9 @@ extern struct_codeplugChannel_t channelScreenChannelData;
 extern int settingsUsbMode;
 extern bool enableHotspot;
 
-bool settingsSaveSettings();
-bool settingsLoadSettings();
-void settingsRestoreDefaultSettings();
-void settingsInitVFOChannel();
+bool settingsSaveSettings(void);
+bool settingsLoadSettings(void);
+void settingsRestoreDefaultSettings(void);
+void settingsInitVFOChannel(void);
 
 #endif

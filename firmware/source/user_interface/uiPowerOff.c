@@ -17,7 +17,7 @@
  */
 #include <user_interface/menuSystem.h>
 
-static void updateScreen();
+static void updateScreen(void);
 static void handleEvent(int buttons, int keys, int events);
 
 
@@ -35,7 +35,7 @@ int menuPowerOff(int buttons, int keys, int events, bool isFirstRun)
 	return 0;
 }
 
-static void updateScreen()
+static void updateScreen(void)
 {
 	UC1701_clearBuf();
 	UC1701_printCentered(12, "Power Off...",UC1701_FONT_8x16);

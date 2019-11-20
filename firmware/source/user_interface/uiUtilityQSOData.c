@@ -48,7 +48,37 @@ uint32_t menuUtilityTgBeforePcMode 	= 0;// No TG saved, prior to a Private call 
 
 const char *POWER_LEVELS[]={"250mW","500mW","750mW","1W","2W","3W","4W","5W"};
 
-void lastheardInitList()
+/*
+ * Remove space at the end of the array, and return pointer to first non space character
+ */
+static char *chomp(char *str)
+{
+	char *sp = str, *ep = str;
+
+	while (*ep != '\0')
+		ep++;
+
+	// Spaces at the end
+	while (ep > str)
+	{
+		if (*ep == '\0')
+			;
+		else if (*ep == ' ')
+			*ep = '\0';
+		else
+			break;
+
+		ep--;
+	}
+
+	// Spaces at the beginning
+	while (*sp == ' ')
+		sp++;
+
+	return sp;
+}
+
+void lastheardInitList(void)
 {
     LinkHead = callsList;
 
@@ -94,7 +124,7 @@ LinkItem_t * findInList(int id)
 volatile uint32_t lastID=0;// This needs to be volatile as lastHeardClearLastID() is called from an ISR
 uint32_t lastTG=0;
 
-void lastHeardClearLastID()
+void lastHeardClearLastID(void)
 {
 	lastID=0;
 }
@@ -340,7 +370,7 @@ static void displayChannelNameOrRxFrequency(char *buffer)
 	UC1701_printCentered(52,buffer,UC1701_FONT_6x8);
 }
 
-void menuUtilityRenderQSOData()
+void menuUtilityRenderQSOData(void)
 {
 	char buffer[32];// buffer passed to the DMR ID lookup function, needs to be large enough to hold worst case text length that is returned. Currently 16+1
 	dmrIdDataStruct_t currentRec;
@@ -377,7 +407,7 @@ void menuUtilityRenderQSOData()
 		if (tg != trxTalkGroupOrPcId)
 		{
 			UC1701_fillRect(0,16,128,16,false);// fill background with black
-			UC1701_printCore(0, CONTACT_Y_POS, buffer,UC1701_FONT_8x16,1,true);// draw the text in inverse video
+			UC1701_printCore(0, CONTACT_Y_POS, buffer,UC1701_FONT_8x16,UC1701_TEXT_ALIGN_CENTER,true);// draw the text in inverse video
 		}
 		else
 		{
@@ -402,15 +432,16 @@ void menuUtilityRenderQSOData()
 					// More than 1 line wide of text, so we need to split onto 2 lines.
 					memcpy(buffer,LinkHead->talkerAlias,6);
 					buffer[6]=0x00;
-					UC1701_printCentered(32, buffer,UC1701_FONT_8x16);
+
+					UC1701_printCentered(32, chomp(buffer), UC1701_FONT_8x16);
 
 					memcpy(buffer,&LinkHead->talkerAlias[6],16);
 					buffer[16]=0x00;
-					UC1701_printAt(0,48,buffer,UC1701_FONT_8x16);
+					UC1701_printAt(0,48, chomp(buffer),UC1701_FONT_8x16);
 				}
 				else
 				{
-					UC1701_printCentered(32,LinkHead->talkerAlias,UC1701_FONT_8x16);
+					UC1701_printCentered(32, chomp(LinkHead->talkerAlias),UC1701_FONT_8x16);
 					displayChannelNameOrRxFrequency(buffer);
 				}
 			}
@@ -425,7 +456,7 @@ void menuUtilityRenderQSOData()
 	}
 }
 
-void menuUtilityRenderHeader()
+void menuUtilityRenderHeader(void)
 {
 	const int Y_OFFSET = 2;
 	char buffer[24];
@@ -507,10 +538,10 @@ void menuUtilityRenderHeader()
 		sprintf(buffer,"C%d %d%%",trxGetDMRColourCode(),batteryPerentage);
 	}
 
-	UC1701_printCore(0,Y_OFFSET,buffer,UC1701_FONT_6x8,2,false);// Display battery percentage at the right
+	UC1701_printCore(0,Y_OFFSET,buffer,UC1701_FONT_6x8,UC1701_TEXT_ALIGN_RIGHT,false);// Display battery percentage at the right
 }
 
-void drawRSSIBarGraph()
+void drawRSSIBarGraph(void)
 {
 	int dBm,barGraphLength;
 
@@ -542,7 +573,7 @@ void drawRSSIBarGraph()
 	trxRxSignal=0;
 }
 
-void drawDMRMicLevelBarGraph()
+void drawDMRMicLevelBarGraph(void)
 {
 	float barGraphLength = sqrt(micAudioSamplesTotal)*1.5;
 
@@ -554,4 +585,20 @@ void drawDMRMicLevelBarGraph()
 	}
 
 	UC1701_fillRect(0, BAR_Y_POS,(int)barGraphLength,3,false);
+}
+
+void setOverrideTGorPC(int tgOrPc, bool privateCall) {
+	uint32_t saveTrxTalkGroupOrPcId = trxTalkGroupOrPcId;
+	nonVolatileSettings.overrideTG = tgOrPc;
+	if (privateCall == true)
+	{
+		// Private Call
+
+		if ((saveTrxTalkGroupOrPcId >> 24) != PC_CALL_FLAG)
+		{
+			// if the current Tx TG is a TalkGroup then save it so it can be stored after the end of the private call
+			menuUtilityTgBeforePcMode = saveTrxTalkGroupOrPcId;
+		}
+		nonVolatileSettings.overrideTG |= (PC_CALL_FLAG << 24);
+	}
 }
