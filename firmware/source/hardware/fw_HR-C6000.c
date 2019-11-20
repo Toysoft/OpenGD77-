@@ -657,7 +657,7 @@ inline static void HRC6000SysInterruptHandler(void)
 		uint8_t LCBuf[12];
 		read_SPI_page_reg_bytearray_SPI0(0x02, 0x00, LCBuf, 12);// read the LC from the C6000
 
-		if (LCBuf[1] == 0x00 && (LCBuf[0]==TG_CALL_FLAG || LCBuf[0]==PC_CALL_FLAG  || (LCBuf[0]>=0x04 && LCBuf[0]<=0x7)) &&
+		if (LCBuf[1] == 0x00 && (LCBuf[0]==TG_CALL_FLAG || LCBuf[0]==PC_CALL_FLAG  || (LCBuf[0]>=0x04 && LCBuf[0]<=0x07)) &&
 			memcmp((uint8_t *)previousLCBuf,LCBuf,12)!=0)
 		{
 			read_SPI_page_reg_byte_SPI0(0x04, 0x52, &reg0x52);  //Read Received CC and CACH Register to get the timecode (TS number)
@@ -1108,7 +1108,7 @@ void triggerQSOdataDisplay(void)
 	/*
 	// check if this is a valid data frame, including Talker Alias data frames (0x04 - 0x07)
 	// Not sure if its necessary to check byte [1] for 0x00 but I'm doing this
-	if (DMR_frame_buffer[1] == 0x00  && (DMR_frame_buffer[0]==TG_CALL_FLAG || DMR_frame_buffer[0]==PC_CALL_FLAG  || (DMR_frame_buffer[0]>=0x04 && DMR_frame_buffer[0]<=0x7)))
+	if (DMR_frame_buffer[1] == 0x00  && (DMR_frame_buffer[0]==TG_CALL_FLAG || DMR_frame_buffer[0]==PC_CALL_FLAG  || (DMR_frame_buffer[0]>=0x04 && DMR_frame_buffer[0]<=0x07)))
 	{
     	lastHeardListUpdate((uint8_t *)DMR_frame_buffer);
 	}*/
