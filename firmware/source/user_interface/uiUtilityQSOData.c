@@ -441,7 +441,8 @@ void menuUtilityRenderQSOData(void)
 				}
 				else
 				{
-					UC1701_printCentered(32, chomp(LinkHead->talkerAlias),UC1701_FONT_8x16);
+					memcpy(buffer, LinkHead->talkerAlias, strlen(LinkHead->talkerAlias));
+					UC1701_printCentered(32, chomp(buffer), UC1701_FONT_8x16);
 					displayChannelNameOrRxFrequency(buffer);
 				}
 			}
