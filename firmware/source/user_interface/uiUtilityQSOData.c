@@ -223,7 +223,7 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 				item->id=id;
 				item->talkGroupOrPcId =  talkGroupOrPcId;
 				lastTG = talkGroupOrPcId;
-				memset((char *)item->talkerAlias,0,32);// Clear any TA data
+				memset(item->talkerAlias,0,32);// Clear any TA data
 				if (item->talkGroupOrPcId!=0)
 				{
 					menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;// flag that the display needs to update
@@ -284,7 +284,7 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 
 		if (LinkHead->talkerAlias[TAOffset] == 0x00 && TABlockLen!=0)
 		{
-			memcpy((char *)&LinkHead->talkerAlias[TAOffset],(uint8_t *)&DMR_frame_buffer[TAStartPos],TABlockLen);// Brandmeister seems to send callsign as 6 chars only
+			memcpy(&LinkHead->talkerAlias[TAOffset],(uint8_t *)&DMR_frame_buffer[TAStartPos],TABlockLen);// Brandmeister seems to send callsign as 6 chars only
 			menuDisplayQSODataState=QSO_DISPLAY_CALLER_DATA;
 		}
 	}
@@ -502,7 +502,7 @@ void menuUtilityRenderQSOData(void)
 			// We don't have this ID, so try looking in the Talker alias data
 			if (LinkHead->talkerAlias[0] != 0x00)
 			{
-				displayContactTextInfos((char *)LinkHead->talkerAlias, sizeof(LinkHead->talkerAlias));
+				displayContactTextInfos(LinkHead->talkerAlias, sizeof(LinkHead->talkerAlias));
 			}
 			else
 			{
