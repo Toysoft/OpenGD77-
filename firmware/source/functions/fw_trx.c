@@ -161,7 +161,14 @@ int trx_carrier_detected()
 {
 	uint8_t squelch=45;
 
-	trxReadRSSIAndNoise();
+	// The C6000 task also reads the RSSI if it is receiving a signal
+	if (trxGetMode() == RADIO_MODE_DIGITAL && slot_state == DMR_STATE_IDLE)
+	{
+		// The task Critical wrapper may not be necessary and is only added as a precaution
+		taskENTER_CRITICAL();
+		trxReadRSSIAndNoise();
+		taskEXIT_CRITICAL();
+	}
 
 	// check for variable squelch control
 	if (currentChannelData->sql!=0)
