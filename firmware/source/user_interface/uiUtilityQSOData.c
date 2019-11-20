@@ -442,6 +442,7 @@ void menuUtilityRenderQSOData(void)
 				else
 				{
 					memcpy(buffer, LinkHead->talkerAlias, strlen(LinkHead->talkerAlias));
+					buffer[strlen(LinkHead->talkerAlias)] = 0;
 					UC1701_printCentered(32, chomp(buffer), UC1701_FONT_8x16);
 					displayChannelNameOrRxFrequency(buffer);
 				}
