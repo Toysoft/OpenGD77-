@@ -34,9 +34,15 @@ static bool displaySquelch=false;
 int currentChannelNumber=0;
 static bool isDisplayingQSOData=false;
 static bool isTxRxFreqSwap=false;
+typedef enum
+{
+	SCAN_ZONE_INACTIVE = 0,
+	SCAN_ZONE_ACTIVE,
+} ScanZoneState_t;
+
 static bool scanActive=false;
 static int scanTimer=0;
-static int scanState=0;					//state flag for scan routine
+static ScanZoneState_t scanState = SCAN_ZONE_INACTIVE;		//state flag for scan routine
 static int scanShortPause=500;			//time to wait after carrier detected to allow time for full signal detection. (CTCSS or DMR)
 static int scanPause=5000;				//time to wait after valid signal is detected.
 static int scanInterval=50;			    //time between each scan step
@@ -247,7 +253,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				displaySquelch=false;
 			}
 
-			if (!((scanActive) & (scanState==0)))
+			if (!((scanActive) & (scanState==SCAN_ZONE_INACTIVE)))
 			{
 			displayLightTrigger();
 			}
@@ -619,7 +625,7 @@ static void handleEvent(int buttons, int keys, int events)
 				}
 			}
 			scanTimer=500;
-			scanState=0;
+			scanState = SCAN_ZONE_INACTIVE;
 		}
 		loadChannelData(false);
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
@@ -746,7 +752,7 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 			case CH_SCREEN_QUICK_MENU_SCAN:
 				scanActive=true;
 				scanTimer=500;
-				scanState=0;
+				scanState = SCAN_ZONE_INACTIVE;
 				menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
 				break;
 			case CH_SCREEN_QUICK_MENU_COPY2VFO:
@@ -802,16 +808,18 @@ static void scanning(void)
 		return;
 	}
 
-	if((scanState==0) & (scanTimer==10))							    			//after initial settling time
+	if((scanState==SCAN_ZONE_INACTIVE) & (scanTimer==10))							    			//after initial settling time
 	{
-		if(trx_carrier_detected())												 	//test for presence of RF Carrier
+		//test for presence of RF Carrier.
+		// In FM mode the dmr slot_state will always be DMR_STATE_IDLE
+		if(slot_state != DMR_STATE_IDLE || trx_carrier_detected() )
 		{
 			scanTimer=scanShortPause;												//start short delay to allow full detection of signal
-			scanState=1;															//state 1 = pause and test for valid signal that produces audio
+			scanState=SCAN_ZONE_ACTIVE;															//state 1 = pause and test for valid signal that produces audio
 		}
 	}
 
-	if(scanState==1)
+	if(scanState==SCAN_ZONE_ACTIVE)
 	{
 	    if (GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable)==1)	    	// if speaker on we must be receiving a signal
 	    {
@@ -834,7 +842,7 @@ static void scanning(void)
 		else
 		{
 			scanTimer=scanInterval;
-			scanState=0;															//state 0 = settling and test for carrier present.
+			scanState = SCAN_ZONE_INACTIVE;															//state 0 = settling and test for carrier present.
 		}
 
 	}
