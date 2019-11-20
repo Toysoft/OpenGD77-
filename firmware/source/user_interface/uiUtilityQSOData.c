@@ -394,11 +394,11 @@ static void displayChannelNameOrRxFrequency(char *buffer)
  * We don't care if extra text is larger than 16 chars, UC1701_print*() functions cut them.
  *.
  */
-static void displayContactTextInfos(char *text, size_t maxLen)
+static void displayContactTextInfos(char *text, size_t maxLen,bool isFromTalkerAlias)
 {
 	char buffer[32];
 
-	if (strlen(text) >= 5) // there is probably a callsign in it.
+	if (strlen(text) >= 5 && isFromTalkerAlias) // if its Talker Alias and there is more text than just the callsign, split across 2 lines
 	{
 		char    *pbuf;
 		int32_t  cpos;
@@ -495,14 +495,14 @@ void menuUtilityRenderQSOData(void)
 		// first check if we have this ID in the DMR ID data
 		if (dmrIDLookup(LinkHead->id, &currentRec))
 		{
-			displayContactTextInfos(currentRec.text, sizeof(currentRec.text));
+			displayContactTextInfos(currentRec.text, sizeof(currentRec.text),false);
 		}
 		else
 		{
 			// We don't have this ID, so try looking in the Talker alias data
 			if (LinkHead->talkerAlias[0] != 0x00)
 			{
-				displayContactTextInfos(LinkHead->talkerAlias, sizeof(LinkHead->talkerAlias));
+				displayContactTextInfos(LinkHead->talkerAlias, sizeof(LinkHead->talkerAlias),true);
 			}
 			else
 			{
