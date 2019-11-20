@@ -175,7 +175,7 @@ void menuInitMenuSystem(void)
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true);// Init and display this screen
 }
 
-const char menuStringTable[32][16] = { "",//0
+const char menuStringTable[32][17] = { "",//0
                                          "Menu",//1
                                          "Contacts",//2
                                          "Message",//3

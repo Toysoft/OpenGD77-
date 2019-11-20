@@ -103,7 +103,7 @@ extern int gMenusStartIndex;
 extern int gMenusEndIndex;
 extern menuItemNew_t *gMenuCurrentMenuList;
 
-extern const char menuStringTable[32][16];
+extern const char menuStringTable[32][17];
 
 extern const menuItemNew_t menuDataMainMenu[];
 extern const menuItemNew_t menuDataContact[];
