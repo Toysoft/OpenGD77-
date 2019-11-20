@@ -25,6 +25,7 @@
 static void handleEvent(int buttons, int keys, int events);
 static void loadChannelData(bool useChannelDataInMemory);
 static void scanning(void);
+static void handleUpKey(int buttons);
 static struct_codeplugZone_t currentZone;
 static struct_codeplugRxGroup_t rxGroupData;
 static struct_codeplugContact_t contactData;
@@ -275,6 +276,14 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 static void handleEvent(int buttons, int keys, int events)
 {
 	uint32_t tg = (LinkHead->talkGroupOrPcId & 0xFFFFFF);
+
+	if (scanActive == true)
+	{
+		scanActive = false;
+		return;
+	}
+
+
 	// If Blue button is pressed during reception it sets the Tx TG to the incoming TG
 	if (isDisplayingQSOData && (buttons & BUTTON_SK2)!=0 && trxGetMode() == RADIO_MODE_DIGITAL && trxTalkGroupOrPcId != tg)
 	{
@@ -291,7 +300,6 @@ static void handleEvent(int buttons, int keys, int events)
 	{
 		if (buttons & BUTTON_ORANGE)
 		{
-			scanActive=false;
 			if (buttons & BUTTON_SK2)
 			{
 				settingsPrivateCallMuteMode = !settingsPrivateCallMuteMode;// Toggle PC mute only mode
@@ -342,7 +350,6 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_HASH)!=0)
 	{
-		scanActive=false;
 		if (trxGetMode() == RADIO_MODE_DIGITAL)
 		{
 			if ((buttons & BUTTON_SK2) != 0)
@@ -356,7 +363,6 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_RED)!=0)
 	{
-		scanActive=false;
 		if (menuUtilityHandlePrivateCallActions(buttons,keys,events))
 		{
 			return;
@@ -375,7 +381,6 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_RIGHT)!=0)
 	{
-		scanActive=false;
 		if (buttons & BUTTON_SK2)
 		{
 			if (nonVolatileSettings.txPowerLevel < 7)
@@ -438,7 +443,6 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_LEFT)!=0)
 	{
-		scanActive=false;
 		if (buttons & BUTTON_SK2)
 		{
 			if (nonVolatileSettings.txPowerLevel > 0)
@@ -499,7 +503,6 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_STAR)!=0)
 	{
-		scanActive=false;
 		// Toggle TimeSlot
 		if (buttons & BUTTON_SK2 )
 		{
@@ -540,7 +543,6 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_DOWN)!=0)
 	{
-		scanActive=false;
 		if (buttons & BUTTON_SK2)
 		{
 			int numZones = codeplugZonesGetCount();
@@ -587,49 +589,7 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_UP)!=0)
 	{
-		if (buttons & BUTTON_SK2)
-		{
-			scanActive=false;
-			int numZones = codeplugZonesGetCount();
-
-			nonVolatileSettings.currentZone++;
-			if (nonVolatileSettings.currentZone >= numZones) {
-				nonVolatileSettings.currentZone = 0;
-			}
-			nonVolatileSettings.overrideTG = 0; // remove any TG override
-			nonVolatileSettings.tsManualOverride &= 0xF0; // remove TS override from channel
-			nonVolatileSettings.currentChannelIndexInZone = 0;// Since we are switching zones the channel index should be reset
-			channelScreenChannelData.rxFreq=0x00; // Flag to the Channel screen that the channel data is now invalid and needs to be reloaded
-			menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
-		}
-		else
-		{
-			lastHeardClearLastID();
-			if (strcmp(currentZoneName,"All Channels")==0)
-			{
-				do
-				{
-					nonVolatileSettings.currentChannelIndexInAllZone++;
-					if (nonVolatileSettings.currentChannelIndexInAllZone>1024)
-					{
-						nonVolatileSettings.currentChannelIndexInAllZone=1;
-					}
-				} while(!codeplugChannelIndexIsValid(nonVolatileSettings.currentChannelIndexInAllZone));
-			}
-			else
-			{
-				nonVolatileSettings.currentChannelIndexInZone++;
-				if (nonVolatileSettings.currentChannelIndexInZone > currentZone.NOT_IN_MEMORY_numChannelsInZone - 1)
-				{
-						nonVolatileSettings.currentChannelIndexInZone = 0;
-				}
-			}
-			scanTimer=500;
-			scanState = SCAN_ZONE_INACTIVE;
-		}
-		loadChannelData(false);
-		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-		menuChannelModeUpdateScreen(0);
+		handleUpKey(buttons);
 	}
 	else if (strcmp(currentZoneName,"All Channels")==0)
 	{
@@ -677,13 +637,59 @@ static void handleEvent(int buttons, int keys, int events)
 
 		if (keyval<10)
 		{
-			scanActive=false;
 			directChannelNumber=(directChannelNumber*10) + keyval;
 			if(directChannelNumber>1024) directChannelNumber=0;
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 			menuChannelModeUpdateScreen(0);
 		}
 	}
+}
+
+
+static void handleUpKey(int buttons)
+{
+	if (buttons & BUTTON_SK2)
+	{
+		int numZones = codeplugZonesGetCount();
+
+		nonVolatileSettings.currentZone++;
+		if (nonVolatileSettings.currentZone >= numZones) {
+			nonVolatileSettings.currentZone = 0;
+		}
+		nonVolatileSettings.overrideTG = 0; // remove any TG override
+		nonVolatileSettings.tsManualOverride &= 0xF0; // remove TS override from channel
+		nonVolatileSettings.currentChannelIndexInZone = 0;// Since we are switching zones the channel index should be reset
+		channelScreenChannelData.rxFreq=0x00; // Flag to the Channel screen that the channel data is now invalid and needs to be reloaded
+		menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
+	}
+	else
+	{
+		lastHeardClearLastID();
+		if (strcmp(currentZoneName,"All Channels")==0)
+		{
+			do
+			{
+				nonVolatileSettings.currentChannelIndexInAllZone++;
+				if (nonVolatileSettings.currentChannelIndexInAllZone>1024)
+				{
+					nonVolatileSettings.currentChannelIndexInAllZone=1;
+				}
+			} while(!codeplugChannelIndexIsValid(nonVolatileSettings.currentChannelIndexInAllZone));
+		}
+		else
+		{
+			nonVolatileSettings.currentChannelIndexInZone++;
+			if (nonVolatileSettings.currentChannelIndexInZone > currentZone.NOT_IN_MEMORY_numChannelsInZone - 1)
+			{
+					nonVolatileSettings.currentChannelIndexInZone = 0;
+			}
+		}
+		scanTimer=500;
+		scanState = SCAN_ZONE_INACTIVE;
+	}
+	loadChannelData(false);
+	menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+	menuChannelModeUpdateScreen(0);
 }
 
 // Quick Menu functions
@@ -802,12 +808,6 @@ int menuChannelModeQuickMenu(int buttons, int keys, int events, bool isFirstRun)
 
 static void scanning(void)
 {
-	if(trxIsTransmitting)															//stop scanning if we press the PTT
-	{
-		scanActive=false;
-		return;
-	}
-
 	if((scanState==SCAN_ZONE_INACTIVE) & (scanTimer==10))							    			//after initial settling time
 	{
 		//test for presence of RF Carrier.
@@ -834,7 +834,7 @@ static void scanning(void)
 	else
 	{
 		trx_measure_count=0;														//needed to allow time for Rx to settle after channel change.
-			handleEvent(0,KEY_UP,0);												//Increment the channel
+		handleUpKey(0);
 		if(channelScreenChannelData.flag4 & 0x20)									//if this channel has the skip bit set
 		{
 			scanTimer=10;															//skip over it quickly. (immediate selection of another channel seems to cause crashes)
