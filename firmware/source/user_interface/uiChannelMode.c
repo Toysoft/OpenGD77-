@@ -37,13 +37,13 @@ static bool isDisplayingQSOData=false;
 static bool isTxRxFreqSwap=false;
 typedef enum
 {
-	SCAN_ZONE_INACTIVE = 0,
-	SCAN_ZONE_ACTIVE,
+	SCAN_SCANNING = 0,
+	SCAN_PAUSED,
 } ScanZoneState_t;
 
 bool uiChannelModeScanActive=false;
 static int scanTimer=0;
-static ScanZoneState_t scanState = SCAN_ZONE_INACTIVE;		//state flag for scan routine
+static ScanZoneState_t scanState = SCAN_SCANNING;		//state flag for scan routine
 static int scanShortPause=500;			//time to wait after carrier detected to allow time for full signal detection. (CTCSS or DMR)
 static int scanPause=5000;				//time to wait after valid signal is detected.
 static int scanInterval=50;			    //time between each scan step
@@ -74,7 +74,7 @@ int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 		menuChannelModeUpdateScreen(0);
 		if (uiChannelModeScanActive == false)
 		{
-			scanState = SCAN_ZONE_INACTIVE;
+			scanState = SCAN_SCANNING;
 		}
 	}
 	else
@@ -257,7 +257,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				displaySquelch=false;
 			}
 
-			if (!((uiChannelModeScanActive) & (scanState==SCAN_ZONE_INACTIVE)))
+			if (!((uiChannelModeScanActive) & (scanState==SCAN_SCANNING)))
 			{
 			displayLightTrigger();
 			}
@@ -280,9 +280,10 @@ static void handleEvent(int buttons, int keys, int events)
 {
 	uint32_t tg = (LinkHead->talkGroupOrPcId & 0xFFFFFF);
 
-	if (uiChannelModeScanActive == true)
+	if ((uiChannelModeScanActive == true) && (!(keys==0)) && (!((keys & KEY_UP) && (!(buttons & BUTTON_SK2)))))    // stop the scan on any button except UP without Shift ( allows scan to be manually continued) or SK2 on its own (allows Backlight to be triggered)
 	{
 		uiChannelModeScanActive = false;
+		displayLightTrigger();
 		return;
 	}
 
@@ -688,7 +689,7 @@ static void handleUpKey(int buttons)
 			}
 		}
 		scanTimer=500;
-		scanState = SCAN_ZONE_INACTIVE;
+		scanState = SCAN_SCANNING;
 	}
 	loadChannelData(false);
 	menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
@@ -761,7 +762,7 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 			case CH_SCREEN_QUICK_MENU_SCAN:
 				uiChannelModeScanActive=true;
 				scanTimer=500;
-				scanState = SCAN_ZONE_INACTIVE;
+				scanState = SCAN_SCANNING;
 				menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
 				break;
 			case CH_SCREEN_QUICK_MENU_COPY2VFO:
@@ -811,18 +812,18 @@ int menuChannelModeQuickMenu(int buttons, int keys, int events, bool isFirstRun)
 
 static void scanning(void)
 {
-	if((scanState==SCAN_ZONE_INACTIVE) & (scanTimer==10))							    			//after initial settling time
+	if((scanState==SCAN_SCANNING) & (scanTimer==10))							    			//after initial settling time
 	{
 		//test for presence of RF Carrier.
 		// In FM mode the dmr slot_state will always be DMR_STATE_IDLE
 		if(slot_state != DMR_STATE_IDLE || trx_carrier_detected() )
 		{
 			scanTimer=scanShortPause;												//start short delay to allow full detection of signal
-			scanState=SCAN_ZONE_ACTIVE;															//state 1 = pause and test for valid signal that produces audio
+			scanState=SCAN_PAUSED;															//state 1 = pause and test for valid signal that produces audio
 		}
 	}
 
-	if(scanState==SCAN_ZONE_ACTIVE)
+	if(scanState==SCAN_PAUSED)
 	{
 	    if (GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable)==1)	    	// if speaker on we must be receiving a signal
 	    {
@@ -845,7 +846,7 @@ static void scanning(void)
 		else
 		{
 			scanTimer=scanInterval;
-			scanState = SCAN_ZONE_INACTIVE;															//state 0 = settling and test for carrier present.
+			scanState = SCAN_SCANNING;															//state 0 = settling and test for carrier present.
 		}
 
 	}
