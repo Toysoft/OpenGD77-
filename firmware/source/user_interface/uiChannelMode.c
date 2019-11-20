@@ -41,7 +41,7 @@ typedef enum
 	SCAN_ZONE_ACTIVE,
 } ScanZoneState_t;
 
-static bool scanActive=false;
+bool uiChannelModeScanActive=false;
 static int scanTimer=0;
 static ScanZoneState_t scanState = SCAN_ZONE_INACTIVE;		//state flag for scan routine
 static int scanShortPause=500;			//time to wait after carrier detected to allow time for full signal detection. (CTCSS or DMR)
@@ -72,7 +72,10 @@ int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		RssiUpdateCounter = RSSI_UPDATE_COUNTER_RELOAD;
 		menuChannelModeUpdateScreen(0);
-
+		if (uiChannelModeScanActive == false)
+		{
+			scanState = SCAN_ZONE_INACTIVE;
+		}
 	}
 	else
 	{
@@ -93,7 +96,7 @@ int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 					RssiUpdateCounter = RSSI_UPDATE_COUNTER_RELOAD;
 				}
 			}
-			if(scanActive)
+			if(uiChannelModeScanActive)
 			{
 				scanning();
 			}
@@ -254,7 +257,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				displaySquelch=false;
 			}
 
-			if (!((scanActive) & (scanState==SCAN_ZONE_INACTIVE)))
+			if (!((uiChannelModeScanActive) & (scanState==SCAN_ZONE_INACTIVE)))
 			{
 			displayLightTrigger();
 			}
@@ -277,9 +280,9 @@ static void handleEvent(int buttons, int keys, int events)
 {
 	uint32_t tg = (LinkHead->talkGroupOrPcId & 0xFFFFFF);
 
-	if (scanActive == true)
+	if (uiChannelModeScanActive == true)
 	{
-		scanActive = false;
+		uiChannelModeScanActive = false;
 		return;
 	}
 
@@ -756,7 +759,7 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 		switch(gMenusCurrentItemIndex)
 		{
 			case CH_SCREEN_QUICK_MENU_SCAN:
-				scanActive=true;
+				uiChannelModeScanActive=true;
 				scanTimer=500;
 				scanState = SCAN_ZONE_INACTIVE;
 				menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);

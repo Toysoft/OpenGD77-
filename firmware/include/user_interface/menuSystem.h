@@ -23,6 +23,7 @@
 #define MENU_INC(O, M) do { O = (O + 1) % M; } while(0)
 #define MENU_DEC(O, M) do { O = (O + M - 1) % M; } while(0)
 
+extern bool uiChannelModeScanActive;
 extern int menuDisplayLightTimer;
 extern int menuTimer;
 
