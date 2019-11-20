@@ -223,7 +223,7 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 				item->id=id;
 				item->talkGroupOrPcId =  talkGroupOrPcId;
 				lastTG = talkGroupOrPcId;
-				memset(item->talkerAlias,0,32);// Clear any TA data
+				memset((char *)item->talkerAlias,0,32);// Clear any TA data
 				if (item->talkGroupOrPcId!=0)
 				{
 					menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;// flag that the display needs to update
@@ -248,9 +248,9 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 	}
 	else
 	{
-		int TAStartPos;
-		int TABlockLen;
-		int TAOffset;
+		size_t TAStartPos;
+		size_t TABlockLen;
+		size_t TAOffset;
 
 		// Data contains the Talker Alias Data
 		switch(DMR_frame_buffer[0])
@@ -281,9 +281,10 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 				TABlockLen=0;
 				break;
 		}
+
 		if (LinkHead->talkerAlias[TAOffset] == 0x00 && TABlockLen!=0)
 		{
-			memcpy(&LinkHead->talkerAlias[TAOffset],(uint8_t *)&DMR_frame_buffer[TAStartPos],TABlockLen);// Brandmeister seems to send callsign as 6 chars only
+			memcpy((char *)&LinkHead->talkerAlias[TAOffset],(uint8_t *)&DMR_frame_buffer[TAStartPos],TABlockLen);// Brandmeister seems to send callsign as 6 chars only
 			menuDisplayQSODataState=QSO_DISPLAY_CALLER_DATA;
 		}
 	}
@@ -410,7 +411,7 @@ static void displayContactTextInfos(char *text, size_t maxLen)
 			UC1701_printCentered(32, chomp(buffer), UC1701_FONT_8x16);
 
 			memcpy(buffer, text + (cpos + 1), (maxLen - (cpos + 1)));
-			buffer[31] = 0;
+			buffer[(strlen(text) - (cpos + 1))] = 0;
 
 			pbuf = chomp(buffer);
 
@@ -428,7 +429,7 @@ static void displayContactTextInfos(char *text, size_t maxLen)
 			UC1701_printCentered(32, chomp(buffer), UC1701_FONT_8x16);
 
 			memcpy(buffer, text + 6, (maxLen - 6));
-			buffer[31] = 0;
+			buffer[(strlen(text) - 6)] = 0;
 
 			pbuf = chomp(buffer);
 
@@ -441,7 +442,7 @@ static void displayContactTextInfos(char *text, size_t maxLen)
 	else
 	{
 		memcpy(buffer, text, strlen(text));
-		buffer[31] = 0;
+		buffer[strlen(text)] = 0;
 		UC1701_printCentered(32, chomp(buffer), UC1701_FONT_8x16);
 		displayChannelNameOrRxFrequency(buffer);
 	}
@@ -501,7 +502,7 @@ void menuUtilityRenderQSOData(void)
 			// We don't have this ID, so try looking in the Talker alias data
 			if (LinkHead->talkerAlias[0] != 0x00)
 			{
-				displayContactTextInfos(LinkHead->talkerAlias, sizeof(LinkHead->talkerAlias));
+				displayContactTextInfos((char *)LinkHead->talkerAlias, sizeof(LinkHead->talkerAlias));
 			}
 			else
 			{
