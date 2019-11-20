@@ -78,6 +78,22 @@ static char *chomp(char *str)
 	return sp;
 }
 
+
+static int32_t getCallsignEndingPos(char *str)
+{
+	char *p = str;
+
+	while(*p != '\0')
+	{
+		if (*p == ' ')
+			return (p - str);
+
+		p++;
+	}
+
+	return -1;
+}
+
 void lastheardInitList(void)
 {
     LinkHead = callsList;
@@ -427,17 +443,41 @@ void menuUtilityRenderQSOData(void)
 			// We don't have this ID, so try looking in the Talker alias data
 			if (LinkHead->talkerAlias[0] != 0x00)
 			{
-				if (strlen(LinkHead->talkerAlias)> 6)
+				if (strlen(LinkHead->talkerAlias) >= 5) // there is probably a callsign in it.
 				{
-					// More than 1 line wide of text, so we need to split onto 2 lines.
-					memcpy(buffer,LinkHead->talkerAlias,6);
-					buffer[6]=0x00;
+					int32_t cpos;
 
-					UC1701_printCentered(32, chomp(buffer), UC1701_FONT_8x16);
+					if ((cpos = getCallsignEndingPos(LinkHead->talkerAlias)) != -1)
+					{
+						char *pbuf;
 
-					memcpy(buffer,&LinkHead->talkerAlias[6],16);
-					buffer[16]=0x00;
-					UC1701_printAt(0,48, chomp(buffer),UC1701_FONT_8x16);
+						// Callsign found
+						memcpy(buffer, LinkHead->talkerAlias, cpos);
+						buffer[cpos] = 0;
+						UC1701_printCentered(32, chomp(buffer), UC1701_FONT_8x16);
+
+						memcpy(buffer, &LinkHead->talkerAlias[cpos], (32 - cpos));
+						buffer[16] = 0;
+
+						pbuf = chomp(buffer);
+
+						if (strlen(pbuf))
+							UC1701_printAt(0, 48, pbuf, UC1701_FONT_8x16);
+						else
+							displayChannelNameOrRxFrequency(buffer);
+					}
+					else
+					{
+						// No space found, use a chainsaw
+						memcpy(buffer,LinkHead->talkerAlias, 6);
+						buffer[6] = 0;
+
+						UC1701_printCentered(32, chomp(buffer), UC1701_FONT_8x16);
+
+						memcpy(buffer, &LinkHead->talkerAlias[6], 16);
+						buffer[16] = 0;
+						UC1701_printAt(0,48, chomp(buffer),UC1701_FONT_8x16);
+					}
 				}
 				else
 				{
