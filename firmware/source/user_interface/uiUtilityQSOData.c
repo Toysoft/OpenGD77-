@@ -371,6 +371,7 @@ bool menuUtilityHandlePrivateCallActions(int buttons, int keys, int events)
 	}
 	return false;// The event has not been handled
 }
+
 static void displayChannelNameOrRxFrequency(char *buffer)
 {
 	if (menuSystemGetCurrentMenuNumber() == MENU_CHANNEL_MODE)
@@ -384,6 +385,66 @@ static void displayChannelNameOrRxFrequency(char *buffer)
 		sprintf(buffer,"%d.%05d MHz",val_before_dp, val_after_dp);
 	}
 	UC1701_printCentered(52,buffer,UC1701_FONT_6x8);
+}
+
+/*
+ * Try to extract callsign and extra text from TA or DMR ID data, then display that on
+ * two lines, if possible.
+ * We don't care if extra text is larger than 16 chars, UC1701_print*() functions cut them.
+ *.
+ */
+static void displayContactTextInfos(char *text, size_t maxLen)
+{
+	char buffer[32];
+
+	if (strlen(text) >= 5) // there is probably a callsign in it.
+	{
+		char    *pbuf;
+		int32_t  cpos;
+
+		if ((cpos = getCallsignEndingPos(text)) != -1)
+		{
+			// Callsign found
+			memcpy(buffer, text, cpos);
+			buffer[cpos] = 0;
+			UC1701_printCentered(32, chomp(buffer), UC1701_FONT_8x16);
+
+			memcpy(buffer, text + (cpos + 1), (maxLen - (cpos + 1)));
+			buffer[31] = 0;
+
+			pbuf = chomp(buffer);
+
+			if (strlen(pbuf))
+				UC1701_printAt(0, 48, pbuf, UC1701_FONT_8x16);
+			else
+				displayChannelNameOrRxFrequency(buffer);
+		}
+		else
+		{
+			// No space found, use a chainsaw
+			memcpy(buffer, text, 6);
+			buffer[6] = 0;
+
+			UC1701_printCentered(32, chomp(buffer), UC1701_FONT_8x16);
+
+			memcpy(buffer, text + 6, (maxLen - 6));
+			buffer[31] = 0;
+
+			pbuf = chomp(buffer);
+
+			if (strlen(pbuf))
+				UC1701_printAt(0, 48, pbuf, UC1701_FONT_8x16);
+			else
+				displayChannelNameOrRxFrequency(buffer);
+		}
+	}
+	else
+	{
+		memcpy(buffer, text, strlen(text));
+		buffer[31] = 0;
+		UC1701_printCentered(32, chomp(buffer), UC1701_FONT_8x16);
+		displayChannelNameOrRxFrequency(buffer);
+	}
 }
 
 void menuUtilityRenderQSOData(void)
@@ -431,67 +492,22 @@ void menuUtilityRenderQSOData(void)
 		}
 
 		// first check if we have this ID in the DMR ID data
-		if (dmrIDLookup( LinkHead->id,&currentRec))
+		if (dmrIDLookup(LinkHead->id, &currentRec))
 		{
-			snprintf(buffer, 20, "%s", currentRec.text);
-			buffer[20] = 0;
-			UC1701_printCentered(32, buffer,UC1701_FONT_8x16);
-			displayChannelNameOrRxFrequency(buffer);
+			displayContactTextInfos(currentRec.text, sizeof(currentRec.text));
 		}
 		else
 		{
 			// We don't have this ID, so try looking in the Talker alias data
 			if (LinkHead->talkerAlias[0] != 0x00)
 			{
-				if (strlen(LinkHead->talkerAlias) >= 5) // there is probably a callsign in it.
-				{
-					int32_t cpos;
-
-					if ((cpos = getCallsignEndingPos(LinkHead->talkerAlias)) != -1)
-					{
-						char *pbuf;
-
-						// Callsign found
-						memcpy(buffer, LinkHead->talkerAlias, cpos);
-						buffer[cpos] = 0;
-						UC1701_printCentered(32, chomp(buffer), UC1701_FONT_8x16);
-
-						memcpy(buffer, &LinkHead->talkerAlias[cpos], (32 - cpos));
-						buffer[16] = 0;
-
-						pbuf = chomp(buffer);
-
-						if (strlen(pbuf))
-							UC1701_printAt(0, 48, pbuf, UC1701_FONT_8x16);
-						else
-							displayChannelNameOrRxFrequency(buffer);
-					}
-					else
-					{
-						// No space found, use a chainsaw
-						memcpy(buffer,LinkHead->talkerAlias, 6);
-						buffer[6] = 0;
-
-						UC1701_printCentered(32, chomp(buffer), UC1701_FONT_8x16);
-
-						memcpy(buffer, &LinkHead->talkerAlias[6], 16);
-						buffer[16] = 0;
-						UC1701_printAt(0,48, chomp(buffer),UC1701_FONT_8x16);
-					}
-				}
-				else
-				{
-					memcpy(buffer, LinkHead->talkerAlias, strlen(LinkHead->talkerAlias));
-					buffer[strlen(LinkHead->talkerAlias)] = 0;
-					UC1701_printCentered(32, chomp(buffer), UC1701_FONT_8x16);
-					displayChannelNameOrRxFrequency(buffer);
-				}
+				displayContactTextInfos(LinkHead->talkerAlias, sizeof(LinkHead->talkerAlias));
 			}
 			else
 			{
 				// No talker alias. So we can only show the ID.
-				sprintf(buffer,"ID: %d", LinkHead->id);
-				UC1701_printCentered(32, buffer,UC1701_FONT_8x16);
+				sprintf(buffer, "ID: %d", LinkHead->id);
+				UC1701_printCentered(32, buffer, UC1701_FONT_8x16);
 				displayChannelNameOrRxFrequency(buffer);
 			}
 		}
