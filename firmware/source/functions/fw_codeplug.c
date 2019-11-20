@@ -189,9 +189,7 @@ bool codeplugChannelIndexIsValid(int index)
 
 	if(channelbank==0)
 	{
-		taskENTER_CRITICAL();
 		EEPROM_Read(CODEPLUG_ADDR_CHANNEL_EEPROM-16,(uint8_t *)bitarray,16);
-		taskENTER_CRITICAL();
 	}
 	else
 	{

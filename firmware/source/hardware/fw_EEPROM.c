@@ -31,6 +31,15 @@ bool EEPROM_Write(int address,uint8_t *buf, int size)
     status_t status;
 
 	taskENTER_CRITICAL();
+    if (isI2cInUse)
+    {
+    	SEGGER_RTT_printf(0, "Clash %d\n",isI2cInUse);
+    	taskEXIT_CRITICAL();
+    	return false;
+    }
+    isI2cInUse = 1;
+
+
     while(size > 0)
     {
 		transferSize = size>EEPROM_PAGE_SIZE?EEPROM_PAGE_SIZE:size;
@@ -65,6 +74,7 @@ bool EEPROM_Write(int address,uint8_t *buf, int size)
 
 		if (status != kStatus_Success)
 		{
+	    	isI2cInUse = 0;
 	    	taskEXIT_CRITICAL();
 			return false;
 		}
@@ -81,13 +91,17 @@ bool EEPROM_Write(int address,uint8_t *buf, int size)
 		status = I2C_MasterTransferBlocking(I2C0, &masterXfer);
 		if (status != kStatus_Success)
 		{
+	    	isI2cInUse = 0;
 	    	taskEXIT_CRITICAL();
 			return status;
 		}
 		address += transferSize;
 		size -= transferSize;
     }
+
+	isI2cInUse = 0;
 	taskEXIT_CRITICAL();
+
 	return true;
 }
 
@@ -99,6 +113,16 @@ bool EEPROM_Read(int address,uint8_t *buf, int size)
     status_t status;
 
 	taskENTER_CRITICAL();
+    if (isI2cInUse)
+    {
+    	SEGGER_RTT_printf(0, "Clash %d\n",isI2cInUse);
+    	taskEXIT_CRITICAL();
+    	return false;
+    }
+
+    isI2cInUse = 2;
+
+
     tmpBuf[0] = address >> 8;
     tmpBuf[1] = address & 0xff;
 
@@ -126,6 +150,7 @@ bool EEPROM_Read(int address,uint8_t *buf, int size)
 
 	if (status != kStatus_Success)
 	{
+    	isI2cInUse = false;
     	taskEXIT_CRITICAL();
 		return false;
 	}
@@ -142,10 +167,13 @@ bool EEPROM_Read(int address,uint8_t *buf, int size)
     status = I2C_MasterTransferBlocking(I2C0, &masterXfer);
     if (status != kStatus_Success)
     {
+    	isI2cInUse = false;
     	taskEXIT_CRITICAL();
     	return false;
     }
 
+	isI2cInUse = false;
 	taskEXIT_CRITICAL();
+
 	return true;
 }

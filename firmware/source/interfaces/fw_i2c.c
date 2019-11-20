@@ -19,6 +19,7 @@
 #include "fw_i2c.h"
 
 uint8_t i2c_master_buff[I2C_DATA_LENGTH];
+volatile int isI2cInUse = 0;
 
 void init_I2C0a(void)
 {
@@ -56,6 +57,7 @@ void init_I2C0a(void)
     PORT_SetPinConfig(Port_I2C0a_SDA, Pin_I2C0a_SDA, &porte25_config);
 
     NVIC_SetPriority(I2C0_IRQn, 3);
+    isI2cInUse = 0;
 }
 
 void init_I2C0b(void)
@@ -125,6 +127,13 @@ int write_I2C_reg_2byte(uint8_t addr, uint8_t reg, uint8_t val1, uint8_t val2)
     i2c_master_transfer_t masterXfer;
     status_t status;
 
+    if (isI2cInUse)
+    {
+    	SEGGER_RTT_printf(0, "Clash %d\n",isI2cInUse);
+    	return 0;
+    }
+    isI2cInUse = 3;
+
 	//taskENTER_CRITICAL();
 	//clear_I2C_buffer();
 	i2c_master_buff[0] = reg;
@@ -143,11 +152,11 @@ int write_I2C_reg_2byte(uint8_t addr, uint8_t reg, uint8_t val1, uint8_t val2)
     status = I2C_MasterTransferBlocking(I2C0, &masterXfer);
     if (status != kStatus_Success)
     {
-    	//taskEXIT_CRITICAL();
+    	isI2cInUse = 0;
     	return status;
     }
 
-	//taskEXIT_CRITICAL();
+    isI2cInUse = 0;
 	return kStatus_Success;
 }
 
@@ -156,8 +165,13 @@ int read_I2C_reg_2byte(uint8_t addr, uint8_t reg, uint8_t* val1, uint8_t* val2)
     i2c_master_transfer_t masterXfer;
     status_t status;
 
-	//taskENTER_CRITICAL();
-	//clear_I2C_buffer();
+    if (isI2cInUse)
+    {
+    	SEGGER_RTT_printf(0, "Clash %d\n",isI2cInUse);
+    	return 0;
+    }
+    isI2cInUse = 4;
+
 	i2c_master_buff[0] = reg;
 
     memset(&masterXfer, 0, sizeof(masterXfer));
@@ -172,11 +186,10 @@ int read_I2C_reg_2byte(uint8_t addr, uint8_t reg, uint8_t* val1, uint8_t* val2)
     status = I2C_MasterTransferBlocking(I2C0, &masterXfer);
     if (status != kStatus_Success)
     {
-    	//taskEXIT_CRITICAL();
+    	isI2cInUse = 0;
     	return status;
     }
 
-	//clear_I2C_buffer();
 
     masterXfer.slaveAddress = I2C_MASTER_SLAVE_ADDR_7BIT;
     masterXfer.direction = kI2C_Read;
@@ -189,14 +202,14 @@ int read_I2C_reg_2byte(uint8_t addr, uint8_t reg, uint8_t* val1, uint8_t* val2)
     status = I2C_MasterTransferBlocking(I2C0, &masterXfer);
     if (status != kStatus_Success)
     {
-    	//taskEXIT_CRITICAL();
+    	isI2cInUse = 0;
     	return status;
     }
 
     *val1 = i2c_master_buff[0];
     *val2 = i2c_master_buff[1];
 
-	//taskEXIT_CRITICAL();
+    isI2cInUse = 0;
 	return kStatus_Success;
 }
 

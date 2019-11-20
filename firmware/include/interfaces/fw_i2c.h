@@ -31,6 +31,7 @@
 
 #define I2C_DATA_LENGTH (32)  /* MAX is 256 */
 extern uint8_t i2c_master_buff[I2C_DATA_LENGTH];
+extern volatile int isI2cInUse;
 
 // I2C0a to AT24C512 EEPROM & AT1846S
 // OUT/ON E24 - I2C SCL to AT24C512 EEPROM & AT1846S
