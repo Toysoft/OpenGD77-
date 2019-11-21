@@ -816,10 +816,15 @@ static void scanning(void)
 	{
 		//test for presence of RF Carrier.
 		// In FM mode the dmr slot_state will always be DMR_STATE_IDLE
-		if(slot_state != DMR_STATE_IDLE || trx_carrier_detected() )
+		if(trx_carrier_detected() )
 		{
 			scanTimer=scanShortPause;												//start short delay to allow full detection of signal
 			scanState=SCAN_PAUSED;															//state 1 = pause and test for valid signal that produces audio
+		}
+		if (slot_state != DMR_STATE_IDLE)
+		{
+			scanState=SCAN_PAUSED;
+			scanTimer=scanPause;
 		}
 	}
 
