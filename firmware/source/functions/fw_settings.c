@@ -36,6 +36,7 @@ settingsStruct_t nonVolatileSettings;
 struct_codeplugChannel_t *currentChannelData;
 struct_codeplugChannel_t channelScreenChannelData={.rxFreq=0};
 struct_codeplugContact_t contactListContactData;
+int contactListContactIndex;
 int settingsUsbMode = USB_MODE_CPS;
 int settingsCurrentChannelNumber=0;
 bool settingsPrivateCallMuteMode = false;

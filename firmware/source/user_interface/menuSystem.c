@@ -48,6 +48,7 @@ int menuCPS(int buttons, int keys, int events, bool isFirstRun);
 int menuLockScreen(int buttons, int keys, int events, bool isFirstRun);
 int menuContactList(int buttons, int keys, int events, bool isFirstRun);
 int menuContactDetails(int buttons, int keys, int events, bool isFirstRun);
+int menuSavedScreen(int buttons, int keys, int events, bool isFirstRun);
 
 /*
  * ---------------------- IMPORTANT ----------------------------
@@ -82,6 +83,7 @@ const menuItemNew_t * menusData[] = { 	NULL,// splash
 										NULL,// Lock screen
 										NULL,// Contact List
 										NULL,// Contact Details
+										NULL,// Saved
 								};
 
 const MenuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
@@ -107,7 +109,8 @@ const MenuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
 												menuVFOModeQuickMenu,
                                                 menuLockScreen,
 												menuContactList,
-												menuContactDetails
+												menuContactDetails,
+												menuSavedScreen,
 };
 
 void menuSystemPushNewMenu(int menuNumber)
@@ -221,9 +224,8 @@ const menuItemNew_t menuDataMainMenu[] = {
 	{ 22, MENU_CHANNEL_DETAILS},
 };
 const menuItemNew_t menuDataContact[] = {
-	{ 3, 1 } ,// length
-	//{ 7 , -1 },// New Contact
-	{ 0, MENU_CONTACT_LIST },// Contacts List
+	{ 2, 1 } ,// length
+	{ 7 , MENU_CONTACT_DETAILS },// New Contact
 	{ 24, MENU_CONTACT_LIST },// Contacts List
 	{ 0, MENU_CONTACT_LIST },// Contacts List
 	//{ 11, MENU_NUMERICAL_ENTRY},// Manual Dial

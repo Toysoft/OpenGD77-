@@ -29,16 +29,32 @@ static void handleEvent(int buttons, int keys, int events);
 static struct_codeplugContact_t tmpContact;
 const static char callTypeString[3][8] = { "Group", "Private", "All" };
 
-enum CONTACT_DETAILS_DISPLAY_LIST { CONTACT_DETAILS_HEADER=0, CONTACT_DETAILS_NAME, CONTACT_DETAILS_TG, CONTACT_DETAILS_CALLTYPE, CONTACT_DETAILS_TS,
+static char digits[9];
+
+enum CONTACT_DETAILS_DISPLAY_LIST { /*CONTACT_DETAILS_NAME=0,*/ CONTACT_DETAILS_TG=0, CONTACT_DETAILS_CALLTYPE, CONTACT_DETAILS_TS,
 	NUM_CONTACT_DETAILS_ITEMS};// The last item in the list is used so that we automatically get a total number of items in the list
 
 int menuContactDetails(int buttons, int keys, int events, bool isFirstRun)
 {
+	char buf[17];
 	if (isFirstRun)
 	{
-		memcpy(&tmpContact, &contactListContactData,sizeof(struct_codeplugContact_t));
+		if (contactListContactIndex == 0) {
+			contactListContactIndex = codeplugContactGetFreeIndex();
 
-		gMenusCurrentItemIndex=1;
+			sprintf(buf,"Contact%d",contactListContactIndex);
+			codeplugUtilConvertStringToBuf(buf, tmpContact.name, 16);
+			tmpContact.callType = CONTACT_CALLTYPE_TG;
+			tmpContact.reserve1 = 0xff;
+			tmpContact.tgNumber = 0;
+			digits[0] = 0x00;
+		} else {
+			memcpy(&tmpContact, &contactListContactData,sizeof(struct_codeplugContact_t));
+			itoa(tmpContact.tgNumber, digits, 10);
+		}
+
+		gMenusCurrentItemIndex=0;
+
 		updateScreen();
 	}
 	else
@@ -57,52 +73,54 @@ static void updateScreen(void)
 	char buf[17];
 
 	UC1701_clearBuf();
-	menuDisplayTitle("Contact details");
+//	menuDisplayTitle("Contact details");
+
+	codeplugUtilConvertBufToString(tmpContact.name, buf, 16);
+	menuDisplayTitle(buf);
 
 	// Can only display 3 of the options at a time menu at -1, 0 and +1
 	for(int i = -1; i <= 1; i++)
 	{
 		mNum = menuGetMenuOffset(NUM_CONTACT_DETAILS_ITEMS, i);
 
-		switch(mNum)
+		switch (mNum)
 		{
-			case CONTACT_DETAILS_HEADER:
-				strcpy(buf,"Name:");
+//			case CONTACT_DETAILS_Name:
+//				strcpy(buf,"Name");
+//				break;
+		case CONTACT_DETAILS_TG:
+			switch (tmpContact.callType)
+			{
+			case CONTACT_CALLTYPE_TG:
+				sprintf(buf, "TG:%s", digits);
 				break;
-			case CONTACT_DETAILS_NAME:
-				codeplugUtilConvertBufToString(tmpContact.name, buf, 16);
+			case CONTACT_CALLTYPE_PC: // Private
+				sprintf(buf, "PC:%s", digits);
 				break;
-			case CONTACT_DETAILS_TG:
-				switch (tmpContact.callType) {
-					case 2: // All Call
-						strcpy(buf,"All:16777215");
-						break;
-					case 1: // Private
-						sprintf(buf,"PC:%d",tmpContact.tgNumber);
-						break;
-					case 0:
-						sprintf(buf,"TG:%d",tmpContact.tgNumber);
-						break;
-				}
+			case CONTACT_CALLTYPE_ALL: // All Call
+				strcpy(buf, "All:16777215");
 				break;
-			case CONTACT_DETAILS_CALLTYPE:
-				strcpy(buf,"Type:");
-				strcat(buf,callTypeString[tmpContact.callType]);
+			}
+			break;
+		case CONTACT_DETAILS_CALLTYPE:
+			strcpy(buf, "Type:");
+			strcat(buf, callTypeString[tmpContact.callType]);
+			break;
+		case CONTACT_DETAILS_TS:
+			switch (tmpContact.reserve1 & 0x3)
+			{
+			case 1:
+			case 3:
+				strcpy(buf, "Timeslot:none");
 				break;
-			case CONTACT_DETAILS_TS:
-				switch (tmpContact.reserve1 & 0x3) {
-				case 1:
-				case 3:
-					strcpy(buf, "Timeslot:none");
-					break;
-				case 0:
-					strcpy(buf, "Timeslot:1");
-					break;
-				case 2:
-					strcpy(buf, "Timeslot: 2");
-					break;
-				}
+			case 0:
+				strcpy(buf, "Timeslot:1");
 				break;
+			case 2:
+				strcpy(buf, "Timeslot: 2");
+				break;
+			}
+			break;
 		}
 
 		menuDisplayEntry(i, mNum, buf);
@@ -114,6 +132,8 @@ static void updateScreen(void)
 
 static void handleEvent(int buttons, int keys, int events)
 {
+	int sLen = strlen(digits);
+
 	if (events & 0x01) {
 		if ((keys & KEY_DOWN)!=0)
 		{
@@ -127,8 +147,8 @@ static void handleEvent(int buttons, int keys, int events)
 		{
 			switch(gMenusCurrentItemIndex)
 			{
-			case CONTACT_DETAILS_NAME:
-				break;
+//			case CONTACT_DETAILS_NAME:
+//				break;
 			case CONTACT_DETAILS_TG:
 				break;
 			case CONTACT_DETAILS_CALLTYPE:
@@ -154,10 +174,12 @@ static void handleEvent(int buttons, int keys, int events)
 		{
 			switch(gMenusCurrentItemIndex)
 			{
-			case CONTACT_DETAILS_NAME:
-				break;
+//			case CONTACT_DETAILS_NAME:
+//				break;
 			case CONTACT_DETAILS_TG:
-				tmpContact.tgNumber = tmpContact.tgNumber / 10;
+				if (sLen>0) {
+					digits[sLen-1] = 0x00;
+				}
 				break;
 			case CONTACT_DETAILS_CALLTYPE:
 				MENU_DEC(tmpContact.callType,3);
@@ -181,13 +203,76 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 		else if ((keys & KEY_GREEN)!=0)
 		{
-			menuSystemPopAllAndDisplayRootMenu();
+			if (tmpContact.callType == CONTACT_CALLTYPE_ALL) {
+				tmpContact.tgNumber = 16777215;
+			}
+			if (contactListContactIndex > 0 && contactListContactIndex <= 1024) {
+				tmpContact.tgNumber = atoi(digits);
+
+				codeplugContactSaveDataForIndex(contactListContactIndex, &tmpContact);
+				contactListContactIndex = 0;
+				menuSystemPushNewMenu(MENU_SAVED_SCREEN);
+			}
 			return;
 		}
 		else if ((keys & KEY_RED)!=0)
 		{
+			contactListContactIndex = 0;
 			menuSystemPopPreviousMenu();
 			return;
+		}
+		else if (gMenusCurrentItemIndex == CONTACT_DETAILS_TG) {
+			// Add a digit
+			if (sLen < 7)
+			{
+				char c[2] = {0, 0};
+
+				if ((keys & KEY_0) != 0)
+				{
+					c[0]='0';
+				}
+				else if ((keys & KEY_1)!=0)
+				{
+					c[0]='1';
+				}
+				else if ((keys & KEY_2)!=0)
+				{
+					c[0]='2';
+				}
+				else if ((keys & KEY_3)!=0)
+				{
+					c[0]='3';
+				}
+				else if ((keys & KEY_4)!=0)
+				{
+					c[0]='4';
+				}
+				else if ((keys & KEY_5)!=0)
+				{
+					c[0]='5';
+				}
+				else if ((keys & KEY_6)!=0)
+				{
+					c[0]='6';
+				}
+				else if ((keys & KEY_7)!=0)
+				{
+					c[0]='7';
+				}
+				else if ((keys & KEY_8)!=0)
+				{
+					c[0]='8';
+				}
+				else if ((keys & KEY_9)!=0)
+				{
+					c[0]='9';
+				}
+
+				if (c[0]!=0)
+				{
+					strcat(digits,c);
+				}
+			}
 		}
 	}
 	updateScreen();

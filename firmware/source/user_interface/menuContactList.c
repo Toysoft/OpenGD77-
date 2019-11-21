@@ -27,7 +27,6 @@ static struct_codeplugContact_t contact;
 static int contactCallType;
 
 static const char *calltypeName[] = { "Group Call", "Private Call" };
-enum CONTACT_CALLTYPE_SELECT { CONTACT_CALLTYPE_TG=0, CONTACT_CALLTYPE_PC };
 
 int menuContactList(int buttons, int keys, int events, bool isFirstRun)
 {
@@ -35,7 +34,7 @@ int menuContactList(int buttons, int keys, int events, bool isFirstRun)
 	{
 		gMenusEndIndex = codeplugContactsGetCount(contactCallType);
 		gMenusCurrentItemIndex = 1;
-		codeplugContactGetDataForNumber(gMenusCurrentItemIndex, contactCallType, &contactListContactData);
+		contactListContactIndex = codeplugContactGetDataForNumber(gMenusCurrentItemIndex, contactCallType, &contactListContactData);
 
 		updateScreen();
 	}
@@ -83,43 +82,51 @@ static void updateScreen()
 
 static void handleEvent(int buttons, int keys, int events)
 {
-	if (events & 0x01) {
-		if ((keys & KEY_RIGHT) != 0)
-		{
-			menuSystemPushNewMenu(MENU_CONTACT_DETAILS);
-			return;
-		}
-		else if ((keys & KEY_DOWN)!=0)
+	if (events & 0x01)
+	{
+		if ((keys & KEY_DOWN) != 0)
 		{
 			MENU_INC(gMenusCurrentItemIndex, gMenusEndIndex);
-			codeplugContactGetDataForNumber(gMenusCurrentItemIndex, contactCallType, &contactListContactData);
+			contactListContactIndex = codeplugContactGetDataForNumber(gMenusCurrentItemIndex, contactCallType, &contactListContactData);
 		}
-		else if ((keys & KEY_UP)!=0)
+		else if ((keys & KEY_UP) != 0)
 		{
 			MENU_DEC(gMenusCurrentItemIndex, gMenusEndIndex);
-			codeplugContactGetDataForNumber(gMenusCurrentItemIndex, contactCallType, &contactListContactData);
+			contactListContactIndex = codeplugContactGetDataForNumber(gMenusCurrentItemIndex, contactCallType, &contactListContactData);
 		}
 		else if ((keys & KEY_HASH) != 0)
 		{
-			if (contactCallType == CONTACT_CALLTYPE_TG) {
+			if (contactCallType == CONTACT_CALLTYPE_TG)
+			{
 				contactCallType = CONTACT_CALLTYPE_PC;
-			} else {
+			}
+			else
+			{
 				contactCallType = CONTACT_CALLTYPE_TG;
 			}
 			gMenusEndIndex = codeplugContactsGetCount(contactCallType);
 			gMenusCurrentItemIndex = 1;
-			codeplugContactGetDataForNumber(gMenusCurrentItemIndex, contactCallType, &contactListContactData);
+			contactListContactIndex = codeplugContactGetDataForNumber(gMenusCurrentItemIndex, contactCallType, &contactListContactData);
 		}
-		else if ((keys & KEY_GREEN)!=0)
+		else if ((keys & KEY_GREEN) != 0)
 		{
-			codeplugContactGetDataForNumber(gMenusCurrentItemIndex, contactCallType, &contact);
-			setOverrideTGorPC(contact.tgNumber, contact.callType == CONTACT_CALLTYPE_PC);
-
-			menuSystemPopAllAndDisplayRootMenu();
-			return;
+			if ((buttons & BUTTON_SK2) != 0)
+			{
+				menuSystemPushNewMenu(MENU_CONTACT_DETAILS);
+				return;
+			}
+			else
+			{
+				contactListContactIndex = codeplugContactGetDataForNumber(gMenusCurrentItemIndex, contactCallType, &contact);
+				setOverrideTGorPC(contact.tgNumber, contact.callType == CONTACT_CALLTYPE_PC);
+				contactListContactIndex = 0;
+				menuSystemPopAllAndDisplayRootMenu();
+				return;
+			}
 		}
-		else if ((keys & KEY_RED)!=0)
+		else if ((keys & KEY_RED) != 0)
 		{
+			contactListContactIndex = 0;
 			menuSystemPopPreviousMenu();
 			return;
 		}
