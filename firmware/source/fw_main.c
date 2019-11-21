@@ -211,11 +211,12 @@ void fw_main_task(void *data)
 					}
 				}
 			}
-			if (key_event == EVENT_KEY_CHANGE && KEYCHECK_PRESS(keys))
-			{
-				if (keys != 0 && (buttons & BUTTON_PTT) == 0)
+			if (key_event == EVENT_KEY_CHANGE && (buttons & BUTTON_PTT) == 0 && keys != 0) {
+				if (keys & KEY_MOD_PRESS)
 				{
 					set_melody(melody_key_beep);
+				} else if  ((keys & (KEY_MOD_LONG | KEY_MOD_DOWN)) == (KEY_MOD_LONG | KEY_MOD_DOWN)) {
+					set_melody(melody_key_long_beep);
 				}
 			}
 /*

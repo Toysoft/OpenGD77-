@@ -38,6 +38,7 @@
 extern int melody_generic[512];
 extern const int melody_poweron[];
 extern const int melody_key_beep[];
+extern const int melody_key_long_beep[];
 extern const int melody_sk1_beep[];
 extern const int melody_sk2_beep[];
 extern const int melody_orange_beep[];
