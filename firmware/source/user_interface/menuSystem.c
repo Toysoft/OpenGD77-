@@ -203,7 +203,7 @@ const char menuStringTable[32][17] = { "",//0
 };
 
 const menuItemNew_t menuDataMainMenu[] = {
-	{9,9},// number of menus
+	{10,10},// number of menus
 	{ 21, MENU_CREDITS },
 	{ 6, MENU_ZONE_LIST },
 	{ 17, MENU_RSSI_SCREEN },
