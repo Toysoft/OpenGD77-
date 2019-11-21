@@ -144,15 +144,18 @@ const uint8_t AT1846DMRSettings[][AT1846_BYTES_PER_COMMAND] = {
 
 void I2C_AT1846S_send_Settings(const uint8_t settings[][3],int numSettings)
 {
+	taskENTER_CRITICAL();
 	for(int i=0;i<numSettings;i++)
 	{
 		write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT,	settings[i][0], settings[i][1],	settings[i][2]);
 	}
+	taskEXIT_CRITICAL();
 }
 
 void I2C_AT1846S_init(void)
 {
 	// --- start of AT1846_init()
+	taskENTER_CRITICAL();
 	write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x30, 0x00, 0x01); // Soft reset
 	vTaskDelay(portTICK_PERIOD_MS * 50);
 
@@ -170,6 +173,7 @@ void I2C_AT1846S_init(void)
 	I2C_AT1846S_send_Settings(AT1846FM12P5kHzSettings, sizeof(AT1846FM12P5kHzSettings)/AT1846_BYTES_PER_COMMAND);// initially set the bandwidth for 12.5 kHz
 
 	set_clear_I2C_reg_2byte_with_mask(0x4e, 0xff, 0x3f, 0x00, 0x80); // Select cdcss mode for tx
+	taskEXIT_CRITICAL();
 	vTaskDelay(portTICK_PERIOD_MS * 200);
 }
 

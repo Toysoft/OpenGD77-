@@ -94,6 +94,7 @@ void trxSetModeAndBandwidth(int mode, bool bandwidthIs25kHz)
 
 		currentBandWidthIs25kHz=bandwidthIs25kHz;
 
+		taskENTER_CRITICAL();
 		switch(mode)
 		{
 		case RADIO_MODE_NONE:
@@ -129,6 +130,7 @@ void trxSetModeAndBandwidth(int mode, bool bandwidthIs25kHz)
 			init_digital();
 			break;
 		}
+		taskEXIT_CRITICAL();
 	}
 }
 
@@ -154,21 +156,19 @@ bool trxCheckFrequencyInAmateurBand(int tmp_frequency)
 
 void trxReadRSSIAndNoise(void)
 {
+	taskENTER_CRITICAL();
 	read_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x1b,(uint8_t *)&trxRxSignal,(uint8_t *)&trxRxNoise);
+	taskEXIT_CRITICAL();
 }
 
 int trx_carrier_detected()
 {
 	uint8_t squelch=45;
 
-	// The C6000 task also reads the RSSI if it is receiving a signal
-	if (trxGetMode() == RADIO_MODE_DIGITAL && slot_state == DMR_STATE_IDLE)
-	{
-		// The task Critical wrapper may not be necessary and is only added as a precaution
-		taskENTER_CRITICAL();
-		trxReadRSSIAndNoise();
-		taskEXIT_CRITICAL();
-	}
+	// The task Critical wrapper may not be necessary and is only added as a precaution
+	taskENTER_CRITICAL();
+	trxReadRSSIAndNoise();
+	taskEXIT_CRITICAL();
 
 	// check for variable squelch control
 	if (currentChannelData->sql!=0)
@@ -247,6 +247,7 @@ void trx_check_analog_squelch(void)
 
 void trxSetFrequency(int fRx,int fTx, int dmrMode)
 {
+	taskENTER_CRITICAL();
 	if (currentRxFrequency!=fRx || currentTxFrequency!=fTx)
 	{
 		calibrationGetPowerForFrequency(fTx, &trxPowerSettings);
@@ -344,6 +345,7 @@ void trxSetFrequency(int fRx,int fTx, int dmrMode)
 			init_digital();
 		}
 	}
+	taskEXIT_CRITICAL();
 }
 
 int trxGetFrequency(void)
@@ -776,6 +778,7 @@ void trxUpdateTsForCurrentChannelWithSpecifiedContact(struct_codeplugContact_t *
 
 void trxSetTxCTCSS(int toneFreqX10)
 {
+	taskENTER_CRITICAL();
 	if (toneFreqX10 == 0xFFFF)
 	{
 		// tone value of 0xffff in the codeplug seem to be a flag that no tone has been selected
@@ -790,10 +793,12 @@ void trxSetTxCTCSS(int toneFreqX10)
 		write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT,	0x4c, 0x0A, 0xE3); // init cdcss_code
 		set_clear_I2C_reg_2byte_with_mask(0x4e,0xF9,0xFF,0x06,0x00);    //enable the transmit CTCSS
 	}
+	taskEXIT_CRITICAL();
 }
 
 void trxSetRxCTCSS(int toneFreqX10)
 {
+	taskENTER_CRITICAL();
 	if (toneFreqX10 == 0xFFFF)
 	{
 		// tone value of 0xffff in the codeplug seem to be a flag that no tone has been selected
@@ -809,6 +814,7 @@ void trxSetRxCTCSS(int toneFreqX10)
 		set_clear_I2C_reg_2byte_with_mask(0x3a,0xFF,0xE0,0x00,0x08);    //set detection to CTCSS2
 		rxCTCSSactive=true;
 	}
+	taskEXIT_CRITICAL();
 }
 
 bool trxCheckCTCSSFlag(void)
@@ -816,8 +822,9 @@ bool trxCheckCTCSSFlag(void)
 	uint8_t FlagsH;
 	uint8_t FlagsL;
 
+	taskENTER_CRITICAL();
 	read_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x1c,&FlagsH,&FlagsL);
-
+	taskEXIT_CRITICAL();
 	return (FlagsH & 0x01);
 }
 
@@ -830,6 +837,7 @@ void trxUpdateDeviation(int channel)
 		return;
 	}
 
+	taskENTER_CRITICAL();
 	switch (channel)
 	{
 	case AT1846_VOICE_CHANNEL_TONE1:
@@ -844,12 +852,14 @@ void trxUpdateDeviation(int channel)
 		I2C_AT1846_set_register_with_mask(0x59, 0x003f, deviation, 6); // Tone deviation value
 		break;
 	}
+	taskEXIT_CRITICAL();
 }
 
 void trxSelectVoiceChannel(uint8_t channel) {
 	uint8_t valh;
 	uint8_t vall;
 
+	taskENTER_CRITICAL();
 	switch (channel)
 	{
 	case AT1846_VOICE_CHANNEL_TONE1:
@@ -881,18 +891,24 @@ void trxSelectVoiceChannel(uint8_t channel) {
 		break;
 	}
 	set_clear_I2C_reg_2byte_with_mask(0x3a, 0x8f, 0xff, channel, 0x00);
+	taskEXIT_CRITICAL();
 }
 
 void trxSetTone1(int toneFreq)
 {
+
 	toneFreq = toneFreq * 10;
+	taskENTER_CRITICAL();
 	write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x35, (toneFreq >> 8) & 0xff,	(toneFreq & 0xff));   // tone1_freq
+	taskEXIT_CRITICAL();
 }
 
 void trxSetTone2(int toneFreq)
 {
 	toneFreq = toneFreq * 10;
+	taskENTER_CRITICAL();
 	write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x36, (toneFreq >> 8) & 0xff,	(toneFreq & 0xff));   // tone2_freq
+	taskEXIT_CRITICAL();
 }
 
 void trxSetDTMF(int code)

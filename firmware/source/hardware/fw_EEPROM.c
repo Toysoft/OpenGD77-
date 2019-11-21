@@ -17,12 +17,52 @@
  */
 
 #include "fw_EEPROM.h"
+#include <SeggerRTT/RTT/SEGGER_RTT.h>
 
 const uint8_t EEPROM_ADDRESS 	= 0x50;
 const uint8_t EEPROM_PAGE_SIZE 	= 128;
 
-// !!! Wait 5ms between consecutive calls !!!
+static bool _EEPROM_Write(int address,uint8_t *buf, int size);
+
 bool EEPROM_Write(int address,uint8_t *buf, int size)
+{
+	bool retVal;
+
+	if (address/128 == (address+size)/128)
+	{
+		// All of the data is in the same page in the EEPROM so can just be written sequentially in one write
+		retVal = _EEPROM_Write(address,buf,size);
+	}
+	else
+	{
+		// Either there is more data than the page size or the data needs to be split across multiple page boundaries
+		int writeSize = 128 - (address%128);
+		retVal = true;// First time though need to prime the while loop
+
+		while (writeSize > 0 && retVal == true)
+		{
+			retVal = _EEPROM_Write(address,buf,writeSize);
+			address += writeSize;
+			buf += writeSize;
+			size -= writeSize;
+			if (size > 128)
+			{
+				writeSize = 128;
+			}
+			else
+			{
+				writeSize = size;
+			}
+		}
+	}
+	return retVal;
+}
+
+/* This was the original EEPROM_Write function, but its now been wrapped by the new EEPROM_Write
+ * While calls this function as necessary to handle write across 128 byte page boundaries
+ * and also for writes larger than 128 bytes.
+ */
+static bool _EEPROM_Write(int address,uint8_t *buf, int size)
 {
 	const int COMMAND_SIZE = 2;
 	int transferSize;
@@ -33,7 +73,7 @@ bool EEPROM_Write(int address,uint8_t *buf, int size)
 	taskENTER_CRITICAL();
     if (isI2cInUse)
     {
-    	SEGGER_RTT_printf(0, "Clash %d\n",isI2cInUse);
+    	SEGGER_RTT_printf(0, "Clash in EEPROM_Write (2) with %d\n",isI2cInUse);
     	taskEXIT_CRITICAL();
     	return false;
     }
@@ -115,7 +155,7 @@ bool EEPROM_Read(int address,uint8_t *buf, int size)
 	taskENTER_CRITICAL();
     if (isI2cInUse)
     {
-    	SEGGER_RTT_printf(0, "Clash %d\n",isI2cInUse);
+    	SEGGER_RTT_printf(0, "Clash in EEPROM_Read (2) with %d\n",isI2cInUse);
     	taskEXIT_CRITICAL();
     	return false;
     }

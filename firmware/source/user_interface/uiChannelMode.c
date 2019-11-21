@@ -44,9 +44,9 @@ typedef enum
 bool uiChannelModeScanActive=false;
 static int scanTimer=0;
 static ScanZoneState_t scanState = SCAN_SCANNING;		//state flag for scan routine
-static int scanShortPause=500;			//time to wait after carrier detected to allow time for full signal detection. (CTCSS or DMR)
-static int scanPause=5000;				//time to wait after valid signal is detected.
-static int scanInterval=50;			    //time between each scan step
+static const int SCAN_SHORT_PAUSE = 500;			//time to wait after carrier detected to allow time for full signal detection. (CTCSS or DMR)
+static const int SCAN_PAUSE = 5000;				//time to wait after valid signal is detected.
+static const int SCAN_INTERVAL = 50;			    //time between each scan step
 
 
 int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
@@ -816,10 +816,18 @@ static void scanning(void)
 	{
 		//test for presence of RF Carrier.
 		// In FM mode the dmr slot_state will always be DMR_STATE_IDLE
-		if(slot_state != DMR_STATE_IDLE || trx_carrier_detected() )
+		if (slot_state != DMR_STATE_IDLE)
 		{
-			scanTimer=scanShortPause;												//start short delay to allow full detection of signal
-			scanState=SCAN_PAUSED;															//state 1 = pause and test for valid signal that produces audio
+			scanState=SCAN_PAUSED;
+			scanTimer=SCAN_PAUSE;
+		}
+		else
+		{
+			if(trx_carrier_detected() )
+			{
+				scanTimer=SCAN_SHORT_PAUSE;												//start short delay to allow full detection of signal
+				scanState=SCAN_PAUSED;															//state 1 = pause and test for valid signal that produces audio
+			}
 		}
 	}
 
@@ -827,7 +835,7 @@ static void scanning(void)
 	{
 	    if (GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable)==1)	    	// if speaker on we must be receiving a signal
 	    {
-	    	scanTimer=scanPause;													//extend the time before resuming scan.
+	    	scanTimer=SCAN_PAUSE;													//extend the time before resuming scan.
 	    }
 	}
 
@@ -845,7 +853,7 @@ static void scanning(void)
 		}
 		else
 		{
-			scanTimer=scanInterval;
+			scanTimer=SCAN_INTERVAL;
 			scanState = SCAN_SCANNING;															//state 0 = settling and test for carrier present.
 		}
 
