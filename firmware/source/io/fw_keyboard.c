@@ -70,6 +70,11 @@ void fw_init_keyboard(void)
 	keyState = KEY_IDLE;
 }
 
+void fw_reset_keyboard(void)
+{
+	keyState = KEY_WAIT_RELEASED;
+}
+
 inline uint8_t fw_read_keyboard_col(void)
 {
 	return ~((GPIOB->PDIR)>>19) & 0x1f;
@@ -239,3 +244,4 @@ void fw_check_key_event(uint32_t *keys, int *event)
 	}
 
 }
+

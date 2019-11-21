@@ -55,6 +55,7 @@ int menuContactDetails(int buttons, int keys, int events, bool isFirstRun)
 
 		gMenusCurrentItemIndex=0;
 
+		fw_reset_keyboard();
 		updateScreen();
 	}
 	else
@@ -135,15 +136,15 @@ static void handleEvent(int buttons, int keys, int events)
 	int sLen = strlen(digits);
 
 	if (events & 0x01) {
-		if ((keys & KEY_DOWN)!=0)
+		if (KEYCHECK_PRESS(keys,KEY_DOWN))
 		{
 			MENU_INC(gMenusCurrentItemIndex, NUM_CONTACT_DETAILS_ITEMS);
 		}
-		else if ((keys & KEY_UP)!=0)
+		else if (KEYCHECK_PRESS(keys,KEY_UP))
 		{
 			MENU_DEC(gMenusCurrentItemIndex, NUM_CONTACT_DETAILS_ITEMS);
 		}
-		else if ((keys & KEY_RIGHT)!=0)
+		else if (KEYCHECK_PRESS(keys,KEY_RIGHT))
 		{
 			switch(gMenusCurrentItemIndex)
 			{
@@ -170,7 +171,7 @@ static void handleEvent(int buttons, int keys, int events)
 				break;
 			}
 		}
-		else if ((keys & KEY_LEFT)!=0)
+		else if (KEYCHECK_PRESS(keys,KEY_LEFT))
 		{
 			switch(gMenusCurrentItemIndex)
 			{
@@ -201,7 +202,7 @@ static void handleEvent(int buttons, int keys, int events)
 				break;
 			}
 		}
-		else if ((keys & KEY_GREEN)!=0)
+		else if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
 		{
 			if (tmpContact.callType == CONTACT_CALLTYPE_ALL) {
 				tmpContact.tgNumber = 16777215;
@@ -215,10 +216,16 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 			return;
 		}
-		else if ((keys & KEY_RED)!=0)
+		else if (KEYCHECK_SHORTUP(keys,KEY_RED))
 		{
 			contactListContactIndex = 0;
 			menuSystemPopPreviousMenu();
+			return;
+		}
+		else if (KEYCHECK_LONGDOWN(keys, KEY_RED))
+		{
+			contactListContactIndex = 0;
+			menuSystemPopAllAndDisplayRootMenu();
 			return;
 		}
 		else if (gMenusCurrentItemIndex == CONTACT_DETAILS_TG) {
@@ -227,43 +234,43 @@ static void handleEvent(int buttons, int keys, int events)
 			{
 				char c[2] = {0, 0};
 
-				if ((keys & KEY_0) != 0)
+				if (KEYCHECK_PRESS(keys,KEY_0))
 				{
 					c[0]='0';
 				}
-				else if ((keys & KEY_1)!=0)
+				else if (KEYCHECK_PRESS(keys,KEY_1))
 				{
 					c[0]='1';
 				}
-				else if ((keys & KEY_2)!=0)
+				else if (KEYCHECK_PRESS(keys,KEY_2))
 				{
 					c[0]='2';
 				}
-				else if ((keys & KEY_3)!=0)
+				else if (KEYCHECK_PRESS(keys,KEY_3))
 				{
 					c[0]='3';
 				}
-				else if ((keys & KEY_4)!=0)
+				else if (KEYCHECK_PRESS(keys,KEY_4))
 				{
 					c[0]='4';
 				}
-				else if ((keys & KEY_5)!=0)
+				else if (KEYCHECK_PRESS(keys,KEY_5))
 				{
 					c[0]='5';
 				}
-				else if ((keys & KEY_6)!=0)
+				else if (KEYCHECK_PRESS(keys,KEY_6))
 				{
 					c[0]='6';
 				}
-				else if ((keys & KEY_7)!=0)
+				else if (KEYCHECK_PRESS(keys,KEY_7))
 				{
 					c[0]='7';
 				}
-				else if ((keys & KEY_8)!=0)
+				else if (KEYCHECK_PRESS(keys,KEY_8))
 				{
 					c[0]='8';
 				}
-				else if ((keys & KEY_9)!=0)
+				else if (KEYCHECK_PRESS(keys,KEY_9))
 				{
 					c[0]='9';
 				}

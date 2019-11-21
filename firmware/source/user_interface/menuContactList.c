@@ -36,6 +36,7 @@ int menuContactList(int buttons, int keys, int events, bool isFirstRun)
 		gMenusCurrentItemIndex = 1;
 		contactListContactIndex = codeplugContactGetDataForNumber(gMenusCurrentItemIndex, contactCallType, &contactListContactData);
 
+		fw_reset_keyboard();
 		updateScreen();
 	}
 	else
@@ -84,17 +85,18 @@ static void handleEvent(int buttons, int keys, int events)
 {
 	if (events & 0x01)
 	{
-		if ((keys & KEY_DOWN) != 0)
+		USB_DEBUG_printf("key: %d mod: %d", keys & 0xffffff,keys>>24);
+		if (KEYCHECK_PRESS(keys, KEY_DOWN))
 		{
 			MENU_INC(gMenusCurrentItemIndex, gMenusEndIndex);
 			contactListContactIndex = codeplugContactGetDataForNumber(gMenusCurrentItemIndex, contactCallType, &contactListContactData);
 		}
-		else if ((keys & KEY_UP) != 0)
+		else if (KEYCHECK_PRESS(keys, KEY_UP))
 		{
 			MENU_DEC(gMenusCurrentItemIndex, gMenusEndIndex);
 			contactListContactIndex = codeplugContactGetDataForNumber(gMenusCurrentItemIndex, contactCallType, &contactListContactData);
 		}
-		else if ((keys & KEY_HASH) != 0)
+		else if (KEYCHECK_SHORTUP(keys, KEY_HASH))
 		{
 			if (contactCallType == CONTACT_CALLTYPE_TG)
 			{
@@ -108,26 +110,28 @@ static void handleEvent(int buttons, int keys, int events)
 			gMenusCurrentItemIndex = 1;
 			contactListContactIndex = codeplugContactGetDataForNumber(gMenusCurrentItemIndex, contactCallType, &contactListContactData);
 		}
-		else if ((keys & KEY_GREEN) != 0)
+		else if (KEYCHECK_SHORTUP(keys, KEY_GREEN))
 		{
-			if ((buttons & BUTTON_SK2) != 0)
-			{
-				menuSystemPushNewMenu(MENU_CONTACT_DETAILS);
-				return;
-			}
-			else
-			{
-				contactListContactIndex = codeplugContactGetDataForNumber(gMenusCurrentItemIndex, contactCallType, &contact);
-				setOverrideTGorPC(contact.tgNumber, contact.callType == CONTACT_CALLTYPE_PC);
-				contactListContactIndex = 0;
-				menuSystemPopAllAndDisplayRootMenu();
-				return;
-			}
+			contactListContactIndex = codeplugContactGetDataForNumber(gMenusCurrentItemIndex, contactCallType, &contact);
+			setOverrideTGorPC(contact.tgNumber, contact.callType == CONTACT_CALLTYPE_PC);
+			contactListContactIndex = 0;
+			menuSystemPopAllAndDisplayRootMenu();
+			return;
 		}
-		else if ((keys & KEY_RED) != 0)
+		else if (KEYCHECK_LONGDOWN(keys, KEY_GREEN))
+		{
+			menuSystemPushNewMenu(MENU_CONTACT_DETAILS);
+			return;
+		}
+		else if (KEYCHECK_SHORTUP(keys, KEY_RED))
 		{
 			contactListContactIndex = 0;
 			menuSystemPopPreviousMenu();
+			return;
+		} else if (KEYCHECK_LONGDOWN(keys, KEY_RED))
+		{
+			contactListContactIndex = 0;
+			menuSystemPopAllAndDisplayRootMenu();
 			return;
 		}
 	}
