@@ -26,7 +26,7 @@ volatile uint32_t adc0_dp1;
 
 const int CUTOFF_VOLTAGE_UPPER_HYST = 64;
 const int CUTOFF_VOLTAGE_LOWER_HYST = 62;
-const int BATTERY_MAX_VOLTAGE = 83;
+const int BATTERY_MAX_VOLTAGE = 82;
 
 void trigger_adc(void)
 {
