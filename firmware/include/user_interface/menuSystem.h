@@ -96,6 +96,7 @@ enum MENU_SCREENS { MENU_SPLASH_SCREEN=0,
 					MENU_VFO_QUICK_MENU,
 					MENU_LOCK_SCREEN,
 					MENU_CONTACT_LIST,
+					MENU_CONTACT_DETAILS
 };
 
 extern int gMenusCurrentItemIndex;

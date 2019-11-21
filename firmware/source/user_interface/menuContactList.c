@@ -35,6 +35,7 @@ int menuContactList(int buttons, int keys, int events, bool isFirstRun)
 	{
 		gMenusEndIndex = codeplugContactsGetCount(contactCallType);
 		gMenusCurrentItemIndex = 1;
+		codeplugContactGetDataForNumber(gMenusCurrentItemIndex, contactCallType, &contactListContactData);
 
 		updateScreen();
 	}
@@ -82,36 +83,46 @@ static void updateScreen()
 
 static void handleEvent(int buttons, int keys, int events)
 {
-	if ((keys & KEY_DOWN)!=0)
-	{
-		MENU_INC(gMenusCurrentItemIndex, gMenusEndIndex);
-	}
-	else if ((keys & KEY_UP)!=0)
-	{
-		MENU_DEC(gMenusCurrentItemIndex, gMenusEndIndex);
-	}
-	else if ((keys & KEY_HASH) != 0)
-	{
-		if (contactCallType == CONTACT_CALLTYPE_TG) {
-			contactCallType = CONTACT_CALLTYPE_PC;
-		} else {
-			contactCallType = CONTACT_CALLTYPE_TG;
+	if (events & 0x01) {
+		if ((keys & KEY_RIGHT) != 0)
+		{
+			menuSystemPushNewMenu(MENU_CONTACT_DETAILS);
+			return;
 		}
-		gMenusEndIndex = codeplugContactsGetCount(contactCallType);
-		gMenusCurrentItemIndex = 1;
-	}
-	else if ((keys & KEY_GREEN)!=0)
-	{
-		codeplugContactGetDataForNumber(gMenusCurrentItemIndex, contactCallType, &contact);
-		setOverrideTGorPC(contact.tgNumber, contact.callType == CONTACT_CALLTYPE_PC);
+		else if ((keys & KEY_DOWN)!=0)
+		{
+			MENU_INC(gMenusCurrentItemIndex, gMenusEndIndex);
+			codeplugContactGetDataForNumber(gMenusCurrentItemIndex, contactCallType, &contactListContactData);
+		}
+		else if ((keys & KEY_UP)!=0)
+		{
+			MENU_DEC(gMenusCurrentItemIndex, gMenusEndIndex);
+			codeplugContactGetDataForNumber(gMenusCurrentItemIndex, contactCallType, &contactListContactData);
+		}
+		else if ((keys & KEY_HASH) != 0)
+		{
+			if (contactCallType == CONTACT_CALLTYPE_TG) {
+				contactCallType = CONTACT_CALLTYPE_PC;
+			} else {
+				contactCallType = CONTACT_CALLTYPE_TG;
+			}
+			gMenusEndIndex = codeplugContactsGetCount(contactCallType);
+			gMenusCurrentItemIndex = 1;
+			codeplugContactGetDataForNumber(gMenusCurrentItemIndex, contactCallType, &contactListContactData);
+		}
+		else if ((keys & KEY_GREEN)!=0)
+		{
+			codeplugContactGetDataForNumber(gMenusCurrentItemIndex, contactCallType, &contact);
+			setOverrideTGorPC(contact.tgNumber, contact.callType == CONTACT_CALLTYPE_PC);
 
-		menuSystemPopAllAndDisplayRootMenu();
-		return;
-	}
-	else if ((keys & KEY_RED)!=0)
-	{
-		menuSystemPopPreviousMenu();
-		return;
+			menuSystemPopAllAndDisplayRootMenu();
+			return;
+		}
+		else if ((keys & KEY_RED)!=0)
+		{
+			menuSystemPopPreviousMenu();
+			return;
+		}
 	}
 	updateScreen();
 }
