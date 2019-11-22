@@ -36,7 +36,7 @@ int menuContactList(int buttons, int keys, int events, bool isFirstRun)
 		gMenusEndIndex = codeplugContactsGetCount(contactCallType);
 		gMenusCurrentItemIndex = 0;
 		if (gMenusEndIndex > 0) {
-			contactListContactIndex = codeplugContactGetDataForNumber(gMenusCurrentItemIndex, contactCallType, &contactListContactData);
+			contactListContactIndex = codeplugContactGetDataForNumber(gMenusCurrentItemIndex+1, contactCallType, &contactListContactData);
 		}
 		fw_reset_keyboard();
 		updateScreen();
@@ -66,7 +66,7 @@ static void updateScreen()
 	} else {
 		for (int i = -1; i <= 1; i++) {
 			mNum = menuGetMenuOffset(gMenusEndIndex, i);
-			idx = codeplugContactGetDataForNumber(mNum, contactCallType, &contact);
+			idx = codeplugContactGetDataForNumber(mNum+1, contactCallType, &contact);
 
 			if (idx > 0) {
 				codeplugUtilConvertBufToString(contact.name, nameBuf, 16); // need to convert to zero terminated string
@@ -85,12 +85,12 @@ static void handleEvent(int buttons, int keys, int events)
 		if (KEYCHECK_PRESS(keys, KEY_DOWN))
 		{
 			MENU_INC(gMenusCurrentItemIndex, gMenusEndIndex);
-			contactListContactIndex = codeplugContactGetDataForNumber(gMenusCurrentItemIndex, contactCallType, &contactListContactData);
+			contactListContactIndex = codeplugContactGetDataForNumber(gMenusCurrentItemIndex+1, contactCallType, &contactListContactData);
 		}
 		else if (KEYCHECK_PRESS(keys, KEY_UP))
 		{
 			MENU_DEC(gMenusCurrentItemIndex, gMenusEndIndex);
-			contactListContactIndex = codeplugContactGetDataForNumber(gMenusCurrentItemIndex, contactCallType, &contactListContactData);
+			contactListContactIndex = codeplugContactGetDataForNumber(gMenusCurrentItemIndex+1, contactCallType, &contactListContactData);
 		}
 		else if (KEYCHECK_SHORTUP(keys, KEY_HASH))
 		{
@@ -104,11 +104,11 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 			gMenusEndIndex = codeplugContactsGetCount(contactCallType);
 			gMenusCurrentItemIndex = 0;
-			contactListContactIndex = codeplugContactGetDataForNumber(gMenusCurrentItemIndex, contactCallType, &contactListContactData);
+			contactListContactIndex = codeplugContactGetDataForNumber(gMenusCurrentItemIndex+1, contactCallType, &contactListContactData);
 		}
 		else if (KEYCHECK_SHORTUP(keys, KEY_GREEN))
 		{
-			contactListContactIndex = codeplugContactGetDataForNumber(gMenusCurrentItemIndex, contactCallType, &contact);
+			contactListContactIndex = codeplugContactGetDataForNumber(gMenusCurrentItemIndex+1, contactCallType, &contact);
 			setOverrideTGorPC(contact.tgNumber, contact.callType == CONTACT_CALLTYPE_PC);
 			contactListContactIndex = 0;
 			menuSystemPopAllAndDisplayRootMenu();
