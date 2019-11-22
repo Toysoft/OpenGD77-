@@ -32,10 +32,12 @@ int menuContactList(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
+		contactCallType = CONTACT_CALLTYPE_TG;
 		gMenusEndIndex = codeplugContactsGetCount(contactCallType);
-		gMenusCurrentItemIndex = 1;
-		contactListContactIndex = codeplugContactGetDataForNumber(gMenusCurrentItemIndex, contactCallType, &contactListContactData);
-
+		gMenusCurrentItemIndex = 0;
+		if (gMenusEndIndex > 0) {
+			contactListContactIndex = codeplugContactGetDataForNumber(gMenusCurrentItemIndex, contactCallType, &contactListContactData);
+		}
 		fw_reset_keyboard();
 		updateScreen();
 	}
@@ -53,28 +55,23 @@ static void updateScreen()
 {
 	char nameBuf[17];
 	int mNum;
+	int idx;
 
 	UC1701_clearBuf();
 	menuDisplayTitle( (char *)calltypeName[contactCallType]);
 
 	if (gMenusEndIndex == 0)
 	{
-		UC1701_printCentered(48, "Empty List", UC1701_FONT_8x16);
+		UC1701_printCentered(32, "Empty List", UC1701_FONT_8x16);
 	} else {
 		for (int i = -1; i <= 1; i++) {
-			if (gMenusEndIndex <= (i + 1)) {
-				break;
-			}
-
 			mNum = menuGetMenuOffset(gMenusEndIndex, i);
-			if (mNum == 0) {
-				codeplugContactGetDataForNumber(gMenusEndIndex, contactCallType, &contact);
-			} else {
-				codeplugContactGetDataForNumber(mNum, contactCallType, &contact);
-			}
+			idx = codeplugContactGetDataForNumber(mNum, contactCallType, &contact);
 
-			codeplugUtilConvertBufToString(contact.name, nameBuf, 16); // need to convert to zero terminated string
-			menuDisplayEntry(i, mNum, (char*) nameBuf);
+			if (idx > 0) {
+				codeplugUtilConvertBufToString(contact.name, nameBuf, 16); // need to convert to zero terminated string
+				menuDisplayEntry(i, mNum, (char*) nameBuf);
+			}
 		}
 	}
 	UC1701_render();
@@ -85,7 +82,6 @@ static void handleEvent(int buttons, int keys, int events)
 {
 	if (events & 0x01)
 	{
-		USB_DEBUG_printf("key: %d mod: %d", keys & 0xffffff,keys>>24);
 		if (KEYCHECK_PRESS(keys, KEY_DOWN))
 		{
 			MENU_INC(gMenusCurrentItemIndex, gMenusEndIndex);
@@ -107,7 +103,7 @@ static void handleEvent(int buttons, int keys, int events)
 				contactCallType = CONTACT_CALLTYPE_TG;
 			}
 			gMenusEndIndex = codeplugContactsGetCount(contactCallType);
-			gMenusCurrentItemIndex = 1;
+			gMenusCurrentItemIndex = 0;
 			contactListContactIndex = codeplugContactGetDataForNumber(gMenusCurrentItemIndex, contactCallType, &contactListContactData);
 		}
 		else if (KEYCHECK_SHORTUP(keys, KEY_GREEN))
