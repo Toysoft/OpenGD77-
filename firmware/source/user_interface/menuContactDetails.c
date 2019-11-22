@@ -36,14 +36,12 @@ enum CONTACT_DETAILS_DISPLAY_LIST { /*CONTACT_DETAILS_NAME=0,*/ CONTACT_DETAILS_
 
 int menuContactDetails(int buttons, int keys, int events, bool isFirstRun)
 {
-	char buf[17];
 	if (isFirstRun)
 	{
 		if (contactListContactIndex == 0) {
 			contactListContactIndex = codeplugContactGetFreeIndex();
 
-			sprintf(buf,"Contact%d",contactListContactIndex);
-			codeplugUtilConvertStringToBuf(buf, tmpContact.name, 16);
+			tmpContact.name[0] = 0x00;
 			tmpContact.callType = CONTACT_CALLTYPE_TG;
 			tmpContact.reserve1 = 0xff;
 			tmpContact.tgNumber = 0;
@@ -76,7 +74,11 @@ static void updateScreen(void)
 	UC1701_clearBuf();
 //	menuDisplayTitle("Contact details");
 
-	codeplugUtilConvertBufToString(tmpContact.name, buf, 16);
+	if (tmpContact.name[0] == 0x00) {
+		strcpy(buf,"New Contact");
+	} else {
+		codeplugUtilConvertBufToString(tmpContact.name, buf, 16);
+	}
 	menuDisplayTitle(buf);
 
 	// Can only display 3 of the options at a time menu at -1, 0 and +1
@@ -133,6 +135,7 @@ static void updateScreen(void)
 
 static void handleEvent(int buttons, int keys, int events)
 {
+	char buf[17];
 	int sLen = strlen(digits);
 
 	if (events & 0x01) {
@@ -209,7 +212,14 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 			if (contactListContactIndex > 0 && contactListContactIndex <= 1024) {
 				tmpContact.tgNumber = atoi(digits);
-
+				if (tmpContact.name[0] == 0x00) {
+					if (tmpContact.callType == CONTACT_CALLTYPE_PC) {
+						sprintf(buf,"PC %d",tmpContact.tgNumber);
+					} else {
+						sprintf(buf,"TG %d",tmpContact.tgNumber);
+					}
+					codeplugUtilConvertStringToBuf(buf, tmpContact.name, 16);
+				}
 				codeplugContactSaveDataForIndex(contactListContactIndex, &tmpContact);
 				contactListContactIndex = 0;
 				menuSystemPushNewMenu(MENU_SAVED_SCREEN);

@@ -85,6 +85,7 @@ typedef struct struct_codeplugContact
 	uint8_t		callRxTone;
 	uint8_t		ringStyle;
 	uint8_t		reserve1;
+	int         NOT_IN_CODEPLUGDATA_indexNumber;
 } struct_codeplugContact_t;
 
 typedef struct struct_codeplugDTMFContact

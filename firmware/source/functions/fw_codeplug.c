@@ -107,18 +107,15 @@ void codeplugUtilConvertBufToString(char *inBuf,char *outBuf,int len)
 
 void codeplugUtilConvertStringToBuf(char *inBuf,char *outBuf,int len)
 {
+	memset(outBuf,0xff,len);
 	for (int i = 0; i < len; i++)
 	{
-		if (inBuf[i] == 0x0)
+		if (inBuf[i] == 0x00)
 		{
-			outBuf[i] = 0xff;
+			break;
 		}
-		else
-		{
-			outBuf[i] = inBuf[i];
-		}
+		outBuf[i] = inBuf[i];
 	}
-	outBuf[len] = 0;
 	return;
 }
 
@@ -414,15 +411,20 @@ int codeplugContactsGetCount(int callType) // 0:TG 1:PC
 int codeplugContactGetDataForNumber(int index, int callType, struct_codeplugContact_t *contact)
 {
 	int pos = 0;
-	for (int i = 1; i <= 1024; i++)
+	if (index > 0)
 	{
-		codeplugContactGetDataForIndex(i, contact);
-		if (contact->name[0] != 0xff && contact->callType == callType) {
-			index--;
-		}
-		if (index == 0) {
-			pos = i;
-			break;
+		for (int i = 1; i <= 1024; i++)
+		{
+			codeplugContactGetDataForIndex(i, contact);
+			if (contact->name[0] != 0xff && contact->callType == callType)
+			{
+				index--;
+			}
+			if (index == 0)
+			{
+				pos = i;
+				break;
+			}
 		}
 	}
 	return pos;
@@ -449,7 +451,8 @@ int codeplugContactGetFreeIndex(void)
 void codeplugContactGetDataForIndex(int index, struct_codeplugContact_t *contact)
 {
 	index--;
-	SPI_Flash_read(CODEPLUG_ADDR_CONTACTS + index*sizeof(struct_codeplugContact_t),(uint8_t *)contact,sizeof(struct_codeplugContact_t));
+	SPI_Flash_read(CODEPLUG_ADDR_CONTACTS + index* CODEPLUG_CONTACTS_LEN,(uint8_t *)contact, CODEPLUG_CONTACTS_LEN);
+	contact->NOT_IN_CODEPLUGDATA_indexNumber = index+1;
 	contact->tgNumber = bcd2int(byteSwap32(contact->tgNumber));
 }
 
@@ -459,16 +462,16 @@ int codeplugContactSaveDataForIndex(int index, struct_codeplugContact_t *contact
 	int flashWritePos = CODEPLUG_ADDR_CONTACTS;
 	int flashSector;
 	int flashEndSector;
-	int bytesToWriteInCurrentSector = sizeof(struct_codeplugContact_t);
+	int bytesToWriteInCurrentSector = CODEPLUG_CONTACTS_LEN;
 
 	index--;
 	contact->tgNumber = byteSwap32(int2bcd(contact->tgNumber));
 
 
-	flashWritePos += index*sizeof(struct_codeplugContact_t);// go to the position of the specific index
+	flashWritePos += index*CODEPLUG_CONTACTS_LEN;// go to the position of the specific index
 
 	flashSector 	= flashWritePos/4096;
-	flashEndSector 	= (flashWritePos+sizeof(struct_codeplugChannel_t))/4096;
+	flashEndSector 	= (flashWritePos+CODEPLUG_CONTACTS_LEN)/4096;
 
 	if (flashSector!=flashEndSector)
 	{
@@ -499,7 +502,7 @@ int codeplugContactSaveDataForIndex(int index, struct_codeplugContact_t *contact
 	if (flashSector!=flashEndSector)
 	{
 		uint8_t *channelBufPusOffset = (uint8_t *)contact + bytesToWriteInCurrentSector;
-		bytesToWriteInCurrentSector = sizeof(struct_codeplugChannel_t) - bytesToWriteInCurrentSector;
+		bytesToWriteInCurrentSector = CODEPLUG_CONTACTS_LEN - bytesToWriteInCurrentSector;
 
 		SPI_Flash_read(flashEndSector*4096,SPI_Flash_sectorbuffer,4096);
 		memcpy(SPI_Flash_sectorbuffer,
@@ -530,7 +533,7 @@ void codeplugDTMFContactGetDataForIndex(struct_codeplugDTMFContactList_t *contac
 {
 	int i;
 
-	EEPROM_Read(CODEPLUG_ADDR_DTMF_CONTACTS,(uint8_t *)contactList, sizeof(struct_codeplugContact_t) * CODEPLUG_DTMF_CONTACTS_MAX_COUNT);
+	EEPROM_Read(CODEPLUG_ADDR_DTMF_CONTACTS,(uint8_t *)contactList, sizeof(struct_codeplugDTMFContact_t) * CODEPLUG_DTMF_CONTACTS_MAX_COUNT);
 
 	for(i=0;i<CODEPLUG_DTMF_CONTACTS_MAX_COUNT;i++)
 	{
