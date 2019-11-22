@@ -411,20 +411,19 @@ int codeplugContactsGetCount(int callType) // 0:TG 1:PC
 int codeplugContactGetDataForNumber(int number, int callType, struct_codeplugContact_t *contact)
 {
 	int pos = 0;
-	if (number > 0)
+
+	number++;   // first contact is number=0;
+	for (int i = 1; i <= 1024; i++)
 	{
-		for (int i = 1; i <= 1024; i++)
+		codeplugContactGetDataForIndex(i, contact);
+		if (contact->name[0] != 0xff && contact->callType == callType)
 		{
-			codeplugContactGetDataForIndex(i, contact);
-			if (contact->name[0] != 0xff && contact->callType == callType)
-			{
-				number--;
-			}
-			if (number == 0)
-			{
-				pos = i;
-				break;
-			}
+			number--;
+		}
+		if (number == 0)
+		{
+			pos = i;
+			break;
 		}
 	}
 	return pos;
