@@ -70,6 +70,7 @@ const int melody_private_call[] = {
 
 								-1, -1 };// Morse letters PC for Priavte Call
 const int melody_key_beep[] = { 600, 60, -1, -1 };
+const int melody_key_long_beep[] = { 880, 60, -1, -1 };
 const int melody_sk1_beep[] = { 466, 60, 0, 60, 466, 60, -1, -1 };
 const int melody_sk2_beep[] = { 494, 60, 0, 60, 494, 60, -1, -1 };
 const int melody_orange_beep[] = { 440, 60, 494, 60, 440, 60, 494, 60, -1, -1 };
