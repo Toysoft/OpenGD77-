@@ -408,19 +408,19 @@ int codeplugContactsGetCount(int callType) // 0:TG 1:PC
 	return numContacts;
 }
 
-int codeplugContactGetDataForNumber(int index, int callType, struct_codeplugContact_t *contact)
+int codeplugContactGetDataForNumber(int number, int callType, struct_codeplugContact_t *contact)
 {
 	int pos = 0;
-	if (index > 0)
+	if (number > 0)
 	{
 		for (int i = 1; i <= 1024; i++)
 		{
 			codeplugContactGetDataForIndex(i, contact);
 			if (contact->name[0] != 0xff && contact->callType == callType)
 			{
-				index--;
+				number--;
 			}
-			if (index == 0)
+			if (number == 0)
 			{
 				pos = i;
 				break;

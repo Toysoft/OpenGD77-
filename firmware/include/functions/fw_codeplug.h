@@ -127,7 +127,7 @@ bool codeplugChannelIndexIsValid(int index);
 bool codeplugChannelSaveDataForIndex(int index, struct_codeplugChannel_t *channelBuf);
 
 int codeplugContactsGetCount(int callType);
-int codeplugContactGetDataForNumber(int index, int callType, struct_codeplugContact_t *contact);
+int codeplugContactGetDataForNumber(int number, int callType, struct_codeplugContact_t *contact);
 int codeplugContactSaveDataForIndex(int index, struct_codeplugContact_t *contact);
 int codeplugContactGetFreeIndex(void);
 
