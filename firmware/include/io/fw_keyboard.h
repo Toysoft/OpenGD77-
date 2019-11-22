@@ -104,16 +104,18 @@
 #define KEY_DEBOUNCE_COUNTER   20
 
 #define KEYCHECK(keys,k) (((keys) & 0xffffff) == (k))
-#define KEYCHECK_MOD(keys, mod) (((keys) & (mod)) == (mod))
+#define KEYCHECK_MOD(keys, k, mask, mod) (((((keys) & 0xffffff) == (k)) && ((keys) & (mask)) == (mod)))
 
-#define KEYCHECK_UP(keys)       KEYCHECK_MOD(keys, KEY_MOD_UP)
-#define KEYCHECK_DOWN(keys)     KEYCHECK_MOD(keys, KEY_MOD_DOWN)
-#define KEYCHECK_PRESS(keys)    KEYCHECK_MOD(keys, KEY_MOD_PRESS)
-#define KEYCHECK_LONGDOWN(keys) KEYCHECK_MOD(keys, KEY_MOD_DOWN | KEY_MOD_LONG)
+#define KEYCHECK_UP(keys, k)       KEYCHECK_MOD(keys, k, KEY_MOD_UP, KEY_MOD_UP)
+#define KEYCHECK_SHORTUP(keys, k)  KEYCHECK_MOD(keys, k, KEY_MOD_UP| KEY_MOD_LONG, KEY_MOD_UP)
+#define KEYCHECK_DOWN(keys, k)     KEYCHECK_MOD(keys, k, KEY_MOD_DOWN, KEY_MOD_DOWN)
+#define KEYCHECK_PRESS(keys, k)    KEYCHECK_MOD(keys, k, KEY_MOD_PRESS, KEY_MOD_PRESS)
+#define KEYCHECK_LONGDOWN(keys, k) KEYCHECK_MOD(keys, k, KEY_MOD_DOWN | KEY_MOD_LONG, KEY_MOD_DOWN | KEY_MOD_LONG)
 
 extern volatile bool keypadLocked;
 
 void fw_init_keyboard(void);
+void fw_reset_keyboard(void);
 uint8_t fw_read_keyboard_col(void);
 uint32_t fw_read_keyboard(void);
 void fw_check_key_event(uint32_t *keys, int *event);

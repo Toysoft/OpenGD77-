@@ -25,6 +25,8 @@ extern const int CODEPLUG_MIN_VARIABLE_SQUELCH;
 extern const int CODEPLUG_ZONE_DATA_SIZE;
 extern const int VFO_FREQ_STEP_TABLE[8];
 
+enum CONTACT_CALLTYPE_SELECT { CONTACT_CALLTYPE_TG=0, CONTACT_CALLTYPE_PC, CONTACT_CALLTYPE_ALL };
+
 typedef struct struct_codeplugZone
 {
 	char name[16];
@@ -83,6 +85,7 @@ typedef struct struct_codeplugContact
 	uint8_t		callRxTone;
 	uint8_t		ringStyle;
 	uint8_t		reserve1;
+	int         NOT_IN_CODEPLUGDATA_indexNumber;
 } struct_codeplugContact_t;
 
 typedef struct struct_codeplugDTMFContact
@@ -107,6 +110,7 @@ int codeplugZonesGetCount(void);
 void codeplugZoneGetDataForNumber(int indexNum,struct_codeplugZone_t *returnBuf);
 void codeplugChannelGetDataForIndex(int index, struct_codeplugChannel_t *channelBuf);
 void codeplugUtilConvertBufToString(char *inBuf,char *outBuf,int len);
+void codeplugUtilConvertStringToBuf(char *inBuf,char *outBuf,int len);
 uint32_t byteSwap32(uint32_t n);
 uint32_t bcd2int(uint32_t in);
 int int2bcd(int i);
@@ -123,6 +127,8 @@ bool codeplugChannelIndexIsValid(int index);
 bool codeplugChannelSaveDataForIndex(int index, struct_codeplugChannel_t *channelBuf);
 
 int codeplugContactsGetCount(int callType);
-void codeplugContactGetDataForNumber(int index, int callType, struct_codeplugContact_t *contact);
+int codeplugContactGetDataForNumber(int number, int callType, struct_codeplugContact_t *contact);
+int codeplugContactSaveDataForIndex(int index, struct_codeplugContact_t *contact);
+int codeplugContactGetFreeIndex(void);
 
 #endif
