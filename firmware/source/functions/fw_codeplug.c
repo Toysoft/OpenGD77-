@@ -412,7 +412,6 @@ int codeplugContactGetDataForNumber(int number, int callType, struct_codeplugCon
 {
 	int pos = 0;
 
-	number++;   // first contact is number=0;
 	for (int i = 1; i <= 1024; i++)
 	{
 		codeplugContactGetDataForIndex(i, contact);
