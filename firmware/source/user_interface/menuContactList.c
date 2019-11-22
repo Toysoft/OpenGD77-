@@ -66,7 +66,6 @@ static void updateScreen()
 	} else {
 		for (int i = -1; i <= 1; i++) {
 			mNum = menuGetMenuOffset(gMenusEndIndex, i);
-			USB_DEBUG_printf("i: %d gMenusEndIndex: %d, mNum: %d",i,gMenusEndIndex,mNum);
 			idx = codeplugContactGetDataForNumber(mNum, contactCallType, &contact);
 
 			if (idx > 0) {
