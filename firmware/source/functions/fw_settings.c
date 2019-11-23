@@ -30,18 +30,26 @@ const int BAND_UHF_MIN 	= 43000000;
 const int BAND_UHF_MAX 	= 45000000;
 
 static const int STORAGE_BASE_ADDRESS 		= 0x6000;
-static const int STORAGE_MAGIC_NUMBER 		= 0x4725;
+static const int STORAGE_MAGIC_NUMBER 		= 0x4726;
 
 settingsStruct_t nonVolatileSettings;
 struct_codeplugChannel_t *currentChannelData;
 struct_codeplugChannel_t channelScreenChannelData={.rxFreq=0};
+struct_codeplugContact_t contactListContactData;
+struct_codeplugChannel_t settingsVFOChannel[2];// VFO A and VFO B from the codeplug.
+int contactListContactIndex;
 int settingsUsbMode = USB_MODE_CPS;
 int settingsCurrentChannelNumber=0;
 bool settingsPrivateCallMuteMode = false;
 bool enableHotspot = false;
 
-bool settingsSaveSettings(void)
+bool settingsSaveSettings(bool includeVFOs)
 {
+	if (includeVFOs)
+	{
+		codeplugSetVFO_ChannelData(&settingsVFOChannel[0],0);
+		codeplugSetVFO_ChannelData(&settingsVFOChannel[1],1);
+	}
 	return EEPROM_Write(STORAGE_BASE_ADDRESS, (uint8_t*)&nonVolatileSettings, sizeof(settingsStruct_t));
 }
 
@@ -52,6 +60,11 @@ bool settingsLoadSettings(void)
 	{
 		settingsRestoreDefaultSettings();
 	}
+
+	codeplugGetVFO_ChannelData(&settingsVFOChannel[0],0);
+	codeplugGetVFO_ChannelData(&settingsVFOChannel[1],1);
+	//settingsInitVFOChannel(0);// clean up any problems with VFO data
+	//settingsInitVFOChannel(1);
 
 	trxDMRID = codeplugGetUserDMRID();
 
@@ -71,38 +84,36 @@ bool settingsLoadSettings(void)
 	return readOK;
 }
 
-void settingsInitVFOChannel(void)
+void settingsInitVFOChannel(int vfoNumber)
 {
-	codeplugVFO_A_ChannelData(&nonVolatileSettings.vfoChannel);
 
-	strcpy(nonVolatileSettings.vfoChannel.name,"VFO");
 	// temporary hack in case the code plug has no RxGroup selected
 	// The TG needs to come from the RxGroupList
-	if (nonVolatileSettings.vfoChannel.rxGroupList == 0)
+	if (settingsVFOChannel[vfoNumber].rxGroupList == 0)
 	{
-		nonVolatileSettings.vfoChannel.rxGroupList=1;
+		settingsVFOChannel[vfoNumber].rxGroupList=1;
 	}
 
-	if (nonVolatileSettings.vfoChannel.chMode == RADIO_MODE_ANALOG)
+	if (settingsVFOChannel[vfoNumber].chMode == RADIO_MODE_ANALOG)
 	{
 		// In Analog mode, some crucial DMR settings will be invalid.
 		// So we need to set them to usable defaults
-		nonVolatileSettings.vfoChannel.rxGroupList=1;
-		nonVolatileSettings.vfoChannel.rxColor = 1;
+		settingsVFOChannel[vfoNumber].rxGroupList=1;
+		settingsVFOChannel[vfoNumber].rxColor = 1;
 		nonVolatileSettings.overrideTG = 9;// Set the override TG to local TG 9
 		trxTalkGroupOrPcId = nonVolatileSettings.overrideTG;
 	}
-
-	if (!trxCheckFrequencyInAmateurBand(nonVolatileSettings.vfoChannel.rxFreq))
+/*
+	if (!trxCheckFrequencyInAmateurBand(settingsVFOChannel[vfoNumber].rxFreq))
 	{
-		nonVolatileSettings.vfoChannel.rxFreq = BAND_UHF_MIN;
+		settingsVFOChannel[vfoNumber].rxFreq = BAND_UHF_MIN;
 	}
 
-	if (!trxCheckFrequencyInAmateurBand(nonVolatileSettings.vfoChannel.txFreq))
+	if (!trxCheckFrequencyInAmateurBand(settingsVFOChannel[vfoNumber].txFreq))
 	{
-		nonVolatileSettings.vfoChannel.txFreq = BAND_UHF_MIN;
+		settingsVFOChannel[vfoNumber].txFreq = BAND_UHF_MIN;
 	}
-
+*/
 }
 
 void settingsRestoreDefaultSettings(void)
@@ -110,18 +121,17 @@ void settingsRestoreDefaultSettings(void)
 	nonVolatileSettings.magicNumber=STORAGE_MAGIC_NUMBER;
 	nonVolatileSettings.currentChannelIndexInZone = 0;
 	nonVolatileSettings.currentChannelIndexInAllZone = 1;
-	nonVolatileSettings.currentIndexInTRxGroupList=0;
+	nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE]=0;
+	nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE]=0;
+	nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_B_MODE]=0;
 	nonVolatileSettings.currentZone = 0;
-	nonVolatileSettings.backLightTimeout = 5;//0 = never timeout. 1 - 255 time in seconds
+	nonVolatileSettings.backLightTimeout = 0;//0 = never timeout. 1 - 255 time in seconds
 	nonVolatileSettings.displayContrast = 0x12;
 	nonVolatileSettings.initialMenuNumber=MENU_VFO_MODE;
 	nonVolatileSettings.displayBacklightPercentage=100U;// 100% brightness
 	nonVolatileSettings.displayInverseVideo=false;// Not inverse video
 	nonVolatileSettings.useCalibration = true;// enable the new calibration system
 	nonVolatileSettings.txFreqLimited = true;// Limit Tx frequency to US Amateur bands
-	// DAC value for txPower: original firmware LOW => about 1600-1700 / original firmware HIGH => about 2900-3000
-	// e.g. external flash power low = 0x67 => 0x0670 (value << 4) => decimal 1648
-	// e.g. external flash power high = 0xb8 => 0x0b80 (value << 4) => decimal 2944
 	nonVolatileSettings.txPowerLevel=3;// 1 WW
 	nonVolatileSettings.overrideTG=0;// 0 = No override
 	nonVolatileSettings.txTimeoutBeepX5Secs = 0;
@@ -130,9 +140,9 @@ void settingsRestoreDefaultSettings(void)
 	nonVolatileSettings.tsManualOverride = 0; // No manual TS override using the Star key
 	nonVolatileSettings.keypadTimerLong = 3;
 	nonVolatileSettings.keypadTimerRepeat = 5;
+	nonVolatileSettings.currentVFONumber = 0;
 
-	settingsInitVFOChannel();
-	currentChannelData = &nonVolatileSettings.vfoChannel;// Set the current channel data to point to the VFO data since the default screen will be the VFO
+	currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];// Set the current channel data to point to the VFO data since the default screen will be the VFO
 
-	settingsSaveSettings();
+	settingsSaveSettings(false);
 }

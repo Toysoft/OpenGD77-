@@ -105,6 +105,20 @@ void codeplugUtilConvertBufToString(char *inBuf,char *outBuf,int len)
 	return;
 }
 
+void codeplugUtilConvertStringToBuf(char *inBuf,char *outBuf,int len)
+{
+	memset(outBuf,0xff,len);
+	for (int i = 0; i < len; i++)
+	{
+		if (inBuf[i] == 0x00)
+		{
+			break;
+		}
+		outBuf[i] = inBuf[i];
+	}
+	return;
+}
+
 int codeplugZonesGetCount(void)
 {
 	uint8_t buf[CODEPLUG_ADDR_EX_ZONE_INUSE_PACKED_DATA_SIZE];
@@ -394,32 +408,130 @@ int codeplugContactsGetCount(int callType) // 0:TG 1:PC
 	return numContacts;
 }
 
-void codeplugContactGetDataForNumber(int index, int callType, struct_codeplugContact_t *contact)
+int codeplugContactGetDataForNumber(int number, int callType, struct_codeplugContact_t *contact)
 {
+	int pos = 0;
+
 	for (int i = 1; i <= 1024; i++)
 	{
 		codeplugContactGetDataForIndex(i, contact);
-		if (contact->name[0] != 0xff && contact->callType == callType) {
-			index--;
+		if (contact->name[0] != 0xff && contact->callType == callType)
+		{
+			number--;
 		}
-		if (index == 0) {
+		if (number == 0)
+		{
+			pos = i;
 			break;
 		}
 	}
+	return pos;
+}
+
+int codeplugContactGetFreeIndex(void)
+{
+	int i;
+	bool found = false;
+	struct_codeplugContact_t contact;
+
+	for (i = 1; i <= 1024; i++)
+	{
+		codeplugContactGetDataForIndex(i, &contact);
+		if (contact.name[0] == 0xff)
+		{
+			found = true;
+			break;
+		}
+	}
+	return (found == true) ? i : 0;
 }
 
 void codeplugContactGetDataForIndex(int index, struct_codeplugContact_t *contact)
 {
 	index--;
-	SPI_Flash_read(CODEPLUG_ADDR_CONTACTS + index*sizeof(struct_codeplugContact_t),(uint8_t *)contact,sizeof(struct_codeplugContact_t));
+	SPI_Flash_read(CODEPLUG_ADDR_CONTACTS + index* CODEPLUG_CONTACTS_LEN,(uint8_t *)contact, CODEPLUG_CONTACTS_LEN);
+	contact->NOT_IN_CODEPLUGDATA_indexNumber = index+1;
 	contact->tgNumber = bcd2int(byteSwap32(contact->tgNumber));
+}
+
+int codeplugContactSaveDataForIndex(int index, struct_codeplugContact_t *contact)
+{
+	int retVal;
+	int flashWritePos = CODEPLUG_ADDR_CONTACTS;
+	int flashSector;
+	int flashEndSector;
+	int bytesToWriteInCurrentSector = CODEPLUG_CONTACTS_LEN;
+
+	index--;
+	contact->tgNumber = byteSwap32(int2bcd(contact->tgNumber));
+
+
+	flashWritePos += index*CODEPLUG_CONTACTS_LEN;// go to the position of the specific index
+
+	flashSector 	= flashWritePos/4096;
+	flashEndSector 	= (flashWritePos+CODEPLUG_CONTACTS_LEN)/4096;
+
+	if (flashSector!=flashEndSector)
+	{
+		bytesToWriteInCurrentSector = (flashEndSector*4096) - flashWritePos;
+	}
+
+	SPI_Flash_read(flashSector*4096,SPI_Flash_sectorbuffer,4096);
+	uint8_t *writePos = SPI_Flash_sectorbuffer + flashWritePos - (flashSector *4096);
+	memcpy( writePos,
+			contact,
+			bytesToWriteInCurrentSector);
+
+	retVal = SPI_Flash_eraseSector(flashSector*4096);
+	if (!retVal)
+	{
+		return false;
+	}
+
+	for (int i=0;i<16;i++)
+	{
+		retVal = SPI_Flash_writePage(flashSector*4096+i*256,SPI_Flash_sectorbuffer+i*256);
+		if (!retVal)
+		{
+			return false;
+		}
+	}
+
+	if (flashSector!=flashEndSector)
+	{
+		uint8_t *channelBufPusOffset = (uint8_t *)contact + bytesToWriteInCurrentSector;
+		bytesToWriteInCurrentSector = CODEPLUG_CONTACTS_LEN - bytesToWriteInCurrentSector;
+
+		SPI_Flash_read(flashEndSector*4096,SPI_Flash_sectorbuffer,4096);
+		memcpy(SPI_Flash_sectorbuffer,
+				(uint8_t *)channelBufPusOffset,
+				bytesToWriteInCurrentSector);
+
+		retVal = SPI_Flash_eraseSector(flashEndSector*4096);
+
+		if (!retVal)
+		{
+			return false;
+		}
+		for (int i=0;i<16;i++)
+		{
+			retVal = SPI_Flash_writePage(flashEndSector*4096+i*256,SPI_Flash_sectorbuffer+i*256);
+
+			if (!retVal)
+			{
+				return false;
+			}
+		}
+
+	}
+	return retVal;
 }
 
 void codeplugDTMFContactGetDataForIndex(struct_codeplugDTMFContactList_t *contactList)
 {
 	int i;
 
-	EEPROM_Read(CODEPLUG_ADDR_DTMF_CONTACTS,(uint8_t *)contactList, sizeof(struct_codeplugContact_t) * CODEPLUG_DTMF_CONTACTS_MAX_COUNT);
+	EEPROM_Read(CODEPLUG_ADDR_DTMF_CONTACTS,(uint8_t *)contactList, sizeof(struct_codeplugDTMFContact_t) * CODEPLUG_DTMF_CONTACTS_MAX_COUNT);
 
 	for(i=0;i<CODEPLUG_DTMF_CONTACTS_MAX_COUNT;i++)
 	{
@@ -467,12 +579,22 @@ void codeplugGetBootItemTexts(char *line1, char *line2)
 }
 
 
-void codeplugVFO_A_ChannelData(struct_codeplugChannel_t *vfoBuf)
+void codeplugGetVFO_ChannelData(struct_codeplugChannel_t *vfoBuf,int VFONumber)
 {
-	EEPROM_Read(CODEPLUG_ADDR_VFO_A_CHANNEL,(uint8_t *)vfoBuf,sizeof(struct_codeplugChannel_t));
+	EEPROM_Read(CODEPLUG_ADDR_VFO_A_CHANNEL + (sizeof(struct_codeplugChannel_t)*VFONumber),(uint8_t *)vfoBuf,sizeof(struct_codeplugChannel_t));
 
 	// Convert the the legacy codeplug tx and rx freq values into normal integers
 	vfoBuf->chMode = (vfoBuf->chMode==0)?RADIO_MODE_ANALOG:RADIO_MODE_DIGITAL;
 	vfoBuf->txFreq = bcd2int(vfoBuf->txFreq);
 	vfoBuf->rxFreq = bcd2int(vfoBuf->rxFreq);
+}
+
+void codeplugSetVFO_ChannelData(struct_codeplugChannel_t *vfoBuf,int VFONumber)
+{
+	struct_codeplugChannel_t tmpChannel;
+	memcpy(&tmpChannel,vfoBuf,sizeof(struct_codeplugChannel_t));// save current VFO data as we need to modify
+	tmpChannel.chMode = (vfoBuf->chMode==RADIO_MODE_ANALOG)?0:1;
+	tmpChannel.txFreq = int2bcd(vfoBuf->txFreq);
+	tmpChannel.rxFreq = int2bcd(vfoBuf->rxFreq);
+	EEPROM_Write(CODEPLUG_ADDR_VFO_A_CHANNEL+(sizeof(struct_codeplugChannel_t)*VFONumber),(uint8_t *)&tmpChannel,sizeof(struct_codeplugChannel_t));
 }

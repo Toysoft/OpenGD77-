@@ -29,15 +29,17 @@ extern const int BAND_UHF_MIN;
 extern const int BAND_UHF_MAX;
 #define VFO_COUNT 4
 enum USB_MODE { USB_MODE_CPS, USB_MODE_HOTSPOT, USB_MODE_DEBUG};
+enum SETTINGS_UI_MODE { SETTINGS_CHANNEL_MODE=0, SETTINGS_VFO_A_MODE, SETTINGS_VFO_B_MODE};
 extern int settingsCurrentChannelNumber;
 extern bool settingsPrivateCallMuteMode;
+extern struct_codeplugChannel_t settingsVFOChannel[2];
 
 typedef struct settingsStruct
 {
 	int 			magicNumber;
 	int16_t			currentChannelIndexInZone;
 	int16_t			currentChannelIndexInAllZone;
-	int16_t			currentIndexInTRxGroupList;
+	int16_t			currentIndexInTRxGroupList[3];// Current Channel, VFO A and VFO B
 	int16_t			currentZone;
 	uint8_t			backLightTimeout;//0 = never timeout. 1 - 255 time in seconds
 	int8_t			displayContrast;
@@ -47,7 +49,6 @@ typedef struct settingsStruct
 	bool			useCalibration;
 	bool			txFreqLimited;
 	uint16_t		txPowerLevel;
-	struct_codeplugChannel_t vfoChannel;
 	uint32_t		overrideTG;
 	uint8_t			txTimeoutBeepX5Secs;
 	uint8_t			beepVolumeDivider;
@@ -55,17 +56,20 @@ typedef struct settingsStruct
 	uint8_t			tsManualOverride;
 	uint16_t		keypadTimerLong;
 	uint16_t		keypadTimerRepeat;
+	uint8_t			currentVFONumber;
 } settingsStruct_t;
 
 extern settingsStruct_t nonVolatileSettings;
 extern struct_codeplugChannel_t *currentChannelData;
 extern struct_codeplugChannel_t channelScreenChannelData;
+extern struct_codeplugContact_t contactListContactData;
+extern int contactListContactIndex;
 extern int settingsUsbMode;
 extern bool enableHotspot;
 
-bool settingsSaveSettings(void);
+bool settingsSaveSettings(bool includeVFOs);
 bool settingsLoadSettings(void);
 void settingsRestoreDefaultSettings(void);
-void settingsInitVFOChannel(void);
+void settingsInitVFOChannel(int vfoNumber);
 
 #endif

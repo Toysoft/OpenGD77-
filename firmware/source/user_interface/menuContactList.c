@@ -27,15 +27,18 @@ static struct_codeplugContact_t contact;
 static int contactCallType;
 
 static const char *calltypeName[] = { "Group Call", "Private Call" };
-enum CONTACT_CALLTYPE_SELECT { CONTACT_CALLTYPE_TG=0, CONTACT_CALLTYPE_PC };
 
 int menuContactList(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
+		contactCallType = CONTACT_CALLTYPE_TG;
 		gMenusEndIndex = codeplugContactsGetCount(contactCallType);
-		gMenusCurrentItemIndex = 1;
-
+		gMenusCurrentItemIndex = 0;
+		if (gMenusEndIndex > 0) {
+			contactListContactIndex = codeplugContactGetDataForNumber(gMenusCurrentItemIndex+1, contactCallType, &contactListContactData);
+		}
+		fw_reset_keyboard();
 		updateScreen();
 	}
 	else
@@ -52,28 +55,23 @@ static void updateScreen()
 {
 	char nameBuf[17];
 	int mNum;
+	int idx;
 
 	UC1701_clearBuf();
 	menuDisplayTitle( (char *)calltypeName[contactCallType]);
 
 	if (gMenusEndIndex == 0)
 	{
-		UC1701_printCentered(48, "Empty List", UC1701_FONT_8x16);
+		UC1701_printCentered(32, "Empty List", UC1701_FONT_8x16);
 	} else {
 		for (int i = -1; i <= 1; i++) {
-			if (gMenusEndIndex <= (i + 1)) {
-				break;
-			}
-
 			mNum = menuGetMenuOffset(gMenusEndIndex, i);
-			if (mNum == 0) {
-				codeplugContactGetDataForNumber(gMenusEndIndex, contactCallType, &contact);
-			} else {
-				codeplugContactGetDataForNumber(mNum, contactCallType, &contact);
-			}
+			idx = codeplugContactGetDataForNumber(mNum+1, contactCallType, &contact);
 
-			codeplugUtilConvertBufToString(contact.name, nameBuf, 16); // need to convert to zero terminated string
-			menuDisplayEntry(i, mNum, (char*) nameBuf);
+			if (idx > 0) {
+				codeplugUtilConvertBufToString(contact.name, nameBuf, 16); // need to convert to zero terminated string
+				menuDisplayEntry(i, mNum, (char*) nameBuf);
+			}
 		}
 	}
 	UC1701_render();
@@ -82,36 +80,56 @@ static void updateScreen()
 
 static void handleEvent(int buttons, int keys, int events)
 {
-	if ((keys & KEY_DOWN)!=0)
+	if (events & 0x01)
 	{
-		MENU_INC(gMenusCurrentItemIndex, gMenusEndIndex);
-	}
-	else if ((keys & KEY_UP)!=0)
-	{
-		MENU_DEC(gMenusCurrentItemIndex, gMenusEndIndex);
-	}
-	else if ((keys & KEY_HASH) != 0)
-	{
-		if (contactCallType == CONTACT_CALLTYPE_TG) {
-			contactCallType = CONTACT_CALLTYPE_PC;
-		} else {
-			contactCallType = CONTACT_CALLTYPE_TG;
+		if (KEYCHECK_PRESS(keys, KEY_DOWN))
+		{
+			MENU_INC(gMenusCurrentItemIndex, gMenusEndIndex);
+			contactListContactIndex = codeplugContactGetDataForNumber(gMenusCurrentItemIndex+1, contactCallType, &contactListContactData);
 		}
-		gMenusEndIndex = codeplugContactsGetCount(contactCallType);
-		gMenusCurrentItemIndex = 1;
-	}
-	else if ((keys & KEY_GREEN)!=0)
-	{
-		codeplugContactGetDataForNumber(gMenusCurrentItemIndex, contactCallType, &contact);
-		setOverrideTGorPC(contact.tgNumber, contact.callType == CONTACT_CALLTYPE_PC);
-
-		menuSystemPopAllAndDisplayRootMenu();
-		return;
-	}
-	else if ((keys & KEY_RED)!=0)
-	{
-		menuSystemPopPreviousMenu();
-		return;
+		else if (KEYCHECK_PRESS(keys, KEY_UP))
+		{
+			MENU_DEC(gMenusCurrentItemIndex, gMenusEndIndex);
+			contactListContactIndex = codeplugContactGetDataForNumber(gMenusCurrentItemIndex+1, contactCallType, &contactListContactData);
+		}
+		else if (KEYCHECK_SHORTUP(keys, KEY_HASH))
+		{
+			if (contactCallType == CONTACT_CALLTYPE_TG)
+			{
+				contactCallType = CONTACT_CALLTYPE_PC;
+			}
+			else
+			{
+				contactCallType = CONTACT_CALLTYPE_TG;
+			}
+			gMenusEndIndex = codeplugContactsGetCount(contactCallType);
+			gMenusCurrentItemIndex = 0;
+			contactListContactIndex = codeplugContactGetDataForNumber(gMenusCurrentItemIndex+1, contactCallType, &contactListContactData);
+		}
+		else if (KEYCHECK_SHORTUP(keys, KEY_GREEN))
+		{
+			contactListContactIndex = codeplugContactGetDataForNumber(gMenusCurrentItemIndex+1, contactCallType, &contact);
+			setOverrideTGorPC(contact.tgNumber, contact.callType == CONTACT_CALLTYPE_PC);
+			contactListContactIndex = 0;
+			menuSystemPopAllAndDisplayRootMenu();
+			return;
+		}
+		else if (KEYCHECK_LONGDOWN(keys, KEY_GREEN))
+		{
+			menuSystemPushNewMenu(MENU_CONTACT_DETAILS);
+			return;
+		}
+		else if (KEYCHECK_SHORTUP(keys, KEY_RED))
+		{
+			contactListContactIndex = 0;
+			menuSystemPopPreviousMenu();
+			return;
+		} else if (KEYCHECK_LONGDOWN(keys, KEY_RED))
+		{
+			contactListContactIndex = 0;
+			menuSystemPopAllAndDisplayRootMenu();
+			return;
+		}
 	}
 	updateScreen();
 }

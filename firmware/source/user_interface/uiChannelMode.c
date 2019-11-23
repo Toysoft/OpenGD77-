@@ -154,7 +154,7 @@ static void loadChannelData(bool useChannelDataInMemory)
 		// Check if this channel has an Rx Group
 		if (rxGroupData.name[0]!=0)
 		{
-			codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
+			codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE]],&contactData);
 		}
 		else
 		{
@@ -401,18 +401,18 @@ static void handleEvent(int buttons, int keys, int events)
 			{
 				if (nonVolatileSettings.overrideTG == 0)
 				{
-					nonVolatileSettings.currentIndexInTRxGroupList++;
-					if (nonVolatileSettings.currentIndexInTRxGroupList
+					nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE]++;
+					if (nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE]
 							> (rxGroupData.NOT_IN_MEMORY_numTGsInGroup - 1))
 					{
-						nonVolatileSettings.currentIndexInTRxGroupList = 0;
+						nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE] = 0;
 					}
 				}
 				nonVolatileSettings.tsManualOverride &= 0xF0; // remove TS override for channel
 
 				if (rxGroupData.name[0]!=0)
 				{
-					codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
+					codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE]],&contactData);
 				}
 
 				trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
@@ -464,17 +464,17 @@ static void handleEvent(int buttons, int keys, int events)
 				// To Do change TG in on same channel freq
 				if (nonVolatileSettings.overrideTG == 0)
 				{
-					nonVolatileSettings.currentIndexInTRxGroupList--;
-					if (nonVolatileSettings.currentIndexInTRxGroupList < 0)
+					nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE]--;
+					if (nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE] < 0)
 					{
-						nonVolatileSettings.currentIndexInTRxGroupList =
+						nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE] =
 								rxGroupData.NOT_IN_MEMORY_numTGsInGroup - 1;
 					}
 				}
 				nonVolatileSettings.tsManualOverride &= 0xF0; // remove TS override from channel
 				if (rxGroupData.name[0]!=0)
 				{
-					codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList],&contactData);
+					codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE]],&contactData);
 				}
 				trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
 
@@ -766,11 +766,11 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 				menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
 				break;
 			case CH_SCREEN_QUICK_MENU_COPY2VFO:
-				memcpy(&nonVolatileSettings.vfoChannel.rxFreq,&channelScreenChannelData.rxFreq,sizeof(struct_codeplugChannel_t) - 16);// Don't copy the name of channel, which are in the first 16 bytes
+				memcpy(&settingsVFOChannel[nonVolatileSettings.currentVFONumber].rxFreq,&channelScreenChannelData.rxFreq,sizeof(struct_codeplugChannel_t) - 16);// Don't copy the name of channel, which are in the first 16 bytes
 				menuSystemPopAllAndDisplaySpecificRootMenu(MENU_VFO_MODE);
 				break;
 			case CH_SCREEN_QUICK_MENU_COPY_FROM_VFO:
-				memcpy(&channelScreenChannelData.rxFreq,&nonVolatileSettings.vfoChannel.rxFreq,sizeof(struct_codeplugChannel_t)- 16);// Don't copy the name of the vfo, which are in the first 16 bytes
+				memcpy(&channelScreenChannelData.rxFreq,&settingsVFOChannel[nonVolatileSettings.currentVFONumber].rxFreq,sizeof(struct_codeplugChannel_t)- 16);// Don't copy the name of the vfo, which are in the first 16 bytes
 
 				codeplugChannelSaveDataForIndex(settingsCurrentChannelNumber,&channelScreenChannelData);
 
