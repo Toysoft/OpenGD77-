@@ -219,13 +219,10 @@ static void handleCPSRequest(void)
 					{
 						case 0:
 							// save current settings and reboot
-							settingsSaveSettings();// Need to save these channels prior to reboot, as reboot does not save
+							settingsSaveSettings(false);// Need to save these channels prior to reboot, as reboot does not save
 							watchdogReboot();
 						break;
 						case 1:
-							//reload VFO from codeplug
-							settingsInitVFOChannel();
-							settingsSaveSettings();// Need to save these channels prior to reboot, as reboot does not save
 							watchdogReboot();
 							break;
 						case 2:

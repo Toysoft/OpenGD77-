@@ -84,7 +84,7 @@ static void handleEvent(int buttons, int keys, int events)
 		nonVolatileSettings.overrideTG = 0; // remove any TG override
 		nonVolatileSettings.currentZone = gMenusCurrentItemIndex;
 		nonVolatileSettings.currentChannelIndexInZone = 0;// Since we are switching zones the channel index should be reset
-		nonVolatileSettings.currentIndexInTRxGroupList=0;// Since we are switching zones the TRx Group index should be reset
+		nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE]=0;// Since we are switching zones the TRx Group index should be reset
 		channelScreenChannelData.rxFreq=0x00; // Flag to the Channel screeen that the channel data is now invalid and needs to be reloaded
 		menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
 

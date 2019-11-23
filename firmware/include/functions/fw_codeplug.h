@@ -122,7 +122,8 @@ int codeplugGetUserDMRID(void);
 void codeplugSetUserDMRID(uint32_t dmrId);
 void codeplugGetRadioName(char *buf);
 void codeplugGetBootItemTexts(char *line1, char *line2);
-void codeplugVFO_A_ChannelData(struct_codeplugChannel_t *vfoBuf);
+void codeplugGetVFO_ChannelData(struct_codeplugChannel_t *vfoBuf,int VFONumber);
+void codeplugSetVFO_ChannelData(struct_codeplugChannel_t *vfoBuf,int VFONumber);
 bool codeplugChannelIndexIsValid(int index);
 bool codeplugChannelSaveDataForIndex(int index, struct_codeplugChannel_t *channelBuf);
 
@@ -130,5 +131,6 @@ int codeplugContactsGetCount(int callType);
 int codeplugContactGetDataForNumber(int number, int callType, struct_codeplugContact_t *contact);
 int codeplugContactSaveDataForIndex(int index, struct_codeplugContact_t *contact);
 int codeplugContactGetFreeIndex(void);
+
 
 #endif

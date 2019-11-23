@@ -31,7 +31,7 @@ static int selectedFreq = VFO_SELECTED_FREQUENCY_INPUT_RX;
 static struct_codeplugRxGroup_t rxGroupData;
 static struct_codeplugContact_t contactData;
 
-static int currentIndexInTRxGroup=0;
+
 static bool displaySquelch=false;
 
 // internal prototypes
@@ -40,6 +40,7 @@ static void reset_freq_enter_digits(void);
 static int read_freq_enter_digits(void);
 static void update_frequency(int tmp_frequency);
 static void stepFrequency(int increment);
+static void loadContact();
 static bool isDisplayingQSOData=false;
 
 // public interface
@@ -51,10 +52,17 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 		isDisplayingQSOData=false;
 		gMenusCurrentItemIndex=0;
 		nonVolatileSettings.initialMenuNumber=MENU_VFO_MODE;
-		currentChannelData = &nonVolatileSettings.vfoChannel;
+		currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];
 		settingsCurrentChannelNumber = -1;// This is not a regular channel. Its the special VFO channel!
 
 		trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq,DMR_MODE_AUTO);
+
+		//Need to load the Rx group if specified even if TG is currently overridden as we may need it later when the left or right button is pressed
+		if (currentChannelData->rxGroupList != 0)
+		{
+			codeplugRxGroupGetDataForIndex(currentChannelData->rxGroupList,&rxGroupData);
+		}
+
 		if (currentChannelData->chMode == RADIO_MODE_ANALOG)
 		{
 			trxSetModeAndBandwidth(currentChannelData->chMode, ((currentChannelData->flag4 & 0x02) == 0x02));
@@ -66,25 +74,11 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 			trxSetDMRColourCode(currentChannelData->rxColor);
 			trxSetModeAndBandwidth(currentChannelData->chMode, false);
 
-			//Need to load the Rx group if specified even if TG is currently overridden as we may need it later when the left or right button is pressed
-			if (currentChannelData->rxGroupList != 0)
-			{
-				codeplugRxGroupGetDataForIndex(currentChannelData->rxGroupList,&rxGroupData);
-			}
-
 			if (nonVolatileSettings.overrideTG == 0)
 			{
 				if (currentChannelData->rxGroupList != 0)
 				{
-					// Check if this channel has an Rx Group
-					if (rxGroupData.name[0]!=0)
-					{
-						codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
-					}
-					else
-					{
-						codeplugContactGetDataForIndex(currentChannelData->contact,&contactData);
-					}
+					loadContact();
 
 					// Check whether the contact data seems valid
 					if (contactData.name[0] == 0 || contactData.tgNumber ==0 || contactData.tgNumber > 9999999)
@@ -311,6 +305,27 @@ static void update_frequency(int frequency)
 		}
 	}
 }
+static void checkAndFixIndexInRxGroup(void)
+{
+	if (nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber]
+			> (rxGroupData.NOT_IN_MEMORY_numTGsInGroup - 1))
+	{
+		nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber] = 0;
+	}
+}
+
+static void loadContact()
+{
+	// Check if this channel has an Rx Group
+	if (rxGroupData.name[0]!=0)
+	{
+		codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber]],&contactData);
+	}
+	else
+	{
+		codeplugContactGetDataForIndex(currentChannelData->contact,&contactData);
+	}
+}
 
 static void handleEvent(int buttons, int keys, int events)
 {
@@ -390,6 +405,12 @@ static void handleEvent(int buttons, int keys, int events)
 				{
 					currentChannelData->chMode = RADIO_MODE_DIGITAL;
 					trxSetModeAndBandwidth(currentChannelData->chMode, false);
+					checkAndFixIndexInRxGroup();
+					// Check if the contact data for the VFO has previous been loaded
+					if (contactData.name[0] == 0x00)
+					{
+						loadContact();
+					}
 				}
 				else
 				{
@@ -473,19 +494,15 @@ static void handleEvent(int buttons, int keys, int events)
 				{
 					if (nonVolatileSettings.overrideTG == 0)
 					{
-						currentIndexInTRxGroup++;
-						if (currentIndexInTRxGroup
-								> (rxGroupData.NOT_IN_MEMORY_numTGsInGroup - 1))
-						{
-							currentIndexInTRxGroup = 0;
-						}
+						nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber]++;
+						checkAndFixIndexInRxGroup();
 					}
 					nonVolatileSettings.tsManualOverride &= 0x0F; // remove TS override for VFO
 
 					// Check if this channel has an Rx Group
 					if (rxGroupData.name[0]!=0)
 					{
-						codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
+						codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber]],&contactData);
 					}
 					else
 					{
@@ -540,10 +557,10 @@ static void handleEvent(int buttons, int keys, int events)
 					// To Do change TG in on same channel freq
 					if (nonVolatileSettings.overrideTG == 0)
 					{
-						currentIndexInTRxGroup--;
-						if (currentIndexInTRxGroup < 0)
+						nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber]--;
+						if (nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber] < 0)
 						{
-							currentIndexInTRxGroup =
+							nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber] =
 									rxGroupData.NOT_IN_MEMORY_numTGsInGroup - 1;
 						}
 					}
@@ -552,7 +569,7 @@ static void handleEvent(int buttons, int keys, int events)
 					// Check if this channel has an Rx Group
 					if (rxGroupData.name[0]!=0)
 					{
-						codeplugContactGetDataForIndex(rxGroupData.contacts[currentIndexInTRxGroup],&contactData);
+						codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber]],&contactData);
 					}
 					else
 					{

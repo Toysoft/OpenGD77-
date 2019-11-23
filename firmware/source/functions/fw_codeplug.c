@@ -579,12 +579,22 @@ void codeplugGetBootItemTexts(char *line1, char *line2)
 }
 
 
-void codeplugVFO_A_ChannelData(struct_codeplugChannel_t *vfoBuf)
+void codeplugGetVFO_ChannelData(struct_codeplugChannel_t *vfoBuf,int VFONumber)
 {
-	EEPROM_Read(CODEPLUG_ADDR_VFO_A_CHANNEL,(uint8_t *)vfoBuf,sizeof(struct_codeplugChannel_t));
+	EEPROM_Read(CODEPLUG_ADDR_VFO_A_CHANNEL + (sizeof(struct_codeplugChannel_t)*VFONumber),(uint8_t *)vfoBuf,sizeof(struct_codeplugChannel_t));
 
 	// Convert the the legacy codeplug tx and rx freq values into normal integers
 	vfoBuf->chMode = (vfoBuf->chMode==0)?RADIO_MODE_ANALOG:RADIO_MODE_DIGITAL;
 	vfoBuf->txFreq = bcd2int(vfoBuf->txFreq);
 	vfoBuf->rxFreq = bcd2int(vfoBuf->rxFreq);
+}
+
+void codeplugSetVFO_ChannelData(struct_codeplugChannel_t *vfoBuf,int VFONumber)
+{
+	struct_codeplugChannel_t tmpChannel;
+	memcpy(&tmpChannel,vfoBuf,sizeof(struct_codeplugChannel_t));// save current VFO data as we need to modify
+	tmpChannel.chMode = (vfoBuf->chMode==RADIO_MODE_ANALOG)?0:1;
+	tmpChannel.txFreq = int2bcd(vfoBuf->txFreq);
+	tmpChannel.rxFreq = int2bcd(vfoBuf->rxFreq);
+	EEPROM_Write(CODEPLUG_ADDR_VFO_A_CHANNEL+(sizeof(struct_codeplugChannel_t)*VFONumber),(uint8_t *)&tmpChannel,sizeof(struct_codeplugChannel_t));
 }

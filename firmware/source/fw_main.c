@@ -256,7 +256,12 @@ void fw_main_task(void *data)
         		{
         			menuSystemPushNewMenu(MENU_TX_SCREEN);
         		}
+        		if (buttons & BUTTON_SK1 && buttons & BUTTON_SK2)
+        		{
+        			settingsSaveSettings(true);
+        		}
         	}
+
 
     		if (!trxIsTransmitting && updateLastHeard==true)
     		{
@@ -276,7 +281,7 @@ void fw_main_task(void *data)
         		{
         			nonVolatileSettings.overrideTG = menuUtilityTgBeforePcMode;
         		}
-				settingsSaveSettings();
+				settingsSaveSettings(true);
 
         		if (battery_voltage<CUTOFF_VOLTAGE_LOWER_HYST)
         		{
