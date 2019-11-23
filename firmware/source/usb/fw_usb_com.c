@@ -226,9 +226,8 @@ static void handleCPSRequest(void)
 							watchdogReboot();
 							break;
 						case 2:
-							// factory reset and reboot
-							settingsRestoreDefaultSettings();// Also saves these new settings, so now need to call settingsSaveSettings
-							watchdogReboot();
+							// Save settings VFO's to codeplug
+							settingsSaveSettings(true);
 							break;
 						case 3:
 							// flash green LED
