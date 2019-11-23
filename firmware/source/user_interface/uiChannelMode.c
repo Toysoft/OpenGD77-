@@ -47,8 +47,9 @@ static ScanZoneState_t scanState = SCAN_SCANNING;		//state flag for scan routine
 static const int SCAN_SHORT_PAUSE = 500;			//time to wait after carrier detected to allow time for full signal detection. (CTCSS or DMR)
 static const int SCAN_PAUSE = 5000;				//time to wait after valid signal is detected.
 static const int SCAN_INTERVAL = 50;			    //time between each scan step
-static int nuisanceDelete[10];
-static int nuisanceDeleteIndex =0;
+#define MAX_ZONE_SCAN_NUISANCE_CHANNELS 16
+static int nuisanceDelete[MAX_ZONE_SCAN_NUISANCE_CHANNELS];
+static int nuisanceDeleteIndex = 0;
 
 
 int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
@@ -285,9 +286,9 @@ static void handleEvent(int buttons, int keys, int events)
 	if((scanState==SCAN_PAUSED) && (keys & KEY_DOWN) && (!(buttons & BUTTON_SK2)))                    // if we are scanning and down key is pressed then enter current channel into nuisance delete array.
 	{
 		nuisanceDelete[nuisanceDeleteIndex++]=settingsCurrentChannelNumber;
-		if(nuisanceDeleteIndex >9)
+		if(nuisanceDeleteIndex > (MAX_ZONE_SCAN_NUISANCE_CHANNELS - 1))
 		{
-			nuisanceDeleteIndex=0;																			//rolling list of last 10 deletes.
+			nuisanceDeleteIndex = 0;																			//rolling list of last MAX_NUISANCE_CHANNELS deletes.
 		}
 		scanTimer=5;																				//force scan to continue;
 		scanState=SCAN_SCANNING;
@@ -776,7 +777,7 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 		switch(gMenusCurrentItemIndex)
 		{
 			case CH_SCREEN_QUICK_MENU_SCAN:
-				for(int i=0;i<10;i++)						//clear all nuisance delete channels at start of scanning
+				for(int i= 0;i<MAX_ZONE_SCAN_NUISANCE_CHANNELS;i++)						//clear all nuisance delete channels at start of scanning
 				{
 					nuisanceDelete[i]=-1;
 					nuisanceDeleteIndex=0;
@@ -875,17 +876,21 @@ static void scanning(void)
 			scanTimer=5;															//skip over it quickly. (immediate selection of another channel seems to cause crashes)
 		}
 
-		for(int i=0;i<10;i++)														//check all nuisance delete entries and skip channel if there is a match
+		for(int i=0;i<MAX_ZONE_SCAN_NUISANCE_CHANNELS;i++)														//check all nuisance delete entries and skip channel if there is a match
 		{
-			if(nuisanceDelete[i]==settingsCurrentChannelNumber)
+			if (nuisanceDelete[i]==-1)
 			{
-				scanTimer=5;
 				break;
 			}
+			else
+			{
+				if(nuisanceDelete[i]==settingsCurrentChannelNumber)
+				{
+					scanTimer=5;
+					break;
+				}
+			}
 		}
-
 	}
-
-
 }
 
