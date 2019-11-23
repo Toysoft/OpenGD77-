@@ -90,6 +90,7 @@ static volatile int readDMRRSSI = 0;
 static volatile int tx_sequence=0;
 
 static volatile int timeCode;
+static volatile int rxColorCode;
 static volatile int repeaterWakeupResponseTimeout=0;
 static volatile int isWaking = WAKING_MODE_NONE;
 static volatile int rxwait;// used for Repeater wakeup sequence
@@ -296,6 +297,72 @@ void setMicGainDMR(uint8_t gain)
 	write_SPI_page_reg_byte_SPI0(0x04, 0xE4, 0x40 + gain);  //CODEC   LineOut Gain 2dB, Mic Stage 1 Gain 0dB, Mic Stage 2 Gain default is 11 =  33dB
 }
 
+typedef enum {DMR_FILTER_NONE=0,DMR_FILTER_CC, DMR_FILTER_CC_TS, DMR_FILTER_CC_TS_TG} dmrFilter_t;
+dmrFilter_t dmrFilterLevel = DMR_FILTER_CC_TS;
+/*
+bool checkDMRFilter(dmrFilter_t filterType)
+{
+	bool result;
+	switch (filterType)
+	{
+		case DMR_FILTER_NONE:
+			result = true;
+			break;
+		case DMR_FILTER_CC:
+			result = 	(rxColorCode == trxGetDMRColourCode());
+			break;
+		case DMR_FILTER_CC_TS:
+			result = 	(timeCode == trxGetDMRTimeSlot()) &&
+						(rxColorCode == trxGetDMRColourCode());
+			break;
+		case DMR_FILTER_CC_TS_TG:
+			result = 	(timeCode == trxGetDMRTimeSlot()) &&
+						(rxColorCode == trxGetDMRColourCode() &&
+								);
+			break;
+		default:
+			result = true;
+			break;
+	}
+
+	return result;
+}
+*/
+static bool checkTimeSlotFilter(void)
+{
+	if (dmrFilterLevel >= DMR_FILTER_CC_TS)
+	{
+		return (timeCode == trxGetDMRTimeSlot());
+	}
+	else
+	{
+		return true;
+	}
+}
+bool checkColourCodeFilter(void)
+{
+	if (dmrFilterLevel >= DMR_FILTER_CC)
+	{
+		return (rxColorCode == trxGetDMRColourCode());
+	}
+	else
+	{
+		return true;
+	}
+}
+bool checkTalkGroupFilter(void)
+{
+	if (dmrFilterLevel >= DMR_FILTER_CC_TS_TG)
+	{
+		return true;// To Do. Actually filter on TG
+	}
+	else
+	{
+		return true;
+	}
+}
+
+
 void PORTC_IRQHandler(void)
 {
     if ((1U << Pin_INT_C6000_SYS) & PORT_GetPinsInterruptFlags(Port_INT_C6000_SYS))
@@ -478,7 +545,7 @@ inline static void HRC6000SysReceivedDataInt(void)
 	int rxSyncClass;
 	bool rxCRCStatus;
 	int rpi;
-	int rxColorCode;
+
 
 	read_SPI_page_reg_byte_SPI0(0x04, 0x51, &tmp_val_0x51);
 	read_SPI_page_reg_byte_SPI0(0x04, 0x52, &tmp_val_0x52);  //Read Received CC and CACH Register
@@ -535,7 +602,7 @@ inline static void HRC6000SysReceivedDataInt(void)
 		}
 		else
 		{
-			if ((timeCode == trxGetDMRTimeSlot() && lastTimeCode != timeCode))
+			if (checkTimeSlotFilter() && (lastTimeCode != timeCode))
 			{
 				GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);// Disable the audio
 			}
@@ -554,7 +621,7 @@ inline static void HRC6000SysReceivedDataInt(void)
 		// Start RX
 		if (slot_state == DMR_STATE_IDLE)
 		{
-			if ((rxColorCode == trxGetDMRColourCode()))// && (rxSyncClass==SYNC_CLASS_DATA) && (rxDataType==1) )// && (timeCode == trxGetDMRTimeSlot()))       //Voice LC Header
+			if ((checkColourCodeFilter()))// && (rxSyncClass==SYNC_CLASS_DATA) && (rxDataType==1) )// && (timeCode == trxGetDMRTimeSlot()))       //Voice LC Header
 			{
 				//SEGGER_RTT_printf(0,"RX START\n");
 				//triggerQSOdataDisplay();
@@ -585,8 +652,8 @@ inline static void HRC6000SysReceivedDataInt(void)
 			if (
 					(skip_count == 0 ||  (receivedSrcId != trxDMRID && receivedSrcId!=0x00)) &&
 					(rxSyncClass!=SYNC_CLASS_DATA) && ( sequenceNumber>= 0x01) && (sequenceNumber <= 0x06) &&
-					(((trxDMRMode == DMR_MODE_PASSIVE) && (timeCode == trxGetDMRTimeSlot() && lastTimeCode != timeCode) &&
-					 (rxColorCode == trxGetDMRColourCode())) || (trxDMRMode == DMR_MODE_ACTIVE &&
+					(((trxDMRMode == DMR_MODE_PASSIVE) && (checkTimeSlotFilter() && lastTimeCode != timeCode) &&
+					 (checkColourCodeFilter())) || (trxDMRMode == DMR_MODE_ACTIVE &&
 					 (slot_state == DMR_STATE_RX_1))))
 			{
 				//SEGGER_RTT_printf(0, "Audio frame %d\t%d\n",sequenceNumber,timeCode);
@@ -777,7 +844,7 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 			if (trxDMRMode == DMR_MODE_PASSIVE)
 			{
 
-				if( !isWaking &&  trxIsTransmitting && (timeCode == trxGetDMRTimeSlot()))
+				if( !isWaking &&  trxIsTransmitting && checkTimeSlotFilter())
 				{
 						HRC6000TransitionToTx();
 				}
