@@ -47,6 +47,9 @@ static ScanZoneState_t scanState = SCAN_SCANNING;		//state flag for scan routine
 static const int SCAN_SHORT_PAUSE = 500;			//time to wait after carrier detected to allow time for full signal detection. (CTCSS or DMR)
 static const int SCAN_PAUSE = 5000;				//time to wait after valid signal is detected.
 static const int SCAN_INTERVAL = 50;			    //time between each scan step
+#define MAX_ZONE_SCAN_NUISANCE_CHANNELS 16
+static int nuisanceDelete[MAX_ZONE_SCAN_NUISANCE_CHANNELS];
+static int nuisanceDeleteIndex = 0;
 
 
 int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
@@ -279,6 +282,18 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 static void handleEvent(int buttons, int keys, int events)
 {
 	uint32_t tg = (LinkHead->talkGroupOrPcId & 0xFFFFFF);
+
+	if((scanState==SCAN_PAUSED) && (keys & KEY_DOWN) && (!(buttons & BUTTON_SK2)))                    // if we are scanning and down key is pressed then enter current channel into nuisance delete array.
+	{
+		nuisanceDelete[nuisanceDeleteIndex++]=settingsCurrentChannelNumber;
+		if(nuisanceDeleteIndex > (MAX_ZONE_SCAN_NUISANCE_CHANNELS - 1))
+		{
+			nuisanceDeleteIndex = 0;																			//rolling list of last MAX_NUISANCE_CHANNELS deletes.
+		}
+		scanTimer=5;																				//force scan to continue;
+		scanState=SCAN_SCANNING;
+		return;
+	}
 
 	if ((uiChannelModeScanActive == true) && (!(keys==0)) && (!((keys & KEY_UP) && (!(buttons & BUTTON_SK2)))))    // stop the scan on any button except UP without Shift ( allows scan to be manually continued) or SK2 on its own (allows Backlight to be triggered)
 	{
@@ -686,6 +701,7 @@ static void handleUpKey(int buttons)
 			if (nonVolatileSettings.currentChannelIndexInZone > currentZone.NOT_IN_MEMORY_numChannelsInZone - 1)
 			{
 					nonVolatileSettings.currentChannelIndexInZone = 0;
+
 			}
 		}
 		scanTimer=500;
@@ -752,6 +768,7 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 {
 	if ((keys & KEY_RED)!=0)
 	{
+		uiChannelModeScanActive=false;
 		menuSystemPopPreviousMenu();
 		return;
 	}
@@ -760,6 +777,11 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 		switch(gMenusCurrentItemIndex)
 		{
 			case CH_SCREEN_QUICK_MENU_SCAN:
+				for(int i= 0;i<MAX_ZONE_SCAN_NUISANCE_CHANNELS;i++)						//clear all nuisance delete channels at start of scanning
+				{
+					nuisanceDelete[i]=-1;
+					nuisanceDeleteIndex=0;
+				}
 				uiChannelModeScanActive=true;
 				scanTimer=500;
 				scanState = SCAN_SCANNING;
@@ -812,7 +834,7 @@ int menuChannelModeQuickMenu(int buttons, int keys, int events, bool isFirstRun)
 
 static void scanning(void)
 {
-	if((scanState==SCAN_SCANNING) & (scanTimer==10))							    			//after initial settling time
+	if((scanState==SCAN_SCANNING) && (scanTimer>5) && (scanTimer< (SCAN_INTERVAL -20)))							    			//after initial settling time
 	{
 		//test for presence of RF Carrier.
 		// In FM mode the dmr slot_state will always be DMR_STATE_IDLE
@@ -847,18 +869,28 @@ static void scanning(void)
 	{
 		trx_measure_count=0;														//needed to allow time for Rx to settle after channel change.
 		handleUpKey(0);
+		scanTimer=SCAN_INTERVAL;
+		scanState = SCAN_SCANNING;															//state 0 = settling and test for carrier present.
 		if(channelScreenChannelData.flag4 & 0x20)									//if this channel has the skip bit set
 		{
-			scanTimer=10;															//skip over it quickly. (immediate selection of another channel seems to cause crashes)
+			scanTimer=5;															//skip over it quickly. (immediate selection of another channel seems to cause crashes)
 		}
-		else
+
+		for(int i=0;i<MAX_ZONE_SCAN_NUISANCE_CHANNELS;i++)														//check all nuisance delete entries and skip channel if there is a match
 		{
-			scanTimer=SCAN_INTERVAL;
-			scanState = SCAN_SCANNING;															//state 0 = settling and test for carrier present.
+			if (nuisanceDelete[i]==-1)
+			{
+				break;
+			}
+			else
+			{
+				if(nuisanceDelete[i]==settingsCurrentChannelNumber)
+				{
+					scanTimer=5;
+					break;
+				}
+			}
 		}
-
 	}
-
-
 }
 
