@@ -155,15 +155,16 @@ void fw_check_key_event(uint32_t *keys, int *event)
 		break;
 	case KEY_DEBOUNCE:
 		keyDebounceCounter++;
-		if (keyDebounceCounter>KEY_DEBOUNCE_COUNTER && keyDebounceScancode == scancode) {
+		if (keyDebounceCounter > KEY_DEBOUNCE_COUNTER && keyDebounceScancode == scancode) {
 			if (*keys == -1) {
 				keyState = KEY_WAIT_RELEASED;
 			} else {
 				keyState = KEY_PRESS;
 			}
-		} else if (keyDebounceScancode != scancode) {
-			keyState = KEY_IDLE;
 		}
+//		else if (keyDebounceScancode != scancode) {
+//			keyState = KEY_IDLE;
+//		}
 		*keys = 0;
 		break;
 	case  KEY_PRESS:
