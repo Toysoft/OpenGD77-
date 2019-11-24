@@ -48,6 +48,7 @@ enum QSO_DISPLAY_STATE
 };
 
 extern const char *POWER_LEVELS[];
+extern const char *DMR_FILTER_LEVELS[];
 extern LinkItem_t *LinkHead;
 extern int menuDisplayQSODataState;
 extern int qsodata_timer;

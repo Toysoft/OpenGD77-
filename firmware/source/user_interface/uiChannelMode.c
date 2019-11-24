@@ -47,7 +47,7 @@ static ScanZoneState_t scanState = SCAN_SCANNING;		//state flag for scan routine
 static const int SCAN_SHORT_PAUSE = 500;			//time to wait after carrier detected to allow time for full signal detection. (CTCSS or DMR)
 static const int SCAN_PAUSE = 5000;				//time to wait after valid signal is detected.
 static const int SCAN_INTERVAL = 50;			    //time between each scan step
-
+static int tmpQuickMenuDmrFilterLevel;
 
 int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 {
@@ -711,6 +711,7 @@ static void handleUpKey(int buttons)
 // Quick Menu functions
 
 enum CHANNEL_SCREEN_QUICK_MENU_ITEMS { CH_SCREEN_QUICK_MENU_SCAN=0, CH_SCREEN_QUICK_MENU_COPY2VFO, CH_SCREEN_QUICK_MENU_COPY_FROM_VFO,
+	CH_SCREEN_QUICK_MENU_DMR_FILTER,
 	NUM_CH_SCREEN_QUICK_MENU_ITEMS };// The last item in the list is used so that we automatically get a total number of items in the list
 
 static void updateQuickMenuScreen(void)
@@ -735,6 +736,9 @@ static void updateQuickMenuScreen(void)
 				break;
 			case CH_SCREEN_QUICK_MENU_COPY_FROM_VFO:
 				strcpy(buf, "VFO --> Channel");
+				break;
+			case CH_SCREEN_QUICK_MENU_DMR_FILTER:
+				sprintf(buf, "DMR Mon:%s",DMR_FILTER_LEVELS[tmpQuickMenuDmrFilterLevel]);
 				break;
 			default:
 				strcpy(buf, "");
@@ -788,8 +792,36 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 
 				menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
 				break;
+			case CH_SCREEN_QUICK_MENU_DMR_FILTER:
+				settingsDmrFilterLevel = tmpQuickMenuDmrFilterLevel;
+				menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
+				break;
 		}
 		return;
+	}
+	else if ((keys & KEY_RIGHT)!=0)
+	{
+		switch(gMenusCurrentItemIndex)
+		{
+			case CH_SCREEN_QUICK_MENU_DMR_FILTER:
+				if (tmpQuickMenuDmrFilterLevel < DMR_FILTER_CC_TS_TG)
+				{
+					tmpQuickMenuDmrFilterLevel++;
+				}
+				break;
+		}
+	}
+	else if ((keys & KEY_LEFT)!=0)
+	{
+		switch(gMenusCurrentItemIndex)
+		{
+			case CH_SCREEN_QUICK_MENU_DMR_FILTER:
+				if (tmpQuickMenuDmrFilterLevel > DMR_FILTER_NONE)
+				{
+					tmpQuickMenuDmrFilterLevel--;
+				}
+				break;
+		}
 	}
 	else if ((keys & KEY_DOWN)!=0)
 	{
@@ -803,10 +835,13 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 	updateQuickMenuScreen();
 }
 
+
+
 int menuChannelModeQuickMenu(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
+		tmpQuickMenuDmrFilterLevel = settingsDmrFilterLevel;
 		gMenusCurrentItemIndex=0;
 		updateQuickMenuScreen();
 	}
