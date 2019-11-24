@@ -432,11 +432,10 @@ int codeplugContactGetDataByTGorPC(int tgorpc, int callType, struct_codeplugCont
 {
 	int pos = 0;
 
-	tgorpc = byteSwap32(int2bcd(tgorpc));
 	for (int i = 1; i <= 1024; i++)
 	{
 		codeplugContactGetDataForIndex(i, contact);
-		if (contact->tgNumber == tgorpc && contact->callType == callType)
+		if (contact->name[0] != 0xff && contact->tgNumber == tgorpc && contact->callType == callType)
 		{
 			pos = i;
 			break;

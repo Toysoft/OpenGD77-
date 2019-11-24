@@ -36,7 +36,7 @@ enum CONTACT_DETAILS_DISPLAY_LIST { /*CONTACT_DETAILS_NAME=0,*/ CONTACT_DETAILS_
 
 static int menuContactDetailsState;
 static int menuContactDetailsTimeout;
-enum MENU_CONTACT_DETAILS_STATE {MENU_CONTACT_DETAILS_DISPLAY=0, MENU_CONTACT_DETAILS_SAVED};
+enum MENU_CONTACT_DETAILS_STATE {MENU_CONTACT_DETAILS_DISPLAY=0, MENU_CONTACT_DETAILS_SAVED, MENU_CONTACT_DETAILS_EXISTS};
 
 int menuContactDetails(int buttons, int keys, int events, bool isFirstRun)
 {
@@ -63,7 +63,11 @@ int menuContactDetails(int buttons, int keys, int events, bool isFirstRun)
 	}
 	else
 	{
-		handleEvent(buttons, keys, events);
+		if ((events!=0 && keys!=0) || menuContactDetailsTimeout > 0)
+		{
+			handleEvent(buttons, keys, events);
+
+		}
 	}
 	return 0;
 }
@@ -137,7 +141,11 @@ static void updateScreen(void)
 		UC1701_printCentered(16, "Contact saved",UC1701_FONT_8x16);
 		UC1701_printCentered(48, "OK             ",UC1701_FONT_8x16);
 		break;
-
+	case MENU_CONTACT_DETAILS_EXISTS:
+		UC1701_printCentered(16, "Duplicate",UC1701_FONT_8x16);
+		UC1701_printCentered(32, "Contact",UC1701_FONT_8x16);
+		UC1701_printCentered(48, "OK             ",UC1701_FONT_8x16);
+		break;
 	}
 	UC1701_render();
 	displayLightTrigger();
@@ -148,6 +156,7 @@ static void handleEvent(int buttons, int keys, int events)
 	dmrIdDataStruct_t foundRecord;
 	char buf[17];
 	int sLen = strlen(digits);
+	struct_codeplugContact_t doubleContact;
 
 	if (KEYCHECK_LONGDOWN(keys, KEY_RED))
 	{
@@ -226,29 +235,45 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 			else if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
 			{
-				if (tmpContact.callType == CONTACT_CALLTYPE_ALL) {
+				if (tmpContact.callType == CONTACT_CALLTYPE_ALL)
+				{
 					tmpContact.tgNumber = 16777215;
 				}
-				if (contactListContactIndex > 0 && contactListContactIndex <= 1024) {
-					tmpContact.tgNumber = atoi(digits);
-					if (tmpContact.name[0] == 0x00) {
-						if (tmpContact.callType == CONTACT_CALLTYPE_PC) {
-							if (dmrIDLookup(tmpContact.tgNumber,&foundRecord))
+
+				int index = codeplugContactGetDataByTGorPC(tmpContact.tgNumber, tmpContact.callType, &doubleContact);
+				if (index > 0 && index != contactListContactIndex)
+				{
+					menuContactDetailsTimeout = 2000;
+					menuContactDetailsState = MENU_CONTACT_DETAILS_EXISTS;
+				}
+				else
+				{
+					if (contactListContactIndex > 0 && contactListContactIndex <= 1024)
+					{
+						tmpContact.tgNumber = atoi(digits);
+						if (tmpContact.name[0] == 0x00)
+						{
+							if (tmpContact.callType == CONTACT_CALLTYPE_PC)
 							{
-								codeplugUtilConvertStringToBuf(foundRecord.text, tmpContact.name, 16);
-							} else {
-								sprintf(buf,"PC %d",tmpContact.tgNumber);
+								if (dmrIDLookup(tmpContact.tgNumber,&foundRecord))
+								{
+									codeplugUtilConvertStringToBuf(foundRecord.text, tmpContact.name, 16);
+								} else {
+									sprintf(buf,"PC %d",tmpContact.tgNumber);
+									codeplugUtilConvertStringToBuf(buf, tmpContact.name, 16);
+								}
+							}
+							else
+							{
+								sprintf(buf,"TG %d",tmpContact.tgNumber);
 								codeplugUtilConvertStringToBuf(buf, tmpContact.name, 16);
 							}
-						} else {
-							sprintf(buf,"TG %d",tmpContact.tgNumber);
-							codeplugUtilConvertStringToBuf(buf, tmpContact.name, 16);
 						}
+						codeplugContactSaveDataForIndex(contactListContactIndex, &tmpContact);
+						contactListContactIndex = 0;
+						menuContactDetailsTimeout = 2000;
+						menuContactDetailsState = MENU_CONTACT_DETAILS_SAVED;
 					}
-					codeplugContactSaveDataForIndex(contactListContactIndex, &tmpContact);
-					contactListContactIndex = 0;
-					menuContactDetailsTimeout = 2000;
-					menuContactDetailsState = MENU_CONTACT_DETAILS_SAVED;
 				}
 			}
 			else if (KEYCHECK_SHORTUP(keys,KEY_RED))
@@ -315,13 +340,22 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 		break;
 	case MENU_CONTACT_DETAILS_SAVED:
+        menuContactDetailsTimeout--;
 		if ((menuContactDetailsTimeout == 0) || (KEYCHECK_SHORTUP(keys, KEY_GREEN)))
 		{
 			contactListContactIndex = 0;
 			menuSystemPopPreviousMenu();
 			return;
 		}
+		updateScreen();
+
+		break;
+	case MENU_CONTACT_DETAILS_EXISTS:
         menuContactDetailsTimeout--;
+		if ((menuContactDetailsTimeout == 0) || (KEYCHECK_SHORTUP(keys, KEY_GREEN)))
+		{
+			menuContactDetailsState = MENU_CONTACT_DETAILS_DISPLAY;
+		}
 		updateScreen();
 
 		break;

@@ -53,7 +53,10 @@ int menuContactList(int buttons, int keys, int events, bool isFirstRun)
 	}
 	else
 	{
-		handleEvent(buttons, keys, events);
+		if ((events!=0 && keys!=0) || menuContactListTimeout > 0)
+		{
+			handleEvent(buttons, keys, events);
+		}
 	}
 	return 0;
 }
@@ -106,7 +109,7 @@ static void updateScreen(void)
 		codeplugUtilConvertBufToString(contact.name, nameBuf, 16);
 		menuDisplayTitle(nameBuf);
 		UC1701_printCentered(16, "Contact used",UC1701_FONT_8x16);
-		UC1701_printCentered(24, "in RX group",UC1701_FONT_8x16);
+		UC1701_printCentered(32, "in RX group",UC1701_FONT_8x16);
 		UC1701_printCentered(48, "OK             ",UC1701_FONT_8x16);
 		break;
 	}
@@ -219,11 +222,11 @@ static void handleEvent(int buttons, int keys, int events)
 
 	case MENU_CONTACT_LIST_DELETED:
 	case MENU_CONTACT_LIST_TG_IN_RXGROUP:
+		menuContactListTimeout--;
 		if ((menuContactListTimeout == 0) || (KEYCHECK_SHORTUP(keys, KEY_GREEN)))
 		{
 			menuContactListDisplayState = MENU_CONTACT_LIST_DISPLAY;
 		}
-		menuContactListTimeout--;
 		updateScreen();
 		break;
 	}
