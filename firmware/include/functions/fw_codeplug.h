@@ -129,8 +129,10 @@ bool codeplugChannelSaveDataForIndex(int index, struct_codeplugChannel_t *channe
 
 int codeplugContactsGetCount(int callType);
 int codeplugContactGetDataForNumber(int number, int callType, struct_codeplugContact_t *contact);
+int codeplugContactGetDataByTGorPC(int tgorpc, int callType, struct_codeplugContact_t *contact);
 int codeplugContactSaveDataForIndex(int index, struct_codeplugContact_t *contact);
 int codeplugContactGetFreeIndex(void);
+bool codeplugContactGetRXGroup(int index);
 
 
 #endif

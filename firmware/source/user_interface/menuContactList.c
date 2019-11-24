@@ -28,7 +28,7 @@ static int contactCallType;
 static int menuContactListDisplayState;
 static int menuContactListTimeout;
 
-enum MENU_CONTACT_LIST_STATE { MENU_CONTACT_LIST_DISPLAY=0, MENU_CONTACT_LIST_CONFIRM, MENU_CONTACT_LIST_DELETED };
+enum MENU_CONTACT_LIST_STATE { MENU_CONTACT_LIST_DISPLAY=0, MENU_CONTACT_LIST_CONFIRM, MENU_CONTACT_LIST_DELETED, MENU_CONTACT_LIST_TG_IN_RXGROUP };
 
 static const char *calltypeName[] = { "Group Call", "Private Call" };
 
@@ -91,11 +91,22 @@ static void updateScreen(void)
 		}
 		break;
 	case MENU_CONTACT_LIST_CONFIRM:
+		codeplugUtilConvertBufToString(contact.name, nameBuf, 16);
+		menuDisplayTitle(nameBuf);
 		UC1701_printCentered(16, "Delete contact?",UC1701_FONT_8x16);
 		UC1701_printCentered(48, "YES          NO",UC1701_FONT_8x16);
 		break;
 	case MENU_CONTACT_LIST_DELETED:
+		codeplugUtilConvertBufToString(contact.name, nameBuf, 16);
+		menuDisplayTitle(nameBuf);
 		UC1701_printCentered(16, "Contact deleted",UC1701_FONT_8x16);
+		UC1701_printCentered(48, "OK             ",UC1701_FONT_8x16);
+		break;
+	case MENU_CONTACT_LIST_TG_IN_RXGROUP:
+		codeplugUtilConvertBufToString(contact.name, nameBuf, 16);
+		menuDisplayTitle(nameBuf);
+		UC1701_printCentered(16, "Contact used",UC1701_FONT_8x16);
+		UC1701_printCentered(24, "in RX group",UC1701_FONT_8x16);
 		UC1701_printCentered(48, "OK             ",UC1701_FONT_8x16);
 		break;
 	}
@@ -167,10 +178,14 @@ static void handleEvent(int buttons, int keys, int events)
 					contactListContactIndex = codeplugContactGetDataForNumber(
 							gMenusCurrentItemIndex + 1, contactCallType,
 							&contact);
-					if (contactListContactIndex > 0
-							&& contact.callType == CONTACT_CALLTYPE_PC)
+					if (contactListContactIndex > 0)
 					{
-						menuContactListDisplayState = MENU_CONTACT_LIST_CONFIRM;
+						if (contact.callType == CONTACT_CALLTYPE_TG && codeplugContactGetRXGroup(contact.NOT_IN_CODEPLUGDATA_indexNumber)) {
+							menuContactListTimeout = 2000;
+							menuContactListDisplayState = MENU_CONTACT_LIST_TG_IN_RXGROUP;
+						} else {
+							menuContactListDisplayState = MENU_CONTACT_LIST_CONFIRM;
+						}
 						updateScreen();
 						return;
 					}
@@ -203,6 +218,7 @@ static void handleEvent(int buttons, int keys, int events)
 		break;
 
 	case MENU_CONTACT_LIST_DELETED:
+	case MENU_CONTACT_LIST_TG_IN_RXGROUP:
 		if ((menuContactListTimeout == 0) || (KEYCHECK_SHORTUP(keys, KEY_GREEN)))
 		{
 			menuContactListDisplayState = MENU_CONTACT_LIST_DISPLAY;

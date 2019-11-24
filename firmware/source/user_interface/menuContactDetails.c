@@ -34,6 +34,10 @@ static char digits[9];
 enum CONTACT_DETAILS_DISPLAY_LIST { /*CONTACT_DETAILS_NAME=0,*/ CONTACT_DETAILS_TG=0, CONTACT_DETAILS_CALLTYPE, CONTACT_DETAILS_TS,
 	NUM_CONTACT_DETAILS_ITEMS};// The last item in the list is used so that we automatically get a total number of items in the list
 
+static int menuContactDetailsState;
+static int menuContactDetailsTimeout;
+enum MENU_CONTACT_DETAILS_STATE {MENU_CONTACT_DETAILS_DISPLAY=0, MENU_CONTACT_DETAILS_SAVED};
+
 int menuContactDetails(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
@@ -52,16 +56,14 @@ int menuContactDetails(int buttons, int keys, int events, bool isFirstRun)
 		}
 
 		gMenusCurrentItemIndex=0;
+		menuContactDetailsState = MENU_CONTACT_DETAILS_DISPLAY;
 
 		fw_reset_keyboard();
 		updateScreen();
 	}
 	else
 	{
-		if (events!=0 && keys!=0)
-		{
-			handleEvent(buttons, keys, events);
-		}
+		handleEvent(buttons, keys, events);
 	}
 	return 0;
 }
@@ -81,54 +83,62 @@ static void updateScreen(void)
 	}
 	menuDisplayTitle(buf);
 
-	// Can only display 3 of the options at a time menu at -1, 0 and +1
-	for(int i = -1; i <= 1; i++)
-	{
-		mNum = menuGetMenuOffset(NUM_CONTACT_DETAILS_ITEMS, i);
-
-		switch (mNum)
+	switch (menuContactDetailsState) {
+	case MENU_CONTACT_DETAILS_DISPLAY:
+		// Can only display 3 of the options at a time menu at -1, 0 and +1
+		for(int i = -1; i <= 1; i++)
 		{
-//			case CONTACT_DETAILS_Name:
-//				strcpy(buf,"Name");
-//				break;
-		case CONTACT_DETAILS_TG:
-			switch (tmpContact.callType)
+			mNum = menuGetMenuOffset(NUM_CONTACT_DETAILS_ITEMS, i);
+
+			switch (mNum)
 			{
-			case CONTACT_CALLTYPE_TG:
-				sprintf(buf, "TG:%s", digits);
+	//			case CONTACT_DETAILS_Name:
+	//				strcpy(buf,"Name");
+	//				break;
+			case CONTACT_DETAILS_TG:
+				switch (tmpContact.callType)
+				{
+				case CONTACT_CALLTYPE_TG:
+					sprintf(buf, "TG:%s", digits);
+					break;
+				case CONTACT_CALLTYPE_PC: // Private
+					sprintf(buf, "PC:%s", digits);
+					break;
+				case CONTACT_CALLTYPE_ALL: // All Call
+					strcpy(buf, "All:16777215");
+					break;
+				}
 				break;
-			case CONTACT_CALLTYPE_PC: // Private
-				sprintf(buf, "PC:%s", digits);
+			case CONTACT_DETAILS_CALLTYPE:
+				strcpy(buf, "Type:");
+				strcat(buf, callTypeString[tmpContact.callType]);
 				break;
-			case CONTACT_CALLTYPE_ALL: // All Call
-				strcpy(buf, "All:16777215");
+			case CONTACT_DETAILS_TS:
+				switch (tmpContact.reserve1 & 0x3)
+				{
+				case 1:
+				case 3:
+					strcpy(buf, "Timeslot:none");
+					break;
+				case 0:
+					strcpy(buf, "Timeslot:1");
+					break;
+				case 2:
+					strcpy(buf, "Timeslot: 2");
+					break;
+				}
 				break;
 			}
-			break;
-		case CONTACT_DETAILS_CALLTYPE:
-			strcpy(buf, "Type:");
-			strcat(buf, callTypeString[tmpContact.callType]);
-			break;
-		case CONTACT_DETAILS_TS:
-			switch (tmpContact.reserve1 & 0x3)
-			{
-			case 1:
-			case 3:
-				strcpy(buf, "Timeslot:none");
-				break;
-			case 0:
-				strcpy(buf, "Timeslot:1");
-				break;
-			case 2:
-				strcpy(buf, "Timeslot: 2");
-				break;
-			}
-			break;
+
+			menuDisplayEntry(i, mNum, buf);
 		}
+		break;
+	case MENU_CONTACT_DETAILS_SAVED:
+		UC1701_printCentered(16, "Contact saved",UC1701_FONT_8x16);
+		UC1701_printCentered(48, "OK             ",UC1701_FONT_8x16);
+		break;
 
-		menuDisplayEntry(i, mNum, buf);
 	}
-
 	UC1701_render();
 	displayLightTrigger();
 }
@@ -139,165 +149,181 @@ static void handleEvent(int buttons, int keys, int events)
 	char buf[17];
 	int sLen = strlen(digits);
 
-	if (events & 0x01) {
-		if (KEYCHECK_PRESS(keys,KEY_DOWN))
-		{
-			MENU_INC(gMenusCurrentItemIndex, NUM_CONTACT_DETAILS_ITEMS);
-		}
-		else if (KEYCHECK_PRESS(keys,KEY_UP))
-		{
-			MENU_DEC(gMenusCurrentItemIndex, NUM_CONTACT_DETAILS_ITEMS);
-		}
-		else if (KEYCHECK_PRESS(keys,KEY_RIGHT))
-		{
-			switch(gMenusCurrentItemIndex)
+	if (KEYCHECK_LONGDOWN(keys, KEY_RED))
+	{
+		contactListContactIndex = 0;
+		menuSystemPopAllAndDisplayRootMenu();
+		return;
+	}
+	switch (menuContactDetailsState) {
+	case MENU_CONTACT_DETAILS_DISPLAY:
+		if (events & 0x01) {
+			if (KEYCHECK_PRESS(keys,KEY_DOWN))
 			{
-//			case CONTACT_DETAILS_NAME:
-//				break;
-			case CONTACT_DETAILS_TG:
-				break;
-			case CONTACT_DETAILS_CALLTYPE:
-				MENU_INC(tmpContact.callType,3);
-				break;
-			case CONTACT_DETAILS_TS:
-				switch (tmpContact.reserve1 & 0x3) {
-				case 1:
-				case 3:
-					tmpContact.reserve1 &= 0xfc;
-					break;
-				case 0:
-					tmpContact.reserve1 |= 0x02;
-					break;
-				case 2:
-					tmpContact.reserve1 |= 0x03;
-					break;
-				}
-				break;
+				MENU_INC(gMenusCurrentItemIndex, NUM_CONTACT_DETAILS_ITEMS);
 			}
-		}
-		else if (KEYCHECK_PRESS(keys,KEY_LEFT))
-		{
-			switch(gMenusCurrentItemIndex)
+			else if (KEYCHECK_PRESS(keys,KEY_UP))
 			{
-//			case CONTACT_DETAILS_NAME:
-//				break;
-			case CONTACT_DETAILS_TG:
-				if (sLen>0) {
-					digits[sLen-1] = 0x00;
-				}
-				break;
-			case CONTACT_DETAILS_CALLTYPE:
-				MENU_DEC(tmpContact.callType,3);
-				break;
-			case CONTACT_DETAILS_TS:
-				switch (tmpContact.reserve1 & 0x3) {
-				case 1:
-				case 3:
-					tmpContact.reserve1 &= 0xfc;
-					tmpContact.reserve1 |= 0x02;
-					break;
-				case 0:
-					tmpContact.reserve1 |= 0x03;
-					break;
-				case 2:
-					tmpContact.reserve1 &= 0xfc;
-					break;
-				}
-				break;
+				MENU_DEC(gMenusCurrentItemIndex, NUM_CONTACT_DETAILS_ITEMS);
 			}
-		}
-		else if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
-		{
-			if (tmpContact.callType == CONTACT_CALLTYPE_ALL) {
-				tmpContact.tgNumber = 16777215;
+			else if (KEYCHECK_PRESS(keys,KEY_RIGHT))
+			{
+				switch(gMenusCurrentItemIndex)
+				{
+	//			case CONTACT_DETAILS_NAME:
+	//				break;
+				case CONTACT_DETAILS_TG:
+					break;
+				case CONTACT_DETAILS_CALLTYPE:
+					MENU_INC(tmpContact.callType,3);
+					break;
+				case CONTACT_DETAILS_TS:
+					switch (tmpContact.reserve1 & 0x3) {
+					case 1:
+					case 3:
+						tmpContact.reserve1 &= 0xfc;
+						break;
+					case 0:
+						tmpContact.reserve1 |= 0x02;
+						break;
+					case 2:
+						tmpContact.reserve1 |= 0x03;
+						break;
+					}
+					break;
+				}
 			}
-			if (contactListContactIndex > 0 && contactListContactIndex <= 1024) {
-				tmpContact.tgNumber = atoi(digits);
-				if (tmpContact.name[0] == 0x00) {
-					if (tmpContact.callType == CONTACT_CALLTYPE_PC) {
-						if (dmrIDLookup(tmpContact.tgNumber,&foundRecord))
-						{
-							codeplugUtilConvertStringToBuf(foundRecord.text, tmpContact.name, 16);
+			else if (KEYCHECK_PRESS(keys,KEY_LEFT))
+			{
+				switch(gMenusCurrentItemIndex)
+				{
+	//			case CONTACT_DETAILS_NAME:
+	//				break;
+				case CONTACT_DETAILS_TG:
+					if (sLen>0) {
+						digits[sLen-1] = 0x00;
+					}
+					break;
+				case CONTACT_DETAILS_CALLTYPE:
+					MENU_DEC(tmpContact.callType,3);
+					break;
+				case CONTACT_DETAILS_TS:
+					switch (tmpContact.reserve1 & 0x3) {
+					case 1:
+					case 3:
+						tmpContact.reserve1 &= 0xfc;
+						tmpContact.reserve1 |= 0x02;
+						break;
+					case 0:
+						tmpContact.reserve1 |= 0x03;
+						break;
+					case 2:
+						tmpContact.reserve1 &= 0xfc;
+						break;
+					}
+					break;
+				}
+			}
+			else if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
+			{
+				if (tmpContact.callType == CONTACT_CALLTYPE_ALL) {
+					tmpContact.tgNumber = 16777215;
+				}
+				if (contactListContactIndex > 0 && contactListContactIndex <= 1024) {
+					tmpContact.tgNumber = atoi(digits);
+					if (tmpContact.name[0] == 0x00) {
+						if (tmpContact.callType == CONTACT_CALLTYPE_PC) {
+							if (dmrIDLookup(tmpContact.tgNumber,&foundRecord))
+							{
+								codeplugUtilConvertStringToBuf(foundRecord.text, tmpContact.name, 16);
+							} else {
+								sprintf(buf,"PC %d",tmpContact.tgNumber);
+								codeplugUtilConvertStringToBuf(buf, tmpContact.name, 16);
+							}
 						} else {
-							sprintf(buf,"PC %d",tmpContact.tgNumber);
+							sprintf(buf,"TG %d",tmpContact.tgNumber);
 							codeplugUtilConvertStringToBuf(buf, tmpContact.name, 16);
 						}
-					} else {
-						sprintf(buf,"TG %d",tmpContact.tgNumber);
-						codeplugUtilConvertStringToBuf(buf, tmpContact.name, 16);
+					}
+					codeplugContactSaveDataForIndex(contactListContactIndex, &tmpContact);
+					contactListContactIndex = 0;
+					menuContactDetailsTimeout = 2000;
+					menuContactDetailsState = MENU_CONTACT_DETAILS_SAVED;
+				}
+			}
+			else if (KEYCHECK_SHORTUP(keys,KEY_RED))
+			{
+				contactListContactIndex = 0;
+				menuSystemPopPreviousMenu();
+				return;
+			}
+			else if (gMenusCurrentItemIndex == CONTACT_DETAILS_TG) {
+				// Add a digit
+				if (sLen < 7)
+				{
+					char c[2] = {0, 0};
+
+					if (KEYCHECK_PRESS(keys,KEY_0))
+					{
+						c[0]='0';
+					}
+					else if (KEYCHECK_PRESS(keys,KEY_1))
+					{
+						c[0]='1';
+					}
+					else if (KEYCHECK_PRESS(keys,KEY_2))
+					{
+						c[0]='2';
+					}
+					else if (KEYCHECK_PRESS(keys,KEY_3))
+					{
+						c[0]='3';
+					}
+					else if (KEYCHECK_PRESS(keys,KEY_4))
+					{
+						c[0]='4';
+					}
+					else if (KEYCHECK_PRESS(keys,KEY_5))
+					{
+						c[0]='5';
+					}
+					else if (KEYCHECK_PRESS(keys,KEY_6))
+					{
+						c[0]='6';
+					}
+					else if (KEYCHECK_PRESS(keys,KEY_7))
+					{
+						c[0]='7';
+					}
+					else if (KEYCHECK_PRESS(keys,KEY_8))
+					{
+						c[0]='8';
+					}
+					else if (KEYCHECK_PRESS(keys,KEY_9))
+					{
+						c[0]='9';
+					}
+
+					if (c[0]!=0)
+					{
+						strcat(digits,c);
 					}
 				}
-				codeplugContactSaveDataForIndex(contactListContactIndex, &tmpContact);
-				contactListContactIndex = 0;
-				menuSystemPushNewMenu(MENU_SAVED_SCREEN);
 			}
-			return;
+			updateScreen();
+
 		}
-		else if (KEYCHECK_SHORTUP(keys,KEY_RED))
+		break;
+	case MENU_CONTACT_DETAILS_SAVED:
+		if ((menuContactDetailsTimeout == 0) || (KEYCHECK_SHORTUP(keys, KEY_GREEN)))
 		{
 			contactListContactIndex = 0;
 			menuSystemPopPreviousMenu();
 			return;
 		}
-		else if (KEYCHECK_LONGDOWN(keys, KEY_RED))
-		{
-			contactListContactIndex = 0;
-			menuSystemPopAllAndDisplayRootMenu();
-			return;
-		}
-		else if (gMenusCurrentItemIndex == CONTACT_DETAILS_TG) {
-			// Add a digit
-			if (sLen < 7)
-			{
-				char c[2] = {0, 0};
+        menuContactDetailsTimeout--;
+		updateScreen();
 
-				if (KEYCHECK_PRESS(keys,KEY_0))
-				{
-					c[0]='0';
-				}
-				else if (KEYCHECK_PRESS(keys,KEY_1))
-				{
-					c[0]='1';
-				}
-				else if (KEYCHECK_PRESS(keys,KEY_2))
-				{
-					c[0]='2';
-				}
-				else if (KEYCHECK_PRESS(keys,KEY_3))
-				{
-					c[0]='3';
-				}
-				else if (KEYCHECK_PRESS(keys,KEY_4))
-				{
-					c[0]='4';
-				}
-				else if (KEYCHECK_PRESS(keys,KEY_5))
-				{
-					c[0]='5';
-				}
-				else if (KEYCHECK_PRESS(keys,KEY_6))
-				{
-					c[0]='6';
-				}
-				else if (KEYCHECK_PRESS(keys,KEY_7))
-				{
-					c[0]='7';
-				}
-				else if (KEYCHECK_PRESS(keys,KEY_8))
-				{
-					c[0]='8';
-				}
-				else if (KEYCHECK_PRESS(keys,KEY_9))
-				{
-					c[0]='9';
-				}
-
-				if (c[0]!=0)
-				{
-					strcat(digits,c);
-				}
-			}
-		}
+		break;
 	}
-	updateScreen();
 }

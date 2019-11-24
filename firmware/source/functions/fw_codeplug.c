@@ -428,6 +428,39 @@ int codeplugContactGetDataForNumber(int number, int callType, struct_codeplugCon
 	return pos;
 }
 
+int codeplugContactGetDataByTGorPC(int tgorpc, int callType, struct_codeplugContact_t *contact)
+{
+	int pos = 0;
+
+	tgorpc = byteSwap32(int2bcd(tgorpc));
+	for (int i = 1; i <= 1024; i++)
+	{
+		codeplugContactGetDataForIndex(i, contact);
+		if (contact->tgNumber == tgorpc && contact->callType == callType)
+		{
+			pos = i;
+			break;
+		}
+	}
+	return pos;
+}
+
+bool codeplugContactGetRXGroup(int index)
+{
+	struct_codeplugRxGroup_t rxGroupBuf;
+	int i;
+
+	for (i = 1; i < 76; i++) {
+		codeplugRxGroupGetDataForIndex(i, &rxGroupBuf);
+		for (int j = 0; j<32; j++) {
+			if (rxGroupBuf.contacts[j] == index) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 int codeplugContactGetFreeIndex(void)
 {
 	int i;
