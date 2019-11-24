@@ -461,7 +461,7 @@ bool codeplugContactGetDataForIndex(int index, struct_codeplugContact_t *contact
 		// If an invalid contact number has been requested, return a TG 9 contact
 		contact->tgNumber = 9;
 		contact->reserve1=0xff;
-		codeplugUtilConvertStringToBuf("TG 9",contact,16);
+		codeplugUtilConvertStringToBuf("TG 9",contact->name,16);
 		return false;
 	}
 }
