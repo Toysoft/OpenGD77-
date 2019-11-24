@@ -448,7 +448,7 @@ int codeplugContactGetFreeIndex(void)
 
 bool codeplugContactGetDataForIndex(int index, struct_codeplugContact_t *contact)
 {
-	if (index>1 && index<=1024)
+	if (index>0 && index<=1024)
 	{
 		index--;
 		SPI_Flash_read(CODEPLUG_ADDR_CONTACTS + index* CODEPLUG_CONTACT_DATA_LEN,(uint8_t *)contact, CODEPLUG_CONTACT_DATA_LEN);
