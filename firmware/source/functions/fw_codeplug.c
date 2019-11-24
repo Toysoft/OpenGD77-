@@ -260,6 +260,12 @@ void codeplugChannelGetDataForIndex(int index, struct_codeplugChannel_t *channel
 	{
 		channelBuf->sql = 10;
 	}
+	// Sanity check the digital contact and set it to 1 is its not been assigned, even for FM channels, as the user could switch to DMR on this channel
+	if (channelBuf->contact == 0)
+	{
+		channelBuf->contact = 1;
+	}
+
 }
 
 

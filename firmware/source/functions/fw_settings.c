@@ -63,8 +63,8 @@ bool settingsLoadSettings(void)
 
 	codeplugGetVFO_ChannelData(&settingsVFOChannel[0],0);
 	codeplugGetVFO_ChannelData(&settingsVFOChannel[1],1);
-	//settingsInitVFOChannel(0);// clean up any problems with VFO data
-	//settingsInitVFOChannel(1);
+	settingsInitVFOChannel(0);// clean up any problems with VFO data
+	settingsInitVFOChannel(1);
 
 	trxDMRID = codeplugGetUserDMRID();
 
@@ -94,6 +94,12 @@ void settingsInitVFOChannel(int vfoNumber)
 		settingsVFOChannel[vfoNumber].rxGroupList=1;
 	}
 
+	if (settingsVFOChannel[vfoNumber].contact == 0)
+	{
+		settingsVFOChannel[vfoNumber].contact=1;
+	}
+
+/*
 	if (settingsVFOChannel[vfoNumber].chMode == RADIO_MODE_ANALOG)
 	{
 		// In Analog mode, some crucial DMR settings will be invalid.
@@ -103,7 +109,7 @@ void settingsInitVFOChannel(int vfoNumber)
 		nonVolatileSettings.overrideTG = 9;// Set the override TG to local TG 9
 		trxTalkGroupOrPcId = nonVolatileSettings.overrideTG;
 	}
-/*
+
 	if (!trxCheckFrequencyInAmateurBand(settingsVFOChannel[vfoNumber].rxFreq))
 	{
 		settingsVFOChannel[vfoNumber].rxFreq = BAND_UHF_MIN;
