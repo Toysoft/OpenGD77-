@@ -98,6 +98,7 @@ enum MENU_SCREENS { MENU_SPLASH_SCREEN=0,
 					MENU_CONTACT_LIST,
 					MENU_CONTACT_DETAILS,
 					MENU_SAVED_SCREEN,
+					MENU_DELETED_SCREEN,
 };
 
 extern int gMenusCurrentItemIndex;

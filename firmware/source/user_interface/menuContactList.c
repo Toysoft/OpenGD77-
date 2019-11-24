@@ -121,6 +121,18 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 		else if (KEYCHECK_SHORTUP(keys, KEY_RED))
 		{
+			if ((buttons & BUTTON_SK2)!= 0) {
+				contactListContactIndex = codeplugContactGetDataForNumber(gMenusCurrentItemIndex+1, contactCallType, &contact);
+				if (contactListContactIndex > 0 && contact.callType == CONTACT_CALLTYPE_PC) {
+					memset(contact.name, 0xff, 16);
+					contact.tgNumber = 0;
+					contact.callType =0;
+					codeplugContactSaveDataForIndex(contactListContactIndex, &contact);
+					contactListContactIndex = 0;
+					menuSystemPushNewMenu(MENU_DELETED_SCREEN);
+					return;
+				}
+			}
 			contactListContactIndex = 0;
 			menuSystemPopPreviousMenu();
 			return;

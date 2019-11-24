@@ -135,6 +135,7 @@ static void updateScreen(void)
 
 static void handleEvent(int buttons, int keys, int events)
 {
+	dmrIdDataStruct_t foundRecord;
 	char buf[17];
 	int sLen = strlen(digits);
 
@@ -214,11 +215,17 @@ static void handleEvent(int buttons, int keys, int events)
 				tmpContact.tgNumber = atoi(digits);
 				if (tmpContact.name[0] == 0x00) {
 					if (tmpContact.callType == CONTACT_CALLTYPE_PC) {
-						sprintf(buf,"PC %d",tmpContact.tgNumber);
+						if (dmrIDLookup(tmpContact.tgNumber,&foundRecord))
+						{
+							codeplugUtilConvertStringToBuf(foundRecord.text, tmpContact.name, 16);
+						} else {
+							sprintf(buf,"PC %d",tmpContact.tgNumber);
+							codeplugUtilConvertStringToBuf(buf, tmpContact.name, 16);
+						}
 					} else {
 						sprintf(buf,"TG %d",tmpContact.tgNumber);
+						codeplugUtilConvertStringToBuf(buf, tmpContact.name, 16);
 					}
-					codeplugUtilConvertStringToBuf(buf, tmpContact.name, 16);
 				}
 				codeplugContactSaveDataForIndex(contactListContactIndex, &tmpContact);
 				contactListContactIndex = 0;
