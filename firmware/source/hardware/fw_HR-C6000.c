@@ -100,6 +100,8 @@ static volatile int rxcnt;// used for Repeater wakeup sequence
 volatile int lastTimeCode=0;
 static volatile uint8_t previousLCBuf[12];
 volatile bool updateLastHeard=false;
+volatile int dmrMonitorCapturedTS=-1;
+volatile int dmrMonitorCapturedTSTimeout = 5000;
 
 static bool callAcceptFilter(void);
 static void setupPcOrTGHeader(void);
@@ -300,7 +302,7 @@ void setMicGainDMR(uint8_t gain)
 }
 
 
-int filterFoundTS=-1;
+
 static bool checkTimeSlotFilter(void)
 {
 	if (trxIsTransmitting)
@@ -315,13 +317,16 @@ static bool checkTimeSlotFilter(void)
 		}
 		else
 		{
-			return true;
-			/*
-			if (filterFoundTS==-1 || (filterFoundTS == timeCode))
+			if (dmrMonitorCapturedTS==-1 || (dmrMonitorCapturedTS == timeCode))
 			{
-				filterFoundTS = timeCode;
-
-			}*/
+				dmrMonitorCapturedTS = timeCode;
+				dmrMonitorCapturedTSTimeout = 5000;
+				return true;
+			}
+			else
+			{
+				return false;
+			}
 		}
 	}
 }
@@ -714,9 +719,9 @@ inline static void HRC6000SysInterruptHandler(void)
 			memcmp((uint8_t *)previousLCBuf,LCBuf,12)!=0)
 		{
 			read_SPI_page_reg_byte_SPI0(0x04, 0x52, &reg0x52);  //Read Received CC and CACH Register to get the timecode (TS number)
-			int tc = ((reg0x52 & 0x04) >> 2);// extract the timecode from the CACH register
+			timeCode = ((reg0x52 & 0x04) >> 2);// extract the timecode from the CACH register
 
-			if (tc == trxGetDMRTimeSlot() || trxDMRMode == DMR_MODE_ACTIVE) // only do this for the selected timeslot, or when in Active mode
+			if (checkTimeSlotFilter() || trxDMRMode == DMR_MODE_ACTIVE) // only do this for the selected timeslot, or when in Active mode
 			{
 				if (DMR_frame_buffer[0]==TG_CALL_FLAG || DMR_frame_buffer[0]==PC_CALL_FLAG)
 				{
@@ -1354,6 +1359,8 @@ void tick_HR_C6000(void)
 
 	if (trxIsTransmitting)
 	{
+		dmrMonitorCapturedTS=-1;// Reset the TS capture
+
 		if (isWaking == WAKING_MODE_WAITING)
 		{
 			if (repeaterWakeupResponseTimeout > 0)
@@ -1454,7 +1461,14 @@ void tick_HR_C6000(void)
 		}
 	}
 
-
+	if (dmrMonitorCapturedTSTimeout > 0)
+	{
+		dmrMonitorCapturedTSTimeout--;
+		if (dmrMonitorCapturedTSTimeout==0)
+		{
+			dmrMonitorCapturedTS=-1;// Reset the TS capture
+		}
+	}
 }
 
 // RC. I had to use accessor functions for the isWaking flag
