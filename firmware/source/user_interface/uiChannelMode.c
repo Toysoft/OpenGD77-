@@ -155,7 +155,7 @@ static void loadChannelData(bool useChannelDataInMemory)
 
 		codeplugRxGroupGetDataForIndex(channelScreenChannelData.rxGroupList,&rxGroupData);
 		// Check if this channel has an Rx Group
-		if (rxGroupData.name[0]!=0)
+		if (rxGroupData.name[0]!=0 && nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE] < rxGroupData.NOT_IN_MEMORY_numTGsInGroup)
 		{
 			codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE]],&contactData);
 		}
@@ -425,9 +425,13 @@ static void handleEvent(int buttons, int keys, int events)
 				}
 				nonVolatileSettings.tsManualOverride &= 0xF0; // remove TS override for channel
 
-				if (rxGroupData.name[0]!=0)
+				if (rxGroupData.name[0]!=0 && nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE] < rxGroupData.NOT_IN_MEMORY_numTGsInGroup)
 				{
 					codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE]],&contactData);
+				}
+				else
+				{
+					codeplugContactGetDataForIndex(channelScreenChannelData.contact,&contactData);
 				}
 
 				trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
@@ -487,10 +491,15 @@ static void handleEvent(int buttons, int keys, int events)
 					}
 				}
 				nonVolatileSettings.tsManualOverride &= 0xF0; // remove TS override from channel
-				if (rxGroupData.name[0]!=0)
+				if (rxGroupData.name[0]!=0 && nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE] < rxGroupData.NOT_IN_MEMORY_numTGsInGroup)
 				{
 					codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE]],&contactData);
 				}
+				else
+				{
+					codeplugContactGetDataForIndex(channelScreenChannelData.contact,&contactData);
+				}
+
 				trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
 
 				nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
