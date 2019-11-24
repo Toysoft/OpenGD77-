@@ -48,7 +48,6 @@ int menuCPS(int buttons, int keys, int events, bool isFirstRun);
 int menuLockScreen(int buttons, int keys, int events, bool isFirstRun);
 int menuContactList(int buttons, int keys, int events, bool isFirstRun);
 int menuContactDetails(int buttons, int keys, int events, bool isFirstRun);
-int menuInfoMsgScreen(int buttons, int keys, int events, bool isFirstRun);
 
 /*
  * ---------------------- IMPORTANT ----------------------------
@@ -83,8 +82,6 @@ const menuItemNew_t * menusData[] = { 	NULL,// splash
 										NULL,// Lock screen
 										NULL,// Contact List
 										NULL,// Contact Details
-										NULL,// Saved
-										NULL,// Deleted
 								};
 
 const MenuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
@@ -111,8 +108,6 @@ const MenuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
                                                 menuLockScreen,
 												menuContactList,
 												menuContactDetails,
-												menuInfoMsgScreen,
-												menuInfoMsgScreen,
 };
 
 void menuSystemPushNewMenu(int menuNumber)
