@@ -23,7 +23,7 @@ static void handleEvent(int buttons, int keys, int events);
 
 static const int TIMEOUT_MS = 2000;
 
-int menuSavedScreen(int buttons, int keys, int events, bool isFirstRun)
+int menuInfoMsgScreen(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -41,7 +41,14 @@ static void updateScreen(void)
 {
 	UC1701_clearBuf();
 	UC1701_drawRoundRect(4, 4, 120, 56, 5, true);
-	UC1701_printCentered(18, "Saved",UC1701_FONT_16x32);
+	switch (menuSystemGetCurrentMenuNumber()) {
+	case MENU_SAVED_SCREEN:
+		UC1701_printCentered(18, "Saved",UC1701_FONT_16x32);
+		break;
+	case MENU_DELETED_SCREEN:
+		UC1701_printCentered(18, "Deleted",UC1701_FONT_16x32);
+		break;
+	}
 	UC1701_render();
 	displayLightTrigger();
 }
