@@ -317,7 +317,7 @@ static void checkAndFixIndexInRxGroup(void)
 static void loadContact()
 {
 	// Check if this channel has an Rx Group
-	if (rxGroupData.name[0]!=0)
+	if (rxGroupData.name[0]!=0 && nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber]<=rxGroupData.NOT_IN_MEMORY_numTGsInGroup)
 	{
 		codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber]],&contactData);
 	}
@@ -500,7 +500,7 @@ static void handleEvent(int buttons, int keys, int events)
 					nonVolatileSettings.tsManualOverride &= 0x0F; // remove TS override for VFO
 
 					// Check if this channel has an Rx Group
-					if (rxGroupData.name[0]!=0)
+					if (rxGroupData.name[0]!=0 && nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber]<=rxGroupData.NOT_IN_MEMORY_numTGsInGroup)
 					{
 						codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber]],&contactData);
 					}
@@ -567,7 +567,7 @@ static void handleEvent(int buttons, int keys, int events)
 					nonVolatileSettings.tsManualOverride &= 0x0F; // remove TS override for VFO
 
 					// Check if this channel has an Rx Group
-					if (rxGroupData.name[0]!=0)
+					if (rxGroupData.name[0]!=0 && nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber]<=rxGroupData.NOT_IN_MEMORY_numTGsInGroup)
 					{
 						codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber]],&contactData);
 					}
