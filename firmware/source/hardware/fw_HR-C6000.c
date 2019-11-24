@@ -44,6 +44,8 @@ const uint8_t PC_CALL_FLAG = 0x03;
 const uint8_t SILENCE_AUDIO[27] = {	0xB9U, 0xE8U, 0x81U, 0x52U, 0x61U, 0x73U, 0x00U, 0x2AU, 0x6BU, 0xB9U, 0xE8U, 0x81U, 0x52U,
 									0x61U, 0x73U, 0x00U, 0x2AU, 0x6BU, 0xB9U, 0xE8U, 0x81U, 0x52U, 0x61U, 0x73U, 0x00U, 0x2AU, 0x6BU };
 
+
+
 // GD-77 FW V3.1.1 data from 0x76010 / length 0x06
 static const uint8_t spi_init_values_1[] = { 0xd5, 0xd7, 0xf7, 0x7f, 0xd7, 0x57 };
 // GD-77 FW V3.1.1 data from 0x75F70 / length 0x20
@@ -297,51 +299,35 @@ void setMicGainDMR(uint8_t gain)
 	write_SPI_page_reg_byte_SPI0(0x04, 0xE4, 0x40 + gain);  //CODEC   LineOut Gain 2dB, Mic Stage 1 Gain 0dB, Mic Stage 2 Gain default is 11 =  33dB
 }
 
-typedef enum {DMR_FILTER_NONE=0,DMR_FILTER_CC, DMR_FILTER_CC_TS, DMR_FILTER_CC_TS_TG} dmrFilter_t;
-dmrFilter_t dmrFilterLevel = DMR_FILTER_CC_TS;
-/*
-bool checkDMRFilter(dmrFilter_t filterType)
-{
-	bool result;
-	switch (filterType)
-	{
-		case DMR_FILTER_NONE:
-			result = true;
-			break;
-		case DMR_FILTER_CC:
-			result = 	(rxColorCode == trxGetDMRColourCode());
-			break;
-		case DMR_FILTER_CC_TS:
-			result = 	(timeCode == trxGetDMRTimeSlot()) &&
-						(rxColorCode == trxGetDMRColourCode());
-			break;
-		case DMR_FILTER_CC_TS_TG:
-			result = 	(timeCode == trxGetDMRTimeSlot()) &&
-						(rxColorCode == trxGetDMRColourCode() &&
-								);
-			break;
-		default:
-			result = true;
-			break;
-	}
 
-	return result;
-}
-*/
+int filterFoundTS=-1;
 static bool checkTimeSlotFilter(void)
 {
-	if (dmrFilterLevel >= DMR_FILTER_CC_TS)
+	if (trxIsTransmitting)
 	{
 		return (timeCode == trxGetDMRTimeSlot());
 	}
 	else
 	{
-		return true;
+		if (settingsDmrFilterLevel >= DMR_FILTER_CC_TS)
+		{
+			return (timeCode == trxGetDMRTimeSlot());
+		}
+		else
+		{
+			return true;
+			/*
+			if (filterFoundTS==-1 || (filterFoundTS == timeCode))
+			{
+				filterFoundTS = timeCode;
+
+			}*/
+		}
 	}
 }
 bool checkColourCodeFilter(void)
 {
-	if (dmrFilterLevel >= DMR_FILTER_CC)
+	if (settingsDmrFilterLevel >= DMR_FILTER_CC)
 	{
 		return (rxColorCode == trxGetDMRColourCode());
 	}
@@ -352,7 +338,7 @@ bool checkColourCodeFilter(void)
 }
 bool checkTalkGroupFilter(void)
 {
-	if (dmrFilterLevel >= DMR_FILTER_CC_TS_TG)
+	if (settingsDmrFilterLevel >= DMR_FILTER_CC_TS_TG)
 	{
 		return true;// To Do. Actually filter on TG
 	}

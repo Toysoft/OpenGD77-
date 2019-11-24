@@ -42,6 +42,7 @@ int settingsUsbMode = USB_MODE_CPS;
 int settingsCurrentChannelNumber=0;
 bool settingsPrivateCallMuteMode = false;
 bool enableHotspot = false;
+dmrFilter_t settingsDmrFilterLevel = DMR_FILTER_CC;//DMR_FILTER_CC_TS;
 
 bool settingsSaveSettings(bool includeVFOs)
 {
