@@ -156,7 +156,6 @@ static void handleEvent(int buttons, int keys, int events)
 	dmrIdDataStruct_t foundRecord;
 	char buf[17];
 	int sLen = strlen(digits);
-	struct_codeplugContact_t doubleContact;
 
 	if (KEYCHECK_LONGDOWN(keys, KEY_RED))
 	{
@@ -239,9 +238,14 @@ static void handleEvent(int buttons, int keys, int events)
 				{
 					tmpContact.tgNumber = 16777215;
 				}
+				else
+				{
+					tmpContact.tgNumber = atoi(digits);
 
-				int index = codeplugContactGetDataByTGorPC(tmpContact.tgNumber, tmpContact.callType, &doubleContact);
-				if (index > 0 && index != contactListContactIndex)
+				}
+
+				int index = codeplugContactIndexByTGorPC(tmpContact.tgNumber, tmpContact.callType);
+				if (index > 0 && index != tmpContact.NOT_IN_CODEPLUGDATA_indexNumber)
 				{
 					menuContactDetailsTimeout = 2000;
 					menuContactDetailsState = MENU_CONTACT_DETAILS_EXISTS;
@@ -250,7 +254,6 @@ static void handleEvent(int buttons, int keys, int events)
 				{
 					if (contactListContactIndex > 0 && contactListContactIndex <= 1024)
 					{
-						tmpContact.tgNumber = atoi(digits);
 						if (tmpContact.name[0] == 0x00)
 						{
 							if (tmpContact.callType == CONTACT_CALLTYPE_PC)
