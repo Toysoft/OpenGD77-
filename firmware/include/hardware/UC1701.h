@@ -45,6 +45,8 @@ typedef enum
 	UC1701_TEXT_ALIGN_RIGHT
 } UC1701_Text_Align_t;
 
+extern uint8_t screenBuf[];
+
 void UC1701_begin(bool isInverted);
 void UC1701_clearBuf(void);
 void UC1701_render(void);

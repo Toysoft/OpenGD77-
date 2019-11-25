@@ -58,6 +58,8 @@ void tick_com_request(void)
 	}
 }
 
+enum CPS_ACCESS_AREA { CPS_ACCESS_FLASH = 1,CPS_ACCESS_EEPROM = 2, CPS_ACCESS_MCU_ROM=5,CPS_ACCESS_DISPLAY_BUFFER=6};
+
 static void handleCPSRequest(void)
 {
 	//Handle read
@@ -71,17 +73,26 @@ static void handleCPSRequest(void)
 		}
 
 		bool result=false;
-		if (com_requestbuffer[1]==1)
+		switch(com_requestbuffer[1])
 		{
-			taskEXIT_CRITICAL();
-			result = SPI_Flash_read(address, &usbComSendBuf[3], length);
-			taskENTER_CRITICAL();
-		}
-		else if (com_requestbuffer[1]==2)
-		{
-			taskEXIT_CRITICAL();
-			result = EEPROM_Read(address, &usbComSendBuf[3], length);
-			taskENTER_CRITICAL();
+			case CPS_ACCESS_FLASH:
+				taskEXIT_CRITICAL();
+				result = SPI_Flash_read(address, &usbComSendBuf[3], length);
+				taskENTER_CRITICAL();
+				break;
+			case CPS_ACCESS_EEPROM:
+				taskEXIT_CRITICAL();
+				result = EEPROM_Read(address, &usbComSendBuf[3], length);
+				taskENTER_CRITICAL();
+				break;
+			case CPS_ACCESS_MCU_ROM:
+				memcpy(&usbComSendBuf[3],(uint8_t *)address,length);
+				result = true;
+				break;
+			case CPS_ACCESS_DISPLAY_BUFFER:
+				memcpy(&usbComSendBuf[3],&screenBuf[address],length);
+				result = true;
+				break;
 		}
 
 		if (result)
