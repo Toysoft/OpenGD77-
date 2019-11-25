@@ -303,7 +303,7 @@ void setMicGainDMR(uint8_t gain)
 
 
 
-static bool checkTimeSlotFilter(void)
+static inline bool checkTimeSlotFilter(void)
 {
 	if (trxIsTransmitting)
 	{
@@ -330,7 +330,7 @@ static bool checkTimeSlotFilter(void)
 		}
 	}
 }
-bool checkColourCodeFilter(void)
+static inline bool checkColourCodeFilter(void)
 {
 	if (settingsDmrFilterLevel >= DMR_FILTER_CC)
 	{
@@ -551,7 +551,7 @@ inline static void HRC6000SysReceivedDataInt(void)
 
 	//SEGGER_RTT_printf(0, "\t\tRXDT\taf:%d\tsc:%02x\tcrc:%02x\trpi:%02x\tcc:%d\ttc:%d\t\n",(rxDataType&0x07),rxSyncClass,rxCRCStatus,rpi,rxColorCode,timeCode);
 
-	if ((slot_state == DMR_STATE_RX_1 || slot_state == DMR_STATE_RX_2) && (rxColorCode != trxGetDMRColourCode() || rpi!=0 || rxCRCStatus != true))
+	if ((slot_state == DMR_STATE_RX_1 || slot_state == DMR_STATE_RX_2) && (!checkColourCodeFilter() || rpi!=0 || rxCRCStatus != true))
 	{
 		//SEGGER_RTT_printf(0, "INVALID DATA");
 		// Something is not correct
