@@ -36,8 +36,8 @@ int menuCPS(int buttons, int keys, int events, bool isFirstRun)
 		radioBandWidth=trxGetBandwidthIs25kHz();
 		trxSetModeAndBandwidth(RADIO_MODE_NONE, radioBandWidth);
 		// Just clear the display and turn on the
-		UC1701_clearBuf();
-		UC1701_render();
+//		UC1701_clearBuf();
+//		UC1701_render();
 		nextPIT = PITCounter + PIT_COUNTS_PER_UPDATE;
 	}
 	else
