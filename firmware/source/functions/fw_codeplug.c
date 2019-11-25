@@ -22,6 +22,7 @@
 #include <hardware/fw_SPI_Flash.h>
 #include "fw_codeplug.h"
 #include "fw_trx.h"
+#include "fw_usb_com.h"
 
 const int CODEPLUG_ADDR_EX_ZONE_BASIC = 0x8000;
 const int CODEPLUG_ADDR_EX_ZONE_INUSE_PACKED_DATA =  0x8010;
@@ -432,6 +433,37 @@ int codeplugContactGetDataForNumber(int number, int callType, struct_codeplugCon
 		}
 	}
 	return pos;
+}
+
+int codeplugContactIndexByTGorPC(int tgorpc, int callType)
+{
+	struct_codeplugContact_t contact;
+
+	for (int i = 1; i <= 1024; i++)
+	{
+		codeplugContactGetDataForIndex(i, &contact);
+		if (contact.name[0] != 0xff && contact.tgNumber == tgorpc && contact.callType == callType)
+		{
+			return i;
+		}
+	}
+	return 0;
+}
+
+bool codeplugContactGetRXGroup(int index)
+{
+	struct_codeplugRxGroup_t rxGroupBuf;
+	int i;
+
+	for (i = 1; i < 76; i++) {
+		codeplugRxGroupGetDataForIndex(i, &rxGroupBuf);
+		for (int j = 0; j<32; j++) {
+			if (rxGroupBuf.contacts[j] == index) {
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 int codeplugContactGetFreeIndex(void)

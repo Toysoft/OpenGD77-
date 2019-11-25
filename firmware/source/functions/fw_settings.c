@@ -144,8 +144,8 @@ void settingsRestoreDefaultSettings(void)
 	nonVolatileSettings.beepVolumeDivider = 1;// no reduction in volume
 	nonVolatileSettings.micGainDMR = 11;// Normal value used by the official firmware
 	nonVolatileSettings.tsManualOverride = 0; // No manual TS override using the Star key
-	nonVolatileSettings.keypadTimerLong = 3;
-	nonVolatileSettings.keypadTimerRepeat = 5;
+	nonVolatileSettings.keypadTimerLong = 5;
+	nonVolatileSettings.keypadTimerRepeat = 3;
 	nonVolatileSettings.currentVFONumber = 0;
 
 	currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];// Set the current channel data to point to the VFO data since the default screen will be the VFO
