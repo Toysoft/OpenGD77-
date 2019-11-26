@@ -139,12 +139,12 @@ static void updateScreen(void)
 		break;
 	case MENU_CONTACT_DETAILS_SAVED:
 		UC1701_printCentered(16, "Contact saved",UC1701_FONT_8x16);
-		UC1701_printCentered(48, "OK             ",UC1701_FONT_8x16);
+		UC1701_drawChoice(UC1701_CHOICE_OK, false);
 		break;
 	case MENU_CONTACT_DETAILS_EXISTS:
 		UC1701_printCentered(16, "Duplicate",UC1701_FONT_8x16);
 		UC1701_printCentered(32, "Contact",UC1701_FONT_8x16);
-		UC1701_printCentered(48, "OK             ",UC1701_FONT_8x16);
+		UC1701_drawChoice(UC1701_CHOICE_OK, false);
 		break;
 	}
 	UC1701_render();
