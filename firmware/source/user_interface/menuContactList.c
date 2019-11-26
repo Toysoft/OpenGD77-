@@ -103,14 +103,14 @@ static void updateScreen(void)
 		codeplugUtilConvertBufToString(contact.name, nameBuf, 16);
 		menuDisplayTitle(nameBuf);
 		UC1701_printCentered(16, "Contact deleted",UC1701_FONT_8x16);
-		UC1701_printCentered(48, "OK             ",UC1701_FONT_8x16);
+		UC1701_drawChoice(UC1701_CHOICE_OK, false);
 		break;
 	case MENU_CONTACT_LIST_TG_IN_RXGROUP:
 		codeplugUtilConvertBufToString(contact.name, nameBuf, 16);
 		menuDisplayTitle(nameBuf);
 		UC1701_printCentered(16, "Contact used",UC1701_FONT_8x16);
 		UC1701_printCentered(32, "in RX group",UC1701_FONT_8x16);
-		UC1701_printCentered(48, "OK             ",UC1701_FONT_8x16);
+		UC1701_drawChoice(UC1701_CHOICE_OK, false);
 		break;
 	}
 	UC1701_render();

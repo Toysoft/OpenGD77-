@@ -1066,3 +1066,62 @@ void UC1701_drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, 
         }
     }
 }
+
+void UC1701_drawChoice(UC1701_Choice_t choice, bool clearRegion)
+{
+	struct
+	{
+		char *lText;
+		char *rText;
+	} choices[] =
+	{
+			{ "OK" ,  NULL  }, // UC1701_CHOICE_OK
+			{ "YES",  "NO"  }  // UC1701_CHOICE_YESNO
+	};
+	char *lText = NULL;
+	char *rText = NULL;
+	uint8_t lCenter = 12;
+	uint8_t rCenter = 115;
+	uint8_t y = 49;
+
+	if (clearRegion)
+	{
+		UC1701_fillRect(0, 48, 128, 16, true);
+	}
+
+	switch (choice)
+	{
+	case UC1701_CHOICE_OK:
+		lText = choices[choice].lText;
+		break;
+
+	case UC1701_CHOICE_YESNO:
+		lText = choices[choice].lText;
+		rText = choices[choice].rText;
+		break;
+
+	default:
+		return;
+	}
+
+	if (lText)
+	{
+		int16_t x = (lCenter - ((strlen(lText) * 8) >> 1));
+
+		if (x < 2)
+			x = 2;
+
+		UC1701_printAt(x, y, lText, UC1701_FONT_8x16);
+	}
+
+	if(rText)
+	{
+		size_t len = (strlen(rText) * 8);
+		int16_t x = (rCenter - (len >> 1));
+
+		if ((x + len) > 126)
+			x = (126 - len);
+
+		UC1701_printAt(x, y, rText, UC1701_FONT_8x16);
+	}
+}
