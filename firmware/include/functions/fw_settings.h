@@ -57,7 +57,11 @@ typedef struct settingsStruct
 	uint16_t		keypadTimerLong;
 	uint16_t		keypadTimerRepeat;
 	uint8_t			currentVFONumber;
+	uint8_t			dmrFilterLevel;
+	uint8_t			dmrCaptureTimeout;
 } settingsStruct_t;
+
+typedef enum {DMR_FILTER_NONE=0,DMR_FILTER_CC=1, DMR_FILTER_CC_TS=2, DMR_FILTER_CC_TS_TG=3} dmrFilter_t;
 
 extern settingsStruct_t nonVolatileSettings;
 extern struct_codeplugChannel_t *currentChannelData;

@@ -47,6 +47,7 @@ uint32_t menuUtilityReceivedPcId 	= 0;// No current Private call awaiting accept
 uint32_t menuUtilityTgBeforePcMode 	= 0;// No TG saved, prior to a Private call being accepted.
 
 const char *POWER_LEVELS[]={"250mW","500mW","750mW","1W","2W","3W","4W","5W"};
+const char *DMR_FILTER_LEVELS[]={"None","CC","CC,TS","CC,TS,TG"};
 
 /*
  * Remove space at the end of the array, and return pointer to first non space character
@@ -468,7 +469,7 @@ void menuUtilityRenderQSOData(void)
 		{
 			// No either we are not in PC mode or not on a Private Call to this station
 			UC1701_printCentered(32, "Accept call?",UC1701_FONT_8x16);
-			UC1701_printCentered(48, "YES          NO",UC1701_FONT_8x16);
+			UC1701_drawChoice(UC1701_CHOICE_YESNO, false);
 			menuUtilityReceivedPcId = LinkHead->id | (PC_CALL_FLAG<<24);
 		    set_melody(melody_private_call);
 		}
@@ -482,7 +483,8 @@ void menuUtilityRenderQSOData(void)
 		// Group call
 		uint32_t tg = (LinkHead->talkGroupOrPcId & 0xFFFFFF);
 		sprintf(buffer,"TG %d", tg);
-		if (tg != trxTalkGroupOrPcId)
+		if (tg != trxTalkGroupOrPcId || (dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot()) ||
+										(dmrMonitorCapturedCC!=-1 && dmrMonitorCapturedCC != trxGetDMRColourCode()))
 		{
 			UC1701_fillRect(0,16,128,16,false);// fill background with black
 			UC1701_printCore(0, CONTACT_Y_POS, buffer,UC1701_FONT_8x16,UC1701_TEXT_ALIGN_CENTER,true);// draw the text in inverse video
@@ -553,27 +555,39 @@ void menuUtilityRenderHeader(void)
 			{
 				strcat(buffer,"R");
 			}
+			UC1701_printAt(0,Y_OFFSET, buffer,UC1701_FONT_6x8);
 			break;
 		case RADIO_MODE_DIGITAL:
 
 
 			if (settingsUsbMode == USB_MODE_HOTSPOT)
 			{
-				sprintf(buffer, "DMR");
+				UC1701_printAt(0,Y_OFFSET, "DMR",UC1701_FONT_6x8);
 			}
 			else
 			{
-				sprintf(buffer, "DMR TS%d",trxGetDMRTimeSlot()+1);
-//						(trxGetMode() == RADIO_MODE_DIGITAL && settingsPrivateCallMuteMode == true)?" MUTE":"");
+//				(trxGetMode() == RADIO_MODE_DIGITAL && settingsPrivateCallMuteMode == true)?" MUTE":"");// The location that this was displayed is now used for the power level
+
+				UC1701_printAt(0,Y_OFFSET, "DMR",UC1701_FONT_6x8);
+				sprintf(buffer, "TS%d",trxGetDMRTimeSlot()+1);
+				if (nonVolatileSettings.dmrFilterLevel < DMR_FILTER_CC_TS)
+				{
+					UC1701_fillRect(20, Y_OFFSET,20,8,false);
+					UC1701_printCore(22,Y_OFFSET, buffer,UC1701_FONT_6x8,UC1701_TEXT_ALIGN_LEFT,true);
+				}
+				else
+				{
+					UC1701_printCore(22,Y_OFFSET, buffer,UC1701_FONT_6x8,UC1701_TEXT_ALIGN_LEFT,false);
+				}
 			}
 			break;
 	}
+
+	/* NO ROOM TO DISPLAY THIS
 	if (keypadLocked)
 	{
 		strcat(buffer," L");
-	}
-
-	UC1701_printAt(0,Y_OFFSET, buffer,UC1701_FONT_6x8);
+	}*/
 
 	UC1701_printCentered(Y_OFFSET,(char *)POWER_LEVELS[nonVolatileSettings.txPowerLevel],UC1701_FONT_6x8);
 

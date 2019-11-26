@@ -44,6 +44,8 @@ const uint8_t PC_CALL_FLAG = 0x03;
 const uint8_t SILENCE_AUDIO[27] = {	0xB9U, 0xE8U, 0x81U, 0x52U, 0x61U, 0x73U, 0x00U, 0x2AU, 0x6BU, 0xB9U, 0xE8U, 0x81U, 0x52U,
 									0x61U, 0x73U, 0x00U, 0x2AU, 0x6BU, 0xB9U, 0xE8U, 0x81U, 0x52U, 0x61U, 0x73U, 0x00U, 0x2AU, 0x6BU };
 
+
+
 // GD-77 FW V3.1.1 data from 0x76010 / length 0x06
 static const uint8_t spi_init_values_1[] = { 0xd5, 0xd7, 0xf7, 0x7f, 0xd7, 0x57 };
 // GD-77 FW V3.1.1 data from 0x75F70 / length 0x20
@@ -90,6 +92,7 @@ static volatile int readDMRRSSI = 0;
 static volatile int tx_sequence=0;
 
 static volatile int timeCode;
+static volatile int rxColorCode;
 static volatile int repeaterWakeupResponseTimeout=0;
 static volatile int isWaking = WAKING_MODE_NONE;
 static volatile int rxwait;// used for Repeater wakeup sequence
@@ -97,6 +100,9 @@ static volatile int rxcnt;// used for Repeater wakeup sequence
 volatile int lastTimeCode=0;
 static volatile uint8_t previousLCBuf[12];
 volatile bool updateLastHeard=false;
+volatile int dmrMonitorCapturedTS = -1;
+volatile int dmrMonitorCapturedCC = -1;
+static volatile int dmrMonitorCapturedTimeout;
 
 static bool callAcceptFilter(void);
 static void setupPcOrTGHeader(void);
@@ -231,6 +237,8 @@ void SPI_HR_C6000_init(void)
 	write_SPI_page_reg_byte_SPI0(0x04, 0x37, 0x9E); // MCU take control of CODEC
 	set_clear_SPI_page_reg_byte_with_mask_SPI0(0x04, 0xE4, 0x3F, 0x00); // Set CODEC LineOut Gain to 0dB
 	// ------ end spi_more_init
+
+	dmrMonitorCapturedTimeout = nonVolatileSettings.dmrCaptureTimeout*1000;
 }
 
 void SPI_C6000_postinit(void)
@@ -295,6 +303,68 @@ void setMicGainDMR(uint8_t gain)
 {
 	write_SPI_page_reg_byte_SPI0(0x04, 0xE4, 0x40 + gain);  //CODEC   LineOut Gain 2dB, Mic Stage 1 Gain 0dB, Mic Stage 2 Gain default is 11 =  33dB
 }
+
+static inline bool checkTimeSlotFilter(void)
+{
+	if (trxIsTransmitting)
+	{
+		return (timeCode == trxGetDMRTimeSlot());
+	}
+	else
+	{
+		if (nonVolatileSettings.dmrFilterLevel >= DMR_FILTER_CC_TS)
+		{
+			return (timeCode == trxGetDMRTimeSlot());
+		}
+		else
+		{
+			if (dmrMonitorCapturedTS==-1 || (dmrMonitorCapturedTS == timeCode))
+			{
+				dmrMonitorCapturedTS = timeCode;
+				dmrMonitorCapturedTimeout = nonVolatileSettings.dmrCaptureTimeout*1000;
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+	}
+}
+
+static inline bool checkColourCodeFilter(void)
+{
+	if (nonVolatileSettings.dmrFilterLevel >= DMR_FILTER_CC)
+	{
+		return (rxColorCode == trxGetDMRColourCode());
+	}
+	else
+	{
+		if (dmrMonitorCapturedCC==-1 || (dmrMonitorCapturedCC == rxColorCode))
+		{
+			dmrMonitorCapturedCC = rxColorCode;
+			dmrMonitorCapturedTimeout = nonVolatileSettings.dmrCaptureTimeout*1000;
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+}
+
+bool checkTalkGroupFilter(void)
+{
+	if (nonVolatileSettings.dmrFilterLevel >= DMR_FILTER_CC_TS_TG)
+	{
+		return true;// To Do. Actually filter on TG
+	}
+	else
+	{
+		return true;
+	}
+}
+
 
 void PORTC_IRQHandler(void)
 {
@@ -478,7 +548,7 @@ inline static void HRC6000SysReceivedDataInt(void)
 	int rxSyncClass;
 	bool rxCRCStatus;
 	int rpi;
-	int rxColorCode;
+
 
 	read_SPI_page_reg_byte_SPI0(0x04, 0x51, &tmp_val_0x51);
 	read_SPI_page_reg_byte_SPI0(0x04, 0x52, &tmp_val_0x52);  //Read Received CC and CACH Register
@@ -493,7 +563,7 @@ inline static void HRC6000SysReceivedDataInt(void)
 
 	//SEGGER_RTT_printf(0, "\t\tRXDT\taf:%d\tsc:%02x\tcrc:%02x\trpi:%02x\tcc:%d\ttc:%d\t\n",(rxDataType&0x07),rxSyncClass,rxCRCStatus,rpi,rxColorCode,timeCode);
 
-	if ((slot_state == DMR_STATE_RX_1 || slot_state == DMR_STATE_RX_2) && (rxColorCode != trxGetDMRColourCode() || rpi!=0 || rxCRCStatus != true))
+	if ((slot_state == DMR_STATE_RX_1 || slot_state == DMR_STATE_RX_2) && (!checkColourCodeFilter() || rpi!=0 || rxCRCStatus != true))
 	{
 		//SEGGER_RTT_printf(0, "INVALID DATA");
 		// Something is not correct
@@ -535,7 +605,7 @@ inline static void HRC6000SysReceivedDataInt(void)
 		}
 		else
 		{
-			if ((timeCode == trxGetDMRTimeSlot() && lastTimeCode != timeCode))
+			if (checkTimeSlotFilter() && (lastTimeCode != timeCode))
 			{
 				GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);// Disable the audio
 			}
@@ -554,7 +624,7 @@ inline static void HRC6000SysReceivedDataInt(void)
 		// Start RX
 		if (slot_state == DMR_STATE_IDLE)
 		{
-			if ((rxColorCode == trxGetDMRColourCode()))// && (rxSyncClass==SYNC_CLASS_DATA) && (rxDataType==1) )// && (timeCode == trxGetDMRTimeSlot()))       //Voice LC Header
+			if ((checkColourCodeFilter()))// && (rxSyncClass==SYNC_CLASS_DATA) && (rxDataType==1) )// && (timeCode == trxGetDMRTimeSlot()))       //Voice LC Header
 			{
 				//SEGGER_RTT_printf(0,"RX START\n");
 				//triggerQSOdataDisplay();
@@ -585,8 +655,8 @@ inline static void HRC6000SysReceivedDataInt(void)
 			if (
 					(skip_count == 0 ||  (receivedSrcId != trxDMRID && receivedSrcId!=0x00)) &&
 					(rxSyncClass!=SYNC_CLASS_DATA) && ( sequenceNumber>= 0x01) && (sequenceNumber <= 0x06) &&
-					(((trxDMRMode == DMR_MODE_PASSIVE) && (timeCode == trxGetDMRTimeSlot() && lastTimeCode != timeCode) &&
-					 (rxColorCode == trxGetDMRColourCode())) || (trxDMRMode == DMR_MODE_ACTIVE &&
+					(((trxDMRMode == DMR_MODE_PASSIVE) && (checkTimeSlotFilter() && lastTimeCode != timeCode) &&
+					 (checkColourCodeFilter())) || (trxDMRMode == DMR_MODE_ACTIVE &&
 					 (slot_state == DMR_STATE_RX_1))))
 			{
 				//SEGGER_RTT_printf(0, "Audio frame %d\t%d\n",sequenceNumber,timeCode);
@@ -661,9 +731,9 @@ inline static void HRC6000SysInterruptHandler(void)
 			memcmp((uint8_t *)previousLCBuf,LCBuf,12)!=0)
 		{
 			read_SPI_page_reg_byte_SPI0(0x04, 0x52, &reg0x52);  //Read Received CC and CACH Register to get the timecode (TS number)
-			int tc = ((reg0x52 & 0x04) >> 2);// extract the timecode from the CACH register
+			timeCode = ((reg0x52 & 0x04) >> 2);// extract the timecode from the CACH register
 
-			if (tc == trxGetDMRTimeSlot() || trxDMRMode == DMR_MODE_ACTIVE) // only do this for the selected timeslot, or when in Active mode
+			if (checkTimeSlotFilter() || trxDMRMode == DMR_MODE_ACTIVE) // only do this for the selected timeslot, or when in Active mode
 			{
 				if (DMR_frame_buffer[0]==TG_CALL_FLAG || DMR_frame_buffer[0]==PC_CALL_FLAG)
 				{
@@ -777,7 +847,7 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 			if (trxDMRMode == DMR_MODE_PASSIVE)
 			{
 
-				if( !isWaking &&  trxIsTransmitting && (timeCode == trxGetDMRTimeSlot()))
+				if( !isWaking &&  trxIsTransmitting && checkTimeSlotFilter())
 				{
 						HRC6000TransitionToTx();
 				}
@@ -927,7 +997,9 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 			break;
 		case DMR_STATE_TX_END_2: // Stop TX (second step)
 
-
+			// Need to hold on this TS after Tx ends otherwise if DMR Mon TS filtering is disabled the radio may switch timeslot
+			dmrMonitorCapturedTS = trxGetDMRTimeSlot();
+			dmrMonitorCapturedTimeout = nonVolatileSettings.dmrCaptureTimeout*1000;
 #ifdef THREE_STATE_SHUTDOWN
 			 slot_state = DMR_STATE_TX_END_3;
 #else
@@ -1401,7 +1473,15 @@ void tick_HR_C6000(void)
 		}
 	}
 
-
+	if (dmrMonitorCapturedTimeout > 0)
+	{
+		dmrMonitorCapturedTimeout--;
+		if (dmrMonitorCapturedTimeout==0)
+		{
+			dmrMonitorCapturedTS = -1;// Reset the TS capture
+			dmrMonitorCapturedCC = -1;// Reset the CC capture
+		}
+	}
 }
 
 // RC. I had to use accessor functions for the isWaking flag
