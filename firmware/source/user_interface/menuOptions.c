@@ -24,7 +24,7 @@ static void handleEvent(int buttons, int keys, int events);
 static bool	doFactoryReset;
 enum OPTIONS_MENU_LIST { OPTIONS_MENU_TIMEOUT_BEEP=0,OPTIONS_MENU_FACTORY_RESET,OPTIONS_MENU_USE_CALIBRATION,
 							OPTIONS_MENU_TX_FREQ_LIMITS,OPTIONS_MENU_BEEP_VOLUME,OPTIONS_MIC_GAIN_DMR,
-							KEYPAD_TIMER_LONG, KEYPAD_TIMER_REPEAT,
+							OPTIONS_MENU_KEYPAD_TIMER_LONG, OPTIONS_MENU_KEYPAD_TIMER_REPEAT, OPTIONS_MENU_DMR_MONITOR_CAPTURE_TIMEOUT,
 							NUM_OPTIONS_MENU_ITEMS};
 
 
@@ -108,12 +108,16 @@ static void updateScreen(void)
 			case OPTIONS_MIC_GAIN_DMR:// DMR Mic gain
 				sprintf(buf, "DMR mic:%ddB", (nonVolatileSettings.micGainDMR - 11) * 3);
 				break;
-			case KEYPAD_TIMER_LONG:// Timer longpress
+			case OPTIONS_MENU_KEYPAD_TIMER_LONG:// Timer longpress
 				sprintf(buf, "Key long:%1d.%1ds", nonVolatileSettings.keypadTimerLong / 10, nonVolatileSettings.keypadTimerLong % 10);
 				break;
-			case KEYPAD_TIMER_REPEAT:// Timer repeat
+			case OPTIONS_MENU_KEYPAD_TIMER_REPEAT:// Timer repeat
 				sprintf(buf, "Key rpt:%1d.%1ds", nonVolatileSettings.keypadTimerRepeat/10, nonVolatileSettings.keypadTimerRepeat % 10);
 				break;
+			case OPTIONS_MENU_DMR_MONITOR_CAPTURE_TIMEOUT:// Timer repeat
+				sprintf(buf, "DMR mon time:%ds", nonVolatileSettings.dmrCaptureTimeout);
+				break;
+
 		}
 
 		menuDisplayEntry(i, mNum, buf);
@@ -165,16 +169,22 @@ static void handleEvent(int buttons, int keys, int events)
 					setMicGainDMR(nonVolatileSettings.micGainDMR);
 				}
 				break;
-			case KEYPAD_TIMER_LONG:
+			case OPTIONS_MENU_KEYPAD_TIMER_LONG:
 				if (nonVolatileSettings.keypadTimerLong<90)
 				{
 					nonVolatileSettings.keypadTimerLong++;
 				}
 				break;
-			case KEYPAD_TIMER_REPEAT:
+			case OPTIONS_MENU_KEYPAD_TIMER_REPEAT:
 				if (nonVolatileSettings.keypadTimerRepeat<90)
 				{
 					nonVolatileSettings.keypadTimerRepeat++;
+				}
+				break;
+			case OPTIONS_MENU_DMR_MONITOR_CAPTURE_TIMEOUT:
+				if (nonVolatileSettings.dmrCaptureTimeout<90)
+				{
+					nonVolatileSettings.dmrCaptureTimeout++;
 				}
 				break;
 		}
@@ -212,16 +222,22 @@ static void handleEvent(int buttons, int keys, int events)
 					setMicGainDMR(nonVolatileSettings.micGainDMR);
 				}
 				break;
-			case KEYPAD_TIMER_LONG:
+			case OPTIONS_MENU_KEYPAD_TIMER_LONG:
 				if (nonVolatileSettings.keypadTimerLong>1)
 				{
 					nonVolatileSettings.keypadTimerLong--;
 				}
 				break;
-			case KEYPAD_TIMER_REPEAT:
+			case OPTIONS_MENU_KEYPAD_TIMER_REPEAT:
 				if (nonVolatileSettings.keypadTimerRepeat>0)
 				{
-					nonVolatileSettings.keypadTimerRepeat--;;
+					nonVolatileSettings.keypadTimerRepeat--;
+				}
+				break;
+			case OPTIONS_MENU_DMR_MONITOR_CAPTURE_TIMEOUT:
+				if (nonVolatileSettings.dmrCaptureTimeout>1)
+				{
+					nonVolatileSettings.dmrCaptureTimeout--;
 				}
 				break;
 		}

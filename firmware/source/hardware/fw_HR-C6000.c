@@ -238,7 +238,7 @@ void SPI_HR_C6000_init(void)
 	set_clear_SPI_page_reg_byte_with_mask_SPI0(0x04, 0xE4, 0x3F, 0x00); // Set CODEC LineOut Gain to 0dB
 	// ------ end spi_more_init
 
-	dmrMonitorCapturedTimeout = nonVolatileSettings.dmrCaptureTimeout * 100;
+	dmrMonitorCapturedTimeout = nonVolatileSettings.dmrCaptureTimeout*1000;
 }
 
 void SPI_C6000_postinit(void)
@@ -321,7 +321,7 @@ static inline bool checkTimeSlotFilter(void)
 			if (dmrMonitorCapturedTS==-1 || (dmrMonitorCapturedTS == timeCode))
 			{
 				dmrMonitorCapturedTS = timeCode;
-				dmrMonitorCapturedTimeout = 5000;
+				dmrMonitorCapturedTimeout = nonVolatileSettings.dmrCaptureTimeout*1000;
 				return true;
 			}
 			else
@@ -343,7 +343,7 @@ static inline bool checkColourCodeFilter(void)
 		if (dmrMonitorCapturedCC==-1 || (dmrMonitorCapturedCC == rxColorCode))
 		{
 			dmrMonitorCapturedCC = rxColorCode;
-			dmrMonitorCapturedTimeout = 5000;
+			dmrMonitorCapturedTimeout = nonVolatileSettings.dmrCaptureTimeout*1000;
 			return true;
 		}
 		else

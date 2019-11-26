@@ -42,7 +42,6 @@ int settingsUsbMode = USB_MODE_CPS;
 int settingsCurrentChannelNumber=0;
 bool settingsPrivateCallMuteMode = false;
 bool enableHotspot = false;
-//dmrFilter_t settingsDmrFilterLevel = DMR_FILTER_CC_TS;
 
 bool settingsSaveSettings(bool includeVFOs)
 {
@@ -61,9 +60,6 @@ bool settingsLoadSettings(void)
 	{
 		settingsRestoreDefaultSettings();
 	}
-
-	// force override at the moment so this is always set to DMR_FILTER_CC_TS
-	nonVolatileSettings.dmrFilterLevel = DMR_FILTER_CC_TS;
 
 	codeplugGetVFO_ChannelData(&settingsVFOChannel[0],0);
 	codeplugGetVFO_ChannelData(&settingsVFOChannel[1],1);
@@ -152,7 +148,7 @@ void settingsRestoreDefaultSettings(void)
 	nonVolatileSettings.keypadTimerRepeat = 3;
 	nonVolatileSettings.currentVFONumber = 0;
 	nonVolatileSettings.dmrFilterLevel = DMR_FILTER_CC_TS;
-	nonVolatileSettings.dmrCaptureTimeout=50;// 5 seconds
+	nonVolatileSettings.dmrCaptureTimeout=5;// 5 seconds
 
 	currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];// Set the current channel data to point to the VFO data since the default screen will be the VFO
 

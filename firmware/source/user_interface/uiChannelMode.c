@@ -846,7 +846,7 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 		switch(gMenusCurrentItemIndex)
 		{
 			case CH_SCREEN_QUICK_MENU_DMR_FILTER:
-				if (tmpQuickMenuDmrFilterLevel < DMR_FILTER_CC_TS_TG)
+				if (tmpQuickMenuDmrFilterLevel < DMR_FILTER_CC_TS)
 				{
 					tmpQuickMenuDmrFilterLevel++;
 				}
@@ -858,7 +858,7 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 		switch(gMenusCurrentItemIndex)
 		{
 			case CH_SCREEN_QUICK_MENU_DMR_FILTER:
-				if (tmpQuickMenuDmrFilterLevel > DMR_FILTER_NONE)
+				if (tmpQuickMenuDmrFilterLevel > DMR_FILTER_CC)
 				{
 					tmpQuickMenuDmrFilterLevel--;
 				}

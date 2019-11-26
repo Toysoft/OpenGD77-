@@ -555,27 +555,39 @@ void menuUtilityRenderHeader(void)
 			{
 				strcat(buffer,"R");
 			}
+			UC1701_printAt(0,Y_OFFSET, buffer,UC1701_FONT_6x8);
 			break;
 		case RADIO_MODE_DIGITAL:
 
 
 			if (settingsUsbMode == USB_MODE_HOTSPOT)
 			{
-				sprintf(buffer, "DMR");
+				UC1701_printAt(0,Y_OFFSET, "DMR",UC1701_FONT_6x8);
 			}
 			else
 			{
-				sprintf(buffer, "DMR TS%d",trxGetDMRTimeSlot()+1);
-//						(trxGetMode() == RADIO_MODE_DIGITAL && settingsPrivateCallMuteMode == true)?" MUTE":"");
+//				(trxGetMode() == RADIO_MODE_DIGITAL && settingsPrivateCallMuteMode == true)?" MUTE":"");// The location that this was displayed is now used for the power level
+
+				UC1701_printAt(0,Y_OFFSET, "DMR",UC1701_FONT_6x8);
+				sprintf(buffer, "TS%d",trxGetDMRTimeSlot()+1);
+				if (nonVolatileSettings.dmrFilterLevel < DMR_FILTER_CC_TS)
+				{
+					UC1701_fillRect(20, Y_OFFSET,20,8,false);
+					UC1701_printCore(22,Y_OFFSET, buffer,UC1701_FONT_6x8,UC1701_TEXT_ALIGN_LEFT,true);
+				}
+				else
+				{
+					UC1701_printCore(22,Y_OFFSET, buffer,UC1701_FONT_6x8,UC1701_TEXT_ALIGN_LEFT,false);
+				}
 			}
 			break;
 	}
+
+	/* NO ROOM TO DISPLAY THIS
 	if (keypadLocked)
 	{
 		strcat(buffer," L");
-	}
-
-	UC1701_printAt(0,Y_OFFSET, buffer,UC1701_FONT_6x8);
+	}*/
 
 	UC1701_printCentered(Y_OFFSET,(char *)POWER_LEVELS[nonVolatileSettings.txPowerLevel],UC1701_FONT_6x8);
 

@@ -756,7 +756,7 @@ int tmp_frequencyRx;
 
 // Quick Menu functions
 enum VFO_SCREEN_QUICK_MENU_ITEMS { 	VFO_SCREEN_QUICK_MENU_TX_SWAP_RX = 0, VFO_SCREEN_QUICK_MENU_BOTH_TO_RX, VFO_SCREEN_QUICK_MENU_BOTH_TO_TX,
-									VFO_SCREEN_QUICK_MENU_DMR_FILTER,
+									VFO_SCREEN_QUICK_MENU_DMR_FILTER,VFO_SCREEN_QUICK_MENU_VFO_A_B,
 									NUM_VFO_SCREEN_QUICK_MENU_ITEMS };// The last item in the list is used so that we automatically get a total number of items in the list
 
 static void updateQuickMenuScreen(void)
@@ -785,6 +785,10 @@ static void updateQuickMenuScreen(void)
 			case VFO_SCREEN_QUICK_MENU_DMR_FILTER:
 				sprintf(buf, "DMR Mon:%s",DMR_FILTER_LEVELS[tmpQuickMenuDmrFilterLevel]);
 				break;
+			case VFO_SCREEN_QUICK_MENU_VFO_A_B:
+				sprintf(buf, "VFO %s",((nonVolatileSettings.currentVFONumber==0)?"A":"B"));
+				break;
+
 			default:
 				strcpy(buf, "");
 		}
@@ -810,7 +814,6 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 			case VFO_SCREEN_QUICK_MENU_BOTH_TO_RX:
 				currentChannelData->txFreq = currentChannelData->rxFreq;
 				trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq,DMR_MODE_AUTO);
-				menuSystemPopPreviousMenu();
 				break;
 			case VFO_SCREEN_QUICK_MENU_TX_SWAP_RX:
 				{
@@ -818,19 +821,18 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 					currentChannelData->txFreq = currentChannelData->rxFreq;
 					currentChannelData->rxFreq =  tmpFreq;
 					trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq,DMR_MODE_AUTO);
-					menuSystemPopPreviousMenu();
 				}
 				break;
 			case VFO_SCREEN_QUICK_MENU_BOTH_TO_TX:
 				currentChannelData->rxFreq = currentChannelData->txFreq;
 				trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq,DMR_MODE_AUTO);
-				menuSystemPopPreviousMenu();
+
 				break;
 			case VFO_SCREEN_QUICK_MENU_DMR_FILTER:
 				nonVolatileSettings.dmrFilterLevel = tmpQuickMenuDmrFilterLevel;
-				menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
 				break;
 		}
+		menuSystemPopPreviousMenu();
 		return;
 	}
 	else if ((keys & KEY_RIGHT)!=0)
@@ -838,11 +840,19 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 			switch(gMenusCurrentItemIndex)
 			{
 				case VFO_SCREEN_QUICK_MENU_DMR_FILTER:
-					if (tmpQuickMenuDmrFilterLevel < DMR_FILTER_CC_TS_TG)
+					if (tmpQuickMenuDmrFilterLevel < DMR_FILTER_CC_TS)
 					{
 						tmpQuickMenuDmrFilterLevel++;
 					}
 					break;
+				case VFO_SCREEN_QUICK_MENU_VFO_A_B:
+					if (nonVolatileSettings.currentVFONumber==0)
+					{
+						nonVolatileSettings.currentVFONumber++;
+						currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];
+					}
+					break;
+
 			}
 		}
 		else if ((keys & KEY_LEFT)!=0)
@@ -850,9 +860,16 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 			switch(gMenusCurrentItemIndex)
 			{
 				case VFO_SCREEN_QUICK_MENU_DMR_FILTER:
-					if (tmpQuickMenuDmrFilterLevel > DMR_FILTER_NONE)
+					if (tmpQuickMenuDmrFilterLevel > DMR_FILTER_CC)
 					{
 						tmpQuickMenuDmrFilterLevel--;
+					}
+					break;
+				case VFO_SCREEN_QUICK_MENU_VFO_A_B:
+					if (nonVolatileSettings.currentVFONumber==1)
+					{
+						nonVolatileSettings.currentVFONumber--;
+						currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];
 					}
 					break;
 			}
