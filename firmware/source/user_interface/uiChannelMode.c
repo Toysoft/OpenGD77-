@@ -396,7 +396,7 @@ static void handleEvent(int buttons, int keys, int events)
 		{
 			if ((buttons & BUTTON_SK2) != 0)
 			{
-				menuSystemPushNewMenu(MENU_CONTACT_LIST);
+				menuSystemPushNewMenu(MENU_CONTACT_QUICKLIST);
 			} else {
 				menuSystemPushNewMenu(MENU_NUMERICAL_ENTRY);
 			}

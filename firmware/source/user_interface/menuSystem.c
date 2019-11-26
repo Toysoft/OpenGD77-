@@ -47,6 +47,7 @@ int menuHotspotMode(int buttons, int keys, int events, bool isFirstRun);
 int menuCPS(int buttons, int keys, int events, bool isFirstRun);
 int menuLockScreen(int buttons, int keys, int events, bool isFirstRun);
 int menuContactList(int buttons, int keys, int events, bool isFirstRun);
+int menuContactListSubMenu(int buttons, int keys, int events, bool isFirstRun);
 int menuContactDetails(int buttons, int keys, int events, bool isFirstRun);
 
 /*
@@ -81,6 +82,8 @@ const menuItemNew_t * menusData[] = { 	NULL,// splash
 										NULL,// Quick menu - VFO
 										NULL,// Lock screen
 										NULL,// Contact List
+										NULL,// Contact Quick List (SK2+#)
+										NULL,// Contact List Quick Menu
 										NULL,// Contact Details
 								};
 
@@ -107,6 +110,8 @@ const MenuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
 												menuVFOModeQuickMenu,
                                                 menuLockScreen,
 												menuContactList,
+												menuContactList,
+												menuContactListSubMenu,
 												menuContactDetails,
 };
 
