@@ -997,7 +997,9 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 			break;
 		case DMR_STATE_TX_END_2: // Stop TX (second step)
 
-
+			// Need to hold on this TS after Tx ends otherwise if DMR Mon TS filtering is disabled the radio may switch timeslot
+			dmrMonitorCapturedTS = trxGetDMRTimeSlot();
+			dmrMonitorCapturedTimeout = nonVolatileSettings.dmrCaptureTimeout*1000;
 #ifdef THREE_STATE_SHUTDOWN
 			 slot_state = DMR_STATE_TX_END_3;
 #else
@@ -1371,9 +1373,6 @@ void tick_HR_C6000(void)
 
 	if (trxIsTransmitting)
 	{
-		dmrMonitorCapturedTS = -1;// Reset the TS capture
-		dmrMonitorCapturedCC = -1;// Reset the CC capture
-
 		if (isWaking == WAKING_MODE_WAITING)
 		{
 			if (repeaterWakeupResponseTimeout > 0)
