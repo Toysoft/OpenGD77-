@@ -483,7 +483,8 @@ void menuUtilityRenderQSOData(void)
 		// Group call
 		uint32_t tg = (LinkHead->talkGroupOrPcId & 0xFFFFFF);
 		sprintf(buffer,"TG %d", tg);
-		if (tg != trxTalkGroupOrPcId || (dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot()))
+		if (tg != trxTalkGroupOrPcId || (dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot()) ||
+										(dmrMonitorCapturedCC!=-1 && dmrMonitorCapturedCC != trxGetDMRColourCode()))
 		{
 			UC1701_fillRect(0,16,128,16,false);// fill background with black
 			UC1701_printCore(0, CONTACT_Y_POS, buffer,UC1701_FONT_8x16,UC1701_TEXT_ALIGN_CENTER,true);// draw the text in inverse video

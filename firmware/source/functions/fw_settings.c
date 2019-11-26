@@ -30,7 +30,7 @@ const int BAND_UHF_MIN 	= 43000000;
 const int BAND_UHF_MAX 	= 45000000;
 
 static const int STORAGE_BASE_ADDRESS 		= 0x6000;
-static const int STORAGE_MAGIC_NUMBER 		= 0x4726;
+static const int STORAGE_MAGIC_NUMBER 		= 0x4727;
 
 settingsStruct_t nonVolatileSettings;
 struct_codeplugChannel_t *currentChannelData;
@@ -42,7 +42,7 @@ int settingsUsbMode = USB_MODE_CPS;
 int settingsCurrentChannelNumber=0;
 bool settingsPrivateCallMuteMode = false;
 bool enableHotspot = false;
-dmrFilter_t settingsDmrFilterLevel = DMR_FILTER_CC_TS;
+//dmrFilter_t settingsDmrFilterLevel = DMR_FILTER_CC_TS;
 
 bool settingsSaveSettings(bool includeVFOs)
 {
@@ -61,6 +61,9 @@ bool settingsLoadSettings(void)
 	{
 		settingsRestoreDefaultSettings();
 	}
+
+	// force override at the moment so this is always set to DMR_FILTER_CC_TS
+	nonVolatileSettings.dmrFilterLevel = DMR_FILTER_CC_TS;
 
 	codeplugGetVFO_ChannelData(&settingsVFOChannel[0],0);
 	codeplugGetVFO_ChannelData(&settingsVFOChannel[1],1);
@@ -148,6 +151,8 @@ void settingsRestoreDefaultSettings(void)
 	nonVolatileSettings.keypadTimerLong = 5;
 	nonVolatileSettings.keypadTimerRepeat = 3;
 	nonVolatileSettings.currentVFONumber = 0;
+	nonVolatileSettings.dmrFilterLevel = DMR_FILTER_CC_TS;
+	nonVolatileSettings.dmrCaptureTimeout=50;// 5 seconds
 
 	currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];// Set the current channel data to point to the VFO data since the default screen will be the VFO
 

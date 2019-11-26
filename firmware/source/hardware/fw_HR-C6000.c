@@ -100,8 +100,9 @@ static volatile int rxcnt;// used for Repeater wakeup sequence
 volatile int lastTimeCode=0;
 static volatile uint8_t previousLCBuf[12];
 volatile bool updateLastHeard=false;
-volatile int dmrMonitorCapturedTS=-1;
-volatile int dmrMonitorCapturedTSTimeout = 5000;
+volatile int dmrMonitorCapturedTS = -1;
+volatile int dmrMonitorCapturedCC = -1;
+static volatile int dmrMonitorCapturedTimeout;
 
 static bool callAcceptFilter(void);
 static void setupPcOrTGHeader(void);
@@ -236,6 +237,8 @@ void SPI_HR_C6000_init(void)
 	write_SPI_page_reg_byte_SPI0(0x04, 0x37, 0x9E); // MCU take control of CODEC
 	set_clear_SPI_page_reg_byte_with_mask_SPI0(0x04, 0xE4, 0x3F, 0x00); // Set CODEC LineOut Gain to 0dB
 	// ------ end spi_more_init
+
+	dmrMonitorCapturedTimeout = nonVolatileSettings.dmrCaptureTimeout * 100;
 }
 
 void SPI_C6000_postinit(void)
@@ -301,8 +304,6 @@ void setMicGainDMR(uint8_t gain)
 	write_SPI_page_reg_byte_SPI0(0x04, 0xE4, 0x40 + gain);  //CODEC   LineOut Gain 2dB, Mic Stage 1 Gain 0dB, Mic Stage 2 Gain default is 11 =  33dB
 }
 
-
-
 static inline bool checkTimeSlotFilter(void)
 {
 	if (trxIsTransmitting)
@@ -311,7 +312,7 @@ static inline bool checkTimeSlotFilter(void)
 	}
 	else
 	{
-		if (settingsDmrFilterLevel >= DMR_FILTER_CC_TS)
+		if (nonVolatileSettings.dmrFilterLevel >= DMR_FILTER_CC_TS)
 		{
 			return (timeCode == trxGetDMRTimeSlot());
 		}
@@ -320,7 +321,7 @@ static inline bool checkTimeSlotFilter(void)
 			if (dmrMonitorCapturedTS==-1 || (dmrMonitorCapturedTS == timeCode))
 			{
 				dmrMonitorCapturedTS = timeCode;
-				dmrMonitorCapturedTSTimeout = 5000;
+				dmrMonitorCapturedTimeout = 5000;
 				return true;
 			}
 			else
@@ -330,20 +331,31 @@ static inline bool checkTimeSlotFilter(void)
 		}
 	}
 }
+
 static inline bool checkColourCodeFilter(void)
 {
-	if (settingsDmrFilterLevel >= DMR_FILTER_CC)
+	if (nonVolatileSettings.dmrFilterLevel >= DMR_FILTER_CC)
 	{
 		return (rxColorCode == trxGetDMRColourCode());
 	}
 	else
 	{
-		return true;
+		if (dmrMonitorCapturedCC==-1 || (dmrMonitorCapturedCC == rxColorCode))
+		{
+			dmrMonitorCapturedCC = rxColorCode;
+			dmrMonitorCapturedTimeout = 5000;
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 }
+
 bool checkTalkGroupFilter(void)
 {
-	if (settingsDmrFilterLevel >= DMR_FILTER_CC_TS_TG)
+	if (nonVolatileSettings.dmrFilterLevel >= DMR_FILTER_CC_TS_TG)
 	{
 		return true;// To Do. Actually filter on TG
 	}
@@ -1359,7 +1371,8 @@ void tick_HR_C6000(void)
 
 	if (trxIsTransmitting)
 	{
-		dmrMonitorCapturedTS=-1;// Reset the TS capture
+		dmrMonitorCapturedTS = -1;// Reset the TS capture
+		dmrMonitorCapturedCC = -1;// Reset the CC capture
 
 		if (isWaking == WAKING_MODE_WAITING)
 		{
@@ -1461,12 +1474,13 @@ void tick_HR_C6000(void)
 		}
 	}
 
-	if (dmrMonitorCapturedTSTimeout > 0)
+	if (dmrMonitorCapturedTimeout > 0)
 	{
-		dmrMonitorCapturedTSTimeout--;
-		if (dmrMonitorCapturedTSTimeout==0)
+		dmrMonitorCapturedTimeout--;
+		if (dmrMonitorCapturedTimeout==0)
 		{
-			dmrMonitorCapturedTS=-1;// Reset the TS capture
+			dmrMonitorCapturedTS = -1;// Reset the TS capture
+			dmrMonitorCapturedCC = -1;// Reset the CC capture
 		}
 	}
 }
