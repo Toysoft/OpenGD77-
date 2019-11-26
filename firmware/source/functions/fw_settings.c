@@ -148,7 +148,7 @@ void settingsRestoreDefaultSettings(void)
 	nonVolatileSettings.keypadTimerRepeat = 3;
 	nonVolatileSettings.currentVFONumber = 0;
 	nonVolatileSettings.dmrFilterLevel = DMR_FILTER_CC_TS;
-	nonVolatileSettings.dmrCaptureTimeout=5;// 5 seconds
+	nonVolatileSettings.dmrCaptureTimeout=10;// Default to holding 10 seconds after a call ends
 
 	currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];// Set the current channel data to point to the VFO data since the default screen will be the VFO
 
