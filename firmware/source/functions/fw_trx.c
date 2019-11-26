@@ -173,15 +173,7 @@ int trx_carrier_detected()
 	// check for variable squelch control
 	if (currentChannelData->sql!=0)
 	{
-		if (currentChannelData->sql==1)
-		{
-			//open_squelch = true;
-		}
-		else
-		{
-			squelch =  70 - (((currentChannelData->sql-1)*11)>>2);
-			//open_squelch = false;
-		}
+		squelch =  70 - (((currentChannelData->sql-1)*11)>>2);
 	}
 
 	if (trxRxNoise < squelch)
@@ -207,15 +199,7 @@ void trx_check_analog_squelch(void)
 		// check for variable squelch control
 		if (currentChannelData->sql!=0)
 		{
-			if (currentChannelData->sql==1)
-			{
-				//open_squelch = true;
-			}
-			else
-			{
-				squelch =  70 - (((currentChannelData->sql-1)*11)>>2);
-				//open_squelch = false;
-			}
+			squelch =  70 - (((currentChannelData->sql-1)*11)>>2);
 		}
 
 		if (trxRxNoise < squelch)
