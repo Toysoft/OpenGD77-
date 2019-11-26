@@ -45,6 +45,12 @@ typedef enum
 	UC1701_TEXT_ALIGN_RIGHT
 } UC1701_Text_Align_t;
 
+typedef enum
+{
+	UC1701_CHOICE_OK = 0,
+	UC1701_CHOICE_YESNO
+} UC1701_Choice_t;
+
 extern uint8_t screenBuf[];
 
 void UC1701_begin(bool isInverted);
@@ -82,8 +88,9 @@ void UC1701_drawRectWithDropShadow(int16_t x, int16_t y, int16_t w, int16_t h, b
 void UC1701_drawBitmap(int16_t x, int16_t y, uint8_t *bitmap, int16_t w, int16_t h, bool color);
 void UC1701_drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, bool color);
 
-
 void UC1701_setContrast(uint8_t contrast);
 void UC1701_setInverseVideo(bool isInverted);
+
+void UC1701_drawChoice(UC1701_Choice_t choice, bool clearRegion);
 
 #endif /* __UC1701_H__ */

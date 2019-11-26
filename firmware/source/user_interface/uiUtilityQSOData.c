@@ -469,7 +469,7 @@ void menuUtilityRenderQSOData(void)
 		{
 			// No either we are not in PC mode or not on a Private Call to this station
 			UC1701_printCentered(32, "Accept call?",UC1701_FONT_8x16);
-			UC1701_printCentered(48, "YES          NO",UC1701_FONT_8x16);
+			UC1701_drawChoice(UC1701_CHOICE_YESNO, false);
 			menuUtilityReceivedPcId = LinkHead->id | (PC_CALL_FLAG<<24);
 		    set_melody(melody_private_call);
 		}
