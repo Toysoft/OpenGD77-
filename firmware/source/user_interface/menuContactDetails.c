@@ -234,48 +234,50 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 			else if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
 			{
-				if (tmpContact.callType == CONTACT_CALLTYPE_ALL)
+				if (tmpContact.tgNumber > 0 && tmpContact.tgNumber <= 9999999)
 				{
-					tmpContact.tgNumber = 16777215;
-				}
-				else
-				{
-					tmpContact.tgNumber = atoi(digits);
-
-				}
-
-				int index = codeplugContactIndexByTGorPC(tmpContact.tgNumber, tmpContact.callType);
-				if (index > 0 && index != tmpContact.NOT_IN_CODEPLUGDATA_indexNumber)
-				{
-					menuContactDetailsTimeout = 2000;
-					menuContactDetailsState = MENU_CONTACT_DETAILS_EXISTS;
-				}
-				else
-				{
-					if (contactListContactIndex > 0 && contactListContactIndex <= 1024)
+					if (tmpContact.callType == CONTACT_CALLTYPE_ALL)
 					{
-						if (tmpContact.name[0] == 0x00)
+						tmpContact.tgNumber = 16777215;
+					}
+					else
+					{
+						tmpContact.tgNumber = atoi(digits);
+					}
+
+					int index = codeplugContactIndexByTGorPC(tmpContact.tgNumber, tmpContact.callType);
+					if (index > 0 && index != tmpContact.NOT_IN_CODEPLUGDATA_indexNumber)
+					{
+						menuContactDetailsTimeout = 2000;
+						menuContactDetailsState = MENU_CONTACT_DETAILS_EXISTS;
+					}
+					else
+					{
+						if (contactListContactIndex > 0 && contactListContactIndex <= 1024)
 						{
-							if (tmpContact.callType == CONTACT_CALLTYPE_PC)
+							if (tmpContact.name[0] == 0x00)
 							{
-								if (dmrIDLookup(tmpContact.tgNumber,&foundRecord))
+								if (tmpContact.callType == CONTACT_CALLTYPE_PC)
 								{
-									codeplugUtilConvertStringToBuf(foundRecord.text, tmpContact.name, 16);
-								} else {
-									sprintf(buf,"PC %d",tmpContact.tgNumber);
+									if (dmrIDLookup(tmpContact.tgNumber,&foundRecord))
+									{
+										codeplugUtilConvertStringToBuf(foundRecord.text, tmpContact.name, 16);
+									} else {
+										sprintf(buf,"PC %d",tmpContact.tgNumber);
+										codeplugUtilConvertStringToBuf(buf, tmpContact.name, 16);
+									}
+								}
+								else
+								{
+									sprintf(buf,"TG %d",tmpContact.tgNumber);
 									codeplugUtilConvertStringToBuf(buf, tmpContact.name, 16);
 								}
 							}
-							else
-							{
-								sprintf(buf,"TG %d",tmpContact.tgNumber);
-								codeplugUtilConvertStringToBuf(buf, tmpContact.name, 16);
-							}
+							codeplugContactSaveDataForIndex(contactListContactIndex, &tmpContact);
+							contactListContactIndex = 0;
+							menuContactDetailsTimeout = 2000;
+							menuContactDetailsState = MENU_CONTACT_DETAILS_SAVED;
 						}
-						codeplugContactSaveDataForIndex(contactListContactIndex, &tmpContact);
-						contactListContactIndex = 0;
-						menuContactDetailsTimeout = 2000;
-						menuContactDetailsState = MENU_CONTACT_DETAILS_SAVED;
 					}
 				}
 			}
