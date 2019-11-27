@@ -234,17 +234,17 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 			else if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
 			{
+				if (tmpContact.callType == CONTACT_CALLTYPE_ALL)
+				{
+					tmpContact.tgNumber = 16777215;
+				}
+				else
+				{
+					tmpContact.tgNumber = atoi(digits);
+				}
+
 				if (tmpContact.tgNumber > 0 && tmpContact.tgNumber <= 9999999)
 				{
-					if (tmpContact.callType == CONTACT_CALLTYPE_ALL)
-					{
-						tmpContact.tgNumber = 16777215;
-					}
-					else
-					{
-						tmpContact.tgNumber = atoi(digits);
-					}
-
 					int index = codeplugContactIndexByTGorPC(tmpContact.tgNumber, tmpContact.callType);
 					if (index > 0 && index != tmpContact.NOT_IN_CODEPLUGDATA_indexNumber)
 					{
