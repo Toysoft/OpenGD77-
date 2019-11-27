@@ -143,56 +143,53 @@ static void handleEvent(int buttons, int keys, int events)
 	switch (menuContactListDisplayState)
 	{
 	case MENU_CONTACT_LIST_DISPLAY:
-		if (events & 0x01)
+		if (KEYCHECK_PRESS(keys, KEY_DOWN))
 		{
-			if (KEYCHECK_PRESS(keys, KEY_DOWN))
+			MENU_INC(gMenusCurrentItemIndex, gMenusEndIndex);
+			contactListContactIndex = codeplugContactGetDataForNumber(
+					gMenusCurrentItemIndex + 1, contactCallType,
+					&contactListContactData);
+			updateScreen();
+		}
+		else if (KEYCHECK_PRESS(keys, KEY_UP))
+		{
+			MENU_DEC(gMenusCurrentItemIndex, gMenusEndIndex);
+			contactListContactIndex = codeplugContactGetDataForNumber(
+					gMenusCurrentItemIndex + 1, contactCallType,
+					&contactListContactData);
+			updateScreen();
+		}
+		else if (KEYCHECK_SHORTUP(keys, KEY_HASH))
+		{
+			if (contactCallType == CONTACT_CALLTYPE_TG)
 			{
-				MENU_INC(gMenusCurrentItemIndex, gMenusEndIndex);
-				contactListContactIndex = codeplugContactGetDataForNumber(
-						gMenusCurrentItemIndex + 1, contactCallType,
-						&contactListContactData);
-				updateScreen();
+				contactCallType = CONTACT_CALLTYPE_PC;
 			}
-			else if (KEYCHECK_PRESS(keys, KEY_UP))
+			else
 			{
-				MENU_DEC(gMenusCurrentItemIndex, gMenusEndIndex);
-				contactListContactIndex = codeplugContactGetDataForNumber(
-						gMenusCurrentItemIndex + 1, contactCallType,
-						&contactListContactData);
-				updateScreen();
+				contactCallType = CONTACT_CALLTYPE_TG;
 			}
-			else if (KEYCHECK_SHORTUP(keys, KEY_HASH))
+			reloadContactList();
+			updateScreen();
+		}
+		else if (KEYCHECK_SHORTUP(keys, KEY_GREEN))
+		{
+			if (menuSystemGetCurrentMenuNumber() == MENU_CONTACT_QUICKLIST)
 			{
-				if (contactCallType == CONTACT_CALLTYPE_TG)
-				{
-					contactCallType = CONTACT_CALLTYPE_PC;
-				}
-				else
-				{
-					contactCallType = CONTACT_CALLTYPE_TG;
-				}
-				reloadContactList();
-				updateScreen();
-			}
-			else if (KEYCHECK_SHORTUP(keys, KEY_GREEN))
-			{
-				if (menuSystemGetCurrentMenuNumber() == MENU_CONTACT_QUICKLIST)
-				{
-					setOverrideTGorPC(contactListContactData.tgNumber, contactListContactData.callType == CONTACT_CALLTYPE_PC);
-					contactListContactIndex = 0;
-					menuSystemPopAllAndDisplayRootMenu();
-					return;
-				} else {
-					menuSystemPushNewMenu(MENU_CONTACT_LIST_SUBMENU);
-					return;
-				}
-			}
-			else if (KEYCHECK_SHORTUP(keys, KEY_RED))
-			{
+				setOverrideTGorPC(contactListContactData.tgNumber, contactListContactData.callType == CONTACT_CALLTYPE_PC);
 				contactListContactIndex = 0;
-				menuSystemPopPreviousMenu();
+				menuSystemPopAllAndDisplayRootMenu();
+				return;
+			} else {
+				menuSystemPushNewMenu(MENU_CONTACT_LIST_SUBMENU);
 				return;
 			}
+		}
+		else if (KEYCHECK_SHORTUP(keys, KEY_RED))
+		{
+			contactListContactIndex = 0;
+			menuSystemPopPreviousMenu();
+			return;
 		}
 		break;
 
@@ -279,10 +276,10 @@ static void handleSubMenuEvent(int buttons, int keys, int events)
 	if (KEYCHECK_SHORTUP(keys, KEY_RED))
 	{
 		menuSystemPopPreviousMenu();
-		return;
 	}
 	else if (KEYCHECK_SHORTUP(keys, KEY_GREEN))
 	{
+		menuContactListOverrideState = 0;
 		switch (gMenusCurrentItemIndex)
 		{
 		case CONTACT_LIST_QUICK_MENU_SELECT:
@@ -306,7 +303,6 @@ static void handleSubMenuEvent(int buttons, int keys, int events)
 			}
 			break;
 		}
-		return;
 	}
 	else if (KEYCHECK_PRESS(keys, KEY_DOWN))
 	{
