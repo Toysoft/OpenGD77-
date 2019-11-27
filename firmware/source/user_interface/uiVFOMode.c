@@ -786,7 +786,7 @@ static void updateQuickMenuScreen(void)
 				sprintf(buf, "DMR Mon:%s",DMR_FILTER_LEVELS[tmpQuickMenuDmrFilterLevel]);
 				break;
 			case VFO_SCREEN_QUICK_MENU_VFO_A_B:
-				sprintf(buf, "VFO %s",((nonVolatileSettings.currentVFONumber==0)?"A":"B"));
+				sprintf(buf, "VFO:%s",((nonVolatileSettings.currentVFONumber==0)?"A":"B"));
 				break;
 
 			default:
