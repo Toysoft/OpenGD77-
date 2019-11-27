@@ -180,6 +180,8 @@ void fw_main_task(void *data)
 			}
 
 			if (menuSystemGetCurrentMenuNumber() != MENU_CONTACT_LIST &&
+					menuSystemGetCurrentMenuNumber() != MENU_CONTACT_QUICKLIST &&
+					menuSystemGetCurrentMenuNumber() != MENU_CONTACT_LIST_SUBMENU &&
 					menuSystemGetCurrentMenuNumber() != MENU_CONTACT_DETAILS)
 			{
 				if (key_event == EVENT_KEY_CHANGE

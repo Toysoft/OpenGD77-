@@ -1076,7 +1076,8 @@ void UC1701_drawChoice(UC1701_Choice_t choice, bool clearRegion)
 	} choices[] =
 	{
 			{ "OK" ,  NULL  }, // UC1701_CHOICE_OK
-			{ "YES",  "NO"  }  // UC1701_CHOICE_YESNO
+			{ "YES",  "NO"  },  // UC1701_CHOICE_YESNO
+			{ NULL, "DISMISS" } // UC1701_CHOICE_DISMISS
 	};
 	char *lText = NULL;
 	char *rText = NULL;
@@ -1089,20 +1090,12 @@ void UC1701_drawChoice(UC1701_Choice_t choice, bool clearRegion)
 		UC1701_fillRect(0, 48, 128, 16, true);
 	}
 
-	switch (choice)
-	{
-	case UC1701_CHOICE_OK:
-		lText = choices[choice].lText;
-		break;
-
-	case UC1701_CHOICE_YESNO:
-		lText = choices[choice].lText;
-		rText = choices[choice].rText;
-		break;
-
-	default:
+	if (choice >= NUM_UC1701_CHOICES) {
 		return;
 	}
+
+	lText = choices[choice].lText;
+	rText = choices[choice].rText;
 
 	if (lText)
 	{

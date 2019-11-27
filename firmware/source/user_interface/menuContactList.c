@@ -27,10 +27,17 @@ static struct_codeplugContact_t contact;
 static int contactCallType;
 static int menuContactListDisplayState;
 static int menuContactListTimeout;
+static int menuContactListOverrideState = 0;
 
-enum MENU_CONTACT_LIST_STATE { MENU_CONTACT_LIST_DISPLAY=0, MENU_CONTACT_LIST_CONFIRM, MENU_CONTACT_LIST_DELETED, MENU_CONTACT_LIST_TG_IN_RXGROUP };
+enum MENU_CONTACT_LIST_STATE
+{
+	MENU_CONTACT_LIST_DISPLAY = 0,
+	MENU_CONTACT_LIST_CONFIRM,
+	MENU_CONTACT_LIST_DELETED,
+	MENU_CONTACT_LIST_TG_IN_RXGROUP
+};
 
-static const char *calltypeName[] = { "Group Call", "Private Call" };
+static const char *calltypeName[] = { "Group Call", "Private Call", "All Call" };
 
 void reloadContactList(void)
 {
@@ -45,10 +52,18 @@ int menuContactList(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		contactCallType = CONTACT_CALLTYPE_TG;
-		reloadContactList();
-		fw_reset_keyboard();
-		menuContactListDisplayState = MENU_CONTACT_LIST_DISPLAY;
+		if (menuContactListOverrideState == 0) {
+			contactCallType = CONTACT_CALLTYPE_TG;
+			fw_reset_keyboard();
+			reloadContactList();
+			menuContactListDisplayState = MENU_CONTACT_LIST_DISPLAY;
+		}
+		else
+		{
+			codeplugContactGetDataForIndex(contactListContactIndex, &contactListContactData);
+			menuContactListDisplayState = menuContactListOverrideState;
+			menuContactListOverrideState = 0;
+		}
 		updateScreen();
 	}
 	else
@@ -94,23 +109,23 @@ static void updateScreen(void)
 		}
 		break;
 	case MENU_CONTACT_LIST_CONFIRM:
-		codeplugUtilConvertBufToString(contact.name, nameBuf, 16);
+		codeplugUtilConvertBufToString(contactListContactData.name, nameBuf, 16);
 		menuDisplayTitle(nameBuf);
 		UC1701_printCentered(16, "Delete contact?",UC1701_FONT_8x16);
-		UC1701_printCentered(48, "YES          NO",UC1701_FONT_8x16);
+		UC1701_drawChoice(UC1701_CHOICE_YESNO, false);
 		break;
 	case MENU_CONTACT_LIST_DELETED:
-		codeplugUtilConvertBufToString(contact.name, nameBuf, 16);
+		codeplugUtilConvertBufToString(contactListContactData.name, nameBuf, 16);
 		menuDisplayTitle(nameBuf);
 		UC1701_printCentered(16, "Contact deleted",UC1701_FONT_8x16);
-		UC1701_drawChoice(UC1701_CHOICE_OK, false);
+		UC1701_drawChoice(UC1701_CHOICE_DISMISS, false);
 		break;
 	case MENU_CONTACT_LIST_TG_IN_RXGROUP:
-		codeplugUtilConvertBufToString(contact.name, nameBuf, 16);
+		codeplugUtilConvertBufToString(contactListContactData.name, nameBuf, 16);
 		menuDisplayTitle(nameBuf);
 		UC1701_printCentered(16, "Contact used",UC1701_FONT_8x16);
 		UC1701_printCentered(32, "in RX group",UC1701_FONT_8x16);
-		UC1701_drawChoice(UC1701_CHOICE_OK, false);
+		UC1701_drawChoice(UC1701_CHOICE_DISMISS, false);
 		break;
 	}
 	UC1701_render();
@@ -128,75 +143,53 @@ static void handleEvent(int buttons, int keys, int events)
 	switch (menuContactListDisplayState)
 	{
 	case MENU_CONTACT_LIST_DISPLAY:
-		if (events & 0x01)
+		if (KEYCHECK_PRESS(keys, KEY_DOWN))
 		{
-			if (KEYCHECK_PRESS(keys, KEY_DOWN))
+			MENU_INC(gMenusCurrentItemIndex, gMenusEndIndex);
+			contactListContactIndex = codeplugContactGetDataForNumber(
+					gMenusCurrentItemIndex + 1, contactCallType,
+					&contactListContactData);
+			updateScreen();
+		}
+		else if (KEYCHECK_PRESS(keys, KEY_UP))
+		{
+			MENU_DEC(gMenusCurrentItemIndex, gMenusEndIndex);
+			contactListContactIndex = codeplugContactGetDataForNumber(
+					gMenusCurrentItemIndex + 1, contactCallType,
+					&contactListContactData);
+			updateScreen();
+		}
+		else if (KEYCHECK_SHORTUP(keys, KEY_HASH))
+		{
+			if (contactCallType == CONTACT_CALLTYPE_TG)
 			{
-				MENU_INC(gMenusCurrentItemIndex, gMenusEndIndex);
-				contactListContactIndex = codeplugContactGetDataForNumber(
-						gMenusCurrentItemIndex + 1, contactCallType,
-						&contactListContactData);
-				updateScreen();
+				contactCallType = CONTACT_CALLTYPE_PC;
 			}
-			else if (KEYCHECK_PRESS(keys, KEY_UP))
+			else
 			{
-				MENU_DEC(gMenusCurrentItemIndex, gMenusEndIndex);
-				contactListContactIndex = codeplugContactGetDataForNumber(
-						gMenusCurrentItemIndex + 1, contactCallType,
-						&contactListContactData);
-				updateScreen();
+				contactCallType = CONTACT_CALLTYPE_TG;
 			}
-			else if (KEYCHECK_SHORTUP(keys, KEY_HASH))
+			reloadContactList();
+			updateScreen();
+		}
+		else if (KEYCHECK_SHORTUP(keys, KEY_GREEN))
+		{
+			if (menuSystemGetCurrentMenuNumber() == MENU_CONTACT_QUICKLIST)
 			{
-				if (contactCallType == CONTACT_CALLTYPE_TG)
-				{
-					contactCallType = CONTACT_CALLTYPE_PC;
-				}
-				else
-				{
-					contactCallType = CONTACT_CALLTYPE_TG;
-				}
-				reloadContactList();
-				updateScreen();
-			}
-			else if (KEYCHECK_SHORTUP(keys, KEY_GREEN))
-			{
-				contactListContactIndex = codeplugContactGetDataForNumber(
-						gMenusCurrentItemIndex + 1, contactCallType, &contact);
-				setOverrideTGorPC(contact.tgNumber,
-						contact.callType == CONTACT_CALLTYPE_PC);
+				setOverrideTGorPC(contactListContactData.tgNumber, contactListContactData.callType == CONTACT_CALLTYPE_PC);
 				contactListContactIndex = 0;
 				menuSystemPopAllAndDisplayRootMenu();
 				return;
-			}
-			else if (KEYCHECK_LONGDOWN(keys, KEY_GREEN))
-			{
-				menuSystemPushNewMenu(MENU_CONTACT_DETAILS);
+			} else {
+				menuSystemPushNewMenu(MENU_CONTACT_LIST_SUBMENU);
 				return;
 			}
-			else if (KEYCHECK_SHORTUP(keys, KEY_RED))
-			{
-				if ((buttons & BUTTON_SK2) != 0)
-				{
-					contactListContactIndex = codeplugContactGetDataForNumber(
-							gMenusCurrentItemIndex + 1, contactCallType,
-							&contact);
-					if (contactListContactIndex > 0)
-					{
-						if (contact.callType == CONTACT_CALLTYPE_TG && codeplugContactGetRXGroup(contact.NOT_IN_CODEPLUGDATA_indexNumber)) {
-							menuContactListTimeout = 2000;
-							menuContactListDisplayState = MENU_CONTACT_LIST_TG_IN_RXGROUP;
-						} else {
-							menuContactListDisplayState = MENU_CONTACT_LIST_CONFIRM;
-						}
-						updateScreen();
-						return;
-					}
-				}
-				contactListContactIndex = 0;
-				menuSystemPopPreviousMenu();
-				return;
-			}
+		}
+		else if (KEYCHECK_SHORTUP(keys, KEY_RED))
+		{
+			contactListContactIndex = 0;
+			menuSystemPopPreviousMenu();
+			return;
 		}
 		break;
 
@@ -208,14 +201,15 @@ static void handleEvent(int buttons, int keys, int events)
 			contact.callType = 0;
 			codeplugContactSaveDataForIndex(contactListContactIndex, &contact);
 			contactListContactIndex = 0;
-			reloadContactList();
 			menuContactListTimeout = 2000;
 			menuContactListDisplayState = MENU_CONTACT_LIST_DELETED;
+			reloadContactList();
 			updateScreen();
 		}
 		else if (KEYCHECK_SHORTUP(keys, KEY_RED))
 		{
 			menuContactListDisplayState = MENU_CONTACT_LIST_DISPLAY;
+			reloadContactList();
 			updateScreen();
 		}
 		break;
@@ -223,11 +217,119 @@ static void handleEvent(int buttons, int keys, int events)
 	case MENU_CONTACT_LIST_DELETED:
 	case MENU_CONTACT_LIST_TG_IN_RXGROUP:
 		menuContactListTimeout--;
-		if ((menuContactListTimeout == 0) || (KEYCHECK_SHORTUP(keys, KEY_GREEN)))
+		if ((menuContactListTimeout == 0) || KEYCHECK_SHORTUP(keys, KEY_GREEN) || KEYCHECK_SHORTUP(keys, KEY_RED))
 		{
 			menuContactListDisplayState = MENU_CONTACT_LIST_DISPLAY;
+			reloadContactList();
 		}
 		updateScreen();
 		break;
 	}
+}
+
+enum CONTACT_LIST_QUICK_MENU_ITEMS
+{
+	CONTACT_LIST_QUICK_MENU_SELECT = 0,
+	CONTACT_LIST_QUICK_MENU_EDIT,
+	CONTACT_LIST_QUICK_MENU_DELETE,
+	NUM_CONTACT_LIST_QUICK_MENU_ITEMS    // The last item in the list is used so that we automatically get a total number of items in the list
+};
+
+static void updateSubMenuScreen(void)
+{
+	int mNum = 0;
+	char buf[17];
+
+	UC1701_clearBuf();
+
+	codeplugUtilConvertBufToString(contactListContactData.name, buf, 16);
+	menuDisplayTitle(buf);
+
+	for(int i = -1; i <= 1; i++)
+	{
+		mNum = menuGetMenuOffset(NUM_CONTACT_LIST_QUICK_MENU_ITEMS, i);
+
+		switch(mNum)
+		{
+			case CONTACT_LIST_QUICK_MENU_SELECT:
+				strcpy(buf, "Select TX");
+				break;
+			case CONTACT_LIST_QUICK_MENU_EDIT:
+				strcpy(buf, "Edit Contact");
+				break;
+			case CONTACT_LIST_QUICK_MENU_DELETE:
+				strcpy(buf, "Delete Contact");
+				break;
+			default:
+				strcpy(buf, "");
+		}
+
+		menuDisplayEntry(i, mNum, buf);
+	}
+
+	UC1701_render();
+	displayLightTrigger();
+}
+
+static void handleSubMenuEvent(int buttons, int keys, int events)
+{
+	if (KEYCHECK_SHORTUP(keys, KEY_RED))
+	{
+		menuSystemPopPreviousMenu();
+	}
+	else if (KEYCHECK_SHORTUP(keys, KEY_GREEN))
+	{
+		menuContactListOverrideState = 0;
+		switch (gMenusCurrentItemIndex)
+		{
+		case CONTACT_LIST_QUICK_MENU_SELECT:
+			setOverrideTGorPC(contactListContactData.tgNumber, contactListContactData.callType == CONTACT_CALLTYPE_PC);
+			contactListContactIndex = 0;
+			menuSystemPopAllAndDisplayRootMenu();
+			break;
+		case CONTACT_LIST_QUICK_MENU_EDIT:
+			menuSystemPushNewMenu(MENU_CONTACT_DETAILS);
+			break;
+		case CONTACT_LIST_QUICK_MENU_DELETE:
+ 			if (contactListContactIndex > 0)
+			{
+				if (contactListContactData.callType == CONTACT_CALLTYPE_TG && codeplugContactGetRXGroup(contactListContactData.NOT_IN_CODEPLUGDATA_indexNumber)) {
+					menuContactListTimeout = 2000;
+					menuContactListOverrideState = MENU_CONTACT_LIST_TG_IN_RXGROUP;
+				} else {
+					menuContactListOverrideState = MENU_CONTACT_LIST_CONFIRM;
+				}
+				menuSystemPopPreviousMenu();
+			}
+			break;
+		}
+	}
+	else if (KEYCHECK_PRESS(keys, KEY_DOWN))
+	{
+		MENU_INC(gMenusCurrentItemIndex, NUM_CONTACT_LIST_QUICK_MENU_ITEMS);
+		updateSubMenuScreen();
+	}
+	else if (KEYCHECK_PRESS(keys, KEY_UP))
+	{
+		MENU_DEC(gMenusCurrentItemIndex, NUM_CONTACT_LIST_QUICK_MENU_ITEMS);
+		updateSubMenuScreen();
+	}
+}
+
+int menuContactListSubMenu(int buttons, int keys, int events, bool isFirstRun)
+{
+	if (isFirstRun)
+	{
+		gMenusCurrentItemIndex=0;
+		updateSubMenuScreen();
+		fw_init_keyboard();
+	}
+	else
+	{
+		if (events!=0 && keys!=0)
+		{
+			handleSubMenuEvent(buttons, keys, events);
+		}
+	}
+	return 0;
 }

@@ -48,7 +48,9 @@ typedef enum
 typedef enum
 {
 	UC1701_CHOICE_OK = 0,
-	UC1701_CHOICE_YESNO
+	UC1701_CHOICE_YESNO,
+	UC1701_CHOICE_DISMISS,
+	NUM_UC1701_CHOICES
 } UC1701_Choice_t;
 
 extern uint8_t screenBuf[];

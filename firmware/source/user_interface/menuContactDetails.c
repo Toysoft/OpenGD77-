@@ -28,7 +28,7 @@ static void handleEvent(int buttons, int keys, int events);
 
 static struct_codeplugContact_t tmpContact;
 const static char callTypeString[3][8] = { "Group", "Private", "All" };
-
+static int contactDetailsIndex;
 static char digits[9];
 
 enum CONTACT_DETAILS_DISPLAY_LIST { /*CONTACT_DETAILS_NAME=0,*/ CONTACT_DETAILS_TG=0, CONTACT_DETAILS_CALLTYPE, CONTACT_DETAILS_TS,
@@ -43,14 +43,14 @@ int menuContactDetails(int buttons, int keys, int events, bool isFirstRun)
 	if (isFirstRun)
 	{
 		if (contactListContactIndex == 0) {
-			contactListContactIndex = codeplugContactGetFreeIndex();
-
+			contactDetailsIndex = codeplugContactGetFreeIndex();
 			tmpContact.name[0] = 0x00;
 			tmpContact.callType = CONTACT_CALLTYPE_TG;
 			tmpContact.reserve1 = 0xff;
 			tmpContact.tgNumber = 0;
 			digits[0] = 0x00;
 		} else {
+			contactDetailsIndex = contactListContactIndex;
 			memcpy(&tmpContact, &contactListContactData,sizeof(struct_codeplugContact_t));
 			itoa(tmpContact.tgNumber, digits, 10);
 		}
@@ -78,7 +78,6 @@ static void updateScreen(void)
 	char buf[17];
 
 	UC1701_clearBuf();
-//	menuDisplayTitle("Contact details");
 
 	if (tmpContact.name[0] == 0x00) {
 		strcpy(buf,"New Contact");
@@ -234,17 +233,17 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 			else if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
 			{
+				if (tmpContact.callType == CONTACT_CALLTYPE_ALL)
+				{
+					tmpContact.tgNumber = 16777215;
+				}
+				else
+				{
+					tmpContact.tgNumber = atoi(digits);
+				}
+
 				if (tmpContact.tgNumber > 0 && tmpContact.tgNumber <= 9999999)
 				{
-					if (tmpContact.callType == CONTACT_CALLTYPE_ALL)
-					{
-						tmpContact.tgNumber = 16777215;
-					}
-					else
-					{
-						tmpContact.tgNumber = atoi(digits);
-					}
-
 					int index = codeplugContactIndexByTGorPC(tmpContact.tgNumber, tmpContact.callType);
 					if (index > 0 && index != tmpContact.NOT_IN_CODEPLUGDATA_indexNumber)
 					{
@@ -253,7 +252,7 @@ static void handleEvent(int buttons, int keys, int events)
 					}
 					else
 					{
-						if (contactListContactIndex > 0 && contactListContactIndex <= 1024)
+						if (contactDetailsIndex > 0 && contactDetailsIndex <= 1024)
 						{
 							if (tmpContact.name[0] == 0x00)
 							{
@@ -273,8 +272,8 @@ static void handleEvent(int buttons, int keys, int events)
 									codeplugUtilConvertStringToBuf(buf, tmpContact.name, 16);
 								}
 							}
-							codeplugContactSaveDataForIndex(contactListContactIndex, &tmpContact);
-							contactListContactIndex = 0;
+							codeplugContactSaveDataForIndex(contactDetailsIndex, &tmpContact);
+//							contactListContactIndex = 0;
 							menuContactDetailsTimeout = 2000;
 							menuContactDetailsState = MENU_CONTACT_DETAILS_SAVED;
 						}
@@ -283,7 +282,7 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 			else if (KEYCHECK_SHORTUP(keys,KEY_RED))
 			{
-				contactListContactIndex = 0;
+//				contactListContactIndex = 0;
 				menuSystemPopPreviousMenu();
 				return;
 			}

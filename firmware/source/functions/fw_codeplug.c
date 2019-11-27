@@ -455,7 +455,7 @@ bool codeplugContactGetRXGroup(int index)
 	struct_codeplugRxGroup_t rxGroupBuf;
 	int i;
 
-	for (i = 1; i < 76; i++) {
+	for (i = 1; i <= 76; i++) {
 		codeplugRxGroupGetDataForIndex(i, &rxGroupBuf);
 		for (int j = 0; j<32; j++) {
 			if (rxGroupBuf.contacts[j] == index) {
