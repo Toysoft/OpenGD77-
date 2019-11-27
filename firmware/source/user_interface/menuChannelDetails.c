@@ -38,7 +38,7 @@ static int CTCSSTxIndex=0;
 static struct_codeplugChannel_t tmpChannel;// update a temporary copy of the channel and only write back if green menu is pressed
 
 enum CHANNEL_DETAILS_DISPLAY_LIST { CH_DETAILS_MODE = 0, CH_DETAILS_DMR_CC, CH_DETAILS_DMR_TS,CH_DETAILS_RXCTCSS, CH_DETAILS_TXCTCSS , CH_DETAILS_RXFREQ, CH_DETAILS_TXFREQ, CH_DETAILS_BANDWIDTH,
-									CH_DETAILS_FREQ_STEP, CH_DETAILS_TOT, CH_DETAILS_SKIP,
+									CH_DETAILS_FREQ_STEP, CH_DETAILS_TOT, CH_DETAILS_SKIP, CH_DETAILS_RXGROUP,
 									NUM_CH_DETAILS_ITEMS};// The last item in the list is used so that we automatically get a total number of items in the list
 
 int menuChannelDetails(int buttons, int keys, int events, bool isFirstRun)
@@ -77,6 +77,8 @@ static void updateScreen(void)
 	int tmpVal;
 	int val_before_dp;
 	int val_after_dp;
+	struct_codeplugRxGroup_t rxGroupBuf;
+	char rxNameBuf[17];
 
 	UC1701_clearBuf();
 	menuDisplayTitle("Channel details");
@@ -193,6 +195,11 @@ static void updateScreen(void)
 				sprintf(buf, "Skip:%s", ((tmpChannel.flag4 & 0x20) == 0x20) ? "Yes" : "No");
 				break;
 
+			case CH_DETAILS_RXGROUP:
+				codeplugRxGroupGetDataForIndex(tmpChannel.rxGroupList, &rxGroupBuf);
+				codeplugUtilConvertBufToString(rxGroupBuf.name, rxNameBuf, 16);
+				snprintf(buf, 16, "RX Grp:%s", rxNameBuf);
+				break;
 		}
 
 		menuDisplayEntry(i, mNum, buf);
@@ -205,6 +212,7 @@ static void updateScreen(void)
 static void handleEvent(int buttons, int keys, int events)
 {
 	int tmpVal;
+	struct_codeplugRxGroup_t rxGroupBuf;
 
 	if ((keys & KEY_DOWN)!=0)
 	{
@@ -283,6 +291,18 @@ static void handleEvent(int buttons, int keys, int events)
 			case CH_DETAILS_SKIP:
 				tmpChannel.flag4 |= 0x20;// set Channel Skip bit (was Auto Scan)
 				break;
+			case CH_DETAILS_RXGROUP:
+				tmpVal = tmpChannel.rxGroupList;
+				tmpVal++;
+				while (tmpVal < 76) {
+					codeplugRxGroupGetDataForIndex(tmpVal, &rxGroupBuf);
+					if (rxGroupBuf.name[0] != 0) {
+						tmpChannel.rxGroupList = tmpVal;
+						break;
+					}
+					tmpVal++;
+				}
+				break;
 		}
 	}
 	else if ((keys & KEY_LEFT)!=0)
@@ -354,6 +374,19 @@ static void handleEvent(int buttons, int keys, int events)
 			case CH_DETAILS_SKIP:
 				tmpChannel.flag4 &= ~0x20;// clear Channel Skip Bit (was Auto Scan bit)
 				break;
+			case CH_DETAILS_RXGROUP:
+					tmpVal = tmpChannel.rxGroupList;
+					tmpVal--;
+					while (tmpVal > 0) {
+						codeplugRxGroupGetDataForIndex(tmpVal, &rxGroupBuf);
+						if (rxGroupBuf.name[0] != 0) {
+							tmpChannel.rxGroupList = tmpVal;
+							break;
+						}
+						tmpVal--;
+					}
+				break;
+
 		}
 	}
 	else if ((keys & KEY_GREEN)!=0)
