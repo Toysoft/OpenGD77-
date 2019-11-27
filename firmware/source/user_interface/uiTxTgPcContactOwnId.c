@@ -236,7 +236,7 @@ static void handleEvent(int buttons, int keys, int events)
 				}
 				else
 				{
-					if (ccs7 > 0)
+					if (ccs7 > 1)
 						ccs7--;
 
 					refreshScreen = true;
