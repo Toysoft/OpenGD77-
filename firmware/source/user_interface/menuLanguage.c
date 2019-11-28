@@ -17,6 +17,8 @@
  */
 #include <user_interface/menuSystem.h>
 #include <user_interface/uiLocalisation.h>
+#include <fw_settings.h>
+
 
 static void updateScreen(void);
 static void handleEvent(int buttons, int keys, int events);
@@ -68,6 +70,7 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else if ((keys & KEY_GREEN)!=0)
 	{
+		nonVolatileSettings.languageIndex = gMenusCurrentItemIndex;
 		currentLanguage = &languages[gMenusCurrentItemIndex];
 		menuSystemPopAllAndDisplayRootMenu();
 		return;

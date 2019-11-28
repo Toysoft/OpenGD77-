@@ -250,7 +250,4 @@ const stringsTable_t germanLanguage =
 };
 
 const stringsTable_t languages[NUM_LANGUAGES]= { englishLanguage ,frenchLanguage,germanLanguage};
-
-const stringsTable_t *currentLanguage = &languages[0];
-
-stringsTable_t *lang;
+const stringsTable_t *currentLanguage;

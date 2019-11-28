@@ -59,6 +59,7 @@ typedef struct settingsStruct
 	uint8_t			currentVFONumber;
 	uint8_t			dmrFilterLevel;
 	uint8_t			dmrCaptureTimeout;
+	uint8_t			languageIndex;
 } settingsStruct_t;
 
 typedef enum {DMR_FILTER_NONE=0,DMR_FILTER_CC=1, DMR_FILTER_CC_TS=2, DMR_FILTER_CC_TS_TG=3} dmrFilter_t;

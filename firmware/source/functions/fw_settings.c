@@ -19,6 +19,7 @@
 
 #include <hardware/fw_EEPROM.h>
 #include <user_interface/menuSystem.h>
+#include <user_interface/uiLocalisation.h>
 #include "fw_settings.h"
 #include "fw_trx.h"
 #include "fw_codeplug.h"
@@ -30,7 +31,7 @@ const int BAND_UHF_MIN 	= 43000000;
 const int BAND_UHF_MAX 	= 45000000;
 
 static const int STORAGE_BASE_ADDRESS 		= 0x6000;
-static const int STORAGE_MAGIC_NUMBER 		= 0x4727;
+static const int STORAGE_MAGIC_NUMBER 		= 0x4728;
 
 settingsStruct_t nonVolatileSettings;
 struct_codeplugChannel_t *currentChannelData;
@@ -67,6 +68,8 @@ bool settingsLoadSettings(void)
 	settingsInitVFOChannel(1);
 
 	trxDMRID = codeplugGetUserDMRID();
+
+	currentLanguage = &languages[nonVolatileSettings.languageIndex];
 
 	// Added this parameter without changing the magic number, so need to check for default / invalid numbers
 	if (nonVolatileSettings.txTimeoutBeepX5Secs > 4)
@@ -149,6 +152,7 @@ void settingsRestoreDefaultSettings(void)
 	nonVolatileSettings.currentVFONumber = 0;
 	nonVolatileSettings.dmrFilterLevel = DMR_FILTER_CC_TS;
 	nonVolatileSettings.dmrCaptureTimeout=10;// Default to holding 10 seconds after a call ends
+	nonVolatileSettings.languageIndex=0;
 
 	currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];// Set the current channel data to point to the VFO data since the default screen will be the VFO
 
