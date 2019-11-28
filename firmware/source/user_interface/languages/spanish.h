@@ -104,5 +104,9 @@ const stringsTable_t spanishLanguage =
 	.key_long			= "Key long:%1d.%1ds",
 	.key_repeat			= "Key rpt:%1d.%1ds",
 	.dmr_filter_timeout	= "Filtro tiempo",
+	.brightness			= "Brillo",
+	.contrast			= "Contraste",
+	.colour_invert		= "Color:Invertido",
+	.colour_normal		= "Color:Normal",
 };
 #endif /* USER_INTERFACE_LANGUAGES_SPANISH_H_ */
