@@ -104,6 +104,9 @@ const stringsTable_t catalanLanguage =
 	.key_long			= "Key long:%1d.%1ds",
 	.key_repeat			= "Key rpt:%1d.%1ds",
 	.dmr_filter_timeout	= "Filtre temps",
+	.brightness			= "Brillantor",
+	.contrast			= "Contrast",
+	.colour_invert		= "Color:Invertit",
+	.colour_normal		= "Color:Normal",
 };
-
 #endif /* USER_INTERFACE_LANGUAGES_CATALAN_H_*/
