@@ -17,11 +17,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-
 #ifndef USER_INTERFACE_LANGUAGES_PORTUGUESE_H_
 #define USER_INTERFACE_LANGUAGES_PORTUGUESE_H_
-
-
 
 const stringsTable_t portuguesLanguage =
 {
@@ -97,7 +94,6 @@ const stringsTable_t portuguesLanguage =
 .yes				= "Sim",
 .no					= "Nao",
 .rx_group			= "Rx Grp",
-
 .on					= "On",
 .timeout_beep		= "Timeout beep",
 .factory_reset		= "Fact Reset",
@@ -108,6 +104,10 @@ const stringsTable_t portuguesLanguage =
 .key_long			= "Key long:%1d.%1ds",
 .key_repeat			= "Key rpt:%1d.%1ds",
 .dmr_filter_timeout	= "Filter time",
+.brightness			= "Brightness",
+.contrast			= "Contrast",
+.colour_invert		= "Color:Invert",
+.colour_normal		= "Color:Normal",
+.backlight_timeout	= "Timeout",
 };
-
 #endif /* USER_INTERFACE_LANGUAGES_PORTUGUESE_H_ */

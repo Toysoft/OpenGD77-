@@ -23,96 +23,94 @@
 
 typedef struct stringsTable
 {
-       const char LANGUAGE_NAME[LANGUAGE_TEXTS_LENGTH];//0
-       const char menu[LANGUAGE_TEXTS_LENGTH];// 1
-       const char credits[LANGUAGE_TEXTS_LENGTH];// 2
-       const char zone[LANGUAGE_TEXTS_LENGTH];//3
-       const char rssi[LANGUAGE_TEXTS_LENGTH];// 4
-       const char battery[LANGUAGE_TEXTS_LENGTH];// 5
-       const char contacts[LANGUAGE_TEXTS_LENGTH];// 6
-       const char last_heard[LANGUAGE_TEXTS_LENGTH];// 7
-       const char firmware_info[LANGUAGE_TEXTS_LENGTH];// 8
-       const char options[LANGUAGE_TEXTS_LENGTH];// 9
-       const char display_options[LANGUAGE_TEXTS_LENGTH];// 10
-       const char channel_details[LANGUAGE_TEXTS_LENGTH];// 11
-       const char language[LANGUAGE_TEXTS_LENGTH];// 12
-       const char new_contact[LANGUAGE_TEXTS_LENGTH];// 13
-       const char contact_list[LANGUAGE_TEXTS_LENGTH];// 14
-       const char contact_details[LANGUAGE_TEXTS_LENGTH];//15
-       const char hotspot_mode[LANGUAGE_TEXTS_LENGTH];//
-       const char batteryVoltage[LANGUAGE_TEXTS_LENGTH];//
-       const char built[LANGUAGE_TEXTS_LENGTH];//
-       const char zones[LANGUAGE_TEXTS_LENGTH];//
-       const char keypad_locked[LANGUAGE_TEXTS_LENGTH];//
-       const char press_blue_plus_star[LANGUAGE_TEXTS_LENGTH];//
-	   const char to_unlock[LANGUAGE_TEXTS_LENGTH];//
-	   const char unlocked[LANGUAGE_TEXTS_LENGTH];//
-	   const char power_off[LANGUAGE_TEXTS_LENGTH]; //
-	   const char error[LANGUAGE_TEXTS_LENGTH];//
-	   const char rx_only[LANGUAGE_TEXTS_LENGTH];//
-	   const char out_of_band[LANGUAGE_TEXTS_LENGTH];//
-	   const char timeout[LANGUAGE_TEXTS_LENGTH];//
-	   const char tg_entry[LANGUAGE_TEXTS_LENGTH];//
-	   const char pc_entry[LANGUAGE_TEXTS_LENGTH];//
-	   const char user_dmr_id[LANGUAGE_TEXTS_LENGTH];//
-	   const char contact[LANGUAGE_TEXTS_LENGTH];//
-	   const char displayRxFreq[LANGUAGE_TEXTS_LENGTH];//  "%d.%05d MHz";
-	   const char accept_call[LANGUAGE_TEXTS_LENGTH];//  "Accept call?"
-	   const char private_call[LANGUAGE_TEXTS_LENGTH];// "Private call"
-	   const char squelch[LANGUAGE_TEXTS_LENGTH];// "Squelch"
-	   const char vfoRxFreq[LANGUAGE_TEXTS_LENGTH];//"%cR %d.%05d MHz"
-	   const char vfoTxFreq[LANGUAGE_TEXTS_LENGTH];//"%cT %d.%05d MHz"
-	   const char vfoEnterFreq[LANGUAGE_TEXTS_LENGTH];//"%c%c%c.%c%c%c%c%c MHz"
-	   const char quick_menu[LANGUAGE_TEXTS_LENGTH];//"Quick Menu"
-	   const char filter[LANGUAGE_TEXTS_LENGTH];//"Filter:%s"
-	   const char all_channels[LANGUAGE_TEXTS_LENGTH];//"All Channels"
-	   const char gotoChannel[LANGUAGE_TEXTS_LENGTH];//"Goto %d"
-	   const char scan[LANGUAGE_TEXTS_LENGTH];// "Scan"
-	   const char channelToVfo[LANGUAGE_TEXTS_LENGTH];// "Channel --> VFO",
-	   const char vfoToChannel[LANGUAGE_TEXTS_LENGTH];// "VFO --> Channel",
-	   const char group[LANGUAGE_TEXTS_LENGTH];//"Group",
-	   const char private[LANGUAGE_TEXTS_LENGTH];//"Private",
-	   const char all[LANGUAGE_TEXTS_LENGTH];//"All",
-	   const char type[LANGUAGE_TEXTS_LENGTH];//"Type:"
-	   const char timeSlot[LANGUAGE_TEXTS_LENGTH];//"Timeslot"
-	   const char none[LANGUAGE_TEXTS_LENGTH];//"none"
-	   const char contact_saved[LANGUAGE_TEXTS_LENGTH];// "Contact saved",
-	   const char duplicate[LANGUAGE_TEXTS_LENGTH];//"Duplicate"
-	   const char tg[LANGUAGE_TEXTS_LENGTH];//"TG"
-	   const char pc[LANGUAGE_TEXTS_LENGTH];//"PC"
-	   const char ts[LANGUAGE_TEXTS_LENGTH];//"TS"
-	   const char mode[LANGUAGE_TEXTS_LENGTH];//"Mode"
-	   const char colour_code[LANGUAGE_TEXTS_LENGTH];//"Color Code"
-	   const char n_a[LANGUAGE_TEXTS_LENGTH];//"N/A"
-
-	   const char channelDetailsRx[LANGUAGE_TEXTS_LENGTH];//"Rx:%d.%05dMHz",
-	   const char channelDetailsTx[LANGUAGE_TEXTS_LENGTH];//"Tx:%d.%05dMHz",
-	   const char bandwidth[LANGUAGE_TEXTS_LENGTH];
-	   const char stepFreq[LANGUAGE_TEXTS_LENGTH];
-
-	   const char tot[LANGUAGE_TEXTS_LENGTH];
-	   const char off[LANGUAGE_TEXTS_LENGTH];
-	   const char skip[LANGUAGE_TEXTS_LENGTH];
-	   const char yes[LANGUAGE_TEXTS_LENGTH];
-	   const char no[LANGUAGE_TEXTS_LENGTH];
-	   const char rx_group[LANGUAGE_TEXTS_LENGTH];
-
-	   const char on[LANGUAGE_TEXTS_LENGTH];
-	   const char timeout_beep[LANGUAGE_TEXTS_LENGTH];
-	   const char factory_reset[LANGUAGE_TEXTS_LENGTH];
-	   const char calibration[LANGUAGE_TEXTS_LENGTH];
-	   const char band_limits[LANGUAGE_TEXTS_LENGTH];
-	   const char beep_volume[LANGUAGE_TEXTS_LENGTH];
-	   const char dmr_mic_gain[LANGUAGE_TEXTS_LENGTH];
-	   const char key_long[LANGUAGE_TEXTS_LENGTH];
-	   const char key_repeat[LANGUAGE_TEXTS_LENGTH];
-	   const char dmr_filter_timeout[LANGUAGE_TEXTS_LENGTH];
-
-
-
-} stringsTable_t;//
+   const char LANGUAGE_NAME[LANGUAGE_TEXTS_LENGTH];//0
+   const char menu[LANGUAGE_TEXTS_LENGTH];// 1
+   const char credits[LANGUAGE_TEXTS_LENGTH];// 2
+   const char zone[LANGUAGE_TEXTS_LENGTH];//3
+   const char rssi[LANGUAGE_TEXTS_LENGTH];// 4
+   const char battery[LANGUAGE_TEXTS_LENGTH];// 5
+   const char contacts[LANGUAGE_TEXTS_LENGTH];// 6
+   const char last_heard[LANGUAGE_TEXTS_LENGTH];// 7
+   const char firmware_info[LANGUAGE_TEXTS_LENGTH];// 8
+   const char options[LANGUAGE_TEXTS_LENGTH];// 9
+   const char display_options[LANGUAGE_TEXTS_LENGTH];// 10
+   const char channel_details[LANGUAGE_TEXTS_LENGTH];// 11
+   const char language[LANGUAGE_TEXTS_LENGTH];// 12
+   const char new_contact[LANGUAGE_TEXTS_LENGTH];// 13
+   const char contact_list[LANGUAGE_TEXTS_LENGTH];// 14
+   const char contact_details[LANGUAGE_TEXTS_LENGTH];//15
+   const char hotspot_mode[LANGUAGE_TEXTS_LENGTH];//
+   const char batteryVoltage[LANGUAGE_TEXTS_LENGTH];//
+   const char built[LANGUAGE_TEXTS_LENGTH];//
+   const char zones[LANGUAGE_TEXTS_LENGTH];//
+   const char keypad_locked[LANGUAGE_TEXTS_LENGTH];//
+   const char press_blue_plus_star[LANGUAGE_TEXTS_LENGTH];//
+   const char to_unlock[LANGUAGE_TEXTS_LENGTH];//
+   const char unlocked[LANGUAGE_TEXTS_LENGTH];//
+   const char power_off[LANGUAGE_TEXTS_LENGTH]; //
+   const char error[LANGUAGE_TEXTS_LENGTH];//
+   const char rx_only[LANGUAGE_TEXTS_LENGTH];//
+   const char out_of_band[LANGUAGE_TEXTS_LENGTH];//
+   const char timeout[LANGUAGE_TEXTS_LENGTH];//
+   const char tg_entry[LANGUAGE_TEXTS_LENGTH];//
+   const char pc_entry[LANGUAGE_TEXTS_LENGTH];//
+   const char user_dmr_id[LANGUAGE_TEXTS_LENGTH];//
+   const char contact[LANGUAGE_TEXTS_LENGTH];//
+   const char displayRxFreq[LANGUAGE_TEXTS_LENGTH];//  "%d.%05d MHz";
+   const char accept_call[LANGUAGE_TEXTS_LENGTH];//  "Accept call?"
+   const char private_call[LANGUAGE_TEXTS_LENGTH];// "Private call"
+   const char squelch[LANGUAGE_TEXTS_LENGTH];// "Squelch"
+   const char vfoRxFreq[LANGUAGE_TEXTS_LENGTH];//"%cR %d.%05d MHz"
+   const char vfoTxFreq[LANGUAGE_TEXTS_LENGTH];//"%cT %d.%05d MHz"
+   const char vfoEnterFreq[LANGUAGE_TEXTS_LENGTH];//"%c%c%c.%c%c%c%c%c MHz"
+   const char quick_menu[LANGUAGE_TEXTS_LENGTH];//"Quick Menu"
+   const char filter[LANGUAGE_TEXTS_LENGTH];//"Filter:%s"
+   const char all_channels[LANGUAGE_TEXTS_LENGTH];//"All Channels"
+   const char gotoChannel[LANGUAGE_TEXTS_LENGTH];//"Goto %d"
+   const char scan[LANGUAGE_TEXTS_LENGTH];// "Scan"
+   const char channelToVfo[LANGUAGE_TEXTS_LENGTH];// "Channel --> VFO",
+   const char vfoToChannel[LANGUAGE_TEXTS_LENGTH];// "VFO --> Channel",
+   const char group[LANGUAGE_TEXTS_LENGTH];//"Group",
+   const char private[LANGUAGE_TEXTS_LENGTH];//"Private",
+   const char all[LANGUAGE_TEXTS_LENGTH];//"All",
+   const char type[LANGUAGE_TEXTS_LENGTH];//"Type:"
+   const char timeSlot[LANGUAGE_TEXTS_LENGTH];//"Timeslot"
+   const char none[LANGUAGE_TEXTS_LENGTH];//"none"
+   const char contact_saved[LANGUAGE_TEXTS_LENGTH];// "Contact saved",
+   const char duplicate[LANGUAGE_TEXTS_LENGTH];//"Duplicate"
+   const char tg[LANGUAGE_TEXTS_LENGTH];//"TG"
+   const char pc[LANGUAGE_TEXTS_LENGTH];//"PC"
+   const char ts[LANGUAGE_TEXTS_LENGTH];//"TS"
+   const char mode[LANGUAGE_TEXTS_LENGTH];//"Mode"
+   const char colour_code[LANGUAGE_TEXTS_LENGTH];//"Color Code"
+   const char n_a[LANGUAGE_TEXTS_LENGTH];//"N/A"
+   const char channelDetailsRx[LANGUAGE_TEXTS_LENGTH];//"Rx:%d.%05dMHz",
+   const char channelDetailsTx[LANGUAGE_TEXTS_LENGTH];//"Tx:%d.%05dMHz",
+   const char bandwidth[LANGUAGE_TEXTS_LENGTH];
+   const char stepFreq[LANGUAGE_TEXTS_LENGTH];
+   const char tot[LANGUAGE_TEXTS_LENGTH];
+   const char off[LANGUAGE_TEXTS_LENGTH];
+   const char skip[LANGUAGE_TEXTS_LENGTH];
+   const char yes[LANGUAGE_TEXTS_LENGTH];
+   const char no[LANGUAGE_TEXTS_LENGTH];
+   const char rx_group[LANGUAGE_TEXTS_LENGTH];
+   const char on[LANGUAGE_TEXTS_LENGTH];
+   const char timeout_beep[LANGUAGE_TEXTS_LENGTH];
+   const char factory_reset[LANGUAGE_TEXTS_LENGTH];
+   const char calibration[LANGUAGE_TEXTS_LENGTH];
+   const char band_limits[LANGUAGE_TEXTS_LENGTH];
+   const char beep_volume[LANGUAGE_TEXTS_LENGTH];
+   const char dmr_mic_gain[LANGUAGE_TEXTS_LENGTH];
+   const char key_long[LANGUAGE_TEXTS_LENGTH];
+   const char key_repeat[LANGUAGE_TEXTS_LENGTH];
+   const char dmr_filter_timeout[LANGUAGE_TEXTS_LENGTH];
+   const char brightness[LANGUAGE_TEXTS_LENGTH];
+   const char contrast[LANGUAGE_TEXTS_LENGTH];
+   const char colour_invert[LANGUAGE_TEXTS_LENGTH];
+   const char colour_normal[LANGUAGE_TEXTS_LENGTH];
+   const char backlight_timeout[LANGUAGE_TEXTS_LENGTH];
+} stringsTable_t;
 
 extern const stringsTable_t languages[];
 extern const stringsTable_t *currentLanguage;
-
 #endif

@@ -17,6 +17,7 @@
  */
 #include <hardware/UC1701.h>
 #include <user_interface/menuSystem.h>
+#include <user_interface/uiLocalisation.h>
 #include "fw_settings.h"
 
 static void updateScreen(void);
@@ -59,7 +60,7 @@ static void updateScreen(void)
 	char buf[17];
 
 	UC1701_clearBuf();
-	menuDisplayTitle("Display options");
+	menuDisplayTitle(currentLanguage->display_options);
 
 	// Can only display 3 of the options at a time menu at -1, 0 and +1
 	for(int i = -1; i <= 1; i++)
@@ -69,22 +70,22 @@ static void updateScreen(void)
 		switch(mNum)
 		{
 			case DISPLAY_MENU_BRIGHTNESS:
-				sprintf(buf, "Brightness %d%%", nonVolatileSettings.displayBacklightPercentage);
+				sprintf(buf, "%s:%d%%",currentLanguage->brightness, nonVolatileSettings.displayBacklightPercentage);
 				break;
 			case DISPLAY_MENU_CONTRAST:
-				sprintf(buf, "Contrast %d", contrast);
+				sprintf(buf, "%s:%d", currentLanguage->contrast, contrast);
 				break;
 			case DISPLAY_MENU_TIMEOUT:
-				sprintf(buf, "Timeout %d", backLightTimeout);
+				sprintf(buf, "%s:%d", currentLanguage->backlight_timeout,backLightTimeout);
 				break;
 			case DISPLAY_MENU_COLOUR_INVERT:
 				if (inverseVideo)
 				{
-					strcpy(buf, "Color:Invert");
+					strcpy(buf, currentLanguage->colour_invert);
 				}
 				else
 				{
-					strcpy(buf, "Color:Normal");
+					strcpy(buf, currentLanguage->colour_normal);
 				}
 				break;
 		}
