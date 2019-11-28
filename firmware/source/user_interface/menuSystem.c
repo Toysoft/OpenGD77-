@@ -16,6 +16,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 #include <user_interface/menuSystem.h>
+#include <user_interface/uiLocalisation.h>
 #include "fw_settings.h"
 
 int menuDisplayLightTimer=-1;
@@ -49,6 +50,7 @@ int menuLockScreen(int buttons, int keys, int events, bool isFirstRun);
 int menuContactList(int buttons, int keys, int events, bool isFirstRun);
 int menuContactListSubMenu(int buttons, int keys, int events, bool isFirstRun);
 int menuContactDetails(int buttons, int keys, int events, bool isFirstRun);
+int menuLanguage(int buttons, int keys, int events, bool isFirstRun);
 
 /*
  * ---------------------- IMPORTANT ----------------------------
@@ -113,6 +115,7 @@ const MenuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
 												menuContactList,
 												menuContactListSubMenu,
 												menuContactDetails,
+												menuLanguage,
 };
 
 void menuSystemPushNewMenu(int menuNumber)
@@ -184,6 +187,7 @@ void menuInitMenuSystem(void)
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true);// Init and display this screen
 }
 
+/*
 const char menuStringTable[32][17] = { "",//0
                                          "Menu",//1
                                          "Contacts",//2
@@ -211,28 +215,29 @@ const char menuStringTable[32][17] = { "",//0
 										 "Contact List",//24
 										 "Contact Details",//25
 };
+*/
 
 const menuItemNew_t menuDataMainMenu[] = {
-	{10,10},// number of menus
-	{ 21, MENU_CREDITS },
-	{ 6, MENU_ZONE_LIST },
-	{ 17, MENU_RSSI_SCREEN },
-	{ 15, MENU_BATTERY },
-	{ 2, MENU_CONTACTS_MENU },
-	{ 18, MENU_LAST_HEARD },
-	{ 16, MENU_FIRMWARE_INFO },
-	{ 19, MENU_OPTIONS },
-	{ 20, MENU_DISPLAY},
-	{ 22, MENU_CHANNEL_DETAILS},
+	{11,11},// number of menus
+	{ 2, MENU_CREDITS },
+	{ 3, MENU_ZONE_LIST },
+	{ 4, MENU_RSSI_SCREEN },
+	{ 5, MENU_BATTERY },
+	{ 6, MENU_CONTACTS_MENU },
+	{ 7, MENU_LAST_HEARD },
+	{ 8, MENU_FIRMWARE_INFO },
+	{ 9, MENU_OPTIONS },
+	{ 10, MENU_DISPLAY},
+	{ 11, MENU_CHANNEL_DETAILS},
+	{ 12, MENU_LANGUAGE},
 };
 const menuItemNew_t menuDataContact[] = {
-	{ 2, 1 } ,// length
-	{ 7 , MENU_CONTACT_DETAILS },// New Contact
-	{ 24, MENU_CONTACT_LIST },// Contacts List
-	{ 0, MENU_CONTACT_LIST },// Contacts List
-	//{ 11, MENU_NUMERICAL_ENTRY},// Manual Dial
+	{ 10, 2} ,// length
+	{ 13 , MENU_CONTACT_DETAILS },// 7 New Contact
+	{ 14, MENU_CONTACT_LIST },// 24 Contacts List
 };
 
+/*
 const menuItemNew_t menuDataContactContact [] = {
 	{ 6,6 },// length
 	{ 9, -1 },// InBox
@@ -241,20 +246,20 @@ const menuItemNew_t menuDataContactContact [] = {
 	{ 12, -1 },// OutBox
 	{ 13, -1 },// Draft
 	{ 14, -1 }// Quick Test
-};
+};*/
 
 int menuDisplayList(int buttons, int keys, int events, bool isFirstRun)
 {
 	return 0;
 }
 
-void menuDisplayTitle(char *title)
+void menuDisplayTitle(const char *title)
 {
 	UC1701_drawFastHLine(0, 13, 128, true);
 	UC1701_printCore(0, 3, title, UC1701_FONT_8x8, UC1701_TEXT_ALIGN_CENTER, false);
 }
 
-void menuDisplayEntry(int loopOffset, int focusedItem, char *entryText)
+void menuDisplayEntry(int loopOffset, int focusedItem,const char *entryText)
 {
 	bool focused = (focusedItem == gMenusCurrentItemIndex);
 

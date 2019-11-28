@@ -17,6 +17,7 @@
  */
 #include <fw_codeplug.h>
 #include <user_interface/menuSystem.h>
+#include <user_interface/uiLocalisation.h>
 #include "fw_main.h"
 #include "fw_settings.h"
 
@@ -48,7 +49,7 @@ static void updateScreen(void)
 	struct_codeplugZone_t zoneBuf;
 
 	UC1701_clearBuf();
-	menuDisplayTitle("Zones");
+	menuDisplayTitle(currentLanguage->zones);
 
 	for(int i = -1; i <= 1; i++)
 	{
@@ -85,7 +86,7 @@ static void handleEvent(int buttons, int keys, int events)
 		nonVolatileSettings.currentZone = gMenusCurrentItemIndex;
 		nonVolatileSettings.currentChannelIndexInZone = 0;// Since we are switching zones the channel index should be reset
 		nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE]=0;// Since we are switching zones the TRx Group index should be reset
-		channelScreenChannelData.rxFreq=0x00; // Flag to the Channel screeen that the channel data is now invalid and needs to be reloaded
+		channelScreenChannelData.rxFreq=0x00; // Flag to the Channel screen that the channel data is now invalid and needs to be reloaded
 		menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
 
 		return;

@@ -21,6 +21,7 @@
 #include <hardware/fw_SPI_Flash.h>
 #include <user_interface/menuSystem.h>
 #include <user_interface/menuUtilityQSOData.h>
+#include <user_interface/uiLocalisation.h>
 #include "fw_trx.h"
 #include "fw_settings.h"
 #include <math.h>
@@ -384,7 +385,7 @@ static void displayChannelNameOrRxFrequency(char *buffer)
 	{
 		int val_before_dp = currentChannelData->rxFreq/100000;
 		int val_after_dp = currentChannelData->rxFreq - val_before_dp*100000;
-		sprintf(buffer,"%d.%05d MHz",val_before_dp, val_after_dp);
+		sprintf(buffer,currentLanguage->displayRxFreq,val_before_dp, val_after_dp);
 	}
 	UC1701_printCentered(52,buffer,UC1701_FONT_6x8);
 }
@@ -468,21 +469,21 @@ void menuUtilityRenderQSOData(void)
 		if (trxTalkGroupOrPcId != (LinkHead->id | (PC_CALL_FLAG<<24)))
 		{
 			// No either we are not in PC mode or not on a Private Call to this station
-			UC1701_printCentered(32, "Accept call?",UC1701_FONT_8x16);
+			UC1701_printCentered(32, currentLanguage->accept_call,UC1701_FONT_8x16);
 			UC1701_drawChoice(UC1701_CHOICE_YESNO, false);
 			menuUtilityReceivedPcId = LinkHead->id | (PC_CALL_FLAG<<24);
 		    set_melody(melody_private_call);
 		}
 		else
 		{
-			UC1701_printCentered(32, "Private call",UC1701_FONT_8x16);
+			UC1701_printCentered(32, currentLanguage->private_call,UC1701_FONT_8x16);
 		}
 	}
 	else
 	{
 		// Group call
 		uint32_t tg = (LinkHead->talkGroupOrPcId & 0xFFFFFF);
-		sprintf(buffer,"TG %d", tg);
+		sprintf(buffer,"%s %d",currentLanguage->tg, tg);
 		if (tg != trxTalkGroupOrPcId || (dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot()) ||
 										(dmrMonitorCapturedCC!=-1 && dmrMonitorCapturedCC != trxGetDMRColourCode()))
 		{
@@ -569,7 +570,7 @@ void menuUtilityRenderHeader(void)
 //				(trxGetMode() == RADIO_MODE_DIGITAL && settingsPrivateCallMuteMode == true)?" MUTE":"");// The location that this was displayed is now used for the power level
 
 				UC1701_printAt(0,Y_OFFSET, "DMR",UC1701_FONT_6x8);
-				sprintf(buffer, "TS%d",trxGetDMRTimeSlot()+1);
+				sprintf(buffer, "%s%d",currentLanguage->ts,trxGetDMRTimeSlot()+1);
 				if (nonVolatileSettings.dmrFilterLevel < DMR_FILTER_CC_TS)
 				{
 					UC1701_fillRect(20, Y_OFFSET,20,8,false);

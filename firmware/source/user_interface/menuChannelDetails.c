@@ -19,6 +19,7 @@
 
 #include <user_interface/menuSystem.h>
 #include <user_interface/menuUtilityQSOData.h>
+#include <user_interface/uiLocalisation.h>
 #include "fw_trx.h"
 #include "fw_codeplug.h"
 #include "fw_settings.h"
@@ -81,7 +82,7 @@ static void updateScreen(void)
 	char rxNameBuf[17];
 
 	UC1701_clearBuf();
-	menuDisplayTitle("Channel details");
+	menuDisplayTitle(currentLanguage->channel_details);
 
 	// Can only display 3 of the options at a time menu at -1, 0 and +1
 	for(int i = -1; i <= 1; i++)
@@ -93,32 +94,32 @@ static void updateScreen(void)
 			case CH_DETAILS_MODE:
 				if (tmpChannel.chMode == RADIO_MODE_ANALOG)
 				{
-					strcpy(buf, "Mode:FM");
+					sprintf(buf, "%s:FM", currentLanguage->mode);
 				}
 				else
 				{
-					sprintf(buf, "Mode:DMR");
+					sprintf(buf, "%s:DMR", currentLanguage->mode);
 				}
 				break;
 			break;
 			case CH_DETAILS_DMR_CC:
 				if (tmpChannel.chMode == RADIO_MODE_ANALOG)
 				{
-					strcpy(buf, "Color Code:N/A");
+					sprintf(buf, "%s:%s",currentLanguage->colour_code,currentLanguage->n_a);
 				}
 				else
 				{
-					sprintf(buf, "Color Code:%d", tmpChannel.rxColor);
+					sprintf(buf, "%s:%d", currentLanguage->colour_code,tmpChannel.rxColor);
 				}
 				break;
 			case CH_DETAILS_DMR_TS:
 				if (tmpChannel.chMode == RADIO_MODE_ANALOG)
 				{
-					strcpy(buf, "Timeslot:N/A");
+					sprintf(buf, "%s:%s",currentLanguage->timeSlot,currentLanguage->n_a);
 				}
 				else
 				{
-					sprintf(buf, "Timeslot:%d", ((tmpChannel.flag2 & 0x40) >> 6) + 1);
+					sprintf(buf, "%s:%d",currentLanguage->timeSlot ,((tmpChannel.flag2 & 0x40) >> 6) + 1);
 				}
 				break;
 			case CH_DETAILS_RXCTCSS:
@@ -126,7 +127,7 @@ static void updateScreen(void)
 				{
 					if (tmpChannel.txTone == CTCSS_TONE_NONE)
 					{
-						strcpy(buf, "Tx CTCSS:None");
+						sprintf(buf, "Tx CTCSS:%s",currentLanguage->none);
 					}
 					else
 					{
@@ -135,7 +136,7 @@ static void updateScreen(void)
 				}
 				else
 				{
-					strcpy(buf, "Tx CTCSS:N/A");
+					sprintf(buf, "Tx CTCSS:%s",currentLanguage->n_a);
 				}
 				break;
 			case CH_DETAILS_TXCTCSS:
@@ -143,7 +144,7 @@ static void updateScreen(void)
 				{
 					if (tmpChannel.rxTone == CTCSS_TONE_NONE)
 					{
-						strcpy(buf, "Rx CTCSS:None");
+						sprintf(buf, "Rx CTCSS:%s",currentLanguage->none);
 					}
 					else
 					{
@@ -152,53 +153,53 @@ static void updateScreen(void)
 				}
 				else
 				{
-					strcpy(buf, "Rx CTCSS:N/A");
+					sprintf(buf, "Rx CTCSS:%s",currentLanguage->n_a);
 				}
 				break;
 			case CH_DETAILS_RXFREQ:
 				val_before_dp = tmpChannel.rxFreq / 100000;
 				val_after_dp = tmpChannel.rxFreq - val_before_dp * 100000;
-				sprintf(buf, "RX:%d.%05dMHz", val_before_dp, val_after_dp);
+				sprintf(buf, currentLanguage->channelDetailsRx, val_before_dp, val_after_dp);
 				break;
 			case CH_DETAILS_TXFREQ:
 				val_before_dp = tmpChannel.txFreq / 100000;
 				val_after_dp = tmpChannel.txFreq - val_before_dp * 100000;
-				sprintf(buf, "TX:%d.%05dMHz", val_before_dp, val_after_dp);
+				sprintf(buf, currentLanguage->channelDetailsTx ,val_before_dp, val_after_dp);
 				break;
 			case CH_DETAILS_BANDWIDTH:
 				// Bandwidth
 				if (tmpChannel.chMode == RADIO_MODE_DIGITAL)
 				{
-					strcpy(buf, "Bandwidth:N/A");
+					sprintf(buf, "%s:%s",currentLanguage->bandwidth,currentLanguage->n_a);
 				}
 				else
 				{
-					sprintf(buf, "Bandwidth:%s", ((tmpChannel.flag4 & 0x02) == 0x02) ? "25kHz" : "12.5kHz");
+					sprintf(buf, "%s:%s",currentLanguage->bandwidth, ((tmpChannel.flag4 & 0x02) == 0x02) ? "25kHz" : "12.5kHz");
 				}
 				break;
 			case CH_DETAILS_FREQ_STEP:
 					tmpVal = VFO_FREQ_STEP_TABLE[(tmpChannel.VFOflag5 >> 4)] / 100;
-					sprintf(buf, "Step:%d.%02dkHz", tmpVal, VFO_FREQ_STEP_TABLE[(tmpChannel.VFOflag5 >> 4)] - (tmpVal * 100));
+					sprintf(buf, currentLanguage->stepFreq, tmpVal, VFO_FREQ_STEP_TABLE[(tmpChannel.VFOflag5 >> 4)] - (tmpVal * 100));
 				break;
 			case CH_DETAILS_TOT:// TOT
 				if (tmpChannel.tot != 0)
 				{
-					sprintf(buf, "TOT:%d", tmpChannel.tot * 15);
+					sprintf(buf, "%s:%d",currentLanguage->tot, tmpChannel.tot * 15);
 				}
 				else
 				{
-					strcpy(buf, "TOT:OFF");
+					sprintf(buf, "%s:%s",currentLanguage->tot,currentLanguage->off);
 				}
 				break;
 			case CH_DETAILS_SKIP:
 							// Scan Skip Channel (Using CPS Auto Scan flag)
-				sprintf(buf, "Skip:%s", ((tmpChannel.flag4 & 0x20) == 0x20) ? "Yes" : "No");
+				sprintf(buf, "%s:%s", currentLanguage->skip,((tmpChannel.flag4 & 0x20) == 0x20) ? currentLanguage->yes : currentLanguage->no);
 				break;
 
 			case CH_DETAILS_RXGROUP:
 				codeplugRxGroupGetDataForIndex(tmpChannel.rxGroupList, &rxGroupBuf);
 				codeplugUtilConvertBufToString(rxGroupBuf.name, rxNameBuf, 16);
-				snprintf(buf, 16, "RX Grp:%s", rxNameBuf);
+				snprintf(buf, 16, "%s:%s",currentLanguage->rx_group, rxNameBuf);
 				break;
 		}
 

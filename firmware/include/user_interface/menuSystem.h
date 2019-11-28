@@ -44,8 +44,8 @@ typedef struct menuItemNew
 
 extern menuControlDataStruct_t menuControlData;
 
-void menuDisplayTitle(char *title);
-void menuDisplayEntry(int loopOffset, int focusedItem, char *entryText);
+void menuDisplayTitle(const char *title);
+void menuDisplayEntry(int loopOffset, int focusedItem,const char *entryText);
 int menuGetMenuOffset(int maxMenuEntries, int loopOffset);
 
 void menuChannelModeUpdateScreen(int txTimeSecs);
@@ -99,6 +99,7 @@ enum MENU_SCREENS { MENU_SPLASH_SCREEN=0,
 					MENU_CONTACT_QUICKLIST,
 					MENU_CONTACT_LIST_SUBMENU,
 					MENU_CONTACT_DETAILS,
+					MENU_LANGUAGE,
 };
 
 extern int gMenusCurrentItemIndex;

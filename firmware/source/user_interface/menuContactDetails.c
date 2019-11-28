@@ -19,6 +19,7 @@
 
 #include <user_interface/menuSystem.h>
 #include <user_interface/menuUtilityQSOData.h>
+#include <user_interface/uiLocalisation.h>
 #include "fw_trx.h"
 #include "fw_codeplug.h"
 #include "fw_settings.h"
@@ -27,7 +28,7 @@ static void updateScreen(void);
 static void handleEvent(int buttons, int keys, int events);
 
 static struct_codeplugContact_t tmpContact;
-const static char callTypeString[3][8] = { "Group", "Private", "All" };
+static const char *callTypeString[3];// = { "Group", "Private", "All" };
 static int contactDetailsIndex;
 static char digits[9];
 
@@ -42,6 +43,10 @@ int menuContactDetails(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
+		callTypeString[0]= currentLanguage->group;
+		callTypeString[1]= currentLanguage->private;
+		callTypeString[2]= currentLanguage->all;
+
 		if (contactListContactIndex == 0) {
 			contactDetailsIndex = codeplugContactGetFreeIndex();
 			tmpContact.name[0] = 0x00;
@@ -80,7 +85,7 @@ static void updateScreen(void)
 	UC1701_clearBuf();
 
 	if (tmpContact.name[0] == 0x00) {
-		strcpy(buf,"New Contact");
+		strcpy(buf,currentLanguage->new_contact);
 	} else {
 		codeplugUtilConvertBufToString(tmpContact.name, buf, 16);
 	}
@@ -102,18 +107,18 @@ static void updateScreen(void)
 				switch (tmpContact.callType)
 				{
 				case CONTACT_CALLTYPE_TG:
-					sprintf(buf, "TG:%s", digits);
+					sprintf(buf, "%s:%s",currentLanguage->tg, digits);
 					break;
 				case CONTACT_CALLTYPE_PC: // Private
-					sprintf(buf, "PC:%s", digits);
+					sprintf(buf, "%s:%s", currentLanguage->pc, digits);
 					break;
 				case CONTACT_CALLTYPE_ALL: // All Call
-					strcpy(buf, "All:16777215");
+					sprintf(buf, "%s:16777215",currentLanguage->all);
 					break;
 				}
 				break;
 			case CONTACT_DETAILS_CALLTYPE:
-				strcpy(buf, "Type:");
+				strcpy(buf, currentLanguage->type);
 				strcat(buf, callTypeString[tmpContact.callType]);
 				break;
 			case CONTACT_DETAILS_TS:
@@ -121,13 +126,13 @@ static void updateScreen(void)
 				{
 				case 1:
 				case 3:
-					strcpy(buf, "Timeslot:none");
+					sprintf(buf, "%s:%s",currentLanguage->timeSlot,currentLanguage->none);
 					break;
 				case 0:
-					strcpy(buf, "Timeslot:1");
+					sprintf(buf, "%s:1",currentLanguage->timeSlot);
 					break;
 				case 2:
-					strcpy(buf, "Timeslot: 2");
+					sprintf(buf, "%s:2",currentLanguage->timeSlot);
 					break;
 				}
 				break;
@@ -137,12 +142,12 @@ static void updateScreen(void)
 		}
 		break;
 	case MENU_CONTACT_DETAILS_SAVED:
-		UC1701_printCentered(16, "Contact saved",UC1701_FONT_8x16);
+		UC1701_printCentered(16,currentLanguage->contact_saved,UC1701_FONT_8x16);
 		UC1701_drawChoice(UC1701_CHOICE_OK, false);
 		break;
 	case MENU_CONTACT_DETAILS_EXISTS:
-		UC1701_printCentered(16, "Duplicate",UC1701_FONT_8x16);
-		UC1701_printCentered(32, "Contact",UC1701_FONT_8x16);
+		UC1701_printCentered(16, currentLanguage->duplicate,UC1701_FONT_8x16);
+		UC1701_printCentered(32,  currentLanguage->contact,UC1701_FONT_8x16);
 		UC1701_drawChoice(UC1701_CHOICE_OK, false);
 		break;
 	}
@@ -262,13 +267,13 @@ static void handleEvent(int buttons, int keys, int events)
 									{
 										codeplugUtilConvertStringToBuf(foundRecord.text, tmpContact.name, 16);
 									} else {
-										sprintf(buf,"PC %d",tmpContact.tgNumber);
+										sprintf(buf,"%s %d",currentLanguage->tg,tmpContact.tgNumber);
 										codeplugUtilConvertStringToBuf(buf, tmpContact.name, 16);
 									}
 								}
 								else
 								{
-									sprintf(buf,"TG %d",tmpContact.tgNumber);
+									sprintf(buf,"%s %d",currentLanguage->tg,tmpContact.tgNumber);
 									codeplugUtilConvertStringToBuf(buf, tmpContact.name, 16);
 								}
 							}

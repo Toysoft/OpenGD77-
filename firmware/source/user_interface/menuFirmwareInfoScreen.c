@@ -16,6 +16,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 #include <user_interface/menuSystem.h>
+#include <user_interface/uiLocalisation.h>
 
 static void updateScreen(void);
 static void handleEvent(int buttons, int keys, int events);
@@ -46,7 +47,7 @@ static void updateScreen(void)
 
 	UC1701_clearBuf();
 	UC1701_printCentered(5, "OpenGD77",UC1701_FONT_8x16);
-	UC1701_printCentered(24, "Built", UC1701_FONT_8x8);
+	UC1701_printCentered(24, currentLanguage->built, UC1701_FONT_8x8);
 	UC1701_printCentered(34,__TIME__,UC1701_FONT_8x8);
 	UC1701_printCentered(44,__DATE__,UC1701_FONT_8x8);
 	UC1701_printCentered(54, buf, UC1701_FONT_8x8);

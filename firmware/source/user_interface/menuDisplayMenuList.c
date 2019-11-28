@@ -16,6 +16,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 #include <user_interface/menuSystem.h>
+#include <user_interface/uiLocalisation.h>
 #include "fw_main.h"
 
 static void updateScreen(void);
@@ -27,7 +28,7 @@ int menuDisplayMenuList(int buttons, int keys, int events, bool isFirstRun)
 	{
 
 		gMenuCurrentMenuList = (menuItemNew_t *)menusData[menuSystemGetCurrentMenuNumber()];
-		gMenusEndIndex = gMenuCurrentMenuList[0].stringNumber;// first entry actually contains the number of entries
+		gMenusEndIndex = gMenuCurrentMenuList[0].menuNum;// first entry actually contains the number of entries
 		gMenuCurrentMenuList = & gMenuCurrentMenuList[1];// move to first real index
 		gMenusCurrentItemIndex=1;
 		updateScreen();
@@ -52,8 +53,7 @@ static void updateScreen(void)
 	for(int i = -1; i <= 1 ; i++)
 	{
 		mNum = menuGetMenuOffset(gMenusEndIndex, i);
-
-		menuDisplayEntry(i, mNum, (char *)menuStringTable[gMenuCurrentMenuList[mNum].stringNumber]);
+		menuDisplayEntry(i, mNum, (const char *)currentLanguage + (gMenuCurrentMenuList[mNum].stringNumber * LANGUAGE_TEXTS_LENGTH));
 	}
 
 

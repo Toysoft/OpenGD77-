@@ -16,6 +16,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 #include <user_interface/menuSystem.h>
+#include <user_interface/uiLocalisation.h>
 
 static void updateScreen(void);
 static void handleEvent(int buttons, int keys, int events);
@@ -56,7 +57,7 @@ int menuCredits(int buttons, int keys, int events, bool isFirstRun)
 static void updateScreen(void)
 {
 	UC1701_clearBuf();
-	menuDisplayTitle("OpenGD77");
+	menuDisplayTitle(currentLanguage->credits);
 
 	for(int i=0;i<6;i++)
 	{

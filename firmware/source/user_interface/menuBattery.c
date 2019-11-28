@@ -16,6 +16,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 #include <user_interface/menuSystem.h>
+#include <user_interface/uiLocalisation.h>
 
 static void updateScreen(void);
 static void handleEvent(int buttons, int keys, int events);
@@ -49,12 +50,12 @@ static void updateScreen(void)
 	char buffer[8];
 
 	UC1701_clearBuf();
-	menuDisplayTitle("Battery");
+	menuDisplayTitle(currentLanguage->battery);
 
 	int val1 = averageBatteryVoltage/10;
 	int val2 = averageBatteryVoltage - (val1 * 10);
 
-	sprintf(buffer,"%d.%dV", val1, val2);
+	sprintf(buffer,currentLanguage->batteryVoltage, val1, val2);
 	UC1701_printAt(20, 22, buffer, UC1701_FONT_16x32);
 	uint32_t h = (uint32_t)(((averageBatteryVoltage - CUTOFF_VOLTAGE_UPPER_HYST) * MAX_BATTERY_BAR_HEIGHT) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));
 

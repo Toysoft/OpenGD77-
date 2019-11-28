@@ -16,6 +16,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 #include <user_interface/menuSystem.h>
+#include <user_interface/uiLocalisation.h>
 #include "fw_settings.h"
 #include "fw_wdog.h"
 
@@ -52,7 +53,7 @@ static void updateScreen(void)
 	char buf[17];
 
 	UC1701_clearBuf();
-	menuDisplayTitle("Options");
+	menuDisplayTitle(currentLanguage->options);
 
 	// Can only display 3 of the options at a time menu at -1, 0 and +1
 	for(int i = -1; i <= 1; i++)

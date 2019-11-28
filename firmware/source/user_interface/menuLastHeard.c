@@ -17,6 +17,7 @@
  */
 #include <user_interface/menuSystem.h>
 #include <user_interface/menuUtilityQSOData.h>
+#include <user_interface/uiLocalisation.h>
 const int LAST_HEARD_NUM_LINES_ON_DISPLAY = 3;
 
 static void updateScreen(void);
@@ -57,7 +58,7 @@ static void updateScreen(void)
 	LinkItem_t *item = LinkHead;
 
 	UC1701_clearBuf();
-	menuDisplayTitle("Last heard");
+	menuDisplayTitle(currentLanguage->last_heard);
 
 	// skip over the first gMenusCurrentItemIndex in the listing
 	for(int i=0;i<gMenusCurrentItemIndex;i++)

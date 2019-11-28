@@ -153,7 +153,7 @@ static inline bool checkWritePos(uint8_t * writePos)
 }
 #endif
 
-int UC1701_printCore(int16_t x, int16_t y, char *szMsg, UC1701_Font_t fontSize, UC1701_Text_Align_t alignment, bool isInverted)
+int UC1701_printCore(int16_t x, int16_t y, const char *szMsg, UC1701_Font_t fontSize, UC1701_Text_Align_t alignment, bool isInverted)
 {
 	int16_t i, sLen;
 	uint8_t *currentCharData;
@@ -364,12 +364,12 @@ void UC1701_clearBuf(void)
 	memset(screenBuf,0x00,1024);
 }
 
-void UC1701_printCentered(uint8_t y, char *text, UC1701_Font_t fontSize)
+void UC1701_printCentered(uint8_t y,const char *text, UC1701_Font_t fontSize)
 {
 	UC1701_printCore(0, y, text, fontSize, UC1701_TEXT_ALIGN_CENTER, false);
 }
 
-void UC1701_printAt(uint8_t x, uint8_t y, char *text, UC1701_Font_t fontSize)
+void UC1701_printAt(uint8_t x, uint8_t y,const char *text, UC1701_Font_t fontSize)
 {
 	UC1701_printCore(x, y, text, fontSize, UC1701_TEXT_ALIGN_LEFT, false);
 }

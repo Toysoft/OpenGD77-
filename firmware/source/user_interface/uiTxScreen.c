@@ -18,6 +18,7 @@
 #include <hardware/fw_HR-C6000.h>
 #include <user_interface/menuSystem.h>
 #include <user_interface/menuUtilityQSOData.h>
+#include <user_interface/uiLocalisation.h>
 #include "fw_settings.h"
 
 
@@ -61,14 +62,14 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 			// But this would require some sort of timer callback system, which we don't currently have.
 			//
 			UC1701_clearBuf();
-			UC1701_printCentered(4, "ERROR",UC1701_FONT_16x32);
+			UC1701_printCentered(4, currentLanguage->error,UC1701_FONT_16x32);
 			if ((currentChannelData->flag4 & 0x04) !=0x00)
 			{
-				UC1701_printCentered(40, "Rx only",UC1701_FONT_8x16);
+				UC1701_printCentered(40, currentLanguage->rx_only,UC1701_FONT_8x16);
 			}
 			else
 			{
-				UC1701_printCentered(40, "OUT OF BAND",UC1701_FONT_8x16);
+				UC1701_printCentered(40,currentLanguage->out_of_band,UC1701_FONT_8x16);
 			}
 			UC1701_render();
 			displayLightOverrideTimeout(-1);
@@ -100,7 +101,7 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 				{
 					set_melody(melody_tx_timeout_beep);
 					UC1701_clearBuf();
-					UC1701_printCentered(20, "TIMEOUT",UC1701_FONT_16x32);
+					UC1701_printCentered(20, currentLanguage->timeout,UC1701_FONT_16x32);
 					UC1701_render();
 				}
 				else

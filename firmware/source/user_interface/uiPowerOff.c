@@ -16,6 +16,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 #include <user_interface/menuSystem.h>
+#include <user_interface/uiLocalisation.h>
 
 static void updateScreen(void);
 static void handleEvent(int buttons, int keys, int events);
@@ -38,7 +39,7 @@ int menuPowerOff(int buttons, int keys, int events, bool isFirstRun)
 static void updateScreen(void)
 {
 	UC1701_clearBuf();
-	UC1701_printCentered(12, "Power Off...",UC1701_FONT_8x16);
+	UC1701_printCentered(12, currentLanguage->power_off,UC1701_FONT_8x16);
 	UC1701_printCentered(32, "73",UC1701_FONT_8x16);
 	UC1701_render();
 	displayLightTrigger();

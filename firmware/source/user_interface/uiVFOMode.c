@@ -18,6 +18,7 @@
 #include <hardware/fw_HR-C6000.h>
 #include <user_interface/menuSystem.h>
 #include <user_interface/menuUtilityQSOData.h>
+#include <user_interface/uiLocalisation.h>
 #include "fw_trx.h"
 #include "fw_settings.h"
 #include "fw_codeplug.h"
@@ -193,7 +194,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 			}
 			else if(displaySquelch)
 			{
-				sprintf(buffer,"Squelch");
+				sprintf(buffer,currentLanguage->squelch);
 				UC1701_printAt(0,16,buffer,UC1701_FONT_8x16);
 				int bargraph= 1 + ((currentChannelData->sql-1)*5)/2 ;
 				UC1701_fillRect(62,21,bargraph,8,false);
@@ -206,7 +207,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 				{
 					val_before_dp = currentChannelData->rxFreq/100000;
 					val_after_dp = currentChannelData->rxFreq - val_before_dp*100000;
-					sprintf(buffer,"%cR %d.%05d MHz", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_RX)?'>':' ',val_before_dp, val_after_dp);
+					sprintf(buffer,currentLanguage->vfoRxFreq, (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_RX)?'>':' ',val_before_dp, val_after_dp);
 					UC1701_printCentered(32, buffer,UC1701_FONT_8x16);
 				}
 				else
@@ -217,12 +218,12 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 
 				val_before_dp = currentChannelData->txFreq/100000;
 				val_after_dp = currentChannelData->txFreq - val_before_dp*100000;
-				sprintf(buffer,"%cT %d.%05d MHz", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX || trxIsTransmitting)?'>':' ',val_before_dp, val_after_dp);
+				sprintf(buffer,currentLanguage->vfoTxFreq, (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX || trxIsTransmitting)?'>':' ',val_before_dp, val_after_dp);
 				UC1701_printCentered(48, buffer,UC1701_FONT_8x16);
 			}
 			else
 			{
-				sprintf(buffer,"%c%c%c.%c%c%c%c%c MHz", freq_enter_digits[0], freq_enter_digits[1], freq_enter_digits[2], freq_enter_digits[3], freq_enter_digits[4], freq_enter_digits[5], freq_enter_digits[6], freq_enter_digits[7] );
+				sprintf(buffer,currentLanguage->vfoEnterFreq, freq_enter_digits[0], freq_enter_digits[1], freq_enter_digits[2], freq_enter_digits[3], freq_enter_digits[4], freq_enter_digits[5], freq_enter_digits[6], freq_enter_digits[7] );
 				if (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX)
 				{
 					UC1701_printCentered(48, buffer,UC1701_FONT_8x16);
@@ -765,7 +766,7 @@ static void updateQuickMenuScreen(void)
 	char buf[17];
 
 	UC1701_clearBuf();
-	menuDisplayTitle("Quick Menu");
+	menuDisplayTitle(currentLanguage->quick_menu);
 
 	for(int i = -1; i <= 1; i++)
 	{
@@ -783,7 +784,7 @@ static void updateQuickMenuScreen(void)
 				strcpy(buf, "Tx --> Rx");
 				break;
 			case VFO_SCREEN_QUICK_MENU_DMR_FILTER:
-				sprintf(buf, "DMR Mon:%s",DMR_FILTER_LEVELS[tmpQuickMenuDmrFilterLevel]);
+				sprintf(buf, currentLanguage->filter,DMR_FILTER_LEVELS[tmpQuickMenuDmrFilterLevel]);
 				break;
 			case VFO_SCREEN_QUICK_MENU_VFO_A_B:
 				sprintf(buf, "VFO:%s",((nonVolatileSettings.currentVFONumber==0)?"A":"B"));

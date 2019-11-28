@@ -17,58 +17,65 @@
  */
 #include <user_interface/menuSystem.h>
 #include <user_interface/uiLocalisation.h>
-#include "fw_settings.h"
 
 static void updateScreen(void);
 static void handleEvent(int buttons, int keys, int events);
 
-static bool lockDisplay = false;
-static int uiLockLastKey;
-static const int TIMEOUT_MS = 2000;
 
-int menuLockScreen(int buttons, int keys, int events, bool isFirstRun)
+int menuLanguage(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		menuTimer = TIMEOUT_MS;
+		gMenusCurrentItemIndex=0;
 		updateScreen();
-		uiLockLastKey = keys;
 	}
 	else
 	{
-		handleEvent(buttons, keys, events);
+		if (events!=0 && keys!=0)
+		{
+			handleEvent(buttons, keys, events);
+		}
 	}
 	return 0;
 }
 
 static void updateScreen(void)
 {
+	int mNum = 0;
+	//stringsTable_t *lang;
 	UC1701_clearBuf();
-	UC1701_drawRoundRect(4, 4, 120, 56, 5, true);
-	if (keypadLocked) {
-		UC1701_printCentered(10, currentLanguage->keypad_locked, UC1701_FONT_8x16);
-		UC1701_printCentered(30,  currentLanguage->press_blue_plus_star, UC1701_FONT_6x8);
-		UC1701_printCentered(38, currentLanguage->to_unlock, UC1701_FONT_6x8);
-	} else {
-		UC1701_printCentered(20, currentLanguage->unlocked, UC1701_FONT_8x16);
+	menuDisplayTitle("Language");
+
+	// Can only display 3 of the options at a time menu at -1, 0 and +1
+	for(int i = -1; i <= 1; i++)
+	{
+		mNum = menuGetMenuOffset(NUM_LANGUAGES, i);
+		menuDisplayEntry(i, mNum, (char *)languages[mNum].LANGUAGE_NAME);
 	}
+
 	UC1701_render();
 	displayLightTrigger();
 }
-
 static void handleEvent(int buttons, int keys, int events)
 {
-	menuTimer--;
-	if (menuTimer == 0)
+	if ((keys & KEY_DOWN)!=0 && gMenusEndIndex!=0)
+	{
+		MENU_INC(gMenusCurrentItemIndex, NUM_LANGUAGES);
+	}
+	else if ((keys & KEY_UP)!=0)
+	{
+		MENU_DEC(gMenusCurrentItemIndex, NUM_LANGUAGES);
+	}
+	else if ((keys & KEY_GREEN)!=0)
+	{
+		currentLanguage = &languages[gMenusCurrentItemIndex];
+		menuSystemPopAllAndDisplayRootMenu();
+		return;
+	}
+	else if ((keys & KEY_RED)!=0)
 	{
 		menuSystemPopPreviousMenu();
-		lockDisplay = false;
+		return;
 	}
-
-	if ((keys & KEY_STAR) != 0 && (buttons & BUTTON_SK2))
-	{
-		keypadLocked = false;
-		menuSystemPopAllAndDisplayRootMenu();
-		menuSystemPushNewMenu(MENU_LOCK_SCREEN);
-	}
+	updateScreen();
 }

@@ -17,6 +17,7 @@
  */
 #include <user_interface/menuSystem.h>
 #include <user_interface/menuUtilityQSOData.h>
+#include <user_interface/uiLocalisation.h>
 #include "fw_trx.h"
 #include "fw_codeplug.h"
 #include "fw_settings.h"
@@ -121,7 +122,7 @@ uint16_t byteSwap16(uint16_t in)
 static void loadChannelData(bool useChannelDataInMemory)
 {
 
-	if (strcmp(currentZoneName,"All Channels")==0)
+	if (strcmp(currentZoneName,currentLanguage->all_channels)==0)
 	{
 		settingsCurrentChannelNumber = nonVolatileSettings.currentChannelIndexInAllZone;
 	}
@@ -132,7 +133,7 @@ static void loadChannelData(bool useChannelDataInMemory)
 
 	if (!useChannelDataInMemory)
 	{
-		if (strcmp(currentZoneName,"All Channels")==0)
+		if (strcmp(currentZoneName,currentLanguage->all_channels)==0)
 		{
 			codeplugChannelGetDataForIndex(nonVolatileSettings.currentChannelIndexInAllZone,&channelScreenChannelData);
 		}
@@ -212,7 +213,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 					channelNumber=nonVolatileSettings.currentChannelIndexInAllZone;
 					if (directChannelNumber>0)
 					{
-						sprintf(nameBuf,"Goto %d",directChannelNumber);
+						sprintf(nameBuf,currentLanguage->gotoChannel,directChannelNumber);
 					}
 					else
 					{
@@ -255,7 +256,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 			}
 			else if(displaySquelch && !trxIsTransmitting)
 			{
-				sprintf(buffer,"Squelch");
+				sprintf(buffer,currentLanguage->squelch);
 				UC1701_printAt(0,16,buffer,UC1701_FONT_8x16);
 				int bargraph= 1 + ((currentChannelData->sql-1)*5)/2 ;
 				UC1701_fillRect(62,21,bargraph,8,false);
@@ -756,7 +757,7 @@ static void updateQuickMenuScreen(void)
 	char buf[17];
 
 	UC1701_clearBuf();
-	menuDisplayTitle("Quick Menu");
+	menuDisplayTitle(currentLanguage->quick_menu);
 
 	for(int i =- 1; i <= 1; i++)
 	{
@@ -765,16 +766,16 @@ static void updateQuickMenuScreen(void)
 		switch(mNum)
 		{
 			case CH_SCREEN_QUICK_MENU_SCAN:
-				strcpy(buf, "Scan");
+				strcpy(buf, currentLanguage->scan);
 				break;
 			case CH_SCREEN_QUICK_MENU_COPY2VFO:
-				strcpy(buf, "Channel --> VFO");
+				strcpy(buf, currentLanguage->channelToVfo);
 				break;
 			case CH_SCREEN_QUICK_MENU_COPY_FROM_VFO:
-				strcpy(buf, "VFO --> Channel");
+				strcpy(buf, currentLanguage->vfoToChannel);
 				break;
 			case CH_SCREEN_QUICK_MENU_DMR_FILTER:
-				sprintf(buf, "DMR Mon:%s",DMR_FILTER_LEVELS[tmpQuickMenuDmrFilterLevel]);
+				sprintf(buf, currentLanguage->filter,DMR_FILTER_LEVELS[tmpQuickMenuDmrFilterLevel]);
 				break;
 			default:
 				strcpy(buf, "");

@@ -18,6 +18,7 @@
 #include <hardware/fw_HR-C6000.h>
 #include <user_interface/menuSystem.h>
 #include <user_interface/menuUtilityQSOData.h>
+#include <user_interface/uiLocalisation.h>
 #include "fw_settings.h"
 #include "fw_codeplug.h"
 #include "fw_ticks.h"
@@ -32,13 +33,17 @@ static void handleEvent(int buttons, int keys, int events);
 
 static const uint32_t CURSOR_UPDATE_TIMEOUT = 1000;
 
-static const char *menuName[] = { "TG entry", "PC entry", "Contact", "User DMR ID" };
+static const char *menuName[4];
 enum DISPLAY_MENU_LIST { ENTRY_TG = 0, ENTRY_PC, ENTRY_SELECT_CONTACT, ENTRY_USER_DMR_ID, NUM_ENTRY_ITEMS};
 // public interface
 int menuNumericalEntry(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
+		menuName[0] = currentLanguage->tg_entry;
+		menuName[1] = currentLanguage->pc_entry;
+		menuName[2] = currentLanguage->contact;
+		menuName[3] = currentLanguage->user_dmr_id;
 		gMenusCurrentItemIndex=ENTRY_TG;
 		digits[0]=0x00;
 		pcIdx = 0;
@@ -48,7 +53,6 @@ int menuNumericalEntry(int buttons, int keys, int events, bool isFirstRun)
 	{
 		if (events == EVENT_BUTTON_NONE)
 		{
-			//updateScreen();
 			updateCursor();
 		}
 		else
