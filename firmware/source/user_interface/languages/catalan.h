@@ -108,5 +108,6 @@ const stringsTable_t catalanLanguage =
 	.contrast			= "Contrast",
 	.colour_invert		= "Color:Invertit",
 	.colour_normal		= "Color:Normal",
+	.backlight_timeout	= "Temps llum",
 };
 #endif /* USER_INTERFACE_LANGUAGES_CATALAN_H_*/
