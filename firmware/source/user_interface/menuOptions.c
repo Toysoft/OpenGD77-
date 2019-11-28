@@ -89,17 +89,17 @@ static void updateScreen(void)
 				}
 				else
 				{
-					sprintf(buf, "%s:%",currentLanguage->calibration,currentLanguage->off);
+					sprintf(buf, "%s:%s",currentLanguage->calibration,currentLanguage->off);
 				}
 				break;
 			case OPTIONS_MENU_TX_FREQ_LIMITS:// Tx Freq limits
 				if (nonVolatileSettings.txFreqLimited)
 				{
-					sprintf(buf, "%s:%",currentLanguage->band_limits,currentLanguage->on);
+					sprintf(buf, "%s:%s",currentLanguage->band_limits,currentLanguage->on);
 				}
 				else
 				{
-					sprintf(buf, "%s:%",currentLanguage->band_limits,currentLanguage->off);
+					sprintf(buf, "%s:%s",currentLanguage->band_limits,currentLanguage->off);
 				}
 				break;
 			case OPTIONS_MENU_BEEP_VOLUME:// Beep volume reduction
@@ -110,10 +110,10 @@ static void updateScreen(void)
 				sprintf(buf, "%s:%ddB", currentLanguage->dmr_mic_gain,(nonVolatileSettings.micGainDMR - 11) * 3);
 				break;
 			case OPTIONS_MENU_KEYPAD_TIMER_LONG:// Timer longpress
-				sprintf(buf, "%:%1d.%1ds",currentLanguage->key_long, nonVolatileSettings.keypadTimerLong / 10, nonVolatileSettings.keypadTimerLong % 10);
+				sprintf(buf, currentLanguage->key_long, nonVolatileSettings.keypadTimerLong / 10, nonVolatileSettings.keypadTimerLong % 10);
 				break;
 			case OPTIONS_MENU_KEYPAD_TIMER_REPEAT:// Timer repeat
-				sprintf(buf, "%s:%1d.%1ds",currentLanguage->key_repeat, nonVolatileSettings.keypadTimerRepeat/10, nonVolatileSettings.keypadTimerRepeat % 10);
+				sprintf(buf, currentLanguage->key_repeat, nonVolatileSettings.keypadTimerRepeat/10, nonVolatileSettings.keypadTimerRepeat % 10);
 				break;
 			case OPTIONS_MENU_DMR_MONITOR_CAPTURE_TIMEOUT:// DMR filtr timeout repeat
 				sprintf(buf, "%s:%ds", currentLanguage->dmr_filter_timeout,nonVolatileSettings.dmrCaptureTimeout);

@@ -104,8 +104,8 @@ const stringsTable_t englishLanguage =
 .band_limits		= "Band Limits",
 .beep_volume		= "Beep vol",
 .dmr_mic_gain		= "DMR mic",
-.key_long			= "Key long",
-.key_repeat			= "Key rpt",
+.key_long			= "Key long:%1d.%1ds",
+.key_repeat			= "Key rpt:%1d.%1ds",
 .dmr_filter_timeout	= "Filter time",
 
 };
@@ -193,8 +193,8 @@ const stringsTable_t germanLanguage =
 .band_limits		= "Band Limits",
 .beep_volume		= "Beep vol",
 .dmr_mic_gain		= "DMR mic",
-.key_long			= "Key long",
-.key_repeat			= "Key rpt",
+.key_long			= "Key long:%1d.%1ds",
+.key_repeat			= "Key rpt:%1d.%1ds",
 .dmr_filter_timeout	= "Filter time",
 };
 
@@ -280,8 +280,8 @@ const stringsTable_t portuguesLanguage =
 .band_limits		= "Band Limits",
 .beep_volume		= "Beep vol",
 .dmr_mic_gain		= "DMR mic",
-.key_long			= "Key long",
-.key_repeat			= "Key rpt",
+.key_long			= "Key long:%1d.%1ds",
+.key_repeat			= "Key rpt:%1d.%1ds",
 .dmr_filter_timeout	= "Filter time",
 };
 
