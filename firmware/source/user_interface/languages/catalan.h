@@ -1,25 +1,3 @@
-/*
- * Copyright (C)2019 Roger Clark. VK3KYY / G4KYF
- *
- * Using some code ported from MMDVM_HS by Andy CA6JAU
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- */
-#ifndef USER_INTERFACE_LANGUAGES_CATALAN_H_
-#define USER_INTERFACE_LANGUAGES_CATALAN_H_
-
 const stringsTable_t catalanLanguage =
 {
 	.LANGUAGE_NAME             = "Catala",
@@ -31,10 +9,10 @@ const stringsTable_t catalanLanguage =
 	.battery                   = "Bateria",
 	.contacts                  = "Contactes",
 	.firmware_info             = "Info firmware",
-	.last_heard                = "Ultim escoltat",
+	.last_heard                = "Escoltats",
 	.options                   = "Opcions",
 	.display_options     = "Opcions display",
-	.channel_details     = "Opcions canal",
+	.channel_details     = "Menu rapid",
 	.new_contact         = "Nou contacte",
 	.contact_list        = "Contactes",
 	.hotspot_mode        = "Mode Hotspot",
@@ -52,8 +30,8 @@ const stringsTable_t catalanLanguage =
 	.rx_only                   = "Nomes Rx",
 	.out_of_band         = "FORA DE BANDA",
 	.timeout                   = "TIMEOUT",
-	.tg_entry                  = "Entrada TG",
-	.pc_entry                  = "Entrada PC",
+	.tg_entry                  = "Entreu TG",
+	.pc_entry                  = "Entreu PC",
 	.user_dmr_id         = "ID Usuari DMR",
 	.contact                   = "Contacte",
 	.displayRxFreq             = "%d.%05d MHz",
@@ -66,7 +44,7 @@ const stringsTable_t catalanLanguage =
 	.quick_menu          = "Menu Rapid",
 	.filter                           = "Filtre:%s",
 	.all_channels        = "Tots els canals",
-	.gotoChannel         = "Anar a %d",
+	.gotoChannel         = "Anar canal %d",
 	.scan                      = "Scan",
 	.channelToVfo        = "Canal --> VFO",
 	.vfoToChannel        = "VFO --> Canal",
@@ -95,14 +73,13 @@ const stringsTable_t catalanLanguage =
 	.no                               = "No",
 	.rx_group                  = "Grup RX",
 	.on					= "On",
-	.timeout_beep		= "Timeout beep",
-	.factory_reset		= "Fact Reset",
-	.calibration		= "Calibration",
-	.band_limits		= "Band Limits",
-	.beep_volume		= "Beep vol",
-	.dmr_mic_gain		= "DMR mic",
+	.timeout_beep		= "So timeout",
+	.factory_reset		= "Reinici fabr.",
+	.calibration		= "Calibracio",
+	.band_limits		= "Limits de banda",
+	.beep_volume		= "Volum so",
+	.dmr_mic_gain		= "Guany DMR",
 	.key_long			= "Key long:%1d.%1ds",
 	.key_repeat			= "Key rpt:%1d.%1ds",
-	.dmr_filter_timeout	= "Filter time",
+	.dmr_filter_timeout	= "Filtre temps",
 };
-#endif /* USER_INTERFACE_LANGUAGES_CATALAN_H_ */
