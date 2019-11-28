@@ -17,8 +17,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-
-
 #ifndef USER_INTERFACE_LANGUAGES_GERMAN_H_
 #define USER_INTERFACE_LANGUAGES_GERMAN_H_
 
@@ -26,14 +24,14 @@ const stringsTable_t germanLanguage =
 {
 .LANGUAGE_NAME 		= "Deutsch",
 .language			= "Sprache",
-.menu				= "Menu",
+.menu				= "Menü",
 .credits			= "Mitwirkende",
 .zone				= "Zone",
-.rssi				= "Feldstarke",
+.rssi				= "Feldstärke",
 .battery			= "Batterie",
 .contacts			= "Kontakte",
 .firmware_info		= "Firmware Info",
-.last_heard			= "Zuletzt gehort",
+.last_heard			= "Zuletzt gehört",
 .options			= "Einstellungen",
 .display_options	= "Display Optionen",
 .channel_details	= "Kanal Details",
@@ -65,11 +63,11 @@ const stringsTable_t germanLanguage =
 .vfoRxFreq			= "%cR %d.%05d MHz",
 .vfoTxFreq			= "%cT %d.%05d MHz",
 .vfoEnterFreq		= "%c%c%c.%c%c%c%c%c MHz",
-.quick_menu 		= "Schnell Menü",
+.quick_menu 		= "Schnellfunktion",
 .filter				= "Filter:%s",
 .all_channels		= "Alle Kanäle",
 .gotoChannel		= "Gehe zu %d",
-.scan				= "Scan",
+.scan				= "Suchlauf",
 .channelToVfo		= "Kanal --> VFO",
 .vfoToChannel		= "VFO --> Kanal",
 .group				= "Gruppe",
@@ -89,25 +87,22 @@ const stringsTable_t germanLanguage =
 .channelDetailsRx	= "Rx:%d.%05dMHz",
 .channelDetailsTx	= "Tx:%d.%05dMHz",
 .bandwidth			= "Bandbreite",
-.stepFreq			= "Step:%d.%02dkHz",
+.stepFreq			= "Schritt:%d.%02dkHz",
 .tot				= "TOT",
 .off				= "Aus",
-.skip				= "Überspringen",
+.skip				= "Überspringe",
 .yes				= "Ja",
 .no					= "Nein",
 .rx_group			= "Rx Gruppe",
-
-.on					= "On",
-.timeout_beep		= "Timeout beep",
-.factory_reset		= "Fact Reset",
-.calibration		= "Calibration",
-.band_limits		= "Band Limits",
-.beep_volume		= "Beep vol",
+.on					= "Ein",
+.timeout_beep		= "Timeout Ton",
+.factory_reset		= "Werks-Reset",
+.calibration		= "Kalibration",
+.band_limits		= "Band Limit",
+.beep_volume		= "Beep Lauts.",
 .dmr_mic_gain		= "DMR mic",
-.key_long			= "Key long:%1d.%1ds",
-.key_repeat			= "Key rpt:%1d.%1ds",
-.dmr_filter_timeout	= "Filter time",
+.key_long			= "Key lang:%1d.%1ds",
+.key_repeat			= "Key wied.:%1d.%1ds",
+.dmr_filter_timeout	= "Filter Zeit",
 };
-
-
 #endif /* USER_INTERFACE_LANGUAGES_GERMAN_H_ */
