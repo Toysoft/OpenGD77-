@@ -104,5 +104,10 @@ const stringsTable_t germanLanguage =
 .key_long			= "Key lang:%1d.%1ds",
 .key_repeat			= "Key wied.:%1d.%1ds",
 .dmr_filter_timeout	= "Filter Zeit",
+.brightness			= "Brightness",
+.contrast			= "Contrast",
+.colour_invert		= "Color:Invert",
+.colour_normal		= "Color:Normal",
+.backlight_timeout	= "Timeout",
 };
 #endif /* USER_INTERFACE_LANGUAGES_GERMAN_H_ */
