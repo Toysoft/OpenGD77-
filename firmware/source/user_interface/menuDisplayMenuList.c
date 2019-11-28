@@ -48,14 +48,16 @@ static void updateScreen(void)
 	int mNum;
 
 	UC1701_clearBuf();
-	menuDisplayTitle("Menu");
+	menuDisplayTitle(currentLanguage->menu);
 
 	for(int i = -1; i <= 1 ; i++)
 	{
 		mNum = menuGetMenuOffset(gMenusEndIndex, i);
-		menuDisplayEntry(i, mNum, (const char *)currentLanguage + (gMenuCurrentMenuList[mNum].stringNumber * LANGUAGE_TEXTS_LENGTH));
+		if (gMenuCurrentMenuList[mNum].stringNumber>=0)
+		{
+			menuDisplayEntry(i, mNum, (const char *)currentLanguage + (gMenuCurrentMenuList[mNum].stringNumber * LANGUAGE_TEXTS_LENGTH));
+		}
 	}
-
 
 	UC1701_render();
 	displayLightTrigger();

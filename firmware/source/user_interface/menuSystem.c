@@ -232,9 +232,10 @@ const menuItemNew_t menuDataMainMenu[] = {
 	{ 12, MENU_LANGUAGE},
 };
 const menuItemNew_t menuDataContact[] = {
-	{ 10, 2} ,// length
+	{ 2, 2} ,// length
 	{ 13 , MENU_CONTACT_DETAILS },// 7 New Contact
 	{ 14, MENU_CONTACT_LIST },// 24 Contacts List
+	{ -1, MENU_CONTACT_LIST },// 24 Contacts Lis
 };
 
 /*
