@@ -97,6 +97,19 @@ typedef struct stringsTable
 	   const char no[LANGUAGE_TEXTS_LENGTH];
 	   const char rx_group[LANGUAGE_TEXTS_LENGTH];
 
+	   const char on[LANGUAGE_TEXTS_LENGTH];
+	   const char timeout_beep[LANGUAGE_TEXTS_LENGTH];
+	   const char factory_reset[LANGUAGE_TEXTS_LENGTH];
+	   const char calibration[LANGUAGE_TEXTS_LENGTH];
+	   const char band_limits[LANGUAGE_TEXTS_LENGTH];
+	   const char beep_volume[LANGUAGE_TEXTS_LENGTH];
+	   const char dmr_mic_gain[LANGUAGE_TEXTS_LENGTH];
+	   const char key_long[LANGUAGE_TEXTS_LENGTH];
+	   const char key_repeat[LANGUAGE_TEXTS_LENGTH];
+	   const char dmr_filter_timeout[LANGUAGE_TEXTS_LENGTH];
+
+
+
 } stringsTable_t;//
 
 extern const stringsTable_t languages[];

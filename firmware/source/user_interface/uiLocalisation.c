@@ -87,13 +87,27 @@ const stringsTable_t englishLanguage =
 .channelDetailsRx	= "Rx:%d.%05dMHz",
 .channelDetailsTx	= "Tx:%d.%05dMHz",
 .bandwidth			= "Bandwidth",
-.stepFreq				= "Step:%d.%02dkHz",
+.stepFreq			= "Step:%d.%02dkHz",
 .tot				= "TOT",
 .off				= "Off",
 .skip				= "Skip",
 .yes				= "Yes",
 .no					= "No",
 .rx_group			= "Rx Grp",
+
+
+
+.on					= "On",
+.timeout_beep		= "Timeout beep",
+.factory_reset		= "Fact Reset",
+.calibration		= "Calibration",
+.band_limits		= "Band Limits",
+.beep_volume		= "Beep vol",
+.dmr_mic_gain		= "DMR mic",
+.key_long			= "Key long",
+.key_repeat			= "Key rpt",
+.dmr_filter_timeout	= "Filter time",
+
 };
 
 
@@ -171,6 +185,17 @@ const stringsTable_t germanLanguage =
 .yes				= "Ja",
 .no					= "Nein",
 .rx_group			= "Rx Gruppe",
+
+.on					= "On",
+.timeout_beep		= "Timeout beep",
+.factory_reset		= "Fact Reset",
+.calibration		= "Calibration",
+.band_limits		= "Band Limits",
+.beep_volume		= "Beep vol",
+.dmr_mic_gain		= "DMR mic",
+.key_long			= "Key long",
+.key_repeat			= "Key rpt",
+.dmr_filter_timeout	= "Filter time",
 };
 
 const stringsTable_t portuguesLanguage =
@@ -247,7 +272,18 @@ const stringsTable_t portuguesLanguage =
 .yes				= "Sim",
 .no					= "Nao",
 .rx_group			= "Rx Grp",
+
+.on					= "On",
+.timeout_beep		= "Timeout beep",
+.factory_reset		= "Fact Reset",
+.calibration		= "Calibration",
+.band_limits		= "Band Limits",
+.beep_volume		= "Beep vol",
+.dmr_mic_gain		= "DMR mic",
+.key_long			= "Key long",
+.key_repeat			= "Key rpt",
+.dmr_filter_timeout	= "Filter time",
 };
 
-const stringsTable_t languages[NUM_LANGUAGES]= { englishLanguage ,germanLanguage,portuguesLanguage};
+const stringsTable_t languages[NUM_LANGUAGES]= { englishLanguage,germanLanguage,portuguesLanguage};
 const stringsTable_t *currentLanguage;

@@ -65,58 +65,58 @@ static void updateScreen(void)
 			case OPTIONS_MENU_TIMEOUT_BEEP:
 				if (nonVolatileSettings.txTimeoutBeepX5Secs != 0)
 				{
-					sprintf(buf, "Timeout beep:%d", nonVolatileSettings.txTimeoutBeepX5Secs * 5);
+					sprintf(buf, "%s:%d",currentLanguage->timeout_beep, nonVolatileSettings.txTimeoutBeepX5Secs * 5);
 				}
 				else
 				{
-					strcpy(buf, "Timeout beep:OFF");
+					sprintf(buf, "%s:%s",currentLanguage->timeout_beep,currentLanguage->off);
 				}
 				break;
 			case OPTIONS_MENU_FACTORY_RESET:
 				if (doFactoryReset == true)
 				{
-					strcpy(buf, "Fact Reset:YES");
+					sprintf(buf, "%s:%s",currentLanguage->factory_reset,currentLanguage->yes);
 				}
 				else
 				{
-					strcpy(buf, "Fact Reset:NO");
+					sprintf(buf, "%s:%s",currentLanguage->factory_reset,currentLanguage->no);
 				}
 				break;
 			case OPTIONS_MENU_USE_CALIBRATION:
 				if (nonVolatileSettings.useCalibration)
 				{
-					strcpy(buf, "Calibration:ON");
+					sprintf(buf, "%s:%s",currentLanguage->calibration,currentLanguage->on);
 				}
 				else
 				{
-					strcpy(buf, "Calibration:OFF");
+					sprintf(buf, "%s:%",currentLanguage->calibration,currentLanguage->off);
 				}
 				break;
 			case OPTIONS_MENU_TX_FREQ_LIMITS:// Tx Freq limits
 				if (nonVolatileSettings.txFreqLimited)
 				{
-					strcpy(buf, "Band Limits:ON");
+					sprintf(buf, "%s:%",currentLanguage->band_limits,currentLanguage->on);
 				}
 				else
 				{
-					strcpy(buf, "Band Limits:OFF");
+					sprintf(buf, "%s:%",currentLanguage->band_limits,currentLanguage->off);
 				}
 				break;
 			case OPTIONS_MENU_BEEP_VOLUME:// Beep volume reduction
-				sprintf(buf, "Beep vol:%ddB", (2 - nonVolatileSettings.beepVolumeDivider) * 3);
+				sprintf(buf, "%s:%ddB",currentLanguage->beep_volume, (2 - nonVolatileSettings.beepVolumeDivider) * 3);
 				soundBeepVolumeDivider = nonVolatileSettings.beepVolumeDivider;
 				break;
 			case OPTIONS_MIC_GAIN_DMR:// DMR Mic gain
-				sprintf(buf, "DMR mic:%ddB", (nonVolatileSettings.micGainDMR - 11) * 3);
+				sprintf(buf, "%s:%ddB", currentLanguage->dmr_mic_gain,(nonVolatileSettings.micGainDMR - 11) * 3);
 				break;
 			case OPTIONS_MENU_KEYPAD_TIMER_LONG:// Timer longpress
-				sprintf(buf, "Key long:%1d.%1ds", nonVolatileSettings.keypadTimerLong / 10, nonVolatileSettings.keypadTimerLong % 10);
+				sprintf(buf, "%:%1d.%1ds",currentLanguage->key_long, nonVolatileSettings.keypadTimerLong / 10, nonVolatileSettings.keypadTimerLong % 10);
 				break;
 			case OPTIONS_MENU_KEYPAD_TIMER_REPEAT:// Timer repeat
-				sprintf(buf, "Key rpt:%1d.%1ds", nonVolatileSettings.keypadTimerRepeat/10, nonVolatileSettings.keypadTimerRepeat % 10);
+				sprintf(buf, "%s:%1d.%1ds",currentLanguage->key_repeat, nonVolatileSettings.keypadTimerRepeat/10, nonVolatileSettings.keypadTimerRepeat % 10);
 				break;
-			case OPTIONS_MENU_DMR_MONITOR_CAPTURE_TIMEOUT:// Timer repeat
-				sprintf(buf, "DMR mon time:%ds", nonVolatileSettings.dmrCaptureTimeout);
+			case OPTIONS_MENU_DMR_MONITOR_CAPTURE_TIMEOUT:// DMR filtr timeout repeat
+				sprintf(buf, "%s:%ds", currentLanguage->dmr_filter_timeout,nonVolatileSettings.dmrCaptureTimeout);
 				break;
 
 		}
