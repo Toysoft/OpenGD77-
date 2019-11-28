@@ -17,8 +17,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-
-
 #ifndef USER_INTERFACE_LANGUAGES_ENGLISH_H_
 #define USER_INTERFACE_LANGUAGES_ENGLISH_H_
 
@@ -96,9 +94,6 @@ const stringsTable_t englishLanguage =
 .yes				= "Yes",
 .no					= "No",
 .rx_group			= "Rx Grp",
-
-
-
 .on					= "On",
 .timeout_beep		= "Timeout beep",
 .factory_reset		= "Fact Reset",
@@ -109,7 +104,5 @@ const stringsTable_t englishLanguage =
 .key_long			= "Key long:%1d.%1ds",
 .key_repeat			= "Key rpt:%1d.%1ds",
 .dmr_filter_timeout	= "Filter time",
-
 };
-
 #endif /* USER_INTERFACE_LANGUAGES_ENGLISH_H_ */
