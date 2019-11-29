@@ -25,7 +25,7 @@ static void handleEvent(int buttons, int keys, int events);
 static bool	doFactoryReset;
 enum OPTIONS_MENU_LIST { OPTIONS_MENU_TIMEOUT_BEEP=0,OPTIONS_MENU_FACTORY_RESET,OPTIONS_MENU_USE_CALIBRATION,
 							OPTIONS_MENU_TX_FREQ_LIMITS,OPTIONS_MENU_BEEP_VOLUME,OPTIONS_MIC_GAIN_DMR,
-							OPTIONS_MENU_KEYPAD_TIMER_LONG, OPTIONS_MENU_KEYPAD_TIMER_REPEAT, OPTIONS_MENU_DMR_MONITOR_CAPTURE_TIMEOUT,
+							OPTIONS_MENU_KEYPAD_TIMER_LONG, OPTIONS_MENU_KEYPAD_TIMER_REPEAT, OPTIONS_MENU_DMR_MONITOR_CAPTURE_TIMEOUT,OPTIONS_MENU_SCAN_DELAY,
 							NUM_OPTIONS_MENU_ITEMS};
 
 
@@ -118,7 +118,9 @@ static void updateScreen(void)
 			case OPTIONS_MENU_DMR_MONITOR_CAPTURE_TIMEOUT:// DMR filtr timeout repeat
 				sprintf(buf, "%s:%ds", currentLanguage->dmr_filter_timeout,nonVolatileSettings.dmrCaptureTimeout);
 				break;
-
+			case OPTIONS_MENU_SCAN_DELAY:// Scan hold and pause time
+				sprintf(buf, "%s:%ds",currentLanguage->scan_delay, nonVolatileSettings.scanDelay);
+				break;
 		}
 
 		menuDisplayEntry(i, mNum, buf);
@@ -188,6 +190,12 @@ static void handleEvent(int buttons, int keys, int events)
 					nonVolatileSettings.dmrCaptureTimeout++;
 				}
 				break;
+			case OPTIONS_MENU_SCAN_DELAY:
+				if (nonVolatileSettings.scanDelay<30)
+				{
+					nonVolatileSettings.scanDelay++;
+				}
+				break;
 		}
 	}
 	else if ((keys & KEY_LEFT)!=0)
@@ -239,6 +247,12 @@ static void handleEvent(int buttons, int keys, int events)
 				if (nonVolatileSettings.dmrCaptureTimeout>1)
 				{
 					nonVolatileSettings.dmrCaptureTimeout--;
+				}
+				break;
+			case OPTIONS_MENU_SCAN_DELAY:
+				if (nonVolatileSettings.scanDelay>1)
+				{
+					nonVolatileSettings.scanDelay--;
 				}
 				break;
 		}
