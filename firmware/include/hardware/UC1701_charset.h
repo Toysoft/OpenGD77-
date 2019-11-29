@@ -27,6 +27,41 @@
 #ifndef __UC1701_CHARSET_H__
 #define __UC1701_CHARSET_H__
 
+#if 0
+/*
+ *************************************
+   REF: https://www.ascii-code.com/
+ *************************************
+ */
+
+#define FONT_CHAR_UPCASE_C_WITH_CARON 		127 // Č
+#define FONT_CHAR_DOWNCASE_C_WITH_CARON 	128 // č
+#define FONT_CHAR_UPCASE_C_WITH_ACUTE  		129 // Ć
+#define FONT_CHAR_DOWNCASE_C_WITH_ACUTE		130 // ć
+#define FONT_CHAR_UPCASE_S_WITH_CARON 		138 // Š 
+#define FONT_CHAR_UPCASE_Z_WITH_CARON 		142 // Ž 
+#define FONT_CHAR_DOWNCASE_S_WITH_CARON 	154 // š 
+#define FONT_CHAR_DOWNCASE_Z_WITH_CARON 	158 // ž 
+#define FONT_CHAR_UPCASE_Y_WITH_DIAERESIS       159 // Ÿ
+
+struct
+{
+     uint32_t   offset;
+     uint8_t    offsetName[48];
+     uint8_t    character[5];
+} char_hand_assigned[] = {
+     {  FONT_CHAR_UPCASE_C_WITH_CARON     , "UC1701_FONT_CHAR_UPCASE_C_WITH_CARON"     , { "Č" } }, // Č
+     {  FONT_CHAR_DOWNCASE_C_WITH_CARON   , "UC1701_FONT_CHAR_DOWNCASE_C_WITH_CARON"   , { "č" } }, // č 
+     {  FONT_CHAR_UPCASE_C_WITH_ACUTE     , "UC1701_FONT_CHAR_UPCASE_C_WITH_ACUTE"     , { "Ć" } }, // Ć
+     {  FONT_CHAR_DOWNCASE_C_WITH_ACUTE   , "UC1701_FONT_CHAR_DOWNCASE_C_WITH_ACUTE"   , { "ć" } }, // ć
+     {  FONT_CHAR_UPCASE_S_WITH_CARON     , "UC1701_FONT_CHAR_UPCASE_S_WITH_CARON"     , { "Š" } }, // Š
+     {  FONT_CHAR_DOWNCASE_S_WITH_CARON   , "UC1701_FONT_CHAR_DOWNCASE_S_WITH_CARON"   , { "š" } }, // š
+     {  FONT_CHAR_UPCASE_Z_WITH_CARON     , "UC1701_FONT_CHAR_UPCASE_Z_WITH_CARON"     , { "Ž" } }, // Ž
+     {  FONT_CHAR_DOWNCASE_Z_WITH_CARON   , "UC1701_FONT_CHAR_DOWNCASE_Z_WITH_CARON"   , { "ž" } }, // ž
+     {  FONT_CHAR_UPCASE_Y_WITH_DIAERESIS , "UC1701_FONT_CHAR_UPCASE_Y_WITH_DIAERESIS" , { "Ÿ" } }, // Ÿ
+};
+#endif
+
 
 const uint8_t font_6x8[] = {
    0x00, 0x00, // Ignored.
