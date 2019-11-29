@@ -67,7 +67,7 @@ const stringsTable_t germanLanguage =
 .filter				= "Filter:%s",
 .all_channels		= "Alle Kanaele",
 .gotoChannel		= "Gehe zu %d",
-.scan				= "Suchlauf",
+.scan			= "Suchlauf",
 .channelToVfo		= "Kanal --> VFO",
 .vfoToChannel		= "VFO --> Kanal",
 .group				= "Gruppe",
@@ -90,7 +90,8 @@ const stringsTable_t germanLanguage =
 .stepFreq			= "Schritt:%d.%02dkHz",
 .tot				= "TOT",
 .off				= "Aus",
-.skip				= "Ueberspringe",
+.zone_skip			= "Z Ueberspringe",
+.all_skip			= "A Ueberspringe",
 .yes				= "Ja",
 .no					= "Nein",
 .rx_group			= "Rx Gruppe",
@@ -109,5 +110,6 @@ const stringsTable_t germanLanguage =
 .colour_invert		= "Anzeige:Invers",
 .colour_normal		= "Anzeige:Normal",
 .backlight_timeout	= "Timeout",
+.scan_delay			= "Scan delay"
 };
 #endif /* USER_INTERFACE_LANGUAGES_GERMAN_H_ */
