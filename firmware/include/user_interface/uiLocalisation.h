@@ -90,7 +90,8 @@ typedef struct stringsTable
    const char stepFreq[LANGUAGE_TEXTS_LENGTH];
    const char tot[LANGUAGE_TEXTS_LENGTH];
    const char off[LANGUAGE_TEXTS_LENGTH];
-   const char skip[LANGUAGE_TEXTS_LENGTH];
+   const char zone_skip[LANGUAGE_TEXTS_LENGTH];
+   const char all_skip[LANGUAGE_TEXTS_LENGTH];
    const char yes[LANGUAGE_TEXTS_LENGTH];
    const char no[LANGUAGE_TEXTS_LENGTH];
    const char rx_group[LANGUAGE_TEXTS_LENGTH];
@@ -109,6 +110,7 @@ typedef struct stringsTable
    const char colour_invert[LANGUAGE_TEXTS_LENGTH];
    const char colour_normal[LANGUAGE_TEXTS_LENGTH];
    const char backlight_timeout[LANGUAGE_TEXTS_LENGTH];
+   const char scan_delay[LANGUAGE_TEXTS_LENGTH];
 } stringsTable_t;
 
 extern const stringsTable_t languages[];

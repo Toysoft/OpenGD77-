@@ -90,7 +90,8 @@ const stringsTable_t catalanLanguage =
 	.stepFreq                         = "Pases:%d.%02dkHz",
 	.tot                       = "TOT",
 	.off                       = "Off",
-	.skip                      = "Saltar",
+	.zone_skip                  = "Zone Skip",
+	.all_skip					= "All Skip",
 	.yes                       = "Si",
 	.no                               = "No",
 	.rx_group                  = "Grup RX",
@@ -109,5 +110,6 @@ const stringsTable_t catalanLanguage =
 	.colour_invert		= "Color:Invertit",
 	.colour_normal		= "Color:Normal",
 	.backlight_timeout	= "Temps llum",
+	.scan_delay			= "Scan delay",
 };
 #endif /* USER_INTERFACE_LANGUAGES_CATALAN_H_*/

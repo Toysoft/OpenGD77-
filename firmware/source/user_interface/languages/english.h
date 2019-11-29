@@ -90,7 +90,8 @@ const stringsTable_t englishLanguage =
 .stepFreq			= "Step:%d.%02dkHz",
 .tot				= "TOT",
 .off				= "Off",
-.skip				= "Skip",
+.zone_skip			= "Zone Skip",
+.all_skip			= "All Skip",
 .yes				= "Yes",
 .no					= "No",
 .rx_group			= "Rx Grp",
@@ -109,5 +110,6 @@ const stringsTable_t englishLanguage =
 .colour_invert		= "Color:Invert",
 .colour_normal		= "Color:Normal",
 .backlight_timeout	= "Timeout",
+.scan_delay			= "Scan delay",
 };
 #endif /* USER_INTERFACE_LANGUAGES_ENGLISH_H_ */

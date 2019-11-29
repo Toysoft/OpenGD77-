@@ -39,17 +39,27 @@ static bool isTxRxFreqSwap=false;
 typedef enum
 {
 	SCAN_SCANNING = 0,
+	SCAN_SHORT_PAUSED,
 	SCAN_PAUSED,
 } ScanZoneState_t;
 
-bool uiChannelModeScanActive=false;
+typedef enum
+{
+	SCAN_OFF = 0,
+	SCAN_HOLD,
+	SCAN_PAUSE,
+} ScanMode_t;
+
+const char *SCAN_MODES[]={"Off","Hold","Pause"};
+
 static int scanTimer=0;
 static ScanZoneState_t scanState = SCAN_SCANNING;		//state flag for scan routine
-static const int SCAN_SHORT_PAUSE = 500;			//time to wait after carrier detected to allow time for full signal detection. (CTCSS or DMR)
-static const int SCAN_PAUSE = 5000;				//time to wait after valid signal is detected.
+int uiChannelModeScanMode = SCAN_OFF;			//scanning mode   OFF = No Scanning HOLD = wait on channel until traffic finishes.   PAUSE = wait for 5 seconds before continuing.
+static const int SCAN_SHORT_PAUSE_TIME = 500;			//time to wait after carrier detected to allow time for full signal detection. (CTCSS or DMR)
 static const int SCAN_INTERVAL = 50;			    //time between each scan step
 
 static int tmpQuickMenuDmrFilterLevel;
+static ScanMode_t tmpQuickMenuScanMode;
 #define MAX_ZONE_SCAN_NUISANCE_CHANNELS 16
 static int nuisanceDelete[MAX_ZONE_SCAN_NUISANCE_CHANNELS];
 static int nuisanceDeleteIndex = 0;
@@ -78,7 +88,7 @@ int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		RssiUpdateCounter = RSSI_UPDATE_COUNTER_RELOAD;
 		menuChannelModeUpdateScreen(0);
-		if (uiChannelModeScanActive == false)
+		if (uiChannelModeScanMode== SCAN_OFF)
 		{
 			scanState = SCAN_SCANNING;
 		}
@@ -102,7 +112,7 @@ int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 					RssiUpdateCounter = RSSI_UPDATE_COUNTER_RELOAD;
 				}
 			}
-			if(uiChannelModeScanActive)
+			if(uiChannelModeScanMode>SCAN_OFF)
 			{
 				scanning();
 			}
@@ -263,7 +273,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				displaySquelch=false;
 			}
 
-			if (!((uiChannelModeScanActive) & (scanState==SCAN_SCANNING)))
+			if (!((uiChannelModeScanMode>SCAN_OFF) & (scanState==SCAN_SCANNING)))
 			{
 			displayLightTrigger();
 			}
@@ -298,9 +308,9 @@ static void handleEvent(int buttons, int keys, int events)
 		return;
 	}
 
-	if ((uiChannelModeScanActive == true) && (!(keys==0)) && (!((keys & KEY_UP) && (!(buttons & BUTTON_SK2)))))    // stop the scan on any button except UP without Shift ( allows scan to be manually continued) or SK2 on its own (allows Backlight to be triggered)
+	if ((uiChannelModeScanMode>SCAN_OFF) && (!(keys==0)) && (!((keys & KEY_UP) && (!(buttons & BUTTON_SK2)))))    // stop the scan on any button except UP without Shift ( allows scan to be manually continued) or SK2 on its own (allows Backlight to be triggered)
 	{
-		uiChannelModeScanActive = false;
+		uiChannelModeScanMode = SCAN_OFF;
 		displayLightTrigger();
 		return;
 	}
@@ -717,7 +727,7 @@ static void handleUpKey(int buttons)
 	else
 	{
 		lastHeardClearLastID();
-		if (strcmp(currentZoneName,"All Channels")==0)
+		if (strcmp(currentZoneName,currentLanguage->all_channels)==0)
 		{
 			do
 			{
@@ -766,7 +776,7 @@ static void updateQuickMenuScreen(void)
 		switch(mNum)
 		{
 			case CH_SCREEN_QUICK_MENU_SCAN:
-				strcpy(buf, currentLanguage->scan);
+				sprintf(buf, "%s:%s",currentLanguage->scan,SCAN_MODES[tmpQuickMenuScanMode]);
 				break;
 			case CH_SCREEN_QUICK_MENU_COPY2VFO:
 				strcpy(buf, currentLanguage->channelToVfo);
@@ -805,7 +815,7 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 {
 	if ((keys & KEY_RED)!=0)
 	{
-		uiChannelModeScanActive=false;
+		uiChannelModeScanMode=SCAN_OFF;
 		menuSystemPopPreviousMenu();
 		return;
 	}
@@ -819,7 +829,7 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 					nuisanceDelete[i]=-1;
 					nuisanceDeleteIndex=0;
 				}
-				uiChannelModeScanActive=true;
+				uiChannelModeScanMode=tmpQuickMenuScanMode;
 				scanTimer=500;
 				scanState = SCAN_SCANNING;
 				menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
@@ -852,6 +862,12 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 					tmpQuickMenuDmrFilterLevel++;
 				}
 				break;
+			case CH_SCREEN_QUICK_MENU_SCAN:
+				if (tmpQuickMenuScanMode < SCAN_PAUSE)
+				{
+					tmpQuickMenuScanMode++;
+				}
+				break;
 		}
 	}
 	else if ((keys & KEY_LEFT)!=0)
@@ -862,6 +878,12 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 				if (tmpQuickMenuDmrFilterLevel > DMR_FILTER_CC)
 				{
 					tmpQuickMenuDmrFilterLevel--;
+				}
+				break;
+			case CH_SCREEN_QUICK_MENU_SCAN:
+				if (tmpQuickMenuScanMode > SCAN_OFF)
+				{
+					tmpQuickMenuScanMode--;
 				}
 				break;
 		}
@@ -884,7 +906,9 @@ int menuChannelModeQuickMenu(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
+		uiChannelModeScanMode=SCAN_OFF;
 		tmpQuickMenuDmrFilterLevel = nonVolatileSettings.dmrFilterLevel;
+		tmpQuickMenuScanMode=uiChannelModeScanMode;
 		gMenusCurrentItemIndex=0;
 		updateQuickMenuScreen();
 	}
@@ -909,23 +933,24 @@ static void scanning(void)
 		if (slot_state != DMR_STATE_IDLE)
 		{
 			scanState=SCAN_PAUSED;
-			scanTimer=SCAN_PAUSE;
+			scanTimer=nonVolatileSettings.scanDelay*1000;
 		}
 		else
 		{
 			if(trx_carrier_detected() )
 			{
-				scanTimer=SCAN_SHORT_PAUSE;												//start short delay to allow full detection of signal
-				scanState=SCAN_PAUSED;															//state 1 = pause and test for valid signal that produces audio
+				scanTimer=SCAN_SHORT_PAUSE_TIME;												//start short delay to allow full detection of signal
+				scanState=SCAN_SHORT_PAUSED;															//state 1 = pause and test for valid signal that produces audio
 			}
 		}
 	}
 
-	if(scanState==SCAN_PAUSED)
+	if(((scanState==SCAN_PAUSED)&&(uiChannelModeScanMode==SCAN_HOLD)) || (scanState==SCAN_SHORT_PAUSED))   // only do this once if scan mode is PAUSE do it every time if scan mode is HOLD
 	{
-	    if (GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable)==1)	    	// if speaker on we must be receiving a signal
+	    if (GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable)==1)	    	// if speaker on we must be receiving a signal so extend the time before resuming scan.
 	    {
-	    	scanTimer=SCAN_PAUSE;													//extend the time before resuming scan.
+	    	scanTimer=nonVolatileSettings.scanDelay*1000;
+	    	scanState=SCAN_PAUSED;
 	    }
 	}
 
@@ -938,10 +963,21 @@ static void scanning(void)
 		trx_measure_count=0;														//needed to allow time for Rx to settle after channel change.
 		handleUpKey(0);
 		scanTimer=SCAN_INTERVAL;
-		scanState = SCAN_SCANNING;															//state 0 = settling and test for carrier present.
-		if(channelScreenChannelData.flag4 & 0x20)									//if this channel has the skip bit set
+		scanState = SCAN_SCANNING;													//state 0 = settling and test for carrier present.
+
+		if (strcmp(currentZoneName,currentLanguage->all_channels)==0)
 		{
-			scanTimer=5;															//skip over it quickly. (immediate selection of another channel seems to cause crashes)
+			if(channelScreenChannelData.flag4 & 0x10)									//if this channel has the All Skip bit set
+			{
+				scanTimer=5;															//skip over it quickly. (immediate selection of another channel seems to cause crashes)
+			}
+		}
+		else
+		{
+			if(channelScreenChannelData.flag4 & 0x20)									//if this channel has the Zone Skip skip bit set
+			{
+				scanTimer=5;															//skip over it quickly. (immediate selection of another channel seems to cause crashes)
+			}
 		}
 
 		for(int i=0;i<MAX_ZONE_SCAN_NUISANCE_CHANNELS;i++)														//check all nuisance delete entries and skip channel if there is a match
@@ -961,4 +997,3 @@ static void scanning(void)
 		}
 	}
 }
-
