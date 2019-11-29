@@ -110,5 +110,6 @@ const stringsTable_t portuguesLanguage =
 .colour_invert		= "Color:Invertido",
 .colour_normal		= "Color:Normal",
 .backlight_timeout	= "Timeout",
+.scan_delay			= "Scan delay",
 };
 #endif /* USER_INTERFACE_LANGUAGES_PORTUGUESE_H_ */
