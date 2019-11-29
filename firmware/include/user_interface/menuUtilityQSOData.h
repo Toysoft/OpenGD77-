@@ -34,9 +34,10 @@ typedef struct dmrIdDataStruct
 typedef struct LinkItem
 {
     struct LinkItem *prev;
-    uint32_t id;
-    uint32_t talkGroupOrPcId;
-    char talkerAlias[32];// 4 blocks of data. 6 bytes + 7 bytes + 7 bytes + 7 bytes . plus 1 for termination some more for safety
+    uint32_t 	id;
+    uint32_t 	talkGroupOrPcId;
+    char 		talkerAlias[32];// 4 blocks of data. 6 bytes + 7 bytes + 7 bytes + 7 bytes . plus 1 for termination some more for safety
+    uint32_t	time;// current system time when this station was heard
     struct LinkItem *next;
 } LinkItem_t;
 

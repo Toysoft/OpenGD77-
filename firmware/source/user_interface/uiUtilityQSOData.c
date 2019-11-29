@@ -25,6 +25,7 @@
 #include "fw_trx.h"
 #include "fw_settings.h"
 #include <math.h>
+#include "fw_ticks.h"
 
 void updateLastHeardList(int id,int talkGroup);
 
@@ -104,6 +105,7 @@ void lastheardInitList(void)
     {
     	callsList[i].id=0;
         callsList[i].talkGroupOrPcId=0;
+        callsList[i].time = 0;
         if (i==0)
         {
             callsList[i].prev=NULL;
@@ -168,6 +170,7 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 			{
 				// Already in the list
 				item->talkGroupOrPcId = talkGroupOrPcId;// update the TG in case they changed TG
+				item->time = fw_millis();
 				lastTG = talkGroupOrPcId;
 
 				if (item == LinkHead)
@@ -224,6 +227,7 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 
 				item->id=id;
 				item->talkGroupOrPcId =  talkGroupOrPcId;
+				item->time = fw_millis();
 				lastTG = talkGroupOrPcId;
 				memset(item->talkerAlias,0,32);// Clear any TA data
 				if (item->talkGroupOrPcId!=0)
@@ -242,6 +246,7 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 				{
 					// Already in the list
 					item->talkGroupOrPcId = talkGroupOrPcId;// update the TG in case they changed TG
+					item->time = fw_millis();
 				}
 				lastTG = talkGroupOrPcId;
 				retVal = true;// something has changed
