@@ -90,7 +90,8 @@ const stringsTable_t portuguesLanguage =
 .stepFreq			= "Passo:%d.%02dkHz",
 .tot				= "TOT",
 .off				= "Off",
-.skip				= "Ignorar",
+.zone_skip			= "Z Ignorar",
+.all_skip			= "A Ignorar",
 .yes				= "Sim",
 .no					= "Nao",
 .rx_group			= "Rx Grp",
@@ -109,5 +110,6 @@ const stringsTable_t portuguesLanguage =
 .colour_invert		= "Color:Invertido",
 .colour_normal		= "Color:Normal",
 .backlight_timeout	= "Timeout",
+.scan_delay			= "Scan delay",
 };
 #endif /* USER_INTERFACE_LANGUAGES_PORTUGUESE_H_ */

@@ -90,7 +90,8 @@ const stringsTable_t spanishLanguage =
 	.stepFreq                         = "Paso:%d.%02dkHz",
 	.tot                       = "TOT",
 	.off                       = "Off",
-	.skip                      = "Saltar",
+	.zone_skip                 = "Z Saltar",
+	.all_skip                 = "A Saltar",
 	.yes                       = "Si",
 	.no                               = "No",
 	.rx_group                  = "Grupo RX",
@@ -109,5 +110,6 @@ const stringsTable_t spanishLanguage =
 	.colour_invert		= "Color:Invertido",
 	.colour_normal		= "Color:Normal",
   .backlight_timeout = "Tiempo luz",
+  	.scan_delay			="Scan delay",
 };
 #endif /* USER_INTERFACE_LANGUAGES_SPANISH_H_ */

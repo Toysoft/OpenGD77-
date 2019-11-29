@@ -39,7 +39,7 @@ static int CTCSSTxIndex=0;
 static struct_codeplugChannel_t tmpChannel;// update a temporary copy of the channel and only write back if green menu is pressed
 
 enum CHANNEL_DETAILS_DISPLAY_LIST { CH_DETAILS_MODE = 0, CH_DETAILS_DMR_CC, CH_DETAILS_DMR_TS,CH_DETAILS_RXCTCSS, CH_DETAILS_TXCTCSS , CH_DETAILS_RXFREQ, CH_DETAILS_TXFREQ, CH_DETAILS_BANDWIDTH,
-									CH_DETAILS_FREQ_STEP, CH_DETAILS_TOT, CH_DETAILS_SKIP, CH_DETAILS_RXGROUP,
+									CH_DETAILS_FREQ_STEP, CH_DETAILS_TOT, CH_DETAILS_ZONE_SKIP,CH_DETAILS_ALL_SKIP,CH_DETAILS_RXGROUP,
 									NUM_CH_DETAILS_ITEMS};// The last item in the list is used so that we automatically get a total number of items in the list
 
 int menuChannelDetails(int buttons, int keys, int events, bool isFirstRun)
@@ -191,11 +191,13 @@ static void updateScreen(void)
 					sprintf(buf, "%s:%s",currentLanguage->tot,currentLanguage->off);
 				}
 				break;
-			case CH_DETAILS_SKIP:
-							// Scan Skip Channel (Using CPS Auto Scan flag)
-				sprintf(buf, "%s:%s", currentLanguage->skip,((tmpChannel.flag4 & 0x20) == 0x20) ? currentLanguage->yes : currentLanguage->no);
+			case CH_DETAILS_ZONE_SKIP:						// Zone Scan Skip Channel (Using CPS Auto Scan flag)
+				sprintf(buf, "%s:%s", currentLanguage->zone_skip,((tmpChannel.flag4 & 0x20) == 0x20) ? currentLanguage->yes : currentLanguage->no);
 				break;
-
+ 			case CH_DETAILS_ALL_SKIP:					// All Scan Skip Channel (Using CPS Lone Worker flag)
+				sprintf(buf, "%s:%s", currentLanguage->all_skip,((tmpChannel.flag4 & 0x10) == 0x10) ? currentLanguage->yes : currentLanguage->no);
+				break;
+				
 			case CH_DETAILS_RXGROUP:
 				codeplugRxGroupGetDataForIndex(tmpChannel.rxGroupList, &rxGroupBuf);
 				codeplugUtilConvertBufToString(rxGroupBuf.name, rxNameBuf, 16);
@@ -289,9 +291,12 @@ static void handleEvent(int buttons, int keys, int events)
 					tmpChannel.tot++;
 				}
 				break;
-			case CH_DETAILS_SKIP:
-				tmpChannel.flag4 |= 0x20;// set Channel Skip bit (was Auto Scan)
+			case CH_DETAILS_ZONE_SKIP:
+				tmpChannel.flag4 |= 0x20;// set Channel Zone Skip bit (was Auto Scan)
 				break;
+			case CH_DETAILS_ALL_SKIP:
+				tmpChannel.flag4 |= 0x10;// set Channel All Skip bit (was Lone Worker)
+				break;				
 			case CH_DETAILS_RXGROUP:
 				tmpVal = tmpChannel.rxGroupList;
 				tmpVal++;
@@ -372,9 +377,12 @@ static void handleEvent(int buttons, int keys, int events)
 					tmpChannel.tot--;
 				}
 				break;
-			case CH_DETAILS_SKIP:
-				tmpChannel.flag4 &= ~0x20;// clear Channel Skip Bit (was Auto Scan bit)
+			case CH_DETAILS_ZONE_SKIP:
+				tmpChannel.flag4 &= ~0x20;// clear Channel Zone Skip Bit (was Auto Scan bit)
 				break;
+			case CH_DETAILS_ALL_SKIP:
+				tmpChannel.flag4 &= ~0x10;// clear Channel All Skip Bit (was Lone Worker bit)
+				break;				
 			case CH_DETAILS_RXGROUP:
 					tmpVal = tmpChannel.rxGroupList;
 					tmpVal--;
