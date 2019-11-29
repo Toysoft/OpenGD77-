@@ -20,7 +20,6 @@
 #ifndef USER_INTERFACE_LANGUAGES_GERMAN_H_
 #define USER_INTERFACE_LANGUAGES_GERMAN_H_
 
-const stringsTable_t germanLanguage =
 {
 .LANGUAGE_NAME 		= "Deutsch",
 .language			= "Sprache",
@@ -90,24 +89,24 @@ const stringsTable_t germanLanguage =
 .stepFreq			= "Schritt:%d.%02dkHz",
 .tot				= "TOT",
 .off				= "Aus",
-.skip				= "Ueberspringe",
+.skip				= "Skip",
 .yes				= "Ja",
 .no					= "Nein",
 .rx_group			= "Rx Gruppe",
 .on					= "Ein",
-.timeout_beep		= "Timeout Ton",
+.timeout_beep		= "Timeout-Ton",
 .factory_reset		= "Werks-Reset",
 .calibration		= "Kalibration",
 .band_limits		= "Band Limit",
 .beep_volume		= "Beep Lauts.",
-.dmr_mic_gain		= "DMR mic",
+.dmr_mic_gain		= "DMR Mikro",
 .key_long			= "Key lang:%1d.%1ds",
 .key_repeat			= "Key wied.:%1d.%1ds",
-.dmr_filter_timeout	= "Filter Zeit",
+.dmr_filter_timeout	= "DMR Filter",
 .brightness			= "Helligkeit",
 .contrast			= "Kontrast",
 .colour_invert		= "Anzeige:Invers",
 .colour_normal		= "Anzeige:Normal",
-.backlight_timeout	= "Timeout",
+.backlight_timeout = "Timeout",
 };
 #endif /* USER_INTERFACE_LANGUAGES_GERMAN_H_ */
