@@ -179,6 +179,15 @@ void fw_main_task(void *data)
 				}
 			}
 
+			// Only PTT is locked, user ask to unlock
+			if (PTTLocked && ((buttons & BUTTON_SK2) && ((keys & KEY_STAR) != 0)))
+			{
+				if (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN)
+				{
+					menuSystemPushNewMenu(MENU_LOCK_SCREEN);
+				}
+			}
+
 			if (menuSystemGetCurrentMenuNumber() != MENU_CONTACT_LIST &&
 					menuSystemGetCurrentMenuNumber() != MENU_CONTACT_QUICKLIST &&
 					menuSystemGetCurrentMenuNumber() != MENU_CONTACT_LIST_SUBMENU &&
@@ -248,16 +257,29 @@ void fw_main_task(void *data)
 			if (button_event == EVENT_BUTTON_CHANGE)
 			{
 				displayLightTrigger();
-        		if ((	(buttons & BUTTON_PTT)!=0) &&
-        				(slot_state==DMR_STATE_IDLE || trxDMRMode == DMR_MODE_PASSIVE) &&
-						trxGetMode()!=RADIO_MODE_NONE &&
-						settingsUsbMode != USB_MODE_HOTSPOT &&
-						menuSystemGetCurrentMenuNumber() != MENU_POWER_OFF &&
-						menuSystemGetCurrentMenuNumber() != MENU_SPLASH_SCREEN &&
-						menuSystemGetCurrentMenuNumber() != MENU_TX_SCREEN )
-        		{
-        			menuSystemPushNewMenu(MENU_TX_SCREEN);
-        		}
+				if ((buttons & BUTTON_PTT)!=0)
+				{
+					if (PTTLocked)
+					{
+						button_event = EVENT_BUTTON_NONE;
+						buttons = 0;
+						set_melody(melody_ERROR_beep);
+						menuSystemPushNewMenu(MENU_LOCK_SCREEN);
+					}
+					else
+					{
+						if ((slot_state == DMR_STATE_IDLE || trxDMRMode == DMR_MODE_PASSIVE) &&
+								trxGetMode() != RADIO_MODE_NONE &&
+								settingsUsbMode != USB_MODE_HOTSPOT &&
+								menuSystemGetCurrentMenuNumber() != MENU_POWER_OFF &&
+								menuSystemGetCurrentMenuNumber() != MENU_SPLASH_SCREEN &&
+								menuSystemGetCurrentMenuNumber() != MENU_TX_SCREEN )
+						{
+							menuSystemPushNewMenu(MENU_TX_SCREEN);
+						}
+					}
+				}
+
         		if (buttons & BUTTON_SK1 && buttons & BUTTON_SK2)
         		{
         			settingsSaveSettings(true);

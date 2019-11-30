@@ -44,13 +44,32 @@ int menuLockScreen(int buttons, int keys, int events, bool isFirstRun)
 static void updateScreen(void)
 {
 	UC1701_clearBuf();
-	UC1701_drawRoundRect(4, 4, 120, 56, 5, true);
-	if (keypadLocked) {
-		UC1701_printCentered(10, currentLanguage->keypad_locked, UC1701_FONT_8x16);
-		UC1701_printCentered(30,  currentLanguage->press_blue_plus_star, UC1701_FONT_6x8);
-		UC1701_printCentered(38, currentLanguage->to_unlock, UC1701_FONT_6x8);
-	} else {
-		UC1701_printCentered(20, currentLanguage->unlocked, UC1701_FONT_8x16);
+	UC1701_drawRoundRectWithDropShadow(4, 4, 120, 58, 5, true);
+	if (keypadLocked || PTTLocked)
+	{
+		char buf[32];
+
+		memset(buf, 0, 32);
+
+		if (keypadLocked)
+			strcat(buf, currentLanguage->keypad);
+
+		if (PTTLocked)
+		{
+			if (keypadLocked)
+				strcat(buf, " & ");
+
+			strcat(buf, currentLanguage->ptt);
+		}
+
+		UC1701_printCentered(6, buf, UC1701_FONT_8x16);
+		UC1701_printCentered(22, currentLanguage->locked, UC1701_FONT_8x16);
+		UC1701_printCentered(40,  currentLanguage->press_blue_plus_star, UC1701_FONT_6x8);
+		UC1701_printCentered(48, currentLanguage->to_unlock, UC1701_FONT_6x8);
+	}
+	else
+	{
+		UC1701_printCentered(24, currentLanguage->unlocked, UC1701_FONT_8x16);
 	}
 	UC1701_render();
 	displayLightTrigger();
@@ -68,6 +87,7 @@ static void handleEvent(int buttons, int keys, int events)
 	if ((keys & KEY_STAR) != 0 && (buttons & BUTTON_SK2))
 	{
 		keypadLocked = false;
+		PTTLocked = false;
 		menuSystemPopAllAndDisplayRootMenu();
 		menuSystemPushNewMenu(MENU_LOCK_SCREEN);
 	}

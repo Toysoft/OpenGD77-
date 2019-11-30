@@ -43,7 +43,9 @@ typedef struct stringsTable
    const char batteryVoltage[LANGUAGE_TEXTS_LENGTH];//
    const char built[LANGUAGE_TEXTS_LENGTH];//
    const char zones[LANGUAGE_TEXTS_LENGTH];//
-   const char keypad_locked[LANGUAGE_TEXTS_LENGTH];//
+   const char keypad[LANGUAGE_TEXTS_LENGTH];//
+   const char ptt[LANGUAGE_TEXTS_LENGTH];//
+   const char locked[LANGUAGE_TEXTS_LENGTH];//
    const char press_blue_plus_star[LANGUAGE_TEXTS_LENGTH];//
    const char to_unlock[LANGUAGE_TEXTS_LENGTH];//
    const char unlocked[LANGUAGE_TEXTS_LENGTH];//
