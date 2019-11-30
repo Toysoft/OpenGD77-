@@ -648,3 +648,19 @@ void codeplugSetVFO_ChannelData(struct_codeplugChannel_t *vfoBuf,int VFONumber)
 	tmpChannel.rxFreq = int2bcd(vfoBuf->rxFreq);
 	EEPROM_Write(CODEPLUG_ADDR_VFO_A_CHANNEL+(sizeof(struct_codeplugChannel_t)*VFONumber),(uint8_t *)&tmpChannel,sizeof(struct_codeplugChannel_t));
 }
+
+void codeplugInitChannelsPerZone()
+{
+	uint8_t buf[16];
+	// 0x806F is the last byte of the name of the second Zone if 16 channels per zone
+	// And because the CPS terminates the zone name with 0xFF, this will be 0xFF if its a 16 channel per zone schema
+	// If the zone has 80 channels per zone this address will be the upper byte of the channel number and because the max channels is 1024
+	// this value can never me 0xff if its a channel number
+
+	// Note. I tried to read just 1 byte but it crashed. So I am now reading 16 bytes and checking the last one
+	EEPROM_Read(0x8060,(uint8_t *)buf,16);
+	if (buf[15]==0x00)
+	{
+		codeplugChannelsPerZone=80;// Must be the new 80 channel per zone format
+	}
+}

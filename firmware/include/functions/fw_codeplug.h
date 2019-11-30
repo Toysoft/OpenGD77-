@@ -135,6 +135,6 @@ int codeplugContactIndexByTGorPC(int tgorpc, int callType);
 int codeplugContactSaveDataForIndex(int index, struct_codeplugContact_t *contact);
 int codeplugContactGetFreeIndex(void);
 bool codeplugContactGetRXGroup(int index);
-
+void codeplugInitChannelsPerZone();
 
 #endif
