@@ -23,8 +23,10 @@ static void updateScreen(void);
 static void handleEvent(int buttons, int keys, int events);
 
 static bool lockDisplay = false;
-static int uiLockLastKey;
 static const int TIMEOUT_MS = 2000;
+static int lockScreenState;
+
+enum LOCK_SCREEN_STATE { LOCK_SCREEN_STATE_IDLE=0, LOCK_SCREEN_STATE_CHANGED };
 
 int menuLockScreen(int buttons, int keys, int events, bool isFirstRun)
 {
@@ -32,7 +34,7 @@ int menuLockScreen(int buttons, int keys, int events, bool isFirstRun)
 	{
 		menuTimer = TIMEOUT_MS;
 		updateScreen();
-		uiLockLastKey = keys;
+		lockScreenState = LOCK_SCREEN_STATE_CHANGED;
 	}
 	else
 	{
@@ -43,36 +45,43 @@ int menuLockScreen(int buttons, int keys, int events, bool isFirstRun)
 
 static void updateScreen(void)
 {
-	UC1701_clearBuf();
-	UC1701_drawRoundRectWithDropShadow(4, 4, 120, 58, 5, true);
-	if (keypadLocked || PTTLocked)
+	if (lockScreenState == LOCK_SCREEN_STATE_CHANGED)
 	{
-		char buf[32];
-
-		memset(buf, 0, 32);
-
-		if (keypadLocked)
-			strcat(buf, currentLanguage->keypad);
-
-		if (PTTLocked)
+		UC1701_clearBuf();
+		UC1701_drawRoundRectWithDropShadow(4, 4, 120, 58, 5, true);
+		if (keypadLocked || PTTLocked)
 		{
+			char buf[32];
+
+			memset(buf, 0, 32);
+
 			if (keypadLocked)
-				strcat(buf, " & ");
+				strcat(buf, currentLanguage->keypad);
 
-			strcat(buf, currentLanguage->ptt);
+			if (PTTLocked)
+			{
+				if (keypadLocked)
+					strcat(buf, " & ");
+
+				strcat(buf, currentLanguage->ptt);
+			}
+
+			UC1701_printCentered(6, buf, UC1701_FONT_8x16);
+			UC1701_printCentered(22, currentLanguage->locked, UC1701_FONT_8x16);
+			UC1701_printCentered(40, currentLanguage->press_blue_plus_star,
+					UC1701_FONT_6x8);
+			UC1701_printCentered(48, currentLanguage->to_unlock,
+					UC1701_FONT_6x8);
 		}
-
-		UC1701_printCentered(6, buf, UC1701_FONT_8x16);
-		UC1701_printCentered(22, currentLanguage->locked, UC1701_FONT_8x16);
-		UC1701_printCentered(40,  currentLanguage->press_blue_plus_star, UC1701_FONT_6x8);
-		UC1701_printCentered(48, currentLanguage->to_unlock, UC1701_FONT_6x8);
+		else
+		{
+			UC1701_printCentered(24, currentLanguage->unlocked,
+					UC1701_FONT_8x16);
+		}
+		UC1701_render();
+		displayLightTrigger();
 	}
-	else
-	{
-		UC1701_printCentered(24, currentLanguage->unlocked, UC1701_FONT_8x16);
-	}
-	UC1701_render();
-	displayLightTrigger();
+	lockScreenState = LOCK_SCREEN_STATE_IDLE;
 }
 
 static void handleEvent(int buttons, int keys, int events)
@@ -84,11 +93,12 @@ static void handleEvent(int buttons, int keys, int events)
 		lockDisplay = false;
 	}
 
-	if ((keys & KEY_STAR) != 0 && (buttons & BUTTON_SK2))
+	if (KEYCHECK_UP(keys, KEY_STAR) && (buttons & BUTTON_SK2))
 	{
 		keypadLocked = false;
 		PTTLocked = false;
 		menuSystemPopAllAndDisplayRootMenu();
 		menuSystemPushNewMenu(MENU_LOCK_SCREEN);
+
 	}
 }
