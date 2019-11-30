@@ -64,7 +64,7 @@ const stringsTable_t portuguesLanguage =
 .vfoRxFreq			= "%cR %d.%05d MHz",
 .vfoTxFreq			= "%cT %d.%05d MHz",
 .vfoEnterFreq		= "%c%c%c.%c%c%c%c%c MHz",
-.quick_menu 		= "Menu Rápido",
+.quick_menu 		= "Menu Rï¿½pido",
 .filter				= "Filtro:%s",
 .all_channels		= "Todos os Canais",
 .gotoChannel		= "Ir para %d",
@@ -113,7 +113,10 @@ const stringsTable_t portuguesLanguage =
 .backlight_timeout	= "Timeout",
 .scan_delay			= "Scan delay",
 .YES				= "SIM",
-.NO				= "NÃO",
+.NO				= "Nï¿½O",
 .DISMISS			= "DISPENSAR",
+.scan_mode			= "Scan mode",
+.hold				= "Hold",
+.pause              = "Pause",
 };
 #endif /* USER_INTERFACE_LANGUAGES_PORTUGUESE_H_ */

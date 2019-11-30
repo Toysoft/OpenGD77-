@@ -35,7 +35,7 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		uiChannelModeScanMode=0;
+		uiChannelModeScanActive=false;
 		trxIsTransmittingTone = false;
 		settingsPrivateCallMuteMode = false;
 		micLevelUpdateCounter=100;

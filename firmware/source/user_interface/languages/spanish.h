@@ -112,8 +112,11 @@ const stringsTable_t spanishLanguage =
 	.colour_normal		= "Color:Normal",
   .backlight_timeout = "Tiempo luz",
   	.scan_delay			="Scan delay",
-	.YES				= "SÍ",
+	.YES				= "Sï¿½",
 	.NO				= "NO",
 	.DISMISS			= "DESPEDIR",
+	.scan_mode			= "Scan mode",
+	.hold				= "Hold",
+	.pause              = "Pause",
 };
 #endif /* USER_INTERFACE_LANGUAGES_SPANISH_H_ */

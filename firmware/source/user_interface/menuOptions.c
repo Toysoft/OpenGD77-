@@ -25,7 +25,8 @@ static void handleEvent(int buttons, int keys, int events);
 static bool	doFactoryReset;
 enum OPTIONS_MENU_LIST { OPTIONS_MENU_TIMEOUT_BEEP=0,OPTIONS_MENU_FACTORY_RESET,OPTIONS_MENU_USE_CALIBRATION,
 							OPTIONS_MENU_TX_FREQ_LIMITS,OPTIONS_MENU_BEEP_VOLUME,OPTIONS_MIC_GAIN_DMR,
-							OPTIONS_MENU_KEYPAD_TIMER_LONG, OPTIONS_MENU_KEYPAD_TIMER_REPEAT, OPTIONS_MENU_DMR_MONITOR_CAPTURE_TIMEOUT,OPTIONS_MENU_SCAN_DELAY,
+							OPTIONS_MENU_KEYPAD_TIMER_LONG, OPTIONS_MENU_KEYPAD_TIMER_REPEAT, OPTIONS_MENU_DMR_MONITOR_CAPTURE_TIMEOUT,
+							OPTIONS_MENU_SCAN_DELAY,OPTIONS_MENU_SCAN_MODE,
 							NUM_OPTIONS_MENU_ITEMS};
 
 
@@ -121,6 +122,16 @@ static void updateScreen(void)
 			case OPTIONS_MENU_SCAN_DELAY:// Scan hold and pause time
 				sprintf(buf, "%s:%ds",currentLanguage->scan_delay, nonVolatileSettings.scanDelay);
 				break;
+			case OPTIONS_MENU_SCAN_MODE:// scanning mode
+				if (nonVolatileSettings.scanModePause)
+				{
+					sprintf(buf, "%s:%s",currentLanguage->scan_mode,currentLanguage->pause);
+				}
+				else
+				{
+					sprintf(buf, "%s:%s",currentLanguage->scan_mode,currentLanguage->hold);
+				}
+				break;
 		}
 
 		menuDisplayEntry(i, mNum, buf);
@@ -196,6 +207,9 @@ static void handleEvent(int buttons, int keys, int events)
 					nonVolatileSettings.scanDelay++;
 				}
 				break;
+			case OPTIONS_MENU_SCAN_MODE:
+				nonVolatileSettings.scanModePause=true;
+				break;
 		}
 	}
 	else if ((keys & KEY_LEFT)!=0)
@@ -254,6 +268,9 @@ static void handleEvent(int buttons, int keys, int events)
 				{
 					nonVolatileSettings.scanDelay--;
 				}
+				break;
+			case OPTIONS_MENU_SCAN_MODE:
+				nonVolatileSettings.scanModePause=false;
 				break;
 		}
 	}

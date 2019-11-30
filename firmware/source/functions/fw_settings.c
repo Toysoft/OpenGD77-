@@ -31,7 +31,7 @@ const int BAND_UHF_MIN 	= 43000000;
 const int BAND_UHF_MAX 	= 45000000;
 
 static const int STORAGE_BASE_ADDRESS 		= 0x6000;
-static const int STORAGE_MAGIC_NUMBER 		= 0x4729;
+static const int STORAGE_MAGIC_NUMBER 		= 0x472A;
 
 settingsStruct_t nonVolatileSettings;
 struct_codeplugChannel_t *currentChannelData;
@@ -154,6 +154,7 @@ void settingsRestoreDefaultSettings(void)
 	nonVolatileSettings.dmrCaptureTimeout=10;// Default to holding 10 seconds after a call ends
 	nonVolatileSettings.languageIndex=0;
 	nonVolatileSettings.scanDelay=5;// 5 seconds
+	nonVolatileSettings.scanModePause=false;
 
 	currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];// Set the current channel data to point to the VFO data since the default screen will be the VFO
 
