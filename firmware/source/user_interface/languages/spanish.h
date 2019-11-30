@@ -41,7 +41,6 @@ const stringsTable_t spanishLanguage =
 	.contact_details     = "Detalle contacto",
 	.batteryVoltage            = "%d.%dV",
 	.built                     = "Compilado",
-	.built                     = "Compilado",
 	.zones                     = "Zonas",
 	.keypad					   = "Teclas",
 	.ptt					   = "PTT",

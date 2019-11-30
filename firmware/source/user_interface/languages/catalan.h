@@ -41,7 +41,6 @@ const stringsTable_t catalanLanguage =
 	.contact_details     = "Detall contacte",
 	.batteryVoltage            = "%d.%dV",
 	.built                     = "Compilat",
-	.built                     = "Compilat",
 	.zones                     = "Zones",
 	.keypad					   = "Teclat",
 	.ptt					   = "PTT",
