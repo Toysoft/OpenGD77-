@@ -116,6 +116,9 @@ typedef struct stringsTable
    const char YES[LANGUAGE_TEXTS_LENGTH];
    const char NO[LANGUAGE_TEXTS_LENGTH];
    const char DISMISS[LANGUAGE_TEXTS_LENGTH];
+   const char scan_mode[LANGUAGE_TEXTS_LENGTH];
+   const char hold[LANGUAGE_TEXTS_LENGTH];
+   const char pause[LANGUAGE_TEXTS_LENGTH];
 
 } stringsTable_t;
 

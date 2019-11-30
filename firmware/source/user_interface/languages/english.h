@@ -115,5 +115,8 @@ const stringsTable_t englishLanguage =
 .YES				= "YES",
 .NO				= "NO",
 .DISMISS			= "DISMISS",
+.scan_mode			= "Scan mode",
+.hold				= "Hold",
+.pause              = "Pause",
 };
 #endif /* USER_INTERFACE_LANGUAGES_ENGLISH_H_ */
