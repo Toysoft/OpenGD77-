@@ -112,5 +112,8 @@ const stringsTable_t frenchLanguage =
 .colour_normal			= "Couleur:Normale",
 .backlight_timeout		= "Timeout",
 .scan_delay			= "Délai scan",
+.YES				= "OUI",
+.NO				= "NON",
+.DISMISS			= "CACHER",
 };
 #endif /* USER_INTERFACE_LANGUAGES_FRENCH_H_ */

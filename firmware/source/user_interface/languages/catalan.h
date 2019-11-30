@@ -112,5 +112,8 @@ const stringsTable_t catalanLanguage =
 	.colour_normal		= "Color:Normal",
 	.backlight_timeout	= "Temps llum",
 	.scan_delay			= "Scan delay",
+	.YES				= "SÍ",
+	.NO				= "NO",
+	.DISMISS			= "DESMISSAR",
 };
 #endif /* USER_INTERFACE_LANGUAGES_CATALAN_H_*/
