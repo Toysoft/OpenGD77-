@@ -20,10 +20,11 @@
 #include <user_interface/uiLocalisation.h>
 
 #include <user_interface/languages/english.h>
+#include <user_interface/languages/french.h>
 #include <user_interface/languages/german.h>
 #include <user_interface/languages/portuguese.h>
 #include <user_interface/languages/catalan.h>
 #include <user_interface/languages/spanish.h>
 
-const stringsTable_t languages[NUM_LANGUAGES]= { englishLanguage,catalanLanguage,germanLanguage,portuguesLanguage,spanishLanguage};
+const stringsTable_t languages[NUM_LANGUAGES]= { englishLanguage,frenchLanguage,catalanLanguage,germanLanguage,portuguesLanguage,spanishLanguage};
 const stringsTable_t *currentLanguage;

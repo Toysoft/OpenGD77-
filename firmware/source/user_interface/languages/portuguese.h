@@ -41,7 +41,6 @@ const stringsTable_t portuguesLanguage =
 .contact_details	= "Detalhes Contato",
 .batteryVoltage		= "%d.%dV",
 .built				= "Built",
-.built				= "Built",
 .zones				= "Zonas",
 .keypad				= "Teclado",
 .ptt 				= "PTT",
@@ -65,7 +64,7 @@ const stringsTable_t portuguesLanguage =
 .vfoRxFreq			= "%cR %d.%05d MHz",
 .vfoTxFreq			= "%cT %d.%05d MHz",
 .vfoEnterFreq		= "%c%c%c.%c%c%c%c%c MHz",
-.quick_menu 		= "Menu RÃ¡pido",
+.quick_menu 		= "Menu Rápido",
 .filter				= "Filtro:%s",
 .all_channels		= "Todos os Canais",
 .gotoChannel		= "Ir para %d",
@@ -113,5 +112,8 @@ const stringsTable_t portuguesLanguage =
 .colour_normal		= "Color:Normal",
 .backlight_timeout	= "Timeout",
 .scan_delay			= "Scan delay",
+.YES				= "SIM",
+.NO				= "NÃO",
+.DISMISS			= "DISPENSAR",
 };
 #endif /* USER_INTERFACE_LANGUAGES_PORTUGUESE_H_ */
