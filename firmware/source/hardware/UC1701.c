@@ -22,6 +22,7 @@
 
 #include <hardware/UC1701.h>
 #include <hardware/UC1701_charset.h>
+#include <user_interface/uiLocalisation.h>
 #include "fw_display.h"
 #include "fw_settings.h"
 
@@ -1075,9 +1076,9 @@ void UC1701_drawChoice(UC1701_Choice_t choice, bool clearRegion)
 		char *rText;
 	} choices[] =
 	{
-			{ "OK" ,  NULL  }, // UC1701_CHOICE_OK
-			{ "YES",  "NO"  },  // UC1701_CHOICE_YESNO
-			{ NULL, "DISMISS" } // UC1701_CHOICE_DISMISS
+			{ "OK" 							 , NULL                              }, // UC1701_CHOICE_OK
+			{ (char *)currentLanguage->YES   , (char *)currentLanguage->NO       }, // UC1701_CHOICE_YESNO
+			{ NULL						     , (char *)currentLanguage->DISMISS  }  // UC1701_CHOICE_DISMISS
 	};
 	char *lText = NULL;
 	char *rText = NULL;

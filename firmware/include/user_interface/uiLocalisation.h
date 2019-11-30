@@ -18,7 +18,7 @@
 #ifndef _UI_LOCALISATION_H_
 #define _UI_LOCALISATION_H_
 
-#define NUM_LANGUAGES 5
+#define NUM_LANGUAGES 6
 #define LANGUAGE_TEXTS_LENGTH 24
 
 typedef struct stringsTable
@@ -113,6 +113,10 @@ typedef struct stringsTable
    const char colour_normal[LANGUAGE_TEXTS_LENGTH];
    const char backlight_timeout[LANGUAGE_TEXTS_LENGTH];
    const char scan_delay[LANGUAGE_TEXTS_LENGTH];
+   const char YES[LANGUAGE_TEXTS_LENGTH];
+   const char NO[LANGUAGE_TEXTS_LENGTH];
+   const char DISMISS[LANGUAGE_TEXTS_LENGTH];
+
 } stringsTable_t;
 
 extern const stringsTable_t languages[];

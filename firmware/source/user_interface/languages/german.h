@@ -41,7 +41,6 @@ const stringsTable_t germanLanguage =
 .contact_details	= "Kontakt Details",
 .batteryVoltage		= "%d.%dV",
 .built				= "Erstellt",
-.built				= "Erstellt",
 .zones				= "Zonen",
 .keypad				= "Tasten",
 .ptt 				= "PTT",
@@ -112,6 +111,9 @@ const stringsTable_t germanLanguage =
 .colour_invert		= "Anzeige:Invers",
 .colour_normal		= "Anzeige:Normal",
 .backlight_timeout	= "Timeout",
-.scan_delay			= "Scan delay"
+.scan_delay			= "Scan delay",
+.YES				= "JA",
+.NO				= "NEIN",
+.DISMISS			= "ENTLASSEN",
 };
 #endif /* USER_INTERFACE_LANGUAGES_GERMAN_H_ */
