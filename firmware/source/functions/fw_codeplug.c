@@ -28,7 +28,7 @@ const int CODEPLUG_ADDR_EX_ZONE_BASIC = 0x8000;
 const int CODEPLUG_ADDR_EX_ZONE_INUSE_PACKED_DATA =  0x8010;
 const int CODEPLUG_ADDR_EX_ZONE_INUSE_PACKED_DATA_SIZE =  32;
 const int CODEPLUG_ADDR_EX_ZONE_LIST =  0x8030;
-const int CODEPLUG_ZONE_DATA_SIZE = 48;
+//const int CODEPLUG_ZONE_DATA_SIZE = 48;
 const int CODEPLUG_ZONE_MAX_COUNT = 250;
 const int CODEPLUG_CHANNEL_DATA_SIZE = 56;
 const int CODEPLUG_ADDR_CHANNEL_EEPROM = 0x3790;
@@ -51,7 +51,7 @@ const int CODEPLUG_ADDR_BOOT_LINE1 = 0x7540;
 const int CODEPLUG_ADDR_BOOT_LINE2 = 0x7550;
 const int CODEPLUG_ADDR_VFO_A_CHANNEL = 0x7590;
 
-const int MAX_CHANNELS_PER_ZONE = 16;
+int codeplugChannelsPerZone = 16;
 
 const int VFO_FREQ_STEP_TABLE[8] = {250,500,625,1000,1250,2500,3000,5000};
 
@@ -140,7 +140,7 @@ void codeplugZoneGetDataForNumber(int zoneNum,struct_codeplugZone_t *returnBuf)
 	if (zoneNum==codeplugZonesGetCount()-1) //special case: return a special Zone called 'All Channels'
 	{
 		sprintf(returnBuf->name,"All Channels");
-		for(int i=0;i<MAX_CHANNELS_PER_ZONE;i++)
+		for(int i=0;i<codeplugChannelsPerZone;i++)
 		{
 			returnBuf->channels[i]=0;
 		}
@@ -179,9 +179,9 @@ void codeplugZoneGetDataForNumber(int zoneNum,struct_codeplugZone_t *returnBuf)
 		}
 
 		// IMPORTANT. read size is different from the size of the data, because I added a extra property to the struct to hold the number of channels in the zone.
-		EEPROM_Read(CODEPLUG_ADDR_EX_ZONE_LIST + (foundIndex  * CODEPLUG_ZONE_DATA_SIZE), (uint8_t*)returnBuf, sizeof(struct_codeplugZone_t));
+		EEPROM_Read(CODEPLUG_ADDR_EX_ZONE_LIST + (foundIndex  * (16 + (2 * codeplugChannelsPerZone))), (uint8_t*)returnBuf, sizeof(struct_codeplugZone_t));
 
-		for(int i=0;i<MAX_CHANNELS_PER_ZONE;i++)
+		for(int i=0;i<codeplugChannelsPerZone;i++)
 		{
 			// Empty channels seem to be filled with zeros
 			if (returnBuf->channels[i] == 0)
@@ -190,7 +190,7 @@ void codeplugZoneGetDataForNumber(int zoneNum,struct_codeplugZone_t *returnBuf)
 				return;
 			}
 		}
-		returnBuf->NOT_IN_MEMORY_numChannelsInZone=MAX_CHANNELS_PER_ZONE;
+		returnBuf->NOT_IN_MEMORY_numChannelsInZone=codeplugChannelsPerZone;
 	}
 }
 
