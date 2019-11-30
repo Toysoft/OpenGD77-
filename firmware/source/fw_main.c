@@ -180,7 +180,7 @@ void fw_main_task(void *data)
 			}
 
 			// Only PTT is locked, user ask to unlock
-			if (PTTLocked && ((buttons & BUTTON_SK2) && ((keys & KEY_STAR) != 0)))
+			if (PTTLocked && ((buttons & BUTTON_PTT) != 0))
 			{
 				if (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN)
 				{
