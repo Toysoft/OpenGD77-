@@ -41,9 +41,10 @@ const stringsTable_t spanishLanguage =
 	.contact_details     = "Detalle contacto",
 	.batteryVoltage            = "%d.%dV",
 	.built                     = "Compilado",
-	.built                     = "Compilado",
 	.zones                     = "Zonas",
-	.keypad_locked             = "Teclas bloq.",
+	.keypad					   = "Teclas",
+	.ptt					   = "PTT",
+	.locked					   = "Bloqueado",
 	.press_blue_plus_star      = "Pulsa Azul + (*)",
 	.to_unlock                 = "para desbloq.",
 	.unlocked                  = "Desbloqueado",
@@ -111,5 +112,8 @@ const stringsTable_t spanishLanguage =
 	.colour_normal		= "Color:Normal",
   .backlight_timeout = "Tiempo luz",
   	.scan_delay			="Scan delay",
+	.YES				= "SÍ",
+	.NO				= "NO",
+	.DISMISS			= "DESPEDIR",
 };
 #endif /* USER_INTERFACE_LANGUAGES_SPANISH_H_ */

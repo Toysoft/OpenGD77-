@@ -41,9 +41,10 @@ const stringsTable_t englishLanguage =
 .contact_details	= "Contact Details",
 .batteryVoltage		= "%d.%dV",
 .built				= "Built",
-.built				= "Built",
 .zones				= "Zones",
-.keypad_locked		= "Keypad locked",
+.keypad				= "Keypad",
+.ptt				= "PTT",
+.locked				= "Locked",
 .press_blue_plus_star	= "Press Blue +*",
 .to_unlock			= "to unlock",
 .unlocked			= "Unlocked",
@@ -111,5 +112,8 @@ const stringsTable_t englishLanguage =
 .colour_normal		= "Color:Normal",
 .backlight_timeout	= "Timeout",
 .scan_delay			= "Scan delay",
+.YES				= "YES",
+.NO				= "NO",
+.DISMISS			= "DISMISS",
 };
 #endif /* USER_INTERFACE_LANGUAGES_ENGLISH_H_ */

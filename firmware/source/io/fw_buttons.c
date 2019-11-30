@@ -20,6 +20,8 @@
 
 static uint32_t old_button_state;
 
+volatile bool PTTLocked = false;
+
 void fw_init_buttons(void)
 {
     PORT_SetPinMux(Port_PTT, Pin_PTT, kPORT_MuxAsGpio);
