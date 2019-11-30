@@ -649,7 +649,7 @@ void codeplugSetVFO_ChannelData(struct_codeplugChannel_t *vfoBuf,int VFONumber)
 	EEPROM_Write(CODEPLUG_ADDR_VFO_A_CHANNEL+(sizeof(struct_codeplugChannel_t)*VFONumber),(uint8_t *)&tmpChannel,sizeof(struct_codeplugChannel_t));
 }
 
-void codeplugInitChannelsPerZone()
+void codeplugInitChannelsPerZone(void)
 {
 	uint8_t buf[16];
 	// 0x806F is the last byte of the name of the second Zone if 16 channels per zone
