@@ -42,6 +42,8 @@
 #define EVENT_BUTTON_NONE   0
 #define EVENT_BUTTON_CHANGE 1
 
+extern volatile bool PTTLocked;
+
 void fw_init_buttons(void);
 uint32_t fw_read_buttons(void);
 void fw_check_button_event(uint32_t *buttons, int *event);

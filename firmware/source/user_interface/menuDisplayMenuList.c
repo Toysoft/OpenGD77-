@@ -93,6 +93,13 @@ static void handleEvent(int buttons, int keys, int events)
 		menuSystemPushNewMenu(MENU_LOCK_SCREEN);
 		return;
 	}
+	else if ((keys & KEY_HASH)!=0 && (menuSystemGetCurrentMenuNumber() == MENU_MAIN_MENU))
+	{
+		PTTLocked = true;
+		menuSystemPopAllAndDisplayRootMenu();
+		menuSystemPushNewMenu(MENU_LOCK_SCREEN);
+		return;
+	}
 
 	updateScreen();
 }
