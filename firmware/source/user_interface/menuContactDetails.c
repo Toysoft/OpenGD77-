@@ -63,7 +63,6 @@ int menuContactDetails(int buttons, int keys, int events, bool isFirstRun)
 		gMenusCurrentItemIndex=0;
 		menuContactDetailsState = MENU_CONTACT_DETAILS_DISPLAY;
 
-		fw_reset_keyboard();
 		updateScreen();
 	}
 	else

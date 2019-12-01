@@ -398,7 +398,7 @@ static void handleEvent(int buttons, int keys, int events)
 
 		}
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_GREEN))
+	else if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
 	{
 		memcpy(currentChannelData,&tmpChannel,sizeof(struct_codeplugChannel_t));
 
@@ -412,7 +412,7 @@ static void handleEvent(int buttons, int keys, int events)
 		menuSystemPopAllAndDisplayRootMenu();
 		return;
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_RED))
+	else if (KEYCHECK_SHORTUP(keys,KEY_RED))
 	{
 		menuSystemPopPreviousMenu();
 		return;

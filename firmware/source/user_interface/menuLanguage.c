@@ -69,14 +69,14 @@ static void handleEvent(int buttons, int keys, int events)
 	{
 		MENU_DEC(gMenusCurrentItemIndex, NUM_LANGUAGES);
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_GREEN))
+	else if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
 	{
 		nonVolatileSettings.languageIndex = gMenusCurrentItemIndex;
 		currentLanguage = &languages[gMenusCurrentItemIndex];
 		menuSystemPopAllAndDisplayRootMenu();
 		return;
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_RED))
+	else if (KEYCHECK_SHORTUP(keys,KEY_RED))
 	{
 		menuSystemPopPreviousMenu();
 		return;
