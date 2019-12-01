@@ -200,6 +200,11 @@ void fw_main_task(void *data)
 				} else if  ((keys & (KEY_MOD_LONG | KEY_MOD_DOWN)) == (KEY_MOD_LONG | KEY_MOD_DOWN)) {
 					set_melody(melody_key_long_beep);
 				}
+				if (KEYCHECK_LONGDOWN(keys, KEY_RED))
+				{
+					contactListContactIndex = 0;
+					menuSystemPopAllAndDisplayRootMenu();
+				}
 			}
 /*
  * This code ignores the keypress if the display is not lit, however this functionality is proving to be a problem for things like entering a TG

@@ -135,12 +135,6 @@ static void updateScreen(void)
 
 static void handleEvent(int buttons, int keys, int events)
 {
-	if (KEYCHECK_LONGDOWN(keys, KEY_RED))
-	{
-		contactListContactIndex = 0;
-		menuSystemPopAllAndDisplayRootMenu();
-		return;
-	}
 	switch (menuContactListDisplayState)
 	{
 	case MENU_CONTACT_LIST_DISPLAY:
