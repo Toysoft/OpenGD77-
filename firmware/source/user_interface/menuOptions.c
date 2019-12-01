@@ -274,7 +274,7 @@ static void handleEvent(int buttons, int keys, int events)
 				break;
 		}
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_GREEN))
+	else if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
 	{
 		if (doFactoryReset==true)
 		{
@@ -284,7 +284,7 @@ static void handleEvent(int buttons, int keys, int events)
 		menuSystemPopAllAndDisplayRootMenu();
 		return;
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_RED))
+	else if (KEYCHECK_SHORTUP(keys,KEY_RED))
 	{
 		menuSystemPopPreviousMenu();
 		return;

@@ -351,7 +351,7 @@ bool dmrIDLookup( int targetId,dmrIdDataStruct_t *foundRecord)
 
 bool menuUtilityHandlePrivateCallActions(int buttons, int keys, int events)
 {
-	if ((buttons & BUTTON_SK2 )!=0 &&   menuUtilityTgBeforePcMode != 0 && (keys & KEY_RED))
+	if ((buttons & BUTTON_SK2 )!=0 &&   menuUtilityTgBeforePcMode != 0 && KEYCHECK_SHORTUP(keys,KEY_RED))
 	{
 		trxTalkGroupOrPcId = menuUtilityTgBeforePcMode;
 		nonVolatileSettings.overrideTG = menuUtilityTgBeforePcMode;
@@ -364,7 +364,7 @@ bool menuUtilityHandlePrivateCallActions(int buttons, int keys, int events)
 	// Note.  menuUtilityReceivedPcId is used to store the PcId but also used as a flag to indicate that a Pc request has occurred.
 	if (menuUtilityReceivedPcId != 0x00 && (LinkHead->talkGroupOrPcId>>24) == PC_CALL_FLAG && nonVolatileSettings.overrideTG != LinkHead->talkGroupOrPcId)
 	{
-		if (KEYCHECK_PRESS(keys,KEY_GREEN))
+		if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
 		{
 			// User has accepted the private call
 			menuUtilityTgBeforePcMode = trxTalkGroupOrPcId;// save the current TG
@@ -684,45 +684,12 @@ void setOverrideTGorPC(int tgOrPc, bool privateCall) {
 
 char keypressToNumberChar(int keys)
 {
-	if (KEYCHECK_PRESS(keys,KEY_0))
-	{
-		return '0';
-	}
-	else if (KEYCHECK_PRESS(keys,KEY_1))
-	{
-		return '1';
-	}
-	else if (KEYCHECK_PRESS(keys,KEY_2))
-	{
-		return '2';
-	}
-	else if (KEYCHECK_PRESS(keys,KEY_3))
-	{
-		return '3';
-	}
-	else if (KEYCHECK_PRESS(keys,KEY_4))
-	{
-		return '4';
-	}
-	else if (KEYCHECK_PRESS(keys,KEY_5))
-	{
-		return '5';
-	}
-	else if (KEYCHECK_PRESS(keys,KEY_6))
-	{
-		return '6';
-	}
-	else if (KEYCHECK_PRESS(keys,KEY_7))
-	{
-		return '7';
-	}
-	else if (KEYCHECK_PRESS(keys,KEY_8))
-	{
-		return '8';
-	}
-	else if (KEYCHECK_PRESS(keys,KEY_9))
-	{
-		return '9';
+	char keycode = KEYCHAR(keys);
+	if (KEYCHECK_MOD(keys, KEY_MOD_PRESS, KEY_MOD_PRESS)) {
+		if (keycode >= '0' && keycode <= '9')
+		{
+			return keycode;
+		}
 	}
 	return '\0';
 }

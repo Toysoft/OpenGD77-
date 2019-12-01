@@ -145,12 +145,12 @@ static void handleEvent(int buttons, int keys, int events)
 {
 	size_t sLen;
 
-	if (KEYCHECK_PRESS(keys,KEY_RED))
+	if (KEYCHECK_SHORTUP(keys,KEY_RED))
 	{
 		menuSystemPopPreviousMenu();
 		return;
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_GREEN))
+	else if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
 	{
 		if (gMenusCurrentItemIndex != ENTRY_USER_DMR_ID)
 		{
@@ -180,7 +180,7 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 		menuSystemPopAllAndDisplayRootMenu();
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_HASH))
+	else if (KEYCHECK_SHORTUP(keys,KEY_HASH))
 	{
 		pcIdx = 0;
 		if ((buttons & BUTTON_SK2)!= 0  && gMenusCurrentItemIndex == ENTRY_SELECT_CONTACT)

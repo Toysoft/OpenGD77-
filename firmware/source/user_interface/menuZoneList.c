@@ -75,12 +75,14 @@ static void handleEvent(int buttons, int keys, int events)
 	if (KEYCHECK_PRESS(keys,KEY_DOWN))
 	{
 		MENU_INC(gMenusCurrentItemIndex, gMenusEndIndex);
+		updateScreen();
 	}
 	else if (KEYCHECK_PRESS(keys,KEY_UP))
 	{
 		MENU_DEC(gMenusCurrentItemIndex, gMenusEndIndex);
+		updateScreen();
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_GREEN))
+	else if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
 	{
 		nonVolatileSettings.overrideTG = 0; // remove any TG override
 		nonVolatileSettings.currentZone = gMenusCurrentItemIndex;
@@ -91,10 +93,9 @@ static void handleEvent(int buttons, int keys, int events)
 
 		return;
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_RED))
+	else if (KEYCHECK_SHORTUP(keys,KEY_RED))
 	{
 		menuSystemPopPreviousMenu();
 		return;
 	}
-	updateScreen();
 }

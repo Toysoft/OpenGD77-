@@ -122,21 +122,23 @@ void menuSystemPushNewMenu(int menuNumber)
 {
 	if (menuControlData.stackPosition < 15)
 	{
-	menuControlData.stackPosition++;
-	menuControlData.stack[menuControlData.stackPosition] = menuNumber;
-		menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,
-				0, 0, true);
+		menuControlData.stackPosition++;
+		menuControlData.stack[menuControlData.stackPosition] = menuNumber;
+		menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0, 0, 0, true);
+		fw_reset_keyboard();
 	}
 }
 void menuSystemPopPreviousMenu(void)
 {
 	menuControlData.stackPosition--;
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true);
+	fw_reset_keyboard();
 }
 void menuSystemPopAllAndDisplayRootMenu(void)
 {
 	menuControlData.stackPosition=0;
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true);
+	fw_reset_keyboard();
 }
 
 void menuSystemPopAllAndDisplaySpecificRootMenu(int newRootMenu)
@@ -144,12 +146,14 @@ void menuSystemPopAllAndDisplaySpecificRootMenu(int newRootMenu)
 	menuControlData.stack[0]  = newRootMenu;
 	menuControlData.stackPosition=0;
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true);
+	fw_reset_keyboard();
 }
 
 void menuSystemSetCurrentMenu(int menuNumber)
 {
 	menuControlData.stack[menuControlData.stackPosition]  = menuNumber;
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true);
+	fw_reset_keyboard();
 }
 int menuSystemGetCurrentMenuNumber(void)
 {

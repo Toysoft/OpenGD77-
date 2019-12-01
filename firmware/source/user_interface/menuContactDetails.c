@@ -63,7 +63,6 @@ int menuContactDetails(int buttons, int keys, int events, bool isFirstRun)
 		gMenusCurrentItemIndex=0;
 		menuContactDetailsState = MENU_CONTACT_DETAILS_DISPLAY;
 
-		fw_reset_keyboard();
 		updateScreen();
 	}
 	else
@@ -161,12 +160,6 @@ static void handleEvent(int buttons, int keys, int events)
 	char buf[33];
 	int sLen = strlen(digits);
 
-	if (KEYCHECK_LONGDOWN(keys, KEY_RED))
-	{
-		contactListContactIndex = 0;
-		menuSystemPopAllAndDisplayRootMenu();
-		return;
-	}
 	switch (menuContactDetailsState) {
 	case MENU_CONTACT_DETAILS_DISPLAY:
 		if (events & 0x01) {

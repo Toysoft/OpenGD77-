@@ -383,7 +383,7 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 	}
 
-	if (KEYCHECK_PRESS(keys,KEY_GREEN))
+	if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
 	{
 		if (menuUtilityHandlePrivateCallActions(buttons,keys,events))
 		{
@@ -405,7 +405,7 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 		}
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_HASH))
+	else if (KEYCHECK_SHORTUP(keys,KEY_HASH))
 	{
 		if (trxGetMode() == RADIO_MODE_DIGITAL)
 		{
@@ -421,7 +421,7 @@ static void handleEvent(int buttons, int keys, int events)
 
 	if (freq_enter_idx==0)
 	{
-		if (KEYCHECK_PRESS(keys,KEY_STAR))
+		if (KEYCHECK_SHORTUP(keys,KEY_STAR))
 		{
 			if (buttons & BUTTON_SK2 )
 			{
@@ -490,7 +490,7 @@ static void handleEvent(int buttons, int keys, int events)
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 
 		}
-		else if (KEYCHECK_PRESS(keys,KEY_RED))
+		else if (KEYCHECK_SHORTUP(keys,KEY_RED))
 		{
 			if (menuUtilityHandlePrivateCallActions(buttons,keys,events))
 			{
@@ -637,13 +637,13 @@ static void handleEvent(int buttons, int keys, int events)
 			freq_enter_digits[freq_enter_idx]='-';
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		}
-		else if (KEYCHECK_PRESS(keys,KEY_RED))
+		else if (KEYCHECK_SHORTUP(keys,KEY_RED))
 		{
 			reset_freq_enter_digits();
     	    set_melody(melody_NACK_beep);
     		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		}
-		else if ((keys & KEY_GREEN) != 0)
+		else if (KEYCHECK_SHORTUP(keys, KEY_GREEN))
 		{
 			int tmp_frequency=read_freq_enter_digits();
 			if (trxCheckFrequencyIsSupportedByTheRadioHardware(tmp_frequency))
@@ -766,12 +766,12 @@ static void updateQuickMenuScreen(void)
 
 static void handleQuickMenuEvent(int buttons, int keys, int events)
 {
-	if (KEYCHECK_PRESS(keys,KEY_RED))
+	if (KEYCHECK_SHORTUP(keys,KEY_RED))
 	{
 		menuSystemPopPreviousMenu();
 		return;
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_GREEN))
+	else if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
 	{
 		switch(gMenusCurrentItemIndex)
 		{

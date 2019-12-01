@@ -45,6 +45,8 @@ static void reloadContactList(void)
 	gMenusCurrentItemIndex = 0;
 	if (gMenusEndIndex > 0) {
 		contactListContactIndex = codeplugContactGetDataForNumber(gMenusCurrentItemIndex+1, contactCallType, &contactListContactData);
+	} else {
+		contactListContactIndex = 0;
 	}
 }
 
@@ -54,7 +56,6 @@ int menuContactList(int buttons, int keys, int events, bool isFirstRun)
 	{
 		if (menuContactListOverrideState == 0) {
 			contactCallType = CONTACT_CALLTYPE_TG;
-			fw_reset_keyboard();
 			reloadContactList();
 			menuContactListDisplayState = MENU_CONTACT_LIST_DISPLAY;
 		}
@@ -134,12 +135,6 @@ static void updateScreen(void)
 
 static void handleEvent(int buttons, int keys, int events)
 {
-	if (KEYCHECK_LONGDOWN(keys, KEY_RED))
-	{
-		contactListContactIndex = 0;
-		menuSystemPopAllAndDisplayRootMenu();
-		return;
-	}
 	switch (menuContactListDisplayState)
 	{
 	case MENU_CONTACT_LIST_DISPLAY:

@@ -363,7 +363,7 @@ static void handleEvent(int buttons, int keys, int events)
 
 	}
 
-	if (KEYCHECK_PRESS(keys,KEY_GREEN))
+	if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
 	{
 		if (menuUtilityHandlePrivateCallActions(buttons,keys,events))
 		{
@@ -395,7 +395,7 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 		return;
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_HASH))
+	else if (KEYCHECK_SHORTUP(keys,KEY_HASH))
 	{
 		if (trxGetMode() == RADIO_MODE_DIGITAL)
 		{
@@ -408,7 +408,7 @@ static void handleEvent(int buttons, int keys, int events)
 			return;
 		}
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_RED))
+	else if (KEYCHECK_SHORTUP(keys,KEY_RED))
 	{
 		if (menuUtilityHandlePrivateCallActions(buttons,keys,events))
 		{
@@ -807,13 +807,13 @@ static void handleTxRxFreqToggle(void)
 */
 static void handleQuickMenuEvent(int buttons, int keys, int events)
 {
-	if (KEYCHECK_PRESS(keys,KEY_RED))
+	if (KEYCHECK_SHORTUP(keys,KEY_RED))
 	{
 		uiChannelModeScanActive=false;
 		menuSystemPopPreviousMenu();
 		return;
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_GREEN))
+	else if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
 	{
 		switch(gMenusCurrentItemIndex)
 		{

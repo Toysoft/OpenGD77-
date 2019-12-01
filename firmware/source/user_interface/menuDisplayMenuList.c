@@ -73,7 +73,7 @@ static void handleEvent(int buttons, int keys, int events)
 	{
 		MENU_DEC(gMenusCurrentItemIndex, gMenusEndIndex);
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_GREEN))
+	else if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
 	{
 		if (gMenuCurrentMenuList[gMenusCurrentItemIndex].menuNum!=-1)
 		{
@@ -81,19 +81,19 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 		return;
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_RED))
+	else if (KEYCHECK_SHORTUP(keys,KEY_RED))
 	{
 		menuSystemPopPreviousMenu();
 		return;
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_STAR) && (menuSystemGetCurrentMenuNumber() == MENU_MAIN_MENU))
+	else if (KEYCHECK_SHORTUP(keys,KEY_STAR) && (menuSystemGetCurrentMenuNumber() == MENU_MAIN_MENU))
 	{
 		keypadLocked = true;
 		menuSystemPopAllAndDisplayRootMenu();
 		menuSystemPushNewMenu(MENU_LOCK_SCREEN);
 		return;
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_HASH) && (menuSystemGetCurrentMenuNumber() == MENU_MAIN_MENU))
+	else if (KEYCHECK_SHORTUP(keys,KEY_HASH) && (menuSystemGetCurrentMenuNumber() == MENU_MAIN_MENU))
 	{
 		PTTLocked = true;
 		menuSystemPopAllAndDisplayRootMenu();
