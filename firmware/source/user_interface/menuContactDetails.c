@@ -63,7 +63,6 @@ int menuContactDetails(int buttons, int keys, int events, bool isFirstRun)
 		gMenusCurrentItemIndex=0;
 		menuContactDetailsState = MENU_CONTACT_DETAILS_DISPLAY;
 
-		fw_reset_keyboard();
 		updateScreen();
 	}
 	else
@@ -80,7 +79,7 @@ int menuContactDetails(int buttons, int keys, int events, bool isFirstRun)
 static void updateScreen(void)
 {
 	int mNum = 0;
-	char buf[17];
+	char buf[33];
 
 	UC1701_clearBuf();
 
@@ -158,15 +157,9 @@ static void updateScreen(void)
 static void handleEvent(int buttons, int keys, int events)
 {
 	dmrIdDataStruct_t foundRecord;
-	char buf[17];
+	char buf[33];
 	int sLen = strlen(digits);
 
-	if (KEYCHECK_LONGDOWN(keys, KEY_RED))
-	{
-		contactListContactIndex = 0;
-		menuSystemPopAllAndDisplayRootMenu();
-		return;
-	}
 	switch (menuContactDetailsState) {
 	case MENU_CONTACT_DETAILS_DISPLAY:
 		if (events & 0x01) {

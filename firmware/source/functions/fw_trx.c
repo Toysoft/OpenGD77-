@@ -161,7 +161,7 @@ void trxReadRSSIAndNoise(void)
 	taskEXIT_CRITICAL();
 }
 
-int trx_carrier_detected()
+int trx_carrier_detected(void)
 {
 	uint8_t squelch=45;
 

@@ -25,12 +25,14 @@ extern const int CODEPLUG_MIN_VARIABLE_SQUELCH;
 extern const int CODEPLUG_ZONE_DATA_SIZE;
 extern const int VFO_FREQ_STEP_TABLE[8];
 
+extern int codeplugChannelsPerZone;
+
 enum CONTACT_CALLTYPE_SELECT { CONTACT_CALLTYPE_TG=0, CONTACT_CALLTYPE_PC, CONTACT_CALLTYPE_ALL };
 
 typedef struct struct_codeplugZone
 {
 	char name[16];
-	uint16_t channels[16];
+	uint16_t channels[80];// 16 for the original codeplug, but set this to  80 to allow for the new codeplug zones format
 	int	NOT_IN_MEMORY_numChannelsInZone;// NOT IN THE
 }
 struct_codeplugZone_t;
@@ -133,6 +135,6 @@ int codeplugContactIndexByTGorPC(int tgorpc, int callType);
 int codeplugContactSaveDataForIndex(int index, struct_codeplugContact_t *contact);
 int codeplugContactGetFreeIndex(void);
 bool codeplugContactGetRXGroup(int index);
-
+void codeplugInitChannelsPerZone(void);
 
 #endif

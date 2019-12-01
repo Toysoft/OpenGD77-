@@ -21,7 +21,7 @@
 #include "fw_main.h"
 #include "fw_settings.h"
 
-static void updateScreen();
+static void updateScreen(void);
 static void handleEvent(int buttons, int keys, int events);
 static struct_codeplugContact_t contact;
 static int contactCallType;
@@ -39,12 +39,14 @@ enum MENU_CONTACT_LIST_STATE
 
 static const char *calltypeName[] = { "Group Call", "Private Call", "All Call" };
 
-void reloadContactList(void)
+static void reloadContactList(void)
 {
 	gMenusEndIndex = codeplugContactsGetCount(contactCallType);
 	gMenusCurrentItemIndex = 0;
 	if (gMenusEndIndex > 0) {
 		contactListContactIndex = codeplugContactGetDataForNumber(gMenusCurrentItemIndex+1, contactCallType, &contactListContactData);
+	} else {
+		contactListContactIndex = 0;
 	}
 }
 
@@ -54,7 +56,6 @@ int menuContactList(int buttons, int keys, int events, bool isFirstRun)
 	{
 		if (menuContactListOverrideState == 0) {
 			contactCallType = CONTACT_CALLTYPE_TG;
-			fw_reset_keyboard();
 			reloadContactList();
 			menuContactListDisplayState = MENU_CONTACT_LIST_DISPLAY;
 		}
@@ -78,7 +79,7 @@ int menuContactList(int buttons, int keys, int events, bool isFirstRun)
 
 static void updateScreen(void)
 {
-	char nameBuf[17];
+	char nameBuf[33];
 	int mNum;
 	int idx;
 
@@ -134,12 +135,6 @@ static void updateScreen(void)
 
 static void handleEvent(int buttons, int keys, int events)
 {
-	if (KEYCHECK_LONGDOWN(keys, KEY_RED))
-	{
-		contactListContactIndex = 0;
-		menuSystemPopAllAndDisplayRootMenu();
-		return;
-	}
 	switch (menuContactListDisplayState)
 	{
 	case MENU_CONTACT_LIST_DISPLAY:
@@ -238,7 +233,7 @@ enum CONTACT_LIST_QUICK_MENU_ITEMS
 static void updateSubMenuScreen(void)
 {
 	int mNum = 0;
-	char buf[17];
+	char buf[33];
 
 	UC1701_clearBuf();
 

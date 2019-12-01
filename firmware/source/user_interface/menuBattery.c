@@ -77,19 +77,16 @@ static void updateScreen(void)
 	displayLightTrigger();
 }
 
-
 static void handleEvent(int buttons, int keys, int events)
 {
-	if ((keys & KEY_RED)!=0)
+	if (KEYCHECK_SHORTUP(keys,KEY_RED))
 	{
 		menuSystemPopPreviousMenu();
 		return;
 	}
-	else if ((keys & KEY_GREEN)!=0)
+	else if (KEYCHECK_PRESS(keys,KEY_GREEN))
 	{
 		menuSystemPopAllAndDisplayRootMenu();
 		return;
 	}
-
-
 }

@@ -57,7 +57,7 @@ int menuDisplayOptions(int buttons, int keys, int events, bool isFirstRun)
 static void updateScreen(void)
 {
 	int mNum = 0;
-	char buf[17];
+	char buf[33];
 
 	UC1701_clearBuf();
 	menuDisplayTitle(currentLanguage->display_options);
@@ -99,15 +99,15 @@ static void updateScreen(void)
 
 static void handleEvent(int buttons, int keys, int events)
 {
-	if ((keys & KEY_DOWN)!=0 && gMenusEndIndex!=0)
+	if (KEYCHECK_PRESS(keys,KEY_DOWN) && gMenusEndIndex!=0)
 	{
 		MENU_INC(gMenusCurrentItemIndex, NUM_DISPLAY_MENU_ITEMS);
 	}
-	else if ((keys & KEY_UP)!=0)
+	else if (KEYCHECK_PRESS(keys,KEY_UP))
 	{
 		MENU_DEC(gMenusCurrentItemIndex, NUM_DISPLAY_MENU_ITEMS);
 	}
-	else if ((keys & KEY_RIGHT)!=0)
+	else if (KEYCHECK_PRESS(keys,KEY_RIGHT))
 	{
 		switch(gMenusCurrentItemIndex)
 		{
@@ -147,7 +147,7 @@ static void handleEvent(int buttons, int keys, int events)
 				break;
 		}
 	}
-	else if ((keys & KEY_LEFT)!=0)
+	else if (KEYCHECK_PRESS(keys,KEY_LEFT))
 	{
 		switch(gMenusCurrentItemIndex)
 		{
@@ -187,7 +187,7 @@ static void handleEvent(int buttons, int keys, int events)
 				break;
 		}
 	}
-	else if ((keys & KEY_GREEN)!=0)
+	else if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
 	{
 		nonVolatileSettings.displayInverseVideo = inverseVideo;
 		nonVolatileSettings.displayContrast = contrast;
@@ -196,7 +196,7 @@ static void handleEvent(int buttons, int keys, int events)
 		menuSystemPopAllAndDisplayRootMenu();
 		return;
 	}
-	else if ((keys & KEY_RED)!=0)
+	else if (KEYCHECK_SHORTUP(keys,KEY_RED))
 	{
 		if (nonVolatileSettings.displayContrast != contrast || nonVolatileSettings.displayInverseVideo != inverseVideo)
 		{

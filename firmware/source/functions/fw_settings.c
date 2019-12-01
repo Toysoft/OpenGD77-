@@ -84,6 +84,8 @@ bool settingsLoadSettings(void)
 	}
 	soundBeepVolumeDivider = nonVolatileSettings.beepVolumeDivider;
 
+	codeplugInitChannelsPerZone();// Initialise the codeplug channels per zone
+
 	return readOK;
 }
 

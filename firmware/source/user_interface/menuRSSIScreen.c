@@ -17,6 +17,7 @@
  */
 #include <user_interface/menuSystem.h>
 #include <user_interface/menuUtilityQSOData.h>
+#include <user_interface/uiLocalisation.h>
 #include "fw_calibration.h"
 #include "fw_settings.h"
 
@@ -67,7 +68,7 @@ static void updateScreen(void)
 		}
 
 		UC1701_clearBuf();
-		menuDisplayTitle("RSSI");
+		menuDisplayTitle(currentLanguage->rssi);
 
 		sprintf(buffer,"%d", trxRxSignal);
 		UC1701_printCore(0, 3, buffer, UC1701_FONT_8x8, UC1701_TEXT_ALIGN_RIGHT, false);
@@ -97,12 +98,12 @@ static void updateScreen(void)
 
 static void handleEvent(int buttons, int keys, int events)
 {
-	if ((keys & KEY_RED)!=0)
+	if (KEYCHECK_SHORTUP(keys,KEY_RED))
 	{
 		menuSystemPopPreviousMenu();
 		return;
 	}
-	else if ((keys & KEY_GREEN)!=0)
+	else if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
 	{
 		menuSystemPopAllAndDisplayRootMenu();
 		return;

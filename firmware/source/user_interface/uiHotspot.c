@@ -863,7 +863,7 @@ static void updateScreen(int rxCommandState)
 
 static void handleEvent(int buttons, int keys, int events)
 {
-	if ((keys & KEY_RED)!=0)
+	if (KEYCHECK_SHORTUP(keys,KEY_RED))
 	{
 		//enableHotspot = false;
 		if (trxIsTransmitting)

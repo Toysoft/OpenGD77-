@@ -98,7 +98,7 @@ uint32_t fw_read_keyboard(void)
     return result;
 }
 
-uint32_t fw_scan_key(uint32_t keys)
+uint32_t fw_scan_key(uint32_t scancode)
 {
 	int key = 0;
 	int col;
@@ -106,13 +106,13 @@ uint32_t fw_scan_key(uint32_t keys)
 	int numKeys = 0;
 	uint8_t scan;
 
-	if (keys == (KEY_GREEN | KEY_STAR)) {     // Just an example
+	if (scancode == (SCAN_GREEN | SCAN_STAR)) {     // Just an example
 		return KEY_GREENSTAR;
 	}
 
 	for (col = 0; col < 4; col++)
 	{
-		scan = keys & 0x1f;
+		scan = scancode & 0x1f;
 		if (scan)
 		{
 			for (row = 0; row < 5; row++)
@@ -125,7 +125,7 @@ uint32_t fw_scan_key(uint32_t keys)
 				scan >>= 1;
 			}
 		}
-		keys >>= 5;
+		scancode >>= 5;
 	}
 	return (numKeys > 1) ? -1 : key;
 }

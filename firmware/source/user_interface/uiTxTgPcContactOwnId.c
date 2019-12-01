@@ -63,7 +63,7 @@ int menuNumericalEntry(int buttons, int keys, int events, bool isFirstRun)
 	return 0;
 }
 
-void updateCursor(void)
+static void updateCursor(void)
 {
 	size_t sLen;
 
@@ -90,7 +90,7 @@ void updateCursor(void)
 
 static void updateScreen(void)
 {
-	char buf[17];
+	char buf[33];
 	size_t sLen = strlen(menuName[gMenusCurrentItemIndex]) * 8;
 	int16_t y = 8;
 
@@ -145,12 +145,12 @@ static void handleEvent(int buttons, int keys, int events)
 {
 	size_t sLen;
 
-	if ((keys & KEY_RED)!=0)
+	if (KEYCHECK_SHORTUP(keys,KEY_RED))
 	{
 		menuSystemPopPreviousMenu();
 		return;
 	}
-	else if ((keys & KEY_GREEN)!=0)
+	else if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
 	{
 		if (gMenusCurrentItemIndex != ENTRY_USER_DMR_ID)
 		{
@@ -180,7 +180,7 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 		menuSystemPopAllAndDisplayRootMenu();
 	}
-	else if ((keys & KEY_HASH)!=0)
+	else if (KEYCHECK_SHORTUP(keys,KEY_HASH))
 	{
 		pcIdx = 0;
 		if ((buttons & BUTTON_SK2)!= 0  && gMenusCurrentItemIndex == ENTRY_SELECT_CONTACT)
@@ -209,9 +209,9 @@ static void handleEvent(int buttons, int keys, int events)
 	{
 		int idx = pcIdx;
 
-		if ((keys & KEY_DOWN) != 0) {
+		if (KEYCHECK_PRESS(keys,KEY_DOWN)) {
 			idx = getNextContact(pcIdx, 1, &contact);
-		} else if ((keys & KEY_UP) != 0) {
+		} else if (KEYCHECK_PRESS(keys,KEY_UP)) {
 			idx = getNextContact(pcIdx, -1, &contact);
 		}
 		if (pcIdx != idx ) {
@@ -225,13 +225,13 @@ static void handleEvent(int buttons, int keys, int events)
 		bool refreshScreen = false;
 
 		// Inc / Dec entered value.
-		if (((keys & KEY_UP) != 0) || ((keys & KEY_DOWN) != 0))
+		if (KEYCHECK_PRESS(keys,KEY_UP) || KEYCHECK_PRESS(keys,KEY_DOWN))
 		{
 			if (strlen(digits))
 			{
 				unsigned long int ccs7 = strtoul(digits, NULL, 10);
 
-				if (((keys & KEY_UP) != 0))
+				if (KEYCHECK_PRESS(keys,KEY_UP))
 				{
 					if (ccs7 < 9999999)
 						ccs7++;
@@ -252,7 +252,7 @@ static void handleEvent(int buttons, int keys, int events)
 				}
 			}
 		} // Delete a digit
-		else if ((keys & KEY_LEFT) != 0)
+		else if (KEYCHECK_PRESS(keys,KEY_LEFT))
 		{
 			if ((sLen = strlen(digits)) > 0)
 			{
@@ -266,48 +266,8 @@ static void handleEvent(int buttons, int keys, int events)
 			if (sLen < 7)
 			{
 				char c[2] = {0, 0};
-
-				if ((keys & KEY_0) != 0)
-				{
-					c[0]='0';
-				}
-				else if ((keys & KEY_1)!=0)
-				{
-					c[0]='1';
-				}
-				else if ((keys & KEY_2)!=0)
-				{
-					c[0]='2';
-				}
-				else if ((keys & KEY_3)!=0)
-				{
-					c[0]='3';
-				}
-				else if ((keys & KEY_4)!=0)
-				{
-					c[0]='4';
-				}
-				else if ((keys & KEY_5)!=0)
-				{
-					c[0]='5';
-				}
-				else if ((keys & KEY_6)!=0)
-				{
-					c[0]='6';
-				}
-				else if ((keys & KEY_7)!=0)
-				{
-					c[0]='7';
-				}
-				else if ((keys & KEY_8)!=0)
-				{
-					c[0]='8';
-				}
-				else if ((keys & KEY_9)!=0)
-				{
-					c[0]='9';
-				}
-
+				c[0] = keypressToNumberChar(keys);
+				
 				if (c[0]!=0)
 				{
 					strcat(digits,c);

@@ -65,15 +65,15 @@ static void updateScreen(void)
 
 static void handleEvent(int buttons, int keys, int events)
 {
-	if ((keys & KEY_DOWN)!=0)
+	if (KEYCHECK_PRESS(keys,KEY_DOWN))
 	{
 		MENU_INC(gMenusCurrentItemIndex, gMenusEndIndex);
 	}
-	else if ((keys & KEY_UP)!=0)
+	else if (KEYCHECK_PRESS(keys,KEY_UP))
 	{
 		MENU_DEC(gMenusCurrentItemIndex, gMenusEndIndex);
 	}
-	else if ((keys & KEY_GREEN)!=0)
+	else if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
 	{
 		if (gMenuCurrentMenuList[gMenusCurrentItemIndex].menuNum!=-1)
 		{
@@ -81,19 +81,19 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 		return;
 	}
-	else if ((keys & KEY_RED)!=0)
+	else if (KEYCHECK_SHORTUP(keys,KEY_RED))
 	{
 		menuSystemPopPreviousMenu();
 		return;
 	}
-	else if ((keys & KEY_STAR)!=0 && (menuSystemGetCurrentMenuNumber() == MENU_MAIN_MENU))
+	else if (KEYCHECK_SHORTUP(keys,KEY_STAR) && (menuSystemGetCurrentMenuNumber() == MENU_MAIN_MENU))
 	{
 		keypadLocked = true;
 		menuSystemPopAllAndDisplayRootMenu();
 		menuSystemPushNewMenu(MENU_LOCK_SCREEN);
 		return;
 	}
-	else if ((keys & KEY_HASH)!=0 && (menuSystemGetCurrentMenuNumber() == MENU_MAIN_MENU))
+	else if (KEYCHECK_SHORTUP(keys,KEY_HASH) && (menuSystemGetCurrentMenuNumber() == MENU_MAIN_MENU))
 	{
 		PTTLocked = true;
 		menuSystemPopAllAndDisplayRootMenu();

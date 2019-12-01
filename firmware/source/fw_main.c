@@ -25,6 +25,11 @@
 #include <SeggerRTT/RTT/SEGGER_RTT.h>
 #endif
 
+#ifdef NDEBUG
+#error A firmware compiled in Releae mode will not work, yet
+#error Change target build to Debug then Clean the build and recompile
+#endif
+
 void fw_main_task(void *data);
 
 const char *FIRMWARE_VERSION_STRING = "VK3KYY";//"V0.3.5";
@@ -180,7 +185,7 @@ void fw_main_task(void *data)
 			}
 
 			// Only PTT is locked, user ask to unlock
-			if (PTTLocked && ((buttons & BUTTON_SK2) && ((keys & KEY_STAR) != 0)))
+			if (PTTLocked && ((buttons & BUTTON_PTT) != 0))
 			{
 				if (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN)
 				{
@@ -188,46 +193,17 @@ void fw_main_task(void *data)
 				}
 			}
 
-			if (menuSystemGetCurrentMenuNumber() != MENU_CONTACT_LIST &&
-					menuSystemGetCurrentMenuNumber() != MENU_CONTACT_QUICKLIST &&
-					menuSystemGetCurrentMenuNumber() != MENU_CONTACT_LIST_SUBMENU &&
-					menuSystemGetCurrentMenuNumber() != MENU_CONTACT_DETAILS)
-			{
-				if (key_event == EVENT_KEY_CHANGE
-						&& (keys & KEY_MOD_PRESS) == 0)
-				{   // Remove after changing key handling in user interface
-					key_event = EVENT_KEY_NONE;
-				}
-			}
-
-			if (keypadLocked)
-			{
-				if (key_event == EVENT_KEY_CHANGE)
-				{
-					key_event = EVENT_KEY_NONE;
-					keys = 0;
-					if (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN)
-					{
-						menuSystemPushNewMenu(MENU_LOCK_SCREEN);
-					}
-				}
-				if (button_event == EVENT_BUTTON_CHANGE
-						&& (buttons & BUTTON_ORANGE) != 0)
-				{
-					button_event = EVENT_BUTTON_NONE;
-					buttons = 0;
-					if (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN)
-					{
-						menuSystemPushNewMenu(MENU_LOCK_SCREEN);
-					}
-				}
-			}
 			if (key_event == EVENT_KEY_CHANGE && (buttons & BUTTON_PTT) == 0 && keys != 0) {
 				if (keys & KEY_MOD_PRESS)
 				{
 					set_melody(melody_key_beep);
 				} else if  ((keys & (KEY_MOD_LONG | KEY_MOD_DOWN)) == (KEY_MOD_LONG | KEY_MOD_DOWN)) {
 					set_melody(melody_key_long_beep);
+				}
+				if (KEYCHECK_LONGDOWN(keys, KEY_RED))
+				{
+					contactListContactIndex = 0;
+					menuSystemPopAllAndDisplayRootMenu();
 				}
 			}
 /*
@@ -251,8 +227,6 @@ void fw_main_task(void *data)
 				}
 			}
 */
-
-
 
 			if (button_event == EVENT_BUTTON_CHANGE)
 			{

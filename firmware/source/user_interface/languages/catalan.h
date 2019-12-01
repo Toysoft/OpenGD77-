@@ -1,7 +1,6 @@
-/*
+/* -*- coding: windows-1252-unix; -*- */
+/* 
  * Copyright (C)2019 Roger Clark. VK3KYY / G4KYF
- *
- * Using some code ported from MMDVM_HS by Andy CA6JAU
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +18,14 @@
  */
 #ifndef USER_INTERFACE_LANGUAGES_CATALAN_H_
 #define USER_INTERFACE_LANGUAGES_CATALAN_H_
-
+/********************************************************************
+ *
+ * VERY IMPORTANT.
+ * This file should not be saved with UTF-8 encoding
+ * Use Notepad++ on Windows with ANSI encoding
+ * or emacs on Linux with windows-1252-unix encoding
+ *
+ ********************************************************************/
 const stringsTable_t catalanLanguage =
 {
 	.LANGUAGE_NAME             = "Catala",
@@ -112,11 +118,16 @@ const stringsTable_t catalanLanguage =
 	.colour_normal		= "Color:Normal",
 	.backlight_timeout	= "Temps llum",
 	.scan_delay			= "Scan delay",
-	.YES				= "Sï¿½",
+	.YES				= "SÍ",
 	.NO				= "NO",
 	.DISMISS			= "DESMISSAR",
-	.scan_mode			= "Scan mode",
-	.hold				= "Hold",
-	.pause              = "Pause",
 };
+/********************************************************************
+ *
+ * VERY IMPORTANT.
+ * This file should not be saved with UTF-8 encoding
+ * Use Notepad++ on Windows with ANSI encoding
+ * or emacs on Linux with windows-1252-unix encoding
+ *
+ ********************************************************************/
 #endif /* USER_INTERFACE_LANGUAGES_CATALAN_H_*/
