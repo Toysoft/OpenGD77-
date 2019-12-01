@@ -63,7 +63,7 @@ int menuNumericalEntry(int buttons, int keys, int events, bool isFirstRun)
 	return 0;
 }
 
-void updateCursor(void)
+static void updateCursor(void)
 {
 	size_t sLen;
 

@@ -307,6 +307,7 @@ static void update_frequency(int frequency)
 		}
 	}
 }
+
 static void checkAndFixIndexInRxGroup(void)
 {
 	if (nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber]
@@ -727,8 +728,8 @@ static void handleEvent(int buttons, int keys, int events)
 
 static void stepFrequency(int increment)
 {
-int tmp_frequencyTx;
-int tmp_frequencyRx;
+	int tmp_frequencyTx;
+	int tmp_frequencyRx;
 
 	if (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX)
 	{

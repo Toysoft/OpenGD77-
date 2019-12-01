@@ -58,6 +58,7 @@ static void updateScreen(void)
 	UC1701_render();
 	displayLightTrigger();
 }
+
 static void handleEvent(int buttons, int keys, int events)
 {
 	if ((keys & KEY_DOWN)!=0 && gMenusEndIndex!=0)

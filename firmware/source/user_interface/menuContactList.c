@@ -39,7 +39,7 @@ enum MENU_CONTACT_LIST_STATE
 
 static const char *calltypeName[] = { "Group Call", "Private Call", "All Call" };
 
-void reloadContactList(void)
+static void reloadContactList(void)
 {
 	gMenusEndIndex = codeplugContactsGetCount(contactCallType);
 	gMenusCurrentItemIndex = 0;
