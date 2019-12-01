@@ -41,7 +41,7 @@ static void reset_freq_enter_digits(void);
 static int read_freq_enter_digits(void);
 static void update_frequency(int tmp_frequency);
 static void stepFrequency(int increment);
-static void loadContact();
+static void loadContact(void);
 static bool isDisplayingQSOData=false;
 static int tmpQuickMenuDmrFilterLevel;
 
@@ -316,7 +316,7 @@ static void checkAndFixIndexInRxGroup(void)
 	}
 }
 
-static void loadContact()
+static void loadContact(void)
 {
 	// Check if this channel has an Rx Group
 	if (rxGroupData.name[0]!=0 && nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber] < rxGroupData.NOT_IN_MEMORY_numTGsInGroup)

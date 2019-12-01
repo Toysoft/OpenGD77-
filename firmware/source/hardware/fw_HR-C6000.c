@@ -1255,7 +1255,7 @@ void buildLC_DataFromLD_Data(uint8_t *outData,uint8_t *LC_DataBytes)
 	outData[11] = 0x00;
 }
 
-void setupPcOrTGHeader()
+void setupPcOrTGHeader(void)
 {
 	uint8_t spi_tx[12];
 
