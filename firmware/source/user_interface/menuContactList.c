@@ -21,7 +21,7 @@
 #include "fw_main.h"
 #include "fw_settings.h"
 
-static void updateScreen();
+static void updateScreen(void);
 static void handleEvent(int buttons, int keys, int events);
 static struct_codeplugContact_t contact;
 static int contactCallType;
