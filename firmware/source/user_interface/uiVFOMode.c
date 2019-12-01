@@ -660,47 +660,7 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	if (freq_enter_idx<8)
 	{
-		char c='\0';
-		if (KEYCHECK_PRESS(keys,KEY_0))
-		{
-			c='0';
-		}
-		else if (KEYCHECK_PRESS(keys,KEY_1))
-		{
-			c='1';
-		}
-		else if (KEYCHECK_PRESS(keys,KEY_2))
-		{
-			c='2';
-		}
-		else if (KEYCHECK_PRESS(keys,KEY_3))
-		{
-			c='3';
-		}
-		else if (KEYCHECK_PRESS(keys,KEY_4))
-		{
-			c='4';
-		}
-		else if (KEYCHECK_PRESS(keys,KEY_5))
-		{
-			c='5';
-		}
-		else if (KEYCHECK_PRESS(keys,KEY_6))
-		{
-			c='6';
-		}
-		else if (KEYCHECK_PRESS(keys,KEY_7))
-		{
-			c='7';
-		}
-		else if (KEYCHECK_PRESS(keys,KEY_8))
-		{
-			c='8';
-		}
-		else if (KEYCHECK_PRESS(keys,KEY_9))
-		{
-			c='9';
-		}
+		char c = keypressToNumberChar(keys);
 		if (c!='\0')
 		{
 			freq_enter_digits[freq_enter_idx]=c;
@@ -724,6 +684,8 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 //	menuVFOModeUpdateScreen(0);
 }
+
+
 
 static void stepFrequency(int increment)
 {

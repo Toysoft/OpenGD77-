@@ -681,3 +681,48 @@ void setOverrideTGorPC(int tgOrPc, bool privateCall) {
 		nonVolatileSettings.overrideTG |= (PC_CALL_FLAG << 24);
 	}
 }
+
+char keypressToNumberChar(int keys)
+{
+	if (KEYCHECK_PRESS(keys,KEY_0))
+	{
+		return '0';
+	}
+	else if (KEYCHECK_PRESS(keys,KEY_1))
+	{
+		return '1';
+	}
+	else if (KEYCHECK_PRESS(keys,KEY_2))
+	{
+		return '2';
+	}
+	else if (KEYCHECK_PRESS(keys,KEY_3))
+	{
+		return '3';
+	}
+	else if (KEYCHECK_PRESS(keys,KEY_4))
+	{
+		return '4';
+	}
+	else if (KEYCHECK_PRESS(keys,KEY_5))
+	{
+		return '5';
+	}
+	else if (KEYCHECK_PRESS(keys,KEY_6))
+	{
+		return '6';
+	}
+	else if (KEYCHECK_PRESS(keys,KEY_7))
+	{
+		return '7';
+	}
+	else if (KEYCHECK_PRESS(keys,KEY_8))
+	{
+		return '8';
+	}
+	else if (KEYCHECK_PRESS(keys,KEY_9))
+	{
+		return '9';
+	}
+	return '\0';
+}

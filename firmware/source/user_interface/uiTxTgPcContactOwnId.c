@@ -266,48 +266,8 @@ static void handleEvent(int buttons, int keys, int events)
 			if (sLen < 7)
 			{
 				char c[2] = {0, 0};
-
-				if (KEYCHECK_PRESS(keys,KEY_0))
-				{
-					c[0]='0';
-				}
-				else if (KEYCHECK_PRESS(keys,KEY_1))
-				{
-					c[0]='1';
-				}
-				else if (KEYCHECK_PRESS(keys,KEY_2))
-				{
-					c[0]='2';
-				}
-				else if (KEYCHECK_PRESS(keys,KEY_3))
-				{
-					c[0]='3';
-				}
-				else if (KEYCHECK_PRESS(keys,KEY_4))
-				{
-					c[0]='4';
-				}
-				else if (KEYCHECK_PRESS(keys,KEY_5))
-				{
-					c[0]='5';
-				}
-				else if (KEYCHECK_PRESS(keys,KEY_6))
-				{
-					c[0]='6';
-				}
-				else if (KEYCHECK_PRESS(keys,KEY_7))
-				{
-					c[0]='7';
-				}
-				else if (KEYCHECK_PRESS(keys,KEY_8))
-				{
-					c[0]='8';
-				}
-				else if (KEYCHECK_PRESS(keys,KEY_9))
-				{
-					c[0]='9';
-				}
-
+				c[0] = keypressToNumberChar(keys);
+				
 				if (c[0]!=0)
 				{
 					strcat(digits,c);
