@@ -18,7 +18,7 @@
 #ifndef _UI_LOCALISATION_H_
 #define _UI_LOCALISATION_H_
 
-#define NUM_LANGUAGES 6
+#define NUM_LANGUAGES 7
 #define LANGUAGE_TEXTS_LENGTH 24
 
 typedef struct stringsTable

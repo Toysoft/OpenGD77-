@@ -74,7 +74,7 @@ int menuChannelDetails(int buttons, int keys, int events, bool isFirstRun)
 static void updateScreen(void)
 {
 	int mNum = 0;
-	char buf[17];
+	char buf[33];
 	int tmpVal;
 	int val_before_dp;
 	int val_after_dp;

@@ -190,7 +190,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 {
 	char nameBuf[17];
 	int channelNumber;
-	char buffer[32];
+	char buffer[33];
 	int verticalPositionOffset = 0;
 	UC1701_clearBuf();
 
@@ -755,7 +755,7 @@ enum CHANNEL_SCREEN_QUICK_MENU_ITEMS { CH_SCREEN_QUICK_MENU_SCAN=0, CH_SCREEN_QU
 static void updateQuickMenuScreen(void)
 {
 	int mNum = 0;
-	char buf[17];
+	char buf[33];
 
 	UC1701_clearBuf();
 	menuDisplayTitle(currentLanguage->quick_menu);
