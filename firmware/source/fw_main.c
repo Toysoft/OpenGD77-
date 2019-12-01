@@ -193,18 +193,6 @@ void fw_main_task(void *data)
 				}
 			}
 
-			if (menuSystemGetCurrentMenuNumber() != MENU_CONTACT_LIST &&
-					menuSystemGetCurrentMenuNumber() != MENU_CONTACT_QUICKLIST &&
-					menuSystemGetCurrentMenuNumber() != MENU_CONTACT_LIST_SUBMENU &&
-					menuSystemGetCurrentMenuNumber() != MENU_CONTACT_DETAILS)
-			{
-				if (key_event == EVENT_KEY_CHANGE
-						&& (keys & KEY_MOD_PRESS) == 0)
-				{   // Remove after changing key handling in user interface
-					key_event = EVENT_KEY_NONE;
-				}
-			}
-
 			if (key_event == EVENT_KEY_CHANGE && (buttons & BUTTON_PTT) == 0 && keys != 0) {
 				if (keys & KEY_MOD_PRESS)
 				{
@@ -234,8 +222,6 @@ void fw_main_task(void *data)
 				}
 			}
 */
-
-
 
 			if (button_event == EVENT_BUTTON_CHANGE)
 			{
