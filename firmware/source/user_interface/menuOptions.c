@@ -51,7 +51,7 @@ int menuOptions(int buttons, int keys, int events, bool isFirstRun)
 static void updateScreen(void)
 {
 	int mNum = 0;
-	char buf[17];
+	char buf[33];
 
 	UC1701_clearBuf();
 	menuDisplayTitle(currentLanguage->options);

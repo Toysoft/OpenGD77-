@@ -78,7 +78,7 @@ int menuContactList(int buttons, int keys, int events, bool isFirstRun)
 
 static void updateScreen(void)
 {
-	char nameBuf[17];
+	char nameBuf[33];
 	int mNum;
 	int idx;
 
@@ -238,7 +238,7 @@ enum CONTACT_LIST_QUICK_MENU_ITEMS
 static void updateSubMenuScreen(void)
 {
 	int mNum = 0;
-	char buf[17];
+	char buf[33];
 
 	UC1701_clearBuf();
 

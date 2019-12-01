@@ -90,7 +90,7 @@ void updateCursor(void)
 
 static void updateScreen(void)
 {
-	char buf[17];
+	char buf[33];
 	size_t sLen = strlen(menuName[gMenusCurrentItemIndex]) * 8;
 	int16_t y = 8;
 
