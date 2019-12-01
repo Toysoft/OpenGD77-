@@ -115,10 +115,13 @@ int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 	}
 	return 0;
 }
+
+#if 0 // rename: we have an union declared (fw_sound.c) with the same name.
 uint16_t byteSwap16(uint16_t in)
 {
 	return ((in &0xff << 8) | (in >>8));
 }
+#endif
 
 static void loadChannelData(bool useChannelDataInMemory)
 {
