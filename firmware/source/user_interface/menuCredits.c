@@ -20,7 +20,7 @@
 
 static void updateScreen(void);
 static void handleEvent(int buttons, int keys, int events);
-static void scrollDownOneLine();
+static void scrollDownOneLine(void);
 
 //#define CREDIT_TEXT_LENGTH 33
 static const int NUM_LINES_PER_SCREEN = 6;

@@ -25,6 +25,11 @@
 #include <SeggerRTT/RTT/SEGGER_RTT.h>
 #endif
 
+#ifdef NDEBUG
+#error A firmware compiled in Releae mode will not work, yet
+#error Change target build to Debug then Clean the build and recompile
+#endif
+
 void fw_main_task(void *data);
 
 const char *FIRMWARE_VERSION_STRING = "VK3KYY";//"V0.3.5";

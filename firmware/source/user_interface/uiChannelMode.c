@@ -789,7 +789,7 @@ static void updateQuickMenuScreen(void)
 	displayLightTrigger();
 }
 /*
-static void handleTxRxFreqToggle()
+static void handleTxRxFreqToggle(void)
 {
 	isTxRxFreqSwap = !isTxRxFreqSwap;
 	if (isTxRxFreqSwap)
