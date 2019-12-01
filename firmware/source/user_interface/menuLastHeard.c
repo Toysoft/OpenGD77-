@@ -109,11 +109,11 @@ static void updateScreen(void)
 static void handleEvent(int buttons, int keys, int events)
 {
 
-	if ((keys & KEY_DOWN)!=0 && gMenusEndIndex!=0)
+	if (KEYCHECK_PRESS(keys,KEY_DOWN) && gMenusEndIndex!=0)
 	{
 		gMenusCurrentItemIndex++;
 	}
-	else if ((keys & KEY_UP)!=0)
+	else if (KEYCHECK_PRESS(keys,KEY_UP))
 	{
 		gMenusCurrentItemIndex--;
 		if (gMenusCurrentItemIndex<0)
@@ -121,12 +121,12 @@ static void handleEvent(int buttons, int keys, int events)
 			gMenusCurrentItemIndex=0;
 		}
 	}
-	else if ((keys & KEY_RED)!=0)
+	else if (KEYCHECK_PRESS(keys,KEY_RED))
 	{
 		menuSystemPopPreviousMenu();
 		return;
 	}
-	else if ((keys & KEY_GREEN)!=0)
+	else if (KEYCHECK_PRESS(keys,KEY_GREEN))
 	{
 		menuSystemPopAllAndDisplayRootMenu();
 		return;

@@ -364,7 +364,7 @@ bool menuUtilityHandlePrivateCallActions(int buttons, int keys, int events)
 	// Note.  menuUtilityReceivedPcId is used to store the PcId but also used as a flag to indicate that a Pc request has occurred.
 	if (menuUtilityReceivedPcId != 0x00 && (LinkHead->talkGroupOrPcId>>24) == PC_CALL_FLAG && nonVolatileSettings.overrideTG != LinkHead->talkGroupOrPcId)
 	{
-		if ((keys & KEY_GREEN)!=0)
+		if (KEYCHECK_PRESS(keys,KEY_GREEN))
 		{
 			// User has accepted the private call
 			menuUtilityTgBeforePcMode = trxTalkGroupOrPcId;// save the current TG

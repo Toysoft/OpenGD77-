@@ -82,16 +82,16 @@ static void scrollDownOneLine(void)
 static void handleEvent(int buttons, int keys, int events)
 {
 
-	if ((keys & KEY_RED)!=0)
+	if (KEYCHECK_PRESS(keys,KEY_RED))
 	{
 		menuSystemPopPreviousMenu();
 		return;
 	}
-	else if ((keys & KEY_DOWN)!=0)
+	else if (KEYCHECK_PRESS(keys,KEY_DOWN))
 	{
 		scrollDownOneLine();
 	}
-	else if ((keys & KEY_UP)!=0)
+	else if (KEYCHECK_PRESS(keys,KEY_UP))
 	{
 		if (currentDisplayIndex>0)
 		{
@@ -99,7 +99,7 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 		updateScreen();
 	}
-	else if ((keys & KEY_GREEN)!=0)
+	else if (KEYCHECK_PRESS(keys,KEY_GREEN))
 	{
 		menuSystemPopAllAndDisplayRootMenu();
 		return;

@@ -382,7 +382,7 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 	}
 
-	if ((keys & KEY_GREEN)!=0)
+	if (KEYCHECK_PRESS(keys,KEY_GREEN))
 	{
 		if (menuUtilityHandlePrivateCallActions(buttons,keys,events))
 		{
@@ -404,7 +404,7 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 		}
 	}
-	else if ((keys & KEY_HASH)!=0)
+	else if (KEYCHECK_PRESS(keys,KEY_HASH))
 	{
 		if (trxGetMode() == RADIO_MODE_DIGITAL)
 		{
@@ -420,7 +420,7 @@ static void handleEvent(int buttons, int keys, int events)
 
 	if (freq_enter_idx==0)
 	{
-		if ((keys & KEY_STAR)!=0)
+		if (KEYCHECK_PRESS(keys,KEY_STAR))
 		{
 			if (buttons & BUTTON_SK2 )
 			{
@@ -464,7 +464,7 @@ static void handleEvent(int buttons, int keys, int events)
 				}
 			}
 		}
-		else if ((keys & KEY_DOWN)!=0)
+		else if (KEYCHECK_PRESS(keys,KEY_DOWN))
 		{
 			if (buttons & BUTTON_SK2 )
 			{
@@ -476,7 +476,7 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		}
-		else if ((keys & KEY_UP)!=0)
+		else if (KEYCHECK_PRESS(keys,KEY_UP))
 		{
 			if (buttons & BUTTON_SK2 )
 			{
@@ -489,7 +489,7 @@ static void handleEvent(int buttons, int keys, int events)
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 
 		}
-		else if ((keys & KEY_RED)!=0)
+		else if (KEYCHECK_PRESS(keys,KEY_RED))
 		{
 			if (menuUtilityHandlePrivateCallActions(buttons,keys,events))
 			{
@@ -499,7 +499,7 @@ static void handleEvent(int buttons, int keys, int events)
 			return;
 		}
 		else
-		if ((keys & KEY_RIGHT)!=0)
+		if (KEYCHECK_PRESS(keys,KEY_RIGHT))
 		{
 			if (buttons & BUTTON_SK2)
 			{
@@ -561,7 +561,7 @@ static void handleEvent(int buttons, int keys, int events)
 				}
 			}
 		}
-		else if ((keys & KEY_LEFT)!=0)
+		else if (KEYCHECK_PRESS(keys,KEY_LEFT))
 		{
 			if (buttons & BUTTON_SK2)
 			{
@@ -630,13 +630,13 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else
 	{
-		if ((keys & KEY_LEFT)!=0)
+		if (KEYCHECK_PRESS(keys,KEY_LEFT))
 		{
 			freq_enter_idx--;
 			freq_enter_digits[freq_enter_idx]='-';
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		}
-		else if ((keys & KEY_RED)!=0)
+		else if (KEYCHECK_PRESS(keys,KEY_RED))
 		{
 			reset_freq_enter_digits();
     	    set_melody(melody_NACK_beep);
@@ -661,43 +661,43 @@ static void handleEvent(int buttons, int keys, int events)
 	if (freq_enter_idx<8)
 	{
 		char c='\0';
-		if ((keys & KEY_0)!=0)
+		if (KEYCHECK_PRESS(keys,KEY_0))
 		{
 			c='0';
 		}
-		else if ((keys & KEY_1)!=0)
+		else if (KEYCHECK_PRESS(keys,KEY_1))
 		{
 			c='1';
 		}
-		else if ((keys & KEY_2)!=0)
+		else if (KEYCHECK_PRESS(keys,KEY_2))
 		{
 			c='2';
 		}
-		else if ((keys & KEY_3)!=0)
+		else if (KEYCHECK_PRESS(keys,KEY_3))
 		{
 			c='3';
 		}
-		else if ((keys & KEY_4)!=0)
+		else if (KEYCHECK_PRESS(keys,KEY_4))
 		{
 			c='4';
 		}
-		else if ((keys & KEY_5)!=0)
+		else if (KEYCHECK_PRESS(keys,KEY_5))
 		{
 			c='5';
 		}
-		else if ((keys & KEY_6)!=0)
+		else if (KEYCHECK_PRESS(keys,KEY_6))
 		{
 			c='6';
 		}
-		else if ((keys & KEY_7)!=0)
+		else if (KEYCHECK_PRESS(keys,KEY_7))
 		{
 			c='7';
 		}
-		else if ((keys & KEY_8)!=0)
+		else if (KEYCHECK_PRESS(keys,KEY_8))
 		{
 			c='8';
 		}
-		else if ((keys & KEY_9)!=0)
+		else if (KEYCHECK_PRESS(keys,KEY_9))
 		{
 			c='9';
 		}
@@ -803,12 +803,12 @@ static void updateQuickMenuScreen(void)
 
 static void handleQuickMenuEvent(int buttons, int keys, int events)
 {
-	if ((keys & KEY_RED)!=0)
+	if (KEYCHECK_PRESS(keys,KEY_RED))
 	{
 		menuSystemPopPreviousMenu();
 		return;
 	}
-	else if ((keys & KEY_GREEN)!=0)
+	else if (KEYCHECK_PRESS(keys,KEY_GREEN))
 	{
 		switch(gMenusCurrentItemIndex)
 		{
@@ -836,7 +836,7 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 		menuSystemPopPreviousMenu();
 		return;
 	}
-	else if ((keys & KEY_RIGHT)!=0)
+	else if (KEYCHECK_PRESS(keys,KEY_RIGHT))
 		{
 			switch(gMenusCurrentItemIndex)
 			{
@@ -856,7 +856,7 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 
 			}
 		}
-		else if ((keys & KEY_LEFT)!=0)
+		else if (KEYCHECK_PRESS(keys,KEY_LEFT))
 		{
 			switch(gMenusCurrentItemIndex)
 			{
@@ -875,11 +875,11 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 					break;
 			}
 		}
-	else if ((keys & KEY_DOWN)!=0)
+	else if (KEYCHECK_PRESS(keys,KEY_DOWN))
 	{
 		MENU_INC(gMenusCurrentItemIndex, NUM_VFO_SCREEN_QUICK_MENU_ITEMS);
 	}
-	else if ((keys & KEY_UP)!=0)
+	else if (KEYCHECK_PRESS(keys,KEY_UP))
 	{
 		MENU_DEC(gMenusCurrentItemIndex, NUM_VFO_SCREEN_QUICK_MENU_ITEMS);
 	}

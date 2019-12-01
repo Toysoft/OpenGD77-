@@ -360,7 +360,7 @@ static void handleEvent(int buttons, int keys, int events)
 
 	}
 
-	if ((keys & KEY_GREEN)!=0)
+	if (KEYCHECK_PRESS(keys,KEY_GREEN))
 	{
 		if (menuUtilityHandlePrivateCallActions(buttons,keys,events))
 		{
@@ -392,7 +392,7 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 		return;
 	}
-	else if ((keys & KEY_HASH)!=0)
+	else if (KEYCHECK_PRESS(keys,KEY_HASH))
 	{
 		if (trxGetMode() == RADIO_MODE_DIGITAL)
 		{
@@ -405,7 +405,7 @@ static void handleEvent(int buttons, int keys, int events)
 			return;
 		}
 	}
-	else if ((keys & KEY_RED)!=0)
+	else if (KEYCHECK_PRESS(keys,KEY_RED))
 	{
 		if (menuUtilityHandlePrivateCallActions(buttons,keys,events))
 		{
@@ -423,7 +423,7 @@ static void handleEvent(int buttons, int keys, int events)
 			return;
 		}
 	}
-	else if ((keys & KEY_RIGHT)!=0)
+	else if (KEYCHECK_PRESS(keys,KEY_RIGHT))
 	{
 		if (buttons & BUTTON_SK2)
 		{
@@ -489,7 +489,7 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 
 	}
-	else if ((keys & KEY_LEFT)!=0)
+	else if (KEYCHECK_PRESS(keys,KEY_LEFT))
 	{
 		if (buttons & BUTTON_SK2)
 		{
@@ -554,7 +554,7 @@ static void handleEvent(int buttons, int keys, int events)
 
 		}
 	}
-	else if ((keys & KEY_STAR)!=0)
+	else if (KEYCHECK_PRESS(keys,KEY_STAR))
 	{
 		// Toggle TimeSlot
 		if (buttons & BUTTON_SK2 )
@@ -594,7 +594,7 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 		}
 	}
-	else if ((keys & KEY_DOWN)!=0)
+	else if (KEYCHECK_PRESS(keys,KEY_DOWN))
 	{
 		if (buttons & BUTTON_SK2)
 		{
@@ -640,7 +640,7 @@ static void handleEvent(int buttons, int keys, int events)
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		menuChannelModeUpdateScreen(0);
 	}
-	else if ((keys & KEY_UP)!=0)
+	else if (KEYCHECK_PRESS(keys,KEY_UP))
 	{
 		handleUpKey(buttons);
 	}
@@ -804,13 +804,13 @@ static void handleTxRxFreqToggle()
 */
 static void handleQuickMenuEvent(int buttons, int keys, int events)
 {
-	if ((keys & KEY_RED)!=0)
+	if (KEYCHECK_PRESS(keys,KEY_RED))
 	{
 		uiChannelModeScanActive=false;
 		menuSystemPopPreviousMenu();
 		return;
 	}
-	else if ((keys & KEY_GREEN)!=0)
+	else if (KEYCHECK_PRESS(keys,KEY_GREEN))
 	{
 		switch(gMenusCurrentItemIndex)
 		{
@@ -843,7 +843,7 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 		}
 		return;
 	}
-	else if ((keys & KEY_RIGHT)!=0)
+	else if (KEYCHECK_PRESS(keys,KEY_RIGHT))
 	{
 		switch(gMenusCurrentItemIndex)
 		{
@@ -855,7 +855,7 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 				break;
 		}
 	}
-	else if ((keys & KEY_LEFT)!=0)
+	else if (KEYCHECK_PRESS(keys,KEY_LEFT))
 	{
 		switch(gMenusCurrentItemIndex)
 		{
@@ -867,11 +867,11 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 				break;
 		}
 	}
-	else if ((keys & KEY_DOWN)!=0)
+	else if (KEYCHECK_PRESS(keys,KEY_DOWN))
 	{
 		MENU_INC(gMenusCurrentItemIndex, NUM_CH_SCREEN_QUICK_MENU_ITEMS);
 	}
-	else if ((keys & KEY_UP)!=0)
+	else if (KEYCHECK_PRESS(keys,KEY_UP))
 	{
 		MENU_DEC(gMenusCurrentItemIndex, NUM_CH_SCREEN_QUICK_MENU_ITEMS);
 	}
