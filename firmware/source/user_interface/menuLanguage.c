@@ -58,6 +58,7 @@ static void updateScreen(void)
 	UC1701_render();
 	displayLightTrigger();
 }
+
 static void handleEvent(int buttons, int keys, int events)
 {
 	if (KEYCHECK_PRESS(keys,KEY_DOWN) && gMenusEndIndex!=0)
