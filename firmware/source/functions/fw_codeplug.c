@@ -23,6 +23,7 @@
 #include "fw_codeplug.h"
 #include "fw_trx.h"
 #include "fw_usb_com.h"
+#include <user_interface/uiLocalisation.h>
 
 const int CODEPLUG_ADDR_EX_ZONE_BASIC = 0x8000;
 const int CODEPLUG_ADDR_EX_ZONE_INUSE_PACKED_DATA =  0x8010;
@@ -139,7 +140,7 @@ void codeplugZoneGetDataForNumber(int zoneNum,struct_codeplugZone_t *returnBuf)
 
 	if (zoneNum==codeplugZonesGetCount()-1) //special case: return a special Zone called 'All Channels'
 	{
-		sprintf(returnBuf->name,"All Channels");
+		sprintf(returnBuf->name,currentLanguage->all_channels);
 		for(int i=0;i<codeplugChannelsPerZone;i++)
 		{
 			returnBuf->channels[i]=0;

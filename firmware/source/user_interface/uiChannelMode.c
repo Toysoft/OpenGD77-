@@ -212,7 +212,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 			}
 			else
 			{
-				if (strcmp(currentZoneName,"All Channels") == 0)
+				if (strcmp(currentZoneName,currentLanguage->all_channels) == 0)
 				{
 					channelNumber=nonVolatileSettings.currentChannelIndexInAllZone;
 					if (directChannelNumber>0)
@@ -619,7 +619,7 @@ static void handleEvent(int buttons, int keys, int events)
 		else
 		{
 			lastHeardClearLastID();
-			if (strcmp(currentZoneName,"All Channels")==0)
+			if (strcmp(currentZoneName,currentLanguage->all_channels)==0)
 			{
 				do
 				{
@@ -647,7 +647,7 @@ static void handleEvent(int buttons, int keys, int events)
 	{
 		handleUpKey(buttons);
 	}
-	else if (strcmp(currentZoneName,"All Channels")==0)
+	else if (strcmp(currentZoneName,currentLanguage->all_channels)==0)
 	{
 		int keyval=99;
 		if (KEYCHECK_PRESS(keys,KEY_1))
