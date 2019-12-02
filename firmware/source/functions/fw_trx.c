@@ -33,10 +33,28 @@ volatile bool trxIsTransmittingTone = false;
 static uint16_t txPower;
 static bool analogSignalReceived = false;
 
+const frequencyBand_t RADIO_FREQUENCY_BANDS[RADIO_BANDS_TOTAL_NUM] =  {
+													{
+														.minFreq=13400000,
+														.maxFreq=17400000
+													},// VHF
+													{
+														.minFreq=20000000,
+														.maxFreq=26000000
+													},// 220Mhz
+													{
+														.minFreq=40000000,
+														.maxFreq=52000000
+													}// UHF
+};
+/*
+ * superseded by the RADIO_FREQUENCY_BANDS data above
+ *
 const int RADIO_VHF_MIN			=	13400000;
 const int RADIO_VHF_MAX			=	17400000;
 const int RADIO_UHF_MIN			=	40000000;
 const int RADIO_UHF_MAX			=	52000000;
+*/
 
 static int currentMode = RADIO_MODE_NONE;
 static bool currentBandWidthIs25kHz = BANDWIDTH_12P5KHZ;
@@ -136,17 +154,26 @@ void trxSetModeAndBandwidth(int mode, bool bandwidthIs25kHz)
 
 bool trxCheckFrequencyIsSupportedByTheRadioHardware(int frequency)
 {
-	return (((frequency >= RADIO_VHF_MIN) && (frequency < RADIO_VHF_MAX)) || ((frequency >= RADIO_UHF_MIN) && (frequency < RADIO_UHF_MAX)));
+	for(int i=0;i<RADIO_BANDS_TOTAL_NUM;i++)
+	{
+		if (frequency >= RADIO_FREQUENCY_BANDS[i].minFreq && frequency < RADIO_FREQUENCY_BANDS[i].maxFreq)
+		{
+			return true;
+		}
+	}
+	return false;
+	//return (((frequency >= RADIO_VHF_MIN) && (frequency < RADIO_VHF_MAX)) || ((frequency >= RADIO_UHF_MIN) && (frequency < RADIO_UHF_MAX)));
 }
-
+/*
 bool trxCheckFrequencyIsVHF(int frequency)
 {
 	return ((frequency >= RADIO_VHF_MIN) && (frequency < RADIO_VHF_MAX));
 }
+*/
 
 bool trxCheckFrequencyIsUHF(int frequency)
 {
-	return ((frequency >= RADIO_UHF_MIN) && (frequency < RADIO_UHF_MAX));
+	return ((frequency >= RADIO_FREQUENCY_BANDS[RADIO_BAND_UHF].minFreq) && (frequency < RADIO_FREQUENCY_BANDS[RADIO_BAND_UHF].maxFreq));
 }
 
 bool trxCheckFrequencyInAmateurBand(int tmp_frequency)
