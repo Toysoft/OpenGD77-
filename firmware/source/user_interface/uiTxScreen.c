@@ -193,67 +193,67 @@ static void handleEvent(int buttons, int keys, int events)
 		else
 		{
 			keyval = 99;
-			if ((keys & KEY_0) != 0)
+			if (KEYCHECK_DOWN(keys,KEY_0))
 			{
 				keyval = 0;
 			}
-			if ((keys & KEY_1) != 0)
+			if (KEYCHECK_DOWN(keys,KEY_1))
 			{
 				keyval = 1;
 			}
-			if ((keys & KEY_2) != 0)
+			if (KEYCHECK_DOWN(keys,KEY_2))
 			{
 				keyval = 2;
 			}
-			if ((keys & KEY_3) != 0)
+			if (KEYCHECK_DOWN(keys,KEY_3))
 			{
 				keyval = 3;
 			}
-			if ((keys & KEY_4) != 0)
+			if (KEYCHECK_DOWN(keys,KEY_4))
 			{
 				keyval = 4;
 			}
-			if ((keys & KEY_5) != 0)
+			if (KEYCHECK_DOWN(keys,KEY_5))
 			{
 				keyval = 5;
 			}
-			if ((keys & KEY_6) != 0)
+			if (KEYCHECK_DOWN(keys,KEY_6))
 			{
 				keyval = 6;
 			}
-			if ((keys & KEY_7) != 0)
+			if (KEYCHECK_DOWN(keys,KEY_7))
 			{
 				keyval = 7;
 			}
-			if ((keys & KEY_8) != 0)
+			if (KEYCHECK_DOWN(keys,KEY_8))
 			{
 				keyval = 8;
 			}
-			if ((keys & KEY_9) != 0)
+			if (KEYCHECK_DOWN(keys,KEY_9))
 			{
 				keyval = 9;
 			}
-			if ((keys & KEY_LEFT) != 0)  // A
+			if (KEYCHECK_DOWN(keys,KEY_LEFT))  // A
 			{
 				keyval = 10;
 			}
-			if ((keys & KEY_RIGHT) != 0) // B
+			if (KEYCHECK_DOWN(keys,KEY_RIGHT)) // B
 			{
 				keyval = 11;
 			}
-			if ((keys & KEY_UP) != 0)    // C
+			if (KEYCHECK_DOWN(keys,KEY_UP))    // C
 			{
 				keyval = 12;
 			}
-			if ((keys & KEY_DOWN) != 0)  // D
+			if (KEYCHECK_DOWN(keys,KEY_DOWN))  // D
 			{
 				keyval = 13;
 			}
-			if ((keys & KEY_STAR) != 0)
+			if (KEYCHECK_DOWN(keys,KEY_STAR))
 			{
 				keyval = 14;
 			}
-			if ((keys & KEY_HASH) != 0)
+			if (KEYCHECK_DOWN(keys,KEY_HASH))
 			{
 				keyval = 15;
 			}

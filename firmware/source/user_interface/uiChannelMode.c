@@ -650,43 +650,43 @@ static void handleEvent(int buttons, int keys, int events)
 	else if (strcmp(currentZoneName,"All Channels")==0)
 	{
 		int keyval=99;
-		if ((keys& KEY_1)!=0)
+		if (KEYCHECK_PRESS(keys,KEY_1))
 		{
 			keyval=1;
 		}
-		if ((keys& KEY_2)!=0)
+		if (KEYCHECK_PRESS(keys,KEY_2))
 		{
 			keyval=2;
 		}
-		if ((keys& KEY_3)!=0)
+		if (KEYCHECK_PRESS(keys,KEY_3))
 		{
 			keyval=3;
 		}
-		if ((keys& KEY_4)!=0)
+		if (KEYCHECK_PRESS(keys,KEY_4))
 		{
 			keyval=4;
 		}
-		if ((keys& KEY_5)!=0)
+		if (KEYCHECK_PRESS(keys,KEY_5))
 		{
 			keyval=5;
 		}
-		if ((keys& KEY_6)!=0)
+		if (KEYCHECK_PRESS(keys,KEY_6))
 		{
 			keyval=6;
 		}
-		if ((keys& KEY_7)!=0)
+		if (KEYCHECK_PRESS(keys,KEY_7))
 		{
 			keyval=7;
 		}
-		if ((keys& KEY_8)!=0)
+		if (KEYCHECK_PRESS(keys,KEY_8))
 		{
 			keyval=8;
 		}
-		if ((keys& KEY_9)!=0)
+		if (KEYCHECK_PRESS(keys,KEY_9))
 		{
 			keyval=9;
 		}
-		if ((keys& KEY_0)!=0)
+		if (KEYCHECK_PRESS(keys,KEY_0))
 		{
 			keyval=0;
 		}
