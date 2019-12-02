@@ -290,7 +290,7 @@ static void handleEvent(int buttons, int keys, int events)
 {
 	uint32_t tg = (LinkHead->talkGroupOrPcId & 0xFFFFFF);
 
-	if((scanState==SCAN_PAUSED) && (keys & KEY_DOWN) && (!(buttons & BUTTON_SK2)))                    // if we are scanning and down key is pressed then enter current channel into nuisance delete array.
+	if((scanState==SCAN_PAUSED) && (KEYCHAR(keys) == KEY_DOWN) && (!(buttons & BUTTON_SK2)))                    // if we are scanning and down key is pressed then enter current channel into nuisance delete array.
 	{
 		nuisanceDelete[nuisanceDeleteIndex++]=settingsCurrentChannelNumber;
 		if(nuisanceDeleteIndex > (MAX_ZONE_SCAN_NUISANCE_CHANNELS - 1))
@@ -299,13 +299,15 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 		scanTimer=5;																				//force scan to continue;
 		scanState=SCAN_SCANNING;
+		fw_reset_keyboard();
 		return;
 	}
 
-	if ((uiChannelModeScanActive) && (!(keys==0)) && (!((keys & KEY_UP) && (!(buttons & BUTTON_SK2)))))    // stop the scan on any button except UP without Shift ( allows scan to be manually continued) or SK2 on its own (allows Backlight to be triggered)
+	if ((uiChannelModeScanActive) && (!(keys==0)) && ((KEYCHAR(keys) != KEY_UP) && (!(buttons & BUTTON_SK2))))    // stop the scan on any button except UP without Shift ( allows scan to be manually continued) or SK2 on its own (allows Backlight to be triggered)
 	{
 		uiChannelModeScanActive = false;
 		displayLightTrigger();
+		fw_reset_keyboard();
 		return;
 	}
 
