@@ -505,7 +505,7 @@
 					</fileInfo>
 					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.1935318000" name="menuUtilityQSOData.c" rcbsApplicability="disable" resourcePath="source/user_interface/uiUtilityQSOData.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.475830819.950684613">
 						<tool id="com.crt.advproject.gcc.exe.debug.475830819.950684613" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.475830819">
-							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1855318250" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1855318250" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.none" valueType="enumerated"/>
 							<inputType id="com.crt.advproject.compiler.input.1327023244" superClass="com.crt.advproject.compiler.input"/>
 						</tool>
 					</fileInfo>

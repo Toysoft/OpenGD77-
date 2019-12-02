@@ -23,6 +23,7 @@
 #include "fw_codeplug.h"
 #include "fw_trx.h"
 #include "fw_usb_com.h"
+#include <user_interface/uiLocalisation.h>
 
 const int CODEPLUG_ADDR_EX_ZONE_BASIC = 0x8000;
 const int CODEPLUG_ADDR_EX_ZONE_INUSE_PACKED_DATA =  0x8010;
@@ -139,7 +140,7 @@ void codeplugZoneGetDataForNumber(int zoneNum,struct_codeplugZone_t *returnBuf)
 
 	if (zoneNum==codeplugZonesGetCount()-1) //special case: return a special Zone called 'All Channels'
 	{
-		sprintf(returnBuf->name,"All Channels");
+		sprintf(returnBuf->name,currentLanguage->all_channels);
 		for(int i=0;i<codeplugChannelsPerZone;i++)
 		{
 			returnBuf->channels[i]=0;
@@ -659,7 +660,7 @@ void codeplugInitChannelsPerZone(void)
 
 	// Note. I tried to read just 1 byte but it crashed. So I am now reading 16 bytes and checking the last one
 	EEPROM_Read(0x8060,(uint8_t *)buf,16);
-	if (buf[15]==0x00)
+	if (buf[15] >= 0x00 && buf[15]<=0x04)
 	{
 		codeplugChannelsPerZone=80;// Must be the new 80 channel per zone format
 	}

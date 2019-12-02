@@ -462,7 +462,19 @@ void menuUtilityRenderQSOData(void)
 
 	menuUtilityReceivedPcId=0;//reset the received PcId
 
-	if ((LinkHead->talkGroupOrPcId>>24) == PC_CALL_FLAG)
+	/*
+	 * Note.
+	 * When using Brandmeister reflectors. TalkGroups can be used to select reflectors e.g. TG 4009, and TG 5000 to check the connnection
+	 * Under these conditions Brandmister seems to respond with a message via a private call even if the command was sent as a TalkGroup,
+	 * and this caused the Private Message acceptance system to operate.
+	 * Brandmeister seems respond on the same ID as the keyed TG, so the code
+	 * (LinkHead->id & 0xFFFFFF) != (trxTalkGroupOrPcId & 0xFFFFFF)  is designed to stop the Private call system tiggering in these instances
+	 *
+	 * FYI. Brandmeister seems to respond with a TG value of the users on ID number,
+	 * but I thought it was safer to disregard any PC's from IDs the same as the current TG
+	 * rather than testing if the TG is the user's ID, though that may work as well.
+	 */
+	if ((LinkHead->talkGroupOrPcId>>24) == PC_CALL_FLAG &&  (LinkHead->id & 0xFFFFFF) != (trxTalkGroupOrPcId & 0xFFFFFF))
 	{
 		// Its a Private call
 		dmrIDLookup( (LinkHead->id & 0xFFFFFF),&currentRec);

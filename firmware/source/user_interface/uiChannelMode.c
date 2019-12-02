@@ -212,7 +212,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 			}
 			else
 			{
-				if (strcmp(currentZoneName,"All Channels") == 0)
+				if (strcmp(currentZoneName,currentLanguage->all_channels) == 0)
 				{
 					channelNumber=nonVolatileSettings.currentChannelIndexInAllZone;
 					if (directChannelNumber>0)
@@ -290,7 +290,7 @@ static void handleEvent(int buttons, int keys, int events)
 {
 	uint32_t tg = (LinkHead->talkGroupOrPcId & 0xFFFFFF);
 
-	if((scanState==SCAN_PAUSED) && (keys & KEY_DOWN) && (!(buttons & BUTTON_SK2)))                    // if we are scanning and down key is pressed then enter current channel into nuisance delete array.
+	if((scanState==SCAN_PAUSED) && (KEYCHAR(keys) == KEY_DOWN) && (!(buttons & BUTTON_SK2)))                    // if we are scanning and down key is pressed then enter current channel into nuisance delete array.
 	{
 		nuisanceDelete[nuisanceDeleteIndex++]=settingsCurrentChannelNumber;
 		if(nuisanceDeleteIndex > (MAX_ZONE_SCAN_NUISANCE_CHANNELS - 1))
@@ -299,13 +299,15 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 		scanTimer=5;																				//force scan to continue;
 		scanState=SCAN_SCANNING;
+		fw_reset_keyboard();
 		return;
 	}
 
-	if ((uiChannelModeScanActive) && (!(keys==0)) && (!((keys & KEY_UP) && (!(buttons & BUTTON_SK2)))))    // stop the scan on any button except UP without Shift ( allows scan to be manually continued) or SK2 on its own (allows Backlight to be triggered)
+	if ((uiChannelModeScanActive) && (!(keys==0)) && ((KEYCHAR(keys) != KEY_UP) && (!(buttons & BUTTON_SK2))))    // stop the scan on any button except UP without Shift ( allows scan to be manually continued) or SK2 on its own (allows Backlight to be triggered)
 	{
 		uiChannelModeScanActive = false;
 		displayLightTrigger();
+		fw_reset_keyboard();
 		return;
 	}
 
@@ -619,7 +621,7 @@ static void handleEvent(int buttons, int keys, int events)
 		else
 		{
 			lastHeardClearLastID();
-			if (strcmp(currentZoneName,"All Channels")==0)
+			if (strcmp(currentZoneName,currentLanguage->all_channels)==0)
 			{
 				do
 				{
@@ -647,46 +649,46 @@ static void handleEvent(int buttons, int keys, int events)
 	{
 		handleUpKey(buttons);
 	}
-	else if (strcmp(currentZoneName,"All Channels")==0)
+	else if (strcmp(currentZoneName,currentLanguage->all_channels)==0)
 	{
 		int keyval=99;
-		if ((keys& KEY_1)!=0)
+		if (KEYCHECK_PRESS(keys,KEY_1))
 		{
 			keyval=1;
 		}
-		if ((keys& KEY_2)!=0)
+		if (KEYCHECK_PRESS(keys,KEY_2))
 		{
 			keyval=2;
 		}
-		if ((keys& KEY_3)!=0)
+		if (KEYCHECK_PRESS(keys,KEY_3))
 		{
 			keyval=3;
 		}
-		if ((keys& KEY_4)!=0)
+		if (KEYCHECK_PRESS(keys,KEY_4))
 		{
 			keyval=4;
 		}
-		if ((keys& KEY_5)!=0)
+		if (KEYCHECK_PRESS(keys,KEY_5))
 		{
 			keyval=5;
 		}
-		if ((keys& KEY_6)!=0)
+		if (KEYCHECK_PRESS(keys,KEY_6))
 		{
 			keyval=6;
 		}
-		if ((keys& KEY_7)!=0)
+		if (KEYCHECK_PRESS(keys,KEY_7))
 		{
 			keyval=7;
 		}
-		if ((keys& KEY_8)!=0)
+		if (KEYCHECK_PRESS(keys,KEY_8))
 		{
 			keyval=8;
 		}
-		if ((keys& KEY_9)!=0)
+		if (KEYCHECK_PRESS(keys,KEY_9))
 		{
 			keyval=9;
 		}
-		if ((keys& KEY_0)!=0)
+		if (KEYCHECK_PRESS(keys,KEY_0))
 		{
 			keyval=0;
 		}

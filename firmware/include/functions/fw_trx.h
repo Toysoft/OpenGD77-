@@ -24,6 +24,12 @@
 #include "fw_calibration.h"
 #include "fw_codeplug.h"
 
+typedef struct frequencyBand
+{
+	int minFreq;
+	int maxFreq;
+} frequencyBand_t;
+
 extern const int RADIO_VHF_MIN;
 extern const int RADIO_VHF_MAX;
 extern const int RADIO_UHF_MIN;
@@ -32,6 +38,9 @@ extern const int RADIO_UHF_MAX;
 enum RADIO_MODE { RADIO_MODE_NONE,RADIO_MODE_ANALOG,RADIO_MODE_DIGITAL};
 enum DMR_ADMIT_CRITERIA { ADMIT_CRITERIA_ALWAYS,ADMIT_CRITERIA_CHANNEL_FREE,ADMIT_CRITERIA_COLOR_CODE};
 enum DMR_MODE {DMR_MODE_AUTO,DMR_MODE_ACTIVE,DMR_MODE_PASSIVE,DMR_MODE_SFR};
+enum RADIO_FREQUENCY_BAND_NAMES { RADIO_BAND_VHF = 0,RADIO_BAND_220MHz = 1,RADIO_BAND_UHF=2,RADIO_BANDS_TOTAL_NUM=3};
+
+extern const frequencyBand_t RADIO_FREQUENCY_BANDS[RADIO_BANDS_TOTAL_NUM];
 
 extern int trxDMRMode;
 
@@ -64,7 +73,7 @@ void trxSetDMRColourCode(int colourCode);
 int trxGetDMRColourCode(void);
 int trxGetDMRTimeSlot(void);
 void trxSetDMRTimeSlot(int timeslot);
-bool trxCheckFrequencyIsVHF(int frequency);
+//bool trxCheckFrequencyIsVHF(int frequency);
 bool trxCheckFrequencyIsUHF(int frequency);
 bool trxCheckFrequency(int tmp_frequency);
 void trxSetTxCTCSS(int toneFreqX10);
