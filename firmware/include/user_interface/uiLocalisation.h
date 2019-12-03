@@ -81,8 +81,6 @@ typedef struct stringsTable
    const char mode[LANGUAGE_TEXTS_LENGTH];//"Mode"
    const char colour_code[LANGUAGE_TEXTS_LENGTH];//"Color Code"
    const char n_a[LANGUAGE_TEXTS_LENGTH];//"N/A"
-   const char channelDetailsRx[LANGUAGE_TEXTS_LENGTH];//"Rx",
-   const char channelDetailsTx[LANGUAGE_TEXTS_LENGTH];//"Tx",
    const char bandwidth[LANGUAGE_TEXTS_LENGTH];
    const char stepFreq[LANGUAGE_TEXTS_LENGTH];
    const char tot[LANGUAGE_TEXTS_LENGTH];

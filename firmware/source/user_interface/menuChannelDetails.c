@@ -172,13 +172,13 @@ static void updateScreen(void)
 			case CH_DETAILS_RXFREQ:
 				val_before_dp = tmpChannel.rxFreq / 100000;
 				val_after_dp = tmpChannel.rxFreq - val_before_dp * 100000;
-				snprintf(buf, bufferLen, "%s:%d.%05d%s", currentLanguage->channelDetailsRx, val_before_dp, val_after_dp, "MHz");
+				snprintf(buf, bufferLen, "Rx:%d.%05dMHz", val_before_dp, val_after_dp);
 				buf[bufferLen - 1] = 0;
 				break;
 			case CH_DETAILS_TXFREQ:
 				val_before_dp = tmpChannel.txFreq / 100000;
 				val_after_dp = tmpChannel.txFreq - val_before_dp * 100000;
-				snprintf(buf, bufferLen, "%s:%d.%05d%s", currentLanguage->channelDetailsTx, val_before_dp, val_after_dp, "MHz");
+				snprintf(buf, bufferLen, "Tx:%d.%05dMHz", val_before_dp, val_after_dp);
 				buf[bufferLen - 1] = 0;
 				break;
 			case CH_DETAILS_BANDWIDTH:
