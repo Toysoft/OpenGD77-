@@ -206,8 +206,9 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 			menuUtilityReceivedPcId = 0x00;
 			if (trxIsTransmitting)
 			{
-				sprintf(buffer," %d ",txTimeSecs);
-				UC1701_printCentered(TX_TIMER_Y_OFFSET, buffer,UC1701_FONT_16x32);
+				snprintf(buffer, 17, " %d ", txTimeSecs);
+				buffer[16] = 0;
+				UC1701_printCentered(TX_TIMER_Y_OFFSET, buffer, UC1701_FONT_16x32);
 				verticalPositionOffset=16;
 			}
 			else
@@ -235,7 +236,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				}
 			}
 
-			codeplugUtilConvertBufToString(channelScreenChannelData.name,nameBuf,16);
+			codeplugUtilConvertBufToString(channelScreenChannelData.name, nameBuf, 16);
 			UC1701_printCentered(32 + verticalPositionOffset, (char *)nameBuf,UC1701_FONT_8x16);
 
 			if (trxGetMode() == RADIO_MODE_DIGITAL)

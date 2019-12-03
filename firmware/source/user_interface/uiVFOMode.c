@@ -150,7 +150,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 {
 	int val_before_dp;
 	int val_after_dp;
-	size_t bufferLen = 32;
+	size_t bufferLen = 33;
 	char buffer[bufferLen];
 
 	UC1701_clearBuf();
@@ -169,7 +169,8 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 				{
 					if((trxTalkGroupOrPcId >> 24) == TG_CALL_FLAG)
 					{
-						snprintf(buffer, 32, "TG %d", (trxTalkGroupOrPcId & 0x00FFFFFF));
+						snprintf(buffer, bufferLen, "TG %d", (trxTalkGroupOrPcId & 0x00FFFFFF));
+						buffer[bufferLen - 1] = 0;
 					}
 					else
 					{
@@ -186,11 +187,11 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 
 				if (trxIsTransmitting)
 				{
-					UC1701_printCentered(34,buffer, UC1701_FONT_8x16);
+					UC1701_printCentered(34, buffer, UC1701_FONT_8x16);
 				}
 				else
 				{
-					UC1701_printCentered(CONTACT_Y_POS,buffer, UC1701_FONT_8x16);
+					UC1701_printCentered(CONTACT_Y_POS, buffer, UC1701_FONT_8x16);
 				}
 			}
 			else if(displaySquelch)
@@ -222,7 +223,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 				val_before_dp = currentChannelData->txFreq/100000;
 				val_after_dp = currentChannelData->txFreq - val_before_dp*100000;
 				snprintf(buffer, bufferLen, "%c%c %d.%05d %s", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX || trxIsTransmitting) ? '>' : ' ', 'T', val_before_dp, val_after_dp, "MHz");
-				UC1701_printCentered(48, buffer,UC1701_FONT_8x16);
+				UC1701_printCentered(48, buffer, UC1701_FONT_8x16);
 			}
 			else
 			{

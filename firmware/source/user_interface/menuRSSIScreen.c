@@ -70,11 +70,11 @@ static void updateScreen(void)
 		UC1701_clearBuf();
 		menuDisplayTitle(currentLanguage->rssi);
 
-		sprintf(buffer,"%d", trxRxSignal);
+		sprintf(buffer, "%d", trxRxSignal);
 		UC1701_printCore(0, 3, buffer, UC1701_FONT_8x8, UC1701_TEXT_ALIGN_RIGHT, false);
 
-		sprintf(buffer,"%ddBm", dBm);
-		UC1701_printCentered(20, buffer,UC1701_FONT_8x16);
+		sprintf(buffer, "%d%s", dBm, "dBm");
+		UC1701_printCentered(20, buffer, UC1701_FONT_8x16);
 
 		barGraphLength = ((dBm + 130) * 24)/10;
 		if (barGraphLength<0)

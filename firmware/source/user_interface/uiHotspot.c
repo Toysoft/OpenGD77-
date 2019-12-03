@@ -780,7 +780,8 @@ static void updateScreen(int rxCommandState)
 {
 	int val_before_dp;
 	int val_after_dp;
-	char buffer[32];
+	size_t bufferLen = 33;
+	char buffer[bufferLen];
 	dmrIdDataStruct_t currentRec;
 
 	UC1701_clearBuf();
@@ -795,7 +796,8 @@ static void updateScreen(int rxCommandState)
 		batteryPerentage=0;
 	}
 
-	sprintf(buffer,"%d%%",batteryPerentage);
+	snprintf(buffer, bufferLen, "%d%%", batteryPerentage);
+	buffer[bufferLen - 1] = 0;
 
 	UC1701_printCore(0,4,buffer,UC1701_FONT_6x8,UC1701_TEXT_ALIGN_RIGHT,false);// Display battery percentage at the right
 
@@ -803,20 +805,22 @@ static void updateScreen(int rxCommandState)
 	if (trxIsTransmitting)
 	{
 		dmrIDLookup( (trxDMRID & 0xFFFFFF),&currentRec);
-		sprintf(buffer,"%s", currentRec.text);
-		UC1701_printCentered(16, buffer,UC1701_FONT_8x16);
+		snprintf(buffer, bufferLen, "%s", currentRec.text);
+		buffer[bufferLen - 1] = 0;
+		UC1701_printCentered(16, buffer, UC1701_FONT_8x16);
 
 	//	sprintf(buffer,"ID %d",trxDMRID & 0xFFFFFF);
 	//	UC1701_printCentered(16, buffer,UC1701_FONT_8x16);
 		if ((trxTalkGroupOrPcId & 0xFF000000) == 0)
 		{
-			sprintf(buffer,"TG %d",trxTalkGroupOrPcId & 0xFFFFFF);
+			snprintf(buffer, bufferLen, "TG %d", trxTalkGroupOrPcId & 0xFFFFFF);
 		}
 		else
 		{
-			sprintf(buffer,"PC %d",trxTalkGroupOrPcId &0xFFFFFF);
+			snprintf(buffer, bufferLen, "PC %d", trxTalkGroupOrPcId &0xFFFFFF);
 		}
-		UC1701_printCentered(32, buffer,UC1701_FONT_8x16);
+		buffer[bufferLen - 1] = 0;
+		UC1701_printCentered(32, buffer, UC1701_FONT_8x16);
 
 		val_before_dp = freq_tx/100000;
 		val_after_dp = freq_tx - val_before_dp*100000;
@@ -831,29 +835,33 @@ static void updateScreen(int rxCommandState)
 			uint32_t FLCO 	= audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][0];// Private or group call
 
 			dmrIDLookup(srcId,&currentRec);
-			sprintf(buffer,"%s", currentRec.text);
-			UC1701_printCentered(16, buffer,UC1701_FONT_8x16);
+			snprintf(buffer, bufferLen, "%s", currentRec.text);
+			buffer[bufferLen - 1] = 0;
+			UC1701_printCentered(16, buffer, UC1701_FONT_8x16);
 
 			if (FLCO == 0)
 			{
-				sprintf(buffer,"TG %d",dstId);
+				snprintf(buffer, bufferLen, "TG %d", dstId);
 			}
 			else
 			{
-				sprintf(buffer,"PC %d",dstId);
+				snprintf(buffer, bufferLen, "PC %d", dstId);
 			}
+			buffer[bufferLen - 1] = 0;
 			UC1701_printCentered(32, buffer,UC1701_FONT_8x16);
 		}
 		else
 		{
-			sprintf(buffer,"CC:%d" ,  trxGetDMRColourCode());//, trxGetDMRTimeSlot()+1) ;
+			snprintf(buffer, bufferLen, "CC:%d", trxGetDMRColourCode());//, trxGetDMRTimeSlot()+1) ;
+			buffer[bufferLen - 1] = 0;
 			UC1701_printCore(0, 32, buffer, UC1701_FONT_8x16, UC1701_TEXT_ALIGN_LEFT, false);
 
 			UC1701_printCore(0, 32, (char *)POWER_LEVELS[hotspotPowerLevel], UC1701_FONT_8x16, UC1701_TEXT_ALIGN_RIGHT, false);
 		}
 		val_before_dp = freq_rx/100000;
 		val_after_dp = freq_rx - val_before_dp*100000;
-		sprintf(buffer,"R %d.%04d MHz",val_before_dp, val_after_dp);
+		snprintf(buffer, bufferLen, "R %d.%04d MHz", val_before_dp, val_after_dp);
+		buffer[bufferLen - 1] = 0;
 	}
 	UC1701_printCentered(48, buffer,UC1701_FONT_8x16);
 

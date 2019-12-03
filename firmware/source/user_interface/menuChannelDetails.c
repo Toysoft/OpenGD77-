@@ -108,7 +108,7 @@ static void updateScreen(void)
 			case CH_DETAILS_DMR_CC:
 				if (tmpChannel.chMode == RADIO_MODE_ANALOG)
 				{
-					sprintf(buf, bufferLen, "%s:%s", currentLanguage->colour_code, currentLanguage->n_a);
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->colour_code, currentLanguage->n_a);
 					buf[bufferLen - 1] = 0;
 				}
 				else

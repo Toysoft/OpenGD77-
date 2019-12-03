@@ -458,7 +458,8 @@ static void displayContactTextInfos(char *text, size_t maxLen,bool isFromTalkerA
 
 void menuUtilityRenderQSOData(void)
 {
-	char buffer[32];// buffer passed to the DMR ID lookup function, needs to be large enough to hold worst case text length that is returned. Currently 16+1
+	size_t bufferLen = 33;
+	char buffer[bufferLen];// buffer passed to the DMR ID lookup function, needs to be large enough to hold worst case text length that is returned. Currently 16+1
 	dmrIdDataStruct_t currentRec;
 
 	menuUtilityReceivedPcId=0;//reset the received PcId
@@ -501,16 +502,17 @@ void menuUtilityRenderQSOData(void)
 	{
 		// Group call
 		uint32_t tg = (LinkHead->talkGroupOrPcId & 0xFFFFFF);
-		sprintf(buffer,"%s %d",currentLanguage->tg, tg);
+		snprintf(buffer, bufferLen, "%s %d",currentLanguage->tg, tg);
+		buffer[bufferLen - 1] = 0;
 		if (tg != trxTalkGroupOrPcId || (dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot()) ||
 										(dmrMonitorCapturedCC!=-1 && dmrMonitorCapturedCC != trxGetDMRColourCode()))
 		{
 			UC1701_fillRect(0,16,128,16,false);// fill background with black
-			UC1701_printCore(0, CONTACT_Y_POS, buffer,UC1701_FONT_8x16,UC1701_TEXT_ALIGN_CENTER,true);// draw the text in inverse video
+			UC1701_printCore(0, CONTACT_Y_POS, buffer, UC1701_FONT_8x16,UC1701_TEXT_ALIGN_CENTER, true);// draw the text in inverse video
 		}
 		else
 		{
-			UC1701_printCentered(CONTACT_Y_POS, buffer,UC1701_FONT_8x16);
+			UC1701_printCentered(CONTACT_Y_POS, buffer, UC1701_FONT_8x16);
 		}
 
 		// first check if we have this ID in the DMR ID data
@@ -528,7 +530,8 @@ void menuUtilityRenderQSOData(void)
 			else
 			{
 				// No talker alias. So we can only show the ID.
-				sprintf(buffer, "ID: %d", LinkHead->id);
+				snprintf(buffer, bufferLen, "ID: %d", LinkHead->id);
+				buffer[bufferLen - 1] = 0;
 				UC1701_printCentered(32, buffer, UC1701_FONT_8x16);
 				displayChannelNameOrRxFrequency(buffer, (sizeof(buffer) / sizeof(buffer[0])));
 			}
@@ -539,7 +542,8 @@ void menuUtilityRenderQSOData(void)
 void menuUtilityRenderHeader(void)
 {
 	const int Y_OFFSET = 2;
-	char buffer[24];
+	size_t bufferLen = 33;
+	char buffer[bufferLen];
 
 	if (!trxIsTransmitting)
 	{
@@ -574,29 +578,30 @@ void menuUtilityRenderHeader(void)
 			{
 				strcat(buffer,"R");
 			}
-			UC1701_printAt(0,Y_OFFSET, buffer,UC1701_FONT_6x8);
+			UC1701_printAt(0, Y_OFFSET, buffer, UC1701_FONT_6x8);
 			break;
 		case RADIO_MODE_DIGITAL:
 
 
 			if (settingsUsbMode == USB_MODE_HOTSPOT)
 			{
-				UC1701_printAt(0,Y_OFFSET, "DMR",UC1701_FONT_6x8);
+				UC1701_printAt(0, Y_OFFSET, "DMR", UC1701_FONT_6x8);
 			}
 			else
 			{
 //				(trxGetMode() == RADIO_MODE_DIGITAL && settingsPrivateCallMuteMode == true)?" MUTE":"");// The location that this was displayed is now used for the power level
 
-				UC1701_printAt(0,Y_OFFSET, "DMR",UC1701_FONT_6x8);
-				sprintf(buffer, "%s%d",currentLanguage->ts,trxGetDMRTimeSlot()+1);
+				UC1701_printAt(0, Y_OFFSET, "DMR", UC1701_FONT_6x8);
+				snprintf(buffer, bufferLen, "%s%d", currentLanguage->ts, trxGetDMRTimeSlot() + 1);
+				buffer[bufferLen - 1] = 0;
 				if (nonVolatileSettings.dmrFilterLevel < DMR_FILTER_CC_TS)
 				{
-					UC1701_fillRect(20, Y_OFFSET,20,8,false);
-					UC1701_printCore(22,Y_OFFSET, buffer,UC1701_FONT_6x8,UC1701_TEXT_ALIGN_LEFT,true);
+					UC1701_fillRect(20, Y_OFFSET, 20, 8, false);
+					UC1701_printCore(22, Y_OFFSET, buffer, UC1701_FONT_6x8,UC1701_TEXT_ALIGN_LEFT, true);
 				}
 				else
 				{
-					UC1701_printCore(22,Y_OFFSET, buffer,UC1701_FONT_6x8,UC1701_TEXT_ALIGN_LEFT,false);
+					UC1701_printCore(22, Y_OFFSET, buffer, UC1701_FONT_6x8,UC1701_TEXT_ALIGN_LEFT, false);
 				}
 			}
 			break;
@@ -623,14 +628,14 @@ void menuUtilityRenderHeader(void)
 	if (settingsUsbMode == USB_MODE_HOTSPOT || trxGetMode() == RADIO_MODE_ANALOG)
 	{
 		// In hotspot mode the CC is show as part of the rest of the display and in Analogue mode the CC is meaningless
-		sprintf(buffer,"%d%%",batteryPerentage);
+		snprintf(buffer, bufferLen, "%d%%", batteryPerentage);
 	}
 	else
 	{
-		sprintf(buffer,"C%d %d%%",trxGetDMRColourCode(),batteryPerentage);
+		snprintf(buffer, bufferLen, "C%d %d%%", trxGetDMRColourCode(), batteryPerentage);
 	}
-
-	UC1701_printCore(0,Y_OFFSET,buffer,UC1701_FONT_6x8,UC1701_TEXT_ALIGN_RIGHT,false);// Display battery percentage at the right
+	buffer[bufferLen - 1] = 0;
+	UC1701_printCore(0, Y_OFFSET, buffer, UC1701_FONT_6x8,UC1701_TEXT_ALIGN_RIGHT, false);// Display battery percentage at the right
 }
 
 void drawRSSIBarGraph(void)
