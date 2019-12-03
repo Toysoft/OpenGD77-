@@ -380,7 +380,7 @@ bool menuUtilityHandlePrivateCallActions(int buttons, int keys, int events)
 	return false;// The event has not been handled
 }
 
-static void displayChannelNameOrRxFrequency(char *buffer)
+static void displayChannelNameOrRxFrequency(char *buffer, size_t maxLen)
 {
 	if (menuSystemGetCurrentMenuNumber() == MENU_CHANNEL_MODE)
 	{
@@ -390,9 +390,10 @@ static void displayChannelNameOrRxFrequency(char *buffer)
 	{
 		int val_before_dp = currentChannelData->rxFreq/100000;
 		int val_after_dp = currentChannelData->rxFreq - val_before_dp*100000;
-		sprintf(buffer,currentLanguage->displayRxFreq,val_before_dp, val_after_dp);
+		snprintf(buffer, maxLen, "%d.%05d %s", val_before_dp, val_after_dp, "MHz");
+		buffer[maxLen - 1] = 0;
 	}
-	UC1701_printCentered(52,buffer,UC1701_FONT_6x8);
+	UC1701_printCentered(52, buffer, UC1701_FONT_6x8);
 }
 
 /*
@@ -425,7 +426,7 @@ static void displayContactTextInfos(char *text, size_t maxLen,bool isFromTalkerA
 			if (strlen(pbuf))
 				UC1701_printAt(0, 48, pbuf, UC1701_FONT_8x16);
 			else
-				displayChannelNameOrRxFrequency(buffer);
+				displayChannelNameOrRxFrequency(buffer, (sizeof(buffer) / sizeof(buffer[0])));
 		}
 		else
 		{
@@ -443,7 +444,7 @@ static void displayContactTextInfos(char *text, size_t maxLen,bool isFromTalkerA
 			if (strlen(pbuf))
 				UC1701_printAt(0, 48, pbuf, UC1701_FONT_8x16);
 			else
-				displayChannelNameOrRxFrequency(buffer);
+				displayChannelNameOrRxFrequency(buffer, (sizeof(buffer) / sizeof(buffer[0])));
 		}
 	}
 	else
@@ -451,7 +452,7 @@ static void displayContactTextInfos(char *text, size_t maxLen,bool isFromTalkerA
 		memcpy(buffer, text, strlen(text));
 		buffer[strlen(text)] = 0;
 		UC1701_printCentered(32, chomp(buffer), UC1701_FONT_8x16);
-		displayChannelNameOrRxFrequency(buffer);
+		displayChannelNameOrRxFrequency(buffer, (sizeof(buffer) / sizeof(buffer[0])));
 	}
 }
 
@@ -529,7 +530,7 @@ void menuUtilityRenderQSOData(void)
 				// No talker alias. So we can only show the ID.
 				sprintf(buffer, "ID: %d", LinkHead->id);
 				UC1701_printCentered(32, buffer, UC1701_FONT_8x16);
-				displayChannelNameOrRxFrequency(buffer);
+				displayChannelNameOrRxFrequency(buffer, (sizeof(buffer) / sizeof(buffer[0])));
 			}
 		}
 	}

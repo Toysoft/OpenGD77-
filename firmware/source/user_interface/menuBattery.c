@@ -47,7 +47,7 @@ int menuBattery(int buttons, int keys, int events, bool isFirstRun)
 static void updateScreen(void)
 {
 	const int MAX_BATTERY_BAR_HEIGHT = 36;
-	char buffer[8];
+	char buffer[16];
 
 	UC1701_clearBuf();
 	menuDisplayTitle(currentLanguage->battery);
@@ -55,7 +55,7 @@ static void updateScreen(void)
 	int val1 = averageBatteryVoltage/10;
 	int val2 = averageBatteryVoltage - (val1 * 10);
 
-	sprintf(buffer,currentLanguage->batteryVoltage, val1, val2);
+	snprintf(buffer, 16, "%d.%d%c", val1, val2, 'V');
 	UC1701_printAt(20, 22, buffer, UC1701_FONT_16x32);
 	uint32_t h = (uint32_t)(((averageBatteryVoltage - CUTOFF_VOLTAGE_UPPER_HYST) * MAX_BATTERY_BAR_HEIGHT) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));
 

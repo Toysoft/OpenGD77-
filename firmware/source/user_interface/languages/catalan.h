@@ -45,7 +45,6 @@ const stringsTable_t catalanLanguage=
 .contact_list			= "Contactes",
 .hotspot_mode			= "Mode Hotspot",
 .contact_details		= "Detall contacte",
-.batteryVoltage			= "%d.%dV",
 .built					= "Compilat",
 .zones					= "Zones",
 .keypad					= "Teclat",
@@ -63,24 +62,20 @@ const stringsTable_t catalanLanguage=
 .pc_entry				= "Entreu PC",
 .user_dmr_id			= "ID DMR d'Usuari",
 .contact				= "Contacte",
-.displayRxFreq			= "%d.%05d MHz",
 .accept_call			= "Acceptar PC?",
 .private_call			= "Trucada privada",
 .squelch				= "Squelch",
-.vfoRxFreq				= "%cR %d.%05d MHz",
-.vfoTxFreq				= "%cT %d.%05d MHz",
-.vfoEnterFreq			= "%c%c%c.%c%c%c%c%c MHz",
 .quick_menu				= "Menú Ràpid",
-.filter					= "Filtre:%s",
+.filter					= "Filtre",
 .all_channels			= "Tots els canals",
-.gotoChannel			= "Anar canal %d",
+.gotoChannel			= "Anar canal",
 .scan					= "Scan",
 .channelToVfo			= "Canal --> VFO",
 .vfoToChannel			= "VFO --> Canal",
 .group					= "Grup",
 .private				= "Privada",
 .all					= "Tots",
-.type					= "Tipus:",
+.type					= "Tipus",
 .timeSlot				= "Timeslot",
 .none					= "Cap",
 .contact_saved			= "Contacte Desat",
@@ -91,10 +86,10 @@ const stringsTable_t catalanLanguage=
 .mode					= "Mode",
 .colour_code			= "Codi Color",
 .n_a					= "N/A",
-.channelDetailsRx		= "Rx:%d.%05dMHz",
-.channelDetailsTx		= "Tx:%d.%05dMHz",
+.channelDetailsRx		= "Rx",
+.channelDetailsTx		= "Tx",
 .bandwidth				= "Ample banda",
-.stepFreq				= "Pases:%d.%02dkHz",
+.stepFreq				= "Pases",
 .tot					= "TOT",
 .off					= "Off",
 .zone_skip				= "Zone Skip",
@@ -109,8 +104,8 @@ const stringsTable_t catalanLanguage=
 .band_limits			= "Limit bandes",
 .beep_volume			= "Volum so",
 .dmr_mic_gain			= "Guany DMR",
-.key_long				= "Key long:%1d.%1ds",
-.key_repeat				= "Key rpt:%1d.%1ds",
+.key_long				= "Key long",
+.key_repeat				= "Key rpt",
 .dmr_filter_timeout		= "Filtre temps",
 .brightness				= "Brillantor",
 .contrast				= "Contrast",
@@ -121,6 +116,9 @@ const stringsTable_t catalanLanguage=
 .YES					= "Si",
 .NO						= "NO",
 .DISMISS				= "PASSAR",
+.scan_mode				= "Scan mode", // MaxLen: 16 (with ':' + .hold or .pause)
+.hold					= "Hold", // MaxLen: 16 (with ':' + .scan_mode)
+.pause					= "Pause", // MaxLen: 16 (with ':' + .scan_mode)
 };
 /********************************************************************
  *
@@ -130,4 +128,4 @@ const stringsTable_t catalanLanguage=
  * or emacs on Linux with windows-1252-unix encoding
  *
  ********************************************************************/
-#endif /* USER_INTERFACE_LANGUAGES_ENGLISH_H_ */
+#endif /* USER_INTERFACE_LANGUAGES_CATALAN_H_ */

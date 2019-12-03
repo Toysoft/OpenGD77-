@@ -40,7 +40,6 @@ typedef struct stringsTable
    const char contact_list[LANGUAGE_TEXTS_LENGTH];// 14
    const char contact_details[LANGUAGE_TEXTS_LENGTH];//15
    const char hotspot_mode[LANGUAGE_TEXTS_LENGTH];//
-   const char batteryVoltage[LANGUAGE_TEXTS_LENGTH];//
    const char built[LANGUAGE_TEXTS_LENGTH];//
    const char zones[LANGUAGE_TEXTS_LENGTH];//
    const char keypad[LANGUAGE_TEXTS_LENGTH];//
@@ -58,13 +57,9 @@ typedef struct stringsTable
    const char pc_entry[LANGUAGE_TEXTS_LENGTH];//
    const char user_dmr_id[LANGUAGE_TEXTS_LENGTH];//
    const char contact[LANGUAGE_TEXTS_LENGTH];//
-   const char displayRxFreq[LANGUAGE_TEXTS_LENGTH];//  "%d.%05d MHz";
    const char accept_call[LANGUAGE_TEXTS_LENGTH];//  "Accept call?"
    const char private_call[LANGUAGE_TEXTS_LENGTH];// "Private call"
    const char squelch[LANGUAGE_TEXTS_LENGTH];// "Squelch"
-   const char vfoRxFreq[LANGUAGE_TEXTS_LENGTH];//"%cR %d.%05d MHz"
-   const char vfoTxFreq[LANGUAGE_TEXTS_LENGTH];//"%cT %d.%05d MHz"
-   const char vfoEnterFreq[LANGUAGE_TEXTS_LENGTH];//"%c%c%c.%c%c%c%c%c MHz"
    const char quick_menu[LANGUAGE_TEXTS_LENGTH];//"Quick Menu"
    const char filter[LANGUAGE_TEXTS_LENGTH];//"Filter:%s"
    const char all_channels[LANGUAGE_TEXTS_LENGTH];//"All Channels"
@@ -86,8 +81,8 @@ typedef struct stringsTable
    const char mode[LANGUAGE_TEXTS_LENGTH];//"Mode"
    const char colour_code[LANGUAGE_TEXTS_LENGTH];//"Color Code"
    const char n_a[LANGUAGE_TEXTS_LENGTH];//"N/A"
-   const char channelDetailsRx[LANGUAGE_TEXTS_LENGTH];//"Rx:%d.%05dMHz",
-   const char channelDetailsTx[LANGUAGE_TEXTS_LENGTH];//"Tx:%d.%05dMHz",
+   const char channelDetailsRx[LANGUAGE_TEXTS_LENGTH];//"Rx",
+   const char channelDetailsTx[LANGUAGE_TEXTS_LENGTH];//"Tx",
    const char bandwidth[LANGUAGE_TEXTS_LENGTH];
    const char stepFreq[LANGUAGE_TEXTS_LENGTH];
    const char tot[LANGUAGE_TEXTS_LENGTH];
