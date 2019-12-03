@@ -483,7 +483,7 @@ void menuUtilityRenderQSOData(void)
 		UC1701_printCentered(16, buffer,UC1701_FONT_8x16);
 
 		// Are we already in PC mode to this caller ?
-		if (trxTalkGroupOrPcId != (LinkHead->id | (PC_CALL_FLAG<<24)))
+		if ((trxTalkGroupOrPcId != (LinkHead->id | (PC_CALL_FLAG<<24))) & ((LinkHead->talkGroupOrPcId & 0xFFFFFF)==trxDMRID) )
 		{
 			// No either we are not in PC mode or not on a Private Call to this station
 			UC1701_printCentered(32, currentLanguage->accept_call,UC1701_FONT_8x16);
