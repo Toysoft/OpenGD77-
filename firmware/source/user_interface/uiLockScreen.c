@@ -93,7 +93,7 @@ static void handleEvent(int buttons, int keys, int events)
 		lockDisplay = false;
 	}
 
-	if (KEYCHECK_UP(keys, KEY_STAR) && (buttons & BUTTON_SK2))
+	if (KEYCHECK_DOWN(keys, KEY_STAR) && (buttons & BUTTON_SK2))
 	{
 		keypadLocked = false;
 		PTTLocked = false;

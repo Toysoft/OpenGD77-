@@ -28,5 +28,20 @@
 #include <user_interface/languages/italian.h>
 #include <user_interface/languages/danish.h>
 
-const stringsTable_t languages[NUM_LANGUAGES]= { englishLanguage,catalanLanguage,danskLanguage,frenchLanguage,germanLanguage,italianLanguage,portuguesLanguage,spanishLanguage};
+/*
+ * Note.
+ *
+ * Do not re-order the list of languages, unless you also change the MagicNumber in the settings
+ * Because otherwise the radio will load a different language than the one the user previously saved when the radio was turned off
+ * Add new languages at the end of the list
+ *
+ */
+const stringsTable_t languages[NUM_LANGUAGES]= { 	englishLanguage,
+													catalanLanguage,
+													danskLanguage,
+													frenchLanguage,
+													germanLanguage,
+													italianLanguage,
+													portuguesLanguage,
+													spanishLanguage};
 const stringsTable_t *currentLanguage;
