@@ -1,5 +1,5 @@
 /* -*- coding: windows-1252-unix; -*- */
-/* 
+/*
  * Copyright (C)2019 Roger Clark. VK3KYY / G4KYF
  *
  * This program is free software; you can redistribute it and/or modify
@@ -26,7 +26,7 @@
  * or emacs on Linux with windows-1252-unix encoding
  *
  ********************************************************************/
-const stringsTable_t DanskLanguage =
+const stringsTable_t danskLanguage =
 {
 .LANGUAGE_NAME 			= "Dansk",
 .language				= "Sprog",
@@ -37,7 +37,7 @@ const stringsTable_t DanskLanguage =
 .battery				= "Batteri",
 .contacts				= "Kontakter",
 .firmware_info			= "Firmware info",
-.last_heard				= "Sidst Hørt",
+.last_heard				= "Sidst Hord",
 .options				= "Valg",
 .display_options		= "Display Valg",
 .channel_details		= "Kanal detaljer",
@@ -50,11 +50,11 @@ const stringsTable_t DanskLanguage =
 .zones					= "Zoner",
 .keypad					= "Keypad",
 .ptt					= "PTT",
-.locked					= "Låst",
-.press_blue_plus_star	= "Tast Blå +*",
-.to_unlock				= "Lås op",
-.unlocked				= "Oplåst",
-.power_off				= "Lukker Ned...",
+.locked					= "Laast",
+.press_blue_plus_star	= "Tryk Blaa + *",
+.to_unlock				= "for at oplase",
+.unlocked				= "Oplast",
+.power_off				= "Slukker nu...",
 .error					= "FEJL",
 .rx_only				= "Kun Rx",
 .out_of_band			= "Ude af FRQ",
@@ -93,7 +93,7 @@ const stringsTable_t DanskLanguage =
 .n_a					= "N/A",
 .channelDetailsRx		= "Rx:%d.%05dMHz",
 .channelDetailsTx		= "Tx:%d.%05dMHz",
-.bandwidth				= "Bandbrede",
+.bandwidth				= "Bandwidth",
 .stepFreq				= "Step:%d.%02dkHz",
 .tot					= "TOT",
 .off					= "Fra",
@@ -104,14 +104,14 @@ const stringsTable_t DanskLanguage =
 .rx_group				= "Rx Grp",
 .on						= "On",
 .timeout_beep			= "Timeout bip",
-.factory_reset			= "Fabriksinst",
-.calibration			= "Justering",
-.band_limits			= "Udvid Frekvens",
+.factory_reset			= "Fabriksinstil",
+.calibration			= "Kalibrering",
+.band_limits			= "Frekvens omrade",
 .beep_volume			= "Bip vol",
 .dmr_mic_gain			= "DMR mic",
-.key_long				= "Lang Tast:%1d.%1ds",
-.key_repeat				= "Tast rpt:%1d.%1ds",
-.dmr_filter_timeout		= "Filter tid",
+.key_long				= "Key long:%1d.%1ds",
+.key_repeat				= "Key rpt:%1d.%1ds",
+.dmr_filter_timeout		= "Filter time",
 .brightness				= "Lys styrke",
 .contrast				= "Contrast",
 .colour_invert			= "Farve:Sort",
