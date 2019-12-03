@@ -150,8 +150,9 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 {
 	int val_before_dp;
 	int val_after_dp;
+	size_t bufferLen = 33;
+	char buffer[bufferLen];
 
-	char buffer[32];
 	UC1701_clearBuf();
 
 	menuUtilityRenderHeader();
@@ -166,38 +167,40 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 			{
 				if (nonVolatileSettings.overrideTG != 0)
 				{
-					if((trxTalkGroupOrPcId>>24) == TG_CALL_FLAG)
+					if((trxTalkGroupOrPcId >> 24) == TG_CALL_FLAG)
 					{
-						sprintf(buffer,"TG %d",(trxTalkGroupOrPcId & 0x00FFFFFF));
+						snprintf(buffer, bufferLen, "TG %d", (trxTalkGroupOrPcId & 0x00FFFFFF));
+						buffer[bufferLen - 1] = 0;
 					}
 					else
 					{
 						dmrIdDataStruct_t currentRec;
 						dmrIDLookup((trxTalkGroupOrPcId & 0x00FFFFFF),&currentRec);
-						snprintf(buffer, 20, "%s",currentRec.text);
+						snprintf(buffer, 20, "%s", currentRec.text);
 						buffer[20] = 0;
 					}
 				}
 				else
 				{
-					codeplugUtilConvertBufToString(contactData.name,buffer,16);
+					codeplugUtilConvertBufToString(contactData.name, buffer, 16);
 				}
 
 				if (trxIsTransmitting)
 				{
-					UC1701_printCentered(34,buffer,UC1701_FONT_8x16);
+					UC1701_printCentered(34, buffer, UC1701_FONT_8x16);
 				}
 				else
 				{
-					UC1701_printCentered(CONTACT_Y_POS,buffer,UC1701_FONT_8x16);
+					UC1701_printCentered(CONTACT_Y_POS, buffer, UC1701_FONT_8x16);
 				}
 			}
 			else if(displaySquelch)
 			{
-				sprintf(buffer,currentLanguage->squelch);
-				UC1701_printAt(0,16,buffer,UC1701_FONT_8x16);
-				int bargraph= 1 + ((currentChannelData->sql-1)*5)/2 ;
-				UC1701_fillRect(62,21,bargraph,8,false);
+				snprintf(buffer, 8, currentLanguage->squelch);
+				buffer[7] = 0; // Avoid overlap with bargraph
+				UC1701_printAt(0,16,buffer, UC1701_FONT_8x16);
+				int bargraph= 1 + ((currentChannelData->sql - 1) * 5) /2;
+				UC1701_fillRect(62, 21, bargraph, 8, false);
 				displaySquelch=false;
 			}
 
@@ -207,30 +210,33 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 				{
 					val_before_dp = currentChannelData->rxFreq/100000;
 					val_after_dp = currentChannelData->rxFreq - val_before_dp*100000;
-					sprintf(buffer,currentLanguage->vfoRxFreq, (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_RX)?'>':' ',val_before_dp, val_after_dp);
-					UC1701_printCentered(32, buffer,UC1701_FONT_8x16);
+					snprintf(buffer, bufferLen, "%c%c %d.%05d %s", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_RX) ? '>' : ' ', 'R', val_before_dp, val_after_dp, "MHz");
+					buffer[bufferLen - 1 ] = 0;
+					UC1701_printCentered(32, buffer, UC1701_FONT_8x16);
 				}
 				else
 				{
-					sprintf(buffer," %d ",txTimeSecs);
-					UC1701_printCentered(TX_TIMER_Y_OFFSET, buffer,UC1701_FONT_16x32);
+					snprintf(buffer, bufferLen, " %d ", txTimeSecs);
+					UC1701_printCentered(TX_TIMER_Y_OFFSET, buffer, UC1701_FONT_16x32);
 				}
 
 				val_before_dp = currentChannelData->txFreq/100000;
 				val_after_dp = currentChannelData->txFreq - val_before_dp*100000;
-				sprintf(buffer,currentLanguage->vfoTxFreq, (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX || trxIsTransmitting)?'>':' ',val_before_dp, val_after_dp);
-				UC1701_printCentered(48, buffer,UC1701_FONT_8x16);
+				snprintf(buffer, bufferLen, "%c%c %d.%05d %s", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX || trxIsTransmitting) ? '>' : ' ', 'T', val_before_dp, val_after_dp, "MHz");
+				UC1701_printCentered(48, buffer, UC1701_FONT_8x16);
 			}
 			else
 			{
-				sprintf(buffer,currentLanguage->vfoEnterFreq, freq_enter_digits[0], freq_enter_digits[1], freq_enter_digits[2], freq_enter_digits[3], freq_enter_digits[4], freq_enter_digits[5], freq_enter_digits[6], freq_enter_digits[7] );
+				snprintf(buffer, bufferLen, "%c%c%c.%c%c%c%c%c %s", freq_enter_digits[0], freq_enter_digits[1], freq_enter_digits[2],
+						freq_enter_digits[3], freq_enter_digits[4], freq_enter_digits[5], freq_enter_digits[6], freq_enter_digits[7], "MHz");
+				buffer[bufferLen - 1] = 0;
 				if (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX)
 				{
-					UC1701_printCentered(48, buffer,UC1701_FONT_8x16);
+					UC1701_printCentered(48, buffer, UC1701_FONT_8x16);
 				}
 				else
 				{
-					UC1701_printCentered(32, buffer,UC1701_FONT_8x16);
+					UC1701_printCentered(32, buffer, UC1701_FONT_8x16);
 				}
 			}
 
@@ -726,7 +732,8 @@ enum VFO_SCREEN_QUICK_MENU_ITEMS { 	VFO_SCREEN_QUICK_MENU_TX_SWAP_RX = 0, VFO_SC
 static void updateQuickMenuScreen(void)
 {
 	int mNum = 0;
-	char buf[17];
+	size_t bufferLen = 33;
+	char buf[bufferLen];
 
 	UC1701_clearBuf();
 	menuDisplayTitle(currentLanguage->quick_menu);
@@ -738,24 +745,26 @@ static void updateQuickMenuScreen(void)
 		switch(mNum)
 		{
 			case VFO_SCREEN_QUICK_MENU_BOTH_TO_RX:
-				strcpy(buf, "Rx --> Tx");
+				strncpy(buf, "Rx --> Tx", 17);
 				break;
 			case VFO_SCREEN_QUICK_MENU_TX_SWAP_RX:
-				strcpy(buf, "Tx <--> Rx");
+				strncpy(buf, "Tx <--> Rx", 17);
 				break;
 			case VFO_SCREEN_QUICK_MENU_BOTH_TO_TX:
-				strcpy(buf, "Tx --> Rx");
+				strncpy(buf, "Tx --> Rx", 17);
 				break;
 			case VFO_SCREEN_QUICK_MENU_DMR_FILTER:
-				sprintf(buf, currentLanguage->filter,DMR_FILTER_LEVELS[tmpQuickMenuDmrFilterLevel]);
+				snprintf(buf, 17, "%s:%s", currentLanguage->filter, DMR_FILTER_LEVELS[tmpQuickMenuDmrFilterLevel]);
 				break;
 			case VFO_SCREEN_QUICK_MENU_VFO_A_B:
-				sprintf(buf, "VFO:%s",((nonVolatileSettings.currentVFONumber==0)?"A":"B"));
+				snprintf(buf, 17, "VFO:%s", ((nonVolatileSettings.currentVFONumber==0)?"A":"B"));
 				break;
 
 			default:
 				strcpy(buf, "");
 		}
+
+		buf[16] = 0;
 
 		menuDisplayEntry(i, mNum, buf);
 	}

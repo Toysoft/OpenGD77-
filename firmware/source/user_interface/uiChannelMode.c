@@ -206,8 +206,9 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 			menuUtilityReceivedPcId = 0x00;
 			if (trxIsTransmitting)
 			{
-				sprintf(buffer," %d ",txTimeSecs);
-				UC1701_printCentered(TX_TIMER_Y_OFFSET, buffer,UC1701_FONT_16x32);
+				snprintf(buffer, 17, " %d ", txTimeSecs);
+				buffer[16] = 0;
+				UC1701_printCentered(TX_TIMER_Y_OFFSET, buffer, UC1701_FONT_16x32);
 				verticalPositionOffset=16;
 			}
 			else
@@ -217,23 +218,25 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 					channelNumber=nonVolatileSettings.currentChannelIndexInAllZone;
 					if (directChannelNumber>0)
 					{
-						sprintf(nameBuf,currentLanguage->gotoChannel,directChannelNumber);
+						snprintf(nameBuf, 17, "%s %d", currentLanguage->gotoChannel, directChannelNumber);
+						nameBuf[16] = 0;
 					}
 					else
 					{
-						sprintf(nameBuf,"CH %d",channelNumber);
+						snprintf(nameBuf, 17, "CH %d", channelNumber);
+						nameBuf[16] = 0;
 					}
-					UC1701_printCentered(50 , (char *)nameBuf,UC1701_FONT_6x8);
+					UC1701_printCentered(50 , (char *)nameBuf, UC1701_FONT_6x8);
 				}
 				else
 				{
-					snprintf(nameBuf, 16, "%s",currentZoneName);
+					snprintf(nameBuf, 17, "%s", currentZoneName);
 					nameBuf[16] = 0;
 					UC1701_printCentered(50, (char *)nameBuf,UC1701_FONT_6x8);
 				}
 			}
 
-			codeplugUtilConvertBufToString(channelScreenChannelData.name,nameBuf,16);
+			codeplugUtilConvertBufToString(channelScreenChannelData.name, nameBuf, 16);
 			UC1701_printCentered(32 + verticalPositionOffset, (char *)nameBuf,UC1701_FONT_8x16);
 
 			if (trxGetMode() == RADIO_MODE_DIGITAL)
@@ -242,28 +245,30 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				{
 					if((trxTalkGroupOrPcId>>24) == TG_CALL_FLAG)
 					{
-						sprintf(nameBuf,"TG %d",(trxTalkGroupOrPcId & 0x00FFFFFF));
+						snprintf(nameBuf, 17, "TG %d", (trxTalkGroupOrPcId & 0x00FFFFFF));
+						nameBuf[16] = 0;
 					}
 					else
 					{
 						dmrIdDataStruct_t currentRec;
-						dmrIDLookup((trxTalkGroupOrPcId & 0x00FFFFFF),&currentRec);
-						snprintf(nameBuf, 16, "%s",currentRec.text);
+						dmrIDLookup((trxTalkGroupOrPcId & 0x00FFFFFF), &currentRec);
+						snprintf(nameBuf, 17, "%s", currentRec.text);
 						nameBuf[16] = 0;
 					}
 				}
 				else
 				{
-					codeplugUtilConvertBufToString(contactData.name,nameBuf,16);
+					codeplugUtilConvertBufToString(contactData.name, nameBuf, 16);
 				}
 				UC1701_printCentered(CONTACT_Y_POS + verticalPositionOffset, (char *)nameBuf,UC1701_FONT_8x16);
 			}
 			else if(displaySquelch && !trxIsTransmitting)
 			{
-				sprintf(buffer,currentLanguage->squelch);
-				UC1701_printAt(0,16,buffer,UC1701_FONT_8x16);
+				snprintf(buffer, 8, "%s", currentLanguage->squelch);
+				buffer[7] = 0; // Avoid overlap with bargraph
+				UC1701_printAt(0, 16, buffer, UC1701_FONT_8x16);
 				int bargraph= 1 + ((currentChannelData->sql-1)*5)/2 ;
-				UC1701_fillRect(62,21,bargraph,8,false);
+				UC1701_fillRect(62, 21, bargraph, 8, false);
 				displaySquelch=false;
 			}
 
@@ -760,7 +765,8 @@ enum CHANNEL_SCREEN_QUICK_MENU_ITEMS { CH_SCREEN_QUICK_MENU_SCAN=0, CH_SCREEN_QU
 static void updateQuickMenuScreen(void)
 {
 	int mNum = 0;
-	char buf[33];
+	size_t bufferLen = 33;
+	char buf[bufferLen];
 
 	UC1701_clearBuf();
 	menuDisplayTitle(currentLanguage->quick_menu);
@@ -772,20 +778,22 @@ static void updateQuickMenuScreen(void)
 		switch(mNum)
 		{
 			case CH_SCREEN_QUICK_MENU_SCAN:
-				strcpy(buf,currentLanguage->scan);
+				strncpy(buf, currentLanguage->scan, 17);
 				break;
 			case CH_SCREEN_QUICK_MENU_COPY2VFO:
-				strcpy(buf, currentLanguage->channelToVfo);
+				strncpy(buf, currentLanguage->channelToVfo, 17);
 				break;
 			case CH_SCREEN_QUICK_MENU_COPY_FROM_VFO:
-				strcpy(buf, currentLanguage->vfoToChannel);
+				strncpy(buf, currentLanguage->vfoToChannel, 17);
 				break;
 			case CH_SCREEN_QUICK_MENU_DMR_FILTER:
-				sprintf(buf, currentLanguage->filter,DMR_FILTER_LEVELS[tmpQuickMenuDmrFilterLevel]);
+				snprintf(buf, 17, "%s:%s", currentLanguage->filter, DMR_FILTER_LEVELS[tmpQuickMenuDmrFilterLevel]);
 				break;
 			default:
 				strcpy(buf, "");
 		}
+
+		buf[16] = 0;
 
 		menuDisplayEntry(i, mNum, buf);
 	}

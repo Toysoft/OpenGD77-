@@ -51,9 +51,10 @@ static void updateScreen(void)
 		UC1701_drawRoundRectWithDropShadow(4, 4, 120, 58, 5, true);
 		if (keypadLocked || PTTLocked)
 		{
-			char buf[32];
+			size_t bufferLen = strlen(currentLanguage->keypad) + 3 + strlen(currentLanguage->ptt) + 1;
+			char buf[bufferLen];
 
-			memset(buf, 0, 32);
+			memset(buf, 0, bufferLen);
 
 			if (keypadLocked)
 				strcat(buf, currentLanguage->keypad);
@@ -65,6 +66,7 @@ static void updateScreen(void)
 
 				strcat(buf, currentLanguage->ptt);
 			}
+			buf[bufferLen -1] = 0;
 
 			UC1701_printCentered(6, buf, UC1701_FONT_8x16);
 			UC1701_printCentered(22, currentLanguage->locked, UC1701_FONT_8x16);

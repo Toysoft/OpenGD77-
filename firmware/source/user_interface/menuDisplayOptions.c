@@ -57,7 +57,8 @@ int menuDisplayOptions(int buttons, int keys, int events, bool isFirstRun)
 static void updateScreen(void)
 {
 	int mNum = 0;
-	char buf[33];
+	size_t bufferLen = 33;
+	char buf[bufferLen];
 
 	UC1701_clearBuf();
 	menuDisplayTitle(currentLanguage->display_options);
@@ -70,23 +71,27 @@ static void updateScreen(void)
 		switch(mNum)
 		{
 			case DISPLAY_MENU_BRIGHTNESS:
-				sprintf(buf, "%s:%d%%",currentLanguage->brightness, nonVolatileSettings.displayBacklightPercentage);
+				snprintf(buf, bufferLen, "%s:%d%%", currentLanguage->brightness, nonVolatileSettings.displayBacklightPercentage);
+				buf[bufferLen - 1] = 0;
 				break;
 			case DISPLAY_MENU_CONTRAST:
-				sprintf(buf, "%s:%d", currentLanguage->contrast, contrast);
+				snprintf(buf, bufferLen, "%s:%d", currentLanguage->contrast, contrast);
+				buf[bufferLen - 1] = 0;
 				break;
 			case DISPLAY_MENU_TIMEOUT:
-				sprintf(buf, "%s:%d", currentLanguage->backlight_timeout,backLightTimeout);
+				snprintf(buf, bufferLen, "%s:%d", currentLanguage->backlight_timeout, backLightTimeout);
+				buf[bufferLen - 1] = 0;
 				break;
 			case DISPLAY_MENU_COLOUR_INVERT:
 				if (inverseVideo)
 				{
-					strcpy(buf, currentLanguage->colour_invert);
+					strncpy(buf, currentLanguage->colour_invert, 17);
 				}
 				else
 				{
-					strcpy(buf, currentLanguage->colour_normal);
+					strncpy(buf, currentLanguage->colour_normal, 17);
 				}
+				buf[bufferLen - 1] = 0;
 				break;
 		}
 
