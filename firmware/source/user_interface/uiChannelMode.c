@@ -192,9 +192,10 @@ static void loadChannelData(bool useChannelDataInMemory)
 void menuChannelModeUpdateScreen(int txTimeSecs)
 {
 	int channelNumber;
+	static const int nameBufferLen = 23;
+	char nameBuf[nameBufferLen];
 	static const int bufferLen = 17;
 	char buffer[bufferLen];
-	char nameBuf[bufferLen];
 	int verticalPositionOffset = 0;
 
 	UC1701_clearBuf();
@@ -219,20 +220,29 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 					channelNumber=nonVolatileSettings.currentChannelIndexInAllZone;
 					if (directChannelNumber>0)
 					{
-						snprintf(nameBuf, bufferLen, "%s %d", currentLanguage->gotoChannel, directChannelNumber);
+						snprintf(nameBuf, nameBufferLen, "%s %d", currentLanguage->gotoChannel, directChannelNumber);
 					}
 					else
 					{
-						snprintf(nameBuf, bufferLen, "CH %d", channelNumber);
+						snprintf(nameBuf, nameBufferLen, "CH %d", channelNumber);
 					}
-					nameBuf[bufferLen - 1] = 0;
+					nameBuf[nameBufferLen - 1] = 0;
 					UC1701_printCentered(50 , nameBuf, UC1701_FONT_6x8);
 				}
 				else
 				{
-					strncpy(nameBuf, currentZoneName, bufferLen);
-					nameBuf[bufferLen - 1] = 0;
-					UC1701_printCentered(50, nameBuf, UC1701_FONT_6x8);
+					channelNumber=nonVolatileSettings.currentChannelIndexInZone+1;
+					if (directChannelNumber>0)
+					{
+						snprintf(nameBuf, nameBufferLen, "%s %d", currentLanguage->gotoChannel, directChannelNumber);
+						nameBuf[nameBufferLen - 1] = 0;
+					}
+					else
+					{
+						snprintf(nameBuf, nameBufferLen, "%s Ch:%d", currentZoneName,channelNumber);
+						nameBuf[nameBufferLen - 1] = 0;
+					}
+					UC1701_printCentered(50, (char *)nameBuf,UC1701_FONT_6x8);
 				}
 			}
 
@@ -378,14 +388,30 @@ static void handleEvent(int buttons, int keys, int events)
 
 		if (directChannelNumber>0)
 		{
-			if (codeplugChannelIndexIsValid(directChannelNumber))
+			if(strcmp(currentZoneName,currentLanguage->all_channels)==0)
 			{
-				nonVolatileSettings.currentChannelIndexInAllZone=directChannelNumber;
-				loadChannelData(false);
+				if (codeplugChannelIndexIsValid(directChannelNumber))
+				{
+					nonVolatileSettings.currentChannelIndexInAllZone=directChannelNumber;
+					loadChannelData(false);
+				}
+				else
+				{
+					set_melody(melody_ERROR_beep);
+				}
 			}
 			else
 			{
-				set_melody(melody_ERROR_beep);
+				if (directChannelNumber-1<currentZone.NOT_IN_MEMORY_numChannelsInZone)
+				{
+					nonVolatileSettings.currentChannelIndexInZone=directChannelNumber-1;
+					loadChannelData(false);
+				}
+				else
+				{
+					set_melody(melody_ERROR_beep);
+				}
+
 			}
 			directChannelNumber=0;
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
@@ -653,8 +679,7 @@ static void handleEvent(int buttons, int keys, int events)
 	{
 		handleUpKey(buttons);
 	}
-	else if (strcmp(currentZoneName,currentLanguage->all_channels)==0)
-	{
+
 		int keyval=99;
 		if (KEYCHECK_PRESS(keys,KEY_1))
 		{
@@ -700,11 +725,27 @@ static void handleEvent(int buttons, int keys, int events)
 		if (keyval<10)
 		{
 			directChannelNumber=(directChannelNumber*10) + keyval;
-			if(directChannelNumber>1024) directChannelNumber=0;
+			if (strcmp(currentZoneName,currentLanguage->all_channels)==0)
+			{
+				if(directChannelNumber>1024)
+				{
+					directChannelNumber=0;
+					set_melody(melody_ERROR_beep);
+				}
+			}
+			else
+			{
+				if(directChannelNumber>currentZone.NOT_IN_MEMORY_numChannelsInZone)
+					{
+						directChannelNumber=0;
+						set_melody(melody_ERROR_beep);
+					}
+
+			}
+
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 			menuChannelModeUpdateScreen(0);
 		}
-	}
 }
 
 
