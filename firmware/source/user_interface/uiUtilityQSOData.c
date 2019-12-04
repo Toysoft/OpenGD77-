@@ -390,7 +390,7 @@ static void displayChannelNameOrRxFrequency(char *buffer, size_t maxLen)
 	{
 		int val_before_dp = currentChannelData->rxFreq/100000;
 		int val_after_dp = currentChannelData->rxFreq - val_before_dp*100000;
-		snprintf(buffer, maxLen, "%d.%05d %s", val_before_dp, val_after_dp, "MHz");
+		snprintf(buffer, maxLen, "%d%c%05d %s", val_before_dp, '.', val_after_dp, "MHz");
 		buffer[maxLen - 1] = 0;
 	}
 	UC1701_printCentered(52, buffer, UC1701_FONT_6x8);
@@ -480,7 +480,7 @@ void menuUtilityRenderQSOData(void)
 	{
 		// Its a Private call
 		dmrIDLookup( (LinkHead->id & 0xFFFFFF),&currentRec);
-		snprintf(buffer, 20, "%s", currentRec.text);
+		strncat(buffer, currentRec.text, 20);
 		buffer[20] = 0;
 		UC1701_printCentered(16, buffer,UC1701_FONT_8x16);
 

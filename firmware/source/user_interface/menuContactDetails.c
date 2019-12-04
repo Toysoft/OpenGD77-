@@ -85,7 +85,7 @@ static void updateScreen(void)
 	UC1701_clearBuf();
 
 	if (tmpContact.name[0] == 0x00) {
-		snprintf(buf, bufferLen, "%s", currentLanguage->new_contact);
+		strncat(buf, currentLanguage->new_contact, bufferLen);
 		buf[16] = 0;
 	} else {
 		codeplugUtilConvertBufToString(tmpContact.name, buf, 16);

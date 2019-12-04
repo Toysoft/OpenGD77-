@@ -169,14 +169,14 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 				{
 					if((trxTalkGroupOrPcId >> 24) == TG_CALL_FLAG)
 					{
-						snprintf(buffer, bufferLen, "TG %d", (trxTalkGroupOrPcId & 0x00FFFFFF));
+						snprintf(buffer, bufferLen, "%s %d", "TG", (trxTalkGroupOrPcId & 0x00FFFFFF));
 						buffer[bufferLen - 1] = 0;
 					}
 					else
 					{
 						dmrIdDataStruct_t currentRec;
 						dmrIDLookup((trxTalkGroupOrPcId & 0x00FFFFFF),&currentRec);
-						snprintf(buffer, 20, "%s", currentRec.text);
+						strncat(buffer, currentRec.text, 20);
 						buffer[20] = 0;
 					}
 				}
@@ -196,7 +196,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 			}
 			else if(displaySquelch)
 			{
-				snprintf(buffer, 8, currentLanguage->squelch);
+				strncat(buffer, currentLanguage->squelch, 8);
 				buffer[7] = 0; // Avoid overlap with bargraph
 				UC1701_printAt(0,16,buffer, UC1701_FONT_8x16);
 				int bargraph= 1 + ((currentChannelData->sql - 1) * 5) /2;

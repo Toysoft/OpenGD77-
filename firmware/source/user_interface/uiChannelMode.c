@@ -230,7 +230,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				}
 				else
 				{
-					snprintf(nameBuf, 17, "%s", currentZoneName);
+					strncat(nameBuf, currentZoneName, 17);
 					nameBuf[16] = 0;
 					UC1701_printCentered(50, (char *)nameBuf,UC1701_FONT_6x8);
 				}
@@ -252,7 +252,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 					{
 						dmrIdDataStruct_t currentRec;
 						dmrIDLookup((trxTalkGroupOrPcId & 0x00FFFFFF), &currentRec);
-						snprintf(nameBuf, 17, "%s", currentRec.text);
+						strncat(nameBuf, currentRec.text, 17);
 						nameBuf[16] = 0;
 					}
 				}
@@ -264,7 +264,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 			}
 			else if(displaySquelch && !trxIsTransmitting)
 			{
-				snprintf(buffer, 8, "%s", currentLanguage->squelch);
+				strncat(buffer, currentLanguage->squelch, 8);
 				buffer[7] = 0; // Avoid overlap with bargraph
 				UC1701_printAt(0, 16, buffer, UC1701_FONT_8x16);
 				int bargraph= 1 + ((currentChannelData->sql-1)*5)/2 ;
