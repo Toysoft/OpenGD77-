@@ -191,12 +191,13 @@ static void loadChannelData(bool useChannelDataInMemory)
 
 void menuChannelModeUpdateScreen(int txTimeSecs)
 {
-	char nameBuf[17];
 	int channelNumber;
-	char buffer[33];
+	static const int bufferLen = 17;
+	char buffer[bufferLen];
+	char nameBuf[bufferLen];
 	int verticalPositionOffset = 0;
-	UC1701_clearBuf();
 
+	UC1701_clearBuf();
 	menuUtilityRenderHeader();
 
 	switch(menuDisplayQSODataState)
@@ -206,8 +207,8 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 			menuUtilityReceivedPcId = 0x00;
 			if (trxIsTransmitting)
 			{
-				snprintf(buffer, 17, " %d ", txTimeSecs);
-				buffer[16] = 0;
+				snprintf(buffer, bufferLen, " %d ", txTimeSecs);
+				buffer[bufferLen - 1] = 0;
 				UC1701_printCentered(TX_TIMER_Y_OFFSET, buffer, UC1701_FONT_16x32);
 				verticalPositionOffset=16;
 			}
@@ -218,26 +219,25 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 					channelNumber=nonVolatileSettings.currentChannelIndexInAllZone;
 					if (directChannelNumber>0)
 					{
-						snprintf(nameBuf, 17, "%s %d", currentLanguage->gotoChannel, directChannelNumber);
-						nameBuf[16] = 0;
+						snprintf(nameBuf, bufferLen, "%s %d", currentLanguage->gotoChannel, directChannelNumber);
 					}
 					else
 					{
-						snprintf(nameBuf, 17, "CH %d", channelNumber);
-						nameBuf[16] = 0;
+						snprintf(nameBuf, bufferLen, "CH %d", channelNumber);
 					}
-					UC1701_printCentered(50 , (char *)nameBuf, UC1701_FONT_6x8);
+					nameBuf[bufferLen - 1] = 0;
+					UC1701_printCentered(50 , nameBuf, UC1701_FONT_6x8);
 				}
 				else
 				{
-					snprintf(nameBuf, 17, "%s", currentZoneName);
-					nameBuf[16] = 0;
-					UC1701_printCentered(50, (char *)nameBuf,UC1701_FONT_6x8);
+					strncpy(nameBuf, currentZoneName, bufferLen);
+					nameBuf[bufferLen - 1] = 0;
+					UC1701_printCentered(50, nameBuf, UC1701_FONT_6x8);
 				}
 			}
 
 			codeplugUtilConvertBufToString(channelScreenChannelData.name, nameBuf, 16);
-			UC1701_printCentered(32 + verticalPositionOffset, (char *)nameBuf,UC1701_FONT_8x16);
+			UC1701_printCentered(32 + verticalPositionOffset, nameBuf, UC1701_FONT_8x16);
 
 			if (trxGetMode() == RADIO_MODE_DIGITAL)
 			{
@@ -245,26 +245,25 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				{
 					if((trxTalkGroupOrPcId>>24) == TG_CALL_FLAG)
 					{
-						snprintf(nameBuf, 17, "TG %d", (trxTalkGroupOrPcId & 0x00FFFFFF));
-						nameBuf[16] = 0;
+						snprintf(nameBuf, bufferLen, "TG %d", (trxTalkGroupOrPcId & 0x00FFFFFF));
 					}
 					else
 					{
 						dmrIdDataStruct_t currentRec;
 						dmrIDLookup((trxTalkGroupOrPcId & 0x00FFFFFF), &currentRec);
-						snprintf(nameBuf, 17, "%s", currentRec.text);
-						nameBuf[16] = 0;
+						strncpy(nameBuf, currentRec.text, bufferLen);
 					}
+					nameBuf[bufferLen - 1] = 0;
 				}
 				else
 				{
 					codeplugUtilConvertBufToString(contactData.name, nameBuf, 16);
 				}
-				UC1701_printCentered(CONTACT_Y_POS + verticalPositionOffset, (char *)nameBuf,UC1701_FONT_8x16);
+				UC1701_printCentered(CONTACT_Y_POS + verticalPositionOffset, nameBuf, UC1701_FONT_8x16);
 			}
 			else if(displaySquelch && !trxIsTransmitting)
 			{
-				snprintf(buffer, 8, "%s", currentLanguage->squelch);
+				strncpy(buffer, currentLanguage->squelch, 8);
 				buffer[7] = 0; // Avoid overlap with bargraph
 				UC1701_printAt(0, 16, buffer, UC1701_FONT_8x16);
 				int bargraph= 1 + ((currentChannelData->sql-1)*5)/2 ;
@@ -274,7 +273,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 
 			if (!((uiChannelModeScanActive) & (scanState==SCAN_SCANNING)))
 			{
-			displayLightTrigger();
+				displayLightTrigger();
 			}
 
 			UC1701_render();
@@ -765,7 +764,7 @@ enum CHANNEL_SCREEN_QUICK_MENU_ITEMS { CH_SCREEN_QUICK_MENU_SCAN=0, CH_SCREEN_QU
 static void updateQuickMenuScreen(void)
 {
 	int mNum = 0;
-	size_t bufferLen = 33;
+	static const int bufferLen = 17;
 	char buf[bufferLen];
 
 	UC1701_clearBuf();
@@ -774,27 +773,27 @@ static void updateQuickMenuScreen(void)
 	for(int i =- 1; i <= 1; i++)
 	{
 		mNum = menuGetMenuOffset(NUM_CH_SCREEN_QUICK_MENU_ITEMS, i);
+		buf[0] = 0;
 
 		switch(mNum)
 		{
 			case CH_SCREEN_QUICK_MENU_SCAN:
-				strncpy(buf, currentLanguage->scan, 17);
+				strncpy(buf, currentLanguage->scan, bufferLen);
 				break;
 			case CH_SCREEN_QUICK_MENU_COPY2VFO:
-				strncpy(buf, currentLanguage->channelToVfo, 17);
+				strncpy(buf, currentLanguage->channelToVfo, bufferLen);
 				break;
 			case CH_SCREEN_QUICK_MENU_COPY_FROM_VFO:
-				strncpy(buf, currentLanguage->vfoToChannel, 17);
+				strncpy(buf, currentLanguage->vfoToChannel, bufferLen);
 				break;
 			case CH_SCREEN_QUICK_MENU_DMR_FILTER:
-				snprintf(buf, 17, "%s:%s", currentLanguage->filter, DMR_FILTER_LEVELS[tmpQuickMenuDmrFilterLevel]);
+				snprintf(buf, bufferLen, "%s:%s", currentLanguage->filter, DMR_FILTER_LEVELS[tmpQuickMenuDmrFilterLevel]);
 				break;
 			default:
 				strcpy(buf, "");
 		}
 
-		buf[16] = 0;
-
+		buf[bufferLen - 1] = 0;
 		menuDisplayEntry(i, mNum, buf);
 	}
 

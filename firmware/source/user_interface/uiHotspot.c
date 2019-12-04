@@ -780,7 +780,7 @@ static void updateScreen(int rxCommandState)
 {
 	int val_before_dp;
 	int val_after_dp;
-	size_t bufferLen = 33;
+	static const int bufferLen = 17;
 	char buffer[bufferLen];
 	dmrIdDataStruct_t currentRec;
 
@@ -798,14 +798,12 @@ static void updateScreen(int rxCommandState)
 
 	snprintf(buffer, bufferLen, "%d%%", batteryPerentage);
 	buffer[bufferLen - 1] = 0;
-
 	UC1701_printCore(0,4,buffer,UC1701_FONT_6x8,UC1701_TEXT_ALIGN_RIGHT,false);// Display battery percentage at the right
-
 
 	if (trxIsTransmitting)
 	{
 		dmrIDLookup( (trxDMRID & 0xFFFFFF),&currentRec);
-		snprintf(buffer, bufferLen, "%s", currentRec.text);
+		strncpy(buffer, currentRec.text, bufferLen);
 		buffer[bufferLen - 1] = 0;
 		UC1701_printCentered(16, buffer, UC1701_FONT_8x16);
 
@@ -835,7 +833,7 @@ static void updateScreen(int rxCommandState)
 			uint32_t FLCO 	= audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][0];// Private or group call
 
 			dmrIDLookup(srcId,&currentRec);
-			snprintf(buffer, bufferLen, "%s", currentRec.text);
+			strncpy(buffer, currentRec.text, bufferLen);
 			buffer[bufferLen - 1] = 0;
 			UC1701_printCentered(16, buffer, UC1701_FONT_8x16);
 

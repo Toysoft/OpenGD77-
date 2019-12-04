@@ -117,6 +117,16 @@ const stringsTable_t italianLanguage =
 .scan_mode				= "Modo Scan",
 .hold					= "Hold",
 .pause					= "Pausa",
+.empty_list				= "Empty List",
+.delete_contact_qm			= "Delete contact?",
+.contact_deleted			= "Contact deleted",
+.contact_used				= "Contact used",
+.in_rx_group				= "in RX group",
+.select_tx				= "Select TX",
+.edit_contact				= "Edit Contact",
+.delete_contact				= "Delete Contact",
+.group_call				= "Group Call",
+.all_call				= "All Call",
 };
 /********************************************************************
  *
