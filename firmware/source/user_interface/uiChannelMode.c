@@ -233,6 +233,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				}
 				else
 				{
+					nameBuf[0] = 0;
 					strncat(nameBuf, currentZoneName, 17);
 					nameBuf[16] = 0;
 					UC1701_printCentered(50, (char *)nameBuf,UC1701_FONT_6x8);
@@ -254,8 +255,8 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 					else
 					{
 						dmrIdDataStruct_t currentRec;
-						nameBuf[0] = 0;
 						dmrIDLookup((trxTalkGroupOrPcId & 0x00FFFFFF), &currentRec);
+						nameBuf[0] = 0;
 						strncat(nameBuf, currentRec.text, 17);
 						nameBuf[16] = 0;
 					}

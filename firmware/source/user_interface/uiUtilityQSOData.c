@@ -462,6 +462,7 @@ void menuUtilityRenderQSOData(void)
 	char buffer[bufferLen];// buffer passed to the DMR ID lookup function, needs to be large enough to hold worst case text length that is returned. Currently 16+1
 	dmrIdDataStruct_t currentRec;
 
+	buffer[0] = 0;
 	menuUtilityReceivedPcId=0;//reset the received PcId
 
 	/*

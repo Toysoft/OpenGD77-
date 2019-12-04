@@ -82,6 +82,8 @@ static void updateScreen(void)
 	size_t bufferLen = 33;
 	char buf[bufferLen];
 
+	buf[0] = 0;
+
 	UC1701_clearBuf();
 
 	if (tmpContact.name[0] == 0x00) {
