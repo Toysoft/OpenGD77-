@@ -191,7 +191,7 @@ static void loadChannelData(bool useChannelDataInMemory)
 
 void menuChannelModeUpdateScreen(int txTimeSecs)
 {
-	char nameBuf[17];
+	char nameBuf[23];
 	int channelNumber;
 	char buffer[33];
 	int verticalPositionOffset = 0;
@@ -230,8 +230,17 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				}
 				else
 				{
-					snprintf(nameBuf, 17, "%s", currentZoneName);
-					nameBuf[16] = 0;
+					channelNumber=nonVolatileSettings.currentChannelIndexInZone+1;
+					if (directChannelNumber>0)
+					{
+						snprintf(nameBuf, 17, "%s %d", currentLanguage->gotoChannel, directChannelNumber);
+						nameBuf[16] = 0;
+					}
+					else
+					{
+						snprintf(nameBuf, 23, "%s Ch:%d", currentZoneName,channelNumber);
+						nameBuf[23] = 0;
+					}
 					UC1701_printCentered(50, (char *)nameBuf,UC1701_FONT_6x8);
 				}
 			}
@@ -379,14 +388,30 @@ static void handleEvent(int buttons, int keys, int events)
 
 		if (directChannelNumber>0)
 		{
-			if (codeplugChannelIndexIsValid(directChannelNumber))
+			if(strcmp(currentZoneName,currentLanguage->all_channels)==0)
 			{
-				nonVolatileSettings.currentChannelIndexInAllZone=directChannelNumber;
-				loadChannelData(false);
+				if (codeplugChannelIndexIsValid(directChannelNumber))
+				{
+					nonVolatileSettings.currentChannelIndexInAllZone=directChannelNumber;
+					loadChannelData(false);
+				}
+				else
+				{
+					set_melody(melody_ERROR_beep);
+				}
 			}
 			else
 			{
-				set_melody(melody_ERROR_beep);
+				if (directChannelNumber-1<currentZone.NOT_IN_MEMORY_numChannelsInZone)
+				{
+					nonVolatileSettings.currentChannelIndexInZone=directChannelNumber-1;
+					loadChannelData(false);
+				}
+				else
+				{
+					set_melody(melody_ERROR_beep);
+				}
+
 			}
 			directChannelNumber=0;
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
@@ -654,8 +679,7 @@ static void handleEvent(int buttons, int keys, int events)
 	{
 		handleUpKey(buttons);
 	}
-	else if (strcmp(currentZoneName,currentLanguage->all_channels)==0)
-	{
+
 		int keyval=99;
 		if (KEYCHECK_PRESS(keys,KEY_1))
 		{
@@ -701,11 +725,27 @@ static void handleEvent(int buttons, int keys, int events)
 		if (keyval<10)
 		{
 			directChannelNumber=(directChannelNumber*10) + keyval;
-			if(directChannelNumber>1024) directChannelNumber=0;
+			if (strcmp(currentZoneName,currentLanguage->all_channels)==0)
+			{
+				if(directChannelNumber>1024)
+				{
+					directChannelNumber=0;
+					set_melody(melody_ERROR_beep);
+				}
+			}
+			else
+			{
+				if(directChannelNumber>currentZone.NOT_IN_MEMORY_numChannelsInZone)
+					{
+						directChannelNumber=0;
+						set_melody(melody_ERROR_beep);
+					}
+
+			}
+
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 			menuChannelModeUpdateScreen(0);
 		}
-	}
 }
 
 
