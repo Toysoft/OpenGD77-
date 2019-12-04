@@ -80,7 +80,7 @@ static void updateScreen(void)
 			}
 			else
 			{
-				snprintf(buffer, 17, "ID:%d", item->id);
+				snprintf(buffer, 17, "%s%d", "ID:", item->id);
 				buffer[16] = 0;
 			}
 			UC1701_printCentered(16+(numDisplayed*16), buffer, UC1701_FONT_8x16);

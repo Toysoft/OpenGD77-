@@ -71,15 +71,15 @@ static void updateScreen(void)
 		switch(mNum)
 		{
 			case DISPLAY_MENU_BRIGHTNESS:
-				snprintf(buf, bufferLen, "%s:%d%%", currentLanguage->brightness, nonVolatileSettings.displayBacklightPercentage);
+				snprintf(buf, bufferLen, "%s%c%d%%", currentLanguage->brightness, ':', nonVolatileSettings.displayBacklightPercentage);
 				buf[bufferLen - 1] = 0;
 				break;
 			case DISPLAY_MENU_CONTRAST:
-				snprintf(buf, bufferLen, "%s:%d", currentLanguage->contrast, contrast);
+				snprintf(buf, bufferLen, "%s%c%d", currentLanguage->contrast, ':', contrast);
 				buf[bufferLen - 1] = 0;
 				break;
 			case DISPLAY_MENU_TIMEOUT:
-				snprintf(buf, bufferLen, "%s:%d", currentLanguage->backlight_timeout, backLightTimeout);
+				snprintf(buf, bufferLen, "%s%c%d", currentLanguage->backlight_timeout, ':', backLightTimeout);
 				buf[bufferLen - 1] = 0;
 				break;
 			case DISPLAY_MENU_COLOUR_INVERT:

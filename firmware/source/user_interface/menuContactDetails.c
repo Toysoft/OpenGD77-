@@ -108,21 +108,21 @@ static void updateScreen(void)
 				switch (tmpContact.callType)
 				{
 				case CONTACT_CALLTYPE_TG:
-					snprintf(buf, bufferLen, "%s:%s", currentLanguage->tg, digits);
+					snprintf(buf, bufferLen, "%s%c%s", currentLanguage->tg, ':', digits);
 					buf[bufferLen - 1] = 0;
 					break;
 				case CONTACT_CALLTYPE_PC: // Private
-					snprintf(buf, bufferLen, "%s:%s", currentLanguage->pc, digits);
+					snprintf(buf, bufferLen, "%s%c%s", currentLanguage->pc, ':', digits);
 					buf[bufferLen - 1] = 0;
 					break;
 				case CONTACT_CALLTYPE_ALL: // All Call
-					snprintf(buf, bufferLen, "%s:%d", currentLanguage->all, 16777215);
+					snprintf(buf, bufferLen, "%s%c%d", currentLanguage->all, ':', 16777215);
 					buf[bufferLen - 1] = 0;
 					break;
 				}
 				break;
 			case CONTACT_DETAILS_CALLTYPE:
-				snprintf(buf, bufferLen, "%s:%s", currentLanguage->type, callTypeString[tmpContact.callType]);
+				snprintf(buf, bufferLen, "%s%c%s", currentLanguage->type, ':', callTypeString[tmpContact.callType]);
 				buf[bufferLen - 1] = 0;
 				break;
 			case CONTACT_DETAILS_TS:
@@ -130,15 +130,15 @@ static void updateScreen(void)
 				{
 				case 1:
 				case 3:
-					snprintf(buf, bufferLen, "%s:%s", currentLanguage->timeSlot, currentLanguage->none);
+					snprintf(buf, bufferLen, "%s%c%s", currentLanguage->timeSlot, ':', currentLanguage->none);
 					buf[bufferLen - 1] = 0;
 					break;
 				case 0:
-					snprintf(buf, bufferLen, "%s:%d", currentLanguage->timeSlot, 1);
+					snprintf(buf, bufferLen, "%s%c%d", currentLanguage->timeSlot, ':', 1);
 					buf[bufferLen - 1] = 0;
 					break;
 				case 2:
-					snprintf(buf, bufferLen, "%s:%d", currentLanguage->timeSlot, 2);
+					snprintf(buf, bufferLen, "%s%c%d", currentLanguage->timeSlot, ':', 2);
 					buf[bufferLen - 1] = 0;
 					break;
 				}

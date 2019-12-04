@@ -67,84 +67,84 @@ static void updateScreen(void)
 			case OPTIONS_MENU_TIMEOUT_BEEP:
 				if (nonVolatileSettings.txTimeoutBeepX5Secs != 0)
 				{
-					snprintf(buf, bufferLen, "%s:%d", currentLanguage->timeout_beep, nonVolatileSettings.txTimeoutBeepX5Secs * 5);
+					snprintf(buf, bufferLen, "%s%c%d", currentLanguage->timeout_beep, ':', nonVolatileSettings.txTimeoutBeepX5Secs * 5);
 					buf[bufferLen - 1] = 0;
 				}
 				else
 				{
-					snprintf(buf, bufferLen, "%s:%s", currentLanguage->timeout_beep, currentLanguage->off);
+					snprintf(buf, bufferLen, "%s%c%s", currentLanguage->timeout_beep, ':', currentLanguage->off);
 					buf[bufferLen - 1] = 0;
 				}
 				break;
 			case OPTIONS_MENU_FACTORY_RESET:
 				if (doFactoryReset == true)
 				{
-					snprintf(buf, bufferLen, "%s:%s", currentLanguage->factory_reset, currentLanguage->yes);
+					snprintf(buf, bufferLen, "%s%c%s", currentLanguage->factory_reset, ':', currentLanguage->yes);
 					buf[bufferLen - 1] = 0;
 				}
 				else
 				{
-					snprintf(buf, bufferLen, "%s:%s", currentLanguage->factory_reset, currentLanguage->no);
+					snprintf(buf, bufferLen, "%s%c%s", currentLanguage->factory_reset, ':', currentLanguage->no);
 					buf[bufferLen - 1] = 0;
 				}
 				break;
 			case OPTIONS_MENU_USE_CALIBRATION:
 				if (nonVolatileSettings.useCalibration)
 				{
-					snprintf(buf, bufferLen, "%s:%s", currentLanguage->calibration, currentLanguage->on);
+					snprintf(buf, bufferLen, "%s%c%s", currentLanguage->calibration, ':', currentLanguage->on);
 					buf[bufferLen - 1] = 0;
 				}
 				else
 				{
-					snprintf(buf, bufferLen, "%s:%s", currentLanguage->calibration, currentLanguage->off);
+					snprintf(buf, bufferLen, "%s%c%s", currentLanguage->calibration, ':', currentLanguage->off);
 					buf[bufferLen - 1] = 0;
 				}
 				break;
 			case OPTIONS_MENU_TX_FREQ_LIMITS:// Tx Freq limits
 				if (nonVolatileSettings.txFreqLimited)
 				{
-					snprintf(buf, bufferLen, "%s:%s", currentLanguage->band_limits, currentLanguage->on);
+					snprintf(buf, bufferLen, "%s%c%s", currentLanguage->band_limits, ':', currentLanguage->on);
 					buf[bufferLen - 1] = 0;
 				}
 				else
 				{
-					snprintf(buf, bufferLen, "%s:%s", currentLanguage->band_limits, currentLanguage->off);
+					snprintf(buf, bufferLen, "%s%c%s", currentLanguage->band_limits, ':', currentLanguage->off);
 					buf[bufferLen - 1] = 0;
 				}
 				break;
 			case OPTIONS_MENU_BEEP_VOLUME:// Beep volume reduction
-				snprintf(buf, bufferLen, "%s:%ddB", currentLanguage->beep_volume, (2 - nonVolatileSettings.beepVolumeDivider) * 3);
+				snprintf(buf, bufferLen, "%s%c%d%s", currentLanguage->beep_volume, ':', (2 - nonVolatileSettings.beepVolumeDivider) * 3, "dB");
 				buf[bufferLen - 1] = 0;
 				soundBeepVolumeDivider = nonVolatileSettings.beepVolumeDivider;
 				break;
 			case OPTIONS_MIC_GAIN_DMR:// DMR Mic gain
-				snprintf(buf, bufferLen, "%s:%ddB", currentLanguage->dmr_mic_gain, (nonVolatileSettings.micGainDMR - 11) * 3);
+				snprintf(buf, bufferLen, "%s%c%d%s", currentLanguage->dmr_mic_gain, ':', (nonVolatileSettings.micGainDMR - 11) * 3, "dB");
 				buf[bufferLen - 1] = 0;
 				break;
 			case OPTIONS_MENU_KEYPAD_TIMER_LONG:// Timer longpress
-				snprintf(buf, bufferLen, "%s:%1d.%1d%c", currentLanguage->key_long, nonVolatileSettings.keypadTimerLong / 10, nonVolatileSettings.keypadTimerLong % 10, 's');
+				snprintf(buf, bufferLen, "%s%c%1d%c%1d%c", currentLanguage->key_long, ':', nonVolatileSettings.keypadTimerLong / 10, '.', nonVolatileSettings.keypadTimerLong % 10, 's');
 				buf[bufferLen - 1] = 0;
 				break;
 			case OPTIONS_MENU_KEYPAD_TIMER_REPEAT:// Timer repeat
-				snprintf(buf, bufferLen, "%s:%1d.%1d%c", currentLanguage->key_repeat, nonVolatileSettings.keypadTimerRepeat/10, nonVolatileSettings.keypadTimerRepeat % 10, 's');
+				snprintf(buf, bufferLen, "%s%c%1d%c%1d%c", currentLanguage->key_repeat, ':', nonVolatileSettings.keypadTimerRepeat/10, '.', nonVolatileSettings.keypadTimerRepeat % 10, 's');
 				buf[bufferLen - 1] = 0;
 				break;
 			case OPTIONS_MENU_DMR_MONITOR_CAPTURE_TIMEOUT:// DMR filtr timeout repeat
-				snprintf(buf, bufferLen, "%s:%ds", currentLanguage->dmr_filter_timeout, nonVolatileSettings.dmrCaptureTimeout);
+				snprintf(buf, bufferLen, "%s%c%d%c", currentLanguage->dmr_filter_timeout, ':', nonVolatileSettings.dmrCaptureTimeout, 's');
 				buf[bufferLen - 1] = 0;
 				break;
 			case OPTIONS_MENU_SCAN_DELAY:// Scan hold and pause time
-				snprintf(buf, bufferLen, "%s:%ds", currentLanguage->scan_delay, nonVolatileSettings.scanDelay);
+				snprintf(buf, bufferLen, "%s%c%d%c", currentLanguage->scan_delay, ':', nonVolatileSettings.scanDelay, 's');
 				buf[bufferLen - 1] = 0;
 				break;
 			case OPTIONS_MENU_SCAN_MODE:// scanning mode
 				if (nonVolatileSettings.scanModePause)
 				{
-					snprintf(buf, bufferLen, "%s:%s", currentLanguage->scan_mode, currentLanguage->pause);
+					snprintf(buf, bufferLen, "%s%c%s", currentLanguage->scan_mode, ':', currentLanguage->pause);
 				}
 				else
 				{
-					snprintf(buf, bufferLen, "%s:%s", currentLanguage->scan_mode, currentLanguage->hold);
+					snprintf(buf, bufferLen, "%s%c%s", currentLanguage->scan_mode, ':', currentLanguage->hold);
 				}
 				buf[bufferLen - 1] = 0;
 				break;
