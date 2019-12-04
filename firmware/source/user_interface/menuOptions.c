@@ -61,6 +61,7 @@ static void updateScreen(void)
 	for(int i = -1; i <= 1; i++)
 	{
 		mNum = menuGetMenuOffset(NUM_OPTIONS_MENU_ITEMS, i);
+		buf[0] = 0;
 
 		switch(mNum)
 		{
@@ -68,74 +69,60 @@ static void updateScreen(void)
 				if (nonVolatileSettings.txTimeoutBeepX5Secs != 0)
 				{
 					snprintf(buf, bufferLen, "%s:%d", currentLanguage->timeout_beep, nonVolatileSettings.txTimeoutBeepX5Secs * 5);
-					buf[bufferLen - 1] = 0;
 				}
 				else
 				{
 					snprintf(buf, bufferLen, "%s:%s", currentLanguage->timeout_beep, currentLanguage->off);
-					buf[bufferLen - 1] = 0;
 				}
 				break;
 			case OPTIONS_MENU_FACTORY_RESET:
 				if (doFactoryReset == true)
 				{
 					snprintf(buf, bufferLen, "%s:%s", currentLanguage->factory_reset, currentLanguage->yes);
-					buf[bufferLen - 1] = 0;
 				}
 				else
 				{
 					snprintf(buf, bufferLen, "%s:%s", currentLanguage->factory_reset, currentLanguage->no);
-					buf[bufferLen - 1] = 0;
 				}
 				break;
 			case OPTIONS_MENU_USE_CALIBRATION:
 				if (nonVolatileSettings.useCalibration)
 				{
 					snprintf(buf, bufferLen, "%s:%s", currentLanguage->calibration, currentLanguage->on);
-					buf[bufferLen - 1] = 0;
 				}
 				else
 				{
 					snprintf(buf, bufferLen, "%s:%s", currentLanguage->calibration, currentLanguage->off);
-					buf[bufferLen - 1] = 0;
 				}
 				break;
 			case OPTIONS_MENU_TX_FREQ_LIMITS:// Tx Freq limits
 				if (nonVolatileSettings.txFreqLimited)
 				{
 					snprintf(buf, bufferLen, "%s:%s", currentLanguage->band_limits, currentLanguage->on);
-					buf[bufferLen - 1] = 0;
 				}
 				else
 				{
 					snprintf(buf, bufferLen, "%s:%s", currentLanguage->band_limits, currentLanguage->off);
-					buf[bufferLen - 1] = 0;
 				}
 				break;
 			case OPTIONS_MENU_BEEP_VOLUME:// Beep volume reduction
 				snprintf(buf, bufferLen, "%s:%ddB", currentLanguage->beep_volume, (2 - nonVolatileSettings.beepVolumeDivider) * 3);
-				buf[bufferLen - 1] = 0;
 				soundBeepVolumeDivider = nonVolatileSettings.beepVolumeDivider;
 				break;
 			case OPTIONS_MIC_GAIN_DMR:// DMR Mic gain
 				snprintf(buf, bufferLen, "%s:%ddB", currentLanguage->dmr_mic_gain, (nonVolatileSettings.micGainDMR - 11) * 3);
-				buf[bufferLen - 1] = 0;
 				break;
 			case OPTIONS_MENU_KEYPAD_TIMER_LONG:// Timer longpress
 				snprintf(buf, bufferLen, "%s:%1d.%1ds", currentLanguage->key_long, nonVolatileSettings.keypadTimerLong / 10, nonVolatileSettings.keypadTimerLong % 10);
-				buf[bufferLen - 1] = 0;
 				break;
 			case OPTIONS_MENU_KEYPAD_TIMER_REPEAT:// Timer repeat
 				snprintf(buf, bufferLen, "%s:%1d.%1ds", currentLanguage->key_repeat, nonVolatileSettings.keypadTimerRepeat/10, nonVolatileSettings.keypadTimerRepeat % 10);
-				buf[bufferLen - 1] = 0;
 				break;
 			case OPTIONS_MENU_DMR_MONITOR_CAPTURE_TIMEOUT:// DMR filtr timeout repeat
 				snprintf(buf, bufferLen, "%s:%ds", currentLanguage->dmr_filter_timeout, nonVolatileSettings.dmrCaptureTimeout);
-				buf[bufferLen - 1] = 0;
 				break;
 			case OPTIONS_MENU_SCAN_DELAY:// Scan hold and pause time
 				snprintf(buf, bufferLen, "%s:%ds", currentLanguage->scan_delay, nonVolatileSettings.scanDelay);
-				buf[bufferLen - 1] = 0;
 				break;
 			case OPTIONS_MENU_SCAN_MODE:// scanning mode
 				if (nonVolatileSettings.scanModePause)
@@ -146,10 +133,10 @@ static void updateScreen(void)
 				{
 					snprintf(buf, bufferLen, "%s:%s", currentLanguage->scan_mode, currentLanguage->hold);
 				}
-				buf[bufferLen - 1] = 0;
 				break;
 		}
 
+		buf[bufferLen - 1] = 0;
 		menuDisplayEntry(i, mNum, buf);
 	}
 

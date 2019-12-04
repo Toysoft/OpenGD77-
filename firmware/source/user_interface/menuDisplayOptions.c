@@ -67,20 +67,18 @@ static void updateScreen(void)
 	for(int i = -1; i <= 1; i++)
 	{
 		mNum = menuGetMenuOffset(NUM_DISPLAY_MENU_ITEMS, i);
+		buf[0] = 0;
 
 		switch(mNum)
 		{
 			case DISPLAY_MENU_BRIGHTNESS:
 				snprintf(buf, bufferLen, "%s:%d%%", currentLanguage->brightness, nonVolatileSettings.displayBacklightPercentage);
-				buf[bufferLen - 1] = 0;
 				break;
 			case DISPLAY_MENU_CONTRAST:
 				snprintf(buf, bufferLen, "%s:%d", currentLanguage->contrast, contrast);
-				buf[bufferLen - 1] = 0;
 				break;
 			case DISPLAY_MENU_TIMEOUT:
 				snprintf(buf, bufferLen, "%s:%d", currentLanguage->backlight_timeout, backLightTimeout);
-				buf[bufferLen - 1] = 0;
 				break;
 			case DISPLAY_MENU_COLOUR_INVERT:
 				if (inverseVideo)
@@ -91,10 +89,10 @@ static void updateScreen(void)
 				{
 					strncpy(buf, currentLanguage->colour_normal, bufferLen);
 				}
-				buf[bufferLen - 1] = 0;
 				break;
 		}
 
+		buf[bufferLen - 1] = 0;
 		menuDisplayEntry(i, mNum, buf);
 	}
 

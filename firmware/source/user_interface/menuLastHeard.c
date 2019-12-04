@@ -77,13 +77,12 @@ static void updateScreen(void)
 			if (item->talkerAlias[0] != 0x00)
 			{
 				memcpy(buffer, item->talkerAlias, bufferLen - 1);// limit to 1 line of the display which is 16 chars at the normal font size
-				buffer[bufferLen - 1] = 0;
 			}
 			else
 			{
 				snprintf(buffer, bufferLen, "ID:%d", item->id);
-				buffer[bufferLen - 1] = 0;
 			}
+			buffer[bufferLen - 1] = 0;
 			UC1701_printCentered(16+(numDisplayed*16), buffer, UC1701_FONT_8x16);
 		}
 

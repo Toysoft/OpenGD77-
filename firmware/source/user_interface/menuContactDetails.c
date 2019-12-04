@@ -98,6 +98,7 @@ static void updateScreen(void)
 		for(int i = -1; i <= 1; i++)
 		{
 			mNum = menuGetMenuOffset(NUM_CONTACT_DETAILS_ITEMS, i);
+			buf[0] = 0;
 
 			switch (mNum)
 			{
@@ -109,21 +110,17 @@ static void updateScreen(void)
 				{
 				case CONTACT_CALLTYPE_TG:
 					snprintf(buf, bufferLen, "%s:%s", currentLanguage->tg, digits);
-					buf[bufferLen - 1] = 0;
 					break;
 				case CONTACT_CALLTYPE_PC: // Private
 					snprintf(buf, bufferLen, "%s:%s", currentLanguage->pc, digits);
-					buf[bufferLen - 1] = 0;
 					break;
 				case CONTACT_CALLTYPE_ALL: // All Call
 					snprintf(buf, bufferLen, "%s:16777215", currentLanguage->all);
-					buf[bufferLen - 1] = 0;
 					break;
 				}
 				break;
 			case CONTACT_DETAILS_CALLTYPE:
 				snprintf(buf, bufferLen, "%s:%s", currentLanguage->type, callTypeString[tmpContact.callType]);
-				buf[bufferLen - 1] = 0;
 				break;
 			case CONTACT_DETAILS_TS:
 				switch (tmpContact.reserve1 & 0x3)
@@ -131,20 +128,18 @@ static void updateScreen(void)
 				case 1:
 				case 3:
 					snprintf(buf, bufferLen, "%s:%s", currentLanguage->timeSlot, currentLanguage->none);
-					buf[bufferLen - 1] = 0;
 					break;
 				case 0:
 					snprintf(buf, bufferLen, "%s:1", currentLanguage->timeSlot);
-					buf[bufferLen - 1] = 0;
 					break;
 				case 2:
 					snprintf(buf, bufferLen, "%s:2", currentLanguage->timeSlot);
-					buf[bufferLen - 1] = 0;
 					break;
 				}
 				break;
 			}
 
+			buf[bufferLen - 1] = 0;
 			menuDisplayEntry(i, mNum, buf);
 		}
 		break;
