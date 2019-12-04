@@ -234,12 +234,12 @@ static void updateSubMenuScreen(void)
 {
 	int mNum = 0;
 	static const int bufferLen = 17;
-	char buffer[bufferLen];
+	char buf[bufferLen];
 
 	UC1701_clearBuf();
 
-	codeplugUtilConvertBufToString(contactListContactData.name, buffer, 16);
-	menuDisplayTitle(buffer);
+	codeplugUtilConvertBufToString(contactListContactData.name, buf, 16);
+	menuDisplayTitle(buf);
 
 	for(int i = -1; i <= 1; i++)
 	{
@@ -248,19 +248,19 @@ static void updateSubMenuScreen(void)
 		switch(mNum)
 		{
 			case CONTACT_LIST_QUICK_MENU_SELECT:
-				strncpy(buffer, currentLanguage->select_tx, 17);
+				strncpy(buf, currentLanguage->select_tx, 17);
 				break;
 			case CONTACT_LIST_QUICK_MENU_EDIT:
-				strncpy(buffer, currentLanguage->edit_contact, 17);
+				strncpy(buf, currentLanguage->edit_contact, 17);
 				break;
 			case CONTACT_LIST_QUICK_MENU_DELETE:
-				strncpy(buffer, currentLanguage->delete_contact, 17);
+				strncpy(buf, currentLanguage->delete_contact, 17);
 				break;
 			default:
-				strcpy(buffer, "");
+				strcpy(buf, "");
 		}
-		buffer[bufferLen - 1] = 0;
-		menuDisplayEntry(i, mNum, buffer);
+		buf[bufferLen - 1] = 0;
+		menuDisplayEntry(i, mNum, buf);
 	}
 
 	UC1701_render();

@@ -52,7 +52,7 @@ static void updateScreen(void)
 {
 	int mNum = 0;
 	static const int bufferLen = 17;
-	char buffer[bufferLen];
+	char buf[bufferLen];
 
 	UC1701_clearBuf();
 	menuDisplayTitle(currentLanguage->options);
@@ -67,90 +67,90 @@ static void updateScreen(void)
 			case OPTIONS_MENU_TIMEOUT_BEEP:
 				if (nonVolatileSettings.txTimeoutBeepX5Secs != 0)
 				{
-					snprintf(buffer, bufferLen, "%s:%d", currentLanguage->timeout_beep, nonVolatileSettings.txTimeoutBeepX5Secs * 5);
-					buffer[bufferLen - 1] = 0;
+					snprintf(buf, bufferLen, "%s:%d", currentLanguage->timeout_beep, nonVolatileSettings.txTimeoutBeepX5Secs * 5);
+					buf[bufferLen - 1] = 0;
 				}
 				else
 				{
-					snprintf(buffer, bufferLen, "%s:%s", currentLanguage->timeout_beep, currentLanguage->off);
-					buffer[bufferLen - 1] = 0;
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->timeout_beep, currentLanguage->off);
+					buf[bufferLen - 1] = 0;
 				}
 				break;
 			case OPTIONS_MENU_FACTORY_RESET:
 				if (doFactoryReset == true)
 				{
-					snprintf(buffer, bufferLen, "%s:%s", currentLanguage->factory_reset, currentLanguage->yes);
-					buffer[bufferLen - 1] = 0;
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->factory_reset, currentLanguage->yes);
+					buf[bufferLen - 1] = 0;
 				}
 				else
 				{
-					snprintf(buffer, bufferLen, "%s:%s", currentLanguage->factory_reset, currentLanguage->no);
-					buffer[bufferLen - 1] = 0;
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->factory_reset, currentLanguage->no);
+					buf[bufferLen - 1] = 0;
 				}
 				break;
 			case OPTIONS_MENU_USE_CALIBRATION:
 				if (nonVolatileSettings.useCalibration)
 				{
-					snprintf(buffer, bufferLen, "%s:%s", currentLanguage->calibration, currentLanguage->on);
-					buffer[bufferLen - 1] = 0;
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->calibration, currentLanguage->on);
+					buf[bufferLen - 1] = 0;
 				}
 				else
 				{
-					snprintf(buffer, bufferLen, "%s:%s", currentLanguage->calibration, currentLanguage->off);
-					buffer[bufferLen - 1] = 0;
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->calibration, currentLanguage->off);
+					buf[bufferLen - 1] = 0;
 				}
 				break;
 			case OPTIONS_MENU_TX_FREQ_LIMITS:// Tx Freq limits
 				if (nonVolatileSettings.txFreqLimited)
 				{
-					snprintf(buffer, bufferLen, "%s:%s", currentLanguage->band_limits, currentLanguage->on);
-					buffer[bufferLen - 1] = 0;
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->band_limits, currentLanguage->on);
+					buf[bufferLen - 1] = 0;
 				}
 				else
 				{
-					snprintf(buffer, bufferLen, "%s:%s", currentLanguage->band_limits, currentLanguage->off);
-					buffer[bufferLen - 1] = 0;
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->band_limits, currentLanguage->off);
+					buf[bufferLen - 1] = 0;
 				}
 				break;
 			case OPTIONS_MENU_BEEP_VOLUME:// Beep volume reduction
-				snprintf(buffer, bufferLen, "%s:%ddB", currentLanguage->beep_volume, (2 - nonVolatileSettings.beepVolumeDivider) * 3);
-				buffer[bufferLen - 1] = 0;
+				snprintf(buf, bufferLen, "%s:%ddB", currentLanguage->beep_volume, (2 - nonVolatileSettings.beepVolumeDivider) * 3);
+				buf[bufferLen - 1] = 0;
 				soundBeepVolumeDivider = nonVolatileSettings.beepVolumeDivider;
 				break;
 			case OPTIONS_MIC_GAIN_DMR:// DMR Mic gain
-				snprintf(buffer, bufferLen, "%s:%ddB", currentLanguage->dmr_mic_gain, (nonVolatileSettings.micGainDMR - 11) * 3);
-				buffer[bufferLen - 1] = 0;
+				snprintf(buf, bufferLen, "%s:%ddB", currentLanguage->dmr_mic_gain, (nonVolatileSettings.micGainDMR - 11) * 3);
+				buf[bufferLen - 1] = 0;
 				break;
 			case OPTIONS_MENU_KEYPAD_TIMER_LONG:// Timer longpress
-				snprintf(buffer, bufferLen, "%s:%1d.%1ds", currentLanguage->key_long, nonVolatileSettings.keypadTimerLong / 10, nonVolatileSettings.keypadTimerLong % 10);
-				buffer[bufferLen - 1] = 0;
+				snprintf(buf, bufferLen, "%s:%1d.%1ds", currentLanguage->key_long, nonVolatileSettings.keypadTimerLong / 10, nonVolatileSettings.keypadTimerLong % 10);
+				buf[bufferLen - 1] = 0;
 				break;
 			case OPTIONS_MENU_KEYPAD_TIMER_REPEAT:// Timer repeat
-				snprintf(buffer, bufferLen, "%s:%1d.%1ds", currentLanguage->key_repeat, nonVolatileSettings.keypadTimerRepeat/10, nonVolatileSettings.keypadTimerRepeat % 10);
-				buffer[bufferLen - 1] = 0;
+				snprintf(buf, bufferLen, "%s:%1d.%1ds", currentLanguage->key_repeat, nonVolatileSettings.keypadTimerRepeat/10, nonVolatileSettings.keypadTimerRepeat % 10);
+				buf[bufferLen - 1] = 0;
 				break;
 			case OPTIONS_MENU_DMR_MONITOR_CAPTURE_TIMEOUT:// DMR filtr timeout repeat
-				snprintf(buffer, bufferLen, "%s:%ds", currentLanguage->dmr_filter_timeout, nonVolatileSettings.dmrCaptureTimeout);
-				buffer[bufferLen - 1] = 0;
+				snprintf(buf, bufferLen, "%s:%ds", currentLanguage->dmr_filter_timeout, nonVolatileSettings.dmrCaptureTimeout);
+				buf[bufferLen - 1] = 0;
 				break;
 			case OPTIONS_MENU_SCAN_DELAY:// Scan hold and pause time
-				snprintf(buffer, bufferLen, "%s:%ds", currentLanguage->scan_delay, nonVolatileSettings.scanDelay);
-				buffer[bufferLen - 1] = 0;
+				snprintf(buf, bufferLen, "%s:%ds", currentLanguage->scan_delay, nonVolatileSettings.scanDelay);
+				buf[bufferLen - 1] = 0;
 				break;
 			case OPTIONS_MENU_SCAN_MODE:// scanning mode
 				if (nonVolatileSettings.scanModePause)
 				{
-					snprintf(buffer, bufferLen, "%s:%s", currentLanguage->scan_mode, currentLanguage->pause);
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->scan_mode, currentLanguage->pause);
 				}
 				else
 				{
-					snprintf(buffer, bufferLen, "%s:%s", currentLanguage->scan_mode, currentLanguage->hold);
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->scan_mode, currentLanguage->hold);
 				}
-				buffer[bufferLen - 1] = 0;
+				buf[bufferLen - 1] = 0;
 				break;
 		}
 
-		menuDisplayEntry(i, mNum, buffer);
+		menuDisplayEntry(i, mNum, buf);
 	}
 
 	UC1701_render();

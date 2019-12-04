@@ -80,17 +80,17 @@ static void updateScreen(void)
 {
 	int mNum = 0;
 	static const int bufferLen = 17;
-	char buffer[bufferLen];
+	char buf[bufferLen];
 
 	UC1701_clearBuf();
 
 	if (tmpContact.name[0] == 0x00) {
-		strncpy(buffer, currentLanguage->new_contact, bufferLen);
-		buffer[bufferLen - 1] = 0;
+		strncpy(buf, currentLanguage->new_contact, bufferLen);
+		buf[bufferLen - 1] = 0;
 	} else {
-		codeplugUtilConvertBufToString(tmpContact.name, buffer, 16);
+		codeplugUtilConvertBufToString(tmpContact.name, buf, 16);
 	}
-	menuDisplayTitle(buffer);
+	menuDisplayTitle(buf);
 
 	switch (menuContactDetailsState) {
 	case MENU_CONTACT_DETAILS_DISPLAY:
@@ -108,44 +108,44 @@ static void updateScreen(void)
 				switch (tmpContact.callType)
 				{
 				case CONTACT_CALLTYPE_TG:
-					snprintf(buffer, bufferLen, "%s:%s", currentLanguage->tg, digits);
-					buffer[bufferLen - 1] = 0;
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->tg, digits);
+					buf[bufferLen - 1] = 0;
 					break;
 				case CONTACT_CALLTYPE_PC: // Private
-					snprintf(buffer, bufferLen, "%s:%s", currentLanguage->pc, digits);
-					buffer[bufferLen - 1] = 0;
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->pc, digits);
+					buf[bufferLen - 1] = 0;
 					break;
 				case CONTACT_CALLTYPE_ALL: // All Call
-					snprintf(buffer, bufferLen, "%s:16777215", currentLanguage->all);
-					buffer[bufferLen - 1] = 0;
+					snprintf(buf, bufferLen, "%s:16777215", currentLanguage->all);
+					buf[bufferLen - 1] = 0;
 					break;
 				}
 				break;
 			case CONTACT_DETAILS_CALLTYPE:
-				snprintf(buffer, bufferLen, "%s:%s", currentLanguage->type, callTypeString[tmpContact.callType]);
-				buffer[bufferLen - 1] = 0;
+				snprintf(buf, bufferLen, "%s:%s", currentLanguage->type, callTypeString[tmpContact.callType]);
+				buf[bufferLen - 1] = 0;
 				break;
 			case CONTACT_DETAILS_TS:
 				switch (tmpContact.reserve1 & 0x3)
 				{
 				case 1:
 				case 3:
-					snprintf(buffer, bufferLen, "%s:%s", currentLanguage->timeSlot, currentLanguage->none);
-					buffer[bufferLen - 1] = 0;
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->timeSlot, currentLanguage->none);
+					buf[bufferLen - 1] = 0;
 					break;
 				case 0:
-					snprintf(buffer, bufferLen, "%s:1", currentLanguage->timeSlot);
-					buffer[bufferLen - 1] = 0;
+					snprintf(buf, bufferLen, "%s:1", currentLanguage->timeSlot);
+					buf[bufferLen - 1] = 0;
 					break;
 				case 2:
-					snprintf(buffer, bufferLen, "%s:2", currentLanguage->timeSlot);
-					buffer[bufferLen - 1] = 0;
+					snprintf(buf, bufferLen, "%s:2", currentLanguage->timeSlot);
+					buf[bufferLen - 1] = 0;
 					break;
 				}
 				break;
 			}
 
-			menuDisplayEntry(i, mNum, buffer);
+			menuDisplayEntry(i, mNum, buf);
 		}
 		break;
 	case MENU_CONTACT_DETAILS_SAVED:
