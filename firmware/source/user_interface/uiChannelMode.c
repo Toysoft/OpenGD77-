@@ -195,8 +195,11 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 	int channelNumber;
 	char buffer[33];
 	int verticalPositionOffset = 0;
-	UC1701_clearBuf();
 
+	buffer[0] = 0;
+	nameBuf[0] = 0;
+
+	UC1701_clearBuf();
 	menuUtilityRenderHeader();
 
 	switch(menuDisplayQSODataState)
@@ -251,6 +254,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 					else
 					{
 						dmrIdDataStruct_t currentRec;
+						nameBuf[0] = 0;
 						dmrIDLookup((trxTalkGroupOrPcId & 0x00FFFFFF), &currentRec);
 						strncat(nameBuf, currentRec.text, 17);
 						nameBuf[16] = 0;
@@ -264,6 +268,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 			}
 			else if(displaySquelch && !trxIsTransmitting)
 			{
+				buffer[0] = 0;
 				strncat(buffer, currentLanguage->squelch, 8);
 				buffer[7] = 0; // Avoid overlap with bargraph
 				UC1701_printAt(0, 16, buffer, UC1701_FONT_8x16);

@@ -153,6 +153,8 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 	size_t bufferLen = 33;
 	char buffer[bufferLen];
 
+	buffer[0] = 0;
+
 	UC1701_clearBuf();
 
 	menuUtilityRenderHeader();
@@ -196,6 +198,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 			}
 			else if(displaySquelch)
 			{
+				buffer[0] = 0;
 				strncat(buffer, currentLanguage->squelch, 8);
 				buffer[7] = 0; // Avoid overlap with bargraph
 				UC1701_printAt(0,16,buffer, UC1701_FONT_8x16);
