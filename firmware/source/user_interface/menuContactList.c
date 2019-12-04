@@ -18,6 +18,7 @@
 #include <fw_codeplug.h>
 #include <user_interface/menuSystem.h>
 #include <user_interface/menuUtilityQSOData.h>
+#include <user_interface/uiLocalisation.h>
 #include "fw_main.h"
 #include "fw_settings.h"
 
@@ -36,8 +37,6 @@ enum MENU_CONTACT_LIST_STATE
 	MENU_CONTACT_LIST_DELETED,
 	MENU_CONTACT_LIST_TG_IN_RXGROUP
 };
-
-static const char *calltypeName[] = { "Group Call", "Private Call", "All Call" };
 
 static void reloadContactList(void)
 {
@@ -82,6 +81,7 @@ static void updateScreen(void)
 	char nameBuf[33];
 	int mNum;
 	int idx;
+	const char *calltypeName[] = { currentLanguage->group_call, currentLanguage->private_call, currentLanguage->all_call };
 
 	UC1701_clearBuf();
 
@@ -92,7 +92,7 @@ static void updateScreen(void)
 
 		if (gMenusEndIndex == 0)
 		{
-			UC1701_printCentered(32, "Empty List", UC1701_FONT_8x16);
+			UC1701_printCentered(32, currentLanguage->empty_list, UC1701_FONT_8x16);
 		}
 		else
 		{
@@ -112,20 +112,20 @@ static void updateScreen(void)
 	case MENU_CONTACT_LIST_CONFIRM:
 		codeplugUtilConvertBufToString(contactListContactData.name, nameBuf, 16);
 		menuDisplayTitle(nameBuf);
-		UC1701_printCentered(16, "Delete contact?",UC1701_FONT_8x16);
+		UC1701_printCentered(16, currentLanguage->delete_contact_qm, UC1701_FONT_8x16);
 		UC1701_drawChoice(UC1701_CHOICE_YESNO, false);
 		break;
 	case MENU_CONTACT_LIST_DELETED:
 		codeplugUtilConvertBufToString(contactListContactData.name, nameBuf, 16);
 		menuDisplayTitle(nameBuf);
-		UC1701_printCentered(16, "Contact deleted",UC1701_FONT_8x16);
+		UC1701_printCentered(16, currentLanguage->contact_deleted, UC1701_FONT_8x16);
 		UC1701_drawChoice(UC1701_CHOICE_DISMISS, false);
 		break;
 	case MENU_CONTACT_LIST_TG_IN_RXGROUP:
 		codeplugUtilConvertBufToString(contactListContactData.name, nameBuf, 16);
 		menuDisplayTitle(nameBuf);
-		UC1701_printCentered(16, "Contact used",UC1701_FONT_8x16);
-		UC1701_printCentered(32, "in RX group",UC1701_FONT_8x16);
+		UC1701_printCentered(16, currentLanguage->contact_used, UC1701_FONT_8x16);
+		UC1701_printCentered(32, currentLanguage->in_rx_group, UC1701_FONT_8x16);
 		UC1701_drawChoice(UC1701_CHOICE_DISMISS, false);
 		break;
 	}
@@ -247,13 +247,13 @@ static void updateSubMenuScreen(void)
 		switch(mNum)
 		{
 			case CONTACT_LIST_QUICK_MENU_SELECT:
-				strcpy(buf, "Select TX");
+				strcpy(buf, currentLanguage->select_tx);
 				break;
 			case CONTACT_LIST_QUICK_MENU_EDIT:
-				strcpy(buf, "Edit Contact");
+				strcpy(buf, currentLanguage->edit_contact);
 				break;
 			case CONTACT_LIST_QUICK_MENU_DELETE:
-				strcpy(buf, "Delete Contact");
+				strcpy(buf, currentLanguage->delete_contact);
 				break;
 			default:
 				strcpy(buf, "");

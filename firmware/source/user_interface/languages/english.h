@@ -63,7 +63,7 @@ const stringsTable_t englishLanguage =
 .user_dmr_id				= "User DMR ID", // MaxLen: 15
 .contact 				= "Contact", // MaxLen: 15
 .accept_call				= "Accept call?", // MaxLen: 16
-.private_call				= "Private call", // MaxLen: 16
+.private_call				= "Private Call", // MaxLen: 16
 .squelch				= "Squelch", // MaxLen: 7
 .quick_menu 				= "Quick Menu", // MaxLen: 16
 .filter					= "Filter", // MaxLen: 7 (with ':' + settings: "None", "CC", "CC,TS", "CC,TS,TG")
@@ -117,6 +117,16 @@ const stringsTable_t englishLanguage =
 .scan_mode				= "Scan mode", // MaxLen: 16 (with ':' + .hold or .pause)
 .hold					= "Hold", // MaxLen: 16 (with ':' + .scan_mode)
 .pause					= "Pause", // MaxLen: 16 (with ':' + .scan_mode)
+.empty_list				= "Empty List", // MaxLen: 16
+.delete_contact_qm			= "Delete contact?", // MaxLen: 16
+.contact_deleted			= "Contact deleted", // MaxLen: 16
+.contact_used				= "Contact used", // MaxLen: 16
+.in_rx_group				= "in RX group", // MaxLen: 16
+.select_tx				= "Select TX", // MaxLen: 16
+.edit_contact				= "Edit Contact", // MaxLen: 16
+.delete_contact				= "Delete Contact", // MaxLen: 16
+.group_call				= "Group Call", // MaxLen: 16
+.all_call				= "All Call", // MaxLen: 16
 };
 /********************************************************************
  *

@@ -116,7 +116,7 @@ static void updateScreen(void)
 					buf[bufferLen - 1] = 0;
 					break;
 				case CONTACT_CALLTYPE_ALL: // All Call
-					snprintf(buf, bufferLen, "%s:16777215", currentLanguage->all);
+					snprintf(buf, bufferLen, "%s:%d", currentLanguage->all, 16777215);
 					buf[bufferLen - 1] = 0;
 					break;
 				}
@@ -134,11 +134,11 @@ static void updateScreen(void)
 					buf[bufferLen - 1] = 0;
 					break;
 				case 0:
-					snprintf(buf, bufferLen, "%s:1", currentLanguage->timeSlot);
+					snprintf(buf, bufferLen, "%s:%d", currentLanguage->timeSlot, 1);
 					buf[bufferLen - 1] = 0;
 					break;
 				case 2:
-					snprintf(buf, bufferLen, "%s:2", currentLanguage->timeSlot);
+					snprintf(buf, bufferLen, "%s:%d", currentLanguage->timeSlot, 2);
 					buf[bufferLen - 1] = 0;
 					break;
 				}

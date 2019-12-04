@@ -95,12 +95,12 @@ static void updateScreen(void)
 			case CH_DETAILS_MODE:
 				if (tmpChannel.chMode == RADIO_MODE_ANALOG)
 				{
-					snprintf(buf, bufferLen, "%s:FM", currentLanguage->mode);
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->mode, "FM");
 					buf[bufferLen - 1] = 0;
 				}
 				else
 				{
-					snprintf(buf, bufferLen, "%s:DMR", currentLanguage->mode);
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->mode, "DMR");
 					buf[bufferLen - 1] = 0;
 				}
 				break;
@@ -134,18 +134,18 @@ static void updateScreen(void)
 				{
 					if (tmpChannel.txTone == CTCSS_TONE_NONE)
 					{
-						snprintf(buf, bufferLen, "Tx CTCSS:%s", currentLanguage->none);
+						snprintf(buf, bufferLen, "%s:%s", "Tx CTCSS", currentLanguage->none);
 						buf[bufferLen - 1] = 0;
 					}
 					else
 					{
-						snprintf(buf, bufferLen, "Tx CTCSS:%d.%dHz", tmpChannel.txTone / 10 , tmpChannel.txTone % 10 );
+						snprintf(buf, bufferLen, "%s:%d.%d%s", "Tx CTCSS", tmpChannel.txTone / 10 , tmpChannel.txTone % 10, "Hz");
 						buf[bufferLen - 1] = 0;
 					}
 				}
 				else
 				{
-					snprintf(buf, bufferLen, "Tx CTCSS:%s", currentLanguage->n_a);
+					snprintf(buf, bufferLen, "%s:%s", "Tx CTCSS", currentLanguage->n_a);
 					buf[bufferLen - 1] = 0;
 				}
 				break;
@@ -154,31 +154,31 @@ static void updateScreen(void)
 				{
 					if (tmpChannel.rxTone == CTCSS_TONE_NONE)
 					{
-						snprintf(buf, bufferLen, "Rx CTCSS:%s", currentLanguage->none);
+						snprintf(buf, bufferLen, "%s:%s", "Rx CTCSS", currentLanguage->none);
 						buf[bufferLen - 1] = 0;
 					}
 					else
 					{
-						snprintf(buf, bufferLen, "Rx CTCSS:%d.%dHz", tmpChannel.rxTone / 10 ,tmpChannel.rxTone % 10 );
+						snprintf(buf, bufferLen, "%s:%d.%d%s", "Rx CTCSS", tmpChannel.rxTone / 10 ,tmpChannel.rxTone % 10, "Hz");
 						buf[bufferLen - 1] = 0;
 					}
 				}
 				else
 				{
-					snprintf(buf, bufferLen, "Rx CTCSS:%s", currentLanguage->n_a);
+					snprintf(buf, bufferLen, "%s:%s", "Rx CTCSS", currentLanguage->n_a);
 					buf[bufferLen - 1] = 0;
 				}
 				break;
 			case CH_DETAILS_RXFREQ:
 				val_before_dp = tmpChannel.rxFreq / 100000;
 				val_after_dp = tmpChannel.rxFreq - val_before_dp * 100000;
-				snprintf(buf, bufferLen, "Rx:%d.%05dMHz", val_before_dp, val_after_dp);
+				snprintf(buf, bufferLen, "%s:%d.%05d%s", "Rx", val_before_dp, val_after_dp, "MHz");
 				buf[bufferLen - 1] = 0;
 				break;
 			case CH_DETAILS_TXFREQ:
 				val_before_dp = tmpChannel.txFreq / 100000;
 				val_after_dp = tmpChannel.txFreq - val_before_dp * 100000;
-				snprintf(buf, bufferLen, "Tx:%d.%05dMHz", val_before_dp, val_after_dp);
+				snprintf(buf, bufferLen, "%s:%d.%05d%s", "Tx", val_before_dp, val_after_dp, "MHz");
 				buf[bufferLen - 1] = 0;
 				break;
 			case CH_DETAILS_BANDWIDTH:
