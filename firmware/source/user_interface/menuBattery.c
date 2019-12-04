@@ -55,7 +55,7 @@ static void updateScreen(void)
 	int val1 = averageBatteryVoltage/10;
 	int val2 = averageBatteryVoltage - (val1 * 10);
 
-	snprintf(buffer, 17, "%d.%d%c", val1, val2, 'V');
+	snprintf(buffer, 17, "%d.%dV", val1, val2);
 	buffer[16] = 0;
 	UC1701_printAt(20, 22, buffer, UC1701_FONT_16x32);
 	uint32_t h = (uint32_t)(((averageBatteryVoltage - CUTOFF_VOLTAGE_UPPER_HYST) * MAX_BATTERY_BAR_HEIGHT) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));

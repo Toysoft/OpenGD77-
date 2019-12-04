@@ -224,7 +224,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 					}
 					else
 					{
-						snprintf(nameBuf, bufferLen, "%s %d", "CH", channelNumber);
+						snprintf(nameBuf, bufferLen, "CH %d", channelNumber);
 						nameBuf[bufferLen - 1] = 0;
 					}
 					UC1701_printCentered(50 , nameBuf, UC1701_FONT_6x8);
@@ -246,7 +246,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				{
 					if((trxTalkGroupOrPcId>>24) == TG_CALL_FLAG)
 					{
-						snprintf(nameBuf, bufferLen, "%s %d", "TG", (trxTalkGroupOrPcId & 0x00FFFFFF));
+						snprintf(nameBuf, bufferLen, "TG %d", (trxTalkGroupOrPcId & 0x00FFFFFF));
 						nameBuf[bufferLen - 1] = 0;
 					}
 					else
@@ -788,7 +788,7 @@ static void updateQuickMenuScreen(void)
 				strncpy(buf, currentLanguage->vfoToChannel, bufferLen);
 				break;
 			case CH_SCREEN_QUICK_MENU_DMR_FILTER:
-				snprintf(buf, bufferLen, "%s%c%s", currentLanguage->filter, ':', DMR_FILTER_LEVELS[tmpQuickMenuDmrFilterLevel]);
+				snprintf(buf, bufferLen, "%s:%s", currentLanguage->filter, DMR_FILTER_LEVELS[tmpQuickMenuDmrFilterLevel]);
 				break;
 			default:
 				strcpy(buf, "");

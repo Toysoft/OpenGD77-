@@ -95,12 +95,12 @@ static void updateScreen(void)
 			case CH_DETAILS_MODE:
 				if (tmpChannel.chMode == RADIO_MODE_ANALOG)
 				{
-					snprintf(buf, bufferLen, "%s%s", currentLanguage->mode, ":FM");
+					snprintf(buf, bufferLen, "%s:FM", currentLanguage->mode);
 					buf[bufferLen - 1] = 0;
 				}
 				else
 				{
-					snprintf(buf, bufferLen, "%s%s", currentLanguage->mode, ":DMR");
+					snprintf(buf, bufferLen, "%s:DMR", currentLanguage->mode);
 					buf[bufferLen - 1] = 0;
 				}
 				break;
@@ -108,24 +108,24 @@ static void updateScreen(void)
 			case CH_DETAILS_DMR_CC:
 				if (tmpChannel.chMode == RADIO_MODE_ANALOG)
 				{
-					snprintf(buf, bufferLen, "%s%c%s", currentLanguage->colour_code, ':', currentLanguage->n_a);
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->colour_code, currentLanguage->n_a);
 					buf[bufferLen - 1] = 0;
 				}
 				else
 				{
-					snprintf(buf, bufferLen, "%s%c%d", currentLanguage->colour_code, ':', tmpChannel.rxColor);
+					snprintf(buf, bufferLen, "%s:%d", currentLanguage->colour_code, tmpChannel.rxColor);
 					buf[bufferLen - 1] = 0;
 				}
 				break;
 			case CH_DETAILS_DMR_TS:
 				if (tmpChannel.chMode == RADIO_MODE_ANALOG)
 				{
-					snprintf(buf, bufferLen, "%s%c%s", currentLanguage->timeSlot, ':', currentLanguage->n_a);
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->timeSlot, currentLanguage->n_a);
 					buf[bufferLen - 1] = 0;
 				}
 				else
 				{
-					snprintf(buf, bufferLen, "%s%c%d", currentLanguage->timeSlot, ':', ((tmpChannel.flag2 & 0x40) >> 6) + 1);
+					snprintf(buf, bufferLen, "%s:%d", currentLanguage->timeSlot, ((tmpChannel.flag2 & 0x40) >> 6) + 1);
 					buf[bufferLen - 1] = 0;
 				}
 				break;
@@ -134,18 +134,18 @@ static void updateScreen(void)
 				{
 					if (tmpChannel.txTone == CTCSS_TONE_NONE)
 					{
-						snprintf(buf, bufferLen, "%s%s", "Tx CTCSS:", currentLanguage->none);
+						snprintf(buf, bufferLen, "Tx CTCSS:%s", currentLanguage->none);
 						buf[bufferLen - 1] = 0;
 					}
 					else
 					{
-						snprintf(buf, bufferLen, "%s%d%c%d%s", "Tx CTCSS:", tmpChannel.txTone / 10 , '.', tmpChannel.txTone % 10, "Hz");
+						snprintf(buf, bufferLen, "Tx CTCSS:%d.%dHz", tmpChannel.txTone / 10 , tmpChannel.txTone % 10);
 						buf[bufferLen - 1] = 0;
 					}
 				}
 				else
 				{
-					snprintf(buf, bufferLen, "%s%s", "Tx CTCSS:", currentLanguage->n_a);
+					snprintf(buf, bufferLen, "Tx CTCSS:%s", currentLanguage->n_a);
 					buf[bufferLen - 1] = 0;
 				}
 				break;
@@ -154,76 +154,76 @@ static void updateScreen(void)
 				{
 					if (tmpChannel.rxTone == CTCSS_TONE_NONE)
 					{
-						snprintf(buf, bufferLen, "%s%s", "Rx CTCSS:", currentLanguage->none);
+						snprintf(buf, bufferLen, "Rx CTCSS:%s", currentLanguage->none);
 						buf[bufferLen - 1] = 0;
 					}
 					else
 					{
-						snprintf(buf, bufferLen, "%s%d%c%d%s", "Rx CTCSS:", tmpChannel.rxTone / 10 , '.', tmpChannel.rxTone % 10, "Hz");
+						snprintf(buf, bufferLen, "Rx CTCSS:%d.%dHz", tmpChannel.rxTone / 10 , tmpChannel.rxTone % 10);
 						buf[bufferLen - 1] = 0;
 					}
 				}
 				else
 				{
-					snprintf(buf, bufferLen, "%s%s", "Rx CTCSS:", currentLanguage->n_a);
+					snprintf(buf, bufferLen, "Rx CTCSS:%s", currentLanguage->n_a);
 					buf[bufferLen - 1] = 0;
 				}
 				break;
 			case CH_DETAILS_RXFREQ:
 				val_before_dp = tmpChannel.rxFreq / 100000;
 				val_after_dp = tmpChannel.rxFreq - val_before_dp * 100000;
-				snprintf(buf, bufferLen, "%s%d%c%05d%s", "Rx:", val_before_dp, '.', val_after_dp, "MHz");
+				snprintf(buf, bufferLen, "Rx:%d.%05dMHz", val_before_dp, val_after_dp);
 				buf[bufferLen - 1] = 0;
 				break;
 			case CH_DETAILS_TXFREQ:
 				val_before_dp = tmpChannel.txFreq / 100000;
 				val_after_dp = tmpChannel.txFreq - val_before_dp * 100000;
-				snprintf(buf, bufferLen, "%s%d%c%05d%s", "Tx:", val_before_dp, '.', val_after_dp, "MHz");
+				snprintf(buf, bufferLen, "Tx:%d.%05dMHz", val_before_dp, val_after_dp);
 				buf[bufferLen - 1] = 0;
 				break;
 			case CH_DETAILS_BANDWIDTH:
 				// Bandwidth
 				if (tmpChannel.chMode == RADIO_MODE_DIGITAL)
 				{
-					snprintf(buf, bufferLen, "%s%c%s", currentLanguage->bandwidth, ':', currentLanguage->n_a);
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->bandwidth, currentLanguage->n_a);
 					buf[bufferLen - 1] = 0;
 				}
 				else
 				{
-					snprintf(buf, bufferLen, "%s%c%s", currentLanguage->bandwidth, ':', ((tmpChannel.flag4 & 0x02) == 0x02) ? "25kHz" : "12.5kHz");
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->bandwidth, ((tmpChannel.flag4 & 0x02) == 0x02) ? "25kHz" : "12.5kHz");
 					buf[bufferLen - 1] = 0;
 				}
 				break;
 			case CH_DETAILS_FREQ_STEP:
 					tmpVal = VFO_FREQ_STEP_TABLE[(tmpChannel.VFOflag5 >> 4)] / 100;
-					snprintf(buf, bufferLen, "%s%c%d%c%02d%s", currentLanguage->stepFreq, ':', tmpVal, '.', VFO_FREQ_STEP_TABLE[(tmpChannel.VFOflag5 >> 4)] - (tmpVal * 100), "kHz");
+					snprintf(buf, bufferLen, "%s:%d.%02dkHz", currentLanguage->stepFreq, tmpVal, VFO_FREQ_STEP_TABLE[(tmpChannel.VFOflag5 >> 4)] - (tmpVal * 100));
 					buf[bufferLen - 1] = 0;
 				break;
 			case CH_DETAILS_TOT:// TOT
 				if (tmpChannel.tot != 0)
 				{
-					snprintf(buf, bufferLen, "%s%c%d", currentLanguage->tot, ':', tmpChannel.tot * 15);
+					snprintf(buf, bufferLen, "%s:%d", currentLanguage->tot, tmpChannel.tot * 15);
 					buf[bufferLen - 1] = 0;
 				}
 				else
 				{
-					snprintf(buf, bufferLen, "%s%c%s",currentLanguage->tot, ':', currentLanguage->off);
+					snprintf(buf, bufferLen, "%s:%s",currentLanguage->tot, currentLanguage->off);
 					buf[bufferLen - 1] = 0;
 				}
 				break;
 			case CH_DETAILS_ZONE_SKIP:						// Zone Scan Skip Channel (Using CPS Auto Scan flag)
-				snprintf(buf, bufferLen, "%s%c%s", currentLanguage->zone_skip, ':', ((tmpChannel.flag4 & 0x20) == 0x20) ? currentLanguage->yes : currentLanguage->no);
+				snprintf(buf, bufferLen, "%s:%s", currentLanguage->zone_skip, ((tmpChannel.flag4 & 0x20) == 0x20) ? currentLanguage->yes : currentLanguage->no);
 				buf[bufferLen - 1] = 0;
 				break;
  			case CH_DETAILS_ALL_SKIP:					// All Scan Skip Channel (Using CPS Lone Worker flag)
-				snprintf(buf, bufferLen, "%s%c%s", currentLanguage->all_skip, ':', ((tmpChannel.flag4 & 0x10) == 0x10) ? currentLanguage->yes : currentLanguage->no);
+				snprintf(buf, bufferLen, "%s:%s", currentLanguage->all_skip, ((tmpChannel.flag4 & 0x10) == 0x10) ? currentLanguage->yes : currentLanguage->no);
 				buf[bufferLen - 1] = 0;
 				break;
 				
 			case CH_DETAILS_RXGROUP:
 				codeplugRxGroupGetDataForIndex(tmpChannel.rxGroupList, &rxGroupBuf);
 				codeplugUtilConvertBufToString(rxGroupBuf.name, rxNameBuf, 16);
-				snprintf(buf, bufferLen, "%s%c%s", currentLanguage->rx_group, ':', rxNameBuf);
+				snprintf(buf, bufferLen, "%s:%s", currentLanguage->rx_group, rxNameBuf);
 				buf[bufferLen - 1] = 0;
 				break;
 		}

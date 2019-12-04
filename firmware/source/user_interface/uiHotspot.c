@@ -811,11 +811,11 @@ static void updateScreen(int rxCommandState)
 	//	UC1701_printCentered(16, buffer,UC1701_FONT_8x16);
 		if ((trxTalkGroupOrPcId & 0xFF000000) == 0)
 		{
-			snprintf(buffer, bufferLen, "%s %d", "TG", trxTalkGroupOrPcId & 0xFFFFFF);
+			snprintf(buffer, bufferLen, "TG %d", trxTalkGroupOrPcId & 0xFFFFFF);
 		}
 		else
 		{
-			snprintf(buffer, bufferLen, "%s %d", "PC", trxTalkGroupOrPcId &0xFFFFFF);
+			snprintf(buffer, bufferLen, "PC %d", trxTalkGroupOrPcId &0xFFFFFF);
 		}
 		buffer[bufferLen - 1] = 0;
 		UC1701_printCentered(32, buffer, UC1701_FONT_8x16);
@@ -839,18 +839,18 @@ static void updateScreen(int rxCommandState)
 
 			if (FLCO == 0)
 			{
-				snprintf(buffer, bufferLen, "%s %d", "TG", dstId);
+				snprintf(buffer, bufferLen, "TG %d", dstId);
 			}
 			else
 			{
-				snprintf(buffer, bufferLen, "%s %d", "PC", dstId);
+				snprintf(buffer, bufferLen, "PC %d", dstId);
 			}
 			buffer[bufferLen - 1] = 0;
 			UC1701_printCentered(32, buffer,UC1701_FONT_8x16);
 		}
 		else
 		{
-			snprintf(buffer, bufferLen, "%s%d", "CC:", trxGetDMRColourCode());//, trxGetDMRTimeSlot()+1) ;
+			snprintf(buffer, bufferLen, "CC:%d", trxGetDMRColourCode());//, trxGetDMRTimeSlot()+1) ;
 			buffer[bufferLen - 1] = 0;
 			UC1701_printCore(0, 32, buffer, UC1701_FONT_8x16, UC1701_TEXT_ALIGN_LEFT, false);
 
@@ -858,7 +858,7 @@ static void updateScreen(int rxCommandState)
 		}
 		val_before_dp = freq_rx/100000;
 		val_after_dp = freq_rx - val_before_dp*100000;
-		snprintf(buffer, bufferLen, "%c %d%c%04d %s", 'R', val_before_dp, '.', val_after_dp, "MHz");
+		snprintf(buffer, bufferLen, "R %d.%04d MHz", val_before_dp, val_after_dp);
 		buffer[bufferLen - 1] = 0;
 	}
 	UC1701_printCentered(48, buffer,UC1701_FONT_8x16);

@@ -345,7 +345,7 @@ bool dmrIDLookup( int targetId,dmrIdDataStruct_t *foundRecord)
 			}
 		}
 	}
-	snprintf(foundRecord->text, 20, "%s%d", "ID:", targetId);
+	snprintf(foundRecord->text, 20, "ID:%d", targetId);
 	return false;
 }
 
@@ -390,7 +390,7 @@ static void displayChannelNameOrRxFrequency(char *buffer, size_t maxLen)
 	{
 		int val_before_dp = currentChannelData->rxFreq/100000;
 		int val_after_dp = currentChannelData->rxFreq - val_before_dp*100000;
-		snprintf(buffer, maxLen, "%d%c%05d %s", val_before_dp, '.', val_after_dp, "MHz");
+		snprintf(buffer, maxLen, "%d.%05d MHz", val_before_dp, val_after_dp);
 		buffer[maxLen - 1] = 0;
 	}
 	UC1701_printCentered(52, buffer, UC1701_FONT_6x8);
@@ -530,7 +530,7 @@ void menuUtilityRenderQSOData(void)
 			else
 			{
 				// No talker alias. So we can only show the ID.
-				snprintf(buffer, bufferLen, "%s %d", "ID:", LinkHead->id);
+				snprintf(buffer, bufferLen, "%ID: %d", LinkHead->id);
 				buffer[bufferLen - 1] = 0;
 				UC1701_printCentered(32, buffer, UC1701_FONT_8x16);
 				displayChannelNameOrRxFrequency(buffer, bufferLen);
@@ -632,7 +632,7 @@ void menuUtilityRenderHeader(void)
 	}
 	else
 	{
-		snprintf(buffer, bufferLen, "%c%d %d%%", 'C', trxGetDMRColourCode(), batteryPerentage);
+		snprintf(buffer, bufferLen, "C%d %d%%", trxGetDMRColourCode(), batteryPerentage);
 	}
 	buffer[bufferLen - 1] = 0;
 	UC1701_printCore(0, Y_OFFSET, buffer, UC1701_FONT_6x8,UC1701_TEXT_ALIGN_RIGHT, false);// Display battery percentage at the right

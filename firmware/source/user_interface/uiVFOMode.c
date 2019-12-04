@@ -169,7 +169,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 				{
 					if((trxTalkGroupOrPcId >> 24) == TG_CALL_FLAG)
 					{
-						snprintf(buffer, bufferLen, "%s %d", "TG", (trxTalkGroupOrPcId & 0x00FFFFFF));
+						snprintf(buffer, bufferLen, "TG %d", (trxTalkGroupOrPcId & 0x00FFFFFF));
 					}
 					else
 					{
@@ -210,7 +210,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 				{
 					val_before_dp = currentChannelData->rxFreq/100000;
 					val_after_dp = currentChannelData->rxFreq - val_before_dp*100000;
-					snprintf(buffer, bufferLen, "%c%c %d%c%05d %s", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_RX) ? '>' : ' ', 'R', val_before_dp, '.', val_after_dp, "MHz");
+					snprintf(buffer, bufferLen, "%cR %d.%05d MHz", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_RX) ? '>' : ' ', val_before_dp, val_after_dp);
 					buffer[bufferLen - 1 ] = 0;
 					UC1701_printCentered(32, buffer, UC1701_FONT_8x16);
 				}
@@ -222,14 +222,14 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 
 				val_before_dp = currentChannelData->txFreq/100000;
 				val_after_dp = currentChannelData->txFreq - val_before_dp*100000;
-				snprintf(buffer, bufferLen, "%c%c %d%c%05d %s", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX || trxIsTransmitting) ? '>' : ' ', 'T', val_before_dp, '.', val_after_dp, "MHz");
+				snprintf(buffer, bufferLen, "%cT %d.%05d MHz", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX || trxIsTransmitting) ? '>' : ' ', val_before_dp, val_after_dp);
 				buffer[bufferLen - 1 ] = 0;
 				UC1701_printCentered(48, buffer, UC1701_FONT_8x16);
 			}
 			else
 			{
-				snprintf(buffer, bufferLen, "%c%c%c%c%c%c%c%c%c %s", freq_enter_digits[0], freq_enter_digits[1], freq_enter_digits[2], '.',
-						freq_enter_digits[3], freq_enter_digits[4], freq_enter_digits[5], freq_enter_digits[6], freq_enter_digits[7], "MHz");
+				snprintf(buffer, bufferLen, "%c%c%c.%c%c%c%c%c MHz", freq_enter_digits[0], freq_enter_digits[1], freq_enter_digits[2],
+						freq_enter_digits[3], freq_enter_digits[4], freq_enter_digits[5], freq_enter_digits[6], freq_enter_digits[7]);
 				if (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX)
 				{
 					UC1701_printCentered(48, buffer, UC1701_FONT_8x16);
@@ -754,10 +754,10 @@ static void updateQuickMenuScreen(void)
 				strcpy(buf, "Tx --> Rx");
 				break;
 			case VFO_SCREEN_QUICK_MENU_DMR_FILTER:
-				snprintf(buf, bufferLen, "%s%c%s", currentLanguage->filter, ':', DMR_FILTER_LEVELS[tmpQuickMenuDmrFilterLevel]);
+				snprintf(buf, bufferLen, "%s:%s", currentLanguage->filter, DMR_FILTER_LEVELS[tmpQuickMenuDmrFilterLevel]);
 				break;
 			case VFO_SCREEN_QUICK_MENU_VFO_A_B:
-				sprintf(buf, "%s%c", "VFO:", ((nonVolatileSettings.currentVFONumber==0) ? 'A' : 'B'));
+				sprintf(buf, "VFO:%c", ((nonVolatileSettings.currentVFONumber==0) ? 'A' : 'B'));
 				break;
 
 			default:
