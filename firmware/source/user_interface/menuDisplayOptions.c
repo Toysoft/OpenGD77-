@@ -57,7 +57,7 @@ int menuDisplayOptions(int buttons, int keys, int events, bool isFirstRun)
 static void updateScreen(void)
 {
 	int mNum = 0;
-	size_t bufferLen = 33;
+	static const int bufferLen = 17;
 	char buf[bufferLen];
 
 	UC1701_clearBuf();

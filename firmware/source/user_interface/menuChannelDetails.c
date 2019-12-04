@@ -74,13 +74,13 @@ int menuChannelDetails(int buttons, int keys, int events, bool isFirstRun)
 static void updateScreen(void)
 {
 	int mNum = 0;
-	size_t bufferLen = 33;
+	static const int bufferLen = 17;
 	char buf[bufferLen];
 	int tmpVal;
 	int val_before_dp;
 	int val_after_dp;
 	struct_codeplugRxGroup_t rxGroupBuf;
-	char rxNameBuf[17];
+	char rxNameBuf[bufferLen];
 
 	UC1701_clearBuf();
 	menuDisplayTitle(currentLanguage->channel_details);
@@ -223,7 +223,8 @@ static void updateScreen(void)
 			case CH_DETAILS_RXGROUP:
 				codeplugRxGroupGetDataForIndex(tmpChannel.rxGroupList, &rxGroupBuf);
 				codeplugUtilConvertBufToString(rxGroupBuf.name, rxNameBuf, 16);
-				snprintf(buf, 17, "%s%c%s", currentLanguage->rx_group, ':', rxNameBuf);
+				snprintf(buf, bufferLen, "%s%c%s", currentLanguage->rx_group, ':', rxNameBuf);
+				buf[bufferLen - 1] = 0;
 				break;
 		}
 

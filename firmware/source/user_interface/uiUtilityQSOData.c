@@ -402,7 +402,7 @@ static void displayChannelNameOrRxFrequency(char *buffer, size_t maxLen)
  * We don't care if extra text is larger than 16 chars, UC1701_print*() functions cut them.
  *.
  */
-static void displayContactTextInfos(char *text, size_t maxLen,bool isFromTalkerAlias)
+static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalkerAlias)
 {
 	char buffer[32];
 
@@ -458,11 +458,10 @@ static void displayContactTextInfos(char *text, size_t maxLen,bool isFromTalkerA
 
 void menuUtilityRenderQSOData(void)
 {
-	size_t bufferLen = 33;
+	static const int bufferLen = 33; // displayChannelNameOrRxFrequency() use 6x8 font
 	char buffer[bufferLen];// buffer passed to the DMR ID lookup function, needs to be large enough to hold worst case text length that is returned. Currently 16+1
 	dmrIdDataStruct_t currentRec;
 
-	buffer[0] = 0;
 	menuUtilityReceivedPcId=0;//reset the received PcId
 
 	/*
@@ -481,9 +480,9 @@ void menuUtilityRenderQSOData(void)
 	{
 		// Its a Private call
 		dmrIDLookup( (LinkHead->id & 0xFFFFFF),&currentRec);
-		strncat(buffer, currentRec.text, 20);
-		buffer[20] = 0;
-		UC1701_printCentered(16, buffer,UC1701_FONT_8x16);
+		strncpy(buffer, currentRec.text, 16);
+		buffer[16] = 0;
+		UC1701_printCentered(16, buffer, UC1701_FONT_8x16);
 
 		// Are we already in PC mode to this caller ?
 		if ((trxTalkGroupOrPcId != (LinkHead->id | (PC_CALL_FLAG<<24))) & ((LinkHead->talkGroupOrPcId & 0xFFFFFF)==trxDMRID) )
@@ -503,13 +502,13 @@ void menuUtilityRenderQSOData(void)
 	{
 		// Group call
 		uint32_t tg = (LinkHead->talkGroupOrPcId & 0xFFFFFF);
-		snprintf(buffer, bufferLen, "%s %d",currentLanguage->tg, tg);
-		buffer[bufferLen - 1] = 0;
+		snprintf(buffer, bufferLen, "%s %d", currentLanguage->tg, tg);
+		buffer[16] = 0;
 		if (tg != trxTalkGroupOrPcId || (dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot()) ||
 										(dmrMonitorCapturedCC!=-1 && dmrMonitorCapturedCC != trxGetDMRColourCode()))
 		{
 			UC1701_fillRect(0,16,128,16,false);// fill background with black
-			UC1701_printCore(0, CONTACT_Y_POS, buffer, UC1701_FONT_8x16,UC1701_TEXT_ALIGN_CENTER, true);// draw the text in inverse video
+			UC1701_printCore(0, CONTACT_Y_POS, buffer, UC1701_FONT_8x16, UC1701_TEXT_ALIGN_CENTER, true);// draw the text in inverse video
 		}
 		else
 		{
@@ -534,7 +533,7 @@ void menuUtilityRenderQSOData(void)
 				snprintf(buffer, bufferLen, "%s %d", "ID:", LinkHead->id);
 				buffer[bufferLen - 1] = 0;
 				UC1701_printCentered(32, buffer, UC1701_FONT_8x16);
-				displayChannelNameOrRxFrequency(buffer, (sizeof(buffer) / sizeof(buffer[0])));
+				displayChannelNameOrRxFrequency(buffer, bufferLen);
 			}
 		}
 	}
@@ -543,7 +542,7 @@ void menuUtilityRenderQSOData(void)
 void menuUtilityRenderHeader(void)
 {
 	const int Y_OFFSET = 2;
-	size_t bufferLen = 33;
+	static const int bufferLen = 17;
 	char buffer[bufferLen];
 
 	if (!trxIsTransmitting)

@@ -780,7 +780,7 @@ static void updateScreen(int rxCommandState)
 {
 	int val_before_dp;
 	int val_after_dp;
-	size_t bufferLen = 33;
+	static const int bufferLen = 17;
 	char buffer[bufferLen];
 	dmrIdDataStruct_t currentRec;
 
@@ -798,14 +798,12 @@ static void updateScreen(int rxCommandState)
 
 	snprintf(buffer, bufferLen, "%d%%", batteryPerentage);
 	buffer[bufferLen - 1] = 0;
-
 	UC1701_printCore(0,4,buffer,UC1701_FONT_6x8,UC1701_TEXT_ALIGN_RIGHT,false);// Display battery percentage at the right
-
 
 	if (trxIsTransmitting)
 	{
 		dmrIDLookup( (trxDMRID & 0xFFFFFF),&currentRec);
-		snprintf(buffer, bufferLen, "%s", currentRec.text);
+		strncpy(buffer, currentRec.text, bufferLen);
 		buffer[bufferLen - 1] = 0;
 		UC1701_printCentered(16, buffer, UC1701_FONT_8x16);
 
@@ -813,11 +811,11 @@ static void updateScreen(int rxCommandState)
 	//	UC1701_printCentered(16, buffer,UC1701_FONT_8x16);
 		if ((trxTalkGroupOrPcId & 0xFF000000) == 0)
 		{
-			snprintf(buffer, bufferLen, "TG %d", trxTalkGroupOrPcId & 0xFFFFFF);
+			snprintf(buffer, bufferLen, "%s %d", "TG", trxTalkGroupOrPcId & 0xFFFFFF);
 		}
 		else
 		{
-			snprintf(buffer, bufferLen, "PC %d", trxTalkGroupOrPcId &0xFFFFFF);
+			snprintf(buffer, bufferLen, "%s %d", "PC", trxTalkGroupOrPcId &0xFFFFFF);
 		}
 		buffer[bufferLen - 1] = 0;
 		UC1701_printCentered(32, buffer, UC1701_FONT_8x16);
@@ -835,24 +833,24 @@ static void updateScreen(int rxCommandState)
 			uint32_t FLCO 	= audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][0];// Private or group call
 
 			dmrIDLookup(srcId,&currentRec);
-			snprintf(buffer, bufferLen, "%s", currentRec.text);
+			strncpy(buffer, currentRec.text, bufferLen);
 			buffer[bufferLen - 1] = 0;
 			UC1701_printCentered(16, buffer, UC1701_FONT_8x16);
 
 			if (FLCO == 0)
 			{
-				snprintf(buffer, bufferLen, "TG %d", dstId);
+				snprintf(buffer, bufferLen, "%s %d", "TG", dstId);
 			}
 			else
 			{
-				snprintf(buffer, bufferLen, "PC %d", dstId);
+				snprintf(buffer, bufferLen, "%s %d", "PC", dstId);
 			}
 			buffer[bufferLen - 1] = 0;
 			UC1701_printCentered(32, buffer,UC1701_FONT_8x16);
 		}
 		else
 		{
-			snprintf(buffer, bufferLen, "CC:%d", trxGetDMRColourCode());//, trxGetDMRTimeSlot()+1) ;
+			snprintf(buffer, bufferLen, "%s%d", "CC:", trxGetDMRColourCode());//, trxGetDMRTimeSlot()+1) ;
 			buffer[bufferLen - 1] = 0;
 			UC1701_printCore(0, 32, buffer, UC1701_FONT_8x16, UC1701_TEXT_ALIGN_LEFT, false);
 
@@ -860,7 +858,7 @@ static void updateScreen(int rxCommandState)
 		}
 		val_before_dp = freq_rx/100000;
 		val_after_dp = freq_rx - val_before_dp*100000;
-		snprintf(buffer, bufferLen, "R %d.%04d MHz", val_before_dp, val_after_dp);
+		snprintf(buffer, bufferLen, "%c %d%c%04d %s", 'R', val_before_dp, '.', val_after_dp, "MHz");
 		buffer[bufferLen - 1] = 0;
 	}
 	UC1701_printCentered(48, buffer,UC1701_FONT_8x16);

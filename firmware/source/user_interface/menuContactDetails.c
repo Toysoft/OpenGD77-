@@ -79,20 +79,18 @@ int menuContactDetails(int buttons, int keys, int events, bool isFirstRun)
 static void updateScreen(void)
 {
 	int mNum = 0;
-	size_t bufferLen = 33;
-	char buf[bufferLen];
-
-	buf[0] = 0;
+	static const int bufferLen = 17;
+	char buffer[bufferLen];
 
 	UC1701_clearBuf();
 
 	if (tmpContact.name[0] == 0x00) {
-		strncat(buf, currentLanguage->new_contact, bufferLen);
-		buf[16] = 0;
+		strncpy(buffer, currentLanguage->new_contact, bufferLen);
+		buffer[bufferLen - 1] = 0;
 	} else {
-		codeplugUtilConvertBufToString(tmpContact.name, buf, 16);
+		codeplugUtilConvertBufToString(tmpContact.name, buffer, 16);
 	}
-	menuDisplayTitle(buf);
+	menuDisplayTitle(buffer);
 
 	switch (menuContactDetailsState) {
 	case MENU_CONTACT_DETAILS_DISPLAY:
@@ -110,44 +108,44 @@ static void updateScreen(void)
 				switch (tmpContact.callType)
 				{
 				case CONTACT_CALLTYPE_TG:
-					snprintf(buf, bufferLen, "%s%c%s", currentLanguage->tg, ':', digits);
-					buf[bufferLen - 1] = 0;
+					snprintf(buffer, bufferLen, "%s%c%s", currentLanguage->tg, ':', digits);
+					buffer[bufferLen - 1] = 0;
 					break;
 				case CONTACT_CALLTYPE_PC: // Private
-					snprintf(buf, bufferLen, "%s%c%s", currentLanguage->pc, ':', digits);
-					buf[bufferLen - 1] = 0;
+					snprintf(buffer, bufferLen, "%s%c%s", currentLanguage->pc, ':', digits);
+					buffer[bufferLen - 1] = 0;
 					break;
 				case CONTACT_CALLTYPE_ALL: // All Call
-					snprintf(buf, bufferLen, "%s%c%d", currentLanguage->all, ':', 16777215);
-					buf[bufferLen - 1] = 0;
+					snprintf(buffer, bufferLen, "%s%c%d", currentLanguage->all, ':', 16777215);
+					buffer[bufferLen - 1] = 0;
 					break;
 				}
 				break;
 			case CONTACT_DETAILS_CALLTYPE:
-				snprintf(buf, bufferLen, "%s%c%s", currentLanguage->type, ':', callTypeString[tmpContact.callType]);
-				buf[bufferLen - 1] = 0;
+				snprintf(buffer, bufferLen, "%s%c%s", currentLanguage->type, ':', callTypeString[tmpContact.callType]);
+				buffer[bufferLen - 1] = 0;
 				break;
 			case CONTACT_DETAILS_TS:
 				switch (tmpContact.reserve1 & 0x3)
 				{
 				case 1:
 				case 3:
-					snprintf(buf, bufferLen, "%s%c%s", currentLanguage->timeSlot, ':', currentLanguage->none);
-					buf[bufferLen - 1] = 0;
+					snprintf(buffer, bufferLen, "%s%c%s", currentLanguage->timeSlot, ':', currentLanguage->none);
+					buffer[bufferLen - 1] = 0;
 					break;
 				case 0:
-					snprintf(buf, bufferLen, "%s%c%d", currentLanguage->timeSlot, ':', 1);
-					buf[bufferLen - 1] = 0;
+					snprintf(buffer, bufferLen, "%s%c%d", currentLanguage->timeSlot, ':', 1);
+					buffer[bufferLen - 1] = 0;
 					break;
 				case 2:
-					snprintf(buf, bufferLen, "%s%c%d", currentLanguage->timeSlot, ':', 2);
-					buf[bufferLen - 1] = 0;
+					snprintf(buffer, bufferLen, "%s%c%d", currentLanguage->timeSlot, ':', 2);
+					buffer[bufferLen - 1] = 0;
 					break;
 				}
 				break;
 			}
 
-			menuDisplayEntry(i, mNum, buf);
+			menuDisplayEntry(i, mNum, buffer);
 		}
 		break;
 	case MENU_CONTACT_DETAILS_SAVED:
@@ -167,7 +165,7 @@ static void updateScreen(void)
 static void handleEvent(int buttons, int keys, int events)
 {
 	dmrIdDataStruct_t foundRecord;
-	size_t bufferLen = 33;
+	static const int bufferLen = 17;
 	char buf[bufferLen];
 	int sLen = strlen(digits);
 
