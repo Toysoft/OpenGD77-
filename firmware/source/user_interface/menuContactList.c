@@ -233,7 +233,8 @@ enum CONTACT_LIST_QUICK_MENU_ITEMS
 static void updateSubMenuScreen(void)
 {
 	int mNum = 0;
-	char buf[33];
+	size_t bufferLen = 33;
+	char buf[bufferLen];
 
 	UC1701_clearBuf();
 
@@ -247,18 +248,18 @@ static void updateSubMenuScreen(void)
 		switch(mNum)
 		{
 			case CONTACT_LIST_QUICK_MENU_SELECT:
-				strcpy(buf, currentLanguage->select_tx);
+				strncpy(buf, currentLanguage->select_tx, 17);
 				break;
 			case CONTACT_LIST_QUICK_MENU_EDIT:
-				strcpy(buf, currentLanguage->edit_contact);
+				strncpy(buf, currentLanguage->edit_contact, 17);
 				break;
 			case CONTACT_LIST_QUICK_MENU_DELETE:
-				strcpy(buf, currentLanguage->delete_contact);
+				strncpy(buf, currentLanguage->delete_contact, 17);
 				break;
 			default:
 				strcpy(buf, "");
 		}
-
+		buf[bufferLen - 1] = 0;
 		menuDisplayEntry(i, mNum, buf);
 	}
 
