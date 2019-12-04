@@ -63,7 +63,7 @@ const stringsTable_t frenchLanguage =
 .user_dmr_id			= "DMR ID perso.",
 .contact 				= "Contact",
 .accept_call			= "Accepter appel ?",
-.private_call			= "Appel privé",
+.private_call			= "Appel Privé",
 .squelch				= "Squelch",
 .quick_menu 			= "Menu rapide",
 .filter					= "Filtre",
@@ -117,6 +117,16 @@ const stringsTable_t frenchLanguage =
 .scan_mode				= "Scan mode",
 .hold					= "Hold",
 .pause					= "Pause",
+.empty_list				= "Liste Vide",
+.delete_contact_qm			= "Efface contact ?",
+.contact_deleted			= "Contact effacé",
+.contact_used				= "Contact utilisé",
+.in_rx_group				= "ds le groupe RX",
+.select_tx				= "Select° TX",
+.edit_contact				= "Edite Contact",
+.delete_contact				= "Efface Contact",
+.group_call				= "Group Call",
+.all_call				= "All Call",
 };
 /********************************************************************
  *
