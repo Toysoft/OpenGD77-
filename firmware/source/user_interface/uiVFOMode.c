@@ -806,7 +806,7 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 			switch(gMenusCurrentItemIndex)
 			{
 				case VFO_SCREEN_QUICK_MENU_DMR_FILTER:
-					if (tmpQuickMenuDmrFilterLevel < DMR_FILTER_TS_TG)
+					if (tmpQuickMenuDmrFilterLevel < DMR_FILTER_TS)
 					{
 						tmpQuickMenuDmrFilterLevel++;
 					}
