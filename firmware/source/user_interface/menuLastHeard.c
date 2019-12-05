@@ -52,7 +52,8 @@ int menuLastHeard(int buttons, int keys, int events, bool isFirstRun)
 
 static void updateScreen(void)
 {
-	char buffer[17];
+	static const int bufferLen = 17;
+	char buffer[bufferLen];
 	dmrIdDataStruct_t foundRecord;
 	int numDisplayed=0;
 	LinkItem_t *item = LinkHead;
@@ -75,14 +76,13 @@ static void updateScreen(void)
 		{
 			if (item->talkerAlias[0] != 0x00)
 			{
-				memcpy(buffer, item->talkerAlias, 16);// limit to 1 line of the display which is 16 chars at the normal font size
-				buffer[16] = 0;
+				memcpy(buffer, item->talkerAlias, bufferLen - 1);// limit to 1 line of the display which is 16 chars at the normal font size
 			}
 			else
 			{
-				snprintf(buffer, 17, "ID:%d", item->id);
-				buffer[16] = 0;
+				snprintf(buffer, bufferLen, "ID:%d", item->id);
 			}
+			buffer[bufferLen - 1] = 0;
 			UC1701_printCentered(16+(numDisplayed*16), buffer, UC1701_FONT_8x16);
 		}
 

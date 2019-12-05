@@ -65,7 +65,6 @@ extern volatile int slot_state;
 extern volatile uint8_t DMR_frame_buffer[DRM_FRAME_BUFFER_SIZE];
 extern volatile bool updateLastHeard;
 extern volatile int dmrMonitorCapturedTS;
-extern volatile int dmrMonitorCapturedCC;
 
 enum DMR_SLOT_STATE { DMR_STATE_IDLE, DMR_STATE_RX_1, DMR_STATE_RX_2, DMR_STATE_RX_END,
 					  DMR_STATE_TX_START_1, DMR_STATE_TX_START_2, DMR_STATE_TX_START_3, DMR_STATE_TX_START_4, DMR_STATE_TX_START_5,

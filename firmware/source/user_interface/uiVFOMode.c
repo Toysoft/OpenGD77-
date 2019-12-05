@@ -150,7 +150,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 {
 	int val_before_dp;
 	int val_after_dp;
-	size_t bufferLen = 33;
+	static const int bufferLen = 17;
 	char buffer[bufferLen];
 
 	UC1701_clearBuf();
@@ -170,20 +170,20 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					if((trxTalkGroupOrPcId >> 24) == TG_CALL_FLAG)
 					{
 						snprintf(buffer, bufferLen, "TG %d", (trxTalkGroupOrPcId & 0x00FFFFFF));
-						buffer[bufferLen - 1] = 0;
 					}
 					else
 					{
 						dmrIdDataStruct_t currentRec;
 						dmrIDLookup((trxTalkGroupOrPcId & 0x00FFFFFF),&currentRec);
-						snprintf(buffer, 20, "%s", currentRec.text);
-						buffer[20] = 0;
+						strncpy(buffer, currentRec.text, bufferLen);
 					}
 				}
 				else
 				{
 					codeplugUtilConvertBufToString(contactData.name, buffer, 16);
 				}
+
+				buffer[bufferLen - 1] = 0;
 
 				if (trxIsTransmitting)
 				{
@@ -196,7 +196,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 			}
 			else if(displaySquelch)
 			{
-				snprintf(buffer, 8, currentLanguage->squelch);
+				strncpy(buffer, currentLanguage->squelch, 8);
 				buffer[7] = 0; // Avoid overlap with bargraph
 				UC1701_printAt(0,16,buffer, UC1701_FONT_8x16);
 				int bargraph= 1 + ((currentChannelData->sql - 1) * 5) /2;
@@ -210,7 +210,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 				{
 					val_before_dp = currentChannelData->rxFreq/100000;
 					val_after_dp = currentChannelData->rxFreq - val_before_dp*100000;
-					snprintf(buffer, bufferLen, "%c%c %d.%05d %s", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_RX) ? '>' : ' ', 'R', val_before_dp, val_after_dp, "MHz");
+					snprintf(buffer, bufferLen, "%cR %d.%05d MHz", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_RX) ? '>' : ' ', val_before_dp, val_after_dp);
 					buffer[bufferLen - 1 ] = 0;
 					UC1701_printCentered(32, buffer, UC1701_FONT_8x16);
 				}
@@ -222,14 +222,14 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 
 				val_before_dp = currentChannelData->txFreq/100000;
 				val_after_dp = currentChannelData->txFreq - val_before_dp*100000;
-				snprintf(buffer, bufferLen, "%c%c %d.%05d %s", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX || trxIsTransmitting) ? '>' : ' ', 'T', val_before_dp, val_after_dp, "MHz");
+				snprintf(buffer, bufferLen, "%cT %d.%05d MHz", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX || trxIsTransmitting) ? '>' : ' ', val_before_dp, val_after_dp);
+				buffer[bufferLen - 1 ] = 0;
 				UC1701_printCentered(48, buffer, UC1701_FONT_8x16);
 			}
 			else
 			{
-				snprintf(buffer, bufferLen, "%c%c%c.%c%c%c%c%c %s", freq_enter_digits[0], freq_enter_digits[1], freq_enter_digits[2],
-						freq_enter_digits[3], freq_enter_digits[4], freq_enter_digits[5], freq_enter_digits[6], freq_enter_digits[7], "MHz");
-				buffer[bufferLen - 1] = 0;
+				snprintf(buffer, bufferLen, "%c%c%c.%c%c%c%c%c MHz", freq_enter_digits[0], freq_enter_digits[1], freq_enter_digits[2],
+						freq_enter_digits[3], freq_enter_digits[4], freq_enter_digits[5], freq_enter_digits[6], freq_enter_digits[7]);
 				if (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX)
 				{
 					UC1701_printCentered(48, buffer, UC1701_FONT_8x16);
@@ -343,8 +343,7 @@ static void handleEvent(int buttons, int keys, int events)
 
 	if (isDisplayingQSOData && (buttons & BUTTON_SK2)!=0 && trxGetMode() == RADIO_MODE_DIGITAL &&
 				(trxTalkGroupOrPcId != tg ||
-				(dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot()) ||
-				(dmrMonitorCapturedCC!=-1 && dmrMonitorCapturedCC != trxGetDMRColourCode())))
+				(dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot())))
 	{
 		lastHeardClearLastID();
 
@@ -359,11 +358,6 @@ static void handleEvent(int buttons, int keys, int events)
 		{
 			trxTalkGroupOrPcId = tg;
 			nonVolatileSettings.overrideTG = trxTalkGroupOrPcId;
-		}
-
-		if(dmrMonitorCapturedCC!=-1 && dmrMonitorCapturedCC != trxGetDMRColourCode())
-		{
-			trxSetDMRColourCode(dmrMonitorCapturedCC);
 		}
 
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
@@ -732,7 +726,7 @@ enum VFO_SCREEN_QUICK_MENU_ITEMS { 	VFO_SCREEN_QUICK_MENU_TX_SWAP_RX = 0, VFO_SC
 static void updateQuickMenuScreen(void)
 {
 	int mNum = 0;
-	size_t bufferLen = 33;
+	static const int bufferLen = 17;
 	char buf[bufferLen];
 
 	UC1701_clearBuf();
@@ -745,27 +739,26 @@ static void updateQuickMenuScreen(void)
 		switch(mNum)
 		{
 			case VFO_SCREEN_QUICK_MENU_BOTH_TO_RX:
-				strncpy(buf, "Rx --> Tx", 17);
+				strcpy(buf, "Rx --> Tx");
 				break;
 			case VFO_SCREEN_QUICK_MENU_TX_SWAP_RX:
-				strncpy(buf, "Tx <--> Rx", 17);
+				strcpy(buf, "Tx <--> Rx");
 				break;
 			case VFO_SCREEN_QUICK_MENU_BOTH_TO_TX:
-				strncpy(buf, "Tx --> Rx", 17);
+				strcpy(buf, "Tx --> Rx");
 				break;
 			case VFO_SCREEN_QUICK_MENU_DMR_FILTER:
-				snprintf(buf, 17, "%s:%s", currentLanguage->filter, DMR_FILTER_LEVELS[tmpQuickMenuDmrFilterLevel]);
+				snprintf(buf, bufferLen, "%s:%s", currentLanguage->filter, DMR_FILTER_LEVELS[tmpQuickMenuDmrFilterLevel]);
 				break;
 			case VFO_SCREEN_QUICK_MENU_VFO_A_B:
-				snprintf(buf, 17, "VFO:%s", ((nonVolatileSettings.currentVFONumber==0)?"A":"B"));
+				sprintf(buf, "VFO:%c", ((nonVolatileSettings.currentVFONumber==0) ? 'A' : 'B'));
 				break;
 
 			default:
 				strcpy(buf, "");
 		}
 
-		buf[16] = 0;
-
+		buf[bufferLen - 1] = 0;
 		menuDisplayEntry(i, mNum, buf);
 	}
 
@@ -813,7 +806,7 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 			switch(gMenusCurrentItemIndex)
 			{
 				case VFO_SCREEN_QUICK_MENU_DMR_FILTER:
-					if (tmpQuickMenuDmrFilterLevel < DMR_FILTER_CC_TS)
+					if (tmpQuickMenuDmrFilterLevel < DMR_FILTER_TS)
 					{
 						tmpQuickMenuDmrFilterLevel++;
 					}
@@ -833,7 +826,7 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 			switch(gMenusCurrentItemIndex)
 			{
 				case VFO_SCREEN_QUICK_MENU_DMR_FILTER:
-					if (tmpQuickMenuDmrFilterLevel > DMR_FILTER_CC)
+					if (tmpQuickMenuDmrFilterLevel > DMR_FILTER_NONE)
 					{
 						tmpQuickMenuDmrFilterLevel--;
 					}

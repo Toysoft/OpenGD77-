@@ -16,8 +16,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-#ifndef USER_INTERFACE_LANGUAGES_Dansk_H_
-#define USER_INTERFACE_LANGUAGES_Dansk_H_
+#ifndef USER_INTERFACE_LANGUAGES_DANISH_H_
+#define USER_INTERFACE_LANGUAGES_DANISH_H_
 /********************************************************************
  *
  * VERY IMPORTANT.
@@ -26,7 +26,7 @@
  * or emacs on Linux with windows-1252-unix encoding
  *
  ********************************************************************/
-const stringsTable_t danskLanguage =
+const stringsTable_t danishLanguage =
 {
 .LANGUAGE_NAME 			= "Dansk",
 .language				= "Sprog",
@@ -99,7 +99,7 @@ const stringsTable_t danskLanguage =
 .timeout_beep			= "Timeout bip",
 .factory_reset			= "Fabriksinst",
 .calibration			= "Justering",
-.band_limits			= "Udvid Frekvens",
+.band_limits			= "Åben FRQ",
 .beep_volume			= "Bip vol",
 .dmr_mic_gain			= "DMR mic",
 .key_long				= "Lang Tast",
@@ -117,6 +117,16 @@ const stringsTable_t danskLanguage =
 .scan_mode				= "Scan mode",
 .hold					= "Hold",
 .pause					= "Pause",
+.empty_list				= "Empty List",
+.delete_contact_qm			= "Delete contact?",
+.contact_deleted			= "Contact deleted",
+.contact_used				= "Contact used",
+.in_rx_group				= "in RX group",
+.select_tx				= "Select TX",
+.edit_contact				= "Edit Contact",
+.delete_contact				= "Delete Contact",
+.group_call				= "Group Call",
+.all_call				= "All Call",
 };
 /********************************************************************
  *
@@ -126,4 +136,4 @@ const stringsTable_t danskLanguage =
  * or emacs on Linux with windows-1252-unix encoding
  *
  ********************************************************************/
-#endif /* USER_INTERFACE_LANGUAGES_Dansk_H_ */
+#endif /* USER_INTERFACE_LANGUAGES_DANISH_H_ */
