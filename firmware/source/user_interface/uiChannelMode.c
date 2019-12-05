@@ -224,7 +224,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 					}
 					else
 					{
-						snprintf(nameBuf, nameBufferLen, "CH %d", channelNumber);
+						snprintf(nameBuf, nameBufferLen, "%s Ch:%d",currentLanguage->all_channels, channelNumber);
 					}
 					nameBuf[nameBufferLen - 1] = 0;
 					UC1701_printCentered(50 , nameBuf, UC1701_FONT_6x8);
