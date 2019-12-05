@@ -49,7 +49,7 @@ uint32_t menuUtilityReceivedPcId 	= 0;// No current Private call awaiting accept
 uint32_t menuUtilityTgBeforePcMode 	= 0;// No TG saved, prior to a Private call being accepted.
 
 const char *POWER_LEVELS[]={"250mW","500mW","750mW","1W","2W","3W","4W","5W"};
-const char *DMR_FILTER_LEVELS[]={"None","CC","CC,TS","CC,TS,TG"};
+const char *DMR_FILTER_LEVELS[]={"None","TS","TS,TG"};
 
 /*
  * Remove space at the end of the array, and return pointer to first non space character
@@ -504,8 +504,7 @@ void menuUtilityRenderQSOData(void)
 		uint32_t tg = (LinkHead->talkGroupOrPcId & 0xFFFFFF);
 		snprintf(buffer, bufferLen, "%s %d", currentLanguage->tg, tg);
 		buffer[16] = 0;
-		if (tg != trxTalkGroupOrPcId || (dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot()) ||
-										(dmrMonitorCapturedCC!=-1 && dmrMonitorCapturedCC != trxGetDMRColourCode()))
+		if (tg != trxTalkGroupOrPcId || (dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot()))
 		{
 			UC1701_fillRect(0,16,128,16,false);// fill background with black
 			UC1701_printCore(0, CONTACT_Y_POS, buffer, UC1701_FONT_8x16, UC1701_TEXT_ALIGN_CENTER, true);// draw the text in inverse video
@@ -594,7 +593,7 @@ void menuUtilityRenderHeader(void)
 				UC1701_printAt(0, Y_OFFSET, "DMR", UC1701_FONT_6x8);
 				snprintf(buffer, bufferLen, "%s%d", currentLanguage->ts, trxGetDMRTimeSlot() + 1);
 				buffer[bufferLen - 1] = 0;
-				if (nonVolatileSettings.dmrFilterLevel < DMR_FILTER_CC_TS)
+				if (nonVolatileSettings.dmrFilterLevel < DMR_FILTER_TS)
 				{
 					UC1701_fillRect(20, Y_OFFSET, 20, 8, false);
 					UC1701_printCore(22, Y_OFFSET, buffer, UC1701_FONT_6x8,UC1701_TEXT_ALIGN_LEFT, true);

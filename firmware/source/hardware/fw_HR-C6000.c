@@ -101,7 +101,6 @@ volatile int lastTimeCode=0;
 static volatile uint8_t previousLCBuf[12];
 volatile bool updateLastHeard=false;
 volatile int dmrMonitorCapturedTS = -1;
-volatile int dmrMonitorCapturedCC = -1;
 static volatile int dmrMonitorCapturedTimeout;
 
 static bool callAcceptFilter(void);
@@ -312,7 +311,7 @@ static inline bool checkTimeSlotFilter(void)
 	}
 	else
 	{
-		if (nonVolatileSettings.dmrFilterLevel >= DMR_FILTER_CC_TS)
+		if (nonVolatileSettings.dmrFilterLevel >= DMR_FILTER_TS)
 		{
 			return (timeCode == trxGetDMRTimeSlot());
 		}
@@ -332,30 +331,9 @@ static inline bool checkTimeSlotFilter(void)
 	}
 }
 
-static inline bool checkColourCodeFilter(void)
-{
-	if (nonVolatileSettings.dmrFilterLevel >= DMR_FILTER_CC)
-	{
-		return (rxColorCode == trxGetDMRColourCode());
-	}
-	else
-	{
-		if (dmrMonitorCapturedCC==-1 || (dmrMonitorCapturedCC == rxColorCode))
-		{
-			dmrMonitorCapturedCC = rxColorCode;
-			dmrMonitorCapturedTimeout = nonVolatileSettings.dmrCaptureTimeout*1000;
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-}
-
 bool checkTalkGroupFilter(void)
 {
-	if (nonVolatileSettings.dmrFilterLevel >= DMR_FILTER_CC_TS_TG)
+	if (nonVolatileSettings.dmrFilterLevel >= DMR_FILTER_TS_TG)
 	{
 		return true;// To Do. Actually filter on TG
 	}
@@ -563,7 +541,7 @@ inline static void HRC6000SysReceivedDataInt(void)
 
 	//SEGGER_RTT_printf(0, "\t\tRXDT\taf:%d\tsc:%02x\tcrc:%02x\trpi:%02x\tcc:%d\ttc:%d\t\n",(rxDataType&0x07),rxSyncClass,rxCRCStatus,rpi,rxColorCode,timeCode);
 
-	if ((slot_state == DMR_STATE_RX_1 || slot_state == DMR_STATE_RX_2) && (!checkColourCodeFilter() || rpi!=0 || rxCRCStatus != true))
+	if ((slot_state == DMR_STATE_RX_1 || slot_state == DMR_STATE_RX_2) && (rxColorCode != trxGetDMRColourCode() || rpi!=0 || rxCRCStatus != true))
 	{
 		//SEGGER_RTT_printf(0, "INVALID DATA");
 		// Something is not correct
@@ -624,7 +602,7 @@ inline static void HRC6000SysReceivedDataInt(void)
 		// Start RX
 		if (slot_state == DMR_STATE_IDLE)
 		{
-			if ((checkColourCodeFilter()))// && (rxSyncClass==SYNC_CLASS_DATA) && (rxDataType==1) )// && (timeCode == trxGetDMRTimeSlot()))       //Voice LC Header
+			if (rxColorCode == trxGetDMRColourCode())// && (rxSyncClass==SYNC_CLASS_DATA) && (rxDataType==1) )// && (timeCode == trxGetDMRTimeSlot()))       //Voice LC Header
 			{
 				//SEGGER_RTT_printf(0,"RX START\n");
 				//triggerQSOdataDisplay();
@@ -656,7 +634,7 @@ inline static void HRC6000SysReceivedDataInt(void)
 					(skip_count == 0 ||  (receivedSrcId != trxDMRID && receivedSrcId!=0x00)) &&
 					(rxSyncClass!=SYNC_CLASS_DATA) && ( sequenceNumber>= 0x01) && (sequenceNumber <= 0x06) &&
 					(((trxDMRMode == DMR_MODE_PASSIVE) && (checkTimeSlotFilter() && lastTimeCode != timeCode) &&
-					 (checkColourCodeFilter())) || (trxDMRMode == DMR_MODE_ACTIVE &&
+					 (rxColorCode == trxGetDMRColourCode())) || (trxDMRMode == DMR_MODE_ACTIVE &&
 					 (slot_state == DMR_STATE_RX_1))))
 			{
 				//SEGGER_RTT_printf(0, "Audio frame %d\t%d\n",sequenceNumber,timeCode);
@@ -1479,7 +1457,6 @@ void tick_HR_C6000(void)
 		if (dmrMonitorCapturedTimeout==0)
 		{
 			dmrMonitorCapturedTS = -1;// Reset the TS capture
-			dmrMonitorCapturedCC = -1;// Reset the CC capture
 		}
 	}
 }

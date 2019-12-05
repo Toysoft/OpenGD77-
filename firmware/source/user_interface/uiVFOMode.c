@@ -343,8 +343,7 @@ static void handleEvent(int buttons, int keys, int events)
 
 	if (isDisplayingQSOData && (buttons & BUTTON_SK2)!=0 && trxGetMode() == RADIO_MODE_DIGITAL &&
 				(trxTalkGroupOrPcId != tg ||
-				(dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot()) ||
-				(dmrMonitorCapturedCC!=-1 && dmrMonitorCapturedCC != trxGetDMRColourCode())))
+				(dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot())))
 	{
 		lastHeardClearLastID();
 
@@ -359,11 +358,6 @@ static void handleEvent(int buttons, int keys, int events)
 		{
 			trxTalkGroupOrPcId = tg;
 			nonVolatileSettings.overrideTG = trxTalkGroupOrPcId;
-		}
-
-		if(dmrMonitorCapturedCC!=-1 && dmrMonitorCapturedCC != trxGetDMRColourCode())
-		{
-			trxSetDMRColourCode(dmrMonitorCapturedCC);
 		}
 
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
@@ -812,7 +806,7 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 			switch(gMenusCurrentItemIndex)
 			{
 				case VFO_SCREEN_QUICK_MENU_DMR_FILTER:
-					if (tmpQuickMenuDmrFilterLevel < DMR_FILTER_CC_TS)
+					if (tmpQuickMenuDmrFilterLevel < DMR_FILTER_TS_TG)
 					{
 						tmpQuickMenuDmrFilterLevel++;
 					}
@@ -832,7 +826,7 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 			switch(gMenusCurrentItemIndex)
 			{
 				case VFO_SCREEN_QUICK_MENU_DMR_FILTER:
-					if (tmpQuickMenuDmrFilterLevel > DMR_FILTER_CC)
+					if (tmpQuickMenuDmrFilterLevel > DMR_FILTER_NONE)
 					{
 						tmpQuickMenuDmrFilterLevel--;
 					}
