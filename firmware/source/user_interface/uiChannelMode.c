@@ -197,6 +197,8 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 	static const int bufferLen = 17;
 	char buffer[bufferLen];
 	int verticalPositionOffset = 0;
+	struct_codeplugContact_t contact;
+	int contactIndex;
 
 	UC1701_clearBuf();
 	menuUtilityRenderHeader();
@@ -255,15 +257,26 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				{
 					if((trxTalkGroupOrPcId>>24) == TG_CALL_FLAG)
 					{
-						snprintf(nameBuf, bufferLen, "TG %d", (trxTalkGroupOrPcId & 0x00FFFFFF));
+						contactIndex = codeplugContactIndexByTGorPC((trxTalkGroupOrPcId & 0x00FFFFFF), CONTACT_CALLTYPE_TG, &contact);
+						if (contactIndex == 0) {
+							snprintf(nameBuf, bufferLen, "TG %d", (trxTalkGroupOrPcId & 0x00FFFFFF));
+						} else {
+							codeplugUtilConvertBufToString(contact.name, nameBuf, 16);
+						}
 					}
 					else
 					{
-						dmrIdDataStruct_t currentRec;
-						dmrIDLookup((trxTalkGroupOrPcId & 0x00FFFFFF), &currentRec);
-						strncpy(nameBuf, currentRec.text, bufferLen);
+						contactIndex = codeplugContactIndexByTGorPC((trxTalkGroupOrPcId & 0x00FFFFFF), CONTACT_CALLTYPE_PC, &contact);
+						if (contactIndex == 0) {
+							dmrIdDataStruct_t currentRec;
+							dmrIDLookup((trxTalkGroupOrPcId & 0x00FFFFFF), &currentRec);
+							strncpy(nameBuf, currentRec.text, bufferLen);
+						} else {
+							codeplugUtilConvertBufToString(contact.name, nameBuf, 16);
+						}
 					}
 					nameBuf[bufferLen - 1] = 0;
+					UC1701_drawRect(0, CONTACT_Y_POS + verticalPositionOffset, 128, 16, true);
 				}
 				else
 				{
