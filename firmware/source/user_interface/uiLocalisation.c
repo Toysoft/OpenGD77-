@@ -39,7 +39,7 @@
  */
 const stringsTable_t languages[NUM_LANGUAGES]= { 	englishLanguage,
 													catalanLanguage,
-													danskLanguage,
+													danishLanguage,
 													frenchLanguage,
 													germanLanguage,
 													italianLanguage,

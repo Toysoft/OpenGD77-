@@ -16,8 +16,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-#ifndef USER_INTERFACE_LANGUAGES_Dansk_H_
-#define USER_INTERFACE_LANGUAGES_Dansk_H_
+#ifndef USER_INTERFACE_LANGUAGES_DANISH_H_
+#define USER_INTERFACE_LANGUAGES_DANISH_H_
 /********************************************************************
  *
  * VERY IMPORTANT.
@@ -26,7 +26,7 @@
  * or emacs on Linux with windows-1252-unix encoding
  *
  ********************************************************************/
-const stringsTable_t danskLanguage =
+const stringsTable_t danishLanguage =
 {
 .LANGUAGE_NAME 			= "Dansk",
 .language				= "Sprog",
@@ -136,4 +136,4 @@ const stringsTable_t danskLanguage =
  * or emacs on Linux with windows-1252-unix encoding
  *
  ********************************************************************/
-#endif /* USER_INTERFACE_LANGUAGES_Dansk_H_ */
+#endif /* USER_INTERFACE_LANGUAGES_DANISH_H_ */
