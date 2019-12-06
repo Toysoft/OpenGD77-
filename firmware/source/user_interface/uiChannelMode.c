@@ -56,7 +56,7 @@ static int nuisanceDelete[MAX_ZONE_SCAN_NUISANCE_CHANNELS];
 static int nuisanceDeleteIndex = 0;
 
 
-int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
+int menuChannelMode(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex)
 {
 	if (isFirstRun)
 	{
@@ -941,13 +941,13 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 
 
 
-int menuChannelModeQuickMenu(int buttons, int keys, int events, bool isFirstRun)
+int menuChannelModeQuickMenu(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex)
 {
 	if (isFirstRun)
 	{
 		uiChannelModeScanActive=false;
 		tmpQuickMenuDmrFilterLevel = nonVolatileSettings.dmrFilterLevel;
-		gMenusCurrentItemIndex=0;
+		gMenusCurrentItemIndex=prevItemIndex;
 		updateQuickMenuScreen();
 	}
 	else

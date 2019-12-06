@@ -28,12 +28,13 @@ extern int menuDisplayLightTimer;
 extern int menuTimer;
 
 
-typedef int (*MenuFunctionPointer_t)(int,int,int,bool); // Typedef for menu function pointers.  Functions are passed the key, the button and the event data. Event can be a Key or a button or both. Last arg is for when the function is only called to initialise and display its screen.
+typedef int (*MenuFunctionPointer_t)(int,int,int,bool,int); // Typedef for menu function pointers.  Functions are passed the key, the button and the event data. Event can be a Key or a button or both. Last arg is for when the function is only called to initialise and display its screen.
 typedef struct menuControlDataStruct
 {
 	int currentMenuNumber;
 	int stackPosition;
 	int stack[16];
+	int itemIndex[16];
 } menuControlDataStruct_t;
 
 typedef struct menuItemNew

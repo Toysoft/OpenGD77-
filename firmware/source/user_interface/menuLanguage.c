@@ -24,11 +24,11 @@ static void updateScreen(void);
 static void handleEvent(int buttons, int keys, int events);
 
 
-int menuLanguage(int buttons, int keys, int events, bool isFirstRun)
+int menuLanguage(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex)
 {
 	if (isFirstRun)
 	{
-		gMenusCurrentItemIndex=0;
+		gMenusCurrentItemIndex=prevItemIndex;
 		updateScreen();
 	}
 	else
