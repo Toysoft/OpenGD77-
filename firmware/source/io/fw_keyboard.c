@@ -98,6 +98,7 @@ uint32_t fw_read_keyboard(void)
 	{
 		GPIO_PinInit(GPIOC, col, &pin_config_output);
 		GPIO_PinWrite(GPIOC, col, 0);
+		for(volatile int i = 0; i < 100;i++);// small delay to allow voltages to settle. The delay value of 100 is arbitrary.
 
 		result=(result<<5) | fw_read_keyboard_col();
 
