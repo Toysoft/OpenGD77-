@@ -131,6 +131,7 @@ void menuSystemPushNewMenu(int menuNumber)
 }
 void menuSystemPopPreviousMenu(void)
 {
+	menuControlData.itemIndex[menuControlData.stackPosition] = 0;
 	menuControlData.stackPosition--;
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true,menuControlData.itemIndex[menuControlData.stackPosition]);
 	fw_reset_keyboard();
