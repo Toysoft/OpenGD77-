@@ -511,9 +511,9 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 			else
 			{
-				if(currentChannelData->sql==0)			//If we were using default squelch level
+				if(currentChannelData->sql == 0)			//If we were using default squelch level
 				{
-					currentChannelData->sql=10;			//start the adjustment from that point.
+					currentChannelData->sql=nonVolatileSettings.squelchDefaults[trxCurrentBand[TRX_RX_FREQ_BAND]];			//start the adjustment from that point.
 				}
 				else
 				{
@@ -577,9 +577,9 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 			else
 			{
-				if(currentChannelData->sql==0)			//If we were using default squelch level
+				if(currentChannelData->sql == 0)			//If we were using default squelch level
 				{
-					currentChannelData->sql=10;			//start the adjustment from that point.
+					currentChannelData->sql=nonVolatileSettings.squelchDefaults[trxCurrentBand[TRX_RX_FREQ_BAND]];			//start the adjustment from that point.
 				}
 				else
 				{

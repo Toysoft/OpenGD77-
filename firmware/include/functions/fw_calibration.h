@@ -105,7 +105,7 @@ void read_val_padrv_ibit(int offset, uint8_t* value);
 
 void read_val_xmitter_dev_wideband(int offset, uint16_t* value);
 void read_val_xmitter_dev_narrowband(int offset, uint16_t* value);
-void read_val_dev_tone(int freq, int index, uint8_t *value);
+void read_val_dev_tone(int index, uint8_t *value);
 
 void read_val_dac_vgain_analog(int offset, uint8_t* value);
 void read_val_volume_analog(int offset, uint8_t* value);
@@ -119,6 +119,6 @@ void read_val_rssi3_th_narrowband(int offset, uint16_t* value);
 
 void read_val_squelch_th(int offset, int mod, uint16_t* value);
 bool calibrationGetPowerForFrequency(int freq, calibrationPowerValues_t *powerSettings);
-bool calibrationGetRSSIMeterParams(int freq, calibrationRSSIMeter_t *rssiMeterValues);
+bool calibrationGetRSSIMeterParams(calibrationRSSIMeter_t *rssiMeterValues);
 
 #endif

@@ -298,7 +298,7 @@ static void update_frequency(int frequency)
 {
 	if (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX)
 	{
-		if (trxCheckFrequencyIsSupportedByTheRadioHardware(frequency))
+		if (trxGetBandFromFrequency(frequency)!=-1)
 		{
 			currentChannelData->txFreq = frequency;
 			trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq,DMR_MODE_AUTO);
@@ -308,20 +308,21 @@ static void update_frequency(int frequency)
 	else
 	{
 		int deltaFrequency = frequency - currentChannelData->rxFreq;
-		if (trxCheckFrequencyIsSupportedByTheRadioHardware(frequency))
+		if (trxGetBandFromFrequency(frequency)!=-1)
 		{
 			currentChannelData->rxFreq = frequency;
 			currentChannelData->txFreq = currentChannelData->txFreq + deltaFrequency;
 			trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq,DMR_MODE_AUTO);
 
-			if (!trxCheckFrequencyIsSupportedByTheRadioHardware(currentChannelData->txFreq))
+			if (trxGetBandFromFrequency(currentChannelData->txFreq)!=-1)
 			{
-				currentChannelData->txFreq = frequency;
-				set_melody(melody_ERROR_beep);
+				set_melody(melody_ACK_beep);
 			}
 			else
 			{
-				set_melody(melody_ACK_beep);
+				currentChannelData->txFreq = frequency;
+				set_melody(melody_ERROR_beep);
+
 			}
 		}
 		else
@@ -560,9 +561,9 @@ static void handleEvent(int buttons, int keys, int events)
 				}
 				else
 				{
-					if(currentChannelData->sql==0)			//If we were using default squelch level
+					if(currentChannelData->sql == 0)			//If we were using default squelch level
 					{
-						currentChannelData->sql=10;			//start the adjustment from that point.
+						currentChannelData->sql = nonVolatileSettings.squelchDefaults[trxCurrentBand[TRX_RX_FREQ_BAND]];			//start the adjustment from that point.
 					}
 					else
 					{
@@ -628,9 +629,9 @@ static void handleEvent(int buttons, int keys, int events)
 				}
 				else
 				{
-					if(currentChannelData->sql==0)			//If we were using default squelch level
+					if(currentChannelData->sql == 0) //If we were using default squelch level
 					{
-						currentChannelData->sql=10;			//start the adjustment from that point.
+						currentChannelData->sql = nonVolatileSettings.squelchDefaults[trxCurrentBand[TRX_RX_FREQ_BAND]];//start the adjustment from that point.
 					}
 					else
 					{
@@ -663,7 +664,7 @@ static void handleEvent(int buttons, int keys, int events)
 		else if (KEYCHECK_SHORTUP(keys, KEY_GREEN))
 		{
 			int tmp_frequency=read_freq_enter_digits();
-			if (trxCheckFrequencyIsSupportedByTheRadioHardware(tmp_frequency))
+			if (trxGetBandFromFrequency(tmp_frequency)!=-1)
 			{
 				update_frequency(tmp_frequency);
 				reset_freq_enter_digits();
@@ -686,7 +687,7 @@ static void handleEvent(int buttons, int keys, int events)
 			if (freq_enter_idx==8)
 			{
 				int tmp_frequency=read_freq_enter_digits();
-				if (trxCheckFrequencyIsSupportedByTheRadioHardware(tmp_frequency))
+				if (trxGetBandFromFrequency(tmp_frequency)!=-1)
 				{
 					update_frequency(tmp_frequency);
 					reset_freq_enter_digits();
@@ -720,7 +721,7 @@ static void stepFrequency(int increment)
 		tmp_frequencyRx  = currentChannelData->rxFreq + increment;
 		tmp_frequencyTx  = currentChannelData->txFreq + increment;
 	}
-	if (trxCheckFrequencyIsSupportedByTheRadioHardware(tmp_frequencyRx))
+	if (trxGetBandFromFrequency(tmp_frequencyRx)!=-1)
 	{
 		currentChannelData->txFreq = tmp_frequencyTx;
 		currentChannelData->rxFreq =  tmp_frequencyRx;

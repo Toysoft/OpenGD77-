@@ -22,6 +22,7 @@
 
 #include "fw_common.h"
 #include "fw_codeplug.h"
+#include "fw_trx.h"
 
 extern const int BAND_VHF_MIN;
 extern const int BAND_VHF_MAX;
@@ -62,6 +63,7 @@ typedef struct settingsStruct
 	uint8_t			languageIndex;
 	uint8_t			scanDelay;
 	bool			scanModePause;
+	uint8_t			squelchDefaults[RADIO_BANDS_TOTAL_NUM];// VHF,200Mhz and UHF
 } settingsStruct_t;
 
 typedef enum {DMR_FILTER_NONE = 0, DMR_FILTER_TS = 1, DMR_FILTER_TS_TG = 2} dmrFilter_t;

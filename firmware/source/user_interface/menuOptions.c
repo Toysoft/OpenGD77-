@@ -27,6 +27,7 @@ enum OPTIONS_MENU_LIST { OPTIONS_MENU_TIMEOUT_BEEP=0,OPTIONS_MENU_FACTORY_RESET,
 							OPTIONS_MENU_TX_FREQ_LIMITS,OPTIONS_MENU_BEEP_VOLUME,OPTIONS_MIC_GAIN_DMR,
 							OPTIONS_MENU_KEYPAD_TIMER_LONG, OPTIONS_MENU_KEYPAD_TIMER_REPEAT, OPTIONS_MENU_DMR_MONITOR_CAPTURE_TIMEOUT,
 							OPTIONS_MENU_SCAN_DELAY,OPTIONS_MENU_SCAN_MODE,
+							OPTIONS_MENU_SQUELCH_DEFAULT_VHF,OPTIONS_MENU_SQUELCH_DEFAULT_220MHz,OPTIONS_MENU_SQUELCH_DEFAULT_UHF,
 							NUM_OPTIONS_MENU_ITEMS};
 
 
@@ -134,6 +135,15 @@ static void updateScreen(void)
 					snprintf(buf, bufferLen, "%s:%s", currentLanguage->scan_mode, currentLanguage->hold);
 				}
 				break;
+			case OPTIONS_MENU_SQUELCH_DEFAULT_VHF:
+				snprintf(buf, bufferLen, "%s VHF:%d%%", currentLanguage->squelch, (nonVolatileSettings.squelchDefaults[RADIO_BAND_VHF] - 1) * 5);// 5% steps
+				break;
+			case OPTIONS_MENU_SQUELCH_DEFAULT_220MHz:
+				snprintf(buf, bufferLen, "%s 220:%d%%", currentLanguage->squelch, (nonVolatileSettings.squelchDefaults[RADIO_BAND_220MHz] - 1) * 5);// 5% steps
+				break;
+			case OPTIONS_MENU_SQUELCH_DEFAULT_UHF:
+				snprintf(buf, bufferLen, "%s UHF:%d%%", currentLanguage->squelch, (nonVolatileSettings.squelchDefaults[RADIO_BAND_UHF] - 1) * 5);// 5% steps
+				break;
 		}
 
 		buf[bufferLen - 1] = 0;
@@ -213,6 +223,25 @@ static void handleEvent(int buttons, int keys, int events)
 			case OPTIONS_MENU_SCAN_MODE:
 				nonVolatileSettings.scanModePause=true;
 				break;
+			case OPTIONS_MENU_SQUELCH_DEFAULT_VHF:
+				if (nonVolatileSettings.squelchDefaults[RADIO_BAND_VHF] < CODEPLUG_MAX_VARIABLE_SQUELCH)
+				{
+					nonVolatileSettings.squelchDefaults[RADIO_BAND_VHF]++;
+				}
+				break;
+			case OPTIONS_MENU_SQUELCH_DEFAULT_220MHz:
+				if (nonVolatileSettings.squelchDefaults[RADIO_BAND_220MHz] < CODEPLUG_MAX_VARIABLE_SQUELCH)
+				{
+					nonVolatileSettings.squelchDefaults[RADIO_BAND_220MHz]++;
+				}
+				break;
+			case OPTIONS_MENU_SQUELCH_DEFAULT_UHF:
+				if (nonVolatileSettings.squelchDefaults[RADIO_BAND_UHF] < CODEPLUG_MAX_VARIABLE_SQUELCH)
+				{
+					nonVolatileSettings.squelchDefaults[RADIO_BAND_UHF]++;
+				}
+				break;
+
 		}
 	}
 	else if (KEYCHECK_PRESS(keys,KEY_LEFT))
@@ -274,6 +303,24 @@ static void handleEvent(int buttons, int keys, int events)
 				break;
 			case OPTIONS_MENU_SCAN_MODE:
 				nonVolatileSettings.scanModePause=false;
+				break;
+			case OPTIONS_MENU_SQUELCH_DEFAULT_VHF:
+				if (nonVolatileSettings.squelchDefaults[RADIO_BAND_VHF] > 1)
+				{
+					nonVolatileSettings.squelchDefaults[RADIO_BAND_VHF]--;
+				}
+				break;
+			case OPTIONS_MENU_SQUELCH_DEFAULT_220MHz:
+				if (nonVolatileSettings.squelchDefaults[RADIO_BAND_220MHz] > 1)
+				{
+					nonVolatileSettings.squelchDefaults[RADIO_BAND_220MHz]--;
+				}
+				break;
+			case OPTIONS_MENU_SQUELCH_DEFAULT_UHF:
+				if (nonVolatileSettings.squelchDefaults[RADIO_BAND_UHF] > 1)
+				{
+					nonVolatileSettings.squelchDefaults[RADIO_BAND_UHF]--;
+				}
 				break;
 		}
 	}

@@ -30,6 +30,12 @@ typedef struct frequencyBand
 	int maxFreq;
 } frequencyBand_t;
 
+typedef struct trxFrequency
+{
+	int rxFreq;
+	int txFreq;
+} trxFrequency_t;
+
 extern const int RADIO_VHF_MIN;
 extern const int RADIO_VHF_MAX;
 extern const int RADIO_UHF_MIN;
@@ -39,6 +45,7 @@ enum RADIO_MODE { RADIO_MODE_NONE,RADIO_MODE_ANALOG,RADIO_MODE_DIGITAL};
 enum DMR_ADMIT_CRITERIA { ADMIT_CRITERIA_ALWAYS,ADMIT_CRITERIA_CHANNEL_FREE,ADMIT_CRITERIA_COLOR_CODE};
 enum DMR_MODE {DMR_MODE_AUTO,DMR_MODE_ACTIVE,DMR_MODE_PASSIVE,DMR_MODE_SFR};
 enum RADIO_FREQUENCY_BAND_NAMES { RADIO_BAND_VHF = 0,RADIO_BAND_220MHz = 1,RADIO_BAND_UHF=2,RADIO_BANDS_TOTAL_NUM=3};
+enum {TRX_RX_FREQ_BAND = 0,TRX_TX_FREQ_BAND = 1};
 
 extern const frequencyBand_t RADIO_FREQUENCY_BANDS[RADIO_BANDS_TOTAL_NUM];
 
@@ -53,6 +60,7 @@ extern volatile uint8_t trxRxSignal;
 extern volatile uint8_t trxRxNoise;
 extern volatile bool trxIsTransmittingTone;
 extern calibrationPowerValues_t trxPowerSettings;
+extern int trxCurrentBand[2];
 
 int trx_carrier_detected(void);
 void trx_check_analog_squelch(void);
@@ -74,13 +82,12 @@ int trxGetDMRColourCode(void);
 int trxGetDMRTimeSlot(void);
 void trxSetDMRTimeSlot(int timeslot);
 //bool trxCheckFrequencyIsVHF(int frequency);
-bool trxCheckFrequencyIsUHF(int frequency);
-bool trxCheckFrequency(int tmp_frequency);
+//bool trxCheckFrequencyIsUHF(int frequency);
 void trxSetTxCTCSS(int toneFreqX10);
 void trxSetRxCTCSS(int toneFreqX10);
 bool trxCheckCTCSSFlag(void);
 bool trxCheckFrequencyInAmateurBand(int tmp_frequency);
-bool trxCheckFrequencyIsSupportedByTheRadioHardware(int frequency);
+int trxGetBandFromFrequency(int frequency);
 void trxReadRSSIAndNoise(void);
 void trxSelectVoiceChannel(uint8_t channel);
 void trxSetTone1(int toneFreq);
