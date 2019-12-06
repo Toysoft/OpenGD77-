@@ -22,10 +22,14 @@
  */
 #ifndef USER_INTERFACE_LANGUAGES_FINNISH_H_
 #define USER_INTERFACE_LANGUAGES_FINNISH_H_
-
-
-
-
+/********************************************************************
+ *
+ * VERY IMPORTANT.
+ * This file should not be saved with UTF-8 encoding
+ * Use Notepad++ on Windows with ANSI encoding
+ * or emacs on Linux with windows-1252-unix encoding
+ *
+ ********************************************************************/
 const stringsTable_t finnishLanguage =
 {
 .LANGUAGE_NAME 		= "Suomi",
@@ -128,4 +132,12 @@ const stringsTable_t finnishLanguage =
 .group_call			= "Ryhmä Puhelu", // MaxLen: 16
 .all_call			= "Puhelu kaikille", // MaxLen: 16
 };
+/********************************************************************
+ *
+ * VERY IMPORTANT.
+ * This file should not be saved with UTF-8 encoding
+ * Use Notepad++ on Windows with ANSI encoding
+ * or emacs on Linux with windows-1252-unix encoding
+ *
+ ********************************************************************/
 #endif /* USER_INTERFACE_LANGUAGES_FINNISH_H_ */
