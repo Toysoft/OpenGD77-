@@ -46,13 +46,13 @@ static bool isDisplayingQSOData=false;
 static int tmpQuickMenuDmrFilterLevel;
 
 // public interface
-int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
+int menuVFOMode(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex)
 {
 	if (isFirstRun)
 	{
 		RssiUpdateCounter = RSSI_UPDATE_COUNTER_RELOAD;
 		isDisplayingQSOData=false;
-		gMenusCurrentItemIndex=0;
+		gMenusCurrentItemIndex=prevItemIndex;
 		nonVolatileSettings.initialMenuNumber=MENU_VFO_MODE;
 		currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];
 		settingsCurrentChannelNumber = -1;// This is not a regular channel. Its the special VFO channel!
@@ -868,12 +868,12 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 	updateQuickMenuScreen();
 }
 
-int menuVFOModeQuickMenu(int buttons, int keys, int events, bool isFirstRun)
+int menuVFOModeQuickMenu(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex)
 {
 	if (isFirstRun)
 	{
 		tmpQuickMenuDmrFilterLevel = nonVolatileSettings.dmrFilterLevel;
-		gMenusCurrentItemIndex=0;
+		gMenusCurrentItemIndex=prevItemIndex;
 		updateQuickMenuScreen();
 	}
 	else

@@ -22,15 +22,14 @@
 static void updateScreen(void);
 static void handleEvent(int buttons, int keys, int events);
 
-int menuDisplayMenuList(int buttons, int keys, int events, bool isFirstRun)
+int menuDisplayMenuList(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex)
 {
 	if (isFirstRun)
 	{
-
 		gMenuCurrentMenuList = (menuItemNew_t *)menusData[menuSystemGetCurrentMenuNumber()];
 		gMenusEndIndex = gMenuCurrentMenuList[0].menuNum;// first entry actually contains the number of entries
 		gMenuCurrentMenuList = & gMenuCurrentMenuList[1];// move to first real index
-		gMenusCurrentItemIndex=1;
+		gMenusCurrentItemIndex=prevItemIndex;
 		updateScreen();
 	}
 	else

@@ -738,7 +738,7 @@ static void hotspotStateMachine(void)
 	}
 }
 
-int menuHotspotMode(int buttons, int keys, int events, bool isFirstRun)
+int menuHotspotMode(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex)
 {
 	if (isFirstRun)
 	{

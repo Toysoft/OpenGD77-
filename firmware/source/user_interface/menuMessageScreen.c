@@ -22,7 +22,7 @@ static void updateScreen(void);
 static void handleEvent(int buttons, int keys, int events);
 static int updateCounter;
 
-int menuMessageScreen(int buttons, int keys, int events, bool isFirstRun)
+int menuMessageScreen(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex)
 {
 	if (isFirstRun)
 	{

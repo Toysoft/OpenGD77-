@@ -30,11 +30,11 @@ enum OPTIONS_MENU_LIST { OPTIONS_MENU_TIMEOUT_BEEP=0,OPTIONS_MENU_FACTORY_RESET,
 							NUM_OPTIONS_MENU_ITEMS};
 
 
-int menuOptions(int buttons, int keys, int events, bool isFirstRun)
+int menuOptions(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex)
 {
 	if (isFirstRun)
 	{
-		gMenusCurrentItemIndex=0;
+		gMenusCurrentItemIndex=prevItemIndex;
 		doFactoryReset=false;
 		updateScreen();
 	}
