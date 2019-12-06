@@ -38,11 +38,21 @@ static const uint32_t keyMap[] = {
 
 void fw_init_keyboard(void)
 {
+	 port_pin_config_t config = {
+	      kPORT_PullUp,
+	      kPORT_FastSlewRate,
+	      kPORT_PassiveFilterDisable,
+	      kPORT_OpenDrainDisable,
+	      kPORT_LowDriveStrength,
+	      kPORT_MuxAsGpio,
+	      kPORT_UnlockRegister,
+	 };
+
     // column lines
-    PORT_SetPinMux(Port_Key_Col0, Pin_Key_Col0, kPORT_MuxAsGpio);
-    PORT_SetPinMux(Port_Key_Col1, Pin_Key_Col1, kPORT_MuxAsGpio);
-    PORT_SetPinMux(Port_Key_Col2, Pin_Key_Col2, kPORT_MuxAsGpio);
-    PORT_SetPinMux(Port_Key_Col3, Pin_Key_Col3, kPORT_MuxAsGpio);
+    PORT_SetPinConfig(Port_Key_Col0, Pin_Key_Col0, &config);
+    PORT_SetPinConfig(Port_Key_Col1, Pin_Key_Col1, &config);
+    PORT_SetPinConfig(Port_Key_Col2, Pin_Key_Col2, &config);
+    PORT_SetPinConfig(Port_Key_Col3, Pin_Key_Col3, &config);
 
     // row lines
     PORT_SetPinMux(Port_Key_Row0, Pin_Key_Row0, kPORT_MuxAsGpio);
@@ -88,6 +98,7 @@ uint32_t fw_read_keyboard(void)
 	{
 		GPIO_PinInit(GPIOC, col, &pin_config_output);
 		GPIO_PinWrite(GPIOC, col, 0);
+		for(volatile int i = 0; i < 100;i++);// small delay to allow voltages to settle. The delay value of 100 is arbitrary.
 
 		result=(result<<5) | fw_read_keyboard_col();
 

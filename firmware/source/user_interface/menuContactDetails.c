@@ -246,7 +246,8 @@ static void handleEvent(int buttons, int keys, int events)
 
 				if (tmpContact.tgNumber > 0 && tmpContact.tgNumber <= 9999999)
 				{
-					int index = codeplugContactIndexByTGorPC(tmpContact.tgNumber, tmpContact.callType);
+					struct_codeplugContact_t contact;
+					int index = codeplugContactIndexByTGorPC(tmpContact.tgNumber, tmpContact.callType, &contact);
 					if (index > 0 && index != tmpContact.NOT_IN_CODEPLUGDATA_indexNumber)
 					{
 						menuContactDetailsTimeout = 2000;

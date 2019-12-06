@@ -436,14 +436,12 @@ int codeplugContactGetDataForNumber(int number, int callType, struct_codeplugCon
 	return pos;
 }
 
-int codeplugContactIndexByTGorPC(int tgorpc, int callType)
+int codeplugContactIndexByTGorPC(int tgorpc, int callType, struct_codeplugContact_t *contact)
 {
-	struct_codeplugContact_t contact;
-
 	for (int i = 1; i <= 1024; i++)
 	{
-		codeplugContactGetDataForIndex(i, &contact);
-		if (contact.name[0] != 0xff && contact.tgNumber == tgorpc && contact.callType == callType)
+		codeplugContactGetDataForIndex(i, contact);
+		if (contact->name[0] != 0xff && contact->tgNumber == tgorpc && contact->callType == callType)
 		{
 			return i;
 		}
