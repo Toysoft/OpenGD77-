@@ -36,7 +36,7 @@ static const uint32_t CURSOR_UPDATE_TIMEOUT = 1000;
 static const char *menuName[4];
 enum DISPLAY_MENU_LIST { ENTRY_TG = 0, ENTRY_PC, ENTRY_SELECT_CONTACT, ENTRY_USER_DMR_ID, NUM_ENTRY_ITEMS};
 // public interface
-int menuNumericalEntry(int buttons, int keys, int events, bool isFirstRun)
+int menuNumericalEntry(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex)
 {
 	if (isFirstRun)
 	{
