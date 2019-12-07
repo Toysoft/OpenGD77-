@@ -16,6 +16,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
+/*
+ * Translators: CT4TX, CT1HSN
+ *
+ *
+ * Rev: 2
+ */
 #ifndef USER_INTERFACE_LANGUAGES_PORTUGUESE_H_
 #define USER_INTERFACE_LANGUAGES_PORTUGUESE_H_
 /********************************************************************

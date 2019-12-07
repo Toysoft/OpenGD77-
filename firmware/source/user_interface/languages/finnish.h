@@ -16,6 +16,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
+/*
+ * Translators: OH1E
+ *
+ *
+ * Rev: 5
+ */
 #ifndef USER_INTERFACE_LANGUAGES_FINNISH_H_
 #define USER_INTERFACE_LANGUAGES_FINNISH_H_
 /********************************************************************
@@ -24,7 +30,7 @@
  * This file should not be saved with UTF-8 encoding
  * Use Notepad++ on Windows with ANSI encoding
  * or emacs on Linux with windows-1252-unix encoding
- * Finnish language translation done by OH1E reviisio 5
+ *
  ********************************************************************/
 const stringsTable_t finnishLanguage =
 {
