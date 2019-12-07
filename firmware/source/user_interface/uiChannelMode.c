@@ -48,7 +48,10 @@ static int scanTimer=0;
 static ScanZoneState_t scanState = SCAN_SCANNING;		//state flag for scan routine
 bool uiChannelModeScanActive = false;					//scan active flag
 static const int SCAN_SHORT_PAUSE_TIME = 500;			//time to wait after carrier detected to allow time for full signal detection. (CTCSS or DMR)
-static const int SCAN_INTERVAL = 50;			    //time between each scan step
+static const int SCAN_RSSI_SAMPLE_TIME = 30;
+static const int SCAN_CHANNEL_CHANGE_SETTLING_TIME = 1;	// Time between the frequency being changed and the RSSI being sampled
+static const int SCAN_SKIP_CHANNEL_TIME = 1;			// Time held on a channel that marked as to be skipped
+static const int SCAN_INTERVAL = SCAN_RSSI_SAMPLE_TIME + SCAN_CHANNEL_CHANGE_SETTLING_TIME + SCAN_SKIP_CHANNEL_TIME;			    	//time between each scan step
 
 static int tmpQuickMenuDmrFilterLevel;
 #define MAX_ZONE_SCAN_NUISANCE_CHANNELS 16
@@ -963,7 +966,7 @@ int menuChannelModeQuickMenu(int buttons, int keys, int events, bool isFirstRun)
 
 static void scanning(void)
 {
-	if((scanState==SCAN_SCANNING) && (scanTimer>5) && (scanTimer< (SCAN_INTERVAL -20)))							    			//after initial settling time
+	if((scanState==SCAN_SCANNING) && (scanTimer > SCAN_SKIP_CHANNEL_TIME ) && (scanTimer < (SCAN_INTERVAL - SCAN_CHANNEL_CHANGE_SETTLING_TIME)))							    			//after initial settling time
 	{
 		//test for presence of RF Carrier.
 		// In FM mode the dmr slot_state will always be DMR_STATE_IDLE
@@ -1006,14 +1009,14 @@ static void scanning(void)
 		{
 			if(channelScreenChannelData.flag4 & 0x10)									//if this channel has the All Skip bit set
 			{
-				scanTimer=5;															//skip over it quickly. (immediate selection of another channel seems to cause crashes)
+				scanTimer = SCAN_SKIP_CHANNEL_TIME;															//skip over it quickly. (immediate selection of another channel seems to cause crashes)
 			}
 		}
 		else
 		{
 			if(channelScreenChannelData.flag4 & 0x20)									//if this channel has the Zone Skip skip bit set
 			{
-				scanTimer=5;															//skip over it quickly. (immediate selection of another channel seems to cause crashes)
+				scanTimer = SCAN_SKIP_CHANNEL_TIME;															//skip over it quickly. (immediate selection of another channel seems to cause crashes)
 			}
 		}
 
@@ -1027,7 +1030,7 @@ static void scanning(void)
 			{
 				if(nuisanceDelete[i]==settingsCurrentChannelNumber)
 				{
-					scanTimer=5;
+					scanTimer = SCAN_SKIP_CHANNEL_TIME;
 					break;
 				}
 			}
