@@ -48,13 +48,16 @@ static int scanTimer=0;
 static ScanZoneState_t scanState = SCAN_SCANNING;		//state flag for scan routine
 bool uiChannelModeScanActive = false;					//scan active flag
 static const int SCAN_SHORT_PAUSE_TIME = 500;			//time to wait after carrier detected to allow time for full signal detection. (CTCSS or DMR)
-static const int SCAN_INTERVAL = 50;			    //time between each scan step
+static const int SCAN_TOTAL_INTERVAL = 20;			    //time between each scan step
+static const int SCAN_FREQ_CHANGE_SETTLING_INTERVAL = 1;//Time after frequency is changed before RSSI sampling starts
+static const int SCAN_SKIP_CHANNEL_INTERVAL = 1;		//This is actually just an implicit flag value to indicate the channel should be skipped
 
-static int tmpQuickMenuDmrFilterLevel;
+
 #define MAX_ZONE_SCAN_NUISANCE_CHANNELS 16
 static int nuisanceDelete[MAX_ZONE_SCAN_NUISANCE_CHANNELS];
 static int nuisanceDeleteIndex = 0;
 
+static int tmpQuickMenuDmrFilterLevel;
 
 int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 {
@@ -325,7 +328,7 @@ static void handleEvent(int buttons, int keys, int events)
 		{
 			nuisanceDeleteIndex = 0;																			//rolling list of last MAX_NUISANCE_CHANNELS deletes.
 		}
-		scanTimer=5;																				//force scan to continue;
+		scanTimer = SCAN_SKIP_CHANNEL_INTERVAL;	//force scan to continue;
 		scanState=SCAN_SCANNING;
 		fw_reset_keyboard();
 		return;
@@ -964,7 +967,7 @@ int menuChannelModeQuickMenu(int buttons, int keys, int events, bool isFirstRun)
 
 static void scanning(void)
 {
-	if((scanState==SCAN_SCANNING) && (scanTimer>5) && (scanTimer< (SCAN_INTERVAL -20)))							    			//after initial settling time
+	if((scanState==SCAN_SCANNING) && (scanTimer > SCAN_SKIP_CHANNEL_INTERVAL) && (scanTimer < ( SCAN_TOTAL_INTERVAL - SCAN_FREQ_CHANGE_SETTLING_INTERVAL)))							    			//after initial settling time
 	{
 		//test for presence of RF Carrier.
 		// In FM mode the dmr slot_state will always be DMR_STATE_IDLE
@@ -1000,21 +1003,21 @@ static void scanning(void)
 	{
 		trx_measure_count=0;														//needed to allow time for Rx to settle after channel change.
 		handleUpKey(0);
-		scanTimer=SCAN_INTERVAL;
+		scanTimer = SCAN_TOTAL_INTERVAL;
 		scanState = SCAN_SCANNING;													//state 0 = settling and test for carrier present.
 
 		if (strcmp(currentZoneName,currentLanguage->all_channels)==0)
 		{
 			if(channelScreenChannelData.flag4 & 0x10)									//if this channel has the All Skip bit set
 			{
-				scanTimer=5;															//skip over it quickly. (immediate selection of another channel seems to cause crashes)
+				scanTimer=SCAN_SKIP_CHANNEL_INTERVAL;															//skip over it quickly. (immediate selection of another channel seems to cause crashes)
 			}
 		}
 		else
 		{
 			if(channelScreenChannelData.flag4 & 0x20)									//if this channel has the Zone Skip skip bit set
 			{
-				scanTimer=5;															//skip over it quickly. (immediate selection of another channel seems to cause crashes)
+				scanTimer=SCAN_SKIP_CHANNEL_INTERVAL;															//skip over it quickly. (immediate selection of another channel seems to cause crashes)
 			}
 		}
 
@@ -1028,7 +1031,7 @@ static void scanning(void)
 			{
 				if(nuisanceDelete[i]==settingsCurrentChannelNumber)
 				{
-					scanTimer=5;
+					scanTimer=SCAN_SKIP_CHANNEL_INTERVAL;
 					break;
 				}
 			}
