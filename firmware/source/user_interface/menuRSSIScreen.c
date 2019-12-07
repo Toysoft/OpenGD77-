@@ -26,7 +26,7 @@ static calibrationRSSIMeter_t rssiCalibration;
 static void updateScreen(void);
 static void handleEvent(int buttons, int keys, int events);
 
-int menuRSSIScreen(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex)
+int menuRSSIScreen(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{

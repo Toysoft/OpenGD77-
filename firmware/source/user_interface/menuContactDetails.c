@@ -39,7 +39,7 @@ static int menuContactDetailsState;
 static int menuContactDetailsTimeout;
 enum MENU_CONTACT_DETAILS_STATE {MENU_CONTACT_DETAILS_DISPLAY=0, MENU_CONTACT_DETAILS_SAVED, MENU_CONTACT_DETAILS_EXISTS};
 
-int menuContactDetails(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex)
+int menuContactDetails(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -60,7 +60,6 @@ int menuContactDetails(int buttons, int keys, int events, bool isFirstRun, int p
 			itoa(tmpContact.tgNumber, digits, 10);
 		}
 
-		gMenusCurrentItemIndex=prevItemIndex;
 		menuContactDetailsState = MENU_CONTACT_DETAILS_DISPLAY;
 
 		updateScreen();

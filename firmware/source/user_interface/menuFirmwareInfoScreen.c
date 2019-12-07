@@ -21,7 +21,7 @@
 static void updateScreen(void);
 static void handleEvent(int buttons, int keys, int events);
 
-int menuFirmwareInfoScreen(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex)
+int menuFirmwareInfoScreen(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{

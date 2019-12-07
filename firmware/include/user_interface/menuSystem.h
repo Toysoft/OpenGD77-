@@ -28,7 +28,7 @@ extern int menuDisplayLightTimer;
 extern int menuTimer;
 
 
-typedef int (*MenuFunctionPointer_t)(int,int,int,bool,int); // Typedef for menu function pointers.  Functions are passed the key, the button and the event data. Event can be a Key or a button or both. Last arg is for when the function is only called to initialise and display its screen.
+typedef int (*MenuFunctionPointer_t)(int,int,int,bool); // Typedef for menu function pointers.  Functions are passed the key, the button and the event data. Event can be a Key or a button or both. Last arg is for when the function is only called to initialise and display its screen.
 typedef struct menuControlDataStruct
 {
 	int currentMenuNumber;
@@ -103,7 +103,11 @@ enum MENU_SCREENS { MENU_SPLASH_SCREEN=0,
 					MENU_LANGUAGE,
 };
 
+// This is used to store current position in menus. The system keeps track of its value, e.g entering in
+// a submenu, it will be restored exiting that submenu. It's up to the menuFunction() to override its
+// value when isFirstRun == true.
 extern int gMenusCurrentItemIndex;
+
 extern int gMenusStartIndex;
 extern int gMenusEndIndex;
 extern menuItemNew_t *gMenuCurrentMenuList;

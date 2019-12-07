@@ -42,12 +42,12 @@ enum CHANNEL_DETAILS_DISPLAY_LIST { CH_DETAILS_MODE = 0, CH_DETAILS_DMR_CC, CH_D
 									CH_DETAILS_FREQ_STEP, CH_DETAILS_TOT, CH_DETAILS_ZONE_SKIP,CH_DETAILS_ALL_SKIP,CH_DETAILS_RXGROUP,
 									NUM_CH_DETAILS_ITEMS};// The last item in the list is used so that we automatically get a total number of items in the list
 
-int menuChannelDetails(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex)
+int menuChannelDetails(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
 		memcpy(&tmpChannel,currentChannelData,sizeof(struct_codeplugChannel_t));
-		gMenusCurrentItemIndex=prevItemIndex;
+
 		for(int i=0;i<NUM_CTCSS;i++)
 		{
 			if (tmpChannel.txTone==CTCSSTones[i])

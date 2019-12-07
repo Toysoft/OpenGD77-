@@ -22,7 +22,7 @@ static void updateScreen(void);
 static void handleEvent(int buttons, int keys, int events);
 
 
-int menuPowerOff(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex)
+int menuPowerOff(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
