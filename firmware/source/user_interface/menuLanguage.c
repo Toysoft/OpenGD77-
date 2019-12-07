@@ -72,6 +72,7 @@ static void handleEvent(int buttons, int keys, int events)
 	{
 		nonVolatileSettings.languageIndex = gMenusCurrentItemIndex;
 		currentLanguage = &languages[gMenusCurrentItemIndex];
+		menuSystemLanguageHasChanged();
 		menuSystemPopAllAndDisplayRootMenu();
 		return;
 	}
