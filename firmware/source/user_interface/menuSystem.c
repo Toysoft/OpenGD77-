@@ -152,7 +152,7 @@ void menuSystemPopAllAndDisplaySpecificRootMenu(int newRootMenu)
 	memset(menuControlData.itemIndex, 0, sizeof(menuControlData.itemIndex));
 	menuControlData.stack[0]  = newRootMenu;
 	menuControlData.stackPosition = 0;
-	gMenusCurrentItemIndex = 0;
+	gMenusCurrentItemIndex = (newRootMenu == MENU_MAIN_MENU) ? 1 : 0;
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true);
 	fw_reset_keyboard();
 }
