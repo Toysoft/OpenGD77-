@@ -26,31 +26,31 @@ menuItemNew_t *gMenuCurrentMenuList;
 menuControlDataStruct_t menuControlData = { .stackPosition = 0, .stack = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, .itemIndex = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
 
 
-int menuVFOMode(int buttons, int keys, int events, bool isFirstRun, int prevSelectedEntry);
-int menuVFOModeQuickMenu(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex);
-int menuChannelMode(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex);
-int menuChannelModeQuickMenu(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex);
-int menuZoneList(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex);
-int menuDisplayMenuList(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex);
-int menuBattery(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex);
-int menuSplashScreen(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex);
-int menuPowerOff(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex);
-int menuFirmwareInfoScreen(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex);
-int menuNumericalEntry(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex);
-int menuTxScreen(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex);
-int menuRSSIScreen(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex);
-int menuLastHeard(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex);
-int menuOptions(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex);
-int menuDisplayOptions(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex);
-int menuCredits(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex);
-int menuChannelDetails(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex);
-int menuHotspotMode(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex);
-int menuCPS(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex);
-int menuLockScreen(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex);
-int menuContactList(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex);
-int menuContactListSubMenu(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex);
-int menuContactDetails(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex);
-int menuLanguage(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex);
+int menuVFOMode(int buttons, int keys, int events, bool isFirstRun);
+int menuVFOModeQuickMenu(int buttons, int keys, int events, bool isFirstRun);
+int menuChannelMode(int buttons, int keys, int events, bool isFirstRun);
+int menuChannelModeQuickMenu(int buttons, int keys, int events, bool isFirstRun);
+int menuZoneList(int buttons, int keys, int events, bool isFirstRun);
+int menuDisplayMenuList(int buttons, int keys, int events, bool isFirstRun);
+int menuBattery(int buttons, int keys, int events, bool isFirstRun);
+int menuSplashScreen(int buttons, int keys, int events, bool isFirstRun);
+int menuPowerOff(int buttons, int keys, int events, bool isFirstRun);
+int menuFirmwareInfoScreen(int buttons, int keys, int events, bool isFirstRun);
+int menuNumericalEntry(int buttons, int keys, int events, bool isFirstRun);
+int menuTxScreen(int buttons, int keys, int events, bool isFirstRun);
+int menuRSSIScreen(int buttons, int keys, int events, bool isFirstRun);
+int menuLastHeard(int buttons, int keys, int events, bool isFirstRun);
+int menuOptions(int buttons, int keys, int events, bool isFirstRun);
+int menuDisplayOptions(int buttons, int keys, int events, bool isFirstRun);
+int menuCredits(int buttons, int keys, int events, bool isFirstRun);
+int menuChannelDetails(int buttons, int keys, int events, bool isFirstRun);
+int menuHotspotMode(int buttons, int keys, int events, bool isFirstRun);
+int menuCPS(int buttons, int keys, int events, bool isFirstRun);
+int menuLockScreen(int buttons, int keys, int events, bool isFirstRun);
+int menuContactList(int buttons, int keys, int events, bool isFirstRun);
+int menuContactListSubMenu(int buttons, int keys, int events, bool isFirstRun);
+int menuContactDetails(int buttons, int keys, int events, bool isFirstRun);
+int menuLanguage(int buttons, int keys, int events, bool isFirstRun);
 
 /*
  * ---------------------- IMPORTANT ----------------------------
@@ -125,7 +125,8 @@ void menuSystemPushNewMenu(int menuNumber)
 		menuControlData.itemIndex[menuControlData.stackPosition] = gMenusCurrentItemIndex;
 		menuControlData.stackPosition++;
 		menuControlData.stack[menuControlData.stackPosition] = menuNumber;
-		menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0, 0, 0, true, (menuNumber == MENU_MAIN_MENU) ? 1 : 0);
+		gMenusCurrentItemIndex = (menuNumber == MENU_MAIN_MENU) ? 1 : 0;
+		menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0, 0, 0, true);
 		fw_reset_keyboard();
 	}
 }
@@ -133,14 +134,16 @@ void menuSystemPopPreviousMenu(void)
 {
 	menuControlData.itemIndex[menuControlData.stackPosition] = 0;
 	menuControlData.stackPosition--;
-	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true,menuControlData.itemIndex[menuControlData.stackPosition]);
+	gMenusCurrentItemIndex = menuControlData.itemIndex[menuControlData.stackPosition];
+	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true);
 	fw_reset_keyboard();
 }
 void menuSystemPopAllAndDisplayRootMenu(void)
 {
 	memset(menuControlData.itemIndex, 0, sizeof(menuControlData.itemIndex));
-	menuControlData.stackPosition=0;
-	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true,0);
+	menuControlData.stackPosition = 0;
+	gMenusCurrentItemIndex = 0;
+	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true);
 	fw_reset_keyboard();
 }
 
@@ -148,15 +151,17 @@ void menuSystemPopAllAndDisplaySpecificRootMenu(int newRootMenu)
 {
 	memset(menuControlData.itemIndex, 0, sizeof(menuControlData.itemIndex));
 	menuControlData.stack[0]  = newRootMenu;
-	menuControlData.stackPosition=0;
-	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true,0);
+	menuControlData.stackPosition = 0;
+	gMenusCurrentItemIndex = 0;
+	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true);
 	fw_reset_keyboard();
 }
 
 void menuSystemSetCurrentMenu(int menuNumber)
 {
-	menuControlData.stack[menuControlData.stackPosition]  = menuNumber;
-	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true,menuControlData.itemIndex[menuControlData.stackPosition]);
+	menuControlData.stack[menuControlData.stackPosition] = menuNumber;
+	gMenusCurrentItemIndex = menuControlData.itemIndex[menuControlData.stackPosition];
+	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true);
 	fw_reset_keyboard();
 }
 int menuSystemGetCurrentMenuNumber(void)
@@ -166,7 +171,7 @@ int menuSystemGetCurrentMenuNumber(void)
 
 void menuSystemCallCurrentMenuTick(int buttons, int keys, int events)
 {
-	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](buttons,keys,events,false, menuControlData.itemIndex[menuControlData.stackPosition]);
+	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](buttons,keys,events,false);
 }
 
 void displayLightTrigger(void)
@@ -192,7 +197,8 @@ void menuInitMenuSystem(void)
 {
 	menuDisplayLightTimer = -1;
 	menuControlData.stack[menuControlData.stackPosition]  = MENU_SPLASH_SCREEN;// set the very first screen as the splash screen
-	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true,0);// Init and display this screen
+	gMenusCurrentItemIndex = 0;
+	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true);// Init and display this screen
 }
 
 /*
@@ -256,12 +262,7 @@ const menuItemNew_t menuDataContactContact [] = {
 	{ 13, -1 },// Draft
 	{ 14, -1 }// Quick Test
 };*/
-/*
-int menuDisplayList(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex)
-{
-	return 0;
-}
-*/
+
 void menuDisplayTitle(const char *title)
 {
 	UC1701_drawFastHLine(0, 13, 128, true);

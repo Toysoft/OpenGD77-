@@ -28,7 +28,7 @@ static int radioMode;
 static int radioBandWidth;
 
 
-int menuCPS(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex)
+int menuCPS(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{

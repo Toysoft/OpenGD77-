@@ -33,11 +33,10 @@ const int CONTRAST_MAX_VALUE = 30;// Maximum value which still seems to be reada
 const int CONTRAST_MIN_VALUE = 12;// Minimum value which still seems to be readable
 enum DISPLAY_MENU_LIST { DISPLAY_MENU_BRIGHTNESS = 0, DISPLAY_MENU_CONTRAST, DISPLAY_MENU_TIMEOUT, DISPLAY_MENU_COLOUR_INVERT, NUM_DISPLAY_MENU_ITEMS};
 
-int menuDisplayOptions(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex)
+int menuDisplayOptions(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		gMenusCurrentItemIndex=prevItemIndex;
 		originalBrightness = nonVolatileSettings.displayBacklightPercentage;
 		contrast = nonVolatileSettings.displayContrast;
 		inverseVideo = nonVolatileSettings.displayInverseVideo;

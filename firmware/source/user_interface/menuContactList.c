@@ -49,7 +49,7 @@ static void reloadContactList(void)
 	}
 }
 
-int menuContactList(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex)
+int menuContactList(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -312,11 +312,10 @@ static void handleSubMenuEvent(int buttons, int keys, int events)
 	}
 }
 
-int menuContactListSubMenu(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex)
+int menuContactListSubMenu(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		gMenusCurrentItemIndex=prevItemIndex;
 		updateSubMenuScreen();
 		fw_init_keyboard();
 	}

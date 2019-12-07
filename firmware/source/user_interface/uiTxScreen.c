@@ -31,7 +31,7 @@ static uint32_t nextSecondPIT;
 
 static int micLevelUpdateCounter=100;
 
-int menuTxScreen(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex)
+int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{

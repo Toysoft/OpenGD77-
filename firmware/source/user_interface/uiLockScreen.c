@@ -28,7 +28,7 @@ static int lockScreenState;
 
 enum LOCK_SCREEN_STATE { LOCK_SCREEN_STATE_IDLE=0, LOCK_SCREEN_STATE_CHANGED };
 
-int menuLockScreen(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex)
+int menuLockScreen(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
