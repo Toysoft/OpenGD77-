@@ -23,11 +23,10 @@ const int LAST_HEARD_NUM_LINES_ON_DISPLAY = 3;
 static void updateScreen(void);
 static void handleEvent(int buttons, int keys, int events);
 
-int menuLastHeard(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex)
+int menuLastHeard(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		gMenusCurrentItemIndex=prevItemIndex;
 		gMenusStartIndex = LinkHead->id;// reuse this global to store the ID of the first item in the list
 		gMenusEndIndex=0;
 		updateScreen();

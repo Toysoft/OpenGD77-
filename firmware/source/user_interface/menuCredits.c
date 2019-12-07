@@ -28,7 +28,7 @@ const int NUM_CREDITS = 6;
 static const char *creditTexts[] = {"Roger VK3KYY","Kai DG4KLU","Jason VK7ZJA","Alex DL4LEX","Daniel F1RMB","Colin G4EML"};
 static int currentDisplayIndex=0;
 
-int menuCredits(int buttons, int keys, int events, bool isFirstRun, int prevItemIndex)
+int menuCredits(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
