@@ -20,6 +20,7 @@
 #include <user_interface/uiLocalisation.h>
 #include "fw_calibration.h"
 #include "fw_settings.h"
+#include "fw_trx.h"
 
 static calibrationRSSIMeter_t rssiCalibration;
 static void updateScreen(void);
@@ -30,7 +31,7 @@ int menuRSSIScreen(int buttons, int keys, int events, bool isFirstRun)
 	if (isFirstRun)
 	{
 		RssiUpdateCounter = RSSI_UPDATE_COUNTER_RELOAD;
-		calibrationGetRSSIMeterParams(currentChannelData->rxFreq,&rssiCalibration);
+		calibrationGetRSSIMeterParams(&rssiCalibration);
 	}
 	else
 	{
@@ -55,7 +56,7 @@ static void updateScreen(void)
 	int barGraphLength;
 	char buffer[17];
 
-		if (trxCheckFrequencyIsUHF(trxGetFrequency()))
+		if (trxCurrentBand[TRX_RX_FREQ_BAND] == RADIO_BAND_UHF)
 		{
 			// Use fixed point maths to scale the RSSI value to dBm, based on data from VK4JWT and VK7ZJA
 			dBm = -151 + trxRxSignal;// Note no the RSSI value on UHF does not need to be scaled like it does on VHF

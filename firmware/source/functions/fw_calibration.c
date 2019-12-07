@@ -105,11 +105,11 @@ void read_val_xmitter_dev_narrowband(int offset, uint16_t* value)
 	*value=buffer[0] + ((buffer[1] & 0x03) << 8);
 }
 
-void read_val_dev_tone(int freq, int index, uint8_t *value)
+void read_val_dev_tone(int index, uint8_t *value)
 {
 	int address;
 
-	if (trxCheckFrequencyIsUHF(freq))
+	if (trxCurrentBand[TRX_TX_FREQ_BAND] == RADIO_BAND_UHF)
 	{
 		address = EXT_uhf_dev_tone+index;
 	}
@@ -204,7 +204,7 @@ bool calibrationGetPowerForFrequency(int freq, calibrationPowerValues_t *powerSe
 	uint8_t buffer[2];
 
 
-	if (trxCheckFrequencyIsUHF(freq))
+	if (trxCurrentBand[TRX_TX_FREQ_BAND] == RADIO_BAND_UHF)
 	{
 		address = POWER_CALIBRATION_ADDRESS_UHF_400MHZ + ((freq - RADIO_FREQUENCY_BANDS[RADIO_BAND_UHF].minFreq) / 500000) * 2;
 	}
@@ -220,11 +220,11 @@ bool calibrationGetPowerForFrequency(int freq, calibrationPowerValues_t *powerSe
 	return true;
 }
 
-bool calibrationGetRSSIMeterParams(int freq, calibrationRSSIMeter_t *rssiMeterValues)
+bool calibrationGetRSSIMeterParams(calibrationRSSIMeter_t *rssiMeterValues)
 {
 	int address;
 
-	if (trxCheckFrequencyIsUHF(freq))
+	if (trxCurrentBand[TRX_RX_FREQ_BAND] == RADIO_BAND_UHF)
 	{
 		address = 0x8F053;
 	}

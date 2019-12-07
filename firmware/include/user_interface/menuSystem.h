@@ -34,6 +34,7 @@ typedef struct menuControlDataStruct
 	int currentMenuNumber;
 	int stackPosition;
 	int stack[16];
+	int itemIndex[16];
 } menuControlDataStruct_t;
 
 typedef struct menuItemNew
@@ -49,10 +50,12 @@ void menuDisplayEntry(int loopOffset, int focusedItem,const char *entryText);
 int menuGetMenuOffset(int maxMenuEntries, int loopOffset);
 
 void menuChannelModeUpdateScreen(int txTimeSecs);
+void menuChannelColdStart();
 void menuVFOModeUpdateScreen(int txTimeSecs);
 void menuCPSUpdate(int command,int x, int y, UC1701_Font_t fontSize, UC1701_Text_Align_t alignment, bool isInverted,char *szMsg);
 
 void menuInitMenuSystem(void);
+void menuSystemLanguageHasChanged(void);
 void displayLightTrigger(void);
 void displayLightOverrideTimeout(int timeout);
 void menuSystemPushNewMenu(int menuNumber);
@@ -102,7 +105,11 @@ enum MENU_SCREENS { MENU_SPLASH_SCREEN=0,
 					MENU_LANGUAGE,
 };
 
+// This is used to store current position in menus. The system keeps track of its value, e.g entering in
+// a submenu, it will be restored exiting that submenu. It's up to the menuFunction() to override its
+// value when isFirstRun == true.
 extern int gMenusCurrentItemIndex;
+
 extern int gMenusStartIndex;
 extern int gMenusEndIndex;
 extern menuItemNew_t *gMenuCurrentMenuList;

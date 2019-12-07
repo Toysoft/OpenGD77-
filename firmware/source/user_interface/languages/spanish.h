@@ -16,6 +16,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
+/*
+ * Translators: EA3IGM, EA5SW
+ *
+ *
+ * Rev: 3
+ */
 #ifndef USER_INTERFACE_LANGUAGES_SPANISH_H_
 #define USER_INTERFACE_LANGUAGES_SPANISH_H_
 /********************************************************************
@@ -28,7 +34,7 @@
  ********************************************************************/
 const stringsTable_t spanishLanguage =
 {
-.LANGUAGE_NAME 			= "Spanish", // MaxLen: 16
+.LANGUAGE_NAME 			= "Spanish", // MaxLen: 16 
 .language				= "Idioma", // MaxLen: 16
 .menu					= "Menu", // MaxLen: 16
 .credits				= "Creditos", // MaxLen: 16
@@ -42,7 +48,7 @@ const stringsTable_t spanishLanguage =
 .display_options			= "Opciones display", // MaxLen: 16
 .channel_details			= "Detalles Canal", // MaxLen: 16
 .new_contact				= "Nuevo contacto", // MaxLen: 16
-.contact_list				= "Lista Contactos", // MaxLen: 16
+.contact_list				= "Lista contactos", // MaxLen: 16
 .hotspot_mode				= "Modo Hotspot", // MaxLen: 16
 .contact_details			= "Detalles contacto", // MaxLen: 16
 .built					= "Compilado", // MaxLen: 16
@@ -50,7 +56,7 @@ const stringsTable_t spanishLanguage =
 .keypad					= "Teclado", // MaxLen: 12 (with .ptt)
 .ptt					= "PTT", // MaxLen: 12 (with .keypad)
 .locked					= "Bloqueado", // MaxLen: 15
-.press_blue_plus_star			= "Pulsa Azul + *", // MaxLen: 19
+.press_blue_plus_star			= "Pulsa azul + *", // MaxLen: 19
 .to_unlock				= "para desbloquear", // MaxLen: 19
 .unlocked				= "Desbloqueado", // MaxLen: 15
 .power_off				= "Apagando...", // MaxLen: 16
@@ -77,7 +83,7 @@ const stringsTable_t spanishLanguage =
 .all					= "Todos", // MaxLen: 16 (with .type)
 .type					= "Tipo", // MaxLen: 16 (with .type)
 .timeSlot				= "Timeslot", // MaxLen: 16 (plus ':' and  .none, '1' or '2')
-.none					= "ninguno", // MaxLen: 16 (with .timeSlot, "Rx CTCSS:" and ""Tx CTCSS:")
+.none					= "Ninguno", // MaxLen: 16 (with .timeSlot, "Rx CTCSS:" and ""Tx CTCSS:")
 .contact_saved				= "Contacto grabado", // MaxLen: 16
 .duplicate				= "Duplicado", // MaxLen: 16
 .tg					= "TG",  // MaxLen: 8
@@ -91,31 +97,31 @@ const stringsTable_t spanishLanguage =
 .tot					= "TOT", // MaxLen: 16 (with ':' + .off or 15..3825)
 .off					= "Off", // MaxLen: 16 (with ':' + .timeout_beep, .calibration or .band_limits)
 .zone_skip				= "Saltar zona", // MaxLen: 16 (with ':' + .yes or .no) 
-.all_skip				= "Satar todo", // MaxLen: 16 (with ':' + .yes or .no)
+.all_skip				= "Saltar todo", // MaxLen: 16 (with ':' + .yes or .no)
 .yes					= "Si", // MaxLen: 16 (with ':' + .zone_skip, .all_skip or .factory_reset)
 .no					= "No", // MaxLen: 16 (with ':' + .zone_skip, .all_skip or .factory_reset)
-.rx_group				= "Grupo RX", // MaxLen: 16 (with ':' and codeplug group name)
+.rx_group				= "Grp.RX", // MaxLen: 16 (with ':' and codeplug group name)
 .on					= "On", // MaxLen: 16 (with ':' + .calibration or .band_limits)
 .timeout_beep				= "Sonido TOT", // MaxLen: 16 (with ':' + .off or 5..20)
 .factory_reset				= "Reset fabrica", // MaxLen: 16 (with ':' + .yes or .no)
 .calibration				= "Calibracion", // MaxLen: 16 (with ':' + .on or .off)
-.band_limits				= "Limites de Banda", // MaxLen: 16 (with ':' + .on or .off)
+.band_limits				= "Limite Banda", // MaxLen: 16 (with ':' + .on or .off)
 .beep_volume				= "Volumen BEEP", // MaxLen: 16 (with ':' + -24..6 + 'dB')
 .dmr_mic_gain				= "Micro DMR", // MaxLen: 16 (with ':' + -33..12 + 'dB')
-.key_long				= "Tecla larga", // MaxLen: 11 (with ':' + x.xs fitted)
-.key_repeat				= "Tecla repetir", // MaxLen: 11 (with ':' + x.xs fitted)
+.key_long				= "Tec.larga", // MaxLen: 11 (with ':' + x.xs fitted)
+.key_repeat				= "Tec.repetir", // MaxLen: 11 (with ':' + x.xs fitted)
 .dmr_filter_timeout			= "Filtro tiempo", // MaxLen: 16 (with ':' + 1..90 + 's')
 .brightness				= "Brillo", // MaxLen: 16 (with ':' + 0..100 + '%')
 .contrast				= "Contraste", // MaxLen: 16 (with ':' + 12..30)
 .colour_invert				= "Color:Invertido", // MaxLen: 16
 .colour_normal				= "Color:Normal", // MaxLen: 16
 .backlight_timeout			= "Tiempo luz", // MaxLen: 16 (with ':' + 0..30)
-.scan_delay				= "Tiempo Escaner", // MaxLen: 16 (with ':' + 1..30 + 's')
+.scan_delay				= "Tiempo Scan", // MaxLen: 16 (with ':' + 1..30 + 's')
 .YES					= "SI", // MaxLen: 8 (choice above green/red buttons)
 .NO					= "NO", // MaxLen: 8 (choice above green/red buttons)
 .DISMISS				= "DESPEDIR", // MaxLen: 8 (choice above green/red buttons)
-.scan_mode				= "Modo Escaner", // MaxLen: 16 (with ':' + .hold or .pause)
-.hold					= "Retener", // MaxLen: 16 (with ':' + .scan_mode)
+.scan_mode				= "Modo Scan", // MaxLen: 16 (with ':' + .hold or .pause)
+.hold					= "Deten", // MaxLen: 16 (with ':' + .scan_mode)
 .pause					= "Pausa", // MaxLen: 16 (with ':' + .scan_mode)
 .empty_list				= "Lista vacia", // MaxLen: 16
 .delete_contact_qm			= "Borrar contacto?", // MaxLen: 16
@@ -123,10 +129,10 @@ const stringsTable_t spanishLanguage =
 .contact_used				= "Contacto usado", // MaxLen: 16
 .in_rx_group				= "en grupo RX", // MaxLen: 16
 .select_tx				= "Selecciona TX", // MaxLen: 16
-.edit_contact				= "Editar Contacto", // MaxLen: 16
-.delete_contact				= "Borrar Contacto", // MaxLen: 16
+.edit_contact				= "Editar contacto", // MaxLen: 16
+.delete_contact				= "Borrar contacto", // MaxLen: 16
 .group_call				= "Llamada Grupo", // MaxLen: 16
-.all_call				= "Llamada todos", // MaxLen: 16
+.all_call				= "Llamada Todos", // MaxLen: 16
 };
 /********************************************************************
  *

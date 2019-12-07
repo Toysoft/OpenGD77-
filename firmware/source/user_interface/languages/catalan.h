@@ -16,6 +16,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
+/*
+ * Translators: EA3IGM, EA5SW
+ *
+ *
+ * Rev: 3
+ */
 #ifndef USER_INTERFACE_LANGUAGES_CATALAN_H_
 #define USER_INTERFACE_LANGUAGES_CATALAN_H_
 /********************************************************************
@@ -110,23 +116,23 @@ const stringsTable_t catalanLanguage=
 .colour_invert			= "Color:Invertit",
 .colour_normal			= "Color:Normal",
 .backlight_timeout		= "Temps llum",
-.scan_delay				= "Scan delay",
+.scan_delay				= "Temps Scan",
 .YES					= "Si",
 .NO						= "NO",
 .DISMISS				= "PASSAR",
-.scan_mode				= "Scan mode",
-.hold					= "Hold",
-.pause					= "Pause",
-.empty_list				= "Empty List",
-.delete_contact_qm			= "Delete contact?",
-.contact_deleted			= "Contact deleted",
-.contact_used				= "Contact used",
-.in_rx_group				= "in RX group",
-.select_tx				= "Select TX",
-.edit_contact				= "Edit Contact",
-.delete_contact				= "Delete Contact",
-.group_call				= "Group Call",
-.all_call				= "All Call",
+.scan_mode				= "Mode Scan",
+.hold					= "Deten",
+.pause					= "Pausa",
+.empty_list				= "Llista buida",
+.delete_contact_qm			= "Esborrar contacte?",
+.contact_deleted			= "Contacte esborrat",
+.contact_used				= "Contacte ocupat",
+.in_rx_group				= "en RX grup",
+.select_tx				= "Selec. TX",
+.edit_contact				= "Editar Contacte",
+.delete_contact				= "Esborrar Contacte",
+.group_call				= "Cridada Grup",
+.all_call				= "Cridada Tots",
 };
 /********************************************************************
  *

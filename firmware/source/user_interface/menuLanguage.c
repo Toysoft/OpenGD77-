@@ -28,7 +28,6 @@ int menuLanguage(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		gMenusCurrentItemIndex=0;
 		updateScreen();
 	}
 	else
@@ -73,6 +72,7 @@ static void handleEvent(int buttons, int keys, int events)
 	{
 		nonVolatileSettings.languageIndex = gMenusCurrentItemIndex;
 		currentLanguage = &languages[gMenusCurrentItemIndex];
+		menuSystemLanguageHasChanged();
 		menuSystemPopAllAndDisplayRootMenu();
 		return;
 	}

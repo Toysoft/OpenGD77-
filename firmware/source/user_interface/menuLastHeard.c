@@ -27,7 +27,6 @@ int menuLastHeard(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		gMenusCurrentItemIndex=0;
 		gMenusStartIndex = LinkHead->id;// reuse this global to store the ID of the first item in the list
 		gMenusEndIndex=0;
 		updateScreen();

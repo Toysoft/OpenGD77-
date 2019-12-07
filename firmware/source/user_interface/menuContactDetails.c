@@ -60,7 +60,6 @@ int menuContactDetails(int buttons, int keys, int events, bool isFirstRun)
 			itoa(tmpContact.tgNumber, digits, 10);
 		}
 
-		gMenusCurrentItemIndex=0;
 		menuContactDetailsState = MENU_CONTACT_DETAILS_DISPLAY;
 
 		updateScreen();

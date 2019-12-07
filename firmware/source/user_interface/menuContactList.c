@@ -316,7 +316,6 @@ int menuContactListSubMenu(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		gMenusCurrentItemIndex=0;
 		updateSubMenuScreen();
 		fw_init_keyboard();
 	}
