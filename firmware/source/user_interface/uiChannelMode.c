@@ -58,6 +58,7 @@ static int nuisanceDeleteIndex = 0;
 
 int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 {
+
 	if (isFirstRun)
 	{
 		nonVolatileSettings.initialMenuNumber = MENU_CHANNEL_MODE;// This menu.
@@ -71,8 +72,8 @@ int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 		else
 		{
 			isTxRxFreqSwap = false;
-			codeplugZoneGetDataForNumber(nonVolatileSettings.currentZone,&currentZone);
-			codeplugUtilConvertBufToString(currentZone.name,currentZoneName,16);// need to convert to zero terminated string
+			codeplugZoneGetDataForNumber(nonVolatileSettings.currentZone, &currentZone);
+			codeplugUtilConvertBufToString(currentZone.name, currentZoneName, 16);// need to convert to zero terminated string
 			loadChannelData(false);
 		}
 
@@ -511,9 +512,9 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 			else
 			{
-				if(currentChannelData->sql==0)			//If we were using default squelch level
+				if(currentChannelData->sql == 0)			//If we were using default squelch level
 				{
-					currentChannelData->sql=10;			//start the adjustment from that point.
+					currentChannelData->sql=nonVolatileSettings.squelchDefaults[trxCurrentBand[TRX_RX_FREQ_BAND]];			//start the adjustment from that point.
 				}
 				else
 				{
@@ -577,9 +578,9 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 			else
 			{
-				if(currentChannelData->sql==0)			//If we were using default squelch level
+				if(currentChannelData->sql == 0)			//If we were using default squelch level
 				{
-					currentChannelData->sql=10;			//start the adjustment from that point.
+					currentChannelData->sql=nonVolatileSettings.squelchDefaults[trxCurrentBand[TRX_RX_FREQ_BAND]];			//start the adjustment from that point.
 				}
 				else
 				{
@@ -947,7 +948,6 @@ int menuChannelModeQuickMenu(int buttons, int keys, int events, bool isFirstRun)
 	{
 		uiChannelModeScanActive=false;
 		tmpQuickMenuDmrFilterLevel = nonVolatileSettings.dmrFilterLevel;
-		gMenusCurrentItemIndex=0;
 		updateQuickMenuScreen();
 	}
 	else
@@ -1034,4 +1034,10 @@ static void scanning(void)
 			}
 		}
 	}
+}
+
+void menuChannelColdStart(void)
+{
+	// Force to re-read codeplug data (needed due to "All Channels" translation)
+	channelScreenChannelData.rxFreq = 0;
 }

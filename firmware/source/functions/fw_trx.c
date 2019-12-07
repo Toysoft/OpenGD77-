@@ -33,6 +33,8 @@ volatile bool trxIsTransmittingTone = false;
 static uint16_t txPower;
 static bool analogSignalReceived = false;
 
+int trxCurrentBand[2] = {RADIO_BAND_VHF,RADIO_BAND_VHF};// Rx and Tx band.
+
 const frequencyBand_t RADIO_FREQUENCY_BANDS[RADIO_BANDS_TOTAL_NUM] =  {
 													{
 														.minFreq=13400000,
@@ -47,6 +49,7 @@ const frequencyBand_t RADIO_FREQUENCY_BANDS[RADIO_BANDS_TOTAL_NUM] =  {
 														.maxFreq=52000000
 													}// UHF
 };
+static const int TRX_SQUELCH_MAX = 70;
 /*
  * superseded by the RADIO_FREQUENCY_BANDS data above
  *
@@ -152,29 +155,23 @@ void trxSetModeAndBandwidth(int mode, bool bandwidthIs25kHz)
 	}
 }
 
-bool trxCheckFrequencyIsSupportedByTheRadioHardware(int frequency)
+int trxGetBandFromFrequency(int frequency)
 {
 	for(int i=0;i<RADIO_BANDS_TOTAL_NUM;i++)
 	{
 		if (frequency >= RADIO_FREQUENCY_BANDS[i].minFreq && frequency < RADIO_FREQUENCY_BANDS[i].maxFreq)
 		{
-			return true;
+			return i;
 		}
 	}
-	return false;
-	//return (((frequency >= RADIO_VHF_MIN) && (frequency < RADIO_VHF_MAX)) || ((frequency >= RADIO_UHF_MIN) && (frequency < RADIO_UHF_MAX)));
+	return -1;
 }
-/*
-bool trxCheckFrequencyIsVHF(int frequency)
-{
-	return ((frequency >= RADIO_VHF_MIN) && (frequency < RADIO_VHF_MAX));
-}
-*/
 
+/*
 bool trxCheckFrequencyIsUHF(int frequency)
 {
 	return ((frequency >= RADIO_FREQUENCY_BANDS[RADIO_BAND_UHF].minFreq) && (frequency < RADIO_FREQUENCY_BANDS[RADIO_BAND_UHF].maxFreq));
-}
+}*/
 
 bool trxCheckFrequencyInAmateurBand(int tmp_frequency)
 {
@@ -190,7 +187,7 @@ void trxReadRSSIAndNoise(void)
 
 int trx_carrier_detected(void)
 {
-	uint8_t squelch=45;
+	uint8_t squelch;
 
 	// The task Critical wrapper may not be necessary and is only added as a precaution
 	taskENTER_CRITICAL();
@@ -200,7 +197,11 @@ int trx_carrier_detected(void)
 	// check for variable squelch control
 	if (currentChannelData->sql!=0)
 	{
-		squelch =  70 - (((currentChannelData->sql-1)*11)>>2);
+		squelch =  TRX_SQUELCH_MAX - (((currentChannelData->sql-1)*11)>>2);
+	}
+	else
+	{
+		squelch =  TRX_SQUELCH_MAX - (((nonVolatileSettings.squelchDefaults[trxCurrentBand[TRX_RX_FREQ_BAND]])*11)>>2);
 	}
 
 	if (trxRxNoise < squelch)
@@ -219,14 +220,18 @@ void trx_check_analog_squelch(void)
 	trx_measure_count++;
 	if (trx_measure_count==25)
 	{
-		uint8_t squelch=45;
+		uint8_t squelch;//=45;
 
 		trxReadRSSIAndNoise();
 
 		// check for variable squelch control
 		if (currentChannelData->sql!=0)
 		{
-			squelch =  70 - (((currentChannelData->sql-1)*11)>>2);
+			squelch =  TRX_SQUELCH_MAX - (((currentChannelData->sql-1)*11)>>2);
+		}
+		else
+		{
+			squelch =  TRX_SQUELCH_MAX - (((nonVolatileSettings.squelchDefaults[trxCurrentBand[TRX_RX_FREQ_BAND]])*11)>>2);
 		}
 
 		if (trxRxNoise < squelch)
@@ -261,8 +266,13 @@ void trxSetFrequency(int fRx,int fTx, int dmrMode)
 	taskENTER_CRITICAL();
 	if (currentRxFrequency!=fRx || currentTxFrequency!=fTx)
 	{
+		trxCurrentBand[TRX_RX_FREQ_BAND] = trxGetBandFromFrequency(fRx);
+		trxCurrentBand[TRX_TX_FREQ_BAND] = trxGetBandFromFrequency(fTx);
+
 		calibrationGetPowerForFrequency(fTx, &trxPowerSettings);
 		trxSetPowerFromLevel(nonVolatileSettings.txPowerLevel);
+
+
 
 		currentRxFrequency=fRx;
 		currentTxFrequency=fTx;
@@ -335,7 +345,7 @@ void trxSetFrequency(int fRx,int fTx, int dmrMode)
 
 		if (!txPAEnabled)
 		{
-			if (trxCheckFrequencyIsUHF(currentRxFrequency))
+			if (trxCurrentBand[TRX_TX_FREQ_BAND] == RADIO_BAND_UHF)
 			{
 				GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 0);
 				GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 1);
@@ -410,7 +420,7 @@ void trx_activateRx(void)
 	txPAEnabled=false;
 
 
-    if (trxCheckFrequencyIsUHF(currentRxFrequency))
+    if (trxCurrentBand[TRX_RX_FREQ_BAND] == RADIO_BAND_UHF)
 	{
 		GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 0);// VHF pre-amp off
 		GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 1);// UHF pre-amp on
@@ -463,7 +473,7 @@ void trx_activateTx(void)
     GPIO_PinWrite(GPIO_RF_ant_switch, Pin_RF_ant_switch, ANTENNA_SWITCH_TX);
 
 	// TX PA on
-	if (trxCheckFrequencyIsUHF(currentTxFrequency))
+	if (trxCurrentBand[TRX_TX_FREQ_BAND] == RADIO_BAND_UHF)
 	{
 		GPIO_PinWrite(GPIO_VHF_TX_amp_power, Pin_VHF_TX_amp_power, 0);// I can't see why this would be needed. Its probably just for safety.
 		GPIO_PinWrite(GPIO_UHF_TX_amp_power, Pin_UHF_TX_amp_power, 1);
@@ -521,7 +531,7 @@ void trxCalcBandAndFrequencyOffset(int *band_offset, int *freq_offset)
 // NOTE. For crossband duplex DMR, the calibration potentially needs to be changed every time the Tx/Rx is switched over on each 30ms cycle
 // But at the moment this is an unnecessary complication and I'll just use the Rx frequency to get the calibration offsets
 
-	if (trxCheckFrequencyIsUHF(currentRxFrequency))
+	if (trxCurrentBand[TRX_RX_FREQ_BAND] == RADIO_BAND_UHF)
 	{
 		*band_offset=0x00000000;
 		if (currentRxFrequency<4100000)
@@ -854,12 +864,12 @@ void trxUpdateDeviation(int channel)
 	{
 	case AT1846_VOICE_CHANNEL_TONE1:
 	case AT1846_VOICE_CHANNEL_TONE2:
-		read_val_dev_tone(currentTxFrequency, CAL_DEV_TONE, &deviation);
+		read_val_dev_tone(CAL_DEV_TONE, &deviation);
 		deviation &= 0x7f;
 		I2C_AT1846_set_register_with_mask(0x59, 0x003f, deviation, 6); // Tone deviation value
 		break;
 	case AT1846_VOICE_CHANNEL_DTMF:
-		read_val_dev_tone(currentTxFrequency, CAL_DEV_DTMF, &deviation);
+		read_val_dev_tone(CAL_DEV_DTMF, &deviation);
 		deviation &= 0x7f;
 		I2C_AT1846_set_register_with_mask(0x59, 0x003f, deviation, 6); // Tone deviation value
 		break;

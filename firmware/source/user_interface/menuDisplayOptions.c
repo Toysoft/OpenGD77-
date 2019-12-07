@@ -37,7 +37,6 @@ int menuDisplayOptions(int buttons, int keys, int events, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		gMenusCurrentItemIndex=0;
 		originalBrightness = nonVolatileSettings.displayBacklightPercentage;
 		contrast = nonVolatileSettings.displayContrast;
 		inverseVideo = nonVolatileSettings.displayInverseVideo;

@@ -223,7 +223,7 @@ void fw_check_key_event(uint32_t *keys, int *event)
 			keyState = KEY_WAIT_RELEASED;
 			*keys=0;
 		} else if (*keys == 0) {
-			*keys = old_keyboard_state | KEY_MOD_UP;
+			*keys = old_keyboard_state | KEY_MOD_LONG | KEY_MOD_UP;
 			*event = EVENT_KEY_CHANGE;
 			keyState = KEY_IDLE;
 		} else {

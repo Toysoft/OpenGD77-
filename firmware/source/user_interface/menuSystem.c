@@ -23,7 +23,7 @@ int menuDisplayLightTimer=-1;
 int menuTimer;
 menuItemNew_t *gMenuCurrentMenuList;
 
-menuControlDataStruct_t menuControlData = { .stackPosition = 0, .stack = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
+menuControlDataStruct_t menuControlData = { .stackPosition = 0, .stack = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, .itemIndex = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
 
 
 int menuVFOMode(int buttons, int keys, int events, bool isFirstRun);
@@ -122,36 +122,46 @@ void menuSystemPushNewMenu(int menuNumber)
 {
 	if (menuControlData.stackPosition < 15)
 	{
+		menuControlData.itemIndex[menuControlData.stackPosition] = gMenusCurrentItemIndex;
 		menuControlData.stackPosition++;
 		menuControlData.stack[menuControlData.stackPosition] = menuNumber;
+		gMenusCurrentItemIndex = (menuNumber == MENU_MAIN_MENU) ? 1 : 0;
 		menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0, 0, 0, true);
 		fw_reset_keyboard();
 	}
 }
 void menuSystemPopPreviousMenu(void)
 {
+	menuControlData.itemIndex[menuControlData.stackPosition] = 0;
 	menuControlData.stackPosition--;
+	gMenusCurrentItemIndex = menuControlData.itemIndex[menuControlData.stackPosition];
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true);
 	fw_reset_keyboard();
 }
+
 void menuSystemPopAllAndDisplayRootMenu(void)
 {
-	menuControlData.stackPosition=0;
+	memset(menuControlData.itemIndex, 0, sizeof(menuControlData.itemIndex));
+	menuControlData.stackPosition = 0;
+	gMenusCurrentItemIndex = 0;
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true);
 	fw_reset_keyboard();
 }
 
 void menuSystemPopAllAndDisplaySpecificRootMenu(int newRootMenu)
 {
+	memset(menuControlData.itemIndex, 0, sizeof(menuControlData.itemIndex));
 	menuControlData.stack[0]  = newRootMenu;
-	menuControlData.stackPosition=0;
+	menuControlData.stackPosition = 0;
+	gMenusCurrentItemIndex = (newRootMenu == MENU_MAIN_MENU) ? 1 : 0;
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true);
 	fw_reset_keyboard();
 }
 
 void menuSystemSetCurrentMenu(int menuNumber)
 {
-	menuControlData.stack[menuControlData.stackPosition]  = menuNumber;
+	menuControlData.stack[menuControlData.stackPosition] = menuNumber;
+	gMenusCurrentItemIndex = menuControlData.itemIndex[menuControlData.stackPosition];
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true);
 	fw_reset_keyboard();
 }
@@ -188,8 +198,16 @@ void menuInitMenuSystem(void)
 {
 	menuDisplayLightTimer = -1;
 	menuControlData.stack[menuControlData.stackPosition]  = MENU_SPLASH_SCREEN;// set the very first screen as the splash screen
+	gMenusCurrentItemIndex = 0;
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true);// Init and display this screen
 }
+
+void menuSystemLanguageHasChanged(void)
+{
+	// Force full update of menuChannelMode() on next call (if isFirstRun arg. is true)
+	menuChannelColdStart();
+}
+
 
 /*
 const char menuStringTable[32][17] = { "",//0
@@ -252,11 +270,6 @@ const menuItemNew_t menuDataContactContact [] = {
 	{ 13, -1 },// Draft
 	{ 14, -1 }// Quick Test
 };*/
-
-int menuDisplayList(int buttons, int keys, int events, bool isFirstRun)
-{
-	return 0;
-}
 
 void menuDisplayTitle(const char *title)
 {

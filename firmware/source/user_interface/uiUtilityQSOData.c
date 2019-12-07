@@ -643,7 +643,7 @@ void drawRSSIBarGraph(void)
 
 	UC1701_fillRect(0, BAR_Y_POS,128,4,true);
 
-	if (trxCheckFrequencyIsUHF(trxGetFrequency()))
+	if (trxCurrentBand[TRX_RX_FREQ_BAND] == RADIO_BAND_UHF)
 	{
 		// Use fixed point maths to scale the RSSI value to dBm, based on data from VK4JWT and VK7ZJA
 		dBm = -151 + trxRxSignal;// Note no the RSSI value on UHF does not need to be scaled like it does on VHF

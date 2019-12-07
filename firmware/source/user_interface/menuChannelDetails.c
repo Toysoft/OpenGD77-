@@ -47,7 +47,7 @@ int menuChannelDetails(int buttons, int keys, int events, bool isFirstRun)
 	if (isFirstRun)
 	{
 		memcpy(&tmpChannel,currentChannelData,sizeof(struct_codeplugChannel_t));
-		gMenusCurrentItemIndex=0;
+
 		for(int i=0;i<NUM_CTCSS;i++)
 		{
 			if (tmpChannel.txTone==CTCSSTones[i])
