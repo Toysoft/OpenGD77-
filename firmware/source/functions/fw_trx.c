@@ -217,7 +217,7 @@ int trx_carrier_detected(void)
 void trx_check_analog_squelch(void)
 {
 	trx_measure_count++;
-	if (trx_measure_count==50)
+	if (trx_measure_count==25)
 	{
 		uint8_t squelch=45;
 
@@ -819,6 +819,7 @@ void trxSetRxCTCSS(int toneFreqX10)
 	else
 	{
 		int threshold=(2500-toneFreqX10)/100;   //adjust threshold value to match tone frequency.
+		if(toneFreqX10>2400) threshold=1;
 		toneFreqX10 = toneFreqX10*10;// value that is stored is 100 time the tone freq but its stored in the codeplug as freq times 10
 		write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT,	0x4d, (toneFreqX10 >> 8) & 0xff,	(toneFreqX10 & 0xff));
 		write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x5b,(threshold & 0xFF),(threshold & 0xFF)); //set the detection thresholds
