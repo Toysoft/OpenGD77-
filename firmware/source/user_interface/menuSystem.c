@@ -138,6 +138,7 @@ void menuSystemPopPreviousMenu(void)
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true);
 	fw_reset_keyboard();
 }
+
 void menuSystemPopAllAndDisplayRootMenu(void)
 {
 	memset(menuControlData.itemIndex, 0, sizeof(menuControlData.itemIndex));
@@ -200,6 +201,13 @@ void menuInitMenuSystem(void)
 	gMenusCurrentItemIndex = 0;
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](0,0,0,true);// Init and display this screen
 }
+
+void menuSystemLanguageHasChanged(void)
+{
+	// Force full update of menuChannelMode() on next call (if isFirstRun arg. is true)
+	menuChannelColdStart();
+}
+
 
 /*
 const char menuStringTable[32][17] = { "",//0

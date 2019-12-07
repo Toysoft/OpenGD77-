@@ -134,13 +134,14 @@ int codeplugZonesGetCount(void)
 	return numZones+1; // Add one extra zone to allow for the special 'All Channels' Zone
 }
 
-void codeplugZoneGetDataForNumber(int zoneNum,struct_codeplugZone_t *returnBuf)
+void codeplugZoneGetDataForNumber(int zoneNum, struct_codeplugZone_t *returnBuf)
 {
-
 
 	if (zoneNum==codeplugZonesGetCount()-1) //special case: return a special Zone called 'All Channels'
 	{
-		sprintf(returnBuf->name,currentLanguage->all_channels);
+		memset(returnBuf->name, 0, sizeof(returnBuf->name));
+		strncpy(returnBuf->name, currentLanguage->all_channels, sizeof(returnBuf->name) - 1);
+
 		for(int i=0;i<codeplugChannelsPerZone;i++)
 		{
 			returnBuf->channels[i]=0;
