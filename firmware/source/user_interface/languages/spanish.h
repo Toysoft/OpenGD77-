@@ -28,7 +28,7 @@
  ********************************************************************/
 const stringsTable_t spanishLanguage =
 {
-.LANGUAGE_NAME 			= "Spanish", // MaxLen: 16
+.LANGUAGE_NAME 			= "Spanish", // MaxLen: 16 
 .language				= "Idioma", // MaxLen: 16
 .menu					= "Menu", // MaxLen: 16
 .credits				= "Creditos", // MaxLen: 16
