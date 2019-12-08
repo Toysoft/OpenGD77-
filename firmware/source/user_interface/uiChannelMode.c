@@ -48,7 +48,7 @@ static int scanTimer=0;
 static ScanZoneState_t scanState = SCAN_SCANNING;		//state flag for scan routine
 bool uiChannelModeScanActive = false;					//scan active flag
 static const int SCAN_SHORT_PAUSE_TIME = 500;			//time to wait after carrier detected to allow time for full signal detection. (CTCSS or DMR)
-static const int SCAN_TOTAL_INTERVAL = 20;			    //time between each scan step
+static const int SCAN_TOTAL_INTERVAL = 30;			    //time between each scan step
 static const int SCAN_FREQ_CHANGE_SETTLING_INTERVAL = 1;//Time after frequency is changed before RSSI sampling starts
 static const int SCAN_SKIP_CHANNEL_INTERVAL = 1;		//This is actually just an implicit flag value to indicate the channel should be skipped
 
