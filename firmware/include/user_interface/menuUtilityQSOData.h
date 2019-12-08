@@ -17,6 +17,7 @@
  */
 #ifndef _MENU_UTILITY_QSO_DATA_H_
 #define _MENU_UTILITY_QSO_DATA_H_                    /**< Symbol preventing repeated inclusion */
+#include <user_interface/menuSystem.h>
 #include "fw_common.h"
 
 #define NUM_LASTHEARD_STORED 16
@@ -55,15 +56,14 @@ extern int menuDisplayQSODataState;
 extern int qsodata_timer;
 extern uint32_t menuUtilityReceivedPcId;
 extern uint32_t menuUtilityTgBeforePcMode;
-extern int RssiUpdateCounter;
-extern const int RSSI_UPDATE_COUNTER_RELOAD;
+extern const uint32_t RSSI_UPDATE_COUNTER_RELOAD;
 
 bool dmrIDLookup(int targetId, dmrIdDataStruct_t *foundRecord);
 void menuUtilityRenderQSOData(void);
 void menuUtilityRenderHeader(void);
 void lastheardInitList(void);
 bool lastHeardListUpdate(uint8_t *dmrDataBuffer);
-bool menuUtilityHandlePrivateCallActions(int buttons, int keys, int events);
+bool menuUtilityHandlePrivateCallActions(ui_event_t *ev);
 void lastHeardClearLastID(void);
 void drawRSSIBarGraph(void);
 void drawDMRMicLevelBarGraph(void);

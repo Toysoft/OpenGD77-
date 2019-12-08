@@ -17,28 +17,39 @@
  */
 #include <user_interface/menuSystem.h>
 #include <user_interface/uiLocalisation.h>
+#include <functions/fw_ticks.h>
 #include "fw_settings.h"
 
 static void updateScreen(void);
-static void handleEvent(int buttons, int keys, int events);
+static void handleEvent(ui_event_t *ev);
 
 static bool lockDisplay = false;
-static const int TIMEOUT_MS = 2000;
+static const uint32_t TIMEOUT_MS = 2000;
 static int lockScreenState;
 
 enum LOCK_SCREEN_STATE { LOCK_SCREEN_STATE_IDLE=0, LOCK_SCREEN_STATE_CHANGED };
 
-int menuLockScreen(int buttons, int keys, int events, bool isFirstRun)
+int menuLockScreen(ui_event_t *ev, bool isFirstRun)
 {
+	static uint32_t m = 0;
+
 	if (isFirstRun)
 	{
-		menuTimer = TIMEOUT_MS;
+		m = fw_millis();
 		updateScreen();
 		lockScreenState = LOCK_SCREEN_STATE_CHANGED;
 	}
 	else
 	{
-		handleEvent(buttons, keys, events);
+		if ((ev->ticks - m) > TIMEOUT_MS)
+		{
+			menuSystemPopPreviousMenu();
+			lockDisplay = false;
+			return 0;
+		}
+
+		if (ev->hasEvent)
+			handleEvent(ev);
 	}
 	return 0;
 }
@@ -86,16 +97,9 @@ static void updateScreen(void)
 	lockScreenState = LOCK_SCREEN_STATE_IDLE;
 }
 
-static void handleEvent(int buttons, int keys, int events)
+static void handleEvent(ui_event_t *ev)
 {
-	menuTimer--;
-	if (menuTimer == 0)
-	{
-		menuSystemPopPreviousMenu();
-		lockDisplay = false;
-	}
-
-	if (KEYCHECK_DOWN(keys, KEY_STAR) && (buttons & BUTTON_SK2))
+	if (KEYCHECK_DOWN(ev->keys, KEY_STAR) && (ev->buttons & BUTTON_SK2))
 	{
 		keypadLocked = false;
 		PTTLocked = false;

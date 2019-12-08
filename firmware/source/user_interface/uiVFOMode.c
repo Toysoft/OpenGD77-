@@ -36,7 +36,7 @@ static struct_codeplugContact_t contactData;
 static bool displaySquelch=false;
 
 // internal prototypes
-static void handleEvent(int buttons, int keys, int events);
+static void handleEvent(ui_event_t *ev);
 static void reset_freq_enter_digits(void);
 static int read_freq_enter_digits(void);
 static void update_frequency(int tmp_frequency);
@@ -55,11 +55,12 @@ static const int CCSCANINTERVAL=500;
 static int scanIndex=0;
 
 // public interface
-int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
+int menuVFOMode(ui_event_t *ev, bool isFirstRun)
 {
+	static uint32_t m = 0;
+
 	if (isFirstRun)
 	{
-		RssiUpdateCounter = RSSI_UPDATE_COUNTER_RELOAD;
 		isDisplayingQSOData=false;
 		nonVolatileSettings.initialMenuNumber=MENU_VFO_MODE;
 		currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];
@@ -130,7 +131,7 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 	}
 	else
 	{
-		if (events==0)
+		if (ev->events==0)
 		{
 			// is there an incoming DMR signal
 			if (menuDisplayQSODataState != QSO_DISPLAY_IDLE)
@@ -139,12 +140,12 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 			}
 			else
 			{
-				if (RssiUpdateCounter-- == 0)
+				if ((ev->ticks - m) > RSSI_UPDATE_COUNTER_RELOAD)
 				{
+					m = ev->ticks;
 					drawRSSIBarGraph();
 					UC1701RenderRows(1,2);// Only render the second row which contains the bar graph, as there is no need to redraw the rest of the screen
 					//UC1701_render();
-					RssiUpdateCounter = RSSI_UPDATE_COUNTER_RELOAD;
 				}
 			}
 			if(toneScanActive==true)
@@ -158,7 +159,7 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 		}
 		else
 		{
-			handleEvent(buttons, keys, events);
+			handleEvent(ev);
 			toneScanActive=false;
 			if(CCScanActive==true)
 			{
@@ -387,12 +388,12 @@ static void loadContact(void)
 	}
 }
 
-static void handleEvent(int buttons, int keys, int events)
+static void handleEvent(ui_event_t *ev)
 {
 	uint32_t tg = (LinkHead->talkGroupOrPcId & 0xFFFFFF);
 	// If Blue button is pressed during reception it sets the Tx TG to the incoming TG
 
-	if (isDisplayingQSOData && (buttons & BUTTON_SK2)!=0 && trxGetMode() == RADIO_MODE_DIGITAL &&
+	if (isDisplayingQSOData && (ev->buttons & BUTTON_SK2)!=0 && trxGetMode() == RADIO_MODE_DIGITAL &&
 				(trxTalkGroupOrPcId != tg ||
 				(dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot())))
 	{
@@ -416,11 +417,11 @@ static void handleEvent(int buttons, int keys, int events)
 		return;
 	}
 
-	if (events & 0x02)
+	if (ev->events & 0x02)
 	{
-		if (buttons & BUTTON_ORANGE)
+		if (ev->buttons & BUTTON_ORANGE)
 		{
-			if (buttons & BUTTON_SK2)
+			if (ev->buttons & BUTTON_SK2)
 			{
 				settingsPrivateCallMuteMode = !settingsPrivateCallMuteMode;// Toggle PC mute only mode
 				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
@@ -434,14 +435,14 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 	}
 
-	if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
+	if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 	{
-		if (menuUtilityHandlePrivateCallActions(buttons,keys,events))
+		if (menuUtilityHandlePrivateCallActions(ev))
 		{
 			reset_freq_enter_digits();
 			return;
 		}
-		if (buttons & BUTTON_SK2 )
+		if (ev->buttons & BUTTON_SK2 )
 		{
 			menuSystemPushNewMenu(MENU_CHANNEL_DETAILS);
 			reset_freq_enter_digits();
@@ -456,11 +457,11 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 		}
 	}
-	else if (KEYCHECK_SHORTUP(keys,KEY_HASH))
+	else if (KEYCHECK_SHORTUP(ev->keys,KEY_HASH))
 	{
 		if (trxGetMode() == RADIO_MODE_DIGITAL)
 		{
-			if ((buttons & BUTTON_SK2) != 0)
+			if ((ev->buttons & BUTTON_SK2) != 0)
 			{
 				menuSystemPushNewMenu(MENU_CONTACT_QUICKLIST);
 			} else {
@@ -472,9 +473,9 @@ static void handleEvent(int buttons, int keys, int events)
 
 	if (freq_enter_idx==0)
 	{
-		if (KEYCHECK_SHORTUP(keys,KEY_STAR))
+		if (KEYCHECK_SHORTUP(ev->keys,KEY_STAR))
 		{
-			if (buttons & BUTTON_SK2 )
+			if (ev->buttons & BUTTON_SK2 )
 			{
 				if (trxGetMode() == RADIO_MODE_ANALOG)
 				{
@@ -516,9 +517,9 @@ static void handleEvent(int buttons, int keys, int events)
 				}
 			}
 		}
-		else if (KEYCHECK_PRESS(keys,KEY_DOWN))
+		else if (KEYCHECK_PRESS(ev->keys,KEY_DOWN))
 		{
-			if (buttons & BUTTON_SK2 )
+			if (ev->buttons & BUTTON_SK2 )
 			{
 				selectedFreq = VFO_SELECTED_FREQUENCY_INPUT_TX;
 			}
@@ -528,9 +529,9 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		}
-		else if (KEYCHECK_PRESS(keys,KEY_UP))
+		else if (KEYCHECK_PRESS(ev->keys,KEY_UP))
 		{
-			if (buttons & BUTTON_SK2 )
+			if (ev->buttons & BUTTON_SK2 )
 			{
 				selectedFreq = VFO_SELECTED_FREQUENCY_INPUT_RX;
 			}
@@ -541,9 +542,9 @@ static void handleEvent(int buttons, int keys, int events)
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 
 		}
-		else if (KEYCHECK_SHORTUP(keys,KEY_RED))
+		else if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 		{
-			if (menuUtilityHandlePrivateCallActions(buttons,keys,events))
+			if (menuUtilityHandlePrivateCallActions(ev))
 			{
 				return;
 			}
@@ -551,9 +552,9 @@ static void handleEvent(int buttons, int keys, int events)
 			return;
 		}
 		else
-		if (KEYCHECK_PRESS(keys,KEY_RIGHT))
+		if (KEYCHECK_PRESS(ev->keys,KEY_RIGHT))
 		{
-			if (buttons & BUTTON_SK2)
+			if (ev->buttons & BUTTON_SK2)
 			{
 				if (nonVolatileSettings.txPowerLevel < 7)
 				{
@@ -613,9 +614,9 @@ static void handleEvent(int buttons, int keys, int events)
 				}
 			}
 		}
-		else if (KEYCHECK_PRESS(keys,KEY_LEFT))
+		else if (KEYCHECK_PRESS(ev->keys,KEY_LEFT))
 		{
-			if (buttons & BUTTON_SK2)
+			if (ev->buttons & BUTTON_SK2)
 			{
 				if (nonVolatileSettings.txPowerLevel > 0)
 				{
@@ -682,19 +683,19 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	else
 	{
-		if (KEYCHECK_PRESS(keys,KEY_LEFT))
+		if (KEYCHECK_PRESS(ev->keys,KEY_LEFT))
 		{
 			freq_enter_idx--;
 			freq_enter_digits[freq_enter_idx]='-';
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		}
-		else if (KEYCHECK_SHORTUP(keys,KEY_RED))
+		else if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 		{
 			reset_freq_enter_digits();
     	    set_melody(melody_NACK_beep);
     		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		}
-		else if (KEYCHECK_SHORTUP(keys, KEY_GREEN))
+		else if (KEYCHECK_SHORTUP(ev->keys, KEY_GREEN))
 		{
 			int tmp_frequency=read_freq_enter_digits();
 			if (trxGetBandFromFrequency(tmp_frequency)!=-1)
@@ -712,7 +713,7 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 	if (freq_enter_idx<8)
 	{
-		char c = keypressToNumberChar(keys);
+		char c = keypressToNumberChar(ev->keys);
 		if (c!='\0')
 		{
 			freq_enter_digits[freq_enter_idx]=c;

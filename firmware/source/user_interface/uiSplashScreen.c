@@ -19,18 +19,17 @@
 #include "fw_settings.h"
 
 static void updateScreen(void);
-static void handleEvent(int buttons, int keys, int events);
+static void handleEvent(ui_event_t *ev);
 
-int menuSplashScreen(int buttons, int keys, int events, bool isFirstRun)
+int menuSplashScreen(ui_event_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		menuTimer = 2000;
 		updateScreen();
 	}
 	else
 	{
-		handleEvent(buttons, keys, events);
+		handleEvent(ev);
 	}
 	return 0;
 }
@@ -49,10 +48,17 @@ static void updateScreen(void)
 	displayLightTrigger();
 }
 
-static void handleEvent(int buttons, int keys, int events)
+static void handleEvent(ui_event_t *ev)
 {
-	menuTimer--;
-	if (menuTimer == 0)
+	static uint32_t m = 0;
+
+	if (m == 0)
+	{
+		m = ev->ticks;
+		return;
+	}
+
+	if ((ev->ticks - m) > 2000)
 	{
 		menuSystemSetCurrentMenu(nonVolatileSettings.initialMenuNumber);
 	}

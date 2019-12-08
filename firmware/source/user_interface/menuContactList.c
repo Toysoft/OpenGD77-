@@ -23,7 +23,7 @@
 #include "fw_settings.h"
 
 static void updateScreen(void);
-static void handleEvent(int buttons, int keys, int events);
+static void handleEvent(ui_event_t *ev);
 static struct_codeplugContact_t contact;
 static int contactCallType;
 static int menuContactListDisplayState;
@@ -49,7 +49,7 @@ static void reloadContactList(void)
 	}
 }
 
-int menuContactList(int buttons, int keys, int events, bool isFirstRun)
+int menuContactList(ui_event_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -68,9 +68,9 @@ int menuContactList(int buttons, int keys, int events, bool isFirstRun)
 	}
 	else
 	{
-		if ((events!=0 && keys!=0) || menuContactListTimeout > 0)
+		if (ev->hasEvent || (menuContactListTimeout > 0))
 		{
-			handleEvent(buttons, keys, events);
+			handleEvent(ev);
 		}
 	}
 	return 0;
@@ -133,12 +133,12 @@ static void updateScreen(void)
 	displayLightTrigger();
 }
 
-static void handleEvent(int buttons, int keys, int events)
+static void handleEvent(ui_event_t *ev)
 {
 	switch (menuContactListDisplayState)
 	{
 	case MENU_CONTACT_LIST_DISPLAY:
-		if (KEYCHECK_PRESS(keys, KEY_DOWN))
+		if (KEYCHECK_PRESS(ev->keys, KEY_DOWN))
 		{
 			MENU_INC(gMenusCurrentItemIndex, gMenusEndIndex);
 			contactListContactIndex = codeplugContactGetDataForNumber(
@@ -146,7 +146,7 @@ static void handleEvent(int buttons, int keys, int events)
 					&contactListContactData);
 			updateScreen();
 		}
-		else if (KEYCHECK_PRESS(keys, KEY_UP))
+		else if (KEYCHECK_PRESS(ev->keys, KEY_UP))
 		{
 			MENU_DEC(gMenusCurrentItemIndex, gMenusEndIndex);
 			contactListContactIndex = codeplugContactGetDataForNumber(
@@ -154,7 +154,7 @@ static void handleEvent(int buttons, int keys, int events)
 					&contactListContactData);
 			updateScreen();
 		}
-		else if (KEYCHECK_SHORTUP(keys, KEY_HASH))
+		else if (KEYCHECK_SHORTUP(ev->keys, KEY_HASH))
 		{
 			if (contactCallType == CONTACT_CALLTYPE_TG)
 			{
@@ -167,7 +167,7 @@ static void handleEvent(int buttons, int keys, int events)
 			reloadContactList();
 			updateScreen();
 		}
-		else if (KEYCHECK_SHORTUP(keys, KEY_GREEN))
+		else if (KEYCHECK_SHORTUP(ev->keys, KEY_GREEN))
 		{
 			if (menuSystemGetCurrentMenuNumber() == MENU_CONTACT_QUICKLIST)
 			{
@@ -180,7 +180,7 @@ static void handleEvent(int buttons, int keys, int events)
 				return;
 			}
 		}
-		else if (KEYCHECK_SHORTUP(keys, KEY_RED))
+		else if (KEYCHECK_SHORTUP(ev->keys, KEY_RED))
 		{
 			contactListContactIndex = 0;
 			menuSystemPopPreviousMenu();
@@ -189,7 +189,7 @@ static void handleEvent(int buttons, int keys, int events)
 		break;
 
 	case MENU_CONTACT_LIST_CONFIRM:
-		if (KEYCHECK_SHORTUP(keys, KEY_GREEN))
+		if (KEYCHECK_SHORTUP(ev->keys, KEY_GREEN))
 		{
 			memset(contact.name, 0xff, 16);
 			contact.tgNumber = 0;
@@ -201,7 +201,7 @@ static void handleEvent(int buttons, int keys, int events)
 			reloadContactList();
 			updateScreen();
 		}
-		else if (KEYCHECK_SHORTUP(keys, KEY_RED))
+		else if (KEYCHECK_SHORTUP(ev->keys, KEY_RED))
 		{
 			menuContactListDisplayState = MENU_CONTACT_LIST_DISPLAY;
 			reloadContactList();
@@ -212,7 +212,7 @@ static void handleEvent(int buttons, int keys, int events)
 	case MENU_CONTACT_LIST_DELETED:
 	case MENU_CONTACT_LIST_TG_IN_RXGROUP:
 		menuContactListTimeout--;
-		if ((menuContactListTimeout == 0) || KEYCHECK_SHORTUP(keys, KEY_GREEN) || KEYCHECK_SHORTUP(keys, KEY_RED))
+		if ((menuContactListTimeout == 0) || KEYCHECK_SHORTUP(ev->keys, KEY_GREEN) || KEYCHECK_SHORTUP(ev->keys, KEY_RED))
 		{
 			menuContactListDisplayState = MENU_CONTACT_LIST_DISPLAY;
 			reloadContactList();

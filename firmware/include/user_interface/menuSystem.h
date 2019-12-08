@@ -19,16 +19,24 @@
 #define _FW_MENUSYSTEM_H_
 #include "fw_main.h"
 
+typedef struct
+{
+	int      buttons;
+	int      keys;
+	int      events;
+	bool     hasEvent;
+	uint32_t ticks;
+} ui_event_t;
+
 #define MENU_MAX_DISPLAYED_ENTRIES 3
 #define MENU_INC(O, M) do { O = (O + 1) % M; } while(0)
 #define MENU_DEC(O, M) do { O = (O + M - 1) % M; } while(0)
 
 extern bool uiChannelModeScanActive;
 extern int menuDisplayLightTimer;
-extern int menuTimer;
 
 
-typedef int (*MenuFunctionPointer_t)(int,int,int,bool); // Typedef for menu function pointers.  Functions are passed the key, the button and the event data. Event can be a Key or a button or both. Last arg is for when the function is only called to initialise and display its screen.
+typedef int (*MenuFunctionPointer_t)(ui_event_t *,bool); // Typedef for menu function pointers.  Functions are passed the key, the button and the event data. Event can be a Key or a button or both. Last arg is for when the function is only called to initialise and display its screen.
 typedef struct menuControlDataStruct
 {
 	int currentMenuNumber;
@@ -67,7 +75,7 @@ void menuSystemPopPreviousMenu(void);
 void menuSystemPopAllAndDisplayRootMenu(void);
 void menuSystemPopAllAndDisplaySpecificRootMenu(int newRootMenu);
 
-void menuSystemCallCurrentMenuTick(int buttons, int keys, int events);
+void menuSystemCallCurrentMenuTick(ui_event_t *ev);
 
 /*
  * ---------------------- IMPORTANT ----------------------------
