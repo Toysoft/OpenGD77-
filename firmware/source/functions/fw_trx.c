@@ -416,6 +416,16 @@ void trx_setTX(void)
 
 }
 
+void trx_rxOff(void)
+{
+	set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0xDF, 0x00, 0x00);
+}
+
+void trx_rxOn(void)
+{
+	set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0xFF, 0x00, 0x20);
+}
+
 void trx_activateRx(void)
 {
 	//SEGGER_RTT_printf(0, "trx_activateRx\n");

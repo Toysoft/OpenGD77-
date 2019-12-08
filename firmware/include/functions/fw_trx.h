@@ -75,6 +75,8 @@ void trxSetModeAndBandwidth(int mode, bool bandwidthIs25kHz);
 void trxSetFrequency(int fRx,int fTx, int dmrMode);
 void trx_setRX(void);
 void trx_setTX(void);
+void trx_rxOff(void);
+void trx_rxOn(void);
 void trx_activateRx(void);
 void trx_activateTx(void);
 void trxSetPowerFromLevel(int powerLevel);

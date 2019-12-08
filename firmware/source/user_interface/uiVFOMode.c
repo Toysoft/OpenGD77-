@@ -958,6 +958,7 @@ int menuVFOModeQuickMenu(int buttons, int keys, int events, bool isFirstRun)
 void toneScan(void)
 {
 	if (GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable)==1)
+
 	{
 		currentChannelData->txTone=TRX_CTCSSTones[scanIndex];
 		currentChannelData->rxTone=TRX_CTCSSTones[scanIndex];
@@ -976,14 +977,13 @@ void toneScan(void)
 		scanIndex++;
 		if(scanIndex > (TRX_NUM_CTCSS-1))
 		{
-			toneScanActive=false;
-			trxSetRxCTCSS(currentChannelData->rxTone);
+			scanIndex=1;
 		}
-		else
-		{
-			trxSetRxCTCSS(TRX_CTCSSTones[scanIndex]);
-			scanTimer=TONESCANINTERVAL-(scanIndex*2);
-		}
+		trx_rxOff();
+		trxSetRxCTCSS(TRX_CTCSSTones[scanIndex]);
+		scanTimer=TONESCANINTERVAL-(scanIndex*2);
+		trx_measure_count=0;							//synchronise the measurement with the scan.
+		trx_rxOn();
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		menuVFOModeUpdateScreen(0);
 	}
