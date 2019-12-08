@@ -19,21 +19,18 @@
 #include <user_interface/uiLocalisation.h>
 
 static void updateScreen(void);
-static void handleEvent(int buttons, int keys, int events);
+static void handleEvent(ui_event_t *ev);
 
-int menuFirmwareInfoScreen(int buttons, int keys, int events, bool isFirstRun)
+int menuFirmwareInfoScreen(ui_event_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		menuTimer = 3000;// Increased so its easier to see what version of fw is being run
 		updateScreen();
 	}
 	else
 	{
-		if (events!=0 && keys!=0)
-		{
-			handleEvent(buttons, keys, events);
-		}
+		if (ev->hasEvent)
+			handleEvent(ev);
 	}
 	return 0;
 }
@@ -56,14 +53,14 @@ static void updateScreen(void)
 }
 
 
-static void handleEvent(int buttons, int keys, int events)
+static void handleEvent(ui_event_t *ev)
 {
-	if (KEYCHECK_PRESS(keys,KEY_RED))
+	if (KEYCHECK_PRESS(ev->keys,KEY_RED))
 	{
 		menuSystemPopPreviousMenu();
 		return;
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_GREEN))
+	else if (KEYCHECK_PRESS(ev->keys,KEY_GREEN))
 	{
 		menuSystemPopAllAndDisplayRootMenu();
 		return;

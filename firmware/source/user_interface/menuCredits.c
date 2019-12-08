@@ -19,7 +19,7 @@
 #include <user_interface/uiLocalisation.h>
 
 static void updateScreen(void);
-static void handleEvent(int buttons, int keys, int events);
+static void handleEvent(ui_event_t *ev);
 static void scrollDownOneLine(void);
 
 //#define CREDIT_TEXT_LENGTH 33
@@ -28,20 +28,17 @@ const int NUM_CREDITS = 6;
 static const char *creditTexts[] = {"Roger VK3KYY","Kai DG4KLU","Jason VK7ZJA","Alex DL4LEX","Daniel F1RMB","Colin G4EML"};
 static int currentDisplayIndex=0;
 
-int menuCredits(int buttons, int keys, int events, bool isFirstRun)
+int menuCredits(ui_event_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
 		gMenusCurrentItemIndex=5000;
-		menuTimer = 3000;
 		updateScreen();
 	}
 	else
 	{
-		if (events!=0 && keys!=0)
-		{
-			handleEvent(buttons, keys, events);
-		}
+		if (ev->hasEvent)
+			handleEvent(ev);
 /*
  * Uncomment to enable auto scrolling
 		if ((gMenusCurrentItemIndex--)==0)
@@ -79,19 +76,19 @@ static void scrollDownOneLine(void)
 	updateScreen();
 }
 
-static void handleEvent(int buttons, int keys, int events)
+static void handleEvent(ui_event_t *ev)
 {
 
-	if (KEYCHECK_SHORTUP(keys,KEY_RED))
+	if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{
 		menuSystemPopPreviousMenu();
 		return;
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_DOWN))
+	else if (KEYCHECK_PRESS(ev->keys,KEY_DOWN))
 	{
 		scrollDownOneLine();
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_UP))
+	else if (KEYCHECK_PRESS(ev->keys,KEY_UP))
 	{
 		if (currentDisplayIndex>0)
 		{
@@ -99,7 +96,7 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 		updateScreen();
 	}
-	else if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
+	else if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 	{
 		menuSystemPopAllAndDisplayRootMenu();
 		return;
