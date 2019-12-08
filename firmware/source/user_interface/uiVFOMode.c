@@ -979,11 +979,11 @@ void toneScan(void)
 		{
 			scanIndex=1;
 		}
-		trx_rxOff();
+		trxAT1846RxOff();
 		trxSetRxCTCSS(TRX_CTCSSTones[scanIndex]);
 		scanTimer=TONESCANINTERVAL-(scanIndex*2);
 		trx_measure_count=0;							//synchronise the measurement with the scan.
-		trx_rxOn();
+		trxAT1846RxOn();
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		menuVFOModeUpdateScreen(0);
 	}

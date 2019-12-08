@@ -1090,13 +1090,13 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 void HRC6000RxInterruptHandler(void)
 {
 	//SEGGER_RTT_printf(0, "RxISR\t%d\n",PITCounter);
-	trx_activateRx();
+	trxActivateRx();
 }
 
 void HRC6000TxInterruptHandler(void)
 {
 	//SEGGER_RTT_printf(0, "TxISR\t%d \n",PITCounter);
-	trx_activateTx();
+	trxActivateTx();
 }
 
 

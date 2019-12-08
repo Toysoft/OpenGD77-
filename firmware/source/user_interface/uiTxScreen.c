@@ -163,7 +163,7 @@ static void handleEvent(int buttons, int keys, int events)
 
 				// Need to wrap this in Task Critical to avoid bus contention on the I2C bus.
 				taskENTER_CRITICAL();
-				trx_activateRx();
+				trxActivateRx();
 				taskEXIT_CRITICAL();
 				menuSystemPopPreviousMenu();
 			}
