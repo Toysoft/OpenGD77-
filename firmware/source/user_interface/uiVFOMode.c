@@ -53,13 +53,6 @@ static int scanTimer=0;
 static const int TONESCANINTERVAL=200;			//time between each tone for lowest tone. (higher tones take less time.)
 static const int CCSCANINTERVAL=500;
 static int scanIndex=0;
-static const unsigned int CTCSSTones[]={65535,625,670,693,719,744,770,797,825,854,
-										885,915,948,974,1000,1035,1072,1109,1148,
-										1188,1230,1273,1318,1365,1413,1462,1514,
-										1567,1598,1622,1655,1679,1713,1738,1773,
-										1799,1835,1862,1899,1928,1966,1995,2035,
-										2065,2107,2181,2257,2291,2336,2418,2503,2541};
-static const int MAXTONESCANINDEX=51;
 
 // public interface
 int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
@@ -83,7 +76,10 @@ int menuVFOMode(int buttons, int keys, int events, bool isFirstRun)
 		{
 			trxSetModeAndBandwidth(currentChannelData->chMode, ((currentChannelData->flag4 & 0x02) == 0x02));
 			trxSetTxCTCSS(currentChannelData->txTone);
-			trxSetRxCTCSS(currentChannelData->rxTone);
+			if (!toneScanActive)
+			{
+				trxSetRxCTCSS(currentChannelData->rxTone);
+			}
 		}
 		else
 		{
@@ -253,7 +249,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 				}
 				if(toneScanActive==true)
 				{
-					sprintf(buffer,"CTCSS %d.%dHz",CTCSSTones[scanIndex]/10,CTCSSTones[scanIndex] % 10);
+					sprintf(buffer,"CTCSS %d.%dHz",TRX_CTCSSTones[scanIndex]/10,TRX_CTCSSTones[scanIndex] % 10);
 					UC1701_printCentered(16,buffer, UC1701_FONT_8x16);
 				}
 
@@ -877,7 +873,8 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 					toneScanActive=true;
 					scanTimer=TONESCANINTERVAL;
 					scanIndex=1;
-					trxSetRxCTCSS(CTCSSTones[scanIndex]);
+					trxSetRxCTCSS(TRX_CTCSSTones[scanIndex]);
+					GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable,0);// turn off the audio amp
 				}
 				else
 				{
@@ -962,8 +959,8 @@ void toneScan(void)
 {
 	if (GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable)==1)
 	{
-		currentChannelData->txTone=CTCSSTones[scanIndex];
-		currentChannelData->rxTone=CTCSSTones[scanIndex];
+		currentChannelData->txTone=TRX_CTCSSTones[scanIndex];
+		currentChannelData->rxTone=TRX_CTCSSTones[scanIndex];
 		trxSetTxCTCSS(currentChannelData->txTone);
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		menuVFOModeUpdateScreen(0);
@@ -977,13 +974,19 @@ void toneScan(void)
 	else
 	{
 		scanIndex++;
-		if(scanIndex>MAXTONESCANINDEX) scanIndex=1;
-		trxSetRxCTCSS(CTCSSTones[scanIndex]);
-		scanTimer=TONESCANINTERVAL-(scanIndex*2);
+		if(scanIndex > (TRX_NUM_CTCSS-1))
+		{
+			toneScanActive=false;
+			trxSetRxCTCSS(currentChannelData->rxTone);
+		}
+		else
+		{
+			trxSetRxCTCSS(TRX_CTCSSTones[scanIndex]);
+			scanTimer=TONESCANINTERVAL-(scanIndex*2);
+		}
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		menuVFOModeUpdateScreen(0);
 	}
-
 }
 
 void CCscan(void)
@@ -1009,6 +1012,4 @@ void CCscan(void)
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		menuVFOModeUpdateScreen(0);
 	}
-
-
 }
