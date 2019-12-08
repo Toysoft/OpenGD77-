@@ -37,6 +37,9 @@ static bool displaySquelch=false;
 
 // internal prototypes
 static void handleEvent(ui_event_t *ev);
+
+static void handleQuickMenuEvent(ui_event_t *ev);
+static void updateQuickMenuScreen(void);
 static void reset_freq_enter_digits(void);
 static int read_freq_enter_digits(void);
 static void update_frequency(int tmp_frequency);
@@ -775,6 +778,24 @@ enum VFO_SCREEN_QUICK_MENU_ITEMS { 	VFO_SCREEN_QUICK_MENU_TX_SWAP_RX = 0, VFO_SC
 									VFO_SCREEN_QUICK_MENU_DMR_FILTER,VFO_SCREEN_QUICK_MENU_VFO_A_B,VFO_SCREEN_CODE_SCAN,
 									NUM_VFO_SCREEN_QUICK_MENU_ITEMS };// The last item in the list is used so that we automatically get a total number of items in the list
 
+
+int menuVFOModeQuickMenu(ui_event_t *ev, bool isFirstRun)
+{
+	if (isFirstRun)
+	{
+		tmpQuickMenuDmrFilterLevel = nonVolatileSettings.dmrFilterLevel;
+		updateQuickMenuScreen();
+	}
+	else
+	{
+		if (ev->events!=0)
+		{
+			handleQuickMenuEvent(ev);
+		}
+	}
+	return 0;
+}
+
 static void updateQuickMenuScreen(void)
 {
 	int mNum = 0;
@@ -829,9 +850,9 @@ static void updateQuickMenuScreen(void)
 	displayLightTrigger();
 }
 
-static void handleQuickMenuEvent(int buttons, int keys, int events)
+static void handleQuickMenuEvent(ui_event_t *ev)
 {
-	if (KEYCHECK_SHORTUP(keys,KEY_RED))
+	if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{
 		toneScanActive=false;
 		if(CCScanActive==true)
@@ -843,7 +864,7 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 		menuSystemPopPreviousMenu();
 		return;
 	}
-	else if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
+	else if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 	{
 		switch(gMenusCurrentItemIndex)
 		{
@@ -889,7 +910,7 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 		menuSystemPopPreviousMenu();
 		return;
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_RIGHT))
+	else if (KEYCHECK_PRESS(ev->keys,KEY_RIGHT))
 		{
 			switch(gMenusCurrentItemIndex)
 			{
@@ -909,7 +930,7 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 
 			}
 		}
-		else if (KEYCHECK_PRESS(keys,KEY_LEFT))
+		else if (KEYCHECK_PRESS(ev->keys,KEY_LEFT))
 		{
 			switch(gMenusCurrentItemIndex)
 			{
@@ -928,35 +949,18 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 					break;
 			}
 		}
-	else if (KEYCHECK_PRESS(keys,KEY_DOWN))
+	else if (KEYCHECK_PRESS(ev->keys,KEY_DOWN))
 	{
 		MENU_INC(gMenusCurrentItemIndex, NUM_VFO_SCREEN_QUICK_MENU_ITEMS);
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_UP))
+	else if (KEYCHECK_PRESS(ev->keys,KEY_UP))
 	{
 		MENU_DEC(gMenusCurrentItemIndex, NUM_VFO_SCREEN_QUICK_MENU_ITEMS);
 	}
 	updateQuickMenuScreen();
 }
 
-int menuVFOModeQuickMenu(int buttons, int keys, int events, bool isFirstRun)
-{
-	if (isFirstRun)
-	{
-		tmpQuickMenuDmrFilterLevel = nonVolatileSettings.dmrFilterLevel;
-		updateQuickMenuScreen();
-	}
-	else
-	{
-		if (events!=0 && keys!=0)
-		{
-			handleQuickMenuEvent(buttons, keys, events);
-		}
-	}
-	return 0;
-}
-
-void toneScan(void)
+static void toneScan(void)
 {
 	if (GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable)==1)
 
@@ -990,7 +994,7 @@ void toneScan(void)
 	}
 }
 
-void CCscan(void)
+static void CCscan(void)
 {
 	if (GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable)==1)
 	{

@@ -27,6 +27,10 @@ static void handleEvent(ui_event_t *ev);
 static void loadChannelData(bool useChannelDataInMemory);
 static void scanning(void);
 static void handleUpKey(ui_event_t *ev);
+
+static void updateQuickMenuScreen(void);
+static void handleQuickMenuEvent(ui_event_t *ev);
+
 static struct_codeplugZone_t currentZone;
 static struct_codeplugRxGroup_t rxGroupData;
 static struct_codeplugContact_t contactData;
@@ -853,29 +857,16 @@ static void updateQuickMenuScreen(void)
 	UC1701_render();
 	displayLightTrigger();
 }
-/*
-static void handleTxRxFreqToggle(void)
+
+static void handleQuickMenuEvent(ui_event_t *ev)
 {
-	isTxRxFreqSwap = !isTxRxFreqSwap;
-	if (isTxRxFreqSwap)
-	{
-		trxSetFrequency(channelScreenChannelData.txFreq,channelScreenChannelData.rxFreq);
-	}
-	else
-	{
-		trxSetFrequency(channelScreenChannelData.txFreq,channelScreenChannelData.rxFreq);
-	}
-}
-*/
-static void handleQuickMenuEvent(int buttons, int keys, int events)
-{
-	if (KEYCHECK_SHORTUP(keys,KEY_RED))
+	if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{
 		uiChannelModeScanActive=false;
 		menuSystemPopPreviousMenu();
 		return;
 	}
-	else if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
+	else if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN) || (ev->buttons & BUTTON_ORANGE))
 	{
 		switch(gMenusCurrentItemIndex)
 		{
@@ -908,7 +899,7 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 		}
 		return;
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_RIGHT))
+	else if (KEYCHECK_PRESS(ev->keys,KEY_RIGHT))
 	{
 		switch(gMenusCurrentItemIndex)
 		{
@@ -920,7 +911,7 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 				break;
 		}
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_LEFT))
+	else if (KEYCHECK_PRESS(ev->keys,KEY_LEFT))
 	{
 		switch(gMenusCurrentItemIndex)
 		{
@@ -932,11 +923,11 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 				break;
 		}
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_DOWN))
+	else if (KEYCHECK_PRESS(ev->keys,KEY_DOWN))
 	{
 		MENU_INC(gMenusCurrentItemIndex, NUM_CH_SCREEN_QUICK_MENU_ITEMS);
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_UP))
+	else if (KEYCHECK_PRESS(ev->keys,KEY_UP))
 	{
 		MENU_DEC(gMenusCurrentItemIndex, NUM_CH_SCREEN_QUICK_MENU_ITEMS);
 	}
@@ -946,7 +937,8 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 
 
 
-int menuChannelModeQuickMenu(int buttons, int keys, int events, bool isFirstRun)
+//int menuChannelModeQuickMenu(int buttons, int keys, int events, bool isFirstRun)
+int menuChannelModeQuickMenu(ui_event_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -956,9 +948,9 @@ int menuChannelModeQuickMenu(int buttons, int keys, int events, bool isFirstRun)
 	}
 	else
 	{
-		if (events!=0 && keys!=0)
+		if (ev->events)
 		{
-			handleQuickMenuEvent(buttons, keys, events);
+			handleQuickMenuEvent(ev);
 		}
 	}
 	return 0;

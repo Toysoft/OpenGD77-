@@ -129,4 +129,31 @@ extern const menuItemNew_t menuDataContact[];
 extern const menuItemNew_t menuDataContactContact [];
 extern const menuItemNew_t * menusData[];
 
+
+int menuVFOMode(ui_event_t *event, bool isFirstRun);
+int menuVFOModeQuickMenu(ui_event_t *event, bool isFirstRun);
+int menuChannelMode(ui_event_t *event, bool isFirstRun);
+int menuChannelModeQuickMenu(ui_event_t *event, bool isFirstRun);
+int menuZoneList(ui_event_t *event, bool isFirstRun);
+int menuDisplayMenuList(ui_event_t *event, bool isFirstRun);
+int menuBattery(ui_event_t *event, bool isFirstRun);
+int menuSplashScreen(ui_event_t *event, bool isFirstRun);
+int menuPowerOff(ui_event_t *event, bool isFirstRun);
+int menuFirmwareInfoScreen(ui_event_t *event, bool isFirstRun);
+int menuNumericalEntry(ui_event_t *event, bool isFirstRun);
+int menuTxScreen(ui_event_t *event, bool isFirstRun);
+int menuRSSIScreen(ui_event_t *event, bool isFirstRun);
+int menuLastHeard(ui_event_t *event, bool isFirstRun);
+int menuOptions(ui_event_t *event, bool isFirstRun);
+int menuDisplayOptions(ui_event_t *event, bool isFirstRun);
+int menuCredits(ui_event_t *event, bool isFirstRun);
+int menuChannelDetails(ui_event_t *event, bool isFirstRun);
+int menuHotspotMode(ui_event_t *event, bool isFirstRun);
+int menuCPS(ui_event_t *event, bool isFirstRun);
+int menuLockScreen(ui_event_t *event, bool isFirstRun);
+int menuContactList(ui_event_t *event, bool isFirstRun);
+int menuContactListSubMenu(ui_event_t *event, bool isFirstRun);
+int menuContactDetails(ui_event_t *event, bool isFirstRun);
+int menuLanguage(ui_event_t *event, bool isFirstRun);
+
 #endif

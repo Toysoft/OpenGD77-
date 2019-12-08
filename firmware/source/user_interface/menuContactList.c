@@ -267,13 +267,13 @@ static void updateSubMenuScreen(void)
 	displayLightTrigger();
 }
 
-static void handleSubMenuEvent(int buttons, int keys, int events)
+static void handleSubMenuEvent(ui_event_t *ev)
 {
-	if (KEYCHECK_SHORTUP(keys, KEY_RED))
+	if (KEYCHECK_SHORTUP(ev->keys, KEY_RED))
 	{
 		menuSystemPopPreviousMenu();
 	}
-	else if (KEYCHECK_SHORTUP(keys, KEY_GREEN))
+	else if (KEYCHECK_SHORTUP(ev->keys, KEY_GREEN))
 	{
 		menuContactListOverrideState = 0;
 		switch (gMenusCurrentItemIndex)
@@ -300,19 +300,19 @@ static void handleSubMenuEvent(int buttons, int keys, int events)
 			break;
 		}
 	}
-	else if (KEYCHECK_PRESS(keys, KEY_DOWN))
+	else if (KEYCHECK_PRESS(ev->keys, KEY_DOWN))
 	{
 		MENU_INC(gMenusCurrentItemIndex, NUM_CONTACT_LIST_QUICK_MENU_ITEMS);
 		updateSubMenuScreen();
 	}
-	else if (KEYCHECK_PRESS(keys, KEY_UP))
+	else if (KEYCHECK_PRESS(ev->keys, KEY_UP))
 	{
 		MENU_DEC(gMenusCurrentItemIndex, NUM_CONTACT_LIST_QUICK_MENU_ITEMS);
 		updateSubMenuScreen();
 	}
 }
 
-int menuContactListSubMenu(int buttons, int keys, int events, bool isFirstRun)
+int menuContactListSubMenu(ui_event_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -321,9 +321,9 @@ int menuContactListSubMenu(int buttons, int keys, int events, bool isFirstRun)
 	}
 	else
 	{
-		if (events!=0 && keys!=0)
+		if (ev->events!=0 && ev->keys!=0)
 		{
-			handleSubMenuEvent(buttons, keys, events);
+			handleSubMenuEvent(ev);
 		}
 	}
 	return 0;
