@@ -1,3 +1,8 @@
+![](media/OpenGD77-logo.svg)
+
+# OpenGD77 User Guide
+(9th December 2019)
+
 <!-- MDTOC maxdepth:6 firsth1:1 numbering:0 flatten:0 bullets:1 updateOnSave:1 -->
 
 - [OpenGD77 User Guide](#opengd77-user-guide)   
@@ -119,9 +124,9 @@ This user guide is a work in progress as is the Open GD77 firmware. If you find 
 
 This manual covers both the original Tier 1 / Phase one version, which includes Hotspot mode, as well as the Tier 2 Alpha versions which don’t include Hotspot mode, but to have other new features.
 
-Due to the rapid pace of development some of photos of screens are now out of date, because the DMR TS and CC are now down shown on all DMR screens.
+Due to the rapid pace of development some of photos of screens are now out of date and not completely accurate.
 
-The photos will be updated when the firmware is not changing so quickly
+The photos will be updated when the firmware in a particular area stabilises
 
 The intention of the OpenGD77 project is to create a fully featured non-commercial firmware that entirely replaces the Radioddity GD-77’s factory firmware. This firmware is specifically designed for **Amateur Radio** use, and has features not available in the official firmware.
 
@@ -153,7 +158,7 @@ Also, as far as possible the firmware is open source. This allows anyone to modi
 
 The project was conceived by Kai DG4KLU, who developed the initial framework and all the FM and DMR TX and RX (Tier 1) functionality.
 
-Kai ceased actively participating in the project in June 2019 and at the time of writing Roger VK3KYY is the main and only developer.
+Kai ceased actively participating in the project in June 2019 and at the time of writing Roger VK3KYY is now the lead developer, with help from Alex DL4LEX, Damiel F1RMB and Colin G4EML
 
 The Tier 2 functionality, User Interface, Display driver, Codeplug API, EEPROM memory API, Flash memory API, Hotspot mode and many other features were developed by Roger VK3KYY
 
@@ -180,17 +185,20 @@ Thanks to all the Beta Testers that provide detailed bug reports and user feedba
 **GD-77 Community CPS with support for OpenGD77:**
 <https://github.com/rogerclarkmelbourne/radioddity_gd-77_cps/blob/master/installer/OpenGD77CPSInstaller.exe>
 
+**OpenGD77 CPS with support new features like 80 channel zones:**
+<https://github.com/rogerclarkmelbourne/radioddity_gd-77_cps/raw/master/installer/OpenGD77CPSInstaller.exe>
+
 ## Installation
 
 The firmware can be installed onto the GD-77 using the firmware update tool provided by Radioddity with their official firmware update packages. This can be downloaded from Radioddity’s website [radioddity.com](https://radioddity.com/) . See Radioddity’s documentation on how to use their firmware update tool.
 
-The Community CPS also has a feature in the Extras menu to upload the firmware into the radio.
+The Community and OpenGD77 CPS now also has a feature in the Extras menu to upload the firmware into the radio.
 
 The OpenGD77 firmware (.sgl file) can be downloaded from Github, using either of the links as listed in section 1.1 of this guide.
 
 Installation of the OpenGD77 firmware is undertaken at the owners own risk, but the official firmware can usually be reloaded onto the GD-77 if the user has problems with the OpenGD77 firmware.
 
-*Note:* The official Radioddity GD-77 CPS PC software is not compatible with the OpenGD77 firmware, and the “Community CPS” should be used instead. This can be downloaded from the link show in section 1.1 of this guide
+*Note:* The official Radioddity GD-77 CPS PC software is not compatible with the OpenGD77 firmware, and the “Community CPS” or the "OpenGD77 CPS" should be used instead. This can be downloaded from the link show in section 1.1 of this guide
 
 ## Main screens (VFO and Channel screens)
 
@@ -300,6 +308,8 @@ Pressing the **Orange** button on the top of the radio in VFO mode displays the 
 
 ##### Copy the RX frequency to the TX frequency
 
+##### Scan for CTCSS tone int FM or DMR CC in DMR mode
+
 Press the **Green** key to confirm the copy or **Red** key to cancel.
 
 ![](media/vfo-quick-menu.jpg)
@@ -349,7 +359,7 @@ This TalkGroup will apply to both RX and TX.
 
 #### Assignment of Timeslot to Digital Contact TalkGroup
 
-A new feature introduced to the Community CPS allows a TimeSlot to be applied to each Digital Contact TalkGroup.
+A new feature introduced to the CPS allows a TimeSlot to be applied to each Digital Contact TalkGroup.
 
 By default, the Channel TS override is disabled. This means that if the **Left** or **Right** arrows are pressed to select this TG within the Rx Group list, the Timeslot assigned to the Channel (in the CPS) or manually changed using the **Star** key will not change.
 
@@ -366,6 +376,8 @@ If you want to transmit on the same TalkGroup as the currently received signal, 
 #### Manual TalkGroup number entry
 
 Press the **Hash (#)** key to enter the TalkGroup number. Followed by the **Green** key to confirm.
+If the entered TG is in the Digital Contacts the name of the TG Contact will be displayed, otherwise the number will be displayed e.g. TG 505.
+When a TG has been manually entered, the display shows a 1 pixel box around the TG display area to indicate that this TG has been manually entered, even if the Contact / TG name is displayed rather than the TG nunber.
 
 ![](media/talkgroup-entry.jpg)
 
