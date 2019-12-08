@@ -140,7 +140,7 @@ int menuVFOMode(ui_event_t *ev, bool isFirstRun)
 			}
 			else
 			{
-				if (ev->ticks - m > RSSI_UPDATE_COUNTER_RELOAD)
+				if ((ev->ticks - m) > RSSI_UPDATE_COUNTER_RELOAD)
 				{
 					m = ev->ticks;
 					drawRSSIBarGraph();
