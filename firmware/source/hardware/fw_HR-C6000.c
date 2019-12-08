@@ -710,7 +710,7 @@ inline static void HRC6000SysInterruptHandler(void)
 		{
 			read_SPI_page_reg_byte_SPI0(0x04, 0x52, &reg0x52);  //Read Received CC and CACH Register to get the timecode (TS number)
 			timeCode = ((reg0x52 & 0x04) >> 2);// extract the timecode from the CACH register
-			rxColorCode 	= (tmp_val_0x52 >> 4) & 0x0f;
+			rxColorCode 	= (reg0x52 >> 4) & 0x0f;
 
 			if ((checkTimeSlotFilter() || trxDMRMode == DMR_MODE_ACTIVE) && (rxColorCode == trxGetDMRColourCode())) // only do this for the selected timeslot, or when in Active mode
 			{
