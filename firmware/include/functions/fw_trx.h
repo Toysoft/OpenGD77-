@@ -49,6 +49,10 @@ enum {TRX_RX_FREQ_BAND = 0,TRX_TX_FREQ_BAND = 1};
 
 extern const frequencyBand_t RADIO_FREQUENCY_BANDS[RADIO_BANDS_TOTAL_NUM];
 
+extern const int TRX_CTCSS_TONE_NONE;
+extern const int TRX_NUM_CTCSS;
+extern const unsigned int TRX_CTCSSTones[];
+
 extern int trxDMRMode;
 
 extern volatile bool trxIsTransmitting;
