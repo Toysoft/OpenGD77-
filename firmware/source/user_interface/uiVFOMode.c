@@ -774,8 +774,8 @@ static void stepFrequency(int increment)
 }
 
 // Quick Menu functions
-enum VFO_SCREEN_QUICK_MENU_ITEMS { 	VFO_SCREEN_QUICK_MENU_TX_SWAP_RX = 0, VFO_SCREEN_QUICK_MENU_BOTH_TO_RX, VFO_SCREEN_QUICK_MENU_BOTH_TO_TX,
-									VFO_SCREEN_QUICK_MENU_DMR_FILTER,VFO_SCREEN_QUICK_MENU_VFO_A_B,VFO_SCREEN_CODE_SCAN,
+enum VFO_SCREEN_QUICK_MENU_ITEMS { 	VFO_SCREEN_QUICK_MENU_VFO_A_B = 0,VFO_SCREEN_QUICK_MENU_TX_SWAP_RX, VFO_SCREEN_QUICK_MENU_BOTH_TO_RX, VFO_SCREEN_QUICK_MENU_BOTH_TO_TX,
+									VFO_SCREEN_QUICK_MENU_DMR_FILTER,VFO_SCREEN_CODE_SCAN,
 									NUM_VFO_SCREEN_QUICK_MENU_ITEMS };// The last item in the list is used so that we automatically get a total number of items in the list
 
 
@@ -907,6 +907,13 @@ static void handleQuickMenuEvent(ui_event_t *ev)
 				}
 				break;
 		}
+		menuSystemPopPreviousMenu();
+		return;
+	}
+	else if (ev->buttons & BUTTON_ORANGE)
+	{
+		nonVolatileSettings.currentVFONumber = 1 - nonVolatileSettings.currentVFONumber;// Switch to other VFO
+		currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];
 		menuSystemPopPreviousMenu();
 		return;
 	}
