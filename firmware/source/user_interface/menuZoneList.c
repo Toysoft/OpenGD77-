@@ -22,9 +22,9 @@
 #include "fw_settings.h"
 
 static void updateScreen(void);
-static void handleEvent(int buttons, int keys, int events);
+static void handleEvent(ui_event_t *ev);
 
-int menuZoneList(int buttons, int keys, int events, bool isFirstRun)
+int menuZoneList(ui_event_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -34,10 +34,8 @@ int menuZoneList(int buttons, int keys, int events, bool isFirstRun)
 	}
 	else
 	{
-		if (events!=0 && keys!=0)
-		{
-			handleEvent(buttons, keys, events);
-		}
+		if (ev->hasEvent)
+			handleEvent(ev);
 	}
 	return 0;
 }
@@ -70,19 +68,19 @@ static void updateScreen(void)
 	displayLightTrigger();
 }
 
-static void handleEvent(int buttons, int keys, int events)
+static void handleEvent(ui_event_t *ev)
 {
-	if (KEYCHECK_PRESS(keys,KEY_DOWN))
+	if (KEYCHECK_PRESS(ev->keys,KEY_DOWN))
 	{
 		MENU_INC(gMenusCurrentItemIndex, gMenusEndIndex);
 		updateScreen();
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_UP))
+	else if (KEYCHECK_PRESS(ev->keys,KEY_UP))
 	{
 		MENU_DEC(gMenusCurrentItemIndex, gMenusEndIndex);
 		updateScreen();
 	}
-	else if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
+	else if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 	{
 		nonVolatileSettings.overrideTG = 0; // remove any TG override
 		nonVolatileSettings.currentZone = gMenusCurrentItemIndex;
@@ -93,7 +91,7 @@ static void handleEvent(int buttons, int keys, int events)
 
 		return;
 	}
-	else if (KEYCHECK_SHORTUP(keys,KEY_RED))
+	else if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{
 		menuSystemPopPreviousMenu();
 		return;

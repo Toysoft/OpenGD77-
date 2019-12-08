@@ -25,7 +25,7 @@
 #include "fw_settings.h"
 
 static void updateScreen(void);
-static void handleEvent(int buttons, int keys, int events);
+static void handleEvent(ui_event_t *ev);
 
 static int CTCSSRxIndex=0;
 static int CTCSSTxIndex=0;
@@ -35,7 +35,7 @@ enum CHANNEL_DETAILS_DISPLAY_LIST { CH_DETAILS_MODE = 0, CH_DETAILS_DMR_CC, CH_D
 									CH_DETAILS_FREQ_STEP, CH_DETAILS_TOT, CH_DETAILS_ZONE_SKIP,CH_DETAILS_ALL_SKIP,CH_DETAILS_RXGROUP,
 									NUM_CH_DETAILS_ITEMS};// The last item in the list is used so that we automatically get a total number of items in the list
 
-int menuChannelDetails(int buttons, int keys, int events, bool isFirstRun)
+int menuChannelDetails(ui_event_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -56,10 +56,8 @@ int menuChannelDetails(int buttons, int keys, int events, bool isFirstRun)
 	}
 	else
 	{
-		if (events!=0 && keys!=0)
-		{
-			handleEvent(buttons, keys, events);
-		}
+		if (ev->hasEvent)
+			handleEvent(ev);
 	}
 	return 0;
 }
@@ -208,20 +206,20 @@ static void updateScreen(void)
 	displayLightTrigger();
 }
 
-static void handleEvent(int buttons, int keys, int events)
+static void handleEvent(ui_event_t *ev)
 {
 	int tmpVal;
 	struct_codeplugRxGroup_t rxGroupBuf;
 
-	if (KEYCHECK_PRESS(keys,KEY_DOWN))
+	if (KEYCHECK_PRESS(ev->keys,KEY_DOWN))
 	{
 		MENU_INC(gMenusCurrentItemIndex, NUM_CH_DETAILS_ITEMS);
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_UP))
+	else if (KEYCHECK_PRESS(ev->keys,KEY_UP))
 	{
 		MENU_DEC(gMenusCurrentItemIndex, NUM_CH_DETAILS_ITEMS);
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_RIGHT))
+	else if (KEYCHECK_PRESS(ev->keys,KEY_RIGHT))
 	{
 		switch(gMenusCurrentItemIndex)
 		{
@@ -307,7 +305,7 @@ static void handleEvent(int buttons, int keys, int events)
 				break;
 		}
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_LEFT))
+	else if (KEYCHECK_PRESS(ev->keys,KEY_LEFT))
 	{
 		switch(gMenusCurrentItemIndex)
 		{
@@ -394,7 +392,7 @@ static void handleEvent(int buttons, int keys, int events)
 
 		}
 	}
-	else if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
+	else if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 	{
 		memcpy(currentChannelData,&tmpChannel,sizeof(struct_codeplugChannel_t));
 
@@ -408,7 +406,7 @@ static void handleEvent(int buttons, int keys, int events)
 		menuSystemPopAllAndDisplayRootMenu();
 		return;
 	}
-	else if (KEYCHECK_SHORTUP(keys,KEY_RED))
+	else if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{
 		menuSystemPopPreviousMenu();
 		return;

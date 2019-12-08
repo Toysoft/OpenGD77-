@@ -21,7 +21,7 @@
 #include "fw_settings.h"
 
 static void updateScreen(void);
-static void handleEvent(int buttons, int keys, int events);
+static void handleEvent(ui_event_t *ev);
 
 static uint8_t originalBrightness;
 static uint8_t contrast;
@@ -33,7 +33,7 @@ const int CONTRAST_MAX_VALUE = 30;// Maximum value which still seems to be reada
 const int CONTRAST_MIN_VALUE = 12;// Minimum value which still seems to be readable
 enum DISPLAY_MENU_LIST { DISPLAY_MENU_BRIGHTNESS = 0, DISPLAY_MENU_CONTRAST, DISPLAY_MENU_TIMEOUT, DISPLAY_MENU_COLOUR_INVERT, NUM_DISPLAY_MENU_ITEMS};
 
-int menuDisplayOptions(int buttons, int keys, int events, bool isFirstRun)
+int menuDisplayOptions(ui_event_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -45,10 +45,8 @@ int menuDisplayOptions(int buttons, int keys, int events, bool isFirstRun)
 	}
 	else
 	{
-		if (events!=0 && keys!=0)
-		{
-			handleEvent(buttons, keys, events);
-		}
+		if (ev->hasEvent)
+			handleEvent(ev);
 	}
 	return 0;
 }
@@ -99,17 +97,17 @@ static void updateScreen(void)
 	displayLightTrigger();
 }
 
-static void handleEvent(int buttons, int keys, int events)
+static void handleEvent(ui_event_t *ev)
 {
-	if (KEYCHECK_PRESS(keys,KEY_DOWN) && gMenusEndIndex!=0)
+	if (KEYCHECK_PRESS(ev->keys,KEY_DOWN) && gMenusEndIndex!=0)
 	{
 		MENU_INC(gMenusCurrentItemIndex, NUM_DISPLAY_MENU_ITEMS);
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_UP))
+	else if (KEYCHECK_PRESS(ev->keys,KEY_UP))
 	{
 		MENU_DEC(gMenusCurrentItemIndex, NUM_DISPLAY_MENU_ITEMS);
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_RIGHT))
+	else if (KEYCHECK_PRESS(ev->keys,KEY_RIGHT))
 	{
 		switch(gMenusCurrentItemIndex)
 		{
@@ -149,7 +147,7 @@ static void handleEvent(int buttons, int keys, int events)
 				break;
 		}
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_LEFT))
+	else if (KEYCHECK_PRESS(ev->keys,KEY_LEFT))
 	{
 		switch(gMenusCurrentItemIndex)
 		{
@@ -189,7 +187,7 @@ static void handleEvent(int buttons, int keys, int events)
 				break;
 		}
 	}
-	else if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
+	else if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 	{
 		nonVolatileSettings.displayInverseVideo = inverseVideo;
 		nonVolatileSettings.displayContrast = contrast;
@@ -198,7 +196,7 @@ static void handleEvent(int buttons, int keys, int events)
 		menuSystemPopAllAndDisplayRootMenu();
 		return;
 	}
-	else if (KEYCHECK_SHORTUP(keys,KEY_RED))
+	else if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{
 		if (nonVolatileSettings.displayContrast != contrast || nonVolatileSettings.displayInverseVideo != inverseVideo)
 		{

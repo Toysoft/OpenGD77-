@@ -24,26 +24,25 @@
 
 static calibrationRSSIMeter_t rssiCalibration;
 static void updateScreen(void);
-static void handleEvent(int buttons, int keys, int events);
+static void handleEvent(ui_event_t *ev);
 
-int menuRSSIScreen(int buttons, int keys, int events, bool isFirstRun)
+int menuRSSIScreen(ui_event_t *ev, bool isFirstRun)
 {
+	static uint32_t m = 0;
+
 	if (isFirstRun)
 	{
-		RssiUpdateCounter = RSSI_UPDATE_COUNTER_RELOAD;
 		calibrationGetRSSIMeterParams(&rssiCalibration);
 	}
 	else
 	{
-		if (events!=0 && keys!=0)
-		{
-			handleEvent(buttons, keys, events);
-		}
+		if (ev->hasEvent)
+			handleEvent(ev);
 
-		if (RssiUpdateCounter-- == 0)
+		if((ev->ticks - m) > RSSI_UPDATE_COUNTER_RELOAD)
 		{
+			m = ev->ticks;
 			updateScreen();
-			RssiUpdateCounter = RSSI_UPDATE_COUNTER_RELOAD;
 		}
 	}
 	return 0;
@@ -97,14 +96,14 @@ static void updateScreen(void)
 }
 
 
-static void handleEvent(int buttons, int keys, int events)
+static void handleEvent(ui_event_t *ev)
 {
-	if (KEYCHECK_SHORTUP(keys,KEY_RED))
+	if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{
 		menuSystemPopPreviousMenu();
 		return;
 	}
-	else if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
+	else if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 	{
 		menuSystemPopAllAndDisplayRootMenu();
 		return;

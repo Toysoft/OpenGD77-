@@ -29,14 +29,14 @@ static struct_codeplugContact_t contact;
 
 static void updateCursor(void);
 static void updateScreen(void);
-static void handleEvent(int buttons, int keys, int events);
+static void handleEvent(ui_event_t *ev);
 
 static const uint32_t CURSOR_UPDATE_TIMEOUT = 1000;
 
 static const char *menuName[4];
 enum DISPLAY_MENU_LIST { ENTRY_TG = 0, ENTRY_PC, ENTRY_SELECT_CONTACT, ENTRY_USER_DMR_ID, NUM_ENTRY_ITEMS};
 // public interface
-int menuNumericalEntry(int buttons, int keys, int events, bool isFirstRun)
+int menuNumericalEntry(ui_event_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -51,13 +51,13 @@ int menuNumericalEntry(int buttons, int keys, int events, bool isFirstRun)
 	}
 	else
 	{
-		if (events == EVENT_BUTTON_NONE)
+		if (ev->events == EVENT_BUTTON_NONE)
 		{
 			updateCursor();
 		}
 		else
 		{
-			handleEvent(buttons, keys, events);
+			handleEvent(ev);
 		}
 	}
 	return 0;
@@ -141,16 +141,16 @@ static int getNextContact(int curidx, int dir, struct_codeplugContact_t *contact
 	return idx;
 }
 
-static void handleEvent(int buttons, int keys, int events)
+static void handleEvent(ui_event_t *ev)
 {
 	size_t sLen;
 
-	if (KEYCHECK_SHORTUP(keys,KEY_RED))
+	if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{
 		menuSystemPopPreviousMenu();
 		return;
 	}
-	else if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
+	else if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 	{
 		if (gMenusCurrentItemIndex != ENTRY_USER_DMR_ID)
 		{
@@ -172,7 +172,7 @@ static void handleEvent(int buttons, int keys, int events)
 		else
 		{
 			trxDMRID = atoi(digits);
-			if (buttons & BUTTON_SK2)
+			if (ev->buttons & BUTTON_SK2)
 			{
 				// make the change to DMR ID permanent if Function + Green is pressed
 				codeplugSetUserDMRID(trxDMRID);
@@ -180,10 +180,10 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 		menuSystemPopAllAndDisplayRootMenu();
 	}
-	else if (KEYCHECK_SHORTUP(keys,KEY_HASH))
+	else if (KEYCHECK_SHORTUP(ev->keys,KEY_HASH))
 	{
 		pcIdx = 0;
-		if ((buttons & BUTTON_SK2)!= 0  && gMenusCurrentItemIndex == ENTRY_SELECT_CONTACT)
+		if ((ev->buttons & BUTTON_SK2)!= 0  && gMenusCurrentItemIndex == ENTRY_SELECT_CONTACT)
 		{
 			digits[0] = 0x00;
 			gMenusCurrentItemIndex = ENTRY_USER_DMR_ID;
@@ -209,9 +209,9 @@ static void handleEvent(int buttons, int keys, int events)
 	{
 		int idx = pcIdx;
 
-		if (KEYCHECK_PRESS(keys,KEY_DOWN)) {
+		if (KEYCHECK_PRESS(ev->keys,KEY_DOWN)) {
 			idx = getNextContact(pcIdx, 1, &contact);
-		} else if (KEYCHECK_PRESS(keys,KEY_UP)) {
+		} else if (KEYCHECK_PRESS(ev->keys,KEY_UP)) {
 			idx = getNextContact(pcIdx, -1, &contact);
 		}
 		if (pcIdx != idx ) {
@@ -225,13 +225,13 @@ static void handleEvent(int buttons, int keys, int events)
 		bool refreshScreen = false;
 
 		// Inc / Dec entered value.
-		if (KEYCHECK_PRESS(keys,KEY_UP) || KEYCHECK_PRESS(keys,KEY_DOWN))
+		if (KEYCHECK_PRESS(ev->keys,KEY_UP) || KEYCHECK_PRESS(ev->keys,KEY_DOWN))
 		{
 			if (strlen(digits))
 			{
 				unsigned long int ccs7 = strtoul(digits, NULL, 10);
 
-				if (KEYCHECK_PRESS(keys,KEY_UP))
+				if (KEYCHECK_PRESS(ev->keys,KEY_UP))
 				{
 					if (ccs7 < 9999999)
 						ccs7++;
@@ -252,7 +252,7 @@ static void handleEvent(int buttons, int keys, int events)
 				}
 			}
 		} // Delete a digit
-		else if (KEYCHECK_PRESS(keys,KEY_LEFT))
+		else if (KEYCHECK_PRESS(ev->keys,KEY_LEFT))
 		{
 			if ((sLen = strlen(digits)) > 0)
 			{
@@ -266,7 +266,7 @@ static void handleEvent(int buttons, int keys, int events)
 			if (sLen < 7)
 			{
 				char c[2] = {0, 0};
-				c[0] = keypressToNumberChar(keys);
+				c[0] = keypressToNumberChar(ev->keys);
 				
 				if (c[0]!=0)
 				{

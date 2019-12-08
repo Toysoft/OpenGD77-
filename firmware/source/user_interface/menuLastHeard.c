@@ -21,9 +21,9 @@
 const int LAST_HEARD_NUM_LINES_ON_DISPLAY = 3;
 
 static void updateScreen(void);
-static void handleEvent(int buttons, int keys, int events);
+static void handleEvent(ui_event_t *ev);
 
-int menuLastHeard(int buttons, int keys, int events, bool isFirstRun)
+int menuLastHeard(ui_event_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -41,10 +41,9 @@ int menuLastHeard(int buttons, int keys, int events, bool isFirstRun)
 			gMenusEndIndex=0;
 			updateScreen();
 		}
-		if (events!=0 && keys!=0)
-		{
-			handleEvent(buttons, keys, events);
-		}
+
+		if (ev->hasEvent)
+			handleEvent(ev);
 	}
 	return 0;
 }
@@ -106,14 +105,14 @@ static void updateScreen(void)
 	menuDisplayQSODataState = QSO_DISPLAY_IDLE;
 }
 
-static void handleEvent(int buttons, int keys, int events)
+static void handleEvent(ui_event_t *ev)
 {
 
-	if (KEYCHECK_PRESS(keys,KEY_DOWN) && gMenusEndIndex!=0)
+	if (KEYCHECK_PRESS(ev->keys,KEY_DOWN) && gMenusEndIndex!=0)
 	{
 		gMenusCurrentItemIndex++;
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_UP))
+	else if (KEYCHECK_PRESS(ev->keys,KEY_UP))
 	{
 		gMenusCurrentItemIndex--;
 		if (gMenusCurrentItemIndex<0)
@@ -121,12 +120,12 @@ static void handleEvent(int buttons, int keys, int events)
 			gMenusCurrentItemIndex=0;
 		}
 	}
-	else if (KEYCHECK_SHORTUP(keys,KEY_RED))
+	else if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{
 		menuSystemPopPreviousMenu();
 		return;
 	}
-	else if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
+	else if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 	{
 		menuSystemPopAllAndDisplayRootMenu();
 		return;

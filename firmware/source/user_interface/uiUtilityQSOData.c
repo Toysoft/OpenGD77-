@@ -42,8 +42,7 @@ LinkItem_t *LinkHead = callsList;
 int numLastHeard=0;
 int menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 int qsodata_timer;
-int RssiUpdateCounter;
-const int RSSI_UPDATE_COUNTER_RELOAD = 500;
+const uint32_t RSSI_UPDATE_COUNTER_RELOAD = 500;
 
 uint32_t menuUtilityReceivedPcId 	= 0;// No current Private call awaiting acceptance
 uint32_t menuUtilityTgBeforePcMode 	= 0;// No TG saved, prior to a Private call being accepted.
@@ -349,9 +348,9 @@ bool dmrIDLookup( int targetId,dmrIdDataStruct_t *foundRecord)
 	return false;
 }
 
-bool menuUtilityHandlePrivateCallActions(int buttons, int keys, int events)
+bool menuUtilityHandlePrivateCallActions(ui_event_t *ev)
 {
-	if ((buttons & BUTTON_SK2 )!=0 &&   menuUtilityTgBeforePcMode != 0 && KEYCHECK_SHORTUP(keys,KEY_RED))
+	if ((ev->buttons & BUTTON_SK2 )!=0 &&   menuUtilityTgBeforePcMode != 0 && KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{
 		trxTalkGroupOrPcId = menuUtilityTgBeforePcMode;
 		nonVolatileSettings.overrideTG = menuUtilityTgBeforePcMode;
@@ -364,7 +363,7 @@ bool menuUtilityHandlePrivateCallActions(int buttons, int keys, int events)
 	// Note.  menuUtilityReceivedPcId is used to store the PcId but also used as a flag to indicate that a Pc request has occurred.
 	if (menuUtilityReceivedPcId != 0x00 && (LinkHead->talkGroupOrPcId>>24) == PC_CALL_FLAG && nonVolatileSettings.overrideTG != LinkHead->talkGroupOrPcId)
 	{
-		if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
+		if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 		{
 			// User has accepted the private call
 			menuUtilityTgBeforePcMode = trxTalkGroupOrPcId;// save the current TG

@@ -21,10 +21,10 @@
 
 
 static void updateScreen(void);
-static void handleEvent(int buttons, int keys, int events);
+static void handleEvent(ui_event_t *ev);
 
 
-int menuLanguage(int buttons, int keys, int events, bool isFirstRun)
+int menuLanguage(ui_event_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -32,10 +32,8 @@ int menuLanguage(int buttons, int keys, int events, bool isFirstRun)
 	}
 	else
 	{
-		if (events!=0 && keys!=0)
-		{
-			handleEvent(buttons, keys, events);
-		}
+		if (ev->hasEvent)
+			handleEvent(ev);
 	}
 	return 0;
 }
@@ -58,17 +56,17 @@ static void updateScreen(void)
 	displayLightTrigger();
 }
 
-static void handleEvent(int buttons, int keys, int events)
+static void handleEvent(ui_event_t *ev)
 {
-	if (KEYCHECK_PRESS(keys,KEY_DOWN) && gMenusEndIndex!=0)
+	if (KEYCHECK_PRESS(ev->keys,KEY_DOWN) && gMenusEndIndex!=0)
 	{
 		MENU_INC(gMenusCurrentItemIndex, NUM_LANGUAGES);
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_UP))
+	else if (KEYCHECK_PRESS(ev->keys,KEY_UP))
 	{
 		MENU_DEC(gMenusCurrentItemIndex, NUM_LANGUAGES);
 	}
-	else if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
+	else if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 	{
 		nonVolatileSettings.languageIndex = gMenusCurrentItemIndex;
 		currentLanguage = &languages[gMenusCurrentItemIndex];
@@ -76,7 +74,7 @@ static void handleEvent(int buttons, int keys, int events)
 		menuSystemPopAllAndDisplayRootMenu();
 		return;
 	}
-	else if (KEYCHECK_SHORTUP(keys,KEY_RED))
+	else if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{
 		menuSystemPopPreviousMenu();
 		return;

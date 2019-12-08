@@ -16,6 +16,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <functions/fw_ticks.h>
 #include <user_interface/menuSystem.h>
 #include <user_interface/menuUtilityQSOData.h>
 #include "fw_main.h"
@@ -61,6 +62,10 @@ void fw_main_task(void *data)
 	int key_event;
 	uint32_t buttons;
 	int button_event;
+	ui_event_t ev = { .buttons = 0, .keys = 0, .events = 0, .hasEvent = false, .ticks = 0 };
+	int oldButtons = 0;
+	int oldKeys = 0;
+	int oldEvents = 0;
 	
     USB_DeviceApplicationInit();
 
@@ -267,7 +272,17 @@ void fw_main_task(void *data)
     			updateLastHeard=false;
     		}
 
-        	menuSystemCallCurrentMenuTick(buttons,keys,(button_event<<1) | key_event);
+    		ev.buttons = buttons;
+    		ev.keys = keys;
+    		ev.events = (button_event<<1) | key_event;
+    		ev.hasEvent = (ev.buttons != oldButtons) || (ev.keys != oldKeys) || (ev.events != oldEvents);
+    		ev.ticks = fw_millis();
+
+    		oldButtons = ev.buttons;
+    		oldKeys = ev.keys;
+    		oldEvents = ev.events;
+
+        	menuSystemCallCurrentMenuTick(&ev);
 
         	if (((GPIO_PinRead(GPIO_Power_Switch, Pin_Power_Switch)!=0)
         			|| (battery_voltage<CUTOFF_VOLTAGE_LOWER_HYST))
