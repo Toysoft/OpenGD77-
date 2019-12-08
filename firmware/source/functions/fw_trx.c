@@ -58,6 +58,15 @@ const int RADIO_VHF_MAX			=	17400000;
 const int RADIO_UHF_MIN			=	40000000;
 const int RADIO_UHF_MAX			=	52000000;
 */
+const int TRX_CTCSS_TONE_NONE = 65535;
+const int TRX_NUM_CTCSS=52;
+const unsigned int TRX_CTCSSTones[]={65535,625,670,693,719,744,770,797,825,854,
+										885,915,948,974,1000,1035,1072,1109,1148,
+										1188,1230,1273,1318,1365,1413,1462,1514,
+										1567,1598,1622,1655,1679,1713,1738,1773,
+										1799,1835,1862,1899,1928,1966,1995,2035,
+										2065,2107,2181,2257,2291,2336,2418,2503,2541};
+
 
 static int currentMode = RADIO_MODE_NONE;
 static bool currentBandWidthIs25kHz = BANDWIDTH_12P5KHZ;
@@ -218,7 +227,7 @@ int trx_carrier_detected(void)
 void trx_check_analog_squelch(void)
 {
 	trx_measure_count++;
-	if (trx_measure_count==50)
+	if (trx_measure_count==25)
 	{
 		uint8_t squelch;//=45;
 
@@ -829,6 +838,7 @@ void trxSetRxCTCSS(int toneFreqX10)
 	else
 	{
 		int threshold=(2500-toneFreqX10)/100;   //adjust threshold value to match tone frequency.
+		if(toneFreqX10>2400) threshold=1;
 		toneFreqX10 = toneFreqX10*10;// value that is stored is 100 time the tone freq but its stored in the codeplug as freq times 10
 		write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT,	0x4d, (toneFreqX10 >> 8) & 0xff,	(toneFreqX10 & 0xff));
 		write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x5b,(threshold & 0xFF),(threshold & 0xFF)); //set the detection thresholds

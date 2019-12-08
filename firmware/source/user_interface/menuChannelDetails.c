@@ -26,14 +26,7 @@
 
 static void updateScreen(void);
 static void handleEvent(int buttons, int keys, int events);
-static const int CTCSS_TONE_NONE = 65535;
-static const unsigned int CTCSSTones[]={65535,625,670,693,719,744,770,797,825,854,
-										885,915,948,974,1000,1035,1072,1109,1148,
-										1188,1230,1273,1318,1365,1413,1462,1514,
-										1567,1598,1622,1655,1679,1713,1738,1773,
-										1799,1835,1862,1899,1928,1966,1995,2035,
-										2065,2107,2181,2257,2291,2336,2418,2503,2541};
-static int NUM_CTCSS=52;
+
 static int CTCSSRxIndex=0;
 static int CTCSSTxIndex=0;
 static struct_codeplugChannel_t tmpChannel;// update a temporary copy of the channel and only write back if green menu is pressed
@@ -48,13 +41,13 @@ int menuChannelDetails(int buttons, int keys, int events, bool isFirstRun)
 	{
 		memcpy(&tmpChannel,currentChannelData,sizeof(struct_codeplugChannel_t));
 
-		for(int i=0;i<NUM_CTCSS;i++)
+		for(int i=0;i<TRX_NUM_CTCSS;i++)
 		{
-			if (tmpChannel.txTone==CTCSSTones[i])
+			if (tmpChannel.txTone==TRX_CTCSSTones[i])
 			{
 				CTCSSTxIndex=i;
 			}
-			if (tmpChannel.rxTone==CTCSSTones[i])
+			if (tmpChannel.rxTone==TRX_CTCSSTones[i])
 			{
 				CTCSSRxIndex=i;
 			}
@@ -127,7 +120,7 @@ static void updateScreen(void)
 			case CH_DETAILS_RXCTCSS:
 				if (tmpChannel.chMode == RADIO_MODE_ANALOG)
 				{
-					if (tmpChannel.txTone == CTCSS_TONE_NONE)
+					if (tmpChannel.txTone == TRX_CTCSS_TONE_NONE)
 					{
 						snprintf(buf, bufferLen, "Tx CTCSS:%s", currentLanguage->none);
 					}
@@ -144,7 +137,7 @@ static void updateScreen(void)
 			case CH_DETAILS_TXCTCSS:
 				if (tmpChannel.chMode == RADIO_MODE_ANALOG)
 				{
-					if (tmpChannel.rxTone == CTCSS_TONE_NONE)
+					if (tmpChannel.rxTone == TRX_CTCSS_TONE_NONE)
 					{
 						snprintf(buf, bufferLen, "Rx CTCSS:%s", currentLanguage->none);
 					}
@@ -256,11 +249,11 @@ static void handleEvent(int buttons, int keys, int events)
 				if (tmpChannel.chMode==RADIO_MODE_ANALOG)
 				{
 					CTCSSTxIndex++;
-					if (CTCSSTxIndex>=NUM_CTCSS)
+					if (CTCSSTxIndex>=TRX_NUM_CTCSS)
 					{
-						CTCSSTxIndex=NUM_CTCSS-1;
+						CTCSSTxIndex=TRX_NUM_CTCSS-1;
 					}
-					tmpChannel.txTone=CTCSSTones[CTCSSTxIndex];
+					tmpChannel.txTone=TRX_CTCSSTones[CTCSSTxIndex];
 					trxSetTxCTCSS(tmpChannel.txTone);
 				}
 				break;
@@ -268,11 +261,11 @@ static void handleEvent(int buttons, int keys, int events)
 				if (tmpChannel.chMode==RADIO_MODE_ANALOG)
 				{
 					CTCSSRxIndex++;
-					if (CTCSSRxIndex>=NUM_CTCSS)
+					if (CTCSSRxIndex>=TRX_NUM_CTCSS)
 					{
-						CTCSSRxIndex=NUM_CTCSS-1;
+						CTCSSRxIndex=TRX_NUM_CTCSS-1;
 					}
-					tmpChannel.rxTone=CTCSSTones[CTCSSRxIndex];
+					tmpChannel.rxTone=TRX_CTCSSTones[CTCSSRxIndex];
 					trxSetRxCTCSS(tmpChannel.rxTone);
 				}
 				break;
@@ -346,7 +339,7 @@ static void handleEvent(int buttons, int keys, int events)
 					{
 						CTCSSTxIndex=0;
 					}
-					tmpChannel.txTone=CTCSSTones[CTCSSTxIndex];
+					tmpChannel.txTone=TRX_CTCSSTones[CTCSSTxIndex];
 					trxSetTxCTCSS(tmpChannel.txTone);
 				}
 				break;
@@ -358,7 +351,7 @@ static void handleEvent(int buttons, int keys, int events)
 					{
 						CTCSSRxIndex=0;
 					}
-					tmpChannel.rxTone=CTCSSTones[CTCSSRxIndex];
+					tmpChannel.rxTone=TRX_CTCSSTones[CTCSSRxIndex];
 					trxSetRxCTCSS(tmpChannel.rxTone);
 				}
 				break;
