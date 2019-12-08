@@ -101,6 +101,7 @@ int menuChannelMode(ui_event_t *ev, bool isFirstRun)
 			{
 				if ((ev->ticks - m) > RSSI_UPDATE_COUNTER_RELOAD)
 				{
+					m = ev->ticks;
 					drawRSSIBarGraph();
 					UC1701RenderRows(1,2);// Only render the second row which contains the bar graph, as there is no need to redraw the rest of the screen
 					//UC1701_render();
