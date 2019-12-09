@@ -23,10 +23,15 @@
 #include "fw_settings.h"
 
 
-static void handleEvent(int buttons, int keys, int events);
+static void handleEvent(ui_event_t *ev);
 static void loadChannelData(bool useChannelDataInMemory);
 static void scanning(void);
-static void handleUpKey(int buttons);
+static void startScan(void);
+static void handleUpKey(ui_event_t *ev);
+
+static void updateQuickMenuScreen(void);
+static void handleQuickMenuEvent(ui_event_t *ev);
+
 static struct_codeplugZone_t currentZone;
 static struct_codeplugRxGroup_t rxGroupData;
 static struct_codeplugContact_t contactData;
@@ -48,7 +53,7 @@ static int scanTimer=0;
 static ScanZoneState_t scanState = SCAN_SCANNING;		//state flag for scan routine
 bool uiChannelModeScanActive = false;					//scan active flag
 static const int SCAN_SHORT_PAUSE_TIME = 500;			//time to wait after carrier detected to allow time for full signal detection. (CTCSS or DMR)
-static const int SCAN_TOTAL_INTERVAL = 20;			    //time between each scan step
+static const int SCAN_TOTAL_INTERVAL = 30;			    //time between each scan step
 static const int SCAN_FREQ_CHANGE_SETTLING_INTERVAL = 1;//Time after frequency is changed before RSSI sampling starts
 static const int SCAN_SKIP_CHANNEL_INTERVAL = 1;		//This is actually just an implicit flag value to indicate the channel should be skipped
 
@@ -59,8 +64,9 @@ static int nuisanceDeleteIndex = 0;
 
 static int tmpQuickMenuDmrFilterLevel;
 
-int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
+int menuChannelMode(ui_event_t *ev, bool isFirstRun)
 {
+	static uint32_t m = 0;
 
 	if (isFirstRun)
 	{
@@ -81,7 +87,6 @@ int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 		}
 
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-		RssiUpdateCounter = RSSI_UPDATE_COUNTER_RELOAD;
 		menuChannelModeUpdateScreen(0);
 		if (uiChannelModeScanActive==false)
 		{
@@ -90,7 +95,7 @@ int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 	}
 	else
 	{
-		if (events==0)
+		if (ev->events==0)
 		{
 			// is there an incoming DMR signal
 			if (menuDisplayQSODataState != QSO_DISPLAY_IDLE)
@@ -99,12 +104,12 @@ int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 			}
 			else
 			{
-				if (RssiUpdateCounter-- == 0)
+				if ((ev->ticks - m) > RSSI_UPDATE_COUNTER_RELOAD)
 				{
+					m = ev->ticks;
 					drawRSSIBarGraph();
 					UC1701RenderRows(1,2);// Only render the second row which contains the bar graph, as there is no need to redraw the rest of the screen
 					//UC1701_render();
-					RssiUpdateCounter = RSSI_UPDATE_COUNTER_RELOAD;
 				}
 			}
 			if(uiChannelModeScanActive==true)
@@ -114,7 +119,8 @@ int menuChannelMode(int buttons, int keys, int events, bool isFirstRun)
 		}
 		else
 		{
-			handleEvent(buttons, keys, events);
+			if (ev->hasEvent)
+				handleEvent(ev);
 		}
 	}
 	return 0;
@@ -317,11 +323,11 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 	menuDisplayQSODataState = QSO_DISPLAY_IDLE;
 }
 
-static void handleEvent(int buttons, int keys, int events)
+static void handleEvent(ui_event_t *ev)
 {
 	uint32_t tg = (LinkHead->talkGroupOrPcId & 0xFFFFFF);
 
-	if((scanState==SCAN_PAUSED) && (KEYCHAR(keys) == KEY_DOWN) && (!(buttons & BUTTON_SK2)))                    // if we are scanning and down key is pressed then enter current channel into nuisance delete array.
+	if((scanState==SCAN_PAUSED) && (KEYCHAR(ev->keys) == KEY_DOWN) && (!(ev->buttons & BUTTON_SK2)))                    // if we are scanning and down key is pressed then enter current channel into nuisance delete array.
 	{
 		nuisanceDelete[nuisanceDeleteIndex++]=settingsCurrentChannelNumber;
 		if(nuisanceDeleteIndex > (MAX_ZONE_SCAN_NUISANCE_CHANNELS - 1))
@@ -334,7 +340,7 @@ static void handleEvent(int buttons, int keys, int events)
 		return;
 	}
 
-	if ((uiChannelModeScanActive) && (!(keys==0)) && ((KEYCHAR(keys) != KEY_UP) && (!(buttons & BUTTON_SK2))))    // stop the scan on any button except UP without Shift ( allows scan to be manually continued) or SK2 on its own (allows Backlight to be triggered)
+	if ((uiChannelModeScanActive) && (!(ev->keys==0)) && ((KEYCHAR(ev->keys) != KEY_UP) && (!(ev->buttons & BUTTON_SK2))))    // stop the scan on any button except UP without Shift ( allows scan to be manually continued) or SK2 on its own (allows Backlight to be triggered)
 	{
 		uiChannelModeScanActive = false;
 		displayLightTrigger();
@@ -344,7 +350,7 @@ static void handleEvent(int buttons, int keys, int events)
 
 
 	// If Blue button is pressed during reception it sets the Tx TG to the incoming TG
-	if (isDisplayingQSOData && (buttons & BUTTON_SK2)!=0 && trxGetMode() == RADIO_MODE_DIGITAL &&
+	if (isDisplayingQSOData && (ev->buttons & BUTTON_SK2)!=0 && trxGetMode() == RADIO_MODE_DIGITAL &&
 			(trxTalkGroupOrPcId != tg ||
 			(dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot())))
 	{
@@ -370,11 +376,11 @@ static void handleEvent(int buttons, int keys, int events)
 	}
 
 
-	if (events & 0x02)
+	if (ev->events & 0x02)
 	{
-		if (buttons & BUTTON_ORANGE)
+		if (ev->buttons & BUTTON_ORANGE)
 		{
-			if (buttons & BUTTON_SK2)
+			if (ev->buttons & BUTTON_SK2)
 			{
 				settingsPrivateCallMuteMode = !settingsPrivateCallMuteMode;// Toggle PC mute only mode
 				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
@@ -390,9 +396,9 @@ static void handleEvent(int buttons, int keys, int events)
 
 	}
 
-	if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
+	if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 	{
-		if (menuUtilityHandlePrivateCallActions(buttons,keys,events))
+		if (menuUtilityHandlePrivateCallActions(ev))
 		{
 			return;
 		}
@@ -428,7 +434,7 @@ static void handleEvent(int buttons, int keys, int events)
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 			menuChannelModeUpdateScreen(0);
 		}
-		else if (buttons & BUTTON_SK2 )
+		else if (ev->buttons & BUTTON_SK2 )
 		{
 			menuSystemPushNewMenu(MENU_CHANNEL_DETAILS);
 		}
@@ -438,11 +444,11 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 		return;
 	}
-	else if (KEYCHECK_SHORTUP(keys,KEY_HASH))
+	else if (KEYCHECK_SHORTUP(ev->keys,KEY_HASH))
 	{
 		if (trxGetMode() == RADIO_MODE_DIGITAL)
 		{
-			if ((buttons & BUTTON_SK2) != 0)
+			if ((ev->buttons & BUTTON_SK2) != 0)
 			{
 				menuSystemPushNewMenu(MENU_CONTACT_QUICKLIST);
 			} else {
@@ -451,9 +457,9 @@ static void handleEvent(int buttons, int keys, int events)
 			return;
 		}
 	}
-	else if (KEYCHECK_SHORTUP(keys,KEY_RED))
+	else if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{
-		if (menuUtilityHandlePrivateCallActions(buttons,keys,events))
+		if (menuUtilityHandlePrivateCallActions(ev))
 		{
 			return;
 		}
@@ -469,9 +475,9 @@ static void handleEvent(int buttons, int keys, int events)
 			return;
 		}
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_RIGHT))
+	else if (KEYCHECK_PRESS(ev->keys,KEY_RIGHT))
 	{
-		if (buttons & BUTTON_SK2)
+		if (ev->buttons & BUTTON_SK2)
 		{
 			if (nonVolatileSettings.txPowerLevel < 7)
 			{
@@ -535,9 +541,9 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_LEFT))
+	else if (KEYCHECK_PRESS(ev->keys,KEY_LEFT))
 	{
-		if (buttons & BUTTON_SK2)
+		if (ev->buttons & BUTTON_SK2)
 		{
 			if (nonVolatileSettings.txPowerLevel > 0)
 			{
@@ -600,10 +606,10 @@ static void handleEvent(int buttons, int keys, int events)
 
 		}
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_STAR))
+	else if (KEYCHECK_PRESS(ev->keys,KEY_STAR))
 	{
 		// Toggle TimeSlot
-		if (buttons & BUTTON_SK2 )
+		if (ev->buttons & BUTTON_SK2 )
 		{
 			if (trxGetMode() == RADIO_MODE_ANALOG)
 			{
@@ -640,9 +646,9 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 		}
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_DOWN))
+	else if (KEYCHECK_PRESS(ev->keys,KEY_DOWN))
 	{
-		if (buttons & BUTTON_SK2)
+		if (ev->buttons & BUTTON_SK2)
 		{
 			int numZones = codeplugZonesGetCount();
 
@@ -686,49 +692,49 @@ static void handleEvent(int buttons, int keys, int events)
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		menuChannelModeUpdateScreen(0);
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_UP))
+	else if (KEYCHECK_PRESS(ev->keys,KEY_UP))
 	{
-		handleUpKey(buttons);
+		handleUpKey(ev);
 	}
 
 		int keyval=99;
-		if (KEYCHECK_PRESS(keys,KEY_1))
+		if (KEYCHECK_PRESS(ev->keys,KEY_1))
 		{
 			keyval=1;
 		}
-		if (KEYCHECK_PRESS(keys,KEY_2))
+		if (KEYCHECK_PRESS(ev->keys,KEY_2))
 		{
 			keyval=2;
 		}
-		if (KEYCHECK_PRESS(keys,KEY_3))
+		if (KEYCHECK_PRESS(ev->keys,KEY_3))
 		{
 			keyval=3;
 		}
-		if (KEYCHECK_PRESS(keys,KEY_4))
+		if (KEYCHECK_PRESS(ev->keys,KEY_4))
 		{
 			keyval=4;
 		}
-		if (KEYCHECK_PRESS(keys,KEY_5))
+		if (KEYCHECK_PRESS(ev->keys,KEY_5))
 		{
 			keyval=5;
 		}
-		if (KEYCHECK_PRESS(keys,KEY_6))
+		if (KEYCHECK_PRESS(ev->keys,KEY_6))
 		{
 			keyval=6;
 		}
-		if (KEYCHECK_PRESS(keys,KEY_7))
+		if (KEYCHECK_PRESS(ev->keys,KEY_7))
 		{
 			keyval=7;
 		}
-		if (KEYCHECK_PRESS(keys,KEY_8))
+		if (KEYCHECK_PRESS(ev->keys,KEY_8))
 		{
 			keyval=8;
 		}
-		if (KEYCHECK_PRESS(keys,KEY_9))
+		if (KEYCHECK_PRESS(ev->keys,KEY_9))
 		{
 			keyval=9;
 		}
-		if (KEYCHECK_PRESS(keys,KEY_0))
+		if (KEYCHECK_PRESS(ev->keys,KEY_0))
 		{
 			keyval=0;
 		}
@@ -760,9 +766,9 @@ static void handleEvent(int buttons, int keys, int events)
 }
 
 
-static void handleUpKey(int buttons)
+static void handleUpKey(ui_event_t *ev)
 {
-	if (buttons & BUTTON_SK2)
+	if (ev->buttons & BUTTON_SK2)
 	{
 		int numZones = codeplugZonesGetCount();
 
@@ -852,42 +858,22 @@ static void updateQuickMenuScreen(void)
 	UC1701_render();
 	displayLightTrigger();
 }
-/*
-static void handleTxRxFreqToggle(void)
+
+
+static void handleQuickMenuEvent(ui_event_t *ev)
 {
-	isTxRxFreqSwap = !isTxRxFreqSwap;
-	if (isTxRxFreqSwap)
-	{
-		trxSetFrequency(channelScreenChannelData.txFreq,channelScreenChannelData.rxFreq);
-	}
-	else
-	{
-		trxSetFrequency(channelScreenChannelData.txFreq,channelScreenChannelData.rxFreq);
-	}
-}
-*/
-static void handleQuickMenuEvent(int buttons, int keys, int events)
-{
-	if (KEYCHECK_SHORTUP(keys,KEY_RED))
+	if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{
 		uiChannelModeScanActive=false;
 		menuSystemPopPreviousMenu();
 		return;
 	}
-	else if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
+	else if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 	{
 		switch(gMenusCurrentItemIndex)
 		{
 			case CH_SCREEN_QUICK_MENU_SCAN:
-				for(int i= 0;i<MAX_ZONE_SCAN_NUISANCE_CHANNELS;i++)						//clear all nuisance delete channels at start of scanning
-				{
-					nuisanceDelete[i]=-1;
-					nuisanceDeleteIndex=0;
-				}
-				uiChannelModeScanActive=true;
-				scanTimer=500;
-				scanState = SCAN_SCANNING;
-				menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
+				startScan();
 				break;
 			case CH_SCREEN_QUICK_MENU_COPY2VFO:
 				memcpy(&settingsVFOChannel[nonVolatileSettings.currentVFONumber].rxFreq,&channelScreenChannelData.rxFreq,sizeof(struct_codeplugChannel_t) - 16);// Don't copy the name of channel, which are in the first 16 bytes
@@ -907,7 +893,7 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 		}
 		return;
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_RIGHT))
+	else if (KEYCHECK_PRESS(ev->keys,KEY_RIGHT))
 	{
 		switch(gMenusCurrentItemIndex)
 		{
@@ -919,7 +905,7 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 				break;
 		}
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_LEFT))
+	else if (KEYCHECK_PRESS(ev->keys,KEY_LEFT))
 	{
 		switch(gMenusCurrentItemIndex)
 		{
@@ -931,13 +917,17 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 				break;
 		}
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_DOWN))
+	else if (KEYCHECK_PRESS(ev->keys,KEY_DOWN))
 	{
 		MENU_INC(gMenusCurrentItemIndex, NUM_CH_SCREEN_QUICK_MENU_ITEMS);
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_UP))
+	else if (KEYCHECK_PRESS(ev->keys,KEY_UP))
 	{
 		MENU_DEC(gMenusCurrentItemIndex, NUM_CH_SCREEN_QUICK_MENU_ITEMS);
+	}
+	else if ((ev->buttons & BUTTON_ORANGE) && (gMenusCurrentItemIndex==CH_SCREEN_QUICK_MENU_SCAN))
+	{
+		startScan();
 	}
 
 	updateQuickMenuScreen();
@@ -945,7 +935,8 @@ static void handleQuickMenuEvent(int buttons, int keys, int events)
 
 
 
-int menuChannelModeQuickMenu(int buttons, int keys, int events, bool isFirstRun)
+//int menuChannelModeQuickMenu(int buttons, int keys, int events, bool isFirstRun)
+int menuChannelModeQuickMenu(ui_event_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -955,15 +946,28 @@ int menuChannelModeQuickMenu(int buttons, int keys, int events, bool isFirstRun)
 	}
 	else
 	{
-		if (events!=0 && keys!=0)
+		if (ev->events)
 		{
-			handleQuickMenuEvent(buttons, keys, events);
+			handleQuickMenuEvent(ev);
 		}
 	}
 	return 0;
 }
 
 //Scan Mode
+
+static void startScan(void)
+{
+	for(int i= 0;i<MAX_ZONE_SCAN_NUISANCE_CHANNELS;i++)						//clear all nuisance delete channels at start of scanning
+	{
+		nuisanceDelete[i]=-1;
+		nuisanceDeleteIndex=0;
+	}
+	uiChannelModeScanActive=true;
+	scanTimer=500;
+	scanState = SCAN_SCANNING;
+	menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
+}
 
 static void scanning(void)
 {
@@ -1001,8 +1005,11 @@ static void scanning(void)
 	}
 	else
 	{
+
 		trx_measure_count=0;														//needed to allow time for Rx to settle after channel change.
-		handleUpKey(0);
+		ui_event_t tmpEvent={.buttons=0,.keys=0,.events=0,.hasEvent=0,.ticks=0};
+
+		handleUpKey(&tmpEvent);
 		scanTimer = SCAN_TOTAL_INTERVAL;
 		scanState = SCAN_SCANNING;													//state 0 = settling and test for carrier present.
 

@@ -49,6 +49,10 @@ enum {TRX_RX_FREQ_BAND = 0,TRX_TX_FREQ_BAND = 1};
 
 extern const frequencyBand_t RADIO_FREQUENCY_BANDS[RADIO_BANDS_TOTAL_NUM];
 
+extern const int TRX_CTCSS_TONE_NONE;
+extern const int TRX_NUM_CTCSS;
+extern const unsigned int TRX_CTCSSTones[];
+
 extern int trxDMRMode;
 
 extern volatile bool trxIsTransmitting;
@@ -71,8 +75,10 @@ void trxSetModeAndBandwidth(int mode, bool bandwidthIs25kHz);
 void trxSetFrequency(int fRx,int fTx, int dmrMode);
 void trx_setRX(void);
 void trx_setTX(void);
-void trx_activateRx(void);
-void trx_activateTx(void);
+void trxAT1846RxOff(void);
+void trxAT1846RxOn(void);
+void trxActivateRx(void);
+void trxActivateTx(void);
 void trxSetPowerFromLevel(int powerLevel);
 uint16_t trxGetPower(void);
 void trxUpdateC6000Calibration(void);
@@ -81,8 +87,6 @@ void trxSetDMRColourCode(int colourCode);
 int trxGetDMRColourCode(void);
 int trxGetDMRTimeSlot(void);
 void trxSetDMRTimeSlot(int timeslot);
-//bool trxCheckFrequencyIsVHF(int frequency);
-//bool trxCheckFrequencyIsUHF(int frequency);
 void trxSetTxCTCSS(int toneFreqX10);
 void trxSetRxCTCSS(int toneFreqX10);
 bool trxCheckCTCSSFlag(void);

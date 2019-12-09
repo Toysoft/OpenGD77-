@@ -20,9 +20,9 @@
 #include "fw_main.h"
 
 static void updateScreen(void);
-static void handleEvent(int buttons, int keys, int events);
+static void handleEvent(ui_event_t *ev);
 
-int menuDisplayMenuList(int buttons, int keys, int events, bool isFirstRun)
+int menuDisplayMenuList(ui_event_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -33,10 +33,8 @@ int menuDisplayMenuList(int buttons, int keys, int events, bool isFirstRun)
 	}
 	else
 	{
-		if (events!=0 && keys!=0)
-		{
-			handleEvent(buttons, keys, events);
-		}
+		if (ev->hasEvent)
+			handleEvent(ev);
 	}
 	return 0;
 }
@@ -61,17 +59,17 @@ static void updateScreen(void)
 	displayLightTrigger();
 }
 
-static void handleEvent(int buttons, int keys, int events)
+static void handleEvent(ui_event_t *ev)
 {
-	if (KEYCHECK_PRESS(keys,KEY_DOWN))
+	if (KEYCHECK_PRESS(ev->keys,KEY_DOWN))
 	{
 		MENU_INC(gMenusCurrentItemIndex, gMenusEndIndex);
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_UP))
+	else if (KEYCHECK_PRESS(ev->keys,KEY_UP))
 	{
 		MENU_DEC(gMenusCurrentItemIndex, gMenusEndIndex);
 	}
-	else if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
+	else if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 	{
 		if (gMenuCurrentMenuList[gMenusCurrentItemIndex].menuNum!=-1)
 		{
@@ -79,19 +77,19 @@ static void handleEvent(int buttons, int keys, int events)
 		}
 		return;
 	}
-	else if (KEYCHECK_SHORTUP(keys,KEY_RED))
+	else if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{
 		menuSystemPopPreviousMenu();
 		return;
 	}
-	else if (KEYCHECK_SHORTUP(keys,KEY_STAR) && (menuSystemGetCurrentMenuNumber() == MENU_MAIN_MENU))
+	else if (KEYCHECK_SHORTUP(ev->keys,KEY_STAR) && (menuSystemGetCurrentMenuNumber() == MENU_MAIN_MENU))
 	{
 		keypadLocked = true;
 		menuSystemPopAllAndDisplayRootMenu();
 		menuSystemPushNewMenu(MENU_LOCK_SCREEN);
 		return;
 	}
-	else if (KEYCHECK_SHORTUP(keys,KEY_HASH) && (menuSystemGetCurrentMenuNumber() == MENU_MAIN_MENU))
+	else if (KEYCHECK_SHORTUP(ev->keys,KEY_HASH) && (menuSystemGetCurrentMenuNumber() == MENU_MAIN_MENU))
 	{
 		PTTLocked = true;
 		menuSystemPopAllAndDisplayRootMenu();

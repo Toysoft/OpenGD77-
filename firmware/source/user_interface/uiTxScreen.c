@@ -23,7 +23,7 @@
 
 
 static void updateScreen(void);
-static void handleEvent(int buttons, int keys, int events);
+static void handleEvent(ui_event_t *ev);
 
 static const int PIT_COUNTS_PER_SECOND = 10000;
 static int timeInSeconds;
@@ -31,7 +31,7 @@ static uint32_t nextSecondPIT;
 
 static int micLevelUpdateCounter=100;
 
-int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
+int menuTxScreen(ui_event_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -125,7 +125,8 @@ int menuTxScreen(int buttons, int keys, int events, bool isFirstRun)
 			}
 
 		}
-		handleEvent(buttons, keys, events);
+
+		handleEvent(ev);
 	}
 	return 0;
 }
@@ -145,11 +146,11 @@ static void updateScreen(void)
 	}
 }
 
-static void handleEvent(int buttons, int keys, int events)
+static void handleEvent(ui_event_t *ev)
 {
 	int keyval;
 
-	if ((buttons & BUTTON_PTT) == 0
+	if ((ev->buttons & BUTTON_PTT) == 0
 			|| (currentChannelData->tot != 0 && timeInSeconds == 0))
 	{
 		if (trxIsTransmitting)
@@ -163,7 +164,7 @@ static void handleEvent(int buttons, int keys, int events)
 
 				// Need to wrap this in Task Critical to avoid bus contention on the I2C bus.
 				taskENTER_CRITICAL();
-				trx_activateRx();
+				trxActivateRx();
 				taskEXIT_CRITICAL();
 				menuSystemPopPreviousMenu();
 			}
@@ -180,9 +181,9 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 		}
 	}
-	if (!trxIsTransmittingTone && (buttons & BUTTON_PTT) != 0 && trxIsTransmitting && trxGetMode() == RADIO_MODE_ANALOG)
+	if (!trxIsTransmittingTone && (ev->buttons & BUTTON_PTT) != 0 && trxIsTransmitting && trxGetMode() == RADIO_MODE_ANALOG)
 	{
-		if ((buttons & BUTTON_SK2) != 0)
+		if ((ev->buttons & BUTTON_SK2) != 0)
 		{
 			trxIsTransmittingTone = true;
 			trxSetTone1(1750);
@@ -193,67 +194,67 @@ static void handleEvent(int buttons, int keys, int events)
 		else
 		{
 			keyval = 99;
-			if (KEYCHECK_DOWN(keys,KEY_0))
+			if (KEYCHECK_DOWN(ev->keys,KEY_0))
 			{
 				keyval = 0;
 			}
-			if (KEYCHECK_DOWN(keys,KEY_1))
+			if (KEYCHECK_DOWN(ev->keys,KEY_1))
 			{
 				keyval = 1;
 			}
-			if (KEYCHECK_DOWN(keys,KEY_2))
+			if (KEYCHECK_DOWN(ev->keys,KEY_2))
 			{
 				keyval = 2;
 			}
-			if (KEYCHECK_DOWN(keys,KEY_3))
+			if (KEYCHECK_DOWN(ev->keys,KEY_3))
 			{
 				keyval = 3;
 			}
-			if (KEYCHECK_DOWN(keys,KEY_4))
+			if (KEYCHECK_DOWN(ev->keys,KEY_4))
 			{
 				keyval = 4;
 			}
-			if (KEYCHECK_DOWN(keys,KEY_5))
+			if (KEYCHECK_DOWN(ev->keys,KEY_5))
 			{
 				keyval = 5;
 			}
-			if (KEYCHECK_DOWN(keys,KEY_6))
+			if (KEYCHECK_DOWN(ev->keys,KEY_6))
 			{
 				keyval = 6;
 			}
-			if (KEYCHECK_DOWN(keys,KEY_7))
+			if (KEYCHECK_DOWN(ev->keys,KEY_7))
 			{
 				keyval = 7;
 			}
-			if (KEYCHECK_DOWN(keys,KEY_8))
+			if (KEYCHECK_DOWN(ev->keys,KEY_8))
 			{
 				keyval = 8;
 			}
-			if (KEYCHECK_DOWN(keys,KEY_9))
+			if (KEYCHECK_DOWN(ev->keys,KEY_9))
 			{
 				keyval = 9;
 			}
-			if (KEYCHECK_DOWN(keys,KEY_LEFT))  // A
+			if (KEYCHECK_DOWN(ev->keys,KEY_LEFT))  // A
 			{
 				keyval = 10;
 			}
-			if (KEYCHECK_DOWN(keys,KEY_RIGHT)) // B
+			if (KEYCHECK_DOWN(ev->keys,KEY_RIGHT)) // B
 			{
 				keyval = 11;
 			}
-			if (KEYCHECK_DOWN(keys,KEY_UP))    // C
+			if (KEYCHECK_DOWN(ev->keys,KEY_UP))    // C
 			{
 				keyval = 12;
 			}
-			if (KEYCHECK_DOWN(keys,KEY_DOWN))  // D
+			if (KEYCHECK_DOWN(ev->keys,KEY_DOWN))  // D
 			{
 				keyval = 13;
 			}
-			if (KEYCHECK_DOWN(keys,KEY_STAR))
+			if (KEYCHECK_DOWN(ev->keys,KEY_STAR))
 			{
 				keyval = 14;
 			}
-			if (KEYCHECK_DOWN(keys,KEY_HASH))
+			if (KEYCHECK_DOWN(ev->keys,KEY_HASH))
 			{
 				keyval = 15;
 			}
@@ -267,7 +268,7 @@ static void handleEvent(int buttons, int keys, int events)
 			}
 		}
 	}
-	if (trxIsTransmittingTone && (buttons & BUTTON_SK2) == 0 && (keys == 0))
+	if (trxIsTransmittingTone && (ev->buttons & BUTTON_SK2) == 0 && (ev->keys == 0))
 	{
 		trxIsTransmittingTone = false;
 		trxSelectVoiceChannel(AT1846_VOICE_CHANNEL_MIC);

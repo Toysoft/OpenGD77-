@@ -50,14 +50,16 @@ const frequencyBand_t RADIO_FREQUENCY_BANDS[RADIO_BANDS_TOTAL_NUM] =  {
 													}// UHF
 };
 static const int TRX_SQUELCH_MAX = 70;
-/*
- * superseded by the RADIO_FREQUENCY_BANDS data above
- *
-const int RADIO_VHF_MIN			=	13400000;
-const int RADIO_VHF_MAX			=	17400000;
-const int RADIO_UHF_MIN			=	40000000;
-const int RADIO_UHF_MAX			=	52000000;
-*/
+
+const int TRX_CTCSS_TONE_NONE = 65535;
+const int TRX_NUM_CTCSS=52;
+const unsigned int TRX_CTCSSTones[]={65535,625,670,693,719,744,770,797,825,854,
+										885,915,948,974,1000,1035,1072,1109,1148,
+										1188,1230,1273,1318,1365,1413,1462,1514,
+										1567,1598,1622,1655,1679,1713,1738,1773,
+										1799,1835,1862,1899,1928,1966,1995,2035,
+										2065,2107,2181,2257,2291,2336,2418,2503,2541};
+
 
 static int currentMode = RADIO_MODE_NONE;
 static bool currentBandWidthIs25kHz = BANDWIDTH_12P5KHZ;
@@ -167,12 +169,6 @@ int trxGetBandFromFrequency(int frequency)
 	return -1;
 }
 
-/*
-bool trxCheckFrequencyIsUHF(int frequency)
-{
-	return ((frequency >= RADIO_FREQUENCY_BANDS[RADIO_BAND_UHF].minFreq) && (frequency < RADIO_FREQUENCY_BANDS[RADIO_BAND_UHF].maxFreq));
-}*/
-
 bool trxCheckFrequencyInAmateurBand(int tmp_frequency)
 {
 	return ((tmp_frequency>=BAND_VHF_MIN) && (tmp_frequency<=BAND_VHF_MAX)) || ((tmp_frequency>=BAND_UHF_MIN) && (tmp_frequency<=BAND_UHF_MAX));
@@ -218,7 +214,7 @@ int trx_carrier_detected(void)
 void trx_check_analog_squelch(void)
 {
 	trx_measure_count++;
-	if (trx_measure_count==50)
+	if (trx_measure_count==25)
 	{
 		uint8_t squelch;//=45;
 
@@ -386,7 +382,7 @@ void trx_setRX(void)
 //	set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0x00);
 	if (currentMode == RADIO_MODE_ANALOG)
 	{
-		trx_activateRx();
+		trxActivateRx();
 	}
 
 }
@@ -402,12 +398,22 @@ void trx_setTX(void)
 //	set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0x00);
 	if (currentMode == RADIO_MODE_ANALOG)
 	{
-		trx_activateTx();
+		trxActivateTx();
 	}
 
 }
 
-void trx_activateRx(void)
+void trxAT1846RxOff(void)
+{
+	set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0xDF, 0x00, 0x00);
+}
+
+void trxAT1846RxOn(void)
+{
+	set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0xFF, 0x00, 0x20);
+}
+
+void trxActivateRx(void)
 {
 	//SEGGER_RTT_printf(0, "trx_activateRx\n");
     DAC_SetBufferValue(DAC0, 0U, 0U);// PA drive power to zero
@@ -453,7 +459,7 @@ void trx_activateRx(void)
 	}
 }
 
-void trx_activateTx(void)
+void trxActivateTx(void)
 {
 	txPAEnabled=true;
 	write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x29, tx_fh_h, tx_fh_l);
@@ -829,6 +835,7 @@ void trxSetRxCTCSS(int toneFreqX10)
 	else
 	{
 		int threshold=(2500-toneFreqX10)/100;   //adjust threshold value to match tone frequency.
+		if(toneFreqX10>2400) threshold=1;
 		toneFreqX10 = toneFreqX10*10;// value that is stored is 100 time the tone freq but its stored in the codeplug as freq times 10
 		write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT,	0x4d, (toneFreqX10 >> 8) & 0xff,	(toneFreqX10 & 0xff));
 		write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x5b,(threshold & 0xFF),(threshold & 0xFF)); //set the detection thresholds
