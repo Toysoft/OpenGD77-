@@ -250,15 +250,15 @@ static void handleEvent(ui_event_t *ev)
 			{
 				keyval = 10;
 			}
-			else if (KEYCHECK_DOWN(ev->keys,KEY_RIGHT)) // B
+			else if (KEYCHECK_DOWN(ev->keys,KEY_UP))    // B
 			{
 				keyval = 11;
 			}
-			else if (KEYCHECK_DOWN(ev->keys,KEY_UP))    // C
+			else if (KEYCHECK_DOWN(ev->keys,KEY_DOWN))  // C
 			{
 				keyval = 12;
 			}
-			else if (KEYCHECK_DOWN(ev->keys,KEY_DOWN))  // D
+			else if (KEYCHECK_DOWN(ev->keys,KEY_RIGHT)) // D
 			{
 				keyval = 13;
 			}
