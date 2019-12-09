@@ -62,6 +62,7 @@ int menuTxScreen(ui_event_t *ev, bool isFirstRun)
 			// But this would require some sort of timer callback system, which we don't currently have.
 			//
 			UC1701_clearBuf();
+			UC1701_drawRoundRectWithDropShadow(4, 4, 120, 58, 5, true);
 			UC1701_printCentered(4, currentLanguage->error, UC1701_FONT_16x32);
 			if ((currentChannelData->flag4 & 0x04) != 0x00)
 			{
