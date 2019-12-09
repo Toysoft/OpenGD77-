@@ -994,8 +994,11 @@ static void scanning(void)
 	}
 	else
 	{
+
 		trx_measure_count=0;														//needed to allow time for Rx to settle after channel change.
-		handleUpKey(0);
+		ui_event_t tmpEvent={.buttons=0,.keys=0,.events=0,.hasEvent=0,.ticks=0};
+
+		handleUpKey(&tmpEvent);
 		scanTimer = SCAN_TOTAL_INTERVAL;
 		scanState = SCAN_SCANNING;													//state 0 = settling and test for carrier present.
 
