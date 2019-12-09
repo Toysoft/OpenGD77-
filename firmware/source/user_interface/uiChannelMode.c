@@ -26,6 +26,7 @@
 static void handleEvent(ui_event_t *ev);
 static void loadChannelData(bool useChannelDataInMemory);
 static void scanning(void);
+static void startScan(void);
 static void handleUpKey(ui_event_t *ev);
 
 static void updateQuickMenuScreen(void);
@@ -858,6 +859,7 @@ static void updateQuickMenuScreen(void)
 	displayLightTrigger();
 }
 
+
 static void handleQuickMenuEvent(ui_event_t *ev)
 {
 	if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
@@ -866,20 +868,12 @@ static void handleQuickMenuEvent(ui_event_t *ev)
 		menuSystemPopPreviousMenu();
 		return;
 	}
-	else if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN) || (ev->buttons & BUTTON_ORANGE))
+	else if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 	{
 		switch(gMenusCurrentItemIndex)
 		{
 			case CH_SCREEN_QUICK_MENU_SCAN:
-				for(int i= 0;i<MAX_ZONE_SCAN_NUISANCE_CHANNELS;i++)						//clear all nuisance delete channels at start of scanning
-				{
-					nuisanceDelete[i]=-1;
-					nuisanceDeleteIndex=0;
-				}
-				uiChannelModeScanActive=true;
-				scanTimer=500;
-				scanState = SCAN_SCANNING;
-				menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
+				startScan();
 				break;
 			case CH_SCREEN_QUICK_MENU_COPY2VFO:
 				memcpy(&settingsVFOChannel[nonVolatileSettings.currentVFONumber].rxFreq,&channelScreenChannelData.rxFreq,sizeof(struct_codeplugChannel_t) - 16);// Don't copy the name of channel, which are in the first 16 bytes
@@ -931,6 +925,10 @@ static void handleQuickMenuEvent(ui_event_t *ev)
 	{
 		MENU_DEC(gMenusCurrentItemIndex, NUM_CH_SCREEN_QUICK_MENU_ITEMS);
 	}
+	else if ((ev->buttons & BUTTON_ORANGE) && (gMenusCurrentItemIndex==CH_SCREEN_QUICK_MENU_SCAN))
+	{
+		startScan();
+	}
 
 	updateQuickMenuScreen();
 }
@@ -957,6 +955,19 @@ int menuChannelModeQuickMenu(ui_event_t *ev, bool isFirstRun)
 }
 
 //Scan Mode
+
+static void startScan(void)
+{
+	for(int i= 0;i<MAX_ZONE_SCAN_NUISANCE_CHANNELS;i++)						//clear all nuisance delete channels at start of scanning
+	{
+		nuisanceDelete[i]=-1;
+		nuisanceDeleteIndex=0;
+	}
+	uiChannelModeScanActive=true;
+	scanTimer=500;
+	scanState = SCAN_SCANNING;
+	menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
+}
 
 static void scanning(void)
 {
