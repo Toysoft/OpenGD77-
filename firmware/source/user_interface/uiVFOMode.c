@@ -162,7 +162,9 @@ int menuVFOMode(ui_event_t *ev, bool isFirstRun)
 		}
 		else
 		{
-			handleEvent(ev);
+			if (ev->hasEvent)
+				handleEvent(ev);
+
 			toneScanActive=false;
 			if(CCScanActive==true)
 			{
@@ -788,10 +790,8 @@ int menuVFOModeQuickMenu(ui_event_t *ev, bool isFirstRun)
 	}
 	else
 	{
-		if (ev->events!=0)
-		{
+		if (ev->hasEvent)
 			handleQuickMenuEvent(ev);
-		}
 	}
 	return 0;
 }

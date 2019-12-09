@@ -936,8 +936,6 @@ static void handleQuickMenuEvent(ui_event_t *ev)
 }
 
 
-
-//int menuChannelModeQuickMenu(int buttons, int keys, int events, bool isFirstRun)
 int menuChannelModeQuickMenu(ui_event_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
@@ -948,10 +946,8 @@ int menuChannelModeQuickMenu(ui_event_t *ev, bool isFirstRun)
 	}
 	else
 	{
-		if (ev->events)
-		{
+		if (ev->hasEvent)
 			handleQuickMenuEvent(ev);
-		}
 	}
 	return 0;
 }
