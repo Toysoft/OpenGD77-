@@ -62,7 +62,7 @@ void fw_main_task(void *data)
 	int key_event;
 	uint32_t buttons;
 	int button_event;
-	ui_event_t ev = { .buttons = 0, .keys = 0, .events = 0, .hasEvent = false, .ticks = 0 };
+	ui_event_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = 0 };
 	int oldButtons = 0;
 	int oldKeys = 0;
 	int oldEvents = 0;

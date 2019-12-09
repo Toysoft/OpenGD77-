@@ -134,7 +134,7 @@ int menuVFOMode(ui_event_t *ev, bool isFirstRun)
 	}
 	else
 	{
-		if (ev->events==0)
+		if (ev->events == NO_EVENT)
 		{
 			// is there an incoming DMR signal
 			if (menuDisplayQSODataState != QSO_DISPLAY_IDLE)
@@ -151,10 +151,12 @@ int menuVFOMode(ui_event_t *ev, bool isFirstRun)
 					//UC1701_render();
 				}
 			}
+
 			if(toneScanActive==true)
 			{
 				toneScan();
 			}
+
 			if(CCScanActive==true)
 			{
 				CCscan();
@@ -422,7 +424,7 @@ static void handleEvent(ui_event_t *ev)
 		return;
 	}
 
-	if (ev->events & 0x02)
+	if (ev->events & BUTTON_EVENT)
 	{
 		if (ev->buttons & BUTTON_ORANGE)
 		{
@@ -436,6 +438,9 @@ static void handleEvent(ui_event_t *ev)
 			{
 				menuSystemPushNewMenu(MENU_VFO_QUICK_MENU);
 			}
+
+			fw_wait_button_release(BUTTON_ORANGE);
+
 			return;
 		}
 	}

@@ -34,6 +34,7 @@
 #define GPIO_Orange		GPIOA
 #define Pin_Orange		2
 
+#define BUTTON_NONE   0x00000000
 #define BUTTON_PTT    0x00000001
 #define BUTTON_SK1    0x00000002
 #define BUTTON_SK2    0x00000004
@@ -47,5 +48,6 @@ extern volatile bool PTTLocked;
 void fw_init_buttons(void);
 uint32_t fw_read_buttons(void);
 void fw_check_button_event(uint32_t *buttons, int *event);
+void fw_wait_button_release(uint32_t button);
 
 #endif /* _FW_BUTTONS_H_ */
