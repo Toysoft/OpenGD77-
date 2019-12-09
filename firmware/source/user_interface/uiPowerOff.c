@@ -19,19 +19,18 @@
 #include <user_interface/uiLocalisation.h>
 
 static void updateScreen(void);
-static void handleEvent(int buttons, int keys, int events);
+static void handleEvent(ui_event_t *ev);
 
 
-int menuPowerOff(int buttons, int keys, int events, bool isFirstRun)
+int menuPowerOff(ui_event_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		menuTimer = 500;// Not sure why its this value. But never mind ;-)
 		updateScreen();
 	}
 	else
 	{
-		handleEvent(buttons, keys, events);
+		handleEvent(ev);
 	}
 	return 0;
 }
@@ -45,18 +44,25 @@ static void updateScreen(void)
 	displayLightTrigger();
 }
 
-static void handleEvent(int buttons, int keys, int events)
+static void handleEvent(ui_event_t *ev)
 {
+	static uint32_t m = 0;
+
 	if ((GPIO_PinRead(GPIO_Power_Switch, Pin_Power_Switch)==0) && (battery_voltage>CUTOFF_VOLTAGE_LOWER_HYST))
 	{
 		// I think this is to handle if the power button is turned back on during shutdown
 		menuSystemPopPreviousMenu();
+		m = 0; // Reset timeout
 		return;
 	}
 
-	menuTimer--;
+	if (m == 0)
+	{
+		m = ev->ticks;
+		return;
+	}
 
-	if (menuTimer == 0)
+	if ((ev->ticks - m) > 500)
 	{
 		// This turns the power off to the CPU.
 		GPIO_PinWrite(GPIO_Keep_Power_On, Pin_Keep_Power_On, 0);

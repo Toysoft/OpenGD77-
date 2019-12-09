@@ -50,14 +50,7 @@ const frequencyBand_t RADIO_FREQUENCY_BANDS[RADIO_BANDS_TOTAL_NUM] =  {
 													}// UHF
 };
 static const int TRX_SQUELCH_MAX = 70;
-/*
- * superseded by the RADIO_FREQUENCY_BANDS data above
- *
-const int RADIO_VHF_MIN			=	13400000;
-const int RADIO_VHF_MAX			=	17400000;
-const int RADIO_UHF_MIN			=	40000000;
-const int RADIO_UHF_MAX			=	52000000;
-*/
+
 const int TRX_CTCSS_TONE_NONE = 65535;
 const int TRX_NUM_CTCSS=52;
 const unsigned int TRX_CTCSSTones[]={65535,625,670,693,719,744,770,797,825,854,
@@ -175,12 +168,6 @@ int trxGetBandFromFrequency(int frequency)
 	}
 	return -1;
 }
-
-/*
-bool trxCheckFrequencyIsUHF(int frequency)
-{
-	return ((frequency >= RADIO_FREQUENCY_BANDS[RADIO_BAND_UHF].minFreq) && (frequency < RADIO_FREQUENCY_BANDS[RADIO_BAND_UHF].maxFreq));
-}*/
 
 bool trxCheckFrequencyInAmateurBand(int tmp_frequency)
 {
@@ -395,7 +382,7 @@ void trx_setRX(void)
 //	set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0x00);
 	if (currentMode == RADIO_MODE_ANALOG)
 	{
-		trx_activateRx();
+		trxActivateRx();
 	}
 
 }
@@ -411,22 +398,22 @@ void trx_setTX(void)
 //	set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0x00);
 	if (currentMode == RADIO_MODE_ANALOG)
 	{
-		trx_activateTx();
+		trxActivateTx();
 	}
 
 }
 
-void trx_rxOff(void)
+void trxAT1846RxOff(void)
 {
 	set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0xDF, 0x00, 0x00);
 }
 
-void trx_rxOn(void)
+void trxAT1846RxOn(void)
 {
 	set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0xFF, 0x00, 0x20);
 }
 
-void trx_activateRx(void)
+void trxActivateRx(void)
 {
 	//SEGGER_RTT_printf(0, "trx_activateRx\n");
     DAC_SetBufferValue(DAC0, 0U, 0U);// PA drive power to zero
@@ -472,7 +459,7 @@ void trx_activateRx(void)
 	}
 }
 
-void trx_activateTx(void)
+void trxActivateTx(void)
 {
 	txPAEnabled=true;
 	write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x29, tx_fh_h, tx_fh_l);

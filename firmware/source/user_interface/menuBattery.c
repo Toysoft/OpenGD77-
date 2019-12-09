@@ -19,27 +19,26 @@
 #include <user_interface/uiLocalisation.h>
 
 static void updateScreen(void);
-static void handleEvent(int buttons, int keys, int events);
-static int updateCounter;
+static void handleEvent(ui_event_t *ev);
 
-int menuBattery(int buttons, int keys, int events, bool isFirstRun)
+int menuBattery(ui_event_t *ev, bool isFirstRun)
 {
+	static uint32_t m = 0;
+
 	if (isFirstRun)
 	{
-		updateCounter=0;
 		updateScreen();
 	}
 	else
 	{
-		if (++updateCounter > 10000)
+		if ((ev->ticks - m) > 10000)
 		{
-			updateCounter=0;
+			m = ev->ticks;
 			updateScreen();// update the screen once per second to show any changes to the battery voltage
 		}
-		if (events!=0 && keys!=0)
-		{
-			handleEvent(buttons, keys, events);
-		}
+
+		if (ev->hasEvent)
+			handleEvent(ev);
 	}
 	return 0;
 }
@@ -47,7 +46,7 @@ int menuBattery(int buttons, int keys, int events, bool isFirstRun)
 static void updateScreen(void)
 {
 	const int MAX_BATTERY_BAR_HEIGHT = 36;
-	char buffer[33];
+	char buffer[17];
 
 	UC1701_clearBuf();
 	menuDisplayTitle(currentLanguage->battery);
@@ -78,14 +77,14 @@ static void updateScreen(void)
 	displayLightTrigger();
 }
 
-static void handleEvent(int buttons, int keys, int events)
+static void handleEvent(ui_event_t *ev)
 {
-	if (KEYCHECK_SHORTUP(keys,KEY_RED))
+	if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{
 		menuSystemPopPreviousMenu();
 		return;
 	}
-	else if (KEYCHECK_PRESS(keys,KEY_GREEN))
+	else if (KEYCHECK_PRESS(ev->keys,KEY_GREEN))
 	{
 		menuSystemPopAllAndDisplayRootMenu();
 		return;

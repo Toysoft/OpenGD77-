@@ -150,7 +150,7 @@ const uint8_t DMR_AUDIO_SEQ_MASK[]  = 		{0x0FU, 0xF0U, 0x00U, 0x00U, 0x00U, 0x0F
 const uint8_t DMR_EMBED_SEQ_MASK[]  = 		{0x00U, 0x0FU, 0xFFU, 0xFFU, 0xFFU, 0xF0U, 0x00U};
 
 static void updateScreen(int rxState);
-static void handleEvent(int buttons, int keys, int events);
+static void handleEvent(ui_event_t *ev);
 void handleHotspotRequest(void);
 /*
  *
@@ -252,7 +252,7 @@ static void disableTransmission(void)
 	GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
 	// Need to wrap this in Task Critical to avoid bus contention on the I2C bus.
 	taskENTER_CRITICAL();
-	trx_activateRx();
+	trxActivateRx();
 	taskEXIT_CRITICAL();
 	//trxSetFrequency(freq_rx,freq_tx);
 
@@ -738,7 +738,7 @@ static void hotspotStateMachine(void)
 	}
 }
 
-int menuHotspotMode(int buttons, int keys, int events, bool isFirstRun)
+int menuHotspotMode(ui_event_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -762,7 +762,8 @@ int menuHotspotMode(int buttons, int keys, int events, bool isFirstRun)
 	}
 	else
 	{
-		handleEvent(buttons, keys, events);
+		if (ev->hasEvent)
+			handleEvent(ev);
 	}
 
 	processUSBDataQueue();
@@ -867,15 +868,15 @@ static void updateScreen(int rxCommandState)
 	displayLightTrigger();
 }
 
-static void handleEvent(int buttons, int keys, int events)
+static void handleEvent(ui_event_t *ev)
 {
-	if (KEYCHECK_SHORTUP(keys,KEY_RED))
+	if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{
 		//enableHotspot = false;
 		if (trxIsTransmitting)
 		{
 			trxIsTransmitting = false;
-			trx_activateRx();
+			trxActivateRx();
 			trx_setRX();
 
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);

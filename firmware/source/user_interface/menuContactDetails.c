@@ -25,7 +25,7 @@
 #include "fw_settings.h"
 
 static void updateScreen(void);
-static void handleEvent(int buttons, int keys, int events);
+static void handleEvent(ui_event_t *ev);
 
 static struct_codeplugContact_t tmpContact;
 static const char *callTypeString[3];// = { "Group", "Private", "All" };
@@ -39,7 +39,7 @@ static int menuContactDetailsState;
 static int menuContactDetailsTimeout;
 enum MENU_CONTACT_DETAILS_STATE {MENU_CONTACT_DETAILS_DISPLAY=0, MENU_CONTACT_DETAILS_SAVED, MENU_CONTACT_DETAILS_EXISTS};
 
-int menuContactDetails(int buttons, int keys, int events, bool isFirstRun)
+int menuContactDetails(ui_event_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -66,9 +66,9 @@ int menuContactDetails(int buttons, int keys, int events, bool isFirstRun)
 	}
 	else
 	{
-		if ((events!=0 && keys!=0) || menuContactDetailsTimeout > 0)
+		if (ev->hasEvent || (menuContactDetailsTimeout > 0))
 		{
-			handleEvent(buttons, keys, events);
+			handleEvent(ev);
 
 		}
 	}
@@ -156,7 +156,7 @@ static void updateScreen(void)
 	displayLightTrigger();
 }
 
-static void handleEvent(int buttons, int keys, int events)
+static void handleEvent(ui_event_t *ev)
 {
 	dmrIdDataStruct_t foundRecord;
 	static const int bufferLen = 17;
@@ -165,16 +165,16 @@ static void handleEvent(int buttons, int keys, int events)
 
 	switch (menuContactDetailsState) {
 	case MENU_CONTACT_DETAILS_DISPLAY:
-		if (events & 0x01) {
-			if (KEYCHECK_PRESS(keys,KEY_DOWN))
+		if (ev->events & 0x01) {
+			if (KEYCHECK_PRESS(ev->keys,KEY_DOWN))
 			{
 				MENU_INC(gMenusCurrentItemIndex, NUM_CONTACT_DETAILS_ITEMS);
 			}
-			else if (KEYCHECK_PRESS(keys,KEY_UP))
+			else if (KEYCHECK_PRESS(ev->keys,KEY_UP))
 			{
 				MENU_DEC(gMenusCurrentItemIndex, NUM_CONTACT_DETAILS_ITEMS);
 			}
-			else if (KEYCHECK_PRESS(keys,KEY_RIGHT))
+			else if (KEYCHECK_PRESS(ev->keys,KEY_RIGHT))
 			{
 				switch(gMenusCurrentItemIndex)
 				{
@@ -201,7 +201,7 @@ static void handleEvent(int buttons, int keys, int events)
 					break;
 				}
 			}
-			else if (KEYCHECK_PRESS(keys,KEY_LEFT))
+			else if (KEYCHECK_PRESS(ev->keys,KEY_LEFT))
 			{
 				switch(gMenusCurrentItemIndex)
 				{
@@ -232,7 +232,7 @@ static void handleEvent(int buttons, int keys, int events)
 					break;
 				}
 			}
-			else if (KEYCHECK_SHORTUP(keys,KEY_GREEN))
+			else if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 			{
 				if (tmpContact.callType == CONTACT_CALLTYPE_ALL)
 				{
@@ -284,7 +284,7 @@ static void handleEvent(int buttons, int keys, int events)
 					}
 				}
 			}
-			else if (KEYCHECK_SHORTUP(keys,KEY_RED))
+			else if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 			{
 //				contactListContactIndex = 0;
 				menuSystemPopPreviousMenu();
@@ -296,43 +296,43 @@ static void handleEvent(int buttons, int keys, int events)
 				{
 					char c[2] = {0, 0};
 
-					if (KEYCHECK_PRESS(keys,KEY_0))
+					if (KEYCHECK_PRESS(ev->keys,KEY_0))
 					{
 						c[0]='0';
 					}
-					else if (KEYCHECK_PRESS(keys,KEY_1))
+					else if (KEYCHECK_PRESS(ev->keys,KEY_1))
 					{
 						c[0]='1';
 					}
-					else if (KEYCHECK_PRESS(keys,KEY_2))
+					else if (KEYCHECK_PRESS(ev->keys,KEY_2))
 					{
 						c[0]='2';
 					}
-					else if (KEYCHECK_PRESS(keys,KEY_3))
+					else if (KEYCHECK_PRESS(ev->keys,KEY_3))
 					{
 						c[0]='3';
 					}
-					else if (KEYCHECK_PRESS(keys,KEY_4))
+					else if (KEYCHECK_PRESS(ev->keys,KEY_4))
 					{
 						c[0]='4';
 					}
-					else if (KEYCHECK_PRESS(keys,KEY_5))
+					else if (KEYCHECK_PRESS(ev->keys,KEY_5))
 					{
 						c[0]='5';
 					}
-					else if (KEYCHECK_PRESS(keys,KEY_6))
+					else if (KEYCHECK_PRESS(ev->keys,KEY_6))
 					{
 						c[0]='6';
 					}
-					else if (KEYCHECK_PRESS(keys,KEY_7))
+					else if (KEYCHECK_PRESS(ev->keys,KEY_7))
 					{
 						c[0]='7';
 					}
-					else if (KEYCHECK_PRESS(keys,KEY_8))
+					else if (KEYCHECK_PRESS(ev->keys,KEY_8))
 					{
 						c[0]='8';
 					}
-					else if (KEYCHECK_PRESS(keys,KEY_9))
+					else if (KEYCHECK_PRESS(ev->keys,KEY_9))
 					{
 						c[0]='9';
 					}
@@ -349,7 +349,7 @@ static void handleEvent(int buttons, int keys, int events)
 		break;
 	case MENU_CONTACT_DETAILS_SAVED:
         menuContactDetailsTimeout--;
-		if ((menuContactDetailsTimeout == 0) || (KEYCHECK_SHORTUP(keys, KEY_GREEN)))
+		if ((menuContactDetailsTimeout == 0) || (KEYCHECK_SHORTUP(ev->keys, KEY_GREEN)))
 		{
 			contactListContactIndex = 0;
 			menuSystemPopPreviousMenu();
@@ -360,7 +360,7 @@ static void handleEvent(int buttons, int keys, int events)
 		break;
 	case MENU_CONTACT_DETAILS_EXISTS:
         menuContactDetailsTimeout--;
-		if ((menuContactDetailsTimeout == 0) || (KEYCHECK_SHORTUP(keys, KEY_GREEN)))
+		if ((menuContactDetailsTimeout == 0) || (KEYCHECK_SHORTUP(ev->keys, KEY_GREEN)))
 		{
 			menuContactDetailsState = MENU_CONTACT_DETAILS_DISPLAY;
 		}
