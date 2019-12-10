@@ -275,7 +275,8 @@ void fw_main_task(void *data)
     		ev.buttons = buttons;
     		ev.keys = keys;
     		ev.events = (button_event<<1) | key_event;
-    		ev.hasEvent = (ev.buttons != oldButtons) || (ev.keys != oldKeys) || (ev.events != oldEvents);
+    		ev.hasEvent = (ev.buttons != oldButtons) || (ev.keys != oldKeys) || (ev.events != oldEvents) ||
+    				((key_event & EVENT_KEY_CHANGE) && (keys & KEY_MOD_LONG));
     		ev.ticks = fw_millis();
 
     		oldButtons = ev.buttons;
