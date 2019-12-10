@@ -60,7 +60,7 @@ static int scanIndex=0;
 // public interface
 int menuVFOMode(ui_event_t *ev, bool isFirstRun)
 {
-	static uint32_t m = 0;
+	static uint32_t m = 0, sqm = 0;
 
 	if (isFirstRun)
 	{
@@ -134,7 +134,7 @@ int menuVFOMode(ui_event_t *ev, bool isFirstRun)
 	}
 	else
 	{
-		if (ev->events==0)
+		if (ev->events == NO_EVENT)
 		{
 			// is there an incoming DMR signal
 			if (menuDisplayQSODataState != QSO_DISPLAY_IDLE)
@@ -143,6 +143,17 @@ int menuVFOMode(ui_event_t *ev, bool isFirstRun)
 			}
 			else
 			{
+
+				// Clear squelch region
+				if (displaySquelch && ((ev->ticks - sqm) > 2000))
+				{
+					displaySquelch = false;
+
+					UC1701_fillRect(0, 16, 128, 16, true);
+					UC1701RenderRows(2,4);
+				}
+
+
 				if ((ev->ticks - m) > RSSI_UPDATE_COUNTER_RELOAD)
 				{
 					m = ev->ticks;
@@ -151,10 +162,12 @@ int menuVFOMode(ui_event_t *ev, bool isFirstRun)
 					//UC1701_render();
 				}
 			}
+
 			if(toneScanActive==true)
 			{
 				toneScan();
 			}
+
 			if(CCScanActive==true)
 			{
 				CCscan();
@@ -162,12 +175,24 @@ int menuVFOMode(ui_event_t *ev, bool isFirstRun)
 		}
 		else
 		{
-			handleEvent(ev);
-			toneScanActive=false;
-			if(CCScanActive==true)
+			if (ev->hasEvent)
 			{
-				CCScanActive=false;
-				trxSetDMRColourCode(currentChannelData->rxColor);
+				if ((currentChannelData->chMode == RADIO_MODE_ANALOG) &&
+						(ev->events & KEY_EVENT) && ((ev->keys & KEY_LEFT) || (ev->keys & KEY_RIGHT)))
+				{
+					sqm = ev->ticks;
+				}
+
+				handleEvent(ev);
+
+				toneScanActive = false;
+
+				if(CCScanActive == true)
+				{
+					CCScanActive = false;
+					trxSetDMRColourCode(currentChannelData->rxColor);
+				}
+
 			}
 
 		}
@@ -242,6 +267,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 			}
 			else
 			{
+				// Squelch will be cleared later, 2000 ticks after last change
 				if(displaySquelch)
 				{
 					strncpy(buffer, currentLanguage->squelch, 8);
@@ -249,9 +275,9 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					UC1701_printAt(0,16,buffer, UC1701_FONT_8x16);
 					int bargraph= 1 + ((currentChannelData->sql - 1) * 5) /2;
 					UC1701_fillRect(62, 21, bargraph, 8, false);
-					displaySquelch=false;
 				}
-				if(toneScanActive==true)
+
+				if(toneScanActive == true)
 				{
 					sprintf(buffer,"CTCSS %d.%dHz",TRX_CTCSSTones[scanIndex]/10,TRX_CTCSSTones[scanIndex] % 10);
 					UC1701_printCentered(16,buffer, UC1701_FONT_8x16);
@@ -306,6 +332,12 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 			break;
 	}
 	menuDisplayQSODataState = QSO_DISPLAY_IDLE;
+}
+
+void menuVFOModeStopScan(void)
+{
+	toneScanActive = false;
+	CCScanActive = false;
 }
 
 static void reset_freq_enter_digits(void)
@@ -420,7 +452,7 @@ static void handleEvent(ui_event_t *ev)
 		return;
 	}
 
-	if (ev->events & 0x02)
+	if (ev->events & BUTTON_EVENT)
 	{
 		if (ev->buttons & BUTTON_ORANGE)
 		{
@@ -434,6 +466,7 @@ static void handleEvent(ui_event_t *ev)
 			{
 				menuSystemPushNewMenu(MENU_VFO_QUICK_MENU);
 			}
+
 			return;
 		}
 	}
@@ -790,10 +823,8 @@ int menuVFOModeQuickMenu(ui_event_t *ev, bool isFirstRun)
 	}
 	else
 	{
-		if (ev->events!=0)
-		{
+		if (ev->hasEvent)
 			handleQuickMenuEvent(ev);
-		}
 	}
 	return 0;
 }
@@ -912,7 +943,7 @@ static void handleQuickMenuEvent(ui_event_t *ev)
 		menuSystemPopPreviousMenu();
 		return;
 	}
-	else if (ev->buttons & BUTTON_ORANGE && (gMenusCurrentItemIndex==VFO_SCREEN_QUICK_MENU_VFO_A_B))
+	else if (((ev->events & BUTTON_EVENT) && (ev->buttons & BUTTON_ORANGE)) && (gMenusCurrentItemIndex==VFO_SCREEN_QUICK_MENU_VFO_A_B))
 	{
 		nonVolatileSettings.currentVFONumber = 1 - nonVolatileSettings.currentVFONumber;// Switch to other VFO
 		currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];
@@ -972,7 +1003,6 @@ static void handleQuickMenuEvent(ui_event_t *ev)
 static void toneScan(void)
 {
 	if (GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable)==1)
-
 	{
 		currentChannelData->txTone=TRX_CTCSSTones[scanIndex];
 		currentChannelData->rxTone=TRX_CTCSSTones[scanIndex];
@@ -980,6 +1010,7 @@ static void toneScan(void)
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		menuVFOModeUpdateScreen(0);
 		toneScanActive=false;
+		return;
 	}
 
 	if(scanTimer>0)
@@ -1011,6 +1042,7 @@ static void CCscan(void)
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		menuVFOModeUpdateScreen(0);
 		CCScanActive=false;
+		return;
 	}
 
 	if(scanTimer>0)

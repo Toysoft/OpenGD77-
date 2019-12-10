@@ -321,10 +321,8 @@ int menuContactListSubMenu(ui_event_t *ev, bool isFirstRun)
 	}
 	else
 	{
-		if (ev->events!=0 && ev->keys!=0)
-		{
+		if (ev->hasEvent)
 			handleSubMenuEvent(ev);
-		}
 	}
 	return 0;
 }

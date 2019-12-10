@@ -29,17 +29,17 @@ static const int PIT_COUNTS_PER_SECOND = 10000;
 static int timeInSeconds;
 static uint32_t nextSecondPIT;
 
-static int micLevelUpdateCounter=100;
-
 int menuTxScreen(ui_event_t *ev, bool isFirstRun)
 {
+	static uint32_t m = 0, micm = 0;
+
 	if (isFirstRun)
 	{
-		uiChannelModeScanActive=false;
+		uiChannelModeScanActive = false;
 		trxIsTransmittingTone = false;
 		settingsPrivateCallMuteMode = false;
-		micLevelUpdateCounter=100;
-		if ((currentChannelData->flag4 & 0x04) == 0x00 && (  trxCheckFrequencyInAmateurBand(currentChannelData->txFreq) || nonVolatileSettings.txFreqLimited == false))
+
+		if ((currentChannelData->flag4 & 0x04) == 0x00 && (trxCheckFrequencyInAmateurBand(currentChannelData->txFreq) || nonVolatileSettings.txFreqLimited == false))
 		{
 			nextSecondPIT = PITCounter + PIT_COUNTS_PER_SECOND;
 			timeInSeconds = currentChannelData->tot*15;
@@ -47,7 +47,7 @@ int menuTxScreen(ui_event_t *ev, bool isFirstRun)
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 			GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 1);
 
-			txstopdelay=0;
+			txstopdelay = 0;
 			clearIsWakingState();
 			trx_setTX();
 			updateScreen();
@@ -62,27 +62,30 @@ int menuTxScreen(ui_event_t *ev, bool isFirstRun)
 			// But this would require some sort of timer callback system, which we don't currently have.
 			//
 			UC1701_clearBuf();
-			UC1701_printCentered(4, currentLanguage->error,UC1701_FONT_16x32);
-			if ((currentChannelData->flag4 & 0x04) !=0x00)
+			UC1701_drawRoundRectWithDropShadow(4, 4, 120, 58, 5, true);
+			UC1701_printCentered(4, currentLanguage->error, UC1701_FONT_16x32);
+			if ((currentChannelData->flag4 & 0x04) != 0x00)
 			{
-				UC1701_printCentered(40, currentLanguage->rx_only,UC1701_FONT_8x16);
+				UC1701_printCentered(40, currentLanguage->rx_only, UC1701_FONT_8x16);
 			}
 			else
 			{
-				UC1701_printCentered(40,currentLanguage->out_of_band,UC1701_FONT_8x16);
+				UC1701_printCentered(40, currentLanguage->out_of_band, UC1701_FONT_8x16);
 			}
 			UC1701_render();
 			displayLightOverrideTimeout(-1);
 			set_melody(melody_ERROR_beep);
 		}
+
+		m = micm = ev->ticks;
 	}
 	else
 	{
-		if (trxIsTransmitting && (getIsWakingState() == WAKING_MODE_NONE ))
+		if (trxIsTransmitting && (getIsWakingState() == WAKING_MODE_NONE))
 		{
-			if (PITCounter >= nextSecondPIT )
+			if (PITCounter >= nextSecondPIT)
 			{
-				if (currentChannelData->tot==0)
+				if (currentChannelData->tot == 0)
 				{
 					timeInSeconds++;
 				}
@@ -91,17 +94,18 @@ int menuTxScreen(ui_event_t *ev, bool isFirstRun)
 					timeInSeconds--;
 					if (timeInSeconds <= (nonVolatileSettings.txTimeoutBeepX5Secs * 5))
 					{
-						if (timeInSeconds%5==0)
+						if ((timeInSeconds % 5) == 0)
 						{
 							set_melody(melody_key_beep);
 						}
 					}
 				}
-				if (currentChannelData->tot!=0 && timeInSeconds == 0)
+
+				if ((currentChannelData->tot != 0) && (timeInSeconds == 0))
 				{
 					set_melody(melody_tx_timeout_beep);
 					UC1701_clearBuf();
-					UC1701_printCentered(20, currentLanguage->timeout,UC1701_FONT_16x32);
+					UC1701_printCentered(20, currentLanguage->timeout, UC1701_FONT_16x32);
 					UC1701_render();
 				}
 				else
@@ -115,18 +119,24 @@ int menuTxScreen(ui_event_t *ev, bool isFirstRun)
 			{
 				if (trxGetMode() == RADIO_MODE_DIGITAL)
 				{
-					if (micLevelUpdateCounter-- == 0)
+					if ((ev->ticks - micm) > 100)
 					{
 						drawDMRMicLevelBarGraph();
 						UC1701RenderRows(1,2);
-						micLevelUpdateCounter=100;
+						micm = ev->ticks;
 					}
 				}
 			}
-
 		}
 
-		handleEvent(ev);
+		// Got an event, or
+		if (ev->hasEvent || // Timeout triggered, or waiting for DMR ending (meanwhile, updating every 200 ticks)
+				( ((currentChannelData->tot != 0) && (timeInSeconds == 0)) || ((trxIsTransmitting == false) &&
+						((ev->ticks - m) > 200))))
+		{
+			handleEvent(ev);
+			m = ev->ticks;
+		}
 	}
 	return 0;
 }
@@ -134,7 +144,7 @@ int menuTxScreen(ui_event_t *ev, bool isFirstRun)
 static void updateScreen(void)
 {
 	menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-	if (menuControlData.stack[0]==MENU_VFO_MODE)
+	if (menuControlData.stack[0] == MENU_VFO_MODE)
 	{
 		menuVFOModeUpdateScreen(timeInSeconds);
 		displayLightOverrideTimeout(-1);
@@ -148,8 +158,7 @@ static void updateScreen(void)
 
 static void handleEvent(ui_event_t *ev)
 {
-	int keyval;
-
+	// Xmiting ends (normal or timeouted)
 	if ((ev->buttons & BUTTON_PTT) == 0
 			|| (currentChannelData->tot != 0 && timeInSeconds == 0))
 	{
@@ -181,8 +190,11 @@ static void handleEvent(ui_event_t *ev)
 			}
 		}
 	}
-	if (!trxIsTransmittingTone && (ev->buttons & BUTTON_PTT) != 0 && trxIsTransmitting && trxGetMode() == RADIO_MODE_ANALOG)
+
+	// Key action while xmitting (ANALOG), Tone triggering
+	if (!trxIsTransmittingTone && ((ev->buttons & BUTTON_PTT) != 0) && trxIsTransmitting && (trxGetMode() == RADIO_MODE_ANALOG))
 	{
+		// Send 1750Hz
 		if ((ev->buttons & BUTTON_SK2) != 0)
 		{
 			trxIsTransmittingTone = true;
@@ -192,72 +204,74 @@ static void handleEvent(ui_event_t *ev)
 			GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 1);
 		}
 		else
-		{
-			keyval = 99;
+		{ // Send DTMF
+			int keyval = 99;
+
 			if (KEYCHECK_DOWN(ev->keys,KEY_0))
 			{
 				keyval = 0;
 			}
-			if (KEYCHECK_DOWN(ev->keys,KEY_1))
+			else if (KEYCHECK_DOWN(ev->keys,KEY_1))
 			{
 				keyval = 1;
 			}
-			if (KEYCHECK_DOWN(ev->keys,KEY_2))
+			else if (KEYCHECK_DOWN(ev->keys,KEY_2))
 			{
 				keyval = 2;
 			}
-			if (KEYCHECK_DOWN(ev->keys,KEY_3))
+			else if (KEYCHECK_DOWN(ev->keys,KEY_3))
 			{
 				keyval = 3;
 			}
-			if (KEYCHECK_DOWN(ev->keys,KEY_4))
+			else if (KEYCHECK_DOWN(ev->keys,KEY_4))
 			{
 				keyval = 4;
 			}
-			if (KEYCHECK_DOWN(ev->keys,KEY_5))
+			else if (KEYCHECK_DOWN(ev->keys,KEY_5))
 			{
 				keyval = 5;
 			}
-			if (KEYCHECK_DOWN(ev->keys,KEY_6))
+			else if (KEYCHECK_DOWN(ev->keys,KEY_6))
 			{
 				keyval = 6;
 			}
-			if (KEYCHECK_DOWN(ev->keys,KEY_7))
+			else if (KEYCHECK_DOWN(ev->keys,KEY_7))
 			{
 				keyval = 7;
 			}
-			if (KEYCHECK_DOWN(ev->keys,KEY_8))
+			else if (KEYCHECK_DOWN(ev->keys,KEY_8))
 			{
 				keyval = 8;
 			}
-			if (KEYCHECK_DOWN(ev->keys,KEY_9))
+			else if (KEYCHECK_DOWN(ev->keys,KEY_9))
 			{
 				keyval = 9;
 			}
-			if (KEYCHECK_DOWN(ev->keys,KEY_LEFT))  // A
+			else if (KEYCHECK_DOWN(ev->keys,KEY_LEFT))  // A
 			{
 				keyval = 10;
 			}
-			if (KEYCHECK_DOWN(ev->keys,KEY_RIGHT)) // B
+			else if (KEYCHECK_DOWN(ev->keys,KEY_UP))    // B
 			{
 				keyval = 11;
 			}
-			if (KEYCHECK_DOWN(ev->keys,KEY_UP))    // C
+			else if (KEYCHECK_DOWN(ev->keys,KEY_DOWN))  // C
 			{
 				keyval = 12;
 			}
-			if (KEYCHECK_DOWN(ev->keys,KEY_DOWN))  // D
+			else if (KEYCHECK_DOWN(ev->keys,KEY_RIGHT)) // D
 			{
 				keyval = 13;
 			}
-			if (KEYCHECK_DOWN(ev->keys,KEY_STAR))
+			else if (KEYCHECK_DOWN(ev->keys,KEY_STAR))
 			{
 				keyval = 14;
 			}
-			if (KEYCHECK_DOWN(ev->keys,KEY_HASH))
+			else if (KEYCHECK_DOWN(ev->keys,KEY_HASH))
 			{
 				keyval = 15;
 			}
+
 			if (keyval != 99)
 			{
 				trxSetDTMF(keyval);
@@ -268,7 +282,9 @@ static void handleEvent(ui_event_t *ev)
 			}
 		}
 	}
-	if (trxIsTransmittingTone && (ev->buttons & BUTTON_SK2) == 0 && (ev->keys == 0))
+
+	// Stop xmitting Tone
+	if (trxIsTransmittingTone && ((ev->buttons & BUTTON_SK2) == 0) && (ev->keys == 0))
 	{
 		trxIsTransmittingTone = false;
 		trxSelectVoiceChannel(AT1846_VOICE_CHANNEL_MIC);

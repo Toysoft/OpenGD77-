@@ -39,7 +39,8 @@ void fw_init_buttons(void)
 
 uint32_t fw_read_buttons(void)
 {
-	uint32_t result = 0;
+	uint32_t result = BUTTON_NONE;
+
 	if (GPIO_PinRead(GPIO_PTT, Pin_PTT)==0)
 	{
 		result |= BUTTON_PTT;
@@ -64,9 +65,9 @@ void fw_check_button_event(uint32_t *buttons, int *event)
 {
 	*buttons = fw_read_buttons();
 
-	if (old_button_state!=*buttons)
+	if (old_button_state != *buttons)
 	{
-		old_button_state=*buttons;
+		old_button_state = *buttons;
 		*event = EVENT_BUTTON_CHANGE;
 	}
 	else
