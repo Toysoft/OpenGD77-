@@ -432,11 +432,11 @@ This can be set for the Channel or VFO, the letters **CT** **CR** or **CTR** wil
 
 #### Squelch
 
-Pressing **Left** or **Right** keys, activates the FM squelch control.
+Pressing **Left** or **Right** keys, controls the FM squelch.
 
 ![](media/squelch.jpg)
 
-Once in squelch control mode, pressing **Right** the squelch more, **Left** opens the squelch more. The VFO and each channel have individual squelch settings that can be set in this manner.
+Once in squelch control mode, pressing **Right** tightens the squelch incrementally, **Left** opens up the squelch incrementally. The VFO and each channel have individual squelch settings that can be set in this manner.
 
 The variable squelch can be set to different values for each Channel and for the VFO using a new feature in the Community CPS, where the squelch can be set anywhere between Open and Closed in 5% steps.
 
@@ -547,6 +547,12 @@ To unlock the keypad, press and hold the **Function** button and press the **Sta
 
 ## The Menu System
 
+The Open GD77 firmware utilizes a significantly revised menu structure compared to the official firmware. Targeted at amateur use, this focuses on being more straightforward, with highlight on commonly-used features. Please refer to the menu map below.
+
+![](media/menu-roadmap-1.png)
+
+![](media/menu-roadmap-2.png)
+
 ![](media/menu-roadmap-3.png)
 
 Pressing the **GREEN** key enters the menu system, press again to enter a menu subsection or to exit the menu.
@@ -558,6 +564,8 @@ The **UP** and **DOWN** arrow keys step up and down through the various pages of
 The **LEFT** and **RIGHT** arrow keys will change the individual items in the menu system where they are changeable.
 
 The **BLUE** button on the side of the radio, known as SK2, is used as a “**Function**”. Various features are accessed by holding the “function” key when pressing a button on the keypad.
+
+Press the **ORANGE** button to access the quick menu from the standby screen.
 
 ## Main Menu
 
@@ -674,13 +682,23 @@ This setting controls whether the radio emits timeout warning beeps during trans
 
 #### Squelch UHF
 
+This setting controls the squelch level for 70cm UHF when using an analog channel or during analog mode in VFO. Default is 45%.
+
 #### Squelch 220
+
+This setting controls the squelch level for 220MHz when using an analog channel or during analog mode in VFO. Default is 45%.
 
 #### Squelch VHF
 
-#### Scan modem
+This setting controls the squelch level for 2 meter VHF when using an analog channel or during analog mode in VFO. Default is 45%.
+
+#### Scan mode
+
+This setting controls how the receiver stops when there is a signal during scan mode. **Hold** continuously tunes in to a channel when a signal is received. **Pause** tunes in to that signal for a specified duration (Scan Delay) and then resumes scan.
 
 #### Scan delay
+
+During scan mode, this controls the duration wherein the radio tunes in to a channel before resuming scan. This works when **Pause** is selected as the scan mode.
 
 #### Filter time
 
@@ -688,7 +706,11 @@ This feature works when TimeSlot filtering is turned off (**Filter: Off** in the
 
 #### Key rpt
 
+This setting controls the speed of key repetitions when a key is held.
+
 #### Key long
+
+This setting controls the time (in seconds) after which a key is considered to be a long/repetitive press.
 
 ### Display Options
 
