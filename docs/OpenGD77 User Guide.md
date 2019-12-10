@@ -75,7 +75,7 @@
          - [Squelch VHF](#squelch-vhf)   
          - [Scan modem](#scan-modem)   
          - [Scan delay](#scan-delay)   
-         - [Filter timer](#filter-timer)   
+         - [Filter time](#filter-timer)   
          - [Key rpt](#key-rpt)   
          - [Key long](#key-long)   
       - [Display Options](#display-options)   
@@ -116,7 +116,7 @@
 ![](media/OpenGD77-logo.svg)
 
 # OpenGD77 User Guide
-(19th November 2019)
+(19th November 2019; Updated 10th December 2019)
 
 ## Introduction
 
@@ -141,7 +141,7 @@ The intention of the OpenGD77 project is to create a fully featured non-commerci
 
    This includes repeater operation using CTCSS on both TX and RX.
 
-1. On DMR, only Talk Group “calls” and Private calls are currently possible
+1. On DMR, only Talk Group “calls” and Private calls are currently possible.
 
    Text messaging and other similar features are currently not supported, but are on the To Do list.
 
@@ -150,9 +150,9 @@ The intention of the OpenGD77 project is to create a fully featured non-commerci
 
 The firmware is designed for Amateur Radio use, especially on DMR, and has a number of features for Amateur Radio use which are not normally available on commercial DMR radios.
 
-These include direct numerical entry of DMR TalkGroup numbers and use of the Rx Group list to control the TG’s selectable for each DMR “channel”
+These include direct numerical entry of DMR TalkGroup numbers and use of the Rx Group list to control the TG’s selectable for each DMR “channel”.
 
-Also, as far as possible the firmware is open source. This allows anyone to modify the firmware to suit their own individual needs, and also for peer review and improvement of the firmware source code
+Also, as far as possible the firmware is open source. This allows anyone to modify the firmware to suit their own individual needs, and also for peer review and improvement of the firmware source code.
 
 #### Credits:
 
@@ -168,7 +168,7 @@ Graphical and other enhancements from Daniel F1RMB
 
 Additions from Colin G4EML, including FM CTCSS and “All Channels” zone functionality
 
-This user guide was written by Roger VK3KYY based on work by Alister G0NEF
+This user guide was written by Roger VK3KYY based on work by Alister G0NEF. Additional edits by Angelo 4I1RAC and graphics by Thierry F1CXG (buttons) and Rafa EA3BIL (menu map).
 
 Thanks to all the Beta Testers that provide detailed bug reports and user feedback, especially VK7ZCR, W1RHS and G4TSN
 
@@ -212,8 +212,7 @@ The frequency used in the VFO for both Tx and Rx will be read from the “VFO A�
 
 On both the VFO and Channel screens, the mode (DMR or FM) is shown in the top left of the display, and the battery voltage percentage is shown in the top right of the display
 
-In DMR mode the current TimeSlot is shown to the right of the “DMR” text e.g TimeSlot 2 "TS2"
-, and the Colour Code e.g. “C1” is shown to the left of the battery percentage.
+In DMR mode the current TimeSlot is shown to the right of the “DMR” text e.g TimeSlot 2 "TS2", and the Colour Code e.g. “C1” is shown to the left of the battery percentage. When TimeSlot filtering is turned off, the **TS1** or **TS2** indicator is in inverse color.
 
 The current Tx power is shown in the middle of the top of the screen (e.g., 750mW)
 
@@ -221,7 +220,7 @@ On the VFO screen, the TX and RX frequency are shown, as well as the TalkGroup w
 
 The arrow to the left of the R (receive frequency) indicates that the keypad up and down arrows and number entry keys will control the RX frequency.
 
-The channel screen displays the same information in the top row, but displays the Channel name (in this example “VK3RZU DMR”) as well as the Zone (“VK3 DMR”) and in DMR mode the TalkGroup will also be displayed
+The channel screen displays the same information in the top row, but displays the Channel name (in this example “VK3RZU DMR”) as well as the Zone (“VK3 DMR”). In DMR mode the TalkGroup will also be displayed
 
 ![](media/dmr-screen.jpg)
 
@@ -231,7 +230,7 @@ Press the **Red** menu button to toggle between the VFO and Channel screens
 
 Press the **Green** menu key to enter the menu system
 
-Pressing **Function + Green** gives quick access to the Channel details screen, which can also be accessed via the menu system.
+Press **Function + Green** for quick access to the Channel details screen, which can also be accessed via the menu system.
 *Note:*
 The VFO is actually a special type of channel; hence the Channel Details screen also works for the VFO.
 
@@ -240,12 +239,12 @@ The VFO is actually a special type of channel; hence the Channel Details screen 
 Press the **Function + Star** key to toggle between FM and DMR mode on either the VFO or Channel screens.
 
 #### Changing Timeslot in DMR mode
-In DMR mode, pressing the **Star** key toggled between Timeslot 1 and Timeslot 2
+In DMR mode, pressing the **Star** key toggles between TimeSlot 1 and TimeSlot 2.
 
 #### Controlling Tx power
 
-Press **Function + Right** to increase the power, Press **Function + Left** to decrease the power. Power can be set to 250mW, 500mW, 750mW, 1W, 2W, 3W, 4W and 5W.
-*Note:* The power output will only be correct after the operator has calibrated their own radio, as the GD-77 does not seem to have very accurate power calibration applied in the factory by TYT
+Press **Function + Right** to increase the power. Press **Function + Left** to decrease the power. Power can be set to 250mW, 500mW, 750mW, 1W, 2W, 3W, 4W and 5W.
+*Note:* The power output will only be correct after the operator has calibrated their own radio, as the GD-77 does not seem to have very accurate power calibration applied in the factory by TYT.
 
 #### Signal strength bar graph
 
@@ -264,59 +263,61 @@ The Channel screen displays the current Channel number as well as the current zo
 
 #### Changing channels within the current zone
 
-Pressing the **Up** or **Down arrow** keys changes channel in current zone, and the channel number in the zone will be displayed in place of the zone name.
+Pressing the **Up** or **Down arrow** keys changes channel in current zone, and the channel number in the zone will be displayed beside the zone name.
 
 #### Changing zones
 
-Pressing **Function + Up arrow** or **Function + Down arrow** changes to the next or previous zone
+Pressing **Function + Up arrow** or **Function + Down arrow** changes to the next or previous zone, respectively.
 
 ![](media/changing-zones.jpg)
 
-#### Channel screen Quick menu
+#### Channel screen Quick Menu
 
-Pressing the **Orange** button on the top of the radio in Channel mode displays the Quick menu for the Channel screen.
+Pressing the **Orange** button on the top of the radio in Channel mode displays the Quick Menu for the Channel screen. Note that in Quick Menu, the **Orange** button has the same function as the **Green** key, which confirms your current selection.
 
 ##### Scan
 
-Press the **Green** key to start scanning all channels in the currently selected zome.
+After pressing the **Orange** button, press it again, or press the the **Green** key to start scanning all channels in the currently selected zome.
 
 ##### Copying a channel to VFO
 
-Press the **Green** key to copy the content of the current channel to the VFO.
+Press the **Orange** button or **Green** key to copy the content of the current channel to the VFO.
 
 ##### Read the VFO into the current channel
 
-Press the **Green** key to confirm and save the updated channel to the codeplug memory **Red** key to cancel.
+Press the **Orange** button or **Green** key to confirm and save the updated channel to the codeplug memory. **Red** key to cancel.
 
 ##### Filter (DMR only)
 
-Use the **Right** or **Left** arrows to select TS (for filtering by the selected timeslot) or None (for no filtering- i.e. "promiscuous" mode).
+Use the **Right** or **Left** arrows to select **TS** (for filtering by the selected timeslot) or **None** (for no filtering, i.e. "promiscuous" mode).
 
 ![](media/channel-quick-menu.jpg)
 
-#### VFO Quick menu
+#### VFO Quick Menu
 
-Pressing the **Orange** button on the top of the radio in VFO mode displays the Quick menu for the VFO screen. Currently this has five options
+Pressing the **Orange** button on the top of the radio in VFO mode displays the Quick menu for the VFO screen. Currently this has five options.
 
 ##### VFO selection A or B
 
-##### Filter (by timeslot- DMR mode only)
-
-##### Copy TX frequency to the RX frequency
+Pressing the **Orange** button twice while in VFO mode quickly toggles between VFO A and VFO B.
 
 ##### Exchange the TX and RX frequencies
 
+##### Copy TX frequency to the RX frequency
+
 ##### Copy the RX frequency to the TX frequency
 
-##### Scan for CTCSS tone int FM or DMR CC in DMR mode
+##### Filter (by timeslot- DMR mode only)
 
-Press the **Green** key to confirm the copy or **Red** key to cancel.
+##### Tone Scan for CTCSS tone in FM, or CC Scan for DMR Colour Code in DMR mode
+
+Press the **Orange** button or **Green** key to confirm the copy or **Red** key to cancel.
 
 ![](media/vfo-quick-menu.jpg)
 
 *Note.*
 
-Listening to the input of a repeater will only work in DMR mode if both the TX frequency and the RX frequency are the same. This is because most DMR radios do not give an option to select Tier2 Active or Tier 2 Passive mode, and instead assume that if the TX and RX frequencies are the same the radio needs to be in Active mode, where the radio is the DMR master. Whereas if the TX and RX frequencies are the same the radio assumes it needs to operate in Tier 2 Passive mode, where the repeater signal controls the DMR timeslot synchronization.
+Listening to the input of a repeater will only work in DMR mode if both the TX frequency and the RX frequency are the same. This is because most DMR radios do not give an option to select Tier2 Active or Tier 2 Passive mode, and instead assume that if the TX and RX frequencies are the same the radio needs to be in Active mode, where the radio is the DMR master. Meanwhile, if the TX and RX frequencies are not the same the radio assumes it needs to operate in Tier 2 Passive mode, wherein the repeater signal controls the DMR timeslot synchronization.
 
 However to listen on the input of a repeater, the signal that is received does not contain the synchronisation information hence the radio needs to be put into DMR Active mode in order to receive the signal.
 
@@ -326,7 +327,7 @@ I am not sure whether the official firmware is able to receive on the input of a
 
 #### Timeslot selection
 
-The **Star** key toggles between Timeslot 1 and Timeslot 2
+The **Star** key toggles between TimeSlot 1 and TimeSlot 2
 
 #### DMR ID callsign and name display
 
@@ -340,7 +341,7 @@ If the DMR ID is in the DMR ID database previously loaded into the radio, the ca
 
 #### Talker Alias display
 
-On the Brandmeister network, if the station’s DMR ID is not in the DMR ID database, the display will show the Talker Alias information sent by Brandmeister.
+If receiving a signal from the Brandmeister network, and if the station’s DMR ID is not in the radio's DMR ID database, the display will show the Talker Alias information sent by Brandmeister.
 
 ![](media/talker-alias.jpg)
 
@@ -350,7 +351,7 @@ If the station has entered any data into the APRS section of their Brandmeister 
 
 ![](media/talker-alias-data.jpg)
 
-Note. As the Talker Alias data is sent slowly as it is embedded inside the DMR audio data frames, the callsign will appear first and about half a second later the DMR ID or other text will arrive via the DMR data and be displayed.
+Note: As the Talker Alias data is sent slowly as it is embedded inside the DMR audio data frames, the callsign will appear first and about half a second later the DMR ID or other text will arrive via the DMR data and be displayed.
 
 #### Talkgroup selection from the Rx Group list
 
@@ -359,7 +360,7 @@ This TalkGroup will apply to both RX and TX.
 
 #### Assignment of Timeslot to Digital Contact TalkGroup
 
-A new feature introduced to the CPS allows a TimeSlot to be applied to each Digital Contact TalkGroup.
+A new feature introduced to the CPS allows a default TimeSlot to be applied to each Digital Contact or TalkGroup.
 
 By default, the Channel TS override is disabled. This means that if the **Left** or **Right** arrows are pressed to select this TG within the Rx Group list, the Timeslot assigned to the Channel (in the CPS) or manually changed using the **Star** key will not change.
 
@@ -369,13 +370,13 @@ However if the Digital Contact has an override TS assigned (e.g., TS 1), when th
 
 If a Talkgroup is displayed in inverse video during reception of a DMR signal, this indicates that the current TX TalkGroup does not match the received TalkGroup, hence pressing the PTT would not transmit back to the station on the same TalkGroup.
 
-If you want to transmit on the same TalkGroup as the currently received signal, press the **Function** button on the side of the radio while the TalkGroup is being displayed in inverse video and TX TalkGroup will be set to the RX TalkGroup.
+If you want to transmit on the same TalkGroup as the currently received signal, press the **Function** button on the side of the radio while the TalkGroup is being displayed in inverse. The TX TalkGroup will now be set to the RX TalkGroup.
 
 ![](media/talkgroup-inverse-video.jpg)
 
-#### Manual TalkGroup number entry
+#### Manual or "*Ad Hoc*" TalkGroup number entry
 
-Press the **Hash (#)** key to enter the TalkGroup number. Followed by the **Green** key to confirm.
+Press the **Hash (#)** key to enter an *ad hoc* TalkGroup number, followed by the **Green** key to confirm.
 If the entered TG is in the Digital Contacts the name of the TG Contact will be displayed, otherwise the number will be displayed e.g. TG 505.
 When a TG has been manually entered, the display shows a 1 pixel box around the TG display area to indicate that this TG has been manually entered, even if the Contact / TG name is displayed rather than the TG nunber.
 
@@ -411,7 +412,7 @@ In Contact selection mode, press **Function + Hash (#)** key, and an alternative
 
 This DMR ID will be used for transmission *until* the radio is rebooted or you enter another DMR ID via the same screen.
 
-To make the change permanent, so that its written back to the codeplug Press **Function + Green** instead of **Green** to enter the number.
+To make the change permanent, so that its written back to the codeplug Press **Function + Green** instead of **Green** to confirm the number.
 
 ![](media/user-dmr-id.jpg)
 
@@ -508,7 +509,7 @@ The only case where the frequency difference will not be maintained is if the TX
 
 ## Transmitting
 
-During transmission the Talk Timer, either counts up or down depending on whether the channel has a timeout defined.
+During transmission the Talk Timer either counts up or down, depending on whether the channel has a timeout defined.
 
 If a timeout is defined in the CPS, or adjusted in the Channel Details screen, the Talk Timer will count down and when the timeout period is reached a beep will play and the TX will stop.
 
@@ -520,11 +521,11 @@ During DMR TX a VU meter is displayed showing the input microphone level, in the
 
 ##### Timeout warning beep
 
-A timeout warning can be configured in the Utilities menu. The radio will beep every 5 seconds when the remaining call time is less than the Timeout warning time that you have configured in the Options screen
+A timeout warning can be configured in the Utilities menu. The radio will beep every 5 seconds when the remaining call time is less than the Timeout warning time that you have configured in the Options screen.
 
 ##### TOT
 
-If TOT is setup for the current channel or VFO, when the timer counts down to zero the transmission will stop, a warning beep will be played and the radio will stop transmitting
+If TOT is setup for the current channel or VFO, when the timer counts down to zero the transmission will stop, a warning beep will be played and the radio will stop transmitting.
 
 ![](media/timeout.jpg)
 
@@ -536,7 +537,7 @@ If TOT is setup for the current channel or VFO, when the timer counts down to ze
 
 To the lock the keypad.
 
-On either the VFO or the Channel screen, press the **Green** menu key to display the Main menu, then press the **Star** key
+On either the VFO or the Channel screen, press the **Green** menu key to display the Main menu, then press the **Star** key. Pressing the **Star** key from any top-level item within the Main menu locks the keypad.
 
 To unlock the keypad, press and hold the **Function** button and press the **Star** key
 
@@ -545,6 +546,8 @@ To unlock the keypad, press and hold the **Function** button and press the **Sta
 ![](media/RadioButtonsHSs.jpg)
 
 ## The Menu System
+
+![](media/menu-roadmap-3.png)
 
 Pressing the **GREEN** key enters the menu system, press again to enter a menu subsection or to exit the menu.
 
@@ -574,13 +577,15 @@ When the All Channels zone is selected, the Channel screen displays the "**All C
 
 ![](media/all-channels-channel-screen.jpg)
 
-Pressing the **Up** and **Down** arrows will cycle though all channels in all zones
+Pressing the **Up** and **Down** arrows will cycle though all channels in the zone.
 
-Pressing any of the number keys on the keypad, enters ‘Goto channel number mode’
+Pressing any of the number keys on the keypad, enters ‘Goto channel number’ mode.
 
 ![](media/goto-channel-number.jpg)
 
-In this mode, you can enter multiple digits and then press the **Green** key to confirm, or the **Red** key to go cancel.
+In this mode, you can enter multiple digits and then press the **Green** key to confirm, or the **Red** key to cancel.
+
+Note that you can quickly cycle through zones by holding the **Blue** button and pressing **Up** or **Down** in Channel mode.
 
 ### RSSI
 
@@ -590,7 +595,7 @@ Displays a signal strength indicator showing the numerical RSSI value in dBm, al
 
 *Notes*
 
-Both RSSI and S meter are not calibrated and will vary somewhat between different radios in their accuracy
+Both RSSI and S meter are not calibrated and will vary somewhat between different radios in their accuracy.
 
 DMR signals by their nature, because they are pulse transmissions will not give accurate RSSI values.
 
@@ -610,7 +615,7 @@ Displays a record of the last 16 DMR stations that the radio has received.
 
 Pressing the **Up** or **Down** arrows cycles through the list to show stations which have been heard.
 
-The radio stores data on the last 16 stations that were heard
+The radio stores data on the last 16 stations that were heard.
 
 ### Firmware Info
 
@@ -643,7 +648,7 @@ Settings are in 3dB steps, with 0dB being the normal default setting, which is t
 
 #### Beep volume
 
-This controls the volume of the beep and other tones, and can be set from 100% to 10%
+This controls the volume of the beep and other tones, and can be set from 100% to 10% in these increments: (-24dB, -21dB, -18dB, -15dB, -12dB, -9dB, -6dB, -3dB, 0dB, 3dB, 6dB).
 
 #### Band Limits
 
@@ -653,13 +658,13 @@ Turns ON/Off the transmit band limit function that prevent transmission outside 
 
 Turns ON/OFF the calibration function (default OFF).
 
-Some radios seem to have invalid calibration data, possibly because the official firmware has corrupted the calibration parameters in the Flash memory.
+Some radios seem to have invalid calibration data, possibly because the official firmware has corrupted the calibration parameters in the Flash memory. This requires a power cycle for the setting to apply.
 
-If the radio does not seem to transmit or receive correctly. Try disabling the calibration and rebooting the radio, as the nominal calibration parameters used by the OpenGD77 firmware normally work almost as well as correct calibration data.
+If the radio does not seem to transmit or receive correctly, or if it does not work correctly (e.g., high BER) with certain hotspots, try disabling the calibration and rebooting the radio, as the nominal calibration parameters used by the OpenGD77 firmware normally work almost as well as correct calibration data.
 
 #### Fact Reset
 
-Resets the radio to default settings, and reads the CPS VFO A values from the codeplug into the VFO screen.
+Resets the radio to default settings, and reads the CPS VFO A values from the codeplug into the VFO screen. Power cycle the radio to apply.
 
 **The radio can also be set to the default settings by holding the Blue (Function) key while turning on the radio.**
 
@@ -677,7 +682,9 @@ This setting controls whether the radio emits timeout warning beeps during trans
 
 #### Scan delay
 
-#### Filter timer
+#### Filter time
+
+This feature works when TimeSlot filtering is turned off (**Filter: Off** in the Quick Menu). It sets the duration the radio listens in to one particular TimeSlot before resuming listening to the other TimeSlot for traffic. This prevents the radio from switching to the other TimeSlot in the event that there is a long pause or transmission gap in the current TimeSlot being heard. When TimeSlot filtering is turned on (**Filter: TS** in Quick Menu), this does not have any effect.
 
 #### Key rpt
 
@@ -732,9 +739,10 @@ Selects the VFO/Channel frequency step size.
 Sets the time out timer to OFF or ON.
 
 #### Zone Skip
-Set zone to be skipped when scanning
+Set to skip the channel when scanning within the zone.
 
 #### All Skip
+Set to skip the channel when scanning within the All Channels list.
 
 #### RX Grp
 Selects which RX group is assigned to teh current channel (DMR only).
@@ -831,7 +839,7 @@ If the GD-77 still fails to enter hotspot mode, check your USB connections.
 
 This is 100% of the maximum power of the modem, and in the case of the GD-77 the maximum power output is 5W, but the radio is not designed to operate as a hotspot, where it may be continuously transmitting.
 
-The maximum power setting that the GD-77 can support for continuous transmission, will vary depending on the operating environment, including the ambient temperature and antenna SWR etc.
+The maximum power setting that the GD-77 can support for continuous transmission will vary depending on the operating environment, including the ambient temperature and antenna SWR, etc.
 
 It is the responsibility of the user to set an appropriate power level that will not overheat and damage the PA.
 
@@ -855,17 +863,17 @@ The LED on the top of the radio also turns red to indicate the radio is transmit
 
 ## Programming Channels and Talkgroups for use with OpenGD77.
 
-**NOTE**: You cannot use the standard Radioddity CPS to write to a GD-77 flashed with the OpenGD77 firmware. If you wish to use the Radioddity CPS the radio will need to run the official Radioddity firmware. Once the code plug has been written to the GD-77 with your ID and callsign, you can then flash the OpenGD77 firmware to the radio and it will then read and operate with the code plug written to it with the standard firmware and CPS software.
+**NOTE**: You cannot use the standard Radioddity CPS to write to a GD-77 flashed with the OpenGD77 firmware. If you wish to use the Radioddity CPS the radio will need to run the official Radioddity firmware. Once the codeplug has been written to the GD-77 with your ID and callsign, you can then flash the OpenGD77 firmware to the radio and it will then read and operate with the code plug written to it with the standard firmware and CPS software.
 
 As an alternative to the Radioddity CPS you can use the latest version of the “Community CPS” by Roger Clark that includes support for OpenGD77. Please see the next section for information specific to the Community CPS. The information in the rest of this section is applicable to both the standard Radioddity CPS and the Community CPS.
 
 ### Overview
 
-With OpenGD77, unlike most commercial DMR radios it is not necessary to create multiple channels to use the same frequency with many different transmit Talkgroups.
+OpenGD77 simplifies the concept of TalkGroups, for maximum convenience for radio amateurs. Unlike most commercial DMR radios it is not necessary to create multiple channels to use the same frequency with many different transmit TalkGroups. Changing is as simple as scrolling **Left** and **Right** across your TalkGroup list or entering an *ad hoc* TalkGroup by pressing the **hash** key.
 
-In DMR mode when using either the VFO or the Zones and Channels, you can use the LEFT/RIGHT arrow keys to scroll through and select any of the Talkgroups in the Rx Group list assigned to the current channel, or to VFO A
+In DMR mode when using either the VFO or the Zones and Channels, you can use the LEFT/RIGHT arrow keys to scroll through and select any of the TalkGroups in the Rx Group list assigned to the current channel, or to VFO A.
 
-When programming the radio using the CPS first add all the Talkgroups that you think you may wish to use into the Digital Contacts list.
+When programming the radio using the CPS first add all the TalkGroups that you think you may wish to use into the Digital Contacts list.
 
 Please download the latest GD77 Community CPS from here:
 <https://github.com/rogerclarkmelbourne/radioddity_gd-77_cps/raw/master/installer/RadioddityGD77CPS31XCommunityEditionInstaller.exe>
@@ -921,11 +929,11 @@ Before writing a codeplug to the radio, you should backup both the EEPROM and Fl
 
 To read the codeplug, press the “Read codeplug” button, wait for all 3 data sections to download, and then close the OpenGD77 Support window. To write a codeplug press the “Write codeplug” button.
 
-#### Writing DMR ID’s
+#### Writing DMR IDs -- the User Database
 
-The OpenGD77 supports extended DMR ID information, with up to 15 character for Callsign and name, as well as doubling the memory capacity for DMR ID’s.
+The OpenGD77 supports extended DMR ID information, with up to 15 character for Callsign and name, as well as doubling the memory capacity for DMR IDs.
 
 Please select the “Enhanced firmware mode” Checkbox, and change the Number of characters menu to the desired DMR callsign and name length.
-*Note.* Because the memory size used for the DMR ID is currently limited to 256, you can store more DMR ID’s if you assign fewer characters per ID.
+*Note.* Because the memory size used for the DMR ID is currently limited to 256, you can store more DMR IDs if you assign fewer characters per ID. Depending on actual information, OpenGD77 can store approximately 14,000 to 15,000 IDs in its user database.
 
 ![](media/cps-dmr-ids.png)
