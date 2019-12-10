@@ -439,8 +439,6 @@ static void handleEvent(ui_event_t *ev)
 				menuSystemPushNewMenu(MENU_VFO_QUICK_MENU);
 			}
 
-			fw_wait_button_release(BUTTON_ORANGE);
-
 			return;
 		}
 	}
@@ -917,7 +915,7 @@ static void handleQuickMenuEvent(ui_event_t *ev)
 		menuSystemPopPreviousMenu();
 		return;
 	}
-	else if (ev->buttons & BUTTON_ORANGE && (gMenusCurrentItemIndex==VFO_SCREEN_QUICK_MENU_VFO_A_B))
+	else if (((ev->events & BUTTON_EVENT) && (ev->buttons & BUTTON_ORANGE)) && (gMenusCurrentItemIndex==VFO_SCREEN_QUICK_MENU_VFO_A_B))
 	{
 		nonVolatileSettings.currentVFONumber = 1 - nonVolatileSettings.currentVFONumber;// Switch to other VFO
 		currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];

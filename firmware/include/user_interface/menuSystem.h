@@ -22,8 +22,8 @@
 
 typedef struct
 {
-	int      buttons;
-	int      keys;
+	uint32_t      buttons;
+	uint32_t      keys;
 	int      events; // See *_EVENT below
 	bool     hasEvent;
 	uint32_t ticks;

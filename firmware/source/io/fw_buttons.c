@@ -75,9 +75,3 @@ void fw_check_button_event(uint32_t *buttons, int *event)
 		*event = EVENT_BUTTON_NONE;
 	}
 }
-
-void fw_wait_button_release(uint32_t button)
-{
-	while (fw_read_buttons() & button);
-}
-

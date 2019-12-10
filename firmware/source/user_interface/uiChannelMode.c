@@ -392,8 +392,6 @@ static void handleEvent(ui_event_t *ev)
 				menuSystemPushNewMenu(MENU_CHANNEL_QUICK_MENU);
 			}
 
-			fw_wait_button_release(BUTTON_ORANGE);
-
 			return;
 		}
 
@@ -928,7 +926,7 @@ static void handleQuickMenuEvent(ui_event_t *ev)
 	{
 		MENU_DEC(gMenusCurrentItemIndex, NUM_CH_SCREEN_QUICK_MENU_ITEMS);
 	}
-	else if ((ev->buttons & BUTTON_ORANGE) && (gMenusCurrentItemIndex==CH_SCREEN_QUICK_MENU_SCAN))
+	else if (((ev->events & BUTTON_EVENT) && (ev->buttons & BUTTON_ORANGE)) && (gMenusCurrentItemIndex==CH_SCREEN_QUICK_MENU_SCAN))
 	{
 		startScan();
 	}
