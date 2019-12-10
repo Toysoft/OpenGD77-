@@ -432,11 +432,11 @@ This can be set for the Channel or VFO, the letters **CT** **CR** or **CTR** wil
 
 #### Squelch
 
-Pressing **Left** or **Right** keys, activates the FM squelch control.
+Pressing **Left** or **Right** keys, controls the FM squelch.
 
 ![](media/squelch.jpg)
 
-Once in squelch control mode, pressing **Right** the squelch more, **Left** opens the squelch more. The VFO and each channel have individual squelch settings that can be set in this manner.
+Once in squelch control mode, pressing **Right** tightens the squelch incrementally, **Left** opens up the squelch incrementally. The VFO and each channel have individual squelch settings that can be set in this manner.
 
 The variable squelch can be set to different values for each Channel and for the VFO using a new feature in the Community CPS, where the squelch can be set anywhere between Open and Closed in 5% steps.
 
