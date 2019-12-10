@@ -57,7 +57,15 @@ int menuNumericalEntry(ui_event_t *ev, bool isFirstRun)
 		}
 		else
 		{
-			handleEvent(ev);
+			if (ev->hasEvent)
+				handleEvent(ev);
+			else
+			{
+				if ((gMenusCurrentItemIndex != ENTRY_SELECT_CONTACT) && (strlen(digits) <= 7))
+				{
+					updateCursor();
+				}
+			}
 		}
 	}
 	return 0;

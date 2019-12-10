@@ -19,13 +19,15 @@
 #define _FW_MENUSYSTEM_H_
 #include "fw_main.h"
 
+typedef enum   {NO_EVENT = 0, KEY_EVENT=0x01, BUTTON_EVENT = 0x02 } uiEvent_t;
+
 typedef struct
 {
-	int      buttons;
-	int      keys;
-	int      events;
-	bool     hasEvent;
-	uint32_t ticks;
+	uint32_t	buttons;
+	uint32_t	keys;
+	uiEvent_t	events;
+	bool		hasEvent;
+	uint32_t 	ticks;
 } ui_event_t;
 
 #define MENU_MAX_DISPLAYED_ENTRIES 3
@@ -60,6 +62,7 @@ int menuGetMenuOffset(int maxMenuEntries, int loopOffset);
 void menuChannelModeUpdateScreen(int txTimeSecs);
 void menuChannelColdStart();
 void menuVFOModeUpdateScreen(int txTimeSecs);
+void menuVFOModeStopScan(void);
 void menuCPSUpdate(int command,int x, int y, UC1701_Font_t fontSize, UC1701_Text_Align_t alignment, bool isInverted,char *szMsg);
 
 void menuInitMenuSystem(void);

@@ -62,7 +62,7 @@ const stringsTable_t finnishLanguage =
 .power_off			= "Virta pois...",
 .error				= "VIRHE", //MaxLen: 8
 .rx_only			= "Vain Rx",
-.out_of_band			= "Bändial. ulkopu.",
+.out_of_band			= "Bändial ulkopu", // MaxLen: 14
 .timeout			= "AIKAKATK", //MaxLen: 8
 .tg_entry			= "Aseta TG", // MaxLen: 15
 .pc_entry			= "Aseta PC", // MaxLen: 15
@@ -133,6 +133,8 @@ const stringsTable_t finnishLanguage =
 .delete_contact			= "Poista Kontakti", // MaxLen: 16
 .group_call			= "Ryhmä Puhelu", // MaxLen: 16
 .all_call			= "Puhelu kaikille", // MaxLen: 16
+.tone_scan				= "Tone scan",//// MaxLen: 16
+.cc_scan				= "CC scan",//// MaxLen: 16
 };
 /********************************************************************
  *

@@ -62,7 +62,7 @@ void fw_main_task(void *data)
 	int key_event;
 	uint32_t buttons;
 	int button_event;
-	ui_event_t ev = { .buttons = 0, .keys = 0, .events = 0, .hasEvent = false, .ticks = 0 };
+	ui_event_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = 0 };
 	int oldButtons = 0;
 	int oldKeys = 0;
 	int oldEvents = 0;
@@ -247,13 +247,18 @@ void fw_main_task(void *data)
 					}
 					else
 					{
+						int currentMenu = menuSystemGetCurrentMenuNumber();
+
 						if ((slot_state == DMR_STATE_IDLE || trxDMRMode == DMR_MODE_PASSIVE) &&
 								trxGetMode() != RADIO_MODE_NONE &&
 								settingsUsbMode != USB_MODE_HOTSPOT &&
-								menuSystemGetCurrentMenuNumber() != MENU_POWER_OFF &&
-								menuSystemGetCurrentMenuNumber() != MENU_SPLASH_SCREEN &&
-								menuSystemGetCurrentMenuNumber() != MENU_TX_SCREEN )
+								currentMenu != MENU_POWER_OFF &&
+								currentMenu != MENU_SPLASH_SCREEN &&
+								currentMenu != MENU_TX_SCREEN )
 						{
+							if (currentMenu == MENU_VFO_MODE)
+								menuVFOModeStopScan();
+
 							menuSystemPushNewMenu(MENU_TX_SCREEN);
 						}
 					}
@@ -275,7 +280,8 @@ void fw_main_task(void *data)
     		ev.buttons = buttons;
     		ev.keys = keys;
     		ev.events = (button_event<<1) | key_event;
-    		ev.hasEvent = (ev.buttons != oldButtons) || (ev.keys != oldKeys) || (ev.events != oldEvents);
+    		ev.hasEvent = (ev.buttons != oldButtons) || (ev.keys != oldKeys) || (ev.events != oldEvents) ||
+    				((key_event & EVENT_KEY_CHANGE) && (keys & KEY_MOD_LONG));
     		ev.ticks = fw_millis();
 
     		oldButtons = ev.buttons;

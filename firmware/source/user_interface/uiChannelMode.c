@@ -95,7 +95,7 @@ int menuChannelMode(ui_event_t *ev, bool isFirstRun)
 	}
 	else
 	{
-		if (ev->events==0)
+		if (ev->events == NO_EVENT)
 		{
 			// is there an incoming DMR signal
 			if (menuDisplayQSODataState != QSO_DISPLAY_IDLE)
@@ -376,7 +376,7 @@ static void handleEvent(ui_event_t *ev)
 	}
 
 
-	if (ev->events & 0x02)
+	if (ev->events & BUTTON_EVENT)
 	{
 		if (ev->buttons & BUTTON_ORANGE)
 		{
@@ -391,6 +391,7 @@ static void handleEvent(ui_event_t *ev)
 				// ToDo Quick Menu
 				menuSystemPushNewMenu(MENU_CHANNEL_QUICK_MENU);
 			}
+
 			return;
 		}
 
@@ -925,7 +926,7 @@ static void handleQuickMenuEvent(ui_event_t *ev)
 	{
 		MENU_DEC(gMenusCurrentItemIndex, NUM_CH_SCREEN_QUICK_MENU_ITEMS);
 	}
-	else if ((ev->buttons & BUTTON_ORANGE) && (gMenusCurrentItemIndex==CH_SCREEN_QUICK_MENU_SCAN))
+	else if (((ev->events & BUTTON_EVENT) && (ev->buttons & BUTTON_ORANGE)) && (gMenusCurrentItemIndex==CH_SCREEN_QUICK_MENU_SCAN))
 	{
 		startScan();
 	}
@@ -934,8 +935,6 @@ static void handleQuickMenuEvent(ui_event_t *ev)
 }
 
 
-
-//int menuChannelModeQuickMenu(int buttons, int keys, int events, bool isFirstRun)
 int menuChannelModeQuickMenu(ui_event_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
@@ -946,10 +945,8 @@ int menuChannelModeQuickMenu(ui_event_t *ev, bool isFirstRun)
 	}
 	else
 	{
-		if (ev->events)
-		{
+		if (ev->hasEvent)
 			handleQuickMenuEvent(ev);
-		}
 	}
 	return 0;
 }
@@ -1007,7 +1004,7 @@ static void scanning(void)
 	{
 
 		trx_measure_count=0;														//needed to allow time for Rx to settle after channel change.
-		ui_event_t tmpEvent={.buttons=0,.keys=0,.events=0,.hasEvent=0,.ticks=0};
+		ui_event_t tmpEvent={ .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = 0, .ticks = 0 };
 
 		handleUpKey(&tmpEvent);
 		scanTimer = SCAN_TOTAL_INTERVAL;

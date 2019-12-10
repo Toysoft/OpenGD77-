@@ -165,7 +165,7 @@ static void handleEvent(ui_event_t *ev)
 
 	switch (menuContactDetailsState) {
 	case MENU_CONTACT_DETAILS_DISPLAY:
-		if (ev->events & 0x01) {
+		if (ev->events & KEY_EVENT) {
 			if (KEYCHECK_PRESS(ev->keys,KEY_DOWN))
 			{
 				MENU_INC(gMenusCurrentItemIndex, NUM_CONTACT_DETAILS_ITEMS);

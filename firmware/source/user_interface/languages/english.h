@@ -61,8 +61,8 @@ const stringsTable_t englishLanguage =
 .unlocked				= "Unlocked", // MaxLen: 15
 .power_off				= "Power Off...", // MaxLen: 16
 .error					= "ERROR", // MaxLen: 8
-.rx_only				= "Rx only", // MaxLen: 16
-.out_of_band				= "OUT OF BAND", // MaxLen: 16
+.rx_only				= "Rx only", // MaxLen: 14
+.out_of_band				= "OUT OF BAND", // MaxLen: 14
 .timeout				= "TIMEOUT", // MaxLen: 8
 .tg_entry				= "TG entry", // MaxLen: 15
 .pc_entry				= "PC entry", // MaxLen: 15
@@ -133,6 +133,8 @@ const stringsTable_t englishLanguage =
 .delete_contact				= "Delete Contact", // MaxLen: 16
 .group_call				= "Group Call", // MaxLen: 16
 .all_call				= "All Call", // MaxLen: 16
+.tone_scan				= "Tone scan",//// MaxLen: 16
+.cc_scan				= "CC scan",//// MaxLen: 16
 };
 /********************************************************************
  *
