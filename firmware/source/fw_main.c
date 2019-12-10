@@ -247,13 +247,18 @@ void fw_main_task(void *data)
 					}
 					else
 					{
+						int currentMenu = menuSystemGetCurrentMenuNumber();
+
 						if ((slot_state == DMR_STATE_IDLE || trxDMRMode == DMR_MODE_PASSIVE) &&
 								trxGetMode() != RADIO_MODE_NONE &&
 								settingsUsbMode != USB_MODE_HOTSPOT &&
-								menuSystemGetCurrentMenuNumber() != MENU_POWER_OFF &&
-								menuSystemGetCurrentMenuNumber() != MENU_SPLASH_SCREEN &&
-								menuSystemGetCurrentMenuNumber() != MENU_TX_SCREEN )
+								currentMenu != MENU_POWER_OFF &&
+								currentMenu != MENU_SPLASH_SCREEN &&
+								currentMenu != MENU_TX_SCREEN )
 						{
+							if (currentMenu == MENU_VFO_MODE)
+								menuVFOModeStopScan();
+
 							menuSystemPushNewMenu(MENU_TX_SCREEN);
 						}
 					}

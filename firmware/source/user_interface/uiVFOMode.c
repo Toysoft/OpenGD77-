@@ -177,17 +177,22 @@ int menuVFOMode(ui_event_t *ev, bool isFirstRun)
 		{
 			if (ev->hasEvent)
 			{
-				if ((ev->events & KEY_EVENT) && ((ev->keys & KEY_LEFT) || (ev->keys & KEY_RIGHT)))
+				if ((currentChannelData->chMode == RADIO_MODE_ANALOG) &&
+						(ev->events & KEY_EVENT) && ((ev->keys & KEY_LEFT) || (ev->keys & KEY_RIGHT)))
+				{
 					sqm = ev->ticks;
+				}
 
 				handleEvent(ev);
-			}
 
-			toneScanActive=false;
-			if(CCScanActive==true)
-			{
-				CCScanActive=false;
-				trxSetDMRColourCode(currentChannelData->rxColor);
+				toneScanActive = false;
+
+				if(CCScanActive == true)
+				{
+					CCScanActive = false;
+					trxSetDMRColourCode(currentChannelData->rxColor);
+				}
+
 			}
 
 		}
@@ -272,7 +277,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					UC1701_fillRect(62, 21, bargraph, 8, false);
 				}
 
-				if(toneScanActive==true)
+				if(toneScanActive == true)
 				{
 					sprintf(buffer,"CTCSS %d.%dHz",TRX_CTCSSTones[scanIndex]/10,TRX_CTCSSTones[scanIndex] % 10);
 					UC1701_printCentered(16,buffer, UC1701_FONT_8x16);
@@ -327,6 +332,12 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 			break;
 	}
 	menuDisplayQSODataState = QSO_DISPLAY_IDLE;
+}
+
+void menuVFOModeStopScan(void)
+{
+	toneScanActive = false;
+	CCScanActive = false;
 }
 
 static void reset_freq_enter_digits(void)
@@ -992,7 +1003,6 @@ static void handleQuickMenuEvent(ui_event_t *ev)
 static void toneScan(void)
 {
 	if (GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable)==1)
-
 	{
 		currentChannelData->txTone=TRX_CTCSSTones[scanIndex];
 		currentChannelData->rxTone=TRX_CTCSSTones[scanIndex];
@@ -1000,6 +1010,7 @@ static void toneScan(void)
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		menuVFOModeUpdateScreen(0);
 		toneScanActive=false;
+		return;
 	}
 
 	if(scanTimer>0)
@@ -1031,6 +1042,7 @@ static void CCscan(void)
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		menuVFOModeUpdateScreen(0);
 		CCScanActive=false;
+		return;
 	}
 
 	if(scanTimer>0)
