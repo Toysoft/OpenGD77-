@@ -133,6 +133,8 @@ const stringsTable_t finnishLanguage =
 .delete_contact			= "Poista Kontakti", // MaxLen: 16
 .group_call			= "Ryhmä Puhelu", // MaxLen: 16
 .all_call			= "Puhelu kaikille", // MaxLen: 16
+.tone_scan				= "Tone scan",//// MaxLen: 16
+.cc_scan				= "CC scan",//// MaxLen: 16
 };
 /********************************************************************
  *

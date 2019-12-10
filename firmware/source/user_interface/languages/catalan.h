@@ -133,6 +133,8 @@ const stringsTable_t catalanLanguage=
 .delete_contact				= "Esborrar Contacte",
 .group_call				= "Cridada Grup",
 .all_call				= "Cridada Tots",
+.tone_scan				= "Tone scan",//// MaxLen: 16
+.cc_scan				= "CC scan",//// MaxLen: 16
 };
 /********************************************************************
  *

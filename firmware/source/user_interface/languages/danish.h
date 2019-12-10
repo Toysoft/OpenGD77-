@@ -133,6 +133,8 @@ const stringsTable_t danishLanguage =
 .delete_contact				= "Delete Contact",
 .group_call				= "Group Call",
 .all_call				= "All Call",
+.tone_scan				= "Tone scan",//// MaxLen: 16
+.cc_scan				= "CC scan",//// MaxLen: 16
 };
 /********************************************************************
  *
