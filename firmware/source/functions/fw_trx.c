@@ -540,31 +540,31 @@ void trxCalcBandAndFrequencyOffset(int *band_offset, int *freq_offset)
 	if (trxCurrentBand[TRX_RX_FREQ_BAND] == RADIO_BAND_UHF)
 	{
 		*band_offset=0x00000000;
-		if (currentRxFrequency<4100000)
+		if (currentRxFrequency<41000000)
 		{
 			*freq_offset=0x00000000;
 		}
-		else if (currentRxFrequency<4200000)
+		else if (currentRxFrequency<42000000)
 		{
 			*freq_offset=0x00000001;
 		}
-		else if (currentRxFrequency<4300000)
+		else if (currentRxFrequency<43000000)
 		{
 			*freq_offset=0x00000002;
 		}
-		else if (currentRxFrequency<4400000)
+		else if (currentRxFrequency<44000000)
 		{
 			*freq_offset=0x00000003;
 		}
-		else if (currentRxFrequency<4500000)
+		else if (currentRxFrequency<45000000)
 		{
 			*freq_offset=0x00000004;
 		}
-		else if (currentRxFrequency<4600000)
+		else if (currentRxFrequency<46000000)
 		{
 			*freq_offset=0x00000005;
 		}
-		else if (currentRxFrequency<4700000)
+		else if (currentRxFrequency<47000000)
 		{
 			*freq_offset=0x00000006;
 		}
@@ -576,31 +576,31 @@ void trxCalcBandAndFrequencyOffset(int *band_offset, int *freq_offset)
 	else
 	{
 		*band_offset=0x00000070;
-		if (currentRxFrequency<1380000)
+		if (currentRxFrequency<13800000)
 		{
 			*freq_offset=0x00000000;
 		}
-		else if (currentRxFrequency<1425000)
+		else if (currentRxFrequency<14250000)
 		{
 			*freq_offset=0x00000001;
 		}
-		else if (currentRxFrequency<1475000)
+		else if (currentRxFrequency<14750000)
 		{
 			*freq_offset=0x00000002;
 		}
-		else if (currentRxFrequency<1525000)
+		else if (currentRxFrequency<15250000)
 		{
 			*freq_offset=0x00000003;
 		}
-		else if (currentRxFrequency<1575000)
+		else if (currentRxFrequency<15750000)
 		{
 			*freq_offset=0x00000004;
 		}
-		else if (currentRxFrequency<1625000)
+		else if (currentRxFrequency<16250000)
 		{
 			*freq_offset=0x00000005;
 		}
-		else if (currentRxFrequency<1685000)
+		else if (currentRxFrequency<16850000)
 		{
 			*freq_offset=0x00000006;
 		}
