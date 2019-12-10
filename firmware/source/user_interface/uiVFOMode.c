@@ -522,6 +522,7 @@ static void handleEvent(ui_event_t *ev)
 		}
 		else if (KEYCHECK_PRESS(ev->keys,KEY_DOWN))
 		{
+			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 			if (ev->buttons & BUTTON_SK2 )
 			{
 				selectedFreq = VFO_SELECTED_FREQUENCY_INPUT_TX;
@@ -529,11 +530,13 @@ static void handleEvent(ui_event_t *ev)
 			else
 			{
 				stepFrequency(VFO_FREQ_STEP_TABLE[(currentChannelData->VFOflag5 >> 4)] * -1);
+				menuVFOModeUpdateScreen(0);
 			}
-			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+
 		}
 		else if (KEYCHECK_PRESS(ev->keys,KEY_UP))
 		{
+			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 			if (ev->buttons & BUTTON_SK2 )
 			{
 				selectedFreq = VFO_SELECTED_FREQUENCY_INPUT_RX;
@@ -541,9 +544,8 @@ static void handleEvent(ui_event_t *ev)
 			else
 			{
 				stepFrequency(VFO_FREQ_STEP_TABLE[(currentChannelData->VFOflag5 >> 4)]);
+				menuVFOModeUpdateScreen(0);
 			}
-			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-
 		}
 		else if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 		{
