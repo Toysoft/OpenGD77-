@@ -122,6 +122,8 @@ typedef struct stringsTable
    const char delete_contact[LANGUAGE_TEXTS_LENGTH];
    const char group_call[LANGUAGE_TEXTS_LENGTH];
    const char all_call[LANGUAGE_TEXTS_LENGTH];
+   const char tone_scan[LANGUAGE_TEXTS_LENGTH];
+   const char cc_scan[LANGUAGE_TEXTS_LENGTH];
 
 } stringsTable_t;
 

@@ -133,6 +133,8 @@ const stringsTable_t germanLanguage =
 .delete_contact			= "Kontakt löschen", // MaxLen: 16
 .group_call				= "Gruppenruf", // MaxLen: 16
 .all_call				= "Ruf an alle", // MaxLen: 16
+.tone_scan				= "Tone scan",//// MaxLen: 16
+.cc_scan				= "CC scan",//// MaxLen: 16
 };
 /********************************************************************
  *

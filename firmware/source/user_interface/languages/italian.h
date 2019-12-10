@@ -133,6 +133,8 @@ const stringsTable_t italianLanguage =
 .delete_contact			= "Canc. Contatto",
 .group_call				= "Chiama Gruppo",
 .all_call				= "Chiama Tutti",
+.tone_scan				= "Tone scan",//// MaxLen: 16
+.cc_scan				= "CC scan",//// MaxLen: 16
 };
 /********************************************************************
  *

@@ -829,11 +829,11 @@ static void updateQuickMenuScreen(void)
 			case VFO_SCREEN_CODE_SCAN:
 				if(trxGetMode() == RADIO_MODE_ANALOG)
 				{
-					strcpy(buf, "Tone scan");
+					strcpy(buf, currentLanguage->tone_scan);
 				}
 				else
 				{
-					strcpy(buf, "CC scan");
+					strcpy(buf, currentLanguage->cc_scan);
 				}
 
 				break;
