@@ -60,7 +60,7 @@ static int scanIndex=0;
 // public interface
 int menuVFOMode(ui_event_t *ev, bool isFirstRun)
 {
-	static uint32_t m = 0;
+	static uint32_t m = 0, sqm = 0;
 
 	if (isFirstRun)
 	{
@@ -143,6 +143,17 @@ int menuVFOMode(ui_event_t *ev, bool isFirstRun)
 			}
 			else
 			{
+
+				// Clear squelch region
+				if (displaySquelch && ((ev->ticks - sqm) > 2000))
+				{
+					displaySquelch = false;
+
+					UC1701_fillRect(0, 16, 128, 16, true);
+					UC1701RenderRows(2,4);
+				}
+
+
 				if ((ev->ticks - m) > RSSI_UPDATE_COUNTER_RELOAD)
 				{
 					m = ev->ticks;
@@ -165,7 +176,12 @@ int menuVFOMode(ui_event_t *ev, bool isFirstRun)
 		else
 		{
 			if (ev->hasEvent)
+			{
+				if ((ev->events & KEY_EVENT) && ((ev->keys & KEY_LEFT) || (ev->keys & KEY_RIGHT)))
+					sqm = ev->ticks;
+
 				handleEvent(ev);
+			}
 
 			toneScanActive=false;
 			if(CCScanActive==true)
@@ -246,6 +262,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 			}
 			else
 			{
+				// Squelch will be cleared later, 2000 ticks after last change
 				if(displaySquelch)
 				{
 					strncpy(buffer, currentLanguage->squelch, 8);
@@ -253,8 +270,8 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					UC1701_printAt(0,16,buffer, UC1701_FONT_8x16);
 					int bargraph= 1 + ((currentChannelData->sql - 1) * 5) /2;
 					UC1701_fillRect(62, 21, bargraph, 8, false);
-					displaySquelch=false;
 				}
+
 				if(toneScanActive==true)
 				{
 					sprintf(buffer,"CTCSS %d.%dHz",TRX_CTCSSTones[scanIndex]/10,TRX_CTCSSTones[scanIndex] % 10);
