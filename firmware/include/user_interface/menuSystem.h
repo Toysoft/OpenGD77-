@@ -19,20 +19,16 @@
 #define _FW_MENUSYSTEM_H_
 #include "fw_main.h"
 
+typedef enum   {NO_EVENT = 0, KEY_EVENT=0x01, BUTTON_EVENT = 0x02 } uiEvent_t;
 
 typedef struct
 {
-	uint32_t      buttons;
-	uint32_t      keys;
-	int      events; // See *_EVENT below
-	bool     hasEvent;
-	uint32_t ticks;
+	uint32_t	buttons;
+	uint32_t	keys;
+	uiEvent_t	events;
+	bool		hasEvent;
+	uint32_t 	ticks;
 } ui_event_t;
-
-#define NO_EVENT       0x00
-#define KEY_EVENT      0x01
-#define BUTTON_EVENT   0x02
-
 
 #define MENU_MAX_DISPLAYED_ENTRIES 3
 #define MENU_INC(O, M) do { O = (O + 1) % M; } while(0)
