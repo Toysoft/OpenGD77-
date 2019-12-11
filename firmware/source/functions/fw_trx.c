@@ -540,6 +540,9 @@ void trxCalcBandAndFrequencyOffset(int *band_offset, int *freq_offset)
 	if (trxCurrentBand[TRX_RX_FREQ_BAND] == RADIO_BAND_UHF)
 	{
 		*band_offset=0x00000000;
+
+		*freq_offset = (currentRxFrequency - 40000000)/1000000;
+		/*
 		if (currentRxFrequency<41000000)
 		{
 			*freq_offset=0x00000000;
@@ -572,10 +575,14 @@ void trxCalcBandAndFrequencyOffset(int *band_offset, int *freq_offset)
 		{
 			*freq_offset=0x00000007;
 		}
+		*/
 	}
 	else
 	{
 		*band_offset=0x00000070;
+
+		*freq_offset = (currentRxFrequency - 13250000)/500000;
+/*
 		if (currentRxFrequency<13800000)
 		{
 			*freq_offset=0x00000000;
@@ -607,7 +614,7 @@ void trxCalcBandAndFrequencyOffset(int *band_offset, int *freq_offset)
 		else
 		{
 			*freq_offset=0x00000007;
-		}
+		}*/
 	}
 }
 
