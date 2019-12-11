@@ -309,7 +309,7 @@ int menuGetKeypadKeyValue(ui_event_t *ev, bool digitsOnly)
 			KEY_LEFT, KEY_UP, KEY_DOWN, KEY_RIGHT, KEY_STAR, KEY_HASH
 	};
 
-	for (uint8_t i = 0; i < (sizeof(keypadKeys) - (digitsOnly ? 6 : 0 )); i++)
+	for (int i = 0; i < (sizeof(keypadKeys) - (digitsOnly ? 6 : 0 )); i++)
 	{
 		if (KEYCHECK_PRESS(ev->keys, keypadKeys[i]))
 				return i;
