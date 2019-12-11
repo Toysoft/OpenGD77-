@@ -15,7 +15,7 @@
          - [Changing Timeslot in DMR mode](#changing-timeslot-in-dmr-mode)   
          - [Controlling Tx power](#controlling-tx-power)   
          - [Signal strength bar graph](#signal-strength-bar-graph)   
-      - [Channel screen specific functionality](#channel-screen-specific-functionality)   
+      -  [Channel screen specific functionality](#channel-screen-specific-functionality)   
          - [Changing channels within the current zone](#changing-channels-within-the-current-zone)   
          - [Changing zones](#changing-zones)   
          - [Channel screen Quick menu](#channel-screen-quick-menu)   
@@ -73,9 +73,9 @@
          - [Squelch UHF](#squelch-uhf)   
          - [Squelch 220](#squelch-220)   
          - [Squelch VHF](#squelch-vhf)   
-         - [Scan modem](#scan-modem)   
+         - [Scan mode](#scan-mode)   
          - [Scan delay](#scan-delay)   
-         - [Filter time](#filter-timer)   
+         - [Filter time](#filter-time)   
          - [Key rpt](#key-rpt)   
          - [Key long](#key-long)   
       - [Display Options](#display-options)   
@@ -303,13 +303,23 @@ Pressing the **Orange** button twice while in VFO mode quickly toggles between V
 
 ##### Exchange the TX and RX frequencies
 
-##### Copy TX frequency to the RX frequency
+This function essentially reverses the TX and RX frequencies. Press **Green** key or **Orange** button to confirm.
 
 ##### Copy the RX frequency to the TX frequency
 
+Copies the RX frequency to the TX frequency. Press **Green** key or **Orange** button to confirm.
+
+##### Copy TX frequency to the RX frequency
+
+Copies the TX frequency to the RX frequency. Press **Green** key or **Orange** button to confirm.
+
 ##### Filter (by timeslot- DMR mode only)
 
+**TS** Filters by TimeSlot. **None** results in radio listening to both timeslots (equivalent to Promiscuous Mode).
+
 ##### Tone Scan for CTCSS tone in FM, or CC Scan for DMR Colour Code in DMR mode
+
+In analog mode, this scans for any CTCSS tone. In DMR mode, it scans across the different Colour Codes to receive signals in the set VFO RX frequency.
 
 Press the **Orange** button or **Green** key to confirm the copy or **Red** key to cancel.
 
@@ -374,7 +384,7 @@ If you want to transmit on the same TalkGroup as the currently received signal, 
 
 ![](media/talkgroup-inverse-video.jpg)
 
-#### Manual or "*Ad Hoc*" TalkGroup number entry
+#### Manual TalkGroup number entry
 
 Press the **Hash (#)** key to enter an *ad hoc* TalkGroup number, followed by the **Green** key to confirm.
 If the entered TG is in the Digital Contacts the name of the TG Contact will be displayed, otherwise the number will be displayed e.g. TG 505.
