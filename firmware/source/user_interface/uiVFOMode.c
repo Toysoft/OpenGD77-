@@ -425,35 +425,35 @@ static void loadContact(void)
 
 static void handleEvent(ui_event_t *ev)
 {
-	uint32_t tg = (LinkHead->talkGroupOrPcId & 0xFFFFFF);
-	// If Blue button is pressed during reception it sets the Tx TG to the incoming TG
-
-	if (isDisplayingQSOData && (ev->buttons & BUTTON_SK2)!=0 && trxGetMode() == RADIO_MODE_DIGITAL &&
-				(trxTalkGroupOrPcId != tg ||
-				(dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot())))
-	{
-		lastHeardClearLastID();
-
-		// Set TS to overriden TS
-		if (dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot())
-		{
-			trxSetDMRTimeSlot(dmrMonitorCapturedTS);
-			nonVolatileSettings.tsManualOverride &= 0xF0;// Clear lower nibble value
-			nonVolatileSettings.tsManualOverride |= (dmrMonitorCapturedTS+1);// Store manual TS override
-		}
-		if (trxTalkGroupOrPcId != tg)
-		{
-			trxTalkGroupOrPcId = tg;
-			nonVolatileSettings.overrideTG = trxTalkGroupOrPcId;
-		}
-
-		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-		menuVFOModeUpdateScreen(0);
-		return;
-	}
-
 	if (ev->events & BUTTON_EVENT)
 	{
+		uint32_t tg = (LinkHead->talkGroupOrPcId & 0xFFFFFF);
+
+		// If Blue button is pressed during reception it sets the Tx TG to the incoming TG
+		if (isDisplayingQSOData && (ev->buttons & BUTTON_SK2) && trxGetMode() == RADIO_MODE_DIGITAL &&
+					(trxTalkGroupOrPcId != tg ||
+					(dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot())))
+		{
+			lastHeardClearLastID();
+
+			// Set TS to overriden TS
+			if (dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot())
+			{
+				trxSetDMRTimeSlot(dmrMonitorCapturedTS);
+				nonVolatileSettings.tsManualOverride &= 0xF0;// Clear lower nibble value
+				nonVolatileSettings.tsManualOverride |= (dmrMonitorCapturedTS+1);// Store manual TS override
+			}
+			if (trxTalkGroupOrPcId != tg)
+			{
+				trxTalkGroupOrPcId = tg;
+				nonVolatileSettings.overrideTG = trxTalkGroupOrPcId;
+			}
+
+			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+			menuVFOModeUpdateScreen(0);
+			return;
+		}
+
 		if (ev->buttons & BUTTON_ORANGE)
 		{
 			if (ev->buttons & BUTTON_SK2)
