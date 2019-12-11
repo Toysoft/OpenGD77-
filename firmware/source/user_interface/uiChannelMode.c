@@ -112,6 +112,7 @@ int menuChannelMode(ui_event_t *ev, bool isFirstRun)
 					//UC1701_render();
 				}
 			}
+
 			if(uiChannelModeScanActive==true)
 			{
 				scanning();
@@ -325,14 +326,13 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 
 static void handleEvent(ui_event_t *ev)
 {
-	uint32_t tg = (LinkHead->talkGroupOrPcId & 0xFFFFFF);
-
-	if((scanState==SCAN_PAUSED) && (KEYCHAR(ev->keys) == KEY_DOWN) && (!(ev->buttons & BUTTON_SK2)))                    // if we are scanning and down key is pressed then enter current channel into nuisance delete array.
+	// if we are scanning and down key is pressed then enter current channel into nuisance delete array.
+	if((scanState==SCAN_PAUSED) && ((ev->events & KEY_EVENT) && (KEYCHAR(ev->keys) == KEY_DOWN)) && (!(ev->buttons & BUTTON_SK2)))
 	{
 		nuisanceDelete[nuisanceDeleteIndex++]=settingsCurrentChannelNumber;
 		if(nuisanceDeleteIndex > (MAX_ZONE_SCAN_NUISANCE_CHANNELS - 1))
 		{
-			nuisanceDeleteIndex = 0;																			//rolling list of last MAX_NUISANCE_CHANNELS deletes.
+			nuisanceDeleteIndex = 0; //rolling list of last MAX_NUISANCE_CHANNELS deletes.
 		}
 		scanTimer = SCAN_SKIP_CHANNEL_INTERVAL;	//force scan to continue;
 		scanState=SCAN_SCANNING;
@@ -340,7 +340,10 @@ static void handleEvent(ui_event_t *ev)
 		return;
 	}
 
-	if ((uiChannelModeScanActive) && (!(ev->keys==0)) && ((KEYCHAR(ev->keys) != KEY_UP) && (!(ev->buttons & BUTTON_SK2))))    // stop the scan on any button except UP without Shift ( allows scan to be manually continued) or SK2 on its own (allows Backlight to be triggered)
+	// stop the scan on any button except UP without Shift (allows scan to be manually continued)
+	// or SK2 on its own (allows Backlight to be triggered)
+	if (uiChannelModeScanActive &&
+			( (ev->events & KEY_EVENT) && ( ((KEYCHAR(ev->keys) == KEY_UP) && ((ev->buttons & BUTTON_SK2) == 0)) == false ) ) )
 	{
 		uiChannelModeScanActive = false;
 		displayLightTrigger();
@@ -348,36 +351,36 @@ static void handleEvent(ui_event_t *ev)
 		return;
 	}
 
-
-	// If Blue button is pressed during reception it sets the Tx TG to the incoming TG
-	if (isDisplayingQSOData && (ev->buttons & BUTTON_SK2)!=0 && trxGetMode() == RADIO_MODE_DIGITAL &&
-			(trxTalkGroupOrPcId != tg ||
-			(dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot())))
-	{
-		lastHeardClearLastID();
-
-
-		// Set TS to overriden TS
-		if (dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot())
-		{
-			trxSetDMRTimeSlot(dmrMonitorCapturedTS);
-			nonVolatileSettings.tsManualOverride &= 0xF0;// Clear lower nibble value
-			nonVolatileSettings.tsManualOverride |= (dmrMonitorCapturedTS+1);// Store manual TS override
-		}
-		if (trxTalkGroupOrPcId != tg)
-		{
-			trxTalkGroupOrPcId = tg;
-			nonVolatileSettings.overrideTG = trxTalkGroupOrPcId;
-		}
-
-		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-		menuChannelModeUpdateScreen(0);
-		return;
-	}
-
-
 	if (ev->events & BUTTON_EVENT)
 	{
+		uint32_t tg = (LinkHead->talkGroupOrPcId & 0xFFFFFF);
+
+		// If Blue button is pressed during reception it sets the Tx TG to the incoming TG
+		if (isDisplayingQSOData && (ev->buttons & BUTTON_SK2) && trxGetMode() == RADIO_MODE_DIGITAL &&
+				(trxTalkGroupOrPcId != tg ||
+				(dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot())))
+		{
+			lastHeardClearLastID();
+
+
+			// Set TS to overriden TS
+			if (dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot())
+			{
+				trxSetDMRTimeSlot(dmrMonitorCapturedTS);
+				nonVolatileSettings.tsManualOverride &= 0xF0;// Clear lower nibble value
+				nonVolatileSettings.tsManualOverride |= (dmrMonitorCapturedTS+1);// Store manual TS override
+			}
+			if (trxTalkGroupOrPcId != tg)
+			{
+				trxTalkGroupOrPcId = tg;
+				nonVolatileSettings.overrideTG = trxTalkGroupOrPcId;
+			}
+
+			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+			menuChannelModeUpdateScreen(0);
+			return;
+		}
+
 		if (ev->buttons & BUTTON_ORANGE)
 		{
 			if (ev->buttons & BUTTON_SK2)
@@ -697,50 +700,11 @@ static void handleEvent(ui_event_t *ev)
 	{
 		handleUpKey(ev);
 	}
+	else
+	{
+		int keyval = menuGetKeypadKeyValue(ev, true);
 
-		int keyval=99;
-		if (KEYCHECK_PRESS(ev->keys,KEY_1))
-		{
-			keyval=1;
-		}
-		if (KEYCHECK_PRESS(ev->keys,KEY_2))
-		{
-			keyval=2;
-		}
-		if (KEYCHECK_PRESS(ev->keys,KEY_3))
-		{
-			keyval=3;
-		}
-		if (KEYCHECK_PRESS(ev->keys,KEY_4))
-		{
-			keyval=4;
-		}
-		if (KEYCHECK_PRESS(ev->keys,KEY_5))
-		{
-			keyval=5;
-		}
-		if (KEYCHECK_PRESS(ev->keys,KEY_6))
-		{
-			keyval=6;
-		}
-		if (KEYCHECK_PRESS(ev->keys,KEY_7))
-		{
-			keyval=7;
-		}
-		if (KEYCHECK_PRESS(ev->keys,KEY_8))
-		{
-			keyval=8;
-		}
-		if (KEYCHECK_PRESS(ev->keys,KEY_9))
-		{
-			keyval=9;
-		}
-		if (KEYCHECK_PRESS(ev->keys,KEY_0))
-		{
-			keyval=0;
-		}
-
-		if (keyval<10)
+		if (keyval < 10)
 		{
 			directChannelNumber=(directChannelNumber*10) + keyval;
 			if (strcmp(currentZoneName,currentLanguage->all_channels)==0)
@@ -764,6 +728,7 @@ static void handleEvent(ui_event_t *ev)
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 			menuChannelModeUpdateScreen(0);
 		}
+	}
 }
 
 

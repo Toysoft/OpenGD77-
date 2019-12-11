@@ -79,6 +79,7 @@ void menuSystemPopAllAndDisplayRootMenu(void);
 void menuSystemPopAllAndDisplaySpecificRootMenu(int newRootMenu);
 
 void menuSystemCallCurrentMenuTick(ui_event_t *ev);
+int menuGetKeypadKeyValue(ui_event_t *ev, bool digitsOnly);
 
 /*
  * ---------------------- IMPORTANT ----------------------------
