@@ -304,33 +304,15 @@ int menuGetMenuOffset(int maxMenuEntries, int loopOffset)
  */
 int menuGetKeypadKeyValue(ui_event_t *ev, bool digitsOnly)
 {
-	static struct
-	{
-		char key;
-		int  value;
-	} keypadKeys[] = {
-			{ KEY_0,      0 },
-			{ KEY_1,      1 },
-			{ KEY_2,      2 },
-			{ KEY_3,      3 },
-			{ KEY_4,      4 },
-			{ KEY_5,      5 },
-			{ KEY_6,      6 },
-			{ KEY_7,      7 },
-			{ KEY_8,      8 },
-			{ KEY_9,      9 },
-			{ KEY_LEFT,  10 },
-			{ KEY_UP,    11 },
-			{ KEY_DOWN,  12 },
-			{ KEY_RIGHT, 13 },
-			{ KEY_STAR,  14 },
-			{ KEY_HASH,  15 }
+	uint32_t keypadKeys[] = {
+			KEY_0, KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9,
+			KEY_LEFT, KEY_UP, KEY_DOWN, KEY_RIGHT, KEY_STAR, KEY_HASH
 	};
 
-	for (uint8_t i = 0; i < ((sizeof(keypadKeys) / sizeof(keypadKeys[0])) - (digitsOnly ? 6 : 0 )); i++)
+	for (uint8_t i = 0; i < (sizeof(keypadKeys) - (digitsOnly ? 6 : 0 )); i++)
 	{
-		if (KEYCHECK_PRESS(ev->keys, keypadKeys[i].key))
-				return keypadKeys[i].value;
+		if (KEYCHECK_PRESS(ev->keys, keypadKeys[i]))
+				return i;
 	}
 
 	return 99;
