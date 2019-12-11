@@ -143,7 +143,6 @@ int menuVFOMode(ui_event_t *ev, bool isFirstRun)
 			}
 			else
 			{
-
 				// Clear squelch region
 				if (displaySquelch && ((ev->ticks - sqm) > 2000))
 				{
@@ -152,7 +151,6 @@ int menuVFOMode(ui_event_t *ev, bool isFirstRun)
 					UC1701_fillRect(0, 16, 128, 16, true);
 					UC1701RenderRows(2,4);
 				}
-
 
 				if ((ev->ticks - m) > RSSI_UPDATE_COUNTER_RELOAD)
 				{

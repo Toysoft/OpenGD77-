@@ -66,7 +66,7 @@ static int tmpQuickMenuDmrFilterLevel;
 
 int menuChannelMode(ui_event_t *ev, bool isFirstRun)
 {
-	static uint32_t m = 0;
+	static uint32_t m = 0, sqm = 0;
 
 	if (isFirstRun)
 	{
@@ -104,6 +104,15 @@ int menuChannelMode(ui_event_t *ev, bool isFirstRun)
 			}
 			else
 			{
+				// Clear squelch region
+				if (displaySquelch && ((ev->ticks - sqm) > 2000))
+				{
+					displaySquelch = false;
+
+					UC1701_fillRect(0, 16, 128, 16, true);
+					UC1701RenderRows(2,4);
+				}
+
 				if ((ev->ticks - m) > RSSI_UPDATE_COUNTER_RELOAD)
 				{
 					m = ev->ticks;
@@ -121,7 +130,15 @@ int menuChannelMode(ui_event_t *ev, bool isFirstRun)
 		else
 		{
 			if (ev->hasEvent)
+			{
+				if ((trxGetMode() == RADIO_MODE_ANALOG) &&
+						(ev->events & KEY_EVENT) && ((ev->keys & KEY_LEFT) || (ev->keys & KEY_RIGHT)))
+				{
+					sqm = ev->ticks;
+				}
+
 				handleEvent(ev);
+			}
 		}
 	}
 	return 0;
@@ -295,6 +312,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				}
 				UC1701_printCentered(CONTACT_Y_POS + verticalPositionOffset, nameBuf, UC1701_FONT_8x16);
 			}
+			// Squelch will be cleared later, 2000 ticks after last change
 			else if(displaySquelch && !trxIsTransmitting)
 			{
 				strncpy(buffer, currentLanguage->squelch, 8);
@@ -302,7 +320,6 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				UC1701_printAt(0, 16, buffer, UC1701_FONT_8x16);
 				int bargraph= 1 + ((currentChannelData->sql-1)*5)/2 ;
 				UC1701_fillRect(62, 21, bargraph, 8, false);
-				displaySquelch=false;
 			}
 
 			if (!((uiChannelModeScanActive) & (scanState==SCAN_SCANNING)))
