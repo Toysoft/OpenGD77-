@@ -86,12 +86,12 @@ static void updateCursor(void)
 		{
 			sLen *= 8;
 
-			UC1701_printCore((((128 - sLen) >> 1) + sLen), 32, "_", UC1701_FONT_8x16, 0, blink);
+			ucPrintCore((((128 - sLen) >> 1) + sLen), 32, "_", FONT_8x16, 0, blink);
 
 			blink = !blink;
 			lastBlink = m;
 
-			UC1701_render();
+			ucRender();
 		}
 	}
 }
@@ -102,26 +102,26 @@ static void updateScreen(void)
 	size_t sLen = strlen(menuName[gMenusCurrentItemIndex]) * 8;
 	int16_t y = 8;
 
-	UC1701_clearBuf();
+	ucClearBuf();
 
-	UC1701_drawRoundRectWithDropShadow(2, y - 1, (128 - 6), 21, 3, true);
+	ucDrawRoundRectWithDropShadow(2, y - 1, (128 - 6), 21, 3, true);
 
 	// Not really centered, off by 2 pixels
-	UC1701_printAt(((128 - sLen) >> 1) - 2, y, (char *)menuName[gMenusCurrentItemIndex], UC1701_FONT_8x16);
+	ucPrintAt(((128 - sLen) >> 1) - 2, y, (char *)menuName[gMenusCurrentItemIndex], FONT_8x16);
 
 	if (pcIdx == 0)
 	{
-		UC1701_printCentered(32, (char *)digits,UC1701_FONT_8x16);
+		ucPrintCentered(32, (char *)digits, FONT_8x16);
 	}
 	else
 	{
 		codeplugUtilConvertBufToString(contact.name, buf, 16);
-		UC1701_printCentered(32, buf, UC1701_FONT_8x16);
-		UC1701_printCentered(52, (char *)digits,UC1701_FONT_6x8);
+		ucPrintCentered(32, buf, FONT_8x16);
+		ucPrintCentered(52, (char *)digits, FONT_6x8);
 	}
-	displayLightTrigger();
 
-	UC1701_render();
+	displayLightTrigger();
+	ucRender();
 }
 
 static int getNextContact(int curidx, int dir, struct_codeplugContact_t *contact)

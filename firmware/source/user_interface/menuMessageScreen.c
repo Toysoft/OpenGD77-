@@ -41,10 +41,10 @@ static void updateScreen(void)
 {
 //	char buffer[8];
 
-	UC1701_clearBuf();
+	ucClearBuf();
 	menuDisplayTitle("Message");
 
-	UC1701_render();
+	ucRender();
 	displayLightTrigger();
 }
 

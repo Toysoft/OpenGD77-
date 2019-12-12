@@ -81,7 +81,7 @@ static void updateScreen(void)
 	static const int bufferLen = 17;
 	char buf[bufferLen];
 
-	UC1701_clearBuf();
+	ucClearBuf();
 
 	if (tmpContact.name[0] == 0x00) {
 		strncpy(buf, currentLanguage->new_contact, bufferLen);
@@ -143,16 +143,16 @@ static void updateScreen(void)
 		}
 		break;
 	case MENU_CONTACT_DETAILS_SAVED:
-		UC1701_printCentered(16,currentLanguage->contact_saved,UC1701_FONT_8x16);
-		UC1701_drawChoice(UC1701_CHOICE_OK, false);
+		ucPrintCentered(16,currentLanguage->contact_saved, FONT_8x16);
+		ucDrawChoice(CHOICE_OK, false);
 		break;
 	case MENU_CONTACT_DETAILS_EXISTS:
-		UC1701_printCentered(16, currentLanguage->duplicate,UC1701_FONT_8x16);
-		UC1701_printCentered(32,  currentLanguage->contact,UC1701_FONT_8x16);
-		UC1701_drawChoice(UC1701_CHOICE_OK, false);
+		ucPrintCentered(16, currentLanguage->duplicate, FONT_8x16);
+		ucPrintCentered(32, currentLanguage->contact, FONT_8x16);
+		ucDrawChoice(CHOICE_OK, false);
 		break;
 	}
-	UC1701_render();
+	ucRender();
 	displayLightTrigger();
 }
 

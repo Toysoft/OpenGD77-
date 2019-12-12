@@ -42,7 +42,7 @@ static void updateScreen(void)
 {
 	int mNum = 0;
 	//stringsTable_t *lang;
-	UC1701_clearBuf();
+	ucClearBuf();
 	menuDisplayTitle("Language");
 
 	// Can only display 3 of the options at a time menu at -1, 0 and +1
@@ -52,7 +52,7 @@ static void updateScreen(void)
 		menuDisplayEntry(i, mNum, (char *)languages[mNum].LANGUAGE_NAME);
 	}
 
-	UC1701_render();
+	ucRender();
 	displayLightTrigger();
 }
 

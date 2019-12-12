@@ -52,7 +52,7 @@ static void updateScreen(void)
 	static const int bufferLen = 17;
 	char buf[bufferLen];
 
-	UC1701_clearBuf();
+	ucClearBuf();
 	menuDisplayTitle(currentLanguage->options);
 
 	// Can only display 3 of the options at a time menu at -1, 0 and +1
@@ -147,7 +147,7 @@ static void updateScreen(void)
 		menuDisplayEntry(i, mNum, buf);
 	}
 
-	UC1701_render();
+	ucRender();
 	displayLightTrigger();
 }
 

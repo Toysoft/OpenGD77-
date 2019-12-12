@@ -56,13 +56,13 @@ void menuCPSUpdate(int command,int x, int y, ucFont_t fontSize, ucTextAlign_t al
 	switch(command)
 	{
 		case 0:
-			UC1701_clearBuf();
+			ucClearBuf();
 			break;
 		case 1:
-			UC1701_printCore(x, y, szMsg, fontSize, alignment, isInverted);
+			ucPrintCore(x, y, szMsg, fontSize, alignment, isInverted);
 			break;
 		case 2:
-			UC1701_render();
+			ucRender();
 			displayLightTrigger();
 			break;
 		case 3:

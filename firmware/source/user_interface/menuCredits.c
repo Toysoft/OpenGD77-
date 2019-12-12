@@ -53,17 +53,17 @@ int menuCredits(uiEvent_t *ev, bool isFirstRun)
 
 static void updateScreen(void)
 {
-	UC1701_clearBuf();
+	ucClearBuf();
 	menuDisplayTitle(currentLanguage->credits);
 
 	for(int i=0;i<6;i++)
 	{
 		if ((i+currentDisplayIndex) < NUM_CREDITS)
 		{
-			UC1701_printCentered(i*8 + 16,(char *)creditTexts[i+currentDisplayIndex],0);
+			ucPrintCentered(i*8 + 16,(char *)creditTexts[i+currentDisplayIndex], FONT_6x8);
 		}
 	}
-	UC1701_render();
+	ucRender();
 	displayLightTrigger();
 }
 

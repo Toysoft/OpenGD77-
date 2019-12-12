@@ -752,11 +752,11 @@ int menuHotspotMode(uiEvent_t *ev, bool isFirstRun)
 		freq_tx = freq_rx = 43000000;
 		settingsUsbMode = USB_MODE_HOTSPOT;
 		MMDVMHostRxState = MMDVMHOST_RX_READY; // We have not sent anything to MMDVMHost, so it can't be busy yet.
-		UC1701_clearBuf();
-		UC1701_printCentered(0, "Hotspot",UC1701_FONT_8x16);
-		UC1701_printCentered(32, "Waiting for",UC1701_FONT_8x16);
-		UC1701_printCentered(48, "PiStar",UC1701_FONT_8x16);
-		UC1701_render();
+		ucClearBuf();
+		ucPrintCentered(0, "Hotspot", FONT_8x16);
+		ucPrintCentered(32, "Waiting for", FONT_8x16);
+		ucPrintCentered(48, "PiStar", FONT_8x16);
+		ucRender();
 		displayLightTrigger();
 //		updateScreen(HOTSPOT_RX_IDLE);
 	}
@@ -785,8 +785,8 @@ static void updateScreen(int rxCommandState)
 	char buffer[bufferLen];
 	dmrIdDataStruct_t currentRec;
 
-	UC1701_clearBuf();
-	UC1701_printAt(0,0, "DMR Hotspot",UC1701_FONT_8x16);
+	ucClearBuf();
+	ucPrintAt(0,0, "DMR Hotspot", FONT_8x16);
 	int  batteryPerentage = (int)(((averageBatteryVoltage - CUTOFF_VOLTAGE_UPPER_HYST) * 100) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));
 	if (batteryPerentage>100)
 	{
@@ -799,14 +799,14 @@ static void updateScreen(int rxCommandState)
 
 	snprintf(buffer, bufferLen, "%d%%", batteryPerentage);
 	buffer[bufferLen - 1] = 0;
-	UC1701_printCore(0,4,buffer,UC1701_FONT_6x8,UC1701_TEXT_ALIGN_RIGHT,false);// Display battery percentage at the right
+	ucPrintCore(0, 4, buffer, FONT_6x8, TEXT_ALIGN_RIGHT, false);// Display battery percentage at the right
 
 	if (trxIsTransmitting)
 	{
 		dmrIDLookup( (trxDMRID & 0xFFFFFF),&currentRec);
 		strncpy(buffer, currentRec.text, bufferLen);
 		buffer[bufferLen - 1] = 0;
-		UC1701_printCentered(16, buffer, UC1701_FONT_8x16);
+		ucPrintCentered(16, buffer, FONT_8x16);
 
 	//	sprintf(buffer,"ID %d",trxDMRID & 0xFFFFFF);
 	//	UC1701_printCentered(16, buffer,UC1701_FONT_8x16);
@@ -819,7 +819,7 @@ static void updateScreen(int rxCommandState)
 			snprintf(buffer, bufferLen, "PC %d", trxTalkGroupOrPcId &0xFFFFFF);
 		}
 		buffer[bufferLen - 1] = 0;
-		UC1701_printCentered(32, buffer, UC1701_FONT_8x16);
+		ucPrintCentered(32, buffer, FONT_8x16);
 
 		val_before_dp = freq_tx/100000;
 		val_after_dp = freq_tx - val_before_dp*100000;
@@ -836,7 +836,7 @@ static void updateScreen(int rxCommandState)
 			dmrIDLookup(srcId,&currentRec);
 			strncpy(buffer, currentRec.text, bufferLen);
 			buffer[bufferLen - 1] = 0;
-			UC1701_printCentered(16, buffer, UC1701_FONT_8x16);
+			ucPrintCentered(16, buffer, FONT_8x16);
 
 			if (FLCO == 0)
 			{
@@ -847,24 +847,24 @@ static void updateScreen(int rxCommandState)
 				snprintf(buffer, bufferLen, "PC %d", dstId);
 			}
 			buffer[bufferLen - 1] = 0;
-			UC1701_printCentered(32, buffer,UC1701_FONT_8x16);
+			ucPrintCentered(32, buffer, FONT_8x16);
 		}
 		else
 		{
 			snprintf(buffer, bufferLen, "CC:%d", trxGetDMRColourCode());//, trxGetDMRTimeSlot()+1) ;
 			buffer[bufferLen - 1] = 0;
-			UC1701_printCore(0, 32, buffer, UC1701_FONT_8x16, UC1701_TEXT_ALIGN_LEFT, false);
+			ucPrintCore(0, 32, buffer, FONT_8x16, TEXT_ALIGN_LEFT, false);
 
-			UC1701_printCore(0, 32, (char *)POWER_LEVELS[hotspotPowerLevel], UC1701_FONT_8x16, UC1701_TEXT_ALIGN_RIGHT, false);
+			ucPrintCore(0, 32, (char *)POWER_LEVELS[hotspotPowerLevel], FONT_8x16, TEXT_ALIGN_RIGHT, false);
 		}
 		val_before_dp = freq_rx/100000;
 		val_after_dp = freq_rx - val_before_dp*100000;
 		snprintf(buffer, bufferLen, "R %d.%04d MHz", val_before_dp, val_after_dp);
 		buffer[bufferLen - 1] = 0;
 	}
-	UC1701_printCentered(48, buffer,UC1701_FONT_8x16);
+	ucPrintCentered(48, buffer, FONT_8x16);
 
-	UC1701_render();
+	ucRender();
 	displayLightTrigger();
 }
 

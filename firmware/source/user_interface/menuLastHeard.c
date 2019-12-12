@@ -56,7 +56,7 @@ static void updateScreen(void)
 	int numDisplayed=0;
 	LinkItem_t *item = LinkHead;
 
-	UC1701_clearBuf();
+	ucClearBuf();
 	menuDisplayTitle(currentLanguage->last_heard);
 
 	// skip over the first gMenusCurrentItemIndex in the listing
@@ -68,7 +68,7 @@ static void updateScreen(void)
 	{
 		if (dmrIDLookup(item->id,&foundRecord))
 		{
-			UC1701_printCentered(16+(numDisplayed*16), foundRecord.text,UC1701_FONT_8x16);
+			ucPrintCentered(16+(numDisplayed*16), foundRecord.text, FONT_8x16);
 		}
 		else
 		{
@@ -81,7 +81,7 @@ static void updateScreen(void)
 				snprintf(buffer, bufferLen, "ID:%d", item->id);
 			}
 			buffer[bufferLen - 1] = 0;
-			UC1701_printCentered(16+(numDisplayed*16), buffer, UC1701_FONT_8x16);
+			ucPrintCentered(16+(numDisplayed*16), buffer, FONT_8x16);
 		}
 
 		numDisplayed++;
@@ -100,7 +100,7 @@ static void updateScreen(void)
 			break;
 		}
 	}
-	UC1701_render();
+	ucRender();
 	displayLightTrigger();
 	menuDisplayQSODataState = QSO_DISPLAY_IDLE;
 }

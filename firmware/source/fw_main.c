@@ -51,9 +51,9 @@ void fw_init(void)
 
 static void show_lowbattery(void)
 {
-	UC1701_clearBuf();
-	UC1701_printCentered(32, "LOW BATTERY !!!", UC1701_FONT_8x16);
-	UC1701_render();
+	ucClearBuf();
+	ucPrintCentered(32, "LOW BATTERY !!!", FONT_8x16);
+	ucRender();
 }
 
 void fw_main_task(void *data)

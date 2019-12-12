@@ -148,16 +148,15 @@ int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
 				{
 					displaySquelch = false;
 
-					UC1701_fillRect(0, 16, 128, 16, true);
-					UC1701RenderRows(2,4);
+					ucFillRect(0, 16, 128, 16, true);
+					ucRenderRows(2,4);
 				}
 
 				if ((ev->ticks - m) > RSSI_UPDATE_COUNTER_RELOAD)
 				{
 					m = ev->ticks;
 					drawRSSIBarGraph();
-					UC1701RenderRows(1,2);// Only render the second row which contains the bar graph, as there is no need to redraw the rest of the screen
-					//UC1701_render();
+					ucRenderRows(1,2);// Only render the second row which contains the bar graph, as there is no need to redraw the rest of the screen
 				}
 			}
 
@@ -207,7 +206,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 	struct_codeplugContact_t contact;
 	int contactIndex;
 
-	UC1701_clearBuf();
+	ucClearBuf();
 
 	menuUtilityRenderHeader();
 
@@ -242,9 +241,9 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 						}
 					}
 					if (trxIsTransmitting) {
-						UC1701_drawRect(0, 34, 128, 16, true);
+						ucDrawRect(0, 34, 128, 16, true);
 					} else {
-						UC1701_drawRect(0, CONTACT_Y_POS, 128, 16, true);
+						ucDrawRect(0, CONTACT_Y_POS, 128, 16, true);
 					}
 				}
 				else
@@ -256,11 +255,11 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 
 				if (trxIsTransmitting)
 				{
-					UC1701_printCentered(34, buffer, UC1701_FONT_8x16);
+					ucPrintCentered(34, buffer, FONT_8x16);
 				}
 				else
 				{
-					UC1701_printCentered(CONTACT_Y_POS, buffer, UC1701_FONT_8x16);
+					ucPrintCentered(CONTACT_Y_POS, buffer, FONT_8x16);
 				}
 			}
 			else
@@ -270,15 +269,15 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 				{
 					strncpy(buffer, currentLanguage->squelch, 8);
 					buffer[7] = 0; // Avoid overlap with bargraph
-					UC1701_printAt(0,16,buffer, UC1701_FONT_8x16);
+					ucPrintAt(0,16,buffer, FONT_8x16);
 					int bargraph= 1 + ((currentChannelData->sql - 1) * 5) /2;
-					UC1701_fillRect(62, 21, bargraph, 8, false);
+					ucFillRect(62, 21, bargraph, 8, false);
 				}
 
 				if(toneScanActive == true)
 				{
 					sprintf(buffer,"CTCSS %d.%dHz",TRX_CTCSSTones[scanIndex]/10,TRX_CTCSSTones[scanIndex] % 10);
-					UC1701_printCentered(16,buffer, UC1701_FONT_8x16);
+					ucPrintCentered(16,buffer, FONT_8x16);
 				}
 
 			}
@@ -290,19 +289,19 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					val_after_dp = currentChannelData->rxFreq - val_before_dp*100000;
 					snprintf(buffer, bufferLen, "%cR %d.%05d MHz", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_RX) ? '>' : ' ', val_before_dp, val_after_dp);
 					buffer[bufferLen - 1 ] = 0;
-					UC1701_printCentered(32, buffer, UC1701_FONT_8x16);
+					ucPrintCentered(32, buffer, FONT_8x16);
 				}
 				else
 				{
 					snprintf(buffer, bufferLen, " %d ", txTimeSecs);
-					UC1701_printCentered(TX_TIMER_Y_OFFSET, buffer, UC1701_FONT_16x32);
+					ucPrintCentered(TX_TIMER_Y_OFFSET, buffer, FONT_16x32);
 				}
 
 				val_before_dp = currentChannelData->txFreq/100000;
 				val_after_dp = currentChannelData->txFreq - val_before_dp*100000;
 				snprintf(buffer, bufferLen, "%cT %d.%05d MHz", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX || trxIsTransmitting) ? '>' : ' ', val_before_dp, val_after_dp);
 				buffer[bufferLen - 1 ] = 0;
-				UC1701_printCentered(48, buffer, UC1701_FONT_8x16);
+				ucPrintCentered(48, buffer, FONT_8x16);
 			}
 			else
 			{
@@ -310,23 +309,23 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 						freq_enter_digits[3], freq_enter_digits[4], freq_enter_digits[5], freq_enter_digits[6], freq_enter_digits[7]);
 				if (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX)
 				{
-					UC1701_printCentered(48, buffer, UC1701_FONT_8x16);
+					ucPrintCentered(48, buffer, FONT_8x16);
 				}
 				else
 				{
-					UC1701_printCentered(32, buffer, UC1701_FONT_8x16);
+					ucPrintCentered(32, buffer, FONT_8x16);
 				}
 			}
 
 			displayLightTrigger();
-			UC1701_render();
+			ucRender();
 			break;
 
 		case QSO_DISPLAY_CALLER_DATA:
 			isDisplayingQSOData=true;
 			menuUtilityRenderQSOData();
 			displayLightTrigger();
-			UC1701_render();
+			ucRender();
 			break;
 	}
 	menuDisplayQSODataState = QSO_DISPLAY_IDLE;
@@ -833,7 +832,7 @@ static void updateQuickMenuScreen(void)
 	static const int bufferLen = 17;
 	char buf[bufferLen];
 
-	UC1701_clearBuf();
+	ucClearBuf();
 	menuDisplayTitle(currentLanguage->quick_menu);
 
 	for(int i = -1; i <= 1; i++)
@@ -876,7 +875,7 @@ static void updateQuickMenuScreen(void)
 		menuDisplayEntry(i, mNum, buf);
 	}
 
-	UC1701_render();
+	ucRender();
 	displayLightTrigger();
 }
 

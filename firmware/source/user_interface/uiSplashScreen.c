@@ -40,11 +40,11 @@ static void updateScreen(void)
 	char line2[16];
 
 	codeplugGetBootItemTexts(line1,line2);
-	UC1701_clearBuf();
-	UC1701_printCentered(10, "OpenGD77",UC1701_FONT_8x16);
-	UC1701_printCentered(28, line1,UC1701_FONT_8x16);
-	UC1701_printCentered(42, line2,UC1701_FONT_8x16);
-	UC1701_render();
+	ucClearBuf();
+	ucPrintCentered(10, "OpenGD77", FONT_8x16);
+	ucPrintCentered(28, line1, FONT_8x16);
+	ucPrintCentered(42, line2, FONT_8x16);
+	ucRender();
 	displayLightTrigger();
 }
 

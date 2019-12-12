@@ -38,7 +38,7 @@ extern bool uiChannelModeScanActive;
 extern int menuDisplayLightTimer;
 
 
-typedef int (*MenuFunctionPointer_t)(uiEvent_t *,bool); // Typedef for menu function pointers.  Functions are passed the key, the button and the event data. Event can be a Key or a button or both. Last arg is for when the function is only called to initialise and display its screen.
+typedef int (*menuFunctionPointer_t)(uiEvent_t *,bool); // Typedef for menu function pointers.  Functions are passed the key, the button and the event data. Event can be a Key or a button or both. Last arg is for when the function is only called to initialise and display its screen.
 typedef struct menuControlDataStruct
 {
 	int currentMenuNumber;

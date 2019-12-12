@@ -58,8 +58,8 @@ static void updateScreen(void)
 {
 	if (lockScreenState == LOCK_SCREEN_STATE_CHANGED)
 	{
-		UC1701_clearBuf();
-		UC1701_drawRoundRectWithDropShadow(4, 4, 120, 58, 5, true);
+		ucClearBuf();
+		ucDrawRoundRectWithDropShadow(4, 4, 120, 58, 5, true);
 		if (keypadLocked || PTTLocked)
 		{
 			size_t bufferLen = strlen(currentLanguage->keypad) + 3 + strlen(currentLanguage->ptt) + 1;
@@ -79,19 +79,16 @@ static void updateScreen(void)
 			}
 			buf[bufferLen -1] = 0;
 
-			UC1701_printCentered(6, buf, UC1701_FONT_8x16);
-			UC1701_printCentered(22, currentLanguage->locked, UC1701_FONT_8x16);
-			UC1701_printCentered(40, currentLanguage->press_blue_plus_star,
-					UC1701_FONT_6x8);
-			UC1701_printCentered(48, currentLanguage->to_unlock,
-					UC1701_FONT_6x8);
+			ucPrintCentered(6, buf, FONT_8x16);
+			ucPrintCentered(22, currentLanguage->locked, FONT_8x16);
+			ucPrintCentered(40, currentLanguage->press_blue_plus_star, FONT_6x8);
+			ucPrintCentered(48, currentLanguage->to_unlock, FONT_6x8);
 		}
 		else
 		{
-			UC1701_printCentered(24, currentLanguage->unlocked,
-					UC1701_FONT_8x16);
+			ucPrintCentered(24, currentLanguage->unlocked, FONT_8x16);
 		}
-		UC1701_render();
+		ucRender();
 		displayLightTrigger();
 	}
 	lockScreenState = LOCK_SCREEN_STATE_IDLE;

@@ -63,7 +63,7 @@ const menuItemNew_t * menusData[] = { 	NULL,// splash
 										NULL,// Contact Details
 								};
 
-const MenuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
+const menuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
 												menuPowerOff,
 												menuVFOMode,
 												menuChannelMode,
@@ -259,8 +259,8 @@ const menuItemNew_t menuDataContactContact [] = {
 
 void menuDisplayTitle(const char *title)
 {
-	UC1701_drawFastHLine(0, 13, 128, true);
-	UC1701_printCore(0, 3, title, UC1701_FONT_8x8, UC1701_TEXT_ALIGN_CENTER, false);
+	ucDrawFastHLine(0, 13, 128, true);
+	ucPrintCore(0, 3, title, FONT_8x8, TEXT_ALIGN_CENTER, false);
 }
 
 void menuDisplayEntry(int loopOffset, int focusedItem,const char *entryText)
@@ -268,9 +268,9 @@ void menuDisplayEntry(int loopOffset, int focusedItem,const char *entryText)
 	bool focused = (focusedItem == gMenusCurrentItemIndex);
 
 	if (focused)
-		UC1701_fillRoundRect(0, (loopOffset + 2) * 16, 128, 16, 2, true);
+		ucFillRoundRect(0, (loopOffset + 2) * 16, 128, 16, 2, true);
 
-	UC1701_printCore(0, (loopOffset + 2) * 16, entryText, UC1701_FONT_8x16, UC1701_TEXT_ALIGN_LEFT, focused);
+	ucPrintCore(0, (loopOffset + 2) * 16, entryText, FONT_8x16, TEXT_ALIGN_LEFT, focused);
 }
 
 int menuGetMenuOffset(int maxMenuEntries, int loopOffset)

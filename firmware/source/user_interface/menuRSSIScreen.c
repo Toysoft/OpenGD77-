@@ -67,14 +67,14 @@ static void updateScreen(void)
 			dBm = -164 + ((trxRxSignal * 32) / 27);
 		}
 
-		UC1701_clearBuf();
+		ucClearBuf();
 		menuDisplayTitle(currentLanguage->rssi);
 
 		sprintf(buffer, "%d", trxRxSignal);
-		UC1701_printCore(0, 3, buffer, UC1701_FONT_8x8, UC1701_TEXT_ALIGN_RIGHT, false);
+		ucPrintCore(0, 3, buffer, FONT_8x8, TEXT_ALIGN_RIGHT, false);
 
 		sprintf(buffer, "%d%s", dBm, "dBm");
-		UC1701_printCentered(20, buffer, UC1701_FONT_8x16);
+		ucPrintCentered(20, buffer, FONT_8x16);
 
 		barGraphLength = ((dBm + 130) * 24)/10;
 		if (barGraphLength<0)
@@ -86,10 +86,10 @@ static void updateScreen(void)
 		{
 			barGraphLength=123;
 		}
-		UC1701_fillRect(4, 40,barGraphLength,8,false);
+		ucFillRect(4, 40,barGraphLength,8,false);
 
-		UC1701_printCore(5,50,"S1  S3  S5  S7  S9",UC1701_FONT_6x8,UC1701_TEXT_ALIGN_LEFT,false);
-		UC1701_render();
+		ucPrintCore(5,50,"S1  S3  S5  S7  S9", FONT_6x8, TEXT_ALIGN_LEFT, false);
+		ucRender();
 		displayLightTrigger();
 		trxRxSignal=0;
 

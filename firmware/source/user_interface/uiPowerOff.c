@@ -37,10 +37,10 @@ int menuPowerOff(uiEvent_t *ev, bool isFirstRun)
 
 static void updateScreen(void)
 {
-	UC1701_clearBuf();
-	UC1701_printCentered(12, currentLanguage->power_off, UC1701_FONT_8x16);
-	UC1701_printCentered(32, "73",UC1701_FONT_8x16);
-	UC1701_render();
+	ucClearBuf();
+	ucPrintCentered(12, currentLanguage->power_off, FONT_8x16);
+	ucPrintCentered(32, "73", FONT_8x16);
+	ucRender();
 	displayLightTrigger();
 }
 

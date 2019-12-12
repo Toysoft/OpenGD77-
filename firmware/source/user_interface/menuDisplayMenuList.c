@@ -43,7 +43,7 @@ static void updateScreen(void)
 {
 	int mNum;
 
-	UC1701_clearBuf();
+	ucClearBuf();
 	menuDisplayTitle(currentLanguage->menu);
 
 	for(int i = -1; i <= 1 ; i++)
@@ -55,7 +55,7 @@ static void updateScreen(void)
 		}
 	}
 
-	UC1701_render();
+	ucRender();
 	displayLightTrigger();
 }
 

@@ -42,13 +42,13 @@ static void updateScreen(void)
 	snprintf(buf, 16, "[ %s ]", GITVERSION);
 	buf[11] = 0; // git hash id 7 char long;
 
-	UC1701_clearBuf();
-	UC1701_printCentered(5, "OpenGD77",UC1701_FONT_8x16);
-	UC1701_printCentered(24, currentLanguage->built, UC1701_FONT_8x8);
-	UC1701_printCentered(34,__TIME__,UC1701_FONT_8x8);
-	UC1701_printCentered(44,__DATE__,UC1701_FONT_8x8);
-	UC1701_printCentered(54, buf, UC1701_FONT_8x8);
-	UC1701_render();
+	ucClearBuf();
+	ucPrintCentered(5, "OpenGD77", FONT_8x16);
+	ucPrintCentered(24, currentLanguage->built, FONT_8x8);
+	ucPrintCentered(34,__TIME__, FONT_8x8);
+	ucPrintCentered(44,__DATE__, FONT_8x8);
+	ucPrintCentered(54, buf, FONT_8x8);
+	ucRender();
 	displayLightTrigger();
 }
 

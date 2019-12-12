@@ -72,7 +72,7 @@ void UC1701_transfer(register uint8_t data1)
 	}
 }
 
-int16_t UC1701_setPixel(int16_t x, int16_t y, bool color)
+int16_t ucSetPixel(int16_t x, int16_t y, bool color)
 {
 	int16_t i;
 
@@ -93,7 +93,7 @@ int16_t UC1701_setPixel(int16_t x, int16_t y, bool color)
 	return 0;
 }
 
-void UC1701RenderRows(int16_t startRow, int16_t endRow)
+void ucRenderRows(int16_t startRow, int16_t endRow)
 {
 	uint8_t *rowPos = (screenBuf + startRow*128);
 	taskENTER_CRITICAL();
@@ -136,9 +136,9 @@ void UC1701RenderRows(int16_t startRow, int16_t endRow)
 	taskEXIT_CRITICAL();
 }
 
-void UC1701_render(void)
+void ucRender(void)
 {
-	UC1701RenderRows(0,8);
+	ucRenderRows(0,8);
 }
 
 //#define DISPLAY_CHECK_BOUNDS
@@ -154,7 +154,7 @@ static inline bool checkWritePos(uint8_t * writePos)
 }
 #endif
 
-int UC1701_printCore(int16_t x, int16_t y, const char *szMsg, ucFont_t fontSize, ucTextAlign_t alignment, bool isInverted)
+int ucPrintCore(int16_t x, int16_t y, const char *szMsg, ucFont_t fontSize, ucTextAlign_t alignment, bool isInverted)
 {
 	int16_t i, sLen;
 	uint8_t *currentCharData;
@@ -171,19 +171,19 @@ int UC1701_printCore(int16_t x, int16_t y, const char *szMsg, ucFont_t fontSize,
 
     switch(fontSize)
     {
-    	case UC1701_FONT_6x8:
+    	case FONT_6x8:
     		currentFont = (uint8_t *) font_6x8;
     		break;
-    	case UC1701_FONT_6x8_BOLD:
+    	case FONT_6x8_BOLD:
 			currentFont = (uint8_t *) font_6x8_bold;
     		break;
-    	case UC1701_FONT_8x8:
+    	case FONT_8x8:
     		currentFont = (uint8_t *) font_8x8;
     		break;
-    	case UC1701_FONT_8x16:
+    	case FONT_8x16:
     		currentFont = (uint8_t *) font_8x16;
 			break;
-    	case UC1701_FONT_16x32:
+    	case FONT_16x32:
     		currentFont = (uint8_t *) font_16x32;
 			break;
 
@@ -210,13 +210,13 @@ int UC1701_printCore(int16_t x, int16_t y, const char *szMsg, ucFont_t fontSize,
 
 	switch(alignment)
 	{
-		case UC1701_TEXT_ALIGN_LEFT:
+		case TEXT_ALIGN_LEFT:
 			// left aligned, do nothing.
 			break;
-		case UC1701_TEXT_ALIGN_CENTER:
+		case TEXT_ALIGN_CENTER:
 			x = (128 - (charWidthPixels * sLen))/2;
 			break;
-		case UC1701_TEXT_ALIGN_RIGHT:
+		case TEXT_ALIGN_RIGHT:
 			x = 128 - (charWidthPixels * sLen);
 			break;
 	}
@@ -309,7 +309,7 @@ int UC1701_printCore(int16_t x, int16_t y, const char *szMsg, ucFont_t fontSize,
 	return 0;
 }
 
-void UC1701_setInverseVideo(bool isInverted)
+void ucSetInverseVideo(bool isInverted)
 {
 	UC1701_setCommandMode(true);
 	if (isInverted)
@@ -325,7 +325,7 @@ void UC1701_setInverseVideo(bool isInverted)
     UC1701_setCommandMode(false);
 }
 
-void UC1701_begin(bool isInverted)
+void ucBegin(bool isInverted)
 {
 	GPIO_PinWrite(GPIO_Display_CS, Pin_Display_CS, 0);// Enable CS permanently
     // Set the LCD parameters...
@@ -348,11 +348,11 @@ void UC1701_begin(bool isInverted)
 
     UC1701_setCommandMode(true);
     UC1701_transfer(0xAF); // Set Display Enable
-    UC1701_clearBuf();
-    UC1701_render();
+    ucClearBuf();
+    ucRender();
 }
 
-void UC1701_setContrast(uint8_t contrast)
+void ucSetContrast(uint8_t contrast)
 {
 	UC1701_setCommandMode(true);
 	UC1701_transfer(0x81);              // command to set contrast
@@ -360,23 +360,23 @@ void UC1701_setContrast(uint8_t contrast)
 	UC1701_setCommandMode(false);
 }
 
-void UC1701_clearBuf(void)
+void ucClearBuf(void)
 {
 	memset(screenBuf,0x00,1024);
 }
 
-void UC1701_printCentered(uint8_t y,const char *text, ucFont_t fontSize)
+void ucPrintCentered(uint8_t y,const char *text, ucFont_t fontSize)
 {
-	UC1701_printCore(0, y, text, fontSize, UC1701_TEXT_ALIGN_CENTER, false);
+	ucPrintCore(0, y, text, fontSize, TEXT_ALIGN_CENTER, false);
 }
 
-void UC1701_printAt(uint8_t x, uint8_t y,const char *text, ucFont_t fontSize)
+void ucPrintAt(uint8_t x, uint8_t y,const char *text, ucFont_t fontSize)
 {
-	UC1701_printCore(x, y, text, fontSize, UC1701_TEXT_ALIGN_LEFT, false);
+	ucPrintCore(x, y, text, fontSize, TEXT_ALIGN_LEFT, false);
 }
 
 // Bresenham's algorithm - thx wikpedia
-void UC1701_drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, bool color)
+void ucDrawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, bool color)
 {
 	int16_t steep = abs(y1 - y0) > abs(x1 - x0);
 
@@ -407,9 +407,9 @@ void UC1701_drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, bool color)
 	for (; x0<=x1; x0++)
 	{
 		if (steep)
-			UC1701_setPixel(y0, x0, color);
+			ucSetPixel(y0, x0, color);
 		else
-			UC1701_setPixel(x0, y0, color);
+			ucSetPixel(x0, y0, color);
 
 		err -= dy;
 		if (err < 0)
@@ -420,18 +420,18 @@ void UC1701_drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, bool color)
 	}
 }
 
-void UC1701_drawFastVLine(int16_t x, int16_t y, int16_t h, bool color)
+void ucDrawFastVLine(int16_t x, int16_t y, int16_t h, bool color)
 {
-	UC1701_drawLine(x, y, x, y + h - 1, color);
+	ucDrawLine(x, y, x, y + h - 1, color);
 }
 
-void UC1701_drawFastHLine(int16_t x, int16_t y, int16_t w, bool color)
+void ucDrawFastHLine(int16_t x, int16_t y, int16_t w, bool color)
 {
-	UC1701_drawLine(x, y, x + w - 1, y, color);
+	ucDrawLine(x, y, x + w - 1, y, color);
 }
 
 // Draw a circle outline
-void UC1701_drawCircle(int16_t x0, int16_t y0, int16_t r, bool color)
+void ucDrawCircle(int16_t x0, int16_t y0, int16_t r, bool color)
 {
 	int16_t f     = 1 - r;
 	int16_t ddF_x = 1;
@@ -439,10 +439,10 @@ void UC1701_drawCircle(int16_t x0, int16_t y0, int16_t r, bool color)
 	int16_t x     = 0;
 	int16_t y     = r;
 
-	UC1701_setPixel(x0    , y0 + r, color);
-	UC1701_setPixel(x0    , y0 - r, color);
-	UC1701_setPixel(x0 + r, y0    , color);
-	UC1701_setPixel(x0 - r, y0    , color);
+	ucSetPixel(x0    , y0 + r, color);
+	ucSetPixel(x0    , y0 - r, color);
+	ucSetPixel(x0 + r, y0    , color);
+	ucSetPixel(x0 - r, y0    , color);
 
 	while (x < y)
 	{
@@ -457,18 +457,18 @@ void UC1701_drawCircle(int16_t x0, int16_t y0, int16_t r, bool color)
 		ddF_x += 2;
 		f += ddF_x;
 
-		UC1701_setPixel(x0 + x, y0 + y, color);
-		UC1701_setPixel(x0 - x, y0 + y, color);
-		UC1701_setPixel(x0 + x, y0 - y, color);
-		UC1701_setPixel(x0 - x, y0 - y, color);
-		UC1701_setPixel(x0 + y, y0 + x, color);
-		UC1701_setPixel(x0 - y, y0 + x, color);
-		UC1701_setPixel(x0 + y, y0 - x, color);
-		UC1701_setPixel(x0 - y, y0 - x, color);
+		ucSetPixel(x0 + x, y0 + y, color);
+		ucSetPixel(x0 - x, y0 + y, color);
+		ucSetPixel(x0 + x, y0 - y, color);
+		ucSetPixel(x0 - x, y0 - y, color);
+		ucSetPixel(x0 + y, y0 + x, color);
+		ucSetPixel(x0 - y, y0 + x, color);
+		ucSetPixel(x0 + y, y0 - x, color);
+		ucSetPixel(x0 - y, y0 - x, color);
 	}
 }
 
-void UC1701_drawCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername, bool color)
+void ucDrawCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername, bool color)
 {
 	int16_t f     = 1 - r;
 	int16_t ddF_x = 1;
@@ -491,26 +491,26 @@ void UC1701_drawCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornerna
 
 		if (cornername & 0x4)
 		{
-			UC1701_setPixel(x0 + x, y0 + y, color);
-			UC1701_setPixel(x0 + y, y0 + x, color);
+			ucSetPixel(x0 + x, y0 + y, color);
+			ucSetPixel(x0 + y, y0 + x, color);
 		}
 
 		if (cornername & 0x2)
 		{
-			UC1701_setPixel(x0 + x, y0 - y, color);
-			UC1701_setPixel(x0 + y, y0 - x, color);
+			ucSetPixel(x0 + x, y0 - y, color);
+			ucSetPixel(x0 + y, y0 - x, color);
 		}
 
 		if (cornername & 0x8)
 		{
-			UC1701_setPixel(x0 - y, y0 + x, color);
-			UC1701_setPixel(x0 - x, y0 + y, color);
+			ucSetPixel(x0 - y, y0 + x, color);
+			ucSetPixel(x0 - x, y0 + y, color);
 		}
 
 		if (cornername & 0x1)
 		{
-			UC1701_setPixel(x0 - y, y0 - x, color);
-			UC1701_setPixel(x0 - x, y0 - y, color);
+			ucSetPixel(x0 - y, y0 - x, color);
+			ucSetPixel(x0 - x, y0 - y, color);
 		}
 	}
 }
@@ -518,7 +518,7 @@ void UC1701_drawCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornerna
 /*
  * Used to do circles and roundrects
  */
-void UC1701_fillCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername, int16_t delta, bool color)
+void ucFillCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername, int16_t delta, bool color)
 {
 	int16_t f     = 1 - r;
 	int16_t ddF_x = 1;
@@ -541,22 +541,22 @@ void UC1701_fillCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornerna
 
 		if (cornername & 0x1)
 		{
-			UC1701_drawFastVLine(x0 + x, y0 - y, 2 * y + 1 + delta, color);
-			UC1701_drawFastVLine(x0 + y, y0 - x, 2 * x + 1 + delta, color);
+			ucDrawFastVLine(x0 + x, y0 - y, 2 * y + 1 + delta, color);
+			ucDrawFastVLine(x0 + y, y0 - x, 2 * x + 1 + delta, color);
 		}
 
 		if (cornername & 0x2)
 		{
-			UC1701_drawFastVLine(x0 - x, y0 - y, 2 * y + 1 + delta, color);
-			UC1701_drawFastVLine(x0 - y, y0 - x, 2 * x + 1 + delta, color);
+			ucDrawFastVLine(x0 - x, y0 - y, 2 * y + 1 + delta, color);
+			ucDrawFastVLine(x0 - y, y0 - x, 2 * x + 1 + delta, color);
 		}
 	}
 }
 
-void UC1701_fillCircle(int16_t x0, int16_t y0, int16_t r, bool color)
+void ucFillCircle(int16_t x0, int16_t y0, int16_t r, bool color)
 {
-	UC1701_drawFastVLine(x0, y0 - r, 2 * r + 1, color);
-	UC1701_fillCircleHelper(x0, y0, r, 3, 0, color);
+	ucDrawFastVLine(x0, y0 - r, 2 * r + 1, color);
+	ucFillCircleHelper(x0, y0, r, 3, 0, color);
 }
 
 /*
@@ -575,7 +575,7 @@ static float sinDegrees(float angle)
 /*
  * DrawArc function thanks to Jnmattern and his Arc_2.0 (https://github.com/Jnmattern)
  */
-void UC1701_fillArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, uint16_t thickness, float start, float end, bool color)
+void ucFillArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, uint16_t thickness, float start, float end, bool color)
 {
 	int16_t xmin = 65535, xmax = -32767, ymin = 32767, ymax = -32767;
 	float cosStart, sinStart, cosEnd, sinEnd;
@@ -592,8 +592,8 @@ void UC1701_fillArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, uint16_t
 
 	if (startAngle > endAngle)
 	{
-		UC1701_fillArcOffsetted(cx, cy, radius, thickness, ((startAngle) / (float)360) * _arcAngleMax, _arcAngleMax, color);
-		UC1701_fillArcOffsetted(cx, cy, radius, thickness, 0, ((endAngle) / (float)360) * _arcAngleMax, color);
+		ucFillArcOffsetted(cx, cy, radius, thickness, ((startAngle) / (float)360) * _arcAngleMax, _arcAngleMax, color);
+		ucFillArcOffsetted(cx, cy, radius, thickness, 0, ((endAngle) / (float)360) * _arcAngleMax, color);
 	}
 	else
 	{
@@ -715,7 +715,7 @@ void UC1701_fillArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, uint16_t
 					{
 						y1EndFound = true;
 						y1e = y - 1;
-						UC1701_drawFastVLine(cx + x, cy + y1s, y - y1s, color);
+						ucDrawFastVLine(cx + x, cy + y1s, y - y1s, color);
 						if (y < 0)
 						{
 							y = abs(y); // skip the empty middle
@@ -728,7 +728,7 @@ void UC1701_fillArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, uint16_t
 						if (y2EndSearching)
 						{
 							// we found the end of the lower line after pixel by pixel search
-							UC1701_drawFastVLine(cx + x, cy + y2s, y - y2s, color);
+							ucDrawFastVLine(cx + x, cy + y2s, y - y2s, color);
 							y2EndSearching = false;
 							break;
 						}
@@ -744,28 +744,28 @@ void UC1701_fillArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, uint16_t
 			if (y1StartFound && !y1EndFound)
 			{
 				y1e = ymax;
-				UC1701_drawFastVLine(cx + x, cy + y1s, y1e - y1s + 1, color);
+				ucDrawFastVLine(cx + x, cy + y1s, y1e - y1s + 1, color);
 			}
 			else if (y2StartFound && y2EndSearching)	// we found start of lower line but we are still searching for the end
 			{										// which we haven't found in the loop so the last pixel in a column must be the end
-				UC1701_drawFastVLine(cx + x, cy + y2s, ymax - y2s + 1, color);
+				ucDrawFastVLine(cx + x, cy + y2s, ymax - y2s + 1, color);
 			}
 		}
 	}
 }
 
-void UC1701_fillArc(uint16_t x, uint16_t y, uint16_t radius, uint16_t thickness, float start, float end, bool color)
+void ucFillArc(uint16_t x, uint16_t y, uint16_t radius, uint16_t thickness, float start, float end, bool color)
 {
 	if (start == 0 && end == _arcAngleMax)
-		UC1701_fillArcOffsetted(x, y, radius, thickness, 0, _arcAngleMax, color);
+		ucFillArcOffsetted(x, y, radius, thickness, 0, _arcAngleMax, color);
 	else
-		UC1701_fillArcOffsetted(x, y, radius, thickness, start + (_angleOffset / (float)360)*_arcAngleMax, end + (_angleOffset / (float)360)*_arcAngleMax, color);
+		ucFillArcOffsetted(x, y, radius, thickness, start + (_angleOffset / (float)360)*_arcAngleMax, end + (_angleOffset / (float)360)*_arcAngleMax, color);
 }
 /*
  * ***** End of Arc related functions *****
  */
 
-void UC1701_drawEllipse(int16_t x0, int16_t y0, int16_t x1, int16_t y1, bool color)
+void ucDrawEllipse(int16_t x0, int16_t y0, int16_t x1, int16_t y1, bool color)
 {
   int16_t a = abs(x1 - x0), b = abs(y1 - y0), b1 = b & 1; /* values of diameter */
   long dx = 4 * (1 - a) * b * b, dy = 4 * (b1 + 1) * a * a; /* error increment */
@@ -779,10 +779,10 @@ void UC1701_drawEllipse(int16_t x0, int16_t y0, int16_t x1, int16_t y1, bool col
   b1 = 8 * b * b;
 
   do {
-	  UC1701_setPixel(x1, y0, color); /*   I. Quadrant */
-	  UC1701_setPixel(x0, y0, color); /*  II. Quadrant */
-	  UC1701_setPixel(x0, y1, color); /* III. Quadrant */
-	  UC1701_setPixel(x1, y1, color); /*  IV. Quadrant */
+	  ucSetPixel(x1, y0, color); /*   I. Quadrant */
+	  ucSetPixel(x0, y0, color); /*  II. Quadrant */
+	  ucSetPixel(x0, y1, color); /* III. Quadrant */
+	  ucSetPixel(x1, y1, color); /*  IV. Quadrant */
     e2 = 2 * err;
     if (e2 >= dx) { x0++; x1--; err += dx += b1; } /* x step */
     if (e2 <= dy) { y0++; y1--; err += dy += a; }  /* y step */
@@ -790,25 +790,25 @@ void UC1701_drawEllipse(int16_t x0, int16_t y0, int16_t x1, int16_t y1, bool col
 
   while (y0 - y1 < b) /* too early stop of flat ellipses a=1 */
   {
-	  UC1701_setPixel(x0 - 1, ++y0, color); /* -> complete tip of ellipse */
-	  UC1701_setPixel(x0 - 1, --y1, color);
+	  ucSetPixel(x0 - 1, ++y0, color); /* -> complete tip of ellipse */
+	  ucSetPixel(x0 - 1, --y1, color);
   }
 }
 
 /*
  * Draw a triangle
  */
-void UC1701_drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, bool color)
+void ucDrawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, bool color)
 {
-	UC1701_drawLine(x0, y0, x1, y1, color);
-	UC1701_drawLine(x1, y1, x2, y2, color);
-	UC1701_drawLine(x2, y2, x0, y0, color);
+	ucDrawLine(x0, y0, x1, y1, color);
+	ucDrawLine(x1, y1, x2, y2, color);
+	ucDrawLine(x2, y2, x0, y0, color);
 }
 
 /*
  * Fill a triangle
  */
-void UC1701_fillTriangle ( int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, bool color)
+void ucFillTriangle ( int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, bool color)
 {
 	int16_t a, b, y, last;
 
@@ -835,7 +835,7 @@ void UC1701_fillTriangle ( int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16
 		if(x2 < a)      a = x2;
 		else if(x2 > b) b = x2;
 
-		UC1701_drawFastHLine(a, y0, b - a + 1, color);
+		ucDrawFastHLine(a, y0, b - a + 1, color);
 		return;
 	}
 
@@ -869,7 +869,7 @@ void UC1701_fillTriangle ( int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16
 		if(a > b)
 			swap(a,b);
 
-		UC1701_drawFastHLine(a, y, b - a + 1, color);
+		ucDrawFastHLine(a, y, b - a + 1, color);
 	}
 
 	// For lower part of triangle, find scanline crossings for segments
@@ -890,64 +890,64 @@ void UC1701_fillTriangle ( int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16
 		if(a > b)
 			swap(a,b);
 
-		UC1701_drawFastHLine(a, y, b - a + 1, color);
+		ucDrawFastHLine(a, y, b - a + 1, color);
 	}
 }
 
 /*
  * Draw a rounded rectangle
  */
-void UC1701_drawRoundRect(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r, bool color)
+void ucDrawRoundRect(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r, bool color)
 {
 	// smarter version
-	UC1701_drawFastHLine(x + r    , y        , w - 2 * r, color); // Top
-	UC1701_drawFastHLine(x + r    , y + h - 1, w - 2 * r, color); // Bottom
-	UC1701_drawFastVLine(x        , y + r    , h - 2 * r, color); // Left
-	UC1701_drawFastVLine(x + w - 1, y + r    , h - 2 * r, color); // Right
+	ucDrawFastHLine(x + r    , y        , w - 2 * r, color); // Top
+	ucDrawFastHLine(x + r    , y + h - 1, w - 2 * r, color); // Bottom
+	ucDrawFastVLine(x        , y + r    , h - 2 * r, color); // Left
+	ucDrawFastVLine(x + w - 1, y + r    , h - 2 * r, color); // Right
 	// draw four corners
-	UC1701_drawCircleHelper(x + r        , y + r        , r, 1, color);
-	UC1701_drawCircleHelper(x + w - r - 1, y + r        , r, 2, color);
-	UC1701_drawCircleHelper(x + w - r - 1, y + h - r - 1, r, 4, color);
-	UC1701_drawCircleHelper(x + r        , y + h - r - 1, r, 8, color);
+	ucDrawCircleHelper(x + r        , y + r        , r, 1, color);
+	ucDrawCircleHelper(x + w - r - 1, y + r        , r, 2, color);
+	ucDrawCircleHelper(x + w - r - 1, y + h - r - 1, r, 4, color);
+	ucDrawCircleHelper(x + r        , y + h - r - 1, r, 8, color);
 }
 
 /*
  * Fill a rounded rectangle
  */
-void UC1701_fillRoundRect(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r, bool color)
+void ucFillRoundRect(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r, bool color)
 {
-	UC1701_fillRect(x + r, y, w - 2 * r, h, !color);
+	ucFillRect(x + r, y, w - 2 * r, h, !color);
 
 	// draw four corners
-	UC1701_fillCircleHelper(x+w-r-1, y + r, r, 1, h - 2 * r - 1, color);
-	UC1701_fillCircleHelper(x+r    , y + r, r, 2, h - 2 * r - 1, color);
+	ucFillCircleHelper(x+w-r-1, y + r, r, 1, h - 2 * r - 1, color);
+	ucFillCircleHelper(x+r    , y + r, r, 2, h - 2 * r - 1, color);
 }
 
 /*
  *
  */
-void UC1701_drawRoundRectWithDropShadow(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r, bool color)
+void ucDrawRoundRectWithDropShadow(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r, bool color)
 {
-	UC1701_fillRoundRect(x + 2, y, w, h, r, color); // Shadow
-	UC1701_fillRoundRect(x, y - 2, w, h, r, !color); // Empty box
-	UC1701_drawRoundRect(x, y - 2, w, h, r, color); // Outline
+	ucFillRoundRect(x + 2, y, w, h, r, color); // Shadow
+	ucFillRoundRect(x, y - 2, w, h, r, !color); // Empty box
+	ucDrawRoundRect(x, y - 2, w, h, r, color); // Outline
 }
 
 /*
  * Draw a rectangle
  */
-void UC1701_drawRect(int16_t x, int16_t y, int16_t w, int16_t h, bool color)
+void ucDrawRect(int16_t x, int16_t y, int16_t w, int16_t h, bool color)
 {
-	UC1701_drawFastHLine(x        , y        , w, color);
-	UC1701_drawFastHLine(x        , y + h - 1, w, color);
-	UC1701_drawFastVLine(x        , y        , h, color);
-	UC1701_drawFastVLine(x + w - 1, y        , h, color);
+	ucDrawFastHLine(x        , y        , w, color);
+	ucDrawFastHLine(x        , y + h - 1, w, color);
+	ucDrawFastVLine(x        , y        , h, color);
+	ucDrawFastVLine(x + w - 1, y        , h, color);
 }
 
 /*
  * Fill a rectangle
  */
-void UC1701_fillRect(int16_t x, int16_t y, int16_t width, int16_t height, bool isInverted)
+void ucFillRect(int16_t x, int16_t y, int16_t width, int16_t height, bool isInverted)
 {
 	uint8_t *addPtr;
 	int16_t endStripe 	= x+width;
@@ -1014,17 +1014,17 @@ void UC1701_fillRect(int16_t x, int16_t y, int16_t width, int16_t height, bool i
 /*
  *
  */
-void UC1701_drawRectWithDropShadow(int16_t x, int16_t y, int16_t w, int16_t h, bool color)
+void ucDrawRectWithDropShadow(int16_t x, int16_t y, int16_t w, int16_t h, bool color)
 {
-	UC1701_fillRect(x + 2, y, w, h, !color); // Shadow
-	UC1701_fillRect(x, y - 2, w, h, color); // Empty box
-	UC1701_drawRect(x, y - 2, w, h, color); // Outline
+	ucFillRect(x + 2, y, w, h, !color); // Shadow
+	ucFillRect(x, y - 2, w, h, color); // Empty box
+	ucDrawRect(x, y - 2, w, h, color); // Outline
 }
 
 /*
  * Draw a 1-bit image at the specified (x,y) position.
 */
-void UC1701_drawBitmap(int16_t x, int16_t y, uint8_t *bitmap, int16_t w, int16_t h, bool color)
+void ucDrawBitmap(int16_t x, int16_t y, uint8_t *bitmap, int16_t w, int16_t h, bool color)
 {
     int16_t byteWidth = (w + 7) / 8; // Bitmap scanline pad = whole byte
     uint8_t byte = 0;
@@ -1039,7 +1039,7 @@ void UC1701_drawBitmap(int16_t x, int16_t y, uint8_t *bitmap, int16_t w, int16_t
             	byte = *(bitmap + (j * byteWidth + i / 8));
 
             if(byte & 0x80)
-            	UC1701_setPixel(x + i, y, color);
+            	ucSetPixel(x + i, y, color);
         }
     }
 }
@@ -1047,7 +1047,7 @@ void UC1701_drawBitmap(int16_t x, int16_t y, uint8_t *bitmap, int16_t w, int16_t
 /*
  * Draw XBitMap Files (*.xbm), e.g. exported from GIMP.
 */
-void UC1701_drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, bool color)
+void ucDrawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, bool color)
 {
     int16_t byteWidth = (w + 7) / 8; // Bitmap scanline pad = whole byte
     uint8_t byte = 0;
@@ -1063,12 +1063,12 @@ void UC1701_drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, 
             // Nearly identical to drawBitmap(), only the bit order
             // is reversed here (left-to-right = LSB to MSB):
             if(byte & 0x01)
-            	UC1701_setPixel(x + i, y, color);
+            	ucSetPixel(x + i, y, color);
         }
     }
 }
 
-void UC1701_drawChoice(ucChoice_t choice, bool clearRegion)
+void ucDrawChoice(ucChoice_t choice, bool clearRegion)
 {
 	struct
 	{
@@ -1088,10 +1088,10 @@ void UC1701_drawChoice(ucChoice_t choice, bool clearRegion)
 
 	if (clearRegion)
 	{
-		UC1701_fillRect(0, 48, 128, 16, true);
+		ucFillRect(0, 48, 128, 16, true);
 	}
 
-	if (choice >= NUM_UC1701_CHOICES) {
+	if (choice >= CHOICES_NUM) {
 		return;
 	}
 
@@ -1105,7 +1105,7 @@ void UC1701_drawChoice(ucChoice_t choice, bool clearRegion)
 		if (x < 2)
 			x = 2;
 
-		UC1701_printAt(x, y, lText, UC1701_FONT_8x16);
+		ucPrintAt(x, y, lText, FONT_8x16);
 	}
 
 	if(rText)
@@ -1116,6 +1116,6 @@ void UC1701_drawChoice(ucChoice_t choice, bool clearRegion)
 		if ((x + len) > 126)
 			x = (126 - len);
 
-		UC1701_printAt(x, y, rText, UC1701_FONT_8x16);
+		ucPrintAt(x, y, rText, FONT_8x16);
 	}
 }

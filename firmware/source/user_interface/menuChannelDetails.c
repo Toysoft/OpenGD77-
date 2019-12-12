@@ -73,7 +73,7 @@ static void updateScreen(void)
 	struct_codeplugRxGroup_t rxGroupBuf;
 	char rxNameBuf[bufferLen];
 
-	UC1701_clearBuf();
+	ucClearBuf();
 	menuDisplayTitle(currentLanguage->channel_details);
 
 	// Can only display 3 of the options at a time menu at -1, 0 and +1
@@ -202,7 +202,7 @@ static void updateScreen(void)
 		menuDisplayEntry(i, mNum, buf);
 	}
 
-	UC1701_render();
+	ucRender();
 	displayLightTrigger();
 }
 
