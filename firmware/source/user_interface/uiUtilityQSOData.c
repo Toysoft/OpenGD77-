@@ -348,7 +348,7 @@ bool dmrIDLookup( int targetId,dmrIdDataStruct_t *foundRecord)
 	return false;
 }
 
-bool menuUtilityHandlePrivateCallActions(ui_event_t *ev)
+bool menuUtilityHandlePrivateCallActions(uiEvent_t *ev)
 {
 	if ((ev->buttons & BUTTON_SK2 )!=0 &&   menuUtilityTgBeforePcMode != 0 && KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{

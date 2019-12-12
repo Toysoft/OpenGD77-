@@ -23,7 +23,7 @@
 #include "fw_settings.h"
 
 static void updateScreen(void);
-static void handleEvent(ui_event_t *ev);
+static void handleEvent(uiEvent_t *ev);
 static struct_codeplugContact_t contact;
 static int contactCallType;
 static int menuContactListDisplayState;
@@ -49,7 +49,7 @@ static void reloadContactList(void)
 	}
 }
 
-int menuContactList(ui_event_t *ev, bool isFirstRun)
+int menuContactList(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -133,7 +133,7 @@ static void updateScreen(void)
 	displayLightTrigger();
 }
 
-static void handleEvent(ui_event_t *ev)
+static void handleEvent(uiEvent_t *ev)
 {
 	switch (menuContactListDisplayState)
 	{
@@ -267,7 +267,7 @@ static void updateSubMenuScreen(void)
 	displayLightTrigger();
 }
 
-static void handleSubMenuEvent(ui_event_t *ev)
+static void handleSubMenuEvent(uiEvent_t *ev)
 {
 	if (KEYCHECK_SHORTUP(ev->keys, KEY_RED))
 	{
@@ -312,7 +312,7 @@ static void handleSubMenuEvent(ui_event_t *ev)
 	}
 }
 
-int menuContactListSubMenu(ui_event_t *ev, bool isFirstRun)
+int menuContactListSubMenu(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{

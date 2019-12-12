@@ -29,14 +29,14 @@ static struct_codeplugContact_t contact;
 
 static void updateCursor(void);
 static void updateScreen(void);
-static void handleEvent(ui_event_t *ev);
+static void handleEvent(uiEvent_t *ev);
 
 static const uint32_t CURSOR_UPDATE_TIMEOUT = 1000;
 
 static const char *menuName[4];
 enum DISPLAY_MENU_LIST { ENTRY_TG = 0, ENTRY_PC, ENTRY_SELECT_CONTACT, ENTRY_USER_DMR_ID, NUM_ENTRY_ITEMS};
 // public interface
-int menuNumericalEntry(ui_event_t *ev, bool isFirstRun)
+int menuNumericalEntry(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -149,7 +149,7 @@ static int getNextContact(int curidx, int dir, struct_codeplugContact_t *contact
 	return idx;
 }
 
-static void handleEvent(ui_event_t *ev)
+static void handleEvent(uiEvent_t *ev)
 {
 	size_t sLen;
 

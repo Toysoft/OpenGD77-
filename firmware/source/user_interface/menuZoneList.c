@@ -22,9 +22,9 @@
 #include "fw_settings.h"
 
 static void updateScreen(void);
-static void handleEvent(ui_event_t *ev);
+static void handleEvent(uiEvent_t *ev);
 
-int menuZoneList(ui_event_t *ev, bool isFirstRun)
+int menuZoneList(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -68,7 +68,7 @@ static void updateScreen(void)
 	displayLightTrigger();
 }
 
-static void handleEvent(ui_event_t *ev)
+static void handleEvent(uiEvent_t *ev)
 {
 	if (KEYCHECK_PRESS(ev->keys,KEY_DOWN))
 	{

@@ -23,13 +23,13 @@
 
 
 static void updateScreen(void);
-static void handleEvent(ui_event_t *ev);
+static void handleEvent(uiEvent_t *ev);
 
 static const int PIT_COUNTS_PER_SECOND = 10000;
 static int timeInSeconds;
 static uint32_t nextSecondPIT;
 
-int menuTxScreen(ui_event_t *ev, bool isFirstRun)
+int menuTxScreen(uiEvent_t *ev, bool isFirstRun)
 {
 	static uint32_t m = 0, micm = 0;
 
@@ -156,7 +156,7 @@ static void updateScreen(void)
 	}
 }
 
-static void handleEvent(ui_event_t *ev)
+static void handleEvent(uiEvent_t *ev)
 {
 	// Xmiting ends (normal or timeouted)
 	if ((ev->buttons & BUTTON_PTT) == 0

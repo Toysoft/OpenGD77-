@@ -25,7 +25,7 @@
 #include "fw_settings.h"
 
 static void updateScreen(void);
-static void handleEvent(ui_event_t *ev);
+static void handleEvent(uiEvent_t *ev);
 
 static struct_codeplugContact_t tmpContact;
 static const char *callTypeString[3];// = { "Group", "Private", "All" };
@@ -39,7 +39,7 @@ static int menuContactDetailsState;
 static int menuContactDetailsTimeout;
 enum MENU_CONTACT_DETAILS_STATE {MENU_CONTACT_DETAILS_DISPLAY=0, MENU_CONTACT_DETAILS_SAVED, MENU_CONTACT_DETAILS_EXISTS};
 
-int menuContactDetails(ui_event_t *ev, bool isFirstRun)
+int menuContactDetails(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -156,7 +156,7 @@ static void updateScreen(void)
 	displayLightTrigger();
 }
 
-static void handleEvent(ui_event_t *ev)
+static void handleEvent(uiEvent_t *ev)
 {
 	dmrIdDataStruct_t foundRecord;
 	static const int bufferLen = 17;

@@ -36,9 +36,9 @@ static struct_codeplugContact_t contactData;
 static bool displaySquelch=false;
 
 // internal prototypes
-static void handleEvent(ui_event_t *ev);
+static void handleEvent(uiEvent_t *ev);
 
-static void handleQuickMenuEvent(ui_event_t *ev);
+static void handleQuickMenuEvent(uiEvent_t *ev);
 static void updateQuickMenuScreen(void);
 static void reset_freq_enter_digits(void);
 static int read_freq_enter_digits(void);
@@ -58,7 +58,7 @@ static const int CCSCANINTERVAL=500;
 static int scanIndex=0;
 
 // public interface
-int menuVFOMode(ui_event_t *ev, bool isFirstRun)
+int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
 {
 	static uint32_t m = 0, sqm = 0;
 
@@ -421,7 +421,7 @@ static void loadContact(void)
 	}
 }
 
-static void handleEvent(ui_event_t *ev)
+static void handleEvent(uiEvent_t *ev)
 {
 	if (ev->events & BUTTON_EVENT)
 	{
@@ -812,7 +812,7 @@ enum VFO_SCREEN_QUICK_MENU_ITEMS { 	VFO_SCREEN_QUICK_MENU_VFO_A_B = 0,VFO_SCREEN
 									NUM_VFO_SCREEN_QUICK_MENU_ITEMS };// The last item in the list is used so that we automatically get a total number of items in the list
 
 
-int menuVFOModeQuickMenu(ui_event_t *ev, bool isFirstRun)
+int menuVFOModeQuickMenu(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -880,7 +880,7 @@ static void updateQuickMenuScreen(void)
 	displayLightTrigger();
 }
 
-static void handleQuickMenuEvent(ui_event_t *ev)
+static void handleQuickMenuEvent(uiEvent_t *ev)
 {
 	if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{

@@ -28,7 +28,7 @@ static int radioMode;
 static int radioBandWidth;
 
 
-int menuCPS(ui_event_t *ev, bool isFirstRun)
+int menuCPS(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{

@@ -25,7 +25,7 @@
 #include "fw_settings.h"
 
 static void updateScreen(void);
-static void handleEvent(ui_event_t *ev);
+static void handleEvent(uiEvent_t *ev);
 
 static int CTCSSRxIndex=0;
 static int CTCSSTxIndex=0;
@@ -35,7 +35,7 @@ enum CHANNEL_DETAILS_DISPLAY_LIST { CH_DETAILS_MODE = 0, CH_DETAILS_DMR_CC, CH_D
 									CH_DETAILS_FREQ_STEP, CH_DETAILS_TOT, CH_DETAILS_ZONE_SKIP,CH_DETAILS_ALL_SKIP,CH_DETAILS_RXGROUP,
 									NUM_CH_DETAILS_ITEMS};// The last item in the list is used so that we automatically get a total number of items in the list
 
-int menuChannelDetails(ui_event_t *ev, bool isFirstRun)
+int menuChannelDetails(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -206,7 +206,7 @@ static void updateScreen(void)
 	displayLightTrigger();
 }
 
-static void handleEvent(ui_event_t *ev)
+static void handleEvent(uiEvent_t *ev)
 {
 	int tmpVal;
 	struct_codeplugRxGroup_t rxGroupBuf;

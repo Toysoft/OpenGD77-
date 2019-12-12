@@ -20,9 +20,9 @@
 #include "fw_main.h"
 
 static void updateScreen(void);
-static void handleEvent(ui_event_t *ev);
+static void handleEvent(uiEvent_t *ev);
 
-int menuDisplayMenuList(ui_event_t *ev, bool isFirstRun)
+int menuDisplayMenuList(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -59,7 +59,7 @@ static void updateScreen(void)
 	displayLightTrigger();
 }
 
-static void handleEvent(ui_event_t *ev)
+static void handleEvent(uiEvent_t *ev)
 {
 	if (KEYCHECK_PRESS(ev->keys,KEY_DOWN))
 	{

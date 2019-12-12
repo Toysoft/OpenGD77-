@@ -21,7 +21,7 @@
 #include "fw_settings.h"
 
 static void updateScreen(void);
-static void handleEvent(ui_event_t *ev);
+static void handleEvent(uiEvent_t *ev);
 
 static bool lockDisplay = false;
 static const uint32_t TIMEOUT_MS = 2000;
@@ -29,7 +29,7 @@ static int lockScreenState;
 
 enum LOCK_SCREEN_STATE { LOCK_SCREEN_STATE_IDLE=0, LOCK_SCREEN_STATE_CHANGED };
 
-int menuLockScreen(ui_event_t *ev, bool isFirstRun)
+int menuLockScreen(uiEvent_t *ev, bool isFirstRun)
 {
 	static uint32_t m = 0;
 
@@ -97,7 +97,7 @@ static void updateScreen(void)
 	lockScreenState = LOCK_SCREEN_STATE_IDLE;
 }
 
-static void handleEvent(ui_event_t *ev)
+static void handleEvent(uiEvent_t *ev)
 {
 	if (KEYCHECK_DOWN(ev->keys, KEY_STAR) && (ev->buttons & BUTTON_SK2))
 	{

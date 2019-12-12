@@ -21,9 +21,9 @@
 const int LAST_HEARD_NUM_LINES_ON_DISPLAY = 3;
 
 static void updateScreen(void);
-static void handleEvent(ui_event_t *ev);
+static void handleEvent(uiEvent_t *ev);
 
-int menuLastHeard(ui_event_t *ev, bool isFirstRun)
+int menuLastHeard(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -105,7 +105,7 @@ static void updateScreen(void)
 	menuDisplayQSODataState = QSO_DISPLAY_IDLE;
 }
 
-static void handleEvent(ui_event_t *ev)
+static void handleEvent(uiEvent_t *ev)
 {
 
 	if (KEYCHECK_PRESS(ev->keys,KEY_DOWN) && gMenusEndIndex!=0)

@@ -24,9 +24,9 @@
 
 static calibrationRSSIMeter_t rssiCalibration;
 static void updateScreen(void);
-static void handleEvent(ui_event_t *ev);
+static void handleEvent(uiEvent_t *ev);
 
-int menuRSSIScreen(ui_event_t *ev, bool isFirstRun)
+int menuRSSIScreen(uiEvent_t *ev, bool isFirstRun)
 {
 	static uint32_t m = 0;
 
@@ -96,7 +96,7 @@ static void updateScreen(void)
 }
 
 
-static void handleEvent(ui_event_t *ev)
+static void handleEvent(uiEvent_t *ev)
 {
 	if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{

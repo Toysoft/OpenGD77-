@@ -96,7 +96,7 @@ void menuSystemPushNewMenu(int menuNumber)
 {
 	if (menuControlData.stackPosition < 15)
 	{
-		ui_event_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
+		uiEvent_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
 
 		menuControlData.itemIndex[menuControlData.stackPosition] = gMenusCurrentItemIndex;
 		menuControlData.stackPosition++;
@@ -108,7 +108,7 @@ void menuSystemPushNewMenu(int menuNumber)
 }
 void menuSystemPopPreviousMenu(void)
 {
-	ui_event_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
+	uiEvent_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
 
 	menuControlData.itemIndex[menuControlData.stackPosition] = 0;
 	menuControlData.stackPosition--;
@@ -119,7 +119,7 @@ void menuSystemPopPreviousMenu(void)
 
 void menuSystemPopAllAndDisplayRootMenu(void)
 {
-	ui_event_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
+	uiEvent_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
 
 	memset(menuControlData.itemIndex, 0, sizeof(menuControlData.itemIndex));
 	menuControlData.stackPosition = 0;
@@ -130,7 +130,7 @@ void menuSystemPopAllAndDisplayRootMenu(void)
 
 void menuSystemPopAllAndDisplaySpecificRootMenu(int newRootMenu)
 {
-	ui_event_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
+	uiEvent_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
 
 	memset(menuControlData.itemIndex, 0, sizeof(menuControlData.itemIndex));
 	menuControlData.stack[0]  = newRootMenu;
@@ -142,7 +142,7 @@ void menuSystemPopAllAndDisplaySpecificRootMenu(int newRootMenu)
 
 void menuSystemSetCurrentMenu(int menuNumber)
 {
-	ui_event_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
+	uiEvent_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
 
 	menuControlData.stack[menuControlData.stackPosition] = menuNumber;
 	gMenusCurrentItemIndex = menuControlData.itemIndex[menuControlData.stackPosition];
@@ -154,7 +154,7 @@ int menuSystemGetCurrentMenuNumber(void)
 	return menuControlData.stack[menuControlData.stackPosition];
 }
 
-void menuSystemCallCurrentMenuTick(ui_event_t *ev)
+void menuSystemCallCurrentMenuTick(uiEvent_t *ev)
 {
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](ev,false);
 }
@@ -180,7 +180,7 @@ int gMenusEndIndex;// as above
 
 void menuInitMenuSystem(void)
 {
-	ui_event_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
+	uiEvent_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
 
 	menuDisplayLightTimer = -1;
 	menuControlData.stack[menuControlData.stackPosition]  = MENU_SPLASH_SCREEN;// set the very first screen as the splash screen
@@ -302,7 +302,7 @@ int menuGetMenuOffset(int maxMenuEntries, int loopOffset)
 /*
  * Returns 99 if key is unknown, or not numerical when digitsOnly is true
  */
-int menuGetKeypadKeyValue(ui_event_t *ev, bool digitsOnly)
+int menuGetKeypadKeyValue(uiEvent_t *ev, bool digitsOnly)
 {
 	uint32_t keypadKeys[] = {
 			KEY_0, KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9,

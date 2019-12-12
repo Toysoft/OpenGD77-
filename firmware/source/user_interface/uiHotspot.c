@@ -150,7 +150,7 @@ const uint8_t DMR_AUDIO_SEQ_MASK[]  = 		{0x0FU, 0xF0U, 0x00U, 0x00U, 0x00U, 0x0F
 const uint8_t DMR_EMBED_SEQ_MASK[]  = 		{0x00U, 0x0FU, 0xFFU, 0xFFU, 0xFFU, 0xF0U, 0x00U};
 
 static void updateScreen(int rxState);
-static void handleEvent(ui_event_t *ev);
+static void handleEvent(uiEvent_t *ev);
 void handleHotspotRequest(void);
 /*
  *
@@ -738,7 +738,7 @@ static void hotspotStateMachine(void)
 	}
 }
 
-int menuHotspotMode(ui_event_t *ev, bool isFirstRun)
+int menuHotspotMode(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -868,7 +868,7 @@ static void updateScreen(int rxCommandState)
 	displayLightTrigger();
 }
 
-static void handleEvent(ui_event_t *ev)
+static void handleEvent(uiEvent_t *ev)
 {
 	if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{

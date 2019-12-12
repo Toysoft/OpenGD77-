@@ -19,10 +19,10 @@
 #include <user_interface/menuSystem.h>
 
 static void updateScreen(void);
-static void handleEvent(ui_event_t *ev);
+static void handleEvent(uiEvent_t *ev);
 static int updateCounter;
 
-int menuMessageScreen(ui_event_t *ev, bool isFirstRun)
+int menuMessageScreen(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -49,7 +49,7 @@ static void updateScreen(void)
 }
 
 
-static void handleEvent(ui_event_t *ev)
+static void handleEvent(uiEvent_t *ev)
 {
 	if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{

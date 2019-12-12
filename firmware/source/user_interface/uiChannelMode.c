@@ -23,14 +23,14 @@
 #include "fw_settings.h"
 
 
-static void handleEvent(ui_event_t *ev);
+static void handleEvent(uiEvent_t *ev);
 static void loadChannelData(bool useChannelDataInMemory);
 static void scanning(void);
 static void startScan(void);
-static void handleUpKey(ui_event_t *ev);
+static void handleUpKey(uiEvent_t *ev);
 
 static void updateQuickMenuScreen(void);
-static void handleQuickMenuEvent(ui_event_t *ev);
+static void handleQuickMenuEvent(uiEvent_t *ev);
 
 static struct_codeplugZone_t currentZone;
 static struct_codeplugRxGroup_t rxGroupData;
@@ -64,7 +64,7 @@ static int nuisanceDeleteIndex = 0;
 
 static int tmpQuickMenuDmrFilterLevel;
 
-int menuChannelMode(ui_event_t *ev, bool isFirstRun)
+int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 {
 	static uint32_t m = 0, sqm = 0;
 
@@ -341,7 +341,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 	menuDisplayQSODataState = QSO_DISPLAY_IDLE;
 }
 
-static void handleEvent(ui_event_t *ev)
+static void handleEvent(uiEvent_t *ev)
 {
 	// if we are scanning and down key is pressed then enter current channel into nuisance delete array.
 	if((scanState==SCAN_PAUSED) && ((ev->events & KEY_EVENT) && (KEYCHAR(ev->keys) == KEY_DOWN)) && (!(ev->buttons & BUTTON_SK2)))
@@ -749,7 +749,7 @@ static void handleEvent(ui_event_t *ev)
 }
 
 
-static void handleUpKey(ui_event_t *ev)
+static void handleUpKey(uiEvent_t *ev)
 {
 	if (ev->buttons & BUTTON_SK2)
 	{
@@ -843,7 +843,7 @@ static void updateQuickMenuScreen(void)
 }
 
 
-static void handleQuickMenuEvent(ui_event_t *ev)
+static void handleQuickMenuEvent(uiEvent_t *ev)
 {
 	if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{
@@ -917,7 +917,7 @@ static void handleQuickMenuEvent(ui_event_t *ev)
 }
 
 
-int menuChannelModeQuickMenu(ui_event_t *ev, bool isFirstRun)
+int menuChannelModeQuickMenu(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -986,7 +986,7 @@ static void scanning(void)
 	{
 
 		trx_measure_count=0;														//needed to allow time for Rx to settle after channel change.
-		ui_event_t tmpEvent={ .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = 0, .ticks = 0 };
+		uiEvent_t tmpEvent={ .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = 0, .ticks = 0 };
 
 		handleUpKey(&tmpEvent);
 		scanTimer = SCAN_TOTAL_INTERVAL;
