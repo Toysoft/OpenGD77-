@@ -178,8 +178,8 @@ void fw_main_task(void *data)
 						menuSystemPushNewMenu(MENU_LOCK_SCREEN);
 					}
 				}
-				if (button_event == EVENT_BUTTON_CHANGE
-						&& (buttons & BUTTON_ORANGE) != 0)
+				// Lockout ORANGE AND BLUE (BLACK stay active regarless lock status, useful to trigger backlight)
+				if (button_event == EVENT_BUTTON_CHANGE && ((buttons & BUTTON_ORANGE) || (buttons & BUTTON_SK2)))
 				{
 					button_event = EVENT_BUTTON_NONE;
 					if (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN)

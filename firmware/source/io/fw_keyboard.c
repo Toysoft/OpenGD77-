@@ -255,4 +255,3 @@ void fw_check_key_event(uint32_t *keys, int *event)
 	}
 
 }
-
