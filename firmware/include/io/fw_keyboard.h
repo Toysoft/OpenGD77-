@@ -118,6 +118,7 @@
 //#define KEYCHAR(keys)              ((char)(keys & 0xff))
 
 extern volatile bool keypadLocked;
+extern volatile bool keypadAlphaEnable;
 
 typedef struct keyboardCode {
 		uint8_t event;

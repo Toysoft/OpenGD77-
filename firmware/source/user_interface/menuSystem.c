@@ -98,57 +98,58 @@ void menuSystemPushNewMenu(int menuNumber)
 	{
 		ui_event_t ev = { .buttons = 0, .keys = KEYCODE_EMPTY, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
 
+		fw_reset_keyboard();
 		menuControlData.itemIndex[menuControlData.stackPosition] = gMenusCurrentItemIndex;
 		menuControlData.stackPosition++;
 		menuControlData.stack[menuControlData.stackPosition] = menuNumber;
 		gMenusCurrentItemIndex = (menuNumber == MENU_MAIN_MENU) ? 1 : 0;
 		menuFunctions[menuControlData.stack[menuControlData.stackPosition]](&ev, true);
-		fw_reset_keyboard();
 	}
 }
 void menuSystemPopPreviousMenu(void)
 {
 	ui_event_t ev = { .buttons = 0, .keys = KEYCODE_EMPTY, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
 
+	fw_reset_keyboard();
 	menuControlData.itemIndex[menuControlData.stackPosition] = 0;
 	menuControlData.stackPosition--;
 	gMenusCurrentItemIndex = menuControlData.itemIndex[menuControlData.stackPosition];
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](&ev,true);
-	fw_reset_keyboard();
 }
 
 void menuSystemPopAllAndDisplayRootMenu(void)
 {
 	ui_event_t ev = { .buttons = 0, .keys = KEYCODE_EMPTY, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
 
+	fw_reset_keyboard();
 	memset(menuControlData.itemIndex, 0, sizeof(menuControlData.itemIndex));
 	menuControlData.stackPosition = 0;
 	gMenusCurrentItemIndex = 0;
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](&ev,true);
-	fw_reset_keyboard();
 }
 
 void menuSystemPopAllAndDisplaySpecificRootMenu(int newRootMenu)
 {
 	ui_event_t ev = { .buttons = 0, .keys = KEYCODE_EMPTY, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
 
+	fw_reset_keyboard();
 	memset(menuControlData.itemIndex, 0, sizeof(menuControlData.itemIndex));
 	menuControlData.stack[0]  = newRootMenu;
 	menuControlData.stackPosition = 0;
 	gMenusCurrentItemIndex = (newRootMenu == MENU_MAIN_MENU) ? 1 : 0;
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](&ev,true);
-	fw_reset_keyboard();
 }
 
 void menuSystemSetCurrentMenu(int menuNumber)
 {
 	ui_event_t ev = { .buttons = 0, .keys = KEYCODE_EMPTY, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
 
+	fw_reset_keyboard();
 	menuControlData.stack[menuControlData.stackPosition] = menuNumber;
 	gMenusCurrentItemIndex = menuControlData.itemIndex[menuControlData.stackPosition];
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](&ev,true);
-	fw_reset_keyboard();
 }
+
 int menuSystemGetCurrentMenuNumber(void)
 {
 	return menuControlData.stack[menuControlData.stackPosition];
@@ -318,3 +319,21 @@ int menuGetKeypadKeyValue(ui_event_t *ev, bool digitsOnly)
 	return 99;
 }
 
+void menuUpdateCursor(int pos, bool render)
+{
+	static uint32_t lastBlink = 0;
+	static bool     blink = false;
+	uint32_t        m = fw_millis();
+
+	if ((m - lastBlink) > 1000)
+	{
+		UC1701_printCore(pos*8, 32, "_", UC1701_FONT_8x16, 0, blink);
+
+		blink = !blink;
+		lastBlink = m;
+
+		if (render) {
+			UC1701_render();
+		}
+	}
+}

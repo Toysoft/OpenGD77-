@@ -31,8 +31,10 @@ static struct_codeplugContact_t tmpContact;
 static const char *callTypeString[3];// = { "Group", "Private", "All" };
 static int contactDetailsIndex;
 static char digits[9];
+static char name[20];
+static int namePos;
 
-enum CONTACT_DETAILS_DISPLAY_LIST { /*CONTACT_DETAILS_NAME=0,*/ CONTACT_DETAILS_TG=0, CONTACT_DETAILS_CALLTYPE, CONTACT_DETAILS_TS,
+enum CONTACT_DETAILS_DISPLAY_LIST { CONTACT_DETAILS_NAME=0, CONTACT_DETAILS_TG, CONTACT_DETAILS_CALLTYPE, CONTACT_DETAILS_TS,
 	NUM_CONTACT_DETAILS_ITEMS};// The last item in the list is used so that we automatically get a total number of items in the list
 
 static int menuContactDetailsState;
@@ -54,18 +56,31 @@ int menuContactDetails(ui_event_t *ev, bool isFirstRun)
 			tmpContact.reserve1 = 0xff;
 			tmpContact.tgNumber = 0;
 			digits[0] = 0x00;
+			memset(name, 0, 20);
+			namePos = 0;
 		} else {
 			contactDetailsIndex = contactListContactIndex;
 			memcpy(&tmpContact, &contactListContactData,sizeof(struct_codeplugContact_t));
 			itoa(tmpContact.tgNumber, digits, 10);
+			codeplugUtilConvertBufToString(tmpContact.name, name, 16);
+			namePos = strlen(name);
 		}
 
 		menuContactDetailsState = MENU_CONTACT_DETAILS_DISPLAY;
+		gMenusCurrentItemIndex = CONTACT_DETAILS_NAME;
 
 		updateScreen();
 	}
 	else
 	{
+		switch (gMenusCurrentItemIndex) {
+		case CONTACT_DETAILS_NAME:
+			menuUpdateCursor(namePos, true);
+			break;
+		case CONTACT_DETAILS_TG:
+			menuUpdateCursor(strlen(digits)+3, true);
+			break;
+		}
 		if (ev->hasEvent || (menuContactDetailsTimeout > 0))
 		{
 			handleEvent(ev);
@@ -90,6 +105,13 @@ static void updateScreen(void)
 		codeplugUtilConvertBufToString(tmpContact.name, buf, 16);
 	}
 	menuDisplayTitle(buf);
+	if (gMenusCurrentItemIndex == CONTACT_DETAILS_NAME) {
+		keypadAlphaEnable = true;
+	}
+	else
+	{
+		keypadAlphaEnable = false;
+	}
 
 	switch (menuContactDetailsState) {
 	case MENU_CONTACT_DETAILS_DISPLAY:
@@ -101,9 +123,9 @@ static void updateScreen(void)
 
 			switch (mNum)
 			{
-	//			case CONTACT_DETAILS_Name:
-	//				strcpy(buf,"Name");
-	//				break;
+			case CONTACT_DETAILS_NAME:
+				strncpy(buf,name,16);
+				break;
 			case CONTACT_DETAILS_TG:
 				switch (tmpContact.callType)
 				{
@@ -178,8 +200,8 @@ static void handleEvent(ui_event_t *ev)
 			{
 				switch(gMenusCurrentItemIndex)
 				{
-	//			case CONTACT_DETAILS_NAME:
-	//				break;
+//				case CONTACT_DETAILS_NAME:
+//					break;
 				case CONTACT_DETAILS_TG:
 					break;
 				case CONTACT_DETAILS_CALLTYPE:
@@ -205,8 +227,12 @@ static void handleEvent(ui_event_t *ev)
 			{
 				switch(gMenusCurrentItemIndex)
 				{
-	//			case CONTACT_DETAILS_NAME:
-	//				break;
+				case CONTACT_DETAILS_NAME:
+					if (namePos > 0) {
+						namePos--;
+						name[namePos] = 0;
+					}
+					break;
 				case CONTACT_DETAILS_TG:
 					if (sLen>0) {
 						digits[sLen-1] = 0x00;
@@ -254,9 +280,10 @@ static void handleEvent(ui_event_t *ev)
 					}
 					else
 					{
+						codeplugUtilConvertStringToBuf(name, tmpContact.name, 16);
 						if (contactDetailsIndex > 0 && contactDetailsIndex <= 1024)
 						{
-							if (tmpContact.name[0] == 0x00)
+							if (tmpContact.name[0] == 0xff)
 							{
 								if (tmpContact.callType == CONTACT_CALLTYPE_PC)
 								{
@@ -295,54 +322,25 @@ static void handleEvent(ui_event_t *ev)
 				if (sLen < 7)
 				{
 					char c[2] = {0, 0};
-
-					if (KEYCHECK_PRESS(ev->keys,KEY_0))
-					{
-						c[0]='0';
-					}
-					else if (KEYCHECK_PRESS(ev->keys,KEY_1))
-					{
-						c[0]='1';
-					}
-					else if (KEYCHECK_PRESS(ev->keys,KEY_2))
-					{
-						c[0]='2';
-					}
-					else if (KEYCHECK_PRESS(ev->keys,KEY_3))
-					{
-						c[0]='3';
-					}
-					else if (KEYCHECK_PRESS(ev->keys,KEY_4))
-					{
-						c[0]='4';
-					}
-					else if (KEYCHECK_PRESS(ev->keys,KEY_5))
-					{
-						c[0]='5';
-					}
-					else if (KEYCHECK_PRESS(ev->keys,KEY_6))
-					{
-						c[0]='6';
-					}
-					else if (KEYCHECK_PRESS(ev->keys,KEY_7))
-					{
-						c[0]='7';
-					}
-					else if (KEYCHECK_PRESS(ev->keys,KEY_8))
-					{
-						c[0]='8';
-					}
-					else if (KEYCHECK_PRESS(ev->keys,KEY_9))
-					{
-						c[0]='9';
-					}
+					c[0] = keypressToNumberChar(ev->keys);
 
 					if (c[0]!=0)
 					{
 						strcat(digits,c);
 					}
 				}
+			} else if (gMenusCurrentItemIndex == CONTACT_DETAILS_NAME)
+			{
+				if (ev->keys.event == KEY_MOD_PREVIEW) {
+					USB_DEBUG_printf("preview: %c",ev->keys.key);
+					name[namePos] = ev->keys.key;
+				}
+				if (ev->keys.event == KEY_MOD_PRESS) {
+					name[namePos] = ev->keys.key;
+					namePos++;
+				}
 			}
+
 			updateScreen();
 
 		}
