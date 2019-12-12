@@ -205,72 +205,7 @@ static void handleEvent(ui_event_t *ev)
 		}
 		else
 		{ // Send DTMF
-			int keyval = 99;
-
-			if (KEYCHECK_DOWN(ev->keys,KEY_0))
-			{
-				keyval = 0;
-			}
-			else if (KEYCHECK_DOWN(ev->keys,KEY_1))
-			{
-				keyval = 1;
-			}
-			else if (KEYCHECK_DOWN(ev->keys,KEY_2))
-			{
-				keyval = 2;
-			}
-			else if (KEYCHECK_DOWN(ev->keys,KEY_3))
-			{
-				keyval = 3;
-			}
-			else if (KEYCHECK_DOWN(ev->keys,KEY_4))
-			{
-				keyval = 4;
-			}
-			else if (KEYCHECK_DOWN(ev->keys,KEY_5))
-			{
-				keyval = 5;
-			}
-			else if (KEYCHECK_DOWN(ev->keys,KEY_6))
-			{
-				keyval = 6;
-			}
-			else if (KEYCHECK_DOWN(ev->keys,KEY_7))
-			{
-				keyval = 7;
-			}
-			else if (KEYCHECK_DOWN(ev->keys,KEY_8))
-			{
-				keyval = 8;
-			}
-			else if (KEYCHECK_DOWN(ev->keys,KEY_9))
-			{
-				keyval = 9;
-			}
-			else if (KEYCHECK_DOWN(ev->keys,KEY_LEFT))  // A
-			{
-				keyval = 10;
-			}
-			else if (KEYCHECK_DOWN(ev->keys,KEY_UP))    // B
-			{
-				keyval = 11;
-			}
-			else if (KEYCHECK_DOWN(ev->keys,KEY_DOWN))  // C
-			{
-				keyval = 12;
-			}
-			else if (KEYCHECK_DOWN(ev->keys,KEY_RIGHT)) // D
-			{
-				keyval = 13;
-			}
-			else if (KEYCHECK_DOWN(ev->keys,KEY_STAR))
-			{
-				keyval = 14;
-			}
-			else if (KEYCHECK_DOWN(ev->keys,KEY_HASH))
-			{
-				keyval = 15;
-			}
+			int keyval = menuGetKeypadKeyValue(ev, false);
 
 			if (keyval != 99)
 			{
