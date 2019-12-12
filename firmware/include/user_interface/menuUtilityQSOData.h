@@ -68,6 +68,6 @@ void lastHeardClearLastID(void);
 void drawRSSIBarGraph(void);
 void drawDMRMicLevelBarGraph(void);
 void setOverrideTGorPC(int tgOrPc, bool privateCall);
-char keypressToNumberChar(int keys);
+char keypressToNumberChar(keyboardCode_t keys);
 
 #endif

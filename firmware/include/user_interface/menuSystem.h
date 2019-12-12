@@ -24,7 +24,7 @@ typedef enum   {NO_EVENT = 0, KEY_EVENT=0x01, BUTTON_EVENT = 0x02 } uiEvent_t;
 typedef struct
 {
 	uint32_t	buttons;
-	uint32_t	keys;
+	keyboardCode_t keys;
 	uiEvent_t	events;
 	bool		hasEvent;
 	uint32_t 	ticks;

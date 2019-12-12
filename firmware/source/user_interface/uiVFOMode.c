@@ -176,7 +176,7 @@ int menuVFOMode(ui_event_t *ev, bool isFirstRun)
 			if (ev->hasEvent)
 			{
 				if ((currentChannelData->chMode == RADIO_MODE_ANALOG) &&
-						(ev->events & KEY_EVENT) && ((ev->keys & KEY_LEFT) || (ev->keys & KEY_RIGHT)))
+						(ev->events & KEY_EVENT) && ((ev->keys.key == KEY_LEFT) || (ev->keys.key == KEY_RIGHT)))
 				{
 					sqm = ev->ticks;
 				}

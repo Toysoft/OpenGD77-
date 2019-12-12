@@ -58,13 +58,13 @@ static void show_lowbattery(void)
 
 void fw_main_task(void *data)
 {
-	uint32_t keys;
+	keyboardCode_t keys;
 	int key_event;
 	uint32_t buttons;
 	int button_event;
-	ui_event_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = 0 };
+	ui_event_t ev = { .buttons = 0, .keys = KEYCODE_EMPTY, .events = NO_EVENT, .hasEvent = false, .ticks = 0 };
 	int oldButtons = 0;
-	int oldKeys = 0;
+	keyboardCode_t oldKeys = KEYCODE_EMPTY;
 	int oldEvents = 0;
 	
     USB_DeviceApplicationInit();
@@ -198,11 +198,11 @@ void fw_main_task(void *data)
 				}
 			}
 
-			if (key_event == EVENT_KEY_CHANGE && (buttons & BUTTON_PTT) == 0 && keys != 0) {
-				if (keys & KEY_MOD_PRESS)
+			if (key_event == EVENT_KEY_CHANGE && (buttons & BUTTON_PTT) == 0 && keys.key != 0) {
+				if (keys.event & KEY_MOD_PRESS)
 				{
 					set_melody(melody_key_beep);
-				} else if  ((keys & (KEY_MOD_LONG | KEY_MOD_DOWN)) == (KEY_MOD_LONG | KEY_MOD_DOWN)) {
+				} else if  ((keys.event & (KEY_MOD_LONG | KEY_MOD_DOWN)) == (KEY_MOD_LONG | KEY_MOD_DOWN)) {
 					set_melody(melody_key_long_beep);
 				}
 				if (KEYCHECK_LONGDOWN(keys, KEY_RED))
@@ -280,8 +280,8 @@ void fw_main_task(void *data)
     		ev.buttons = buttons;
     		ev.keys = keys;
     		ev.events = (button_event<<1) | key_event;
-    		ev.hasEvent = (ev.buttons != oldButtons) || (ev.keys != oldKeys) || (ev.events != oldEvents) ||
-    				((key_event & EVENT_KEY_CHANGE) && (keys & KEY_MOD_LONG));
+    		ev.hasEvent = (ev.buttons != oldButtons) || (ev.keys.event != oldKeys.event) || (ev.events != oldEvents) ||
+    				((key_event & EVENT_KEY_CHANGE) && (keys.event & KEY_MOD_LONG));
     		ev.ticks = fw_millis();
 
     		oldButtons = ev.buttons;

@@ -698,13 +698,12 @@ void setOverrideTGorPC(int tgOrPc, bool privateCall) {
 	}
 }
 
-char keypressToNumberChar(int keys)
+char keypressToNumberChar(keyboardCode_t keys)
 {
-	char keycode = KEYCHAR(keys);
-	if (KEYCHECK_MOD(keys, KEY_MOD_PRESS, KEY_MOD_PRESS)) {
-		if (keycode >= '0' && keycode <= '9')
+	if (keys.event & KEY_MOD_PRESS) {
+		if (keys.key >= '0' && keys.key <= '9')
 		{
-			return keycode;
+			return keys.key;
 		}
 	}
 	return '\0';

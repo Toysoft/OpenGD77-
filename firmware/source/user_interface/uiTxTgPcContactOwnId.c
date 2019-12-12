@@ -152,6 +152,7 @@ static int getNextContact(int curidx, int dir, struct_codeplugContact_t *contact
 static void handleEvent(ui_event_t *ev)
 {
 	size_t sLen;
+	uint32_t tmpID;
 
 	if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{
@@ -160,30 +161,33 @@ static void handleEvent(ui_event_t *ev)
 	}
 	else if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 	{
-		if (gMenusCurrentItemIndex != ENTRY_USER_DMR_ID)
-		{
-			uint32_t saveTrxTalkGroupOrPcId = trxTalkGroupOrPcId;
-			trxTalkGroupOrPcId = atoi(digits);
-			nonVolatileSettings.overrideTG = trxTalkGroupOrPcId;
-			if (gMenusCurrentItemIndex == ENTRY_PC || (pcIdx != 0 && contact.callType == 0x01))
+		tmpID = atoi(digits);
+		if (tmpID > 0 && tmpID <= 9999999) {
+			if (gMenusCurrentItemIndex != ENTRY_USER_DMR_ID)
 			{
-				// Private Call
-
-				if ((saveTrxTalkGroupOrPcId >> 24) != PC_CALL_FLAG)
+				uint32_t saveTrxTalkGroupOrPcId = trxTalkGroupOrPcId;
+				trxTalkGroupOrPcId = tmpID;
+				nonVolatileSettings.overrideTG = trxTalkGroupOrPcId;
+				if (gMenusCurrentItemIndex == ENTRY_PC || (pcIdx != 0 && contact.callType == 0x01))
 				{
-					// if the current Tx TG is a TalkGroup then save it so it can be stored after the end of the private call
-					menuUtilityTgBeforePcMode = saveTrxTalkGroupOrPcId;
+					// Private Call
+
+					if ((saveTrxTalkGroupOrPcId >> 24) != PC_CALL_FLAG)
+					{
+						// if the current Tx TG is a TalkGroup then save it so it can be stored after the end of the private call
+						menuUtilityTgBeforePcMode = saveTrxTalkGroupOrPcId;
+					}
+					nonVolatileSettings.overrideTG |= (PC_CALL_FLAG << 24);
 				}
-				nonVolatileSettings.overrideTG |= (PC_CALL_FLAG << 24);
 			}
-		}
-		else
-		{
-			trxDMRID = atoi(digits);
-			if (ev->buttons & BUTTON_SK2)
+			else
 			{
-				// make the change to DMR ID permanent if Function + Green is pressed
-				codeplugSetUserDMRID(trxDMRID);
+				trxDMRID = tmpID;
+				if (ev->buttons & BUTTON_SK2)
+				{
+					// make the change to DMR ID permanent if Function + Green is pressed
+					codeplugSetUserDMRID(trxDMRID);
+				}
 			}
 		}
 		menuSystemPopAllAndDisplayRootMenu();

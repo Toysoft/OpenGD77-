@@ -219,7 +219,7 @@ static void handleEvent(ui_event_t *ev)
 	}
 
 	// Stop xmitting Tone
-	if (trxIsTransmittingTone && ((ev->buttons & BUTTON_SK2) == 0) && (ev->keys == 0))
+	if (trxIsTransmittingTone && ((ev->buttons & BUTTON_SK2) == 0) && (ev->keys.key == 0))
 	{
 		trxIsTransmittingTone = false;
 		trxSelectVoiceChannel(AT1846_VOICE_CHANNEL_MIC);
