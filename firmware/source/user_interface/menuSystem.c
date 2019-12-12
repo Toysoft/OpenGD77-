@@ -299,3 +299,22 @@ int menuGetMenuOffset(int maxMenuEntries, int loopOffset)
      return offset;
 }
 
+/*
+ * Returns 99 if key is unknown, or not numerical when digitsOnly is true
+ */
+int menuGetKeypadKeyValue(ui_event_t *ev, bool digitsOnly)
+{
+	uint32_t keypadKeys[] = {
+			KEY_0, KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9,
+			KEY_LEFT, KEY_UP, KEY_DOWN, KEY_RIGHT, KEY_STAR, KEY_HASH
+	};
+
+	for (int i = 0; i < ((sizeof(keypadKeys) / sizeof(keypadKeys[0])) - (digitsOnly ? 6 : 0 )); i++)
+	{
+		if (KEYCHECK_PRESS(ev->keys, keypadKeys[i]))
+				return i;
+	}
+
+	return 99;
+}
+

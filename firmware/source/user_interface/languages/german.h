@@ -61,8 +61,8 @@ const stringsTable_t germanLanguage =
 .unlocked				= "Entsperrt", // MaxLen: 15
 .power_off				= "Schalte aus...", // MaxLen: 16
 .error					= "FEHLER", // MaxLen: 8
-.rx_only				= "Nur Rx", // MaxLen: 14
-.out_of_band			= "AUSSER BAND", // MaxLen: 14
+.rx_only				= "Nur Rx", // MaxLen: 16
+.out_of_band			= "AUSSER BAND", // MaxLen: 16
 .timeout				= "Zeit abgelaufen", // MaxLen: 8
 .tg_entry				= "TG Eingabe", // MaxLen: 15
 .pc_entry				= "PC Eingabe", // MaxLen: 15
@@ -133,8 +133,8 @@ const stringsTable_t germanLanguage =
 .delete_contact			= "Kontakt löschen", // MaxLen: 16
 .group_call				= "Gruppenruf", // MaxLen: 16
 .all_call				= "Ruf an alle", // MaxLen: 16
-.tone_scan				= "Tone scan",//// MaxLen: 16
-.cc_scan				= "CC scan",//// MaxLen: 16
+.tone_scan				= "CTCSS Scan",//// MaxLen: 16
+.cc_scan				= "CC Scan",//// MaxLen: 16
 };
 /********************************************************************
  *
