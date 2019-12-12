@@ -51,7 +51,7 @@ int menuCPS(uiEvent_t *ev, bool isFirstRun)
 	return 0;
 }
 
-void menuCPSUpdate(int command,int x, int y, UC1701_Font_t fontSize, UC1701_Text_Align_t alignment, bool isInverted,char *szMsg)
+void menuCPSUpdate(int command,int x, int y, ucFont_t fontSize, ucTextAlign_t alignment, bool isInverted,char *szMsg)
 {
 	switch(command)
 	{

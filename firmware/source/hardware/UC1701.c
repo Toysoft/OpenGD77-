@@ -154,7 +154,7 @@ static inline bool checkWritePos(uint8_t * writePos)
 }
 #endif
 
-int UC1701_printCore(int16_t x, int16_t y, const char *szMsg, UC1701_Font_t fontSize, UC1701_Text_Align_t alignment, bool isInverted)
+int UC1701_printCore(int16_t x, int16_t y, const char *szMsg, ucFont_t fontSize, ucTextAlign_t alignment, bool isInverted)
 {
 	int16_t i, sLen;
 	uint8_t *currentCharData;
@@ -365,12 +365,12 @@ void UC1701_clearBuf(void)
 	memset(screenBuf,0x00,1024);
 }
 
-void UC1701_printCentered(uint8_t y,const char *text, UC1701_Font_t fontSize)
+void UC1701_printCentered(uint8_t y,const char *text, ucFont_t fontSize)
 {
 	UC1701_printCore(0, y, text, fontSize, UC1701_TEXT_ALIGN_CENTER, false);
 }
 
-void UC1701_printAt(uint8_t x, uint8_t y,const char *text, UC1701_Font_t fontSize)
+void UC1701_printAt(uint8_t x, uint8_t y,const char *text, ucFont_t fontSize)
 {
 	UC1701_printCore(x, y, text, fontSize, UC1701_TEXT_ALIGN_LEFT, false);
 }
@@ -1068,7 +1068,7 @@ void UC1701_drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, 
     }
 }
 
-void UC1701_drawChoice(UC1701_Choice_t choice, bool clearRegion)
+void UC1701_drawChoice(ucChoice_t choice, bool clearRegion)
 {
 	struct
 	{

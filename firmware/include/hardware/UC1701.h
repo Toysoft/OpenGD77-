@@ -36,14 +36,14 @@ typedef enum
 	UC1701_FONT_8x8,
 	UC1701_FONT_8x16,
 	UC1701_FONT_16x32
-} UC1701_Font_t;
+} ucFont_t;
 
 typedef enum
 {
 	UC1701_TEXT_ALIGN_LEFT = 0,
 	UC1701_TEXT_ALIGN_CENTER,
 	UC1701_TEXT_ALIGN_RIGHT
-} UC1701_Text_Align_t;
+} ucTextAlign_t;
 
 typedef enum
 {
@@ -51,7 +51,7 @@ typedef enum
 	UC1701_CHOICE_YESNO,
 	UC1701_CHOICE_DISMISS,
 	NUM_UC1701_CHOICES
-} UC1701_Choice_t;
+} ucChoice_t;
 
 extern uint8_t screenBuf[];
 
@@ -59,9 +59,9 @@ void UC1701_begin(bool isInverted);
 void UC1701_clearBuf(void);
 void UC1701_render(void);
 void UC1701RenderRows(int16_t startRow, int16_t endRow);
-void UC1701_printCentered(uint8_t y,const  char *text, UC1701_Font_t fontSize);
-void UC1701_printAt(uint8_t x, uint8_t y,const  char *text, UC1701_Font_t fontSize);
-int UC1701_printCore(int16_t x, int16_t y,const char *szMsg, UC1701_Font_t fontSize, UC1701_Text_Align_t alignment, bool isInverted);
+void UC1701_printCentered(uint8_t y,const  char *text, ucFont_t fontSize);
+void UC1701_printAt(uint8_t x, uint8_t y,const  char *text, ucFont_t fontSize);
+int UC1701_printCore(int16_t x, int16_t y,const char *szMsg, ucFont_t fontSize, ucTextAlign_t alignment, bool isInverted);
 
 int16_t UC1701_setPixel(int16_t x, int16_t y, bool color);
 
@@ -93,6 +93,6 @@ void UC1701_drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, 
 void UC1701_setContrast(uint8_t contrast);
 void UC1701_setInverseVideo(bool isInverted);
 
-void UC1701_drawChoice(UC1701_Choice_t choice, bool clearRegion);
+void UC1701_drawChoice(ucChoice_t choice, bool clearRegion);
 
 #endif /* __UC1701_H__ */

@@ -63,7 +63,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs);
 void menuChannelColdStart();
 void menuVFOModeUpdateScreen(int txTimeSecs);
 void menuVFOModeStopScan(void);
-void menuCPSUpdate(int command,int x, int y, UC1701_Font_t fontSize, UC1701_Text_Align_t alignment, bool isInverted,char *szMsg);
+void menuCPSUpdate(int command,int x, int y, ucFont_t fontSize, ucTextAlign_t alignment, bool isInverted,char *szMsg);
 
 void menuInitMenuSystem(void);
 void menuSystemLanguageHasChanged(void);

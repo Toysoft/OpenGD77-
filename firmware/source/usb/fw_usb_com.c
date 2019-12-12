@@ -208,7 +208,7 @@ static void handleCPSRequest(void)
 				break;
 			case 2:
 				// Write a line of text to CPS screen
-				menuCPSUpdate(1,com_requestbuffer[2],com_requestbuffer[3],(UC1701_Font_t)com_requestbuffer[4],(UC1701_Text_Align_t)com_requestbuffer[5],com_requestbuffer[6],(char *)&com_requestbuffer[7]);
+				menuCPSUpdate(1,com_requestbuffer[2],com_requestbuffer[3],(ucFont_t)com_requestbuffer[4],(ucTextAlign_t)com_requestbuffer[5],com_requestbuffer[6],(char *)&com_requestbuffer[7]);
 				break;
 			case 3:
 				// Render CPS screen
