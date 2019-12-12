@@ -422,12 +422,12 @@ void ucDrawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, bool color)
 
 void ucDrawFastVLine(int16_t x, int16_t y, int16_t h, bool color)
 {
-	ucDrawLine(x, y, x, y + h - 1, color);
+	ucFillRect(x, y, 1, h, !color);
 }
 
 void ucDrawFastHLine(int16_t x, int16_t y, int16_t w, bool color)
 {
-	ucDrawLine(x, y, x + w - 1, y, color);
+	ucFillRect(x, y, w, 1, !color);
 }
 
 // Draw a circle outline
