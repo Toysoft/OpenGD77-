@@ -862,13 +862,12 @@ static void updateQuickMenuScreen(void)
 			case VFO_SCREEN_CODE_SCAN:
 				if(trxGetMode() == RADIO_MODE_ANALOG)
 				{
-					strcpy(buf, currentLanguage->tone_scan);
+					strncpy(buf, currentLanguage->tone_scan, bufferLen);
 				}
 				else
 				{
-					strcpy(buf, currentLanguage->cc_scan);
+					strncpy(buf, currentLanguage->cc_scan, bufferLen);
 				}
-
 				break;
 
 			default:
