@@ -72,10 +72,14 @@ int menuChannelDetails(uiEvent_t *ev, bool isFirstRun)
 
 static void updateCursor(bool moved)
 {
-	switch (gMenusCurrentItemIndex) {
-	case CH_DETAILS_NAME:
-		menuUpdateCursor(namePos, moved, true);
-		break;
+	if (settingsCurrentChannelNumber != -1)
+	{
+		switch (gMenusCurrentItemIndex)
+		{
+		case CH_DETAILS_NAME:
+			menuUpdateCursor(namePos, moved, true);
+			break;
+		}
 	}
 }
 
@@ -246,8 +250,10 @@ static void handleEvent(uiEvent_t *ev)
 		switch(gMenusCurrentItemIndex)
 		{
 			case CH_DETAILS_NAME:
-				moveCursorRightInString(channelName, &namePos, 16, (ev->buttons & BUTTON_SK2));
-				updateCursor(true);
+				if (settingsCurrentChannelNumber != -1) {
+					moveCursorRightInString(channelName, &namePos, 16, (ev->buttons & BUTTON_SK2));
+					updateCursor(true);
+				}
 				break;
 			case CH_DETAILS_MODE:
 				if (tmpChannel.chMode ==RADIO_MODE_ANALOG)
@@ -336,8 +342,10 @@ static void handleEvent(uiEvent_t *ev)
 		switch(gMenusCurrentItemIndex)
 		{
 			case CH_DETAILS_NAME:
-				moveCursorLeftInString(channelName, &namePos, (ev->buttons & BUTTON_SK2));
-				updateCursor(true);
+				if (settingsCurrentChannelNumber != -1) {
+					moveCursorLeftInString(channelName, &namePos, (ev->buttons & BUTTON_SK2));
+					updateCursor(true);
+				}
 				break;
 			case CH_DETAILS_MODE:
 				if (tmpChannel.chMode==RADIO_MODE_ANALOG)
@@ -424,7 +432,9 @@ static void handleEvent(uiEvent_t *ev)
 	}
 	else if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 	{
-		codeplugUtilConvertStringToBuf(channelName, (char *)&tmpChannel.name, 16);
+		if (settingsCurrentChannelNumber != -1) {
+			codeplugUtilConvertStringToBuf(channelName, (char *)&tmpChannel.name, 16);
+		}
 		memcpy(currentChannelData,&tmpChannel,sizeof(struct_codeplugChannel_t));
 
 		// settingsCurrentChannelNumber is -1 when in VFO mode
@@ -442,7 +452,7 @@ static void handleEvent(uiEvent_t *ev)
 		menuSystemPopPreviousMenu();
 		return;
 	}
-	else if (gMenusCurrentItemIndex == CH_DETAILS_NAME)
+	else if (gMenusCurrentItemIndex == CH_DETAILS_NAME && settingsCurrentChannelNumber != -1)
 	{
 		if (ev->keys.event == KEY_MOD_PREVIEW && namePos<16) {
 			channelName[namePos] = ev->keys.key;
