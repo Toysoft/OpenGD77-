@@ -61,6 +61,7 @@ const menuItemNew_t * menusData[] = { 	NULL,// splash
 										NULL,// Contact Quick List (SK2+#)
 										NULL,// Contact List Quick Menu
 										NULL,// Contact Details
+										NULL,// New Contact
 								};
 
 const menuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
@@ -88,6 +89,7 @@ const menuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
 												menuContactList,
 												menuContactList,
 												menuContactListSubMenu,
+												menuContactDetails,
 												menuContactDetails,
 												menuLanguage,
 };
@@ -242,7 +244,7 @@ const menuItemNew_t menuDataMainMenu[] = {
 };
 const menuItemNew_t menuDataContact[] = {
 	{ 2, 2} ,// length
-	{ 13 , MENU_CONTACT_DETAILS },// 7 New Contact
+	{ 13 , MENU_CONTACT_NEW },// 7 New Contact
 	{ 14, MENU_CONTACT_LIST },// 24 Contacts List
 	{ -1, MENU_CONTACT_LIST },// 24 Contacts Lis
 };

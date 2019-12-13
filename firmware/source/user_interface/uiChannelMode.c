@@ -237,6 +237,14 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 			menuUtilityReceivedPcId = 0x00;
 			if (trxIsTransmitting)
 			{
+				// Squelch is displayed, PTT was pressed
+				// Clear its region
+				if (displaySquelch)
+				{
+					displaySquelch = false;
+					ucFillRect(0, 16, 128, 16, true);
+				}
+
 				snprintf(buffer, bufferLen, " %d ", txTimeSecs);
 				buffer[bufferLen - 1] = 0;
 				ucPrintCentered(TX_TIMER_Y_OFFSET, buffer, FONT_16x32);

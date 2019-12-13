@@ -63,9 +63,7 @@ void fw_main_task(void *data)
 	uint32_t buttons;
 	int button_event;
 	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .ticks = 0 };
-	int oldButtons = 0;
-	keyboardCode_t oldKeys = NO_KEYCODE;
-	int oldEvents = 0;
+	bool keyOrButtonChanged = false;
 	
     USB_DeviceApplicationInit();
 
@@ -167,6 +165,9 @@ void fw_main_task(void *data)
 
 			fw_check_button_event(&buttons, &button_event); // Read button state and event
 			fw_check_key_event(&keys, &key_event); // Read keyboard state and event
+
+			// EVENT_*_CHANGED can be cleared later, so check this now as hasEvent has to be set anyway.
+			keyOrButtonChanged = ((key_event != NO_EVENT) || (button_event != NO_EVENT));
 
 			if (keypadLocked)
 			{
@@ -280,13 +281,8 @@ void fw_main_task(void *data)
     		ev.buttons = buttons;
     		ev.keys = keys;
     		ev.events = (button_event<<1) | key_event;
-    		ev.hasEvent = (ev.buttons != oldButtons) || (ev.keys.event != oldKeys.event) || (ev.events != oldEvents) ||
-    				((key_event & EVENT_KEY_CHANGE) && (keys.event & KEY_MOD_LONG));
+    		ev.hasEvent = keyOrButtonChanged;
     		ev.ticks = fw_millis();
-
-    		oldButtons = ev.buttons;
-    		oldKeys = ev.keys;
-    		oldEvents = ev.events;
 
         	menuSystemCallCurrentMenuTick(&ev);
 

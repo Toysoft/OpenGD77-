@@ -41,8 +41,10 @@ enum MENU_CONTACT_LIST_STATE
 static void reloadContactList(void)
 {
 	gMenusEndIndex = codeplugContactsGetCount(contactCallType);
-	gMenusCurrentItemIndex = 0;
 	if (gMenusEndIndex > 0) {
+		if (gMenusCurrentItemIndex >= gMenusEndIndex) {
+			gMenusCurrentItemIndex = 0;
+		}
 		contactListContactIndex = codeplugContactGetDataForNumber(gMenusCurrentItemIndex+1, contactCallType, &contactListContactData);
 	} else {
 		contactListContactIndex = 0;
@@ -54,7 +56,12 @@ int menuContactList(uiEvent_t *ev, bool isFirstRun)
 	if (isFirstRun)
 	{
 		if (menuContactListOverrideState == 0) {
-			contactCallType = CONTACT_CALLTYPE_TG;
+			if (contactListContactIndex == 0) {
+				contactCallType = CONTACT_CALLTYPE_TG;
+			} else {
+				codeplugContactGetDataForIndex(contactListContactIndex, &contactListContactData);
+				contactCallType = contactListContactData.callType;
+			}
 			reloadContactList();
 			menuContactListDisplayState = MENU_CONTACT_LIST_DISPLAY;
 		}
@@ -117,7 +124,7 @@ static void updateScreen(void)
 		break;
 	case MENU_CONTACT_LIST_DELETED:
 		codeplugUtilConvertBufToString(contactListContactData.name, nameBuf, 16);
-		menuDisplayTitle(nameBuf);
+//		menuDisplayTitle(nameBuf);
 		ucPrintCentered(16, currentLanguage->contact_deleted, FONT_8x16);
 		ucDrawChoice(CHOICE_DISMISS, false);
 		break;
@@ -284,7 +291,7 @@ static void handleSubMenuEvent(uiEvent_t *ev)
 			menuSystemPopAllAndDisplayRootMenu();
 			break;
 		case CONTACT_LIST_QUICK_MENU_EDIT:
-			menuSystemPushNewMenu(MENU_CONTACT_DETAILS);
+			menuSystemSetCurrentMenu(MENU_CONTACT_DETAILS);
 			break;
 		case CONTACT_LIST_QUICK_MENU_DELETE:
  			if (contactListContactIndex > 0)
