@@ -293,6 +293,14 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 				}
 				else
 				{
+					// Squelch is displayed, PTT was pressed
+					// Clear its region
+					if (displaySquelch)
+					{
+						displaySquelch = false;
+						ucFillRect(0, 16, 128, 16, true);
+					}
+
 					snprintf(buffer, bufferLen, " %d ", txTimeSecs);
 					ucPrintCentered(TX_TIMER_Y_OFFSET, buffer, FONT_16x32);
 				}
