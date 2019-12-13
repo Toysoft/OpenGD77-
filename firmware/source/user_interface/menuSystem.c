@@ -63,7 +63,7 @@ const menuItemNew_t * menusData[] = { 	NULL,// splash
 										NULL,// Contact Details
 								};
 
-const MenuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
+const menuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
 												menuPowerOff,
 												menuVFOMode,
 												menuChannelMode,
@@ -96,7 +96,7 @@ void menuSystemPushNewMenu(int menuNumber)
 {
 	if (menuControlData.stackPosition < 15)
 	{
-		ui_event_t ev = { .buttons = 0, .keys = KEYCODE_EMPTY, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
+		uiEvent_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
 
 		fw_reset_keyboard();
 		menuControlData.itemIndex[menuControlData.stackPosition] = gMenusCurrentItemIndex;
@@ -108,7 +108,7 @@ void menuSystemPushNewMenu(int menuNumber)
 }
 void menuSystemPopPreviousMenu(void)
 {
-	ui_event_t ev = { .buttons = 0, .keys = KEYCODE_EMPTY, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
+	uiEvent_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
 
 	fw_reset_keyboard();
 	menuControlData.itemIndex[menuControlData.stackPosition] = 0;
@@ -119,7 +119,7 @@ void menuSystemPopPreviousMenu(void)
 
 void menuSystemPopAllAndDisplayRootMenu(void)
 {
-	ui_event_t ev = { .buttons = 0, .keys = KEYCODE_EMPTY, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
+	uiEvent_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
 
 	fw_reset_keyboard();
 	memset(menuControlData.itemIndex, 0, sizeof(menuControlData.itemIndex));
@@ -130,7 +130,7 @@ void menuSystemPopAllAndDisplayRootMenu(void)
 
 void menuSystemPopAllAndDisplaySpecificRootMenu(int newRootMenu)
 {
-	ui_event_t ev = { .buttons = 0, .keys = KEYCODE_EMPTY, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
+	uiEvent_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
 
 	fw_reset_keyboard();
 	memset(menuControlData.itemIndex, 0, sizeof(menuControlData.itemIndex));
@@ -142,7 +142,7 @@ void menuSystemPopAllAndDisplaySpecificRootMenu(int newRootMenu)
 
 void menuSystemSetCurrentMenu(int menuNumber)
 {
-	ui_event_t ev = { .buttons = 0, .keys = KEYCODE_EMPTY, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
+	uiEvent_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
 
 	fw_reset_keyboard();
 	menuControlData.stack[menuControlData.stackPosition] = menuNumber;
@@ -155,7 +155,7 @@ int menuSystemGetCurrentMenuNumber(void)
 	return menuControlData.stack[menuControlData.stackPosition];
 }
 
-void menuSystemCallCurrentMenuTick(ui_event_t *ev)
+void menuSystemCallCurrentMenuTick(uiEvent_t *ev)
 {
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](ev,false);
 }
@@ -181,7 +181,7 @@ int gMenusEndIndex;// as above
 
 void menuInitMenuSystem(void)
 {
-	ui_event_t ev = { .buttons = 0, .keys = KEYCODE_EMPTY, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
+	uiEvent_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
 
 	menuDisplayLightTimer = -1;
 	menuControlData.stack[menuControlData.stackPosition]  = MENU_SPLASH_SCREEN;// set the very first screen as the splash screen
@@ -260,8 +260,8 @@ const menuItemNew_t menuDataContactContact [] = {
 
 void menuDisplayTitle(const char *title)
 {
-	UC1701_drawFastHLine(0, 13, 128, true);
-	UC1701_printCore(0, 3, title, UC1701_FONT_8x8, UC1701_TEXT_ALIGN_CENTER, false);
+	ucDrawFastHLine(0, 13, 128, true);
+	ucPrintCore(0, 3, title, FONT_8x8, TEXT_ALIGN_CENTER, false);
 }
 
 void menuDisplayEntry(int loopOffset, int focusedItem,const char *entryText)
@@ -269,9 +269,9 @@ void menuDisplayEntry(int loopOffset, int focusedItem,const char *entryText)
 	bool focused = (focusedItem == gMenusCurrentItemIndex);
 
 	if (focused)
-		UC1701_fillRoundRect(0, (loopOffset + 2) * 16, 128, 16, 2, true);
+		ucFillRoundRect(0, (loopOffset + 2) * 16, 128, 16, 2, true);
 
-	UC1701_printCore(0, (loopOffset + 2) * 16, entryText, UC1701_FONT_8x16, UC1701_TEXT_ALIGN_LEFT, focused);
+	ucPrintCore(0, (loopOffset + 2) * 16, entryText, FONT_8x16, TEXT_ALIGN_LEFT, focused);
 }
 
 int menuGetMenuOffset(int maxMenuEntries, int loopOffset)
@@ -303,7 +303,7 @@ int menuGetMenuOffset(int maxMenuEntries, int loopOffset)
 /*
  * Returns 99 if key is unknown, or not numerical when digitsOnly is true
  */
-int menuGetKeypadKeyValue(ui_event_t *ev, bool digitsOnly)
+int menuGetKeypadKeyValue(uiEvent_t *ev, bool digitsOnly)
 {
 	uint32_t keypadKeys[] = {
 			KEY_0, KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9,

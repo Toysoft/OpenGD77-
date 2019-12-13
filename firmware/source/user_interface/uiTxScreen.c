@@ -23,13 +23,13 @@
 
 
 static void updateScreen(void);
-static void handleEvent(ui_event_t *ev);
+static void handleEvent(uiEvent_t *ev);
 
 static const int PIT_COUNTS_PER_SECOND = 10000;
 static int timeInSeconds;
 static uint32_t nextSecondPIT;
 
-int menuTxScreen(ui_event_t *ev, bool isFirstRun)
+int menuTxScreen(uiEvent_t *ev, bool isFirstRun)
 {
 	static uint32_t m = 0, micm = 0;
 
@@ -61,18 +61,18 @@ int menuTxScreen(ui_event_t *ev, bool isFirstRun)
 			// We need to work out how to display this message for 1 or 2 seconds, even if the PTT is released.
 			// But this would require some sort of timer callback system, which we don't currently have.
 			//
-			UC1701_clearBuf();
-			UC1701_drawRoundRectWithDropShadow(4, 4, 120, 58, 5, true);
-			UC1701_printCentered(4, currentLanguage->error, UC1701_FONT_16x32);
+			ucClearBuf();
+			ucDrawRoundRectWithDropShadow(4, 4, 120, 58, 5, true);
+			ucPrintCentered(4, currentLanguage->error, FONT_16x32);
 			if ((currentChannelData->flag4 & 0x04) != 0x00)
 			{
-				UC1701_printCentered(40, currentLanguage->rx_only, UC1701_FONT_8x16);
+				ucPrintCentered(40, currentLanguage->rx_only, FONT_8x16);
 			}
 			else
 			{
-				UC1701_printCentered(40, currentLanguage->out_of_band, UC1701_FONT_8x16);
+				ucPrintCentered(40, currentLanguage->out_of_band, FONT_8x16);
 			}
-			UC1701_render();
+			ucRender();
 			displayLightOverrideTimeout(-1);
 			set_melody(melody_ERROR_beep);
 		}
@@ -104,9 +104,9 @@ int menuTxScreen(ui_event_t *ev, bool isFirstRun)
 				if ((currentChannelData->tot != 0) && (timeInSeconds == 0))
 				{
 					set_melody(melody_tx_timeout_beep);
-					UC1701_clearBuf();
-					UC1701_printCentered(20, currentLanguage->timeout, UC1701_FONT_16x32);
-					UC1701_render();
+					ucClearBuf();
+					ucPrintCentered(20, currentLanguage->timeout, FONT_16x32);
+					ucRender();
 				}
 				else
 				{
@@ -122,7 +122,7 @@ int menuTxScreen(ui_event_t *ev, bool isFirstRun)
 					if ((ev->ticks - micm) > 100)
 					{
 						drawDMRMicLevelBarGraph();
-						UC1701RenderRows(1,2);
+						ucRenderRows(1,2);
 						micm = ev->ticks;
 					}
 				}
@@ -156,7 +156,7 @@ static void updateScreen(void)
 	}
 }
 
-static void handleEvent(ui_event_t *ev)
+static void handleEvent(uiEvent_t *ev)
 {
 	// Xmiting ends (normal or timeouted)
 	if ((ev->buttons & BUTTON_PTT) == 0

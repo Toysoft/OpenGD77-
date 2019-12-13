@@ -65,41 +65,41 @@ static const char keypadAlphaMap[11][31] = {
 
 void fw_init_keyboard(void)
 {
-	port_pin_config_t config = {
-			kPORT_PullUp,
-			kPORT_FastSlewRate,
-			kPORT_PassiveFilterDisable,
-			kPORT_OpenDrainDisable,
-			kPORT_LowDriveStrength,
-			kPORT_MuxAsGpio,
+	 port_pin_config_t config = {
+	      kPORT_PullUp,
+	      kPORT_FastSlewRate,
+	      kPORT_PassiveFilterDisable,
+	      kPORT_OpenDrainDisable,
+	      kPORT_LowDriveStrength,
+	      kPORT_MuxAsGpio,
 			kPORT_UnlockRegister
-	};
+	 };
 
-	// column lines
+    // column lines
 	PORT_SetPinMux(Port_Key_Col0, Pin_Key_Col0, kPORT_MuxAsGpio);
 	PORT_SetPinMux(Port_Key_Col1, Pin_Key_Col1, kPORT_MuxAsGpio);
 	PORT_SetPinMux(Port_Key_Col2, Pin_Key_Col2, kPORT_MuxAsGpio);
 	PORT_SetPinMux(Port_Key_Col3, Pin_Key_Col3, kPORT_MuxAsGpio);
 
-	// row lines
-	PORT_SetPinConfig(Port_Key_Row0, Pin_Key_Row0, &config);
-	PORT_SetPinConfig(Port_Key_Row1, Pin_Key_Row1, &config);
-	PORT_SetPinConfig(Port_Key_Row2, Pin_Key_Row2, &config);
-	PORT_SetPinConfig(Port_Key_Row3, Pin_Key_Row3, &config);
-	PORT_SetPinConfig(Port_Key_Row4, Pin_Key_Row4, &config);
+    // row lines
+    PORT_SetPinConfig(Port_Key_Row0, Pin_Key_Row0, &config);
+    PORT_SetPinConfig(Port_Key_Row1, Pin_Key_Row1, &config);
+    PORT_SetPinConfig(Port_Key_Row2, Pin_Key_Row2, &config);
+    PORT_SetPinConfig(Port_Key_Row3, Pin_Key_Row3, &config);
+    PORT_SetPinConfig(Port_Key_Row4, Pin_Key_Row4, &config);
 
-	// column lines
-	GPIO_PinInit(GPIO_Key_Col0, Pin_Key_Col0, &pin_config_input);
-	GPIO_PinInit(GPIO_Key_Col1, Pin_Key_Col1, &pin_config_input);
-	GPIO_PinInit(GPIO_Key_Col2, Pin_Key_Col2, &pin_config_input);
-	GPIO_PinInit(GPIO_Key_Col3, Pin_Key_Col3, &pin_config_input);
+    // column lines
+    GPIO_PinInit(GPIO_Key_Col0, Pin_Key_Col0, &pin_config_input);
+    GPIO_PinInit(GPIO_Key_Col1, Pin_Key_Col1, &pin_config_input);
+    GPIO_PinInit(GPIO_Key_Col2, Pin_Key_Col2, &pin_config_input);
+    GPIO_PinInit(GPIO_Key_Col3, Pin_Key_Col3, &pin_config_input);
 
-	// row lines
-	GPIO_PinInit(GPIO_Key_Row0, Pin_Key_Row0, &pin_config_input);
-	GPIO_PinInit(GPIO_Key_Row1, Pin_Key_Row1, &pin_config_input);
-	GPIO_PinInit(GPIO_Key_Row2, Pin_Key_Row2, &pin_config_input);
-	GPIO_PinInit(GPIO_Key_Row3, Pin_Key_Row3, &pin_config_input);
-	GPIO_PinInit(GPIO_Key_Row4, Pin_Key_Row4, &pin_config_input);
+    // row lines
+    GPIO_PinInit(GPIO_Key_Row0, Pin_Key_Row0, &pin_config_input);
+    GPIO_PinInit(GPIO_Key_Row1, Pin_Key_Row1, &pin_config_input);
+    GPIO_PinInit(GPIO_Key_Row2, Pin_Key_Row2, &pin_config_input);
+    GPIO_PinInit(GPIO_Key_Row3, Pin_Key_Row3, &pin_config_input);
+    GPIO_PinInit(GPIO_Key_Row4, Pin_Key_Row4, &pin_config_input);
 
 	oldKeyboardCode = 0;
 	keyDebounceScancode = 0;
@@ -108,6 +108,7 @@ void fw_init_keyboard(void)
 	keypadAlphaIndex = 0;
 	keypadAlphaKey = 0;
 	keyState = KEY_IDLE;
+	keypadLocked = false;
 }
 
 void fw_reset_keyboard(void)
@@ -121,27 +122,27 @@ void fw_reset_keyboard(void)
 
 inline uint8_t fw_read_keyboard_col(void)
 {
-	return ~((GPIOB->PDIR) >> 19) & 0x1f;
+	return ~((GPIOB->PDIR)>>19) & 0x1f;
 }
 
 uint32_t fw_read_keyboard(void)
 {
 	uint32_t result = 0;
 
-	for (int col = 3; col >= 0; col--)
+	for (int col=3; col>=0; col--)
 	{
 		GPIO_PinInit(GPIOC, col, &pin_config_output);
 		GPIO_PinWrite(GPIOC, col, 0);
 		for (volatile int i = 0; i < 100; i++)
 			; // small delay to allow voltages to settle. The delay value of 100 is arbitrary.
 
-		result = (result << 5) | fw_read_keyboard_col();
+		result=(result<<5) | fw_read_keyboard_col();
 
 		GPIO_PinWrite(GPIOC, col, 1);
 		GPIO_PinInit(GPIOC, col, &pin_config_input);
 	}
 
-	return result;
+    return result;
 }
 
 bool fw_scan_key(uint32_t scancode, char *keycode)
@@ -239,15 +240,15 @@ void fw_check_key_event(keyboardCode_t *keys, int *event)
 			}
 		}
 		break;
-	case KEY_PRESS:
+	case  KEY_PRESS:
 		keys->key = keycode;
 		keys->event = KEY_MOD_DOWN | KEY_MOD_PRESS;
 		*event = EVENT_KEY_CHANGE;
 
-		taskENTER_CRITICAL();
-		timer_keypad = keypadTimerLong;
+			taskENTER_CRITICAL();
+			timer_keypad=keypadTimerLong;
 		timer_keypad_timeout = 10000;
-		taskEXIT_CRITICAL();
+			taskEXIT_CRITICAL();
 		keyState = KEY_WAITLONG;
 
 		if (keypadAlphaEnable == true)
@@ -289,7 +290,7 @@ void fw_check_key_event(keyboardCode_t *keys, int *event)
 				{
 					keys->key = keypadAlphaMap[keypadAlphaKey - 1][keypadAlphaIndex];
 					keys->event = KEY_MOD_PRESS;
-					*event = EVENT_KEY_CHANGE;
+			*event = EVENT_KEY_CHANGE;
 					keypadAlphaKey = newAlphaKey;
 					keypadAlphaIndex = -1;
 					keyState = KEY_PRESS;
@@ -309,13 +310,13 @@ void fw_check_key_event(keyboardCode_t *keys, int *event)
 		else
 		{
 			taskENTER_CRITICAL();
-			tmp_timer_keypad = timer_keypad;
+			tmp_timer_keypad=timer_keypad;
 			taskEXIT_CRITICAL();
 
 			if (tmp_timer_keypad == 0)
 			{
 				taskENTER_CRITICAL();
-				timer_keypad = keypadTimerRepeat;
+				timer_keypad=keypadTimerRepeat;
 				taskEXIT_CRITICAL();
 
 				keys->key = keycode;
@@ -337,7 +338,7 @@ void fw_check_key_event(keyboardCode_t *keys, int *event)
 		else
 		{
 			taskENTER_CRITICAL();
-			tmp_timer_keypad = timer_keypad;
+			tmp_timer_keypad=timer_keypad;
 			taskEXIT_CRITICAL();
 
 			keys->key = keycode;
@@ -347,7 +348,7 @@ void fw_check_key_event(keyboardCode_t *keys, int *event)
 			if (tmp_timer_keypad == 0)
 			{
 				taskENTER_CRITICAL();
-				timer_keypad = keypadTimerRepeat;
+				timer_keypad=keypadTimerRepeat;
 				taskEXIT_CRITICAL();
 
 				if (keys->key == KEY_LEFT || keys->key == KEY_RIGHT

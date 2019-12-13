@@ -19,7 +19,7 @@
 #include <user_interface/uiLocalisation.h>
 
 static void updateScreen(void);
-static void handleEvent(ui_event_t *ev);
+static void handleEvent(uiEvent_t *ev);
 static void scrollDownOneLine(void);
 
 //#define CREDIT_TEXT_LENGTH 33
@@ -28,7 +28,7 @@ const int NUM_CREDITS = 6;
 static const char *creditTexts[] = {"Roger VK3KYY","Kai DG4KLU","Jason VK7ZJA","Alex DL4LEX","Daniel F1RMB","Colin G4EML"};
 static int currentDisplayIndex=0;
 
-int menuCredits(ui_event_t *ev, bool isFirstRun)
+int menuCredits(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -53,17 +53,17 @@ int menuCredits(ui_event_t *ev, bool isFirstRun)
 
 static void updateScreen(void)
 {
-	UC1701_clearBuf();
+	ucClearBuf();
 	menuDisplayTitle(currentLanguage->credits);
 
 	for(int i=0;i<6;i++)
 	{
 		if ((i+currentDisplayIndex) < NUM_CREDITS)
 		{
-			UC1701_printCentered(i*8 + 16,(char *)creditTexts[i+currentDisplayIndex],0);
+			ucPrintCentered(i*8 + 16,(char *)creditTexts[i+currentDisplayIndex], FONT_6x8);
 		}
 	}
-	UC1701_render();
+	ucRender();
 	displayLightTrigger();
 }
 
@@ -76,7 +76,7 @@ static void scrollDownOneLine(void)
 	updateScreen();
 }
 
-static void handleEvent(ui_event_t *ev)
+static void handleEvent(uiEvent_t *ev)
 {
 
 	if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
