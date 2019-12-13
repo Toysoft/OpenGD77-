@@ -25,6 +25,7 @@
 #include "fw_settings.h"
 
 static void updateScreen(void);
+static void updateCursor(bool moved);
 static void handleEvent(uiEvent_t *ev);
 
 
@@ -32,7 +33,7 @@ static struct_codeplugContact_t tmpContact;
 static const char *callTypeString[3];// = { "Group", "Private", "All" };
 static int contactDetailsIndex;
 static char digits[9];
-static char name[20];
+static char contactName[20];
 static int namePos;
 
 enum CONTACT_DETAILS_DISPLAY_LIST { CONTACT_DETAILS_NAME=0, CONTACT_DETAILS_TG, CONTACT_DETAILS_CALLTYPE, CONTACT_DETAILS_TS,
@@ -57,31 +58,25 @@ int menuContactDetails(uiEvent_t *ev, bool isFirstRun)
 			tmpContact.reserve1 = 0xff;
 			tmpContact.tgNumber = 0;
 			digits[0] = 0x00;
-			memset(name, 0, 20);
+			memset(contactName, 0, 20);
 			namePos = 0;
 		} else {
 			contactDetailsIndex = contactListContactIndex;
 			memcpy(&tmpContact, &contactListContactData,sizeof(struct_codeplugContact_t));
 			itoa(tmpContact.tgNumber, digits, 10);
-			codeplugUtilConvertBufToString(tmpContact.name, name, 16);
-			namePos = strlen(name);
+			codeplugUtilConvertBufToString(tmpContact.name, contactName, 16);
+			namePos = strlen(contactName);
 		}
 
 		menuContactDetailsState = MENU_CONTACT_DETAILS_DISPLAY;
 		gMenusCurrentItemIndex = CONTACT_DETAILS_NAME;
 
 		updateScreen();
+		updateCursor(true);
 	}
 	else
 	{
-		switch (gMenusCurrentItemIndex) {
-		case CONTACT_DETAILS_NAME:
-			menuUpdateCursor(namePos, true);
-			break;
-		case CONTACT_DETAILS_TG:
-			menuUpdateCursor(strlen(digits)+3, true);
-			break;
-		}
+		updateCursor(false);
 		if (ev->hasEvent || (menuContactDetailsTimeout > 0))
 		{
 			handleEvent(ev);
@@ -89,6 +84,18 @@ int menuContactDetails(uiEvent_t *ev, bool isFirstRun)
 		}
 	}
 	return 0;
+}
+
+static void updateCursor(bool moved)
+{
+	switch (gMenusCurrentItemIndex) {
+	case CONTACT_DETAILS_NAME:
+		menuUpdateCursor(namePos, moved, true);
+		break;
+	case CONTACT_DETAILS_TG:
+		menuUpdateCursor(strlen(digits)+3, moved, true);
+		break;
+	}
 }
 
 static void updateScreen(void)
@@ -125,7 +132,7 @@ static void updateScreen(void)
 			switch (mNum)
 			{
 			case CONTACT_DETAILS_NAME:
-				strncpy(buf,name,16);
+				strncpy(buf,contactName,16);
 				break;
 			case CONTACT_DETAILS_TG:
 				switch (tmpContact.callType)
@@ -202,7 +209,8 @@ static void handleEvent(uiEvent_t *ev)
 				switch(gMenusCurrentItemIndex)
 				{
 				case CONTACT_DETAILS_NAME:
-					moveCursorRightInString(name, &namePos, 16, (ev->buttons & BUTTON_SK2));
+					moveCursorRightInString(contactName, &namePos, 16, (ev->buttons & BUTTON_SK2));
+					updateCursor(true);
 					break;
 				case CONTACT_DETAILS_TG:
 					break;
@@ -230,12 +238,14 @@ static void handleEvent(uiEvent_t *ev)
 				switch(gMenusCurrentItemIndex)
 				{
 				case CONTACT_DETAILS_NAME:
-					moveCursorLeftInString(name, &namePos, (ev->buttons & BUTTON_SK2));
+					moveCursorLeftInString(contactName, &namePos, (ev->buttons & BUTTON_SK2));
+					updateCursor(true);
 					break;
 				case CONTACT_DETAILS_TG:
 					if (sLen>0) {
 						digits[sLen-1] = 0x00;
 					}
+					updateCursor(true);
 					break;
 				case CONTACT_DETAILS_CALLTYPE:
 					MENU_DEC(tmpContact.callType,3);
@@ -279,7 +289,7 @@ static void handleEvent(uiEvent_t *ev)
 					}
 					else
 					{
-						codeplugUtilConvertStringToBuf(name, tmpContact.name, 16);
+						codeplugUtilConvertStringToBuf(contactName, tmpContact.name, 16);
 						if (contactDetailsIndex > 0 && contactDetailsIndex <= 1024)
 						{
 							if (tmpContact.name[0] == 0xff)
@@ -331,11 +341,15 @@ static void handleEvent(uiEvent_t *ev)
 			} else if (gMenusCurrentItemIndex == CONTACT_DETAILS_NAME)
 			{
 				if (ev->keys.event == KEY_MOD_PREVIEW) {
-					name[namePos] = ev->keys.key;
+					contactName[namePos] = ev->keys.key;
+					updateCursor(true);
 				}
 				if (ev->keys.event == KEY_MOD_PRESS) {
-					name[namePos] = ev->keys.key;
-					namePos++;
+					contactName[namePos] = ev->keys.key;
+					if (namePos < strlen(contactName) && namePos < 15) {
+						namePos++;
+					}
+					updateCursor(true);
 				}
 			}
 

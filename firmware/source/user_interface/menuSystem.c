@@ -319,23 +319,24 @@ int menuGetKeypadKeyValue(uiEvent_t *ev, bool digitsOnly)
 	return 99;
 }
 
-void menuUpdateCursor(int pos, bool render)
+void menuUpdateCursor(int pos, bool moved, bool render)
 {
 	static uint32_t lastBlink = 0;
 	static bool     blink = false;
 	uint32_t        m = fw_millis();
 
-	if ((m - lastBlink) > 1000)
+	if (moved) {
+		blink = true;
+	}
+	if ((m - lastBlink) > 1000 || moved)
 	{
-//		ucPrintCore(pos*8-1, 33, "_", FONT_8x16, 0, blink);
-
 		ucDrawFastHLine(pos*8-1, 46, 8, blink);
 
 		blink = !blink;
 		lastBlink = m;
 
 		if (render) {
-			ucRender();
+			ucRenderRows(5,6);
 		}
 	}
 }
@@ -373,8 +374,7 @@ void moveCursorRightInString(char *str, int *pos, int max, bool insert)
 				str[*pos] = ' ';
 			}
 		}
-		else
-		{
+		if (*pos < max-1) {
 			*pos += 1;
 		}
 	}

@@ -80,7 +80,7 @@ void menuSystemPopAllAndDisplaySpecificRootMenu(int newRootMenu);
 
 void menuSystemCallCurrentMenuTick(uiEvent_t *ev);
 int menuGetKeypadKeyValue(uiEvent_t *ev, bool digitsOnly);
-void menuUpdateCursor(int pos, bool render);
+void menuUpdateCursor(int pos, bool moved, bool render);
 void moveCursorLeftInString(char *str, int *pos, bool delete);
 void moveCursorRightInString(char *str, int *pos, int max, bool insert);
 
