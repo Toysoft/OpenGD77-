@@ -349,9 +349,9 @@ static void handleEvent(uiEvent_t *ev)
 		break;
 	case MENU_CONTACT_DETAILS_SAVED:
         menuContactDetailsTimeout--;
-		if ((menuContactDetailsTimeout == 0) || (KEYCHECK_SHORTUP(ev->keys, KEY_GREEN)))
+		if ((menuContactDetailsTimeout == 0) || KEYCHECK_SHORTUP(ev->keys, KEY_GREEN) || KEYCHECK_SHORTUP(ev->keys, KEY_RED))
 		{
-			contactListContactIndex = 0;
+//			contactListContactIndex = 0;
 			menuSystemPopPreviousMenu();
 			return;
 		}
@@ -360,7 +360,7 @@ static void handleEvent(uiEvent_t *ev)
 		break;
 	case MENU_CONTACT_DETAILS_EXISTS:
         menuContactDetailsTimeout--;
-		if ((menuContactDetailsTimeout == 0) || (KEYCHECK_SHORTUP(ev->keys, KEY_GREEN)))
+		if ((menuContactDetailsTimeout == 0) || KEYCHECK_SHORTUP(ev->keys, KEY_GREEN) || KEYCHECK_SHORTUP(ev->keys, KEY_RED))
 		{
 			menuContactDetailsState = MENU_CONTACT_DETAILS_DISPLAY;
 		}
