@@ -339,3 +339,43 @@ void menuUpdateCursor(int pos, bool render)
 		}
 	}
 }
+
+void moveCursorLeftInString(char *str, int *pos, bool delete)
+{
+	int nLen = strlen(str);
+
+	if (*pos > 0) {
+		*pos -=1;
+		if (delete)
+		{
+			for (int i = *pos; i <= nLen; i++)
+			{
+				str[i] = str[i + 1];
+			}
+		}
+	}
+}
+
+void moveCursorRightInString(char *str, int *pos, int max, bool insert)
+{
+	int nLen = strlen(str);
+
+	if (*pos < strlen(str))
+	{
+		if (insert)
+		{
+			if (nLen < max)
+			{
+				for (int i = nLen; i > *pos; i--)
+				{
+					str[i] = str[i - 1];
+				}
+				str[*pos] = ' ';
+			}
+		}
+		else
+		{
+			*pos += 1;
+		}
+	}
+}

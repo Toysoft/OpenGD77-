@@ -27,6 +27,7 @@
 static void updateScreen(void);
 static void handleEvent(uiEvent_t *ev);
 
+
 static struct_codeplugContact_t tmpContact;
 static const char *callTypeString[3];// = { "Group", "Private", "All" };
 static int contactDetailsIndex;
@@ -201,19 +202,7 @@ static void handleEvent(uiEvent_t *ev)
 				switch(gMenusCurrentItemIndex)
 				{
 				case CONTACT_DETAILS_NAME:
-					if (namePos < strlen(name)) {
-						if (ev->buttons & BUTTON_SK2)
-						{
-							int nLen = strlen(name);
-							for (int i = nLen; i > namePos; i--)
-							{
-								name[i] = name[i-1];
-							}
-							name[namePos] = ' ';
-						} else {
-							namePos++;
-						}
-					}
+					moveCursorRightInString(name, &namePos, 16, (ev->buttons & BUTTON_SK2));
 					break;
 				case CONTACT_DETAILS_TG:
 					break;
@@ -241,17 +230,7 @@ static void handleEvent(uiEvent_t *ev)
 				switch(gMenusCurrentItemIndex)
 				{
 				case CONTACT_DETAILS_NAME:
-					if (namePos > 0) {
-						namePos--;
-						if (ev->buttons & BUTTON_SK2)
-						{
-							int nLen = strlen(name);
-							for (int i = namePos; i <= nLen; i++)
-							{
-								name[i] = name[i + 1];
-							}
-						}
-					}
+					moveCursorLeftInString(name, &namePos, (ev->buttons & BUTTON_SK2));
 					break;
 				case CONTACT_DETAILS_TG:
 					if (sLen>0) {
@@ -352,7 +331,6 @@ static void handleEvent(uiEvent_t *ev)
 			} else if (gMenusCurrentItemIndex == CONTACT_DETAILS_NAME)
 			{
 				if (ev->keys.event == KEY_MOD_PREVIEW) {
-					USB_DEBUG_printf("preview: %c",ev->keys.key);
 					name[namePos] = ev->keys.key;
 				}
 				if (ev->keys.event == KEY_MOD_PRESS) {
