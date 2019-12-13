@@ -63,7 +63,7 @@ void menuUtilityRenderQSOData(void);
 void menuUtilityRenderHeader(void);
 void lastheardInitList(void);
 bool lastHeardListUpdate(uint8_t *dmrDataBuffer);
-bool menuUtilityHandlePrivateCallActions(ui_event_t *ev);
+bool menuUtilityHandlePrivateCallActions(uiEvent_t *ev);
 void lastHeardClearLastID(void);
 void drawRSSIBarGraph(void);
 void drawDMRMicLevelBarGraph(void);

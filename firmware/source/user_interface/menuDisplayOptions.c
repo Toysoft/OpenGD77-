@@ -21,7 +21,7 @@
 #include "fw_settings.h"
 
 static void updateScreen(void);
-static void handleEvent(ui_event_t *ev);
+static void handleEvent(uiEvent_t *ev);
 
 static uint8_t originalBrightness;
 static uint8_t contrast;
@@ -33,7 +33,7 @@ const int CONTRAST_MAX_VALUE = 30;// Maximum value which still seems to be reada
 const int CONTRAST_MIN_VALUE = 12;// Minimum value which still seems to be readable
 enum DISPLAY_MENU_LIST { DISPLAY_MENU_BRIGHTNESS = 0, DISPLAY_MENU_CONTRAST, DISPLAY_MENU_TIMEOUT, DISPLAY_MENU_COLOUR_INVERT, NUM_DISPLAY_MENU_ITEMS};
 
-int menuDisplayOptions(ui_event_t *ev, bool isFirstRun)
+int menuDisplayOptions(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -57,7 +57,7 @@ static void updateScreen(void)
 	static const int bufferLen = 17;
 	char buf[bufferLen];
 
-	UC1701_clearBuf();
+	ucClearBuf();
 	menuDisplayTitle(currentLanguage->display_options);
 
 	// Can only display 3 of the options at a time menu at -1, 0 and +1
@@ -93,11 +93,11 @@ static void updateScreen(void)
 		menuDisplayEntry(i, mNum, buf);
 	}
 
-	UC1701_render();
+	ucRender();
 	displayLightTrigger();
 }
 
-static void handleEvent(ui_event_t *ev)
+static void handleEvent(uiEvent_t *ev)
 {
 	if (KEYCHECK_PRESS(ev->keys,KEY_DOWN) && gMenusEndIndex!=0)
 	{
@@ -132,7 +132,7 @@ static void handleEvent(ui_event_t *ev)
 				{
 					contrast = CONTRAST_MAX_VALUE;
 				}
-				UC1701_setContrast(contrast);
+				ucSetContrast(contrast);
 				break;
 			case DISPLAY_MENU_TIMEOUT:
 				backLightTimeout += 5;
@@ -172,7 +172,7 @@ static void handleEvent(ui_event_t *ev)
 				{
 					contrast = CONTRAST_MIN_VALUE;
 				}
-				UC1701_setContrast(contrast);
+				ucSetContrast(contrast);
 				break;
 			case DISPLAY_MENU_TIMEOUT:
 				backLightTimeout -= 5;

@@ -49,17 +49,17 @@ void fw_init_keyboard(void)
 	 };
 
     // column lines
-    PORT_SetPinConfig(Port_Key_Col0, Pin_Key_Col0, &config);
-    PORT_SetPinConfig(Port_Key_Col1, Pin_Key_Col1, &config);
-    PORT_SetPinConfig(Port_Key_Col2, Pin_Key_Col2, &config);
-    PORT_SetPinConfig(Port_Key_Col3, Pin_Key_Col3, &config);
+	PORT_SetPinMux(Port_Key_Col0, Pin_Key_Col0, kPORT_MuxAsGpio);
+	PORT_SetPinMux(Port_Key_Col1, Pin_Key_Col1, kPORT_MuxAsGpio);
+	PORT_SetPinMux(Port_Key_Col2, Pin_Key_Col2, kPORT_MuxAsGpio);
+	PORT_SetPinMux(Port_Key_Col3, Pin_Key_Col3, kPORT_MuxAsGpio);
 
     // row lines
-    PORT_SetPinMux(Port_Key_Row0, Pin_Key_Row0, kPORT_MuxAsGpio);
-    PORT_SetPinMux(Port_Key_Row1, Pin_Key_Row1, kPORT_MuxAsGpio);
-    PORT_SetPinMux(Port_Key_Row2, Pin_Key_Row2, kPORT_MuxAsGpio);
-    PORT_SetPinMux(Port_Key_Row3, Pin_Key_Row3, kPORT_MuxAsGpio);
-    PORT_SetPinMux(Port_Key_Row4, Pin_Key_Row4, kPORT_MuxAsGpio);
+    PORT_SetPinConfig(Port_Key_Row0, Pin_Key_Row0, &config);
+    PORT_SetPinConfig(Port_Key_Row1, Pin_Key_Row1, &config);
+    PORT_SetPinConfig(Port_Key_Row2, Pin_Key_Row2, &config);
+    PORT_SetPinConfig(Port_Key_Row3, Pin_Key_Row3, &config);
+    PORT_SetPinConfig(Port_Key_Row4, Pin_Key_Row4, &config);
 
     // column lines
     GPIO_PinInit(GPIO_Key_Col0, Pin_Key_Col0, &pin_config_input);
@@ -78,6 +78,7 @@ void fw_init_keyboard(void)
 	keyDebounceScancode = 0;
 	keyDebounceCounter = 0;
 	keyState = KEY_IDLE;
+	keypadLocked = false;
 }
 
 void fw_reset_keyboard(void)

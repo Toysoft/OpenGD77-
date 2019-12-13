@@ -25,7 +25,7 @@
 #include "fw_settings.h"
 
 static void updateScreen(void);
-static void handleEvent(ui_event_t *ev);
+static void handleEvent(uiEvent_t *ev);
 
 static struct_codeplugContact_t tmpContact;
 static const char *callTypeString[3];// = { "Group", "Private", "All" };
@@ -39,7 +39,7 @@ static int menuContactDetailsState;
 static int menuContactDetailsTimeout;
 enum MENU_CONTACT_DETAILS_STATE {MENU_CONTACT_DETAILS_DISPLAY=0, MENU_CONTACT_DETAILS_SAVED, MENU_CONTACT_DETAILS_EXISTS};
 
-int menuContactDetails(ui_event_t *ev, bool isFirstRun)
+int menuContactDetails(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -81,7 +81,7 @@ static void updateScreen(void)
 	static const int bufferLen = 17;
 	char buf[bufferLen];
 
-	UC1701_clearBuf();
+	ucClearBuf();
 
 	if (tmpContact.name[0] == 0x00) {
 		strncpy(buf, currentLanguage->new_contact, bufferLen);
@@ -143,20 +143,20 @@ static void updateScreen(void)
 		}
 		break;
 	case MENU_CONTACT_DETAILS_SAVED:
-		UC1701_printCentered(16,currentLanguage->contact_saved,UC1701_FONT_8x16);
-		UC1701_drawChoice(UC1701_CHOICE_OK, false);
+		ucPrintCentered(16,currentLanguage->contact_saved, FONT_8x16);
+		ucDrawChoice(CHOICE_OK, false);
 		break;
 	case MENU_CONTACT_DETAILS_EXISTS:
-		UC1701_printCentered(16, currentLanguage->duplicate,UC1701_FONT_8x16);
-		UC1701_printCentered(32,  currentLanguage->contact,UC1701_FONT_8x16);
-		UC1701_drawChoice(UC1701_CHOICE_OK, false);
+		ucPrintCentered(16, currentLanguage->duplicate, FONT_8x16);
+		ucPrintCentered(32, currentLanguage->contact, FONT_8x16);
+		ucDrawChoice(CHOICE_OK, false);
 		break;
 	}
-	UC1701_render();
+	ucRender();
 	displayLightTrigger();
 }
 
-static void handleEvent(ui_event_t *ev)
+static void handleEvent(uiEvent_t *ev)
 {
 	dmrIdDataStruct_t foundRecord;
 	static const int bufferLen = 17;
