@@ -96,7 +96,7 @@ void menuSystemPushNewMenu(int menuNumber)
 {
 	if (menuControlData.stackPosition < 15)
 	{
-		uiEvent_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
+		uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
 
 		fw_reset_keyboard();
 		menuControlData.itemIndex[menuControlData.stackPosition] = gMenusCurrentItemIndex;
@@ -108,7 +108,7 @@ void menuSystemPushNewMenu(int menuNumber)
 }
 void menuSystemPopPreviousMenu(void)
 {
-	uiEvent_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
+	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
 
 	fw_reset_keyboard();
 	menuControlData.itemIndex[menuControlData.stackPosition] = 0;
@@ -119,7 +119,7 @@ void menuSystemPopPreviousMenu(void)
 
 void menuSystemPopAllAndDisplayRootMenu(void)
 {
-	uiEvent_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
+	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
 
 	fw_reset_keyboard();
 	memset(menuControlData.itemIndex, 0, sizeof(menuControlData.itemIndex));
@@ -130,7 +130,7 @@ void menuSystemPopAllAndDisplayRootMenu(void)
 
 void menuSystemPopAllAndDisplaySpecificRootMenu(int newRootMenu)
 {
-	uiEvent_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
+	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
 
 	fw_reset_keyboard();
 	memset(menuControlData.itemIndex, 0, sizeof(menuControlData.itemIndex));
@@ -142,7 +142,7 @@ void menuSystemPopAllAndDisplaySpecificRootMenu(int newRootMenu)
 
 void menuSystemSetCurrentMenu(int menuNumber)
 {
-	uiEvent_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
+	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
 
 	fw_reset_keyboard();
 	menuControlData.stack[menuControlData.stackPosition] = menuNumber;
@@ -181,7 +181,7 @@ int gMenusEndIndex;// as above
 
 void menuInitMenuSystem(void)
 {
-	uiEvent_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
+	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
 
 	menuDisplayLightTimer = -1;
 	menuControlData.stack[menuControlData.stackPosition]  = MENU_SPLASH_SCREEN;// set the very first screen as the splash screen
@@ -327,13 +327,13 @@ void menuUpdateCursor(int pos, bool render)
 
 	if ((m - lastBlink) > 1000)
 	{
-		UC1701_printCore(pos*8, 32, "_", UC1701_FONT_8x16, 0, blink);
+		ucPrintCore(pos*8, 32, "_", FONT_8x16, 0, blink);
 
 		blink = !blink;
 		lastBlink = m;
 
 		if (render) {
-			UC1701_render();
+			ucRender();
 		}
 	}
 }

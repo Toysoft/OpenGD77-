@@ -24,7 +24,7 @@ typedef enum { NO_EVENT = 0, KEY_EVENT=0x01, BUTTON_EVENT = 0x02 } uiEventInput_
 typedef struct
 {
 	uint32_t	    buttons;
-	uint32_t	    keys;
+	keyboardCode_t  keys;
 	uiEventInput_t	events;
 	bool		    hasEvent;
 	uint32_t 	    ticks;
@@ -80,8 +80,6 @@ void menuSystemPopAllAndDisplaySpecificRootMenu(int newRootMenu);
 
 void menuSystemCallCurrentMenuTick(uiEvent_t *ev);
 int menuGetKeypadKeyValue(uiEvent_t *ev, bool digitsOnly);
-void menuSystemCallCurrentMenuTick(ui_event_t *ev);
-int menuGetKeypadKeyValue(ui_event_t *ev, bool digitsOnly);
 void menuUpdateCursor(int pos, bool render);
 
 /*

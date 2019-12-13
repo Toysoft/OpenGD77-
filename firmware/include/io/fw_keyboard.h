@@ -125,7 +125,7 @@ typedef struct keyboardCode {
 		char key;
 } keyboardCode_t;
 
-#define KEYCODE_EMPTY  { .event = 0, .key = 0 }
+#define NO_KEYCODE  { .event = 0, .key = 0 }
 
 void fw_init_keyboard(void);
 void fw_reset_keyboard(void);

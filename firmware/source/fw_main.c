@@ -62,9 +62,9 @@ void fw_main_task(void *data)
 	int key_event;
 	uint32_t buttons;
 	int button_event;
-	uiEvent_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = 0 };
+	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .ticks = 0 };
 	int oldButtons = 0;
-	keyboardCode_t oldKeys = KEYCODE_EMPTY;
+	keyboardCode_t oldKeys = NO_KEYCODE;
 	int oldEvents = 0;
 	
     USB_DeviceApplicationInit();
