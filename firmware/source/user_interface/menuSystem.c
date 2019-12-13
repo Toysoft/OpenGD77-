@@ -327,7 +327,9 @@ void menuUpdateCursor(int pos, bool render)
 
 	if ((m - lastBlink) > 1000)
 	{
-		ucPrintCore(pos*8, 32, "_", FONT_8x16, 0, blink);
+//		ucPrintCore(pos*8-1, 33, "_", FONT_8x16, 0, blink);
+
+		ucDrawFastHLine(pos*8-1, 46, 8, blink);
 
 		blink = !blink;
 		lastBlink = m;

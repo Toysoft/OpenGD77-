@@ -200,8 +200,21 @@ static void handleEvent(uiEvent_t *ev)
 			{
 				switch(gMenusCurrentItemIndex)
 				{
-//				case CONTACT_DETAILS_NAME:
-//					break;
+				case CONTACT_DETAILS_NAME:
+					if (namePos < strlen(name)) {
+						if (ev->buttons & BUTTON_SK2)
+						{
+							int nLen = strlen(name);
+							for (int i = nLen; i > namePos; i--)
+							{
+								name[i] = name[i-1];
+							}
+							name[namePos] = ' ';
+						} else {
+							namePos++;
+						}
+					}
+					break;
 				case CONTACT_DETAILS_TG:
 					break;
 				case CONTACT_DETAILS_CALLTYPE:
@@ -230,7 +243,14 @@ static void handleEvent(uiEvent_t *ev)
 				case CONTACT_DETAILS_NAME:
 					if (namePos > 0) {
 						namePos--;
-						name[namePos] = 0;
+						if (ev->buttons & BUTTON_SK2)
+						{
+							int nLen = strlen(name);
+							for (int i = namePos; i <= nLen; i++)
+							{
+								name[i] = name[i + 1];
+							}
+						}
 					}
 					break;
 				case CONTACT_DETAILS_TG:
