@@ -23,14 +23,14 @@
 #include "fw_settings.h"
 
 
-static void handleEvent(ui_event_t *ev);
+static void handleEvent(uiEvent_t *ev);
 static void loadChannelData(bool useChannelDataInMemory);
 static void scanning(void);
 static void startScan(void);
-static void handleUpKey(ui_event_t *ev);
+static void handleUpKey(uiEvent_t *ev);
 
 static void updateQuickMenuScreen(void);
-static void handleQuickMenuEvent(ui_event_t *ev);
+static void handleQuickMenuEvent(uiEvent_t *ev);
 
 static struct_codeplugZone_t currentZone;
 static struct_codeplugRxGroup_t rxGroupData;
@@ -64,7 +64,7 @@ static int nuisanceDeleteIndex = 0;
 
 static int tmpQuickMenuDmrFilterLevel;
 
-int menuChannelMode(ui_event_t *ev, bool isFirstRun)
+int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 {
 	static uint32_t m = 0, sqm = 0;
 
@@ -109,16 +109,15 @@ int menuChannelMode(ui_event_t *ev, bool isFirstRun)
 				{
 					displaySquelch = false;
 
-					UC1701_fillRect(0, 16, 128, 16, true);
-					UC1701RenderRows(2,4);
+					ucFillRect(0, 16, 128, 16, true);
+					ucRenderRows(2,4);
 				}
 
 				if ((ev->ticks - m) > RSSI_UPDATE_COUNTER_RELOAD)
 				{
 					m = ev->ticks;
 					drawRSSIBarGraph();
-					UC1701RenderRows(1,2);// Only render the second row which contains the bar graph, as there is no need to redraw the rest of the screen
-					//UC1701_render();
+					ucRenderRows(1,2);// Only render the second row which contains the bar graph, as there is no need to redraw the rest of the screen
 				}
 			}
 
@@ -228,7 +227,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 	struct_codeplugContact_t contact;
 	int contactIndex;
 
-	UC1701_clearBuf();
+	ucClearBuf();
 	menuUtilityRenderHeader();
 
 	switch(menuDisplayQSODataState)
@@ -240,7 +239,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 			{
 				snprintf(buffer, bufferLen, " %d ", txTimeSecs);
 				buffer[bufferLen - 1] = 0;
-				UC1701_printCentered(TX_TIMER_Y_OFFSET, buffer, UC1701_FONT_16x32);
+				ucPrintCentered(TX_TIMER_Y_OFFSET, buffer, FONT_16x32);
 				verticalPositionOffset=16;
 			}
 			else
@@ -257,7 +256,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 						snprintf(nameBuf, nameBufferLen, "%s Ch:%d",currentLanguage->all_channels, channelNumber);
 					}
 					nameBuf[nameBufferLen - 1] = 0;
-					UC1701_printCentered(50 , nameBuf, UC1701_FONT_6x8);
+					ucPrintCentered(50 , nameBuf, FONT_6x8);
 				}
 				else
 				{
@@ -272,12 +271,12 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 						snprintf(nameBuf, nameBufferLen, "%s Ch:%d", currentZoneName,channelNumber);
 						nameBuf[nameBufferLen - 1] = 0;
 					}
-					UC1701_printCentered(50, (char *)nameBuf,UC1701_FONT_6x8);
+					ucPrintCentered(50, (char *)nameBuf, FONT_6x8);
 				}
 			}
 
 			codeplugUtilConvertBufToString(channelScreenChannelData.name, nameBuf, 16);
-			UC1701_printCentered(32 + verticalPositionOffset, nameBuf, UC1701_FONT_8x16);
+			ucPrintCentered(32 + verticalPositionOffset, nameBuf, FONT_8x16);
 
 			if (trxGetMode() == RADIO_MODE_DIGITAL)
 			{
@@ -304,22 +303,22 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 						}
 					}
 					nameBuf[bufferLen - 1] = 0;
-					UC1701_drawRect(0, CONTACT_Y_POS + verticalPositionOffset, 128, 16, true);
+					ucDrawRect(0, CONTACT_Y_POS + verticalPositionOffset, 128, 16, true);
 				}
 				else
 				{
 					codeplugUtilConvertBufToString(contactData.name, nameBuf, 16);
 				}
-				UC1701_printCentered(CONTACT_Y_POS + verticalPositionOffset, nameBuf, UC1701_FONT_8x16);
+				ucPrintCentered(CONTACT_Y_POS + verticalPositionOffset, nameBuf, FONT_8x16);
 			}
 			// Squelch will be cleared later, 2000 ticks after last change
 			else if(displaySquelch && !trxIsTransmitting)
 			{
 				strncpy(buffer, currentLanguage->squelch, 8);
 				buffer[7] = 0; // Avoid overlap with bargraph
-				UC1701_printAt(0, 16, buffer, UC1701_FONT_8x16);
+				ucPrintAt(0, 16, buffer, FONT_8x16);
 				int bargraph= 1 + ((currentChannelData->sql-1)*5)/2 ;
-				UC1701_fillRect(62, 21, bargraph, 8, false);
+				ucFillRect(62, 21, bargraph, 8, false);
 			}
 
 			if (!((uiChannelModeScanActive) & (scanState==SCAN_SCANNING)))
@@ -327,21 +326,21 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				displayLightTrigger();
 			}
 
-			UC1701_render();
+			ucRender();
 			break;
 
 		case QSO_DISPLAY_CALLER_DATA:
 			isDisplayingQSOData=true;
 			menuUtilityRenderQSOData();
 			displayLightTrigger();
-			UC1701_render();
+			ucRender();
 			break;
 	}
 
 	menuDisplayQSODataState = QSO_DISPLAY_IDLE;
 }
 
-static void handleEvent(ui_event_t *ev)
+static void handleEvent(uiEvent_t *ev)
 {
 	// if we are scanning and down key is pressed then enter current channel into nuisance delete array.
 	if((scanState==SCAN_PAUSED) && ((ev->events & KEY_EVENT) && (KEYCHAR(ev->keys) == KEY_DOWN)) && (!(ev->buttons & BUTTON_SK2)))
@@ -749,7 +748,7 @@ static void handleEvent(ui_event_t *ev)
 }
 
 
-static void handleUpKey(ui_event_t *ev)
+static void handleUpKey(uiEvent_t *ev)
 {
 	if (ev->buttons & BUTTON_SK2)
 	{
@@ -808,7 +807,7 @@ static void updateQuickMenuScreen(void)
 	static const int bufferLen = 17;
 	char buf[bufferLen];
 
-	UC1701_clearBuf();
+	ucClearBuf();
 	menuDisplayTitle(currentLanguage->quick_menu);
 
 	for(int i =- 1; i <= 1; i++)
@@ -838,12 +837,12 @@ static void updateQuickMenuScreen(void)
 		menuDisplayEntry(i, mNum, buf);
 	}
 
-	UC1701_render();
+	ucRender();
 	displayLightTrigger();
 }
 
 
-static void handleQuickMenuEvent(ui_event_t *ev)
+static void handleQuickMenuEvent(uiEvent_t *ev)
 {
 	if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{
@@ -917,7 +916,7 @@ static void handleQuickMenuEvent(ui_event_t *ev)
 }
 
 
-int menuChannelModeQuickMenu(ui_event_t *ev, bool isFirstRun)
+int menuChannelModeQuickMenu(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -986,7 +985,7 @@ static void scanning(void)
 	{
 
 		trx_measure_count=0;														//needed to allow time for Rx to settle after channel change.
-		ui_event_t tmpEvent={ .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = 0, .ticks = 0 };
+		uiEvent_t tmpEvent={ .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = 0, .ticks = 0 };
 
 		handleUpKey(&tmpEvent);
 		scanTimer = SCAN_TOTAL_INTERVAL;

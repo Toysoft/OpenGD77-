@@ -19,9 +19,9 @@
 #include "fw_settings.h"
 
 static void updateScreen(void);
-static void handleEvent(ui_event_t *ev);
+static void handleEvent(uiEvent_t *ev);
 
-int menuSplashScreen(ui_event_t *ev, bool isFirstRun)
+int menuSplashScreen(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -40,15 +40,15 @@ static void updateScreen(void)
 	char line2[16];
 
 	codeplugGetBootItemTexts(line1,line2);
-	UC1701_clearBuf();
-	UC1701_printCentered(10, "OpenGD77",UC1701_FONT_8x16);
-	UC1701_printCentered(28, line1,UC1701_FONT_8x16);
-	UC1701_printCentered(42, line2,UC1701_FONT_8x16);
-	UC1701_render();
+	ucClearBuf();
+	ucPrintCentered(10, "OpenGD77", FONT_8x16);
+	ucPrintCentered(28, line1, FONT_8x16);
+	ucPrintCentered(42, line2, FONT_8x16);
+	ucRender();
 	displayLightTrigger();
 }
 
-static void handleEvent(ui_event_t *ev)
+static void handleEvent(uiEvent_t *ev)
 {
 	static uint32_t m = 0;
 

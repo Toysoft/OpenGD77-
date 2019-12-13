@@ -19,10 +19,10 @@
 #include <user_interface/uiLocalisation.h>
 
 static void updateScreen(void);
-static void handleEvent(ui_event_t *ev);
+static void handleEvent(uiEvent_t *ev);
 
 
-int menuPowerOff(ui_event_t *ev, bool isFirstRun)
+int menuPowerOff(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -37,14 +37,14 @@ int menuPowerOff(ui_event_t *ev, bool isFirstRun)
 
 static void updateScreen(void)
 {
-	UC1701_clearBuf();
-	UC1701_printCentered(12, currentLanguage->power_off, UC1701_FONT_8x16);
-	UC1701_printCentered(32, "73",UC1701_FONT_8x16);
-	UC1701_render();
+	ucClearBuf();
+	ucPrintCentered(12, currentLanguage->power_off, FONT_8x16);
+	ucPrintCentered(32, "73", FONT_8x16);
+	ucRender();
 	displayLightTrigger();
 }
 
-static void handleEvent(ui_event_t *ev)
+static void handleEvent(uiEvent_t *ev)
 {
 	static uint32_t m = 0;
 
