@@ -51,9 +51,9 @@ void fw_init(void)
 
 static void show_lowbattery(void)
 {
-	UC1701_clearBuf();
-	UC1701_printCentered(32, "LOW BATTERY !!!", UC1701_FONT_8x16);
-	UC1701_render();
+	ucClearBuf();
+	ucPrintCentered(32, "LOW BATTERY !!!", FONT_8x16);
+	ucRender();
 }
 
 void fw_main_task(void *data)
@@ -62,7 +62,7 @@ void fw_main_task(void *data)
 	int key_event;
 	uint32_t buttons;
 	int button_event;
-	ui_event_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = 0 };
+	uiEvent_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = 0 };
 	int oldButtons = 0;
 	int oldKeys = 0;
 	int oldEvents = 0;

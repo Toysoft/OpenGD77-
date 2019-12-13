@@ -19,16 +19,16 @@
 #define _FW_MENUSYSTEM_H_
 #include "fw_main.h"
 
-typedef enum   {NO_EVENT = 0, KEY_EVENT=0x01, BUTTON_EVENT = 0x02 } uiEvent_t;
+typedef enum { NO_EVENT = 0, KEY_EVENT=0x01, BUTTON_EVENT = 0x02 } uiEventInput_t;
 
 typedef struct
 {
-	uint32_t	buttons;
-	uint32_t	keys;
-	uiEvent_t	events;
-	bool		hasEvent;
-	uint32_t 	ticks;
-} ui_event_t;
+	uint32_t	    buttons;
+	uint32_t	    keys;
+	uiEventInput_t	events;
+	bool		    hasEvent;
+	uint32_t 	    ticks;
+} uiEvent_t;
 
 #define MENU_MAX_DISPLAYED_ENTRIES 3
 #define MENU_INC(O, M) do { O = (O + 1) % M; } while(0)
@@ -38,7 +38,7 @@ extern bool uiChannelModeScanActive;
 extern int menuDisplayLightTimer;
 
 
-typedef int (*MenuFunctionPointer_t)(ui_event_t *,bool); // Typedef for menu function pointers.  Functions are passed the key, the button and the event data. Event can be a Key or a button or both. Last arg is for when the function is only called to initialise and display its screen.
+typedef int (*menuFunctionPointer_t)(uiEvent_t *,bool); // Typedef for menu function pointers.  Functions are passed the key, the button and the event data. Event can be a Key or a button or both. Last arg is for when the function is only called to initialise and display its screen.
 typedef struct menuControlDataStruct
 {
 	int currentMenuNumber;
@@ -63,7 +63,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs);
 void menuChannelColdStart();
 void menuVFOModeUpdateScreen(int txTimeSecs);
 void menuVFOModeStopScan(void);
-void menuCPSUpdate(int command,int x, int y, UC1701_Font_t fontSize, UC1701_Text_Align_t alignment, bool isInverted,char *szMsg);
+void menuCPSUpdate(int command,int x, int y, ucFont_t fontSize, ucTextAlign_t alignment, bool isInverted,char *szMsg);
 
 void menuInitMenuSystem(void);
 void menuSystemLanguageHasChanged(void);
@@ -78,8 +78,8 @@ void menuSystemPopPreviousMenu(void);
 void menuSystemPopAllAndDisplayRootMenu(void);
 void menuSystemPopAllAndDisplaySpecificRootMenu(int newRootMenu);
 
-void menuSystemCallCurrentMenuTick(ui_event_t *ev);
-int menuGetKeypadKeyValue(ui_event_t *ev, bool digitsOnly);
+void menuSystemCallCurrentMenuTick(uiEvent_t *ev);
+int menuGetKeypadKeyValue(uiEvent_t *ev, bool digitsOnly);
 
 /*
  * ---------------------- IMPORTANT ----------------------------
@@ -134,30 +134,30 @@ extern const menuItemNew_t menuDataContactContact [];
 extern const menuItemNew_t * menusData[];
 
 
-int menuVFOMode(ui_event_t *event, bool isFirstRun);
-int menuVFOModeQuickMenu(ui_event_t *event, bool isFirstRun);
-int menuChannelMode(ui_event_t *event, bool isFirstRun);
-int menuChannelModeQuickMenu(ui_event_t *event, bool isFirstRun);
-int menuZoneList(ui_event_t *event, bool isFirstRun);
-int menuDisplayMenuList(ui_event_t *event, bool isFirstRun);
-int menuBattery(ui_event_t *event, bool isFirstRun);
-int menuSplashScreen(ui_event_t *event, bool isFirstRun);
-int menuPowerOff(ui_event_t *event, bool isFirstRun);
-int menuFirmwareInfoScreen(ui_event_t *event, bool isFirstRun);
-int menuNumericalEntry(ui_event_t *event, bool isFirstRun);
-int menuTxScreen(ui_event_t *event, bool isFirstRun);
-int menuRSSIScreen(ui_event_t *event, bool isFirstRun);
-int menuLastHeard(ui_event_t *event, bool isFirstRun);
-int menuOptions(ui_event_t *event, bool isFirstRun);
-int menuDisplayOptions(ui_event_t *event, bool isFirstRun);
-int menuCredits(ui_event_t *event, bool isFirstRun);
-int menuChannelDetails(ui_event_t *event, bool isFirstRun);
-int menuHotspotMode(ui_event_t *event, bool isFirstRun);
-int menuCPS(ui_event_t *event, bool isFirstRun);
-int menuLockScreen(ui_event_t *event, bool isFirstRun);
-int menuContactList(ui_event_t *event, bool isFirstRun);
-int menuContactListSubMenu(ui_event_t *event, bool isFirstRun);
-int menuContactDetails(ui_event_t *event, bool isFirstRun);
-int menuLanguage(ui_event_t *event, bool isFirstRun);
+int menuVFOMode(uiEvent_t *event, bool isFirstRun);
+int menuVFOModeQuickMenu(uiEvent_t *event, bool isFirstRun);
+int menuChannelMode(uiEvent_t *event, bool isFirstRun);
+int menuChannelModeQuickMenu(uiEvent_t *event, bool isFirstRun);
+int menuZoneList(uiEvent_t *event, bool isFirstRun);
+int menuDisplayMenuList(uiEvent_t *event, bool isFirstRun);
+int menuBattery(uiEvent_t *event, bool isFirstRun);
+int menuSplashScreen(uiEvent_t *event, bool isFirstRun);
+int menuPowerOff(uiEvent_t *event, bool isFirstRun);
+int menuFirmwareInfoScreen(uiEvent_t *event, bool isFirstRun);
+int menuNumericalEntry(uiEvent_t *event, bool isFirstRun);
+int menuTxScreen(uiEvent_t *event, bool isFirstRun);
+int menuRSSIScreen(uiEvent_t *event, bool isFirstRun);
+int menuLastHeard(uiEvent_t *event, bool isFirstRun);
+int menuOptions(uiEvent_t *event, bool isFirstRun);
+int menuDisplayOptions(uiEvent_t *event, bool isFirstRun);
+int menuCredits(uiEvent_t *event, bool isFirstRun);
+int menuChannelDetails(uiEvent_t *event, bool isFirstRun);
+int menuHotspotMode(uiEvent_t *event, bool isFirstRun);
+int menuCPS(uiEvent_t *event, bool isFirstRun);
+int menuLockScreen(uiEvent_t *event, bool isFirstRun);
+int menuContactList(uiEvent_t *event, bool isFirstRun);
+int menuContactListSubMenu(uiEvent_t *event, bool isFirstRun);
+int menuContactDetails(uiEvent_t *event, bool isFirstRun);
+int menuLanguage(uiEvent_t *event, bool isFirstRun);
 
 #endif

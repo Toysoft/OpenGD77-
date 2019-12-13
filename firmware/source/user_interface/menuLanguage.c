@@ -21,10 +21,10 @@
 
 
 static void updateScreen(void);
-static void handleEvent(ui_event_t *ev);
+static void handleEvent(uiEvent_t *ev);
 
 
-int menuLanguage(ui_event_t *ev, bool isFirstRun)
+int menuLanguage(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -42,7 +42,7 @@ static void updateScreen(void)
 {
 	int mNum = 0;
 	//stringsTable_t *lang;
-	UC1701_clearBuf();
+	ucClearBuf();
 	menuDisplayTitle("Language");
 
 	// Can only display 3 of the options at a time menu at -1, 0 and +1
@@ -52,11 +52,11 @@ static void updateScreen(void)
 		menuDisplayEntry(i, mNum, (char *)languages[mNum].LANGUAGE_NAME);
 	}
 
-	UC1701_render();
+	ucRender();
 	displayLightTrigger();
 }
 
-static void handleEvent(ui_event_t *ev)
+static void handleEvent(uiEvent_t *ev)
 {
 	if (KEYCHECK_PRESS(ev->keys,KEY_DOWN) && gMenusEndIndex!=0)
 	{

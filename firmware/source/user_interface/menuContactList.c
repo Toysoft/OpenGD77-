@@ -23,7 +23,7 @@
 #include "fw_settings.h"
 
 static void updateScreen(void);
-static void handleEvent(ui_event_t *ev);
+static void handleEvent(uiEvent_t *ev);
 static struct_codeplugContact_t contact;
 static int contactCallType;
 static int menuContactListDisplayState;
@@ -49,7 +49,7 @@ static void reloadContactList(void)
 	}
 }
 
-int menuContactList(ui_event_t *ev, bool isFirstRun)
+int menuContactList(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -83,7 +83,7 @@ static void updateScreen(void)
 	int idx;
 	const char *calltypeName[] = { currentLanguage->group_call, currentLanguage->private_call, currentLanguage->all_call };
 
-	UC1701_clearBuf();
+	ucClearBuf();
 
 	switch (menuContactListDisplayState)
 	{
@@ -92,7 +92,7 @@ static void updateScreen(void)
 
 		if (gMenusEndIndex == 0)
 		{
-			UC1701_printCentered(32, currentLanguage->empty_list, UC1701_FONT_8x16);
+			ucPrintCentered(32, currentLanguage->empty_list, FONT_8x16);
 		}
 		else
 		{
@@ -112,28 +112,28 @@ static void updateScreen(void)
 	case MENU_CONTACT_LIST_CONFIRM:
 		codeplugUtilConvertBufToString(contactListContactData.name, nameBuf, 16);
 		menuDisplayTitle(nameBuf);
-		UC1701_printCentered(16, currentLanguage->delete_contact_qm, UC1701_FONT_8x16);
-		UC1701_drawChoice(UC1701_CHOICE_YESNO, false);
+		ucPrintCentered(16, currentLanguage->delete_contact_qm, FONT_8x16);
+		ucDrawChoice(CHOICE_YESNO, false);
 		break;
 	case MENU_CONTACT_LIST_DELETED:
 		codeplugUtilConvertBufToString(contactListContactData.name, nameBuf, 16);
 		menuDisplayTitle(nameBuf);
-		UC1701_printCentered(16, currentLanguage->contact_deleted, UC1701_FONT_8x16);
-		UC1701_drawChoice(UC1701_CHOICE_DISMISS, false);
+		ucPrintCentered(16, currentLanguage->contact_deleted, FONT_8x16);
+		ucDrawChoice(CHOICE_DISMISS, false);
 		break;
 	case MENU_CONTACT_LIST_TG_IN_RXGROUP:
 		codeplugUtilConvertBufToString(contactListContactData.name, nameBuf, 16);
 		menuDisplayTitle(nameBuf);
-		UC1701_printCentered(16, currentLanguage->contact_used, UC1701_FONT_8x16);
-		UC1701_printCentered(32, currentLanguage->in_rx_group, UC1701_FONT_8x16);
-		UC1701_drawChoice(UC1701_CHOICE_DISMISS, false);
+		ucPrintCentered(16, currentLanguage->contact_used, FONT_8x16);
+		ucPrintCentered(32, currentLanguage->in_rx_group, FONT_8x16);
+		ucDrawChoice(CHOICE_DISMISS, false);
 		break;
 	}
-	UC1701_render();
+	ucRender();
 	displayLightTrigger();
 }
 
-static void handleEvent(ui_event_t *ev)
+static void handleEvent(uiEvent_t *ev)
 {
 	switch (menuContactListDisplayState)
 	{
@@ -236,7 +236,7 @@ static void updateSubMenuScreen(void)
 	static const int bufferLen = 17;
 	char buf[bufferLen];
 
-	UC1701_clearBuf();
+	ucClearBuf();
 
 	codeplugUtilConvertBufToString(contactListContactData.name, buf, 16);
 	menuDisplayTitle(buf);
@@ -263,11 +263,11 @@ static void updateSubMenuScreen(void)
 		menuDisplayEntry(i, mNum, buf);
 	}
 
-	UC1701_render();
+	ucRender();
 	displayLightTrigger();
 }
 
-static void handleSubMenuEvent(ui_event_t *ev)
+static void handleSubMenuEvent(uiEvent_t *ev)
 {
 	if (KEYCHECK_SHORTUP(ev->keys, KEY_RED))
 	{
@@ -312,7 +312,7 @@ static void handleSubMenuEvent(ui_event_t *ev)
 	}
 }
 
-int menuContactListSubMenu(ui_event_t *ev, bool isFirstRun)
+int menuContactListSubMenu(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
