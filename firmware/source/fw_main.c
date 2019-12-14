@@ -19,8 +19,10 @@
 #include <functions/fw_ticks.h>
 #include <user_interface/menuSystem.h>
 #include <user_interface/menuUtilityQSOData.h>
+#include <user_interface/uiLocalisation.h>
 #include "fw_main.h"
 #include "fw_settings.h"
+
 
 #if defined(USE_SEGGER_RTT)
 #include <SeggerRTT/RTT/SEGGER_RTT.h>
@@ -52,7 +54,7 @@ void fw_init(void)
 static void show_lowbattery(void)
 {
 	ucClearBuf();
-	ucPrintCentered(32, "LOW BATTERY !!!", FONT_8x16);
+	ucPrintCentered(32, currentLanguage->low_battery, FONT_8x16);
 	ucRender();
 }
 
