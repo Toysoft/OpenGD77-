@@ -175,7 +175,7 @@ int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
 			if (ev->hasEvent)
 			{
 				if ((currentChannelData->chMode == RADIO_MODE_ANALOG) &&
-						(ev->events & KEY_EVENT) && ((ev->keys & KEY_LEFT) || (ev->keys & KEY_RIGHT)))
+						(ev->events & KEY_EVENT) && ((ev->keys.key == KEY_LEFT) || (ev->keys.key == KEY_RIGHT)))
 				{
 					sqm = ev->ticks;
 				}
@@ -859,7 +859,7 @@ static void updateQuickMenuScreen(void)
 				strcpy(buf, "Tx --> Rx");
 				break;
 			case VFO_SCREEN_QUICK_MENU_DMR_FILTER:
-				snprintf(buf, bufferLen, "%s:%s", currentLanguage->filter, DMR_FILTER_LEVELS[tmpQuickMenuDmrFilterLevel]);
+				snprintf(buf, bufferLen, "%s:%s", currentLanguage->filter, (tmpQuickMenuDmrFilterLevel == 0) ? currentLanguage->none : DMR_FILTER_LEVELS[tmpQuickMenuDmrFilterLevel]);
 				break;
 			case VFO_SCREEN_QUICK_MENU_VFO_A_B:
 				sprintf(buf, "VFO:%c", ((nonVolatileSettings.currentVFONumber==0) ? 'A' : 'B'));

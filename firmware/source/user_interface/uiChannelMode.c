@@ -131,7 +131,7 @@ int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 			if (ev->hasEvent)
 			{
 				if ((trxGetMode() == RADIO_MODE_ANALOG) &&
-						(ev->events & KEY_EVENT) && ((ev->keys & KEY_LEFT) || (ev->keys & KEY_RIGHT)))
+						(ev->events & KEY_EVENT) && ((ev->keys.key == KEY_LEFT) || (ev->keys.key == KEY_RIGHT)))
 				{
 					sqm = ev->ticks;
 				}
@@ -351,7 +351,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 static void handleEvent(uiEvent_t *ev)
 {
 	// if we are scanning and down key is pressed then enter current channel into nuisance delete array.
-	if((scanState==SCAN_PAUSED) && ((ev->events & KEY_EVENT) && (KEYCHAR(ev->keys) == KEY_DOWN)) && (!(ev->buttons & BUTTON_SK2)))
+	if((scanState==SCAN_PAUSED) && ((ev->events & KEY_EVENT) && (ev->keys.key == KEY_DOWN)) && (!(ev->buttons & BUTTON_SK2)))
 	{
 		nuisanceDelete[nuisanceDeleteIndex++]=settingsCurrentChannelNumber;
 		if(nuisanceDeleteIndex > (MAX_ZONE_SCAN_NUISANCE_CHANNELS - 1))
@@ -367,7 +367,7 @@ static void handleEvent(uiEvent_t *ev)
 	// stop the scan on any button except UP without Shift (allows scan to be manually continued)
 	// or SK2 on its own (allows Backlight to be triggered)
 	if (uiChannelModeScanActive &&
-			( (ev->events & KEY_EVENT) && ( ((KEYCHAR(ev->keys) == KEY_UP) && ((ev->buttons & BUTTON_SK2) == 0)) == false ) ) )
+			( (ev->events & KEY_EVENT) && ( ((ev->keys.key == KEY_UP) && ((ev->buttons & BUTTON_SK2) == 0)) == false ) ) )
 	{
 		uiChannelModeScanActive = false;
 		displayLightTrigger();
@@ -835,7 +835,7 @@ static void updateQuickMenuScreen(void)
 				strncpy(buf, currentLanguage->vfoToChannel, bufferLen);
 				break;
 			case CH_SCREEN_QUICK_MENU_DMR_FILTER:
-				snprintf(buf, bufferLen, "%s:%s", currentLanguage->filter, DMR_FILTER_LEVELS[tmpQuickMenuDmrFilterLevel]);
+				snprintf(buf, bufferLen, "%s:%s", currentLanguage->filter, (tmpQuickMenuDmrFilterLevel == 0) ? currentLanguage->none : DMR_FILTER_LEVELS[tmpQuickMenuDmrFilterLevel]);
 				break;
 			default:
 				strcpy(buf, "");
@@ -993,7 +993,7 @@ static void scanning(void)
 	{
 
 		trx_measure_count=0;														//needed to allow time for Rx to settle after channel change.
-		uiEvent_t tmpEvent={ .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = 0, .ticks = 0 };
+		uiEvent_t tmpEvent={ .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = 0, .ticks = 0 };
 
 		handleUpKey(&tmpEvent);
 		scanTimer = SCAN_TOTAL_INTERVAL;

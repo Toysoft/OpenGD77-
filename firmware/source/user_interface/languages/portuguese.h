@@ -135,6 +135,7 @@ const stringsTable_t portuguesLanguage =
 .all_call				= "All Call",
 .tone_scan				= "Tone scan",//// MaxLen: 16
 .cc_scan				= "CC scan",//// MaxLen: 16
+.low_battery			= "LOW BATTERY !!!",//// MaxLen: 16
 };
 /********************************************************************
  *

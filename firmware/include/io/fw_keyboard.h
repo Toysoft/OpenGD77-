@@ -93,44 +93,45 @@
 #define KEY_HASH  '#'
 
 
-#define KEY_MOD_DOWN  0x01000000
-#define KEY_MOD_UP    0x02000000
-#define KEY_MOD_LONG  0x04000000
-#define KEY_MOD_PRESS 0x08000000
+#define KEY_MOD_DOWN    0x01
+#define KEY_MOD_UP      0x02
+#define KEY_MOD_LONG    0x04
+#define KEY_MOD_PRESS   0x08
+#define KEY_MOD_PREVIEW 0x10
 
 #define EVENT_KEY_NONE   0
 #define EVENT_KEY_CHANGE 1
 
 #define KEY_DEBOUNCE_COUNTER   20
 
-#define KEYCHECK(keys,k) (((keys) & 0xffffff) == (k))
-#define KEYCHECK_KEYMOD(keys, k, mask, mod) (((((keys) & 0xffffff) == (k)) && ((keys) & (mask)) == (mod)))
-#define KEYCHECK_MOD(keys, mask, mod) (((keys) & (mask)) == (mod))
+//#define KEYCHECK(keys,k) (((keys) & 0xffffff) == (k))
+//#define KEYCHECK_KEYMOD(keys, k, mask, mod) (((((keys) & 0xffffff) == (k)) && ((keys) & (mask)) == (mod)))
+//#define KEYCHECK_MOD(keys, mask, mod) (((keys) & (mask)) == (mod))
 
-#define KEYCHECK_UP(keys, k)       KEYCHECK_KEYMOD(keys, k, KEY_MOD_UP, KEY_MOD_UP)
-#define KEYCHECK_SHORTUP(keys, k)  KEYCHECK_KEYMOD(keys, k, KEY_MOD_UP| KEY_MOD_LONG, KEY_MOD_UP)
-#define KEYCHECK_DOWN(keys, k)     KEYCHECK_KEYMOD(keys, k, KEY_MOD_DOWN, KEY_MOD_DOWN)
-#define KEYCHECK_PRESS(keys, k)    KEYCHECK_KEYMOD(keys, k, KEY_MOD_PRESS, KEY_MOD_PRESS)
-#define KEYCHECK_LONGDOWN(keys, k) KEYCHECK_KEYMOD(keys, k, KEY_MOD_DOWN | KEY_MOD_LONG, KEY_MOD_DOWN | KEY_MOD_LONG)
+#define KEYCHECK_UP(keys, k)       ((keys.key == k) && ((keys.event & KEY_MOD_UP) == KEY_MOD_UP)
+#define KEYCHECK_SHORTUP(keys, k)  ((keys.key == k) && ((keys.event & (KEY_MOD_UP | KEY_MOD_LONG)) == KEY_MOD_UP))
+#define KEYCHECK_DOWN(keys, k)     ((keys.key == k) && ((keys.event & KEY_MOD_DOWN) == KEY_MOD_DOWN))
+#define KEYCHECK_PRESS(keys, k)    ((keys.key == k) && ((keys.event & KEY_MOD_PRESS) == KEY_MOD_PRESS))
+#define KEYCHECK_LONGDOWN(keys, k) ((keys.key == k) && ((keys.event & (KEY_MOD_DOWN | KEY_MOD_LONG)) == (KEY_MOD_DOWN | KEY_MOD_LONG)))
 
-#define KEYCHAR(keys)              ((char)(keys & 0xff))
+
+//#define KEYCHAR(keys)              ((char)(keys & 0xff))
 
 extern volatile bool keypadLocked;
+extern volatile bool keypadAlphaEnable;
 
-typedef union keyboardKeycode {
-	uint32_t keycode;
-	struct {
-		uint8_t mod;
-		uint16_t reserve;
+typedef struct keyboardCode {
+		uint8_t event;
 		char key;
-	} code;
-} keyboardKeycode_t;
+} keyboardCode_t;
+
+#define NO_KEYCODE  { .event = 0, .key = 0 }
 
 void fw_init_keyboard(void);
 void fw_reset_keyboard(void);
 uint8_t fw_read_keyboard_col(void);
 uint32_t fw_read_keyboard(void);
-void fw_check_key_event(uint32_t *keys, int *event);
-uint32_t fw_scan_key(uint32_t keys);
+void fw_check_key_event(keyboardCode_t *keys, int *event);
+bool fw_scan_key(uint32_t scancode, char *keycode);
 
 #endif /* _FW_KEYBOARD_H_ */

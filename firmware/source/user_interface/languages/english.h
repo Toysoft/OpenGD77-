@@ -72,7 +72,7 @@ const stringsTable_t englishLanguage =
 .private_call				= "Private Call", // MaxLen: 16
 .squelch				= "Squelch", // MaxLen: 7
 .quick_menu 				= "Quick Menu", // MaxLen: 16
-.filter					= "Filter", // MaxLen: 7 (with ':' + settings: "None", "CC", "CC,TS", "CC,TS,TG")
+.filter					= "Filter", // MaxLen: 7 (with ':' + settings: .none, "CC", "CC,TS", "CC,TS,TG")
 .all_channels				= "All Channels", // MaxLen: 16
 .gotoChannel				= "Goto",  // MaxLen: 11 (" 1024")
 .scan					= "Scan", // MaxLen: 16
@@ -83,7 +83,7 @@ const stringsTable_t englishLanguage =
 .all					= "All", // MaxLen: 16 (with .type)
 .type					= "Type", // MaxLen: 16 (with .type)
 .timeSlot				= "Timeslot", // MaxLen: 16 (plus ':' and  .none, '1' or '2')
-.none					= "none", // MaxLen: 16 (with .timeSlot, "Rx CTCSS:" and ""Tx CTCSS:")
+.none					= "none", // MaxLen: 16 (with .timeSlot, "Rx CTCSS:" and ""Tx CTCSS:", and .filter)
 .contact_saved				= "Contact saved", // MaxLen: 16
 .duplicate				= "Duplicate", // MaxLen: 16
 .tg					= "TG",  // MaxLen: 8
@@ -135,6 +135,7 @@ const stringsTable_t englishLanguage =
 .all_call				= "All Call", // MaxLen: 16
 .tone_scan				= "Tone scan",//// MaxLen: 16
 .cc_scan				= "CC scan",//// MaxLen: 16
+.low_battery			= "LOW BATTERY !!!",//// MaxLen: 16
 };
 /********************************************************************
  *

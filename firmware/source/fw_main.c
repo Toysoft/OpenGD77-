@@ -19,8 +19,10 @@
 #include <functions/fw_ticks.h>
 #include <user_interface/menuSystem.h>
 #include <user_interface/menuUtilityQSOData.h>
+#include <user_interface/uiLocalisation.h>
 #include "fw_main.h"
 #include "fw_settings.h"
+
 
 #if defined(USE_SEGGER_RTT)
 #include <SeggerRTT/RTT/SEGGER_RTT.h>
@@ -52,17 +54,17 @@ void fw_init(void)
 static void show_lowbattery(void)
 {
 	ucClearBuf();
-	ucPrintCentered(32, "LOW BATTERY !!!", FONT_8x16);
+	ucPrintCentered(32, currentLanguage->low_battery, FONT_8x16);
 	ucRender();
 }
 
 void fw_main_task(void *data)
 {
-	uint32_t keys;
+	keyboardCode_t keys;
 	int key_event;
 	uint32_t buttons;
 	int button_event;
-	uiEvent_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = 0 };
+	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .ticks = 0 };
 	bool keyOrButtonChanged = false;
 	
     USB_DeviceApplicationInit();
@@ -199,11 +201,11 @@ void fw_main_task(void *data)
 				}
 			}
 
-			if (key_event == EVENT_KEY_CHANGE && (buttons & BUTTON_PTT) == 0 && keys != 0) {
-				if (keys & KEY_MOD_PRESS)
+			if (key_event == EVENT_KEY_CHANGE && (buttons & BUTTON_PTT) == 0 && keys.key != 0) {
+				if (keys.event & KEY_MOD_PRESS)
 				{
 					set_melody(melody_key_beep);
-				} else if  ((keys & (KEY_MOD_LONG | KEY_MOD_DOWN)) == (KEY_MOD_LONG | KEY_MOD_DOWN)) {
+				} else if  ((keys.event & (KEY_MOD_LONG | KEY_MOD_DOWN)) == (KEY_MOD_LONG | KEY_MOD_DOWN)) {
 					set_melody(melody_key_long_beep);
 				}
 				if (KEYCHECK_LONGDOWN(keys, KEY_RED))
@@ -281,7 +283,7 @@ void fw_main_task(void *data)
     		ev.buttons = buttons;
     		ev.keys = keys;
     		ev.events = (button_event<<1) | key_event;
-    		ev.hasEvent = keyOrButtonChanged || ((key_event & EVENT_KEY_CHANGE) && (keys & KEY_MOD_LONG));
+    		ev.hasEvent = keyOrButtonChanged;
     		ev.ticks = fw_millis();
 
         	menuSystemCallCurrentMenuTick(&ev);

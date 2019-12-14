@@ -135,6 +135,7 @@ const stringsTable_t germanLanguage =
 .all_call				= "Ruf an alle", // MaxLen: 16
 .tone_scan				= "CTCSS Scan",//// MaxLen: 16
 .cc_scan				= "CC Scan",//// MaxLen: 16
+.low_battery			= "LOW BATTERY !!!",//// MaxLen: 16
 };
 /********************************************************************
  *
