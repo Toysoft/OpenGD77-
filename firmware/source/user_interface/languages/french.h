@@ -135,7 +135,7 @@ const stringsTable_t frenchLanguage =
 .all_call				= "All Call",
 .tone_scan				= "Scan tonalités",
 .cc_scan				= "Scan CC",
-.low_battery			= "LOW BATTERY !!!",//// MaxLen: 16
+.low_battery			        = "BATT. FAIBLE !!!",//// MaxLen: 16
 };
 /********************************************************************
  *

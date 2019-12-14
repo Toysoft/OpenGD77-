@@ -290,7 +290,7 @@ void fw_check_key_event(keyboardCode_t *keys, int *event)
 				{
 					keys->key = keypadAlphaMap[keypadAlphaKey - 1][keypadAlphaIndex];
 					keys->event = KEY_MOD_PRESS;
-			*event = EVENT_KEY_CHANGE;
+					*event = EVENT_KEY_CHANGE;
 					keypadAlphaKey = newAlphaKey;
 					keypadAlphaIndex = -1;
 					keyState = KEY_PRESS;
