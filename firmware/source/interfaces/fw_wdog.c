@@ -35,6 +35,75 @@ static bool reboot=false;
 static const int BATTERY_VOLTAGE_TICK_RELOAD = 2000;
 static const int AVERAGE_BATTERY_VOLTAGE_SAMPLE_WINDOW = 60.0f;// 120 secs = Sample window * BATTERY_VOLTAGE_TICK_RELOAD in milliseconds
 
+#define VOLTAGE_BUFFER_LEN 128 // At one sample each 2 minutes: ~ 4.3 hours
+
+typedef struct
+{
+	int32_t  buffer[VOLTAGE_BUFFER_LEN];
+	int32_t *buffer_end;
+	size_t   capacity;
+	int32_t *head;
+	int32_t *tail;
+} voltageCircularBuffer_t;
+
+voltageCircularBuffer_t batteryVoltageHistory;
+
+static void circularBufferInit(voltageCircularBuffer_t *cb, size_t capacity)
+{
+	cb->buffer_end = &cb->buffer[VOLTAGE_BUFFER_LEN - 1];
+	cb->capacity = capacity;
+	cb->head = cb->buffer;
+	cb->tail = cb->buffer;
+}
+
+static void circularBufferPushBack(voltageCircularBuffer_t *cb, const int32_t item)
+{
+	*cb->head = item;
+	cb->head++;
+
+    if(cb->head == cb->buffer_end)
+    	cb->head = cb->buffer;
+
+    if (cb->tail == cb->head)
+    {
+    	cb->tail++;
+
+    	if(cb->tail == cb->buffer_end)
+    		cb->tail = cb->buffer;
+    }
+}
+
+static size_t circularBufferGetData(voltageCircularBuffer_t *cb, int32_t *data, size_t dataLen)
+{
+     size_t  count = 0;
+     int32_t *p = cb->tail;
+
+     while ((p != cb->head) && (count < dataLen))
+     {
+    	 *(data + count) = *p;
+
+    	 p++;
+    	 count++;
+
+    	 if (p == cb->buffer_end)
+    		 p = cb->buffer;
+     }
+
+     return count;
+}
+
+size_t batteryGetHistoryData(int32_t *data, size_t dataLen)
+{
+	size_t l = 0;
+
+	taskENTER_CRITICAL();
+	l = circularBufferGetData(&batteryVoltageHistory, data, dataLen);
+	taskEXIT_CRITICAL();
+
+	return l;
+}
+
+
 void init_watchdog(void)
 {
     wdog_config_t config;
@@ -52,9 +121,12 @@ void init_watchdog(void)
     alive_beeptask = false;
     alive_hrc6000task = false;
 
-	battery_voltage=get_battery_voltage();
+    battery_voltage=get_battery_voltage();
 	averageBatteryVoltage = battery_voltage;
 	battery_voltage_tick=0;
+
+	circularBufferInit(&batteryVoltageHistory, (sizeof(batteryVoltageHistory.buffer) / sizeof(batteryVoltageHistory.buffer[0])));
+	circularBufferPushBack(&batteryVoltageHistory, battery_voltage);
 
 	xTaskCreate(fw_watchdog_task,                        /* pointer to the task */
 				"fw watchdog task",                      /* task name for kernel awareness debugging */
@@ -106,6 +178,9 @@ void tick_watchdog(void)
 	if (battery_voltage_tick == BATTERY_VOLTAGE_TICK_RELOAD)
 	{
 		int tmp_battery_voltage = get_battery_voltage();
+
+		circularBufferPushBack(&batteryVoltageHistory, tmp_battery_voltage);
+
 		if (battery_voltage!=tmp_battery_voltage)
 		{
 			battery_voltage=tmp_battery_voltage;
