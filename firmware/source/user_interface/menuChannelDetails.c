@@ -25,13 +25,17 @@
 #include "fw_settings.h"
 
 static void updateScreen(void);
+static void updateCursor(bool moved);
 static void handleEvent(uiEvent_t *ev);
 
 static int CTCSSRxIndex=0;
 static int CTCSSTxIndex=0;
 static struct_codeplugChannel_t tmpChannel;// update a temporary copy of the channel and only write back if green menu is pressed
+static char channelName[17];
+static int namePos;
 
-enum CHANNEL_DETAILS_DISPLAY_LIST { CH_DETAILS_MODE = 0, CH_DETAILS_DMR_CC, CH_DETAILS_DMR_TS,CH_DETAILS_RXCTCSS, CH_DETAILS_TXCTCSS , CH_DETAILS_RXFREQ, CH_DETAILS_TXFREQ, CH_DETAILS_BANDWIDTH,
+
+enum CHANNEL_DETAILS_DISPLAY_LIST { CH_DETAILS_NAME = 0, CH_DETAILS_MODE, CH_DETAILS_DMR_CC, CH_DETAILS_DMR_TS,CH_DETAILS_RXCTCSS, CH_DETAILS_TXCTCSS , CH_DETAILS_RXFREQ, CH_DETAILS_TXFREQ, CH_DETAILS_BANDWIDTH,
 									CH_DETAILS_FREQ_STEP, CH_DETAILS_TOT, CH_DETAILS_ZONE_SKIP,CH_DETAILS_ALL_SKIP,CH_DETAILS_RXGROUP,
 									NUM_CH_DETAILS_ITEMS};// The last item in the list is used so that we automatically get a total number of items in the list
 
@@ -52,14 +56,31 @@ int menuChannelDetails(uiEvent_t *ev, bool isFirstRun)
 				CTCSSRxIndex=i;
 			}
 		}
+		codeplugUtilConvertBufToString(tmpChannel.name, channelName, 16);
+		namePos = strlen(channelName);
 		updateScreen();
+		updateCursor(true);
 	}
 	else
 	{
+		updateCursor(false);
 		if (ev->hasEvent)
 			handleEvent(ev);
 	}
 	return 0;
+}
+
+static void updateCursor(bool moved)
+{
+	if (settingsCurrentChannelNumber != -1)
+	{
+		switch (gMenusCurrentItemIndex)
+		{
+		case CH_DETAILS_NAME:
+			menuUpdateCursor(namePos, moved, true);
+			break;
+		}
+	}
 }
 
 static void updateScreen(void)
@@ -76,6 +97,8 @@ static void updateScreen(void)
 	ucClearBuf();
 	menuDisplayTitle(currentLanguage->channel_details);
 
+	keypadAlphaEnable = (gMenusCurrentItemIndex == CH_DETAILS_NAME);
+
 	// Can only display 3 of the options at a time menu at -1, 0 and +1
 	for(int i = -1; i <= 1; i++)
 	{
@@ -84,6 +107,9 @@ static void updateScreen(void)
 
 		switch(mNum)
 		{
+			case CH_DETAILS_NAME:
+				strncpy(buf, channelName, 17);
+			break;
 			case CH_DETAILS_MODE:
 				if (tmpChannel.chMode == RADIO_MODE_ANALOG)
 				{
@@ -223,6 +249,12 @@ static void handleEvent(uiEvent_t *ev)
 	{
 		switch(gMenusCurrentItemIndex)
 		{
+			case CH_DETAILS_NAME:
+				if (settingsCurrentChannelNumber != -1) {
+					moveCursorRightInString(channelName, &namePos, 16, (ev->buttons & BUTTON_SK2));
+					updateCursor(true);
+				}
+				break;
 			case CH_DETAILS_MODE:
 				if (tmpChannel.chMode ==RADIO_MODE_ANALOG)
 				{
@@ -309,6 +341,12 @@ static void handleEvent(uiEvent_t *ev)
 	{
 		switch(gMenusCurrentItemIndex)
 		{
+			case CH_DETAILS_NAME:
+				if (settingsCurrentChannelNumber != -1) {
+					moveCursorLeftInString(channelName, &namePos, (ev->buttons & BUTTON_SK2));
+					updateCursor(true);
+				}
+				break;
 			case CH_DETAILS_MODE:
 				if (tmpChannel.chMode==RADIO_MODE_ANALOG)
 				{
@@ -394,6 +432,9 @@ static void handleEvent(uiEvent_t *ev)
 	}
 	else if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 	{
+		if (settingsCurrentChannelNumber != -1) {
+			codeplugUtilConvertStringToBuf(channelName, (char *)&tmpChannel.name, 16);
+		}
 		memcpy(currentChannelData,&tmpChannel,sizeof(struct_codeplugChannel_t));
 
 		// settingsCurrentChannelNumber is -1 when in VFO mode
@@ -410,6 +451,20 @@ static void handleEvent(uiEvent_t *ev)
 	{
 		menuSystemPopPreviousMenu();
 		return;
+	}
+	else if (gMenusCurrentItemIndex == CH_DETAILS_NAME && settingsCurrentChannelNumber != -1)
+	{
+		if (ev->keys.event == KEY_MOD_PREVIEW && namePos<16) {
+			channelName[namePos] = ev->keys.key;
+			updateCursor(true);
+		}
+		if (ev->keys.event == KEY_MOD_PRESS && namePos < 16) {
+			channelName[namePos] = ev->keys.key;
+			if (namePos < strlen(channelName) && namePos < 15) {
+				namePos++;
+			}
+			updateCursor(true);
+		}
 	}
 
 	updateScreen();

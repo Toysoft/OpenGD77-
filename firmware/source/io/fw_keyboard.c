@@ -21,12 +21,25 @@
 #include "fw_settings.h"
 #include "fw_usb_com.h"
 
-static uint32_t old_keyboard_state;
+static char oldKeyboardCode;
 static uint32_t keyDebounceScancode;
 static int keyDebounceCounter;
 static uint8_t keyState;
 
-enum KEY_STATE { KEY_IDLE=0, KEY_DEBOUNCE, KEY_PRESS, KEY_HOLD, KEY_REPEAT, KEY_WAIT_RELEASED };
+static char keypadAlphaKey;
+static int keypadAlphaIndex;
+
+volatile bool keypadAlphaEnable;
+
+enum KEY_STATE
+{
+	KEY_IDLE = 0,
+	KEY_DEBOUNCE,
+	KEY_PRESS,
+	KEY_WAITLONG,
+	KEY_REPEAT,
+	KEY_WAIT_RELEASED
+};
 
 volatile bool keypadLocked = false;
 
@@ -34,7 +47,21 @@ static const uint32_t keyMap[] = {
 		KEY_1, KEY_2, KEY_3, KEY_GREEN, KEY_RIGHT,
 		KEY_4, KEY_5, KEY_6, KEY_UP, KEY_LEFT,
 		KEY_7, KEY_8, KEY_9, KEY_DOWN, 0,
-		KEY_STAR, KEY_0, KEY_HASH, KEY_RED, 0 };
+		KEY_STAR, KEY_0, KEY_HASH, KEY_RED, 0
+};
+static const char keypadAlphaMap[11][31] = {
+		"0 ",
+		"1.!,@-:?()~/[]#<>=*+$%'`&|_^{}",
+		"abc2ABC",
+		"def3DEF",
+		"ghi4GHI",
+		"jkl5JKL",
+		"mno6MNO",
+		"pqrs7PQRS",
+		"tuv8TUV",
+		"wxyz9WXYZ",
+		"*"
+};
 
 void fw_init_keyboard(void)
 {
@@ -45,7 +72,7 @@ void fw_init_keyboard(void)
 	      kPORT_OpenDrainDisable,
 	      kPORT_LowDriveStrength,
 	      kPORT_MuxAsGpio,
-	      kPORT_UnlockRegister,
+			kPORT_UnlockRegister
 	 };
 
     // column lines
@@ -74,15 +101,22 @@ void fw_init_keyboard(void)
     GPIO_PinInit(GPIO_Key_Row3, Pin_Key_Row3, &pin_config_input);
     GPIO_PinInit(GPIO_Key_Row4, Pin_Key_Row4, &pin_config_input);
 
-    old_keyboard_state = 0;
+	oldKeyboardCode = 0;
 	keyDebounceScancode = 0;
 	keyDebounceCounter = 0;
+	keypadAlphaEnable = false;
+	keypadAlphaIndex = 0;
+	keypadAlphaKey = 0;
 	keyState = KEY_IDLE;
 	keypadLocked = false;
 }
 
 void fw_reset_keyboard(void)
 {
+	oldKeyboardCode = 0;
+	keypadAlphaEnable = false;
+	keypadAlphaIndex = 0;
+	keypadAlphaKey = 0;
 	keyState = KEY_WAIT_RELEASED;
 }
 
@@ -99,7 +133,8 @@ uint32_t fw_read_keyboard(void)
 	{
 		GPIO_PinInit(GPIOC, col, &pin_config_output);
 		GPIO_PinWrite(GPIOC, col, 0);
-		for(volatile int i = 0; i < 100;i++);// small delay to allow voltages to settle. The delay value of 100 is arbitrary.
+		for (volatile int i = 0; i < 100; i++)
+			; // small delay to allow voltages to settle. The delay value of 100 is arbitrary.
 
 		result=(result<<5) | fw_read_keyboard_col();
 
@@ -110,17 +145,22 @@ uint32_t fw_read_keyboard(void)
     return result;
 }
 
-uint32_t fw_scan_key(uint32_t scancode)
+bool fw_scan_key(uint32_t scancode, char *keycode)
 {
-	int key = 0;
 	int col;
 	int row = 0;
 	int numKeys = 0;
 	uint8_t scan;
 
-	if (scancode == (SCAN_GREEN | SCAN_STAR)) {     // Just an example
-		return KEY_GREENSTAR;
+	*keycode = 0;
+	if (scancode == 0)
+	{
+		return true;
 	}
+
+//	if (scancode == (SCAN_GREEN | SCAN_STAR)) {     // Just an example
+//		return KEY_GREENSTAR;
+//	}
 
 	for (col = 0; col < 4; col++)
 	{
@@ -132,43 +172,66 @@ uint32_t fw_scan_key(uint32_t scancode)
 				if (scan & 0x01)
 				{
 					numKeys++;
-					key = keyMap[col * 5 + row];
+					*keycode = keyMap[col * 5 + row];
 				}
 				scan >>= 1;
 			}
 		}
 		scancode >>= 5;
 	}
-	return (numKeys > 1) ? -1 : key;
+	return (numKeys == 1);
 }
 
-void fw_check_key_event(uint32_t *keys, int *event)
+void fw_check_key_event(keyboardCode_t *keys, int *event)
 {
 	uint32_t scancode = fw_read_keyboard();
+	char keycode;
+	bool validKey;
+	int newAlphaKey;
 	uint32_t tmp_timer_keypad;
 	uint32_t keypadTimerLong = nonVolatileSettings.keypadTimerLong * 1000;
 	uint32_t keypadTimerRepeat = nonVolatileSettings.keypadTimerRepeat * 1000;
 
 	*event = EVENT_KEY_NONE;
-	*keys = 0;
+	keys->event = 0;
+	keys->key = 0;
 
-	if (scancode != 0) {
-		*keys = fw_scan_key(scancode);
+	validKey = fw_scan_key(scancode, &keycode);
+
+	if (keyState > KEY_DEBOUNCE && !validKey)
+	{
+		keyState = KEY_WAIT_RELEASED;
 	}
 
-	switch (keyState) {
+	switch (keyState)
+	{
 	case KEY_IDLE:
-		if (scancode != 0) {
+		if (scancode != 0)
+		{
 			keyState = KEY_DEBOUNCE;
 			keyDebounceCounter = 0;
 			keyDebounceScancode = scancode;
-			old_keyboard_state = 0;
+			oldKeyboardCode = 0;
+		}
+		taskENTER_CRITICAL();
+		tmp_timer_keypad = timer_keypad_timeout;
+		taskEXIT_CRITICAL();
+
+		if (tmp_timer_keypad == 0 && keypadAlphaKey != 0)
+		{
+			keys->key = keypadAlphaMap[keypadAlphaKey - 1][keypadAlphaIndex];
+			keys->event = KEY_MOD_PRESS;
+			*event = EVENT_KEY_CHANGE;
+			keypadAlphaKey = 0;
 		}
 		break;
 	case KEY_DEBOUNCE:
 		keyDebounceCounter++;
-		if (keyDebounceCounter > KEY_DEBOUNCE_COUNTER) {
-			if (keyDebounceScancode == scancode && *keys != -1) {
+		if (keyDebounceCounter > KEY_DEBOUNCE_COUNTER)
+		{
+			if (keyDebounceScancode == scancode)
+			{
+				oldKeyboardCode = keycode;
 				keyState = KEY_PRESS;
 			}
 			else
@@ -176,82 +239,131 @@ void fw_check_key_event(uint32_t *keys, int *event)
 				keyState = KEY_WAIT_RELEASED;
 			}
 		}
-		*keys = 0;
 		break;
 	case  KEY_PRESS:
-		if (*keys == -1) {
-			keyState = KEY_WAIT_RELEASED;
-			*keys=0;
-		} else {
+		keys->key = keycode;
+		keys->event = KEY_MOD_DOWN | KEY_MOD_PRESS;
+		*event = EVENT_KEY_CHANGE;
+
 			taskENTER_CRITICAL();
 			timer_keypad=keypadTimerLong;
+		timer_keypad_timeout = 10000;
 			taskEXIT_CRITICAL();
+		keyState = KEY_WAITLONG;
 
-			old_keyboard_state = *keys;
-			*keys |= KEY_MOD_DOWN | KEY_MOD_PRESS;
+		if (keypadAlphaEnable == true)
+		{
+			newAlphaKey = 0;
+			if (keycode >= '0' && keycode <= '9')
+			{
+				newAlphaKey = keycode - '0'+1;
+			} else if (keycode == KEY_STAR) {
+				newAlphaKey = 11;
+			}
+			if (keypadAlphaKey == 0)
+			{
+				if (newAlphaKey != 0)
+				{
+					keypadAlphaKey = newAlphaKey;
+					keypadAlphaIndex = 0;
+				}
+			}
+			else
+			{
+				if (newAlphaKey == keypadAlphaKey)
+				{
+					keypadAlphaIndex++;
+					if (keypadAlphaMap[keypadAlphaKey - 1][keypadAlphaIndex] == 0)
+					{
+						keypadAlphaIndex = 0;
+					}
+				}
+			}
+			if (keypadAlphaKey != 0)
+			{
+				if (newAlphaKey == keypadAlphaKey)
+				{
+					keys->key =	keypadAlphaMap[keypadAlphaKey - 1][keypadAlphaIndex];
+					keys->event = KEY_MOD_PREVIEW;
+				}
+				else
+				{
+					keys->key = keypadAlphaMap[keypadAlphaKey - 1][keypadAlphaIndex];
+					keys->event = KEY_MOD_PRESS;
 			*event = EVENT_KEY_CHANGE;
-			keyState = KEY_HOLD;
+					keypadAlphaKey = newAlphaKey;
+					keypadAlphaIndex = -1;
+					keyState = KEY_PRESS;
+				}
+			}
 		}
 		break;
-	case KEY_HOLD:
-		if (*keys == -1) {
-			keyState = KEY_WAIT_RELEASED;
-			*keys=0;
-		} else if (*keys == 0) {
-			*keys = old_keyboard_state | KEY_MOD_UP;
+	case KEY_WAITLONG:
+		if (keycode == 0)
+		{
+			keys->key = oldKeyboardCode;
+			keys->event = KEY_MOD_UP;
 			*event = EVENT_KEY_CHANGE;
+
 			keyState = KEY_IDLE;
-		} else {
+		}
+		else
+		{
 			taskENTER_CRITICAL();
 			tmp_timer_keypad=timer_keypad;
 			taskEXIT_CRITICAL();
 
-			old_keyboard_state = *keys;
 			if (tmp_timer_keypad == 0)
 			{
 				taskENTER_CRITICAL();
 				timer_keypad=keypadTimerRepeat;
 				taskEXIT_CRITICAL();
 
-				*keys |= KEY_MOD_LONG | KEY_MOD_DOWN;
+				keys->key = keycode;
+				keys->event = KEY_MOD_LONG | KEY_MOD_DOWN;
 				*event = EVENT_KEY_CHANGE;
 				keyState = KEY_REPEAT;
 			}
 		}
 		break;
 	case KEY_REPEAT:
-		if (*keys == -1) {
-			keyState = KEY_WAIT_RELEASED;
-			*keys=0;
-		} else if (*keys == 0) {
-			*keys = old_keyboard_state | KEY_MOD_LONG | KEY_MOD_UP;
+		if (keycode == 0)
+		{
+			keys->key = oldKeyboardCode;
+			keys->event = KEY_MOD_LONG | KEY_MOD_UP;
 			*event = EVENT_KEY_CHANGE;
+
 			keyState = KEY_IDLE;
-		} else {
+		}
+		else
+		{
 			taskENTER_CRITICAL();
 			tmp_timer_keypad=timer_keypad;
 			taskEXIT_CRITICAL();
 
-			*keys |= KEY_MOD_LONG;
+			keys->key = keycode;
+			keys->event = KEY_MOD_LONG;
+			*event = EVENT_KEY_CHANGE;
+
 			if (tmp_timer_keypad == 0)
 			{
 				taskENTER_CRITICAL();
 				timer_keypad=keypadTimerRepeat;
 				taskEXIT_CRITICAL();
 
-				if (KEYCHECK(*keys, KEY_LEFT) || KEYCHECK(*keys,KEY_RIGHT) ||
-						KEYCHECK(*keys, KEY_UP) || KEYCHECK(*keys, KEY_DOWN)) {
-					*keys |= KEY_MOD_PRESS;
+				if (keys->key == KEY_LEFT || keys->key == KEY_RIGHT
+						|| keys->key == KEY_UP || keys->key == KEY_DOWN)
+				{
+					keys->event = KEY_MOD_LONG | KEY_MOD_PRESS;
 				}
 			}
-			*event = EVENT_KEY_CHANGE;
 		}
 		break;
 	case KEY_WAIT_RELEASED:
-		if (scancode == 0) {
+		if (scancode == 0)
+		{
 			keyState = KEY_IDLE;
 		}
-		*keys = 0;
 		break;
 	}
 

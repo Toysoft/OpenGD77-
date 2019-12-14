@@ -98,59 +98,60 @@ void menuSystemPushNewMenu(int menuNumber)
 {
 	if (menuControlData.stackPosition < 15)
 	{
-		uiEvent_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
+		uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
 
+		fw_reset_keyboard();
 		menuControlData.itemIndex[menuControlData.stackPosition] = gMenusCurrentItemIndex;
 		menuControlData.stackPosition++;
 		menuControlData.stack[menuControlData.stackPosition] = menuNumber;
 		gMenusCurrentItemIndex = (menuNumber == MENU_MAIN_MENU) ? 1 : 0;
 		menuFunctions[menuControlData.stack[menuControlData.stackPosition]](&ev, true);
-		fw_reset_keyboard();
 	}
 }
 void menuSystemPopPreviousMenu(void)
 {
-	uiEvent_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
+	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
 
+	fw_reset_keyboard();
 	menuControlData.itemIndex[menuControlData.stackPosition] = 0;
 	menuControlData.stackPosition--;
 	gMenusCurrentItemIndex = menuControlData.itemIndex[menuControlData.stackPosition];
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](&ev,true);
-	fw_reset_keyboard();
 }
 
 void menuSystemPopAllAndDisplayRootMenu(void)
 {
-	uiEvent_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
+	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
 
+	fw_reset_keyboard();
 	memset(menuControlData.itemIndex, 0, sizeof(menuControlData.itemIndex));
 	menuControlData.stackPosition = 0;
 	gMenusCurrentItemIndex = 0;
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](&ev,true);
-	fw_reset_keyboard();
 }
 
 void menuSystemPopAllAndDisplaySpecificRootMenu(int newRootMenu)
 {
-	uiEvent_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
+	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
 
+	fw_reset_keyboard();
 	memset(menuControlData.itemIndex, 0, sizeof(menuControlData.itemIndex));
 	menuControlData.stack[0]  = newRootMenu;
 	menuControlData.stackPosition = 0;
 	gMenusCurrentItemIndex = (newRootMenu == MENU_MAIN_MENU) ? 1 : 0;
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](&ev,true);
-	fw_reset_keyboard();
 }
 
 void menuSystemSetCurrentMenu(int menuNumber)
 {
-	uiEvent_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
+	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
 
+	fw_reset_keyboard();
 	menuControlData.stack[menuControlData.stackPosition] = menuNumber;
 	gMenusCurrentItemIndex = menuControlData.itemIndex[menuControlData.stackPosition];
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](&ev,true);
-	fw_reset_keyboard();
 }
+
 int menuSystemGetCurrentMenuNumber(void)
 {
 	return menuControlData.stack[menuControlData.stackPosition];
@@ -182,7 +183,7 @@ int gMenusEndIndex;// as above
 
 void menuInitMenuSystem(void)
 {
-	uiEvent_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
+	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
 
 	menuDisplayLightTimer = -1;
 	menuControlData.stack[menuControlData.stackPosition]  = MENU_SPLASH_SCREEN;// set the very first screen as the splash screen
@@ -320,3 +321,63 @@ int menuGetKeypadKeyValue(uiEvent_t *ev, bool digitsOnly)
 	return 99;
 }
 
+void menuUpdateCursor(int pos, bool moved, bool render)
+{
+	static uint32_t lastBlink = 0;
+	static bool     blink = false;
+	uint32_t        m = fw_millis();
+
+	if (moved) {
+		blink = true;
+	}
+	if ((m - lastBlink) > 1000 || moved)
+	{
+		ucDrawFastHLine(pos*8-1, 46, 8, blink);
+
+		blink = !blink;
+		lastBlink = m;
+
+		if (render) {
+			ucRenderRows(5,6);
+		}
+	}
+}
+
+void moveCursorLeftInString(char *str, int *pos, bool delete)
+{
+	int nLen = strlen(str);
+
+	if (*pos > 0) {
+		*pos -=1;
+		if (delete)
+		{
+			for (int i = *pos; i <= nLen; i++)
+			{
+				str[i] = str[i + 1];
+			}
+		}
+	}
+}
+
+void moveCursorRightInString(char *str, int *pos, int max, bool insert)
+{
+	int nLen = strlen(str);
+
+	if (*pos < strlen(str))
+	{
+		if (insert)
+		{
+			if (nLen < max)
+			{
+				for (int i = nLen; i > *pos; i--)
+				{
+					str[i] = str[i - 1];
+				}
+				str[*pos] = ' ';
+			}
+		}
+		if (*pos < max-1) {
+			*pos += 1;
+		}
+	}
+}
