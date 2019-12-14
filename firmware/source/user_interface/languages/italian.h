@@ -135,6 +135,7 @@ const stringsTable_t italianLanguage =
 .all_call				= "Chiama Tutti",
 .tone_scan				= "Scansione Toni",//// MaxLen: 16
 .cc_scan				= "Scansione CC",//// MaxLen: 16
+.low_battery			= "LOW BATTERY !!!",//// MaxLen: 16
 };
 /********************************************************************
  *
