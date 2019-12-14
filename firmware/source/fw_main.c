@@ -58,13 +58,12 @@ static void show_lowbattery(void)
 
 void fw_main_task(void *data)
 {
-	uint32_t keys;
+	keyboardCode_t keys;
 	int key_event;
 	uint32_t buttons;
 	int button_event;
-	uiEvent_t ev = { .buttons = 0, .keys = 0, .events = NO_EVENT, .hasEvent = false, .ticks = 0 };
+	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .ticks = 0 };
 	bool keyOrButtonChanged = false;
-	uint32_t prevKeys = 0;
 	
     USB_DeviceApplicationInit();
 
@@ -200,11 +199,11 @@ void fw_main_task(void *data)
 				}
 			}
 
-			if (key_event == EVENT_KEY_CHANGE && (buttons & BUTTON_PTT) == 0 && keys != 0) {
-				if (keys & KEY_MOD_PRESS)
+			if (key_event == EVENT_KEY_CHANGE && (buttons & BUTTON_PTT) == 0 && keys.key != 0) {
+				if (keys.event & KEY_MOD_PRESS)
 				{
 					set_melody(melody_key_beep);
-				} else if  ((keys & (KEY_MOD_LONG | KEY_MOD_DOWN)) == (KEY_MOD_LONG | KEY_MOD_DOWN)) {
+				} else if  ((keys.event & (KEY_MOD_LONG | KEY_MOD_DOWN)) == (KEY_MOD_LONG | KEY_MOD_DOWN)) {
 					set_melody(melody_key_long_beep);
 				}
 				if (KEYCHECK_LONGDOWN(keys, KEY_RED))
@@ -282,18 +281,10 @@ void fw_main_task(void *data)
     		ev.buttons = buttons;
     		ev.keys = keys;
     		ev.events = (button_event<<1) | key_event;
-    		ev.hasEvent = keyOrButtonChanged || (prevKeys != keys) || ((key_event & EVENT_KEY_CHANGE) && (keys & KEY_MOD_LONG));
+    		ev.hasEvent = keyOrButtonChanged;
     		ev.ticks = fw_millis();
 
         	menuSystemCallCurrentMenuTick(&ev);
-
-        	// In few cases, we cannot rely on EVENT_KEY_CHANGE status, otherwise we're missing the
-        	// final one.
-        	// It's required to check if anything as changed since last event, no matter what. It's up to the
-        	// called functions to handle *_EVENT, and "buttons bits"/"key status".
-        	// WARNING: I need to check if that could happen with BUTTON keys (previous code was checking that
-        	// too, but was removed).
-        	prevKeys = keys;
 
         	if (((GPIO_PinRead(GPIO_Power_Switch, Pin_Power_Switch)!=0)
         			|| (battery_voltage<CUTOFF_VOLTAGE_LOWER_HYST))
