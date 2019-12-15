@@ -20,7 +20,7 @@
  * Translators: OH1E
  *
  *
- * Rev: 6.0
+ * Rev: 6.1
  */
 #ifndef USER_INTERFACE_LANGUAGES_FINNISH_H_
 #define USER_INTERFACE_LANGUAGES_FINNISH_H_
