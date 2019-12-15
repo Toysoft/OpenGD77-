@@ -475,7 +475,7 @@ void menuUtilityRenderQSOData(void)
 	 * but I thought it was safer to disregard any PC's from IDs the same as the current TG
 	 * rather than testing if the TG is the user's ID, though that may work as well.
 	 */
-	if ((LinkHead->talkGroupOrPcId>>24) == PC_CALL_FLAG &&  (LinkHead->id & 0xFFFFFF) != (trxTalkGroupOrPcId & 0xFFFFFF))
+	if ((LinkHead->talkGroupOrPcId>>24) == PC_CALL_FLAG) // &&  (LinkHead->id & 0xFFFFFF) != (trxTalkGroupOrPcId & 0xFFFFFF))
 	{
 		// Its a Private call
 		dmrIDLookup( (LinkHead->id & 0xFFFFFF),&currentRec);
@@ -484,7 +484,7 @@ void menuUtilityRenderQSOData(void)
 		ucPrintCentered(16, buffer, FONT_8x16);
 
 		// Are we already in PC mode to this caller ?
-		if ((trxTalkGroupOrPcId != (LinkHead->id | (PC_CALL_FLAG<<24))) & ((LinkHead->talkGroupOrPcId & 0xFFFFFF)==trxDMRID) )
+		if (((trxTalkGroupOrPcId & 0xFFFFFF) != (LinkHead->id & 0xFFFFFF)) && ((LinkHead->talkGroupOrPcId & 0xFFFFFF)==trxDMRID))
 		{
 			// No either we are not in PC mode or not on a Private Call to this station
 			ucPrintCentered(32, currentLanguage->accept_call, FONT_8x16);
@@ -514,7 +514,7 @@ void menuUtilityRenderQSOData(void)
 		}
 
 		// first check if we have this ID in the DMR ID data
-		if (dmrIDLookup(LinkHead->id, &currentRec))
+		if (dmrIDLookup((LinkHead->id & 0xFFFFFF), &currentRec))
 		{
 			displayContactTextInfos(currentRec.text, sizeof(currentRec.text),false);
 		}
@@ -528,7 +528,7 @@ void menuUtilityRenderQSOData(void)
 			else
 			{
 				// No talker alias. So we can only show the ID.
-				snprintf(buffer, bufferLen, "%ID: %d", LinkHead->id);
+				snprintf(buffer, bufferLen, "ID: %d", LinkHead->id);
 				buffer[bufferLen - 1] = 0;
 				ucPrintCentered(32, buffer, FONT_8x16);
 				displayChannelNameOrRxFrequency(buffer, bufferLen);
@@ -689,16 +689,15 @@ void drawDMRMicLevelBarGraph(void)
 }
 
 void setOverrideTGorPC(int tgOrPc, bool privateCall) {
-	uint32_t saveTrxTalkGroupOrPcId = trxTalkGroupOrPcId;
 	nonVolatileSettings.overrideTG = tgOrPc;
 	if (privateCall == true)
 	{
 		// Private Call
 
-		if ((saveTrxTalkGroupOrPcId >> 24) != PC_CALL_FLAG)
+		if ((trxTalkGroupOrPcId >> 24) != PC_CALL_FLAG)
 		{
 			// if the current Tx TG is a TalkGroup then save it so it can be stored after the end of the private call
-			menuUtilityTgBeforePcMode = saveTrxTalkGroupOrPcId;
+			menuUtilityTgBeforePcMode = trxTalkGroupOrPcId;
 		}
 		nonVolatileSettings.overrideTG |= (PC_CALL_FLAG << 24);
 	}

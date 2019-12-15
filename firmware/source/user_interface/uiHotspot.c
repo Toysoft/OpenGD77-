@@ -823,7 +823,7 @@ static void updateScreen(int rxCommandState)
 
 		val_before_dp = freq_tx/100000;
 		val_after_dp = freq_tx - val_before_dp*100000;
-		sprintf(buffer,"T %d.%04d MHz",val_before_dp, val_after_dp);
+		sprintf(buffer,"T %d.%05d MHz",val_before_dp, val_after_dp);
 	}
 	else
 	{
@@ -859,7 +859,7 @@ static void updateScreen(int rxCommandState)
 		}
 		val_before_dp = freq_rx/100000;
 		val_after_dp = freq_rx - val_before_dp*100000;
-		snprintf(buffer, bufferLen, "R %d.%04d MHz", val_before_dp, val_after_dp);
+		snprintf(buffer, bufferLen, "R %d.%05d MHz", val_before_dp, val_after_dp);
 		buffer[bufferLen - 1] = 0;
 	}
 	ucPrintCentered(48, buffer, FONT_8x16);
