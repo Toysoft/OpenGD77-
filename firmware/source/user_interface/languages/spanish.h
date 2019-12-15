@@ -133,9 +133,9 @@ const stringsTable_t spanishLanguage =
 .delete_contact			= "Borrar contacto", // MaxLen: 16
 .group_call				= "Llamada Grupo", // MaxLen: 16
 .all_call				= "Llamada Todos", // MaxLen: 16
-.tone_scan				= "Tone scan",//// MaxLen: 16
+.tone_scan				= "Tono scan",//// MaxLen: 16
 .cc_scan				= "CC scan",//// MaxLen: 16
-.low_battery			= "LOW BATTERY !!!",//// MaxLen: 16
+.low_battery			= "BATERÍA BAJA!!!",//// MaxLen: 16
 };
 /********************************************************************
  *
