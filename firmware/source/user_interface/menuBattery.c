@@ -26,7 +26,6 @@ SemaphoreHandle_t battSemaphore = NULL;
 typedef struct
 {
 	int32_t  buffer[VOLTAGE_BUFFER_LEN];
-	size_t   capacity;
 	int32_t *head;
 	int32_t *tail;
 	int32_t *end;
@@ -43,10 +42,9 @@ static void handleEvent(uiEvent_t *ev);
 
 static int displayMode = BATTERY_LEVEL;
 
-static void circularBufferInit(voltageCircularBuffer_t *cb, size_t capacity)
+static void circularBufferInit(voltageCircularBuffer_t *cb)
 {
 	cb->end = &cb->buffer[VOLTAGE_BUFFER_LEN - 1];
-	cb->capacity = capacity;
 	cb->head = cb->buffer;
 	cb->tail = cb->buffer;
 	cb->modified = false;
@@ -54,10 +52,10 @@ static void circularBufferInit(voltageCircularBuffer_t *cb, size_t capacity)
 
 static void circularBufferPushBack(voltageCircularBuffer_t *cb, const int32_t item)
 {
+	cb->modified = true;
+
 	*cb->head = item;
 	cb->head++;
-
-	cb->modified = true;
 
     if(cb->head == cb->end)
     	cb->head = cb->buffer;
@@ -266,7 +264,7 @@ void menuBatteryInit(void)
 		while(true); // Something better maybe ?
 	}
 
-	circularBufferInit(&batteryVoltageHistory, (sizeof(batteryVoltageHistory.buffer) / sizeof(batteryVoltageHistory.buffer[0])));
+	circularBufferInit(&batteryVoltageHistory);
 }
 
 void menuBatteryPushBackVoltage(int32_t voltage)
