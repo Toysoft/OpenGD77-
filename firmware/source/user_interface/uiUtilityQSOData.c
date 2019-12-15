@@ -606,6 +606,11 @@ void menuUtilityRenderHeader(void)
 						snprintf(buffer, bufferLen, "%d", trxGetDMRTimeSlot() + 1);
 						ucPrintCore(35, Y_OFFSET, buffer, FONT_6x8, TEXT_ALIGN_LEFT, true);
 					}
+					else if ( trxGetDMRTimeSlot() != ((currentChannelData->flag2 & 0x40)!=0))
+					{
+						ucDrawFastHLine(22, Y_OFFSET+7, 18, true);
+					}
+
 				}
 			}
 			break;
