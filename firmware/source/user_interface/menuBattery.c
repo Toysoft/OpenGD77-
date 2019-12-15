@@ -18,8 +18,12 @@
 #include <user_interface/menuSystem.h>
 #include <user_interface/uiLocalisation.h>
 
+enum { BATTERY_LEVEL = 0, BATTERY_GRAPH };
+
 static void updateScreen(void);
 static void handleEvent(uiEvent_t *ev);
+
+static int displayMode = BATTERY_LEVEL;
 
 int menuBattery(uiEvent_t *ev, bool isFirstRun)
 {
@@ -27,14 +31,17 @@ int menuBattery(uiEvent_t *ev, bool isFirstRun)
 
 	if (isFirstRun)
 	{
+		ucClearBuf();
+		menuDisplayTitle(currentLanguage->battery);
+
 		updateScreen();
 	}
 	else
 	{
-		if ((ev->ticks - m) > 10000)
+		if ((ev->ticks - m) > 2000)
 		{
 			m = ev->ticks;
-			updateScreen();// update the screen once per second to show any changes to the battery voltage
+			updateScreen();// update the screen each two seconds to show any changes to the battery voltage
 		}
 
 		if (ev->hasEvent)
@@ -45,33 +52,66 @@ int menuBattery(uiEvent_t *ev, bool isFirstRun)
 
 static void updateScreen(void)
 {
-	const int MAX_BATTERY_BAR_HEIGHT = 36;
-	char buffer[17];
+	static bool blink = false;
 
-	ucClearBuf();
-	menuDisplayTitle(currentLanguage->battery);
-
-	int val1 = averageBatteryVoltage/10;
-	int val2 = averageBatteryVoltage - (val1 * 10);
-
-	snprintf(buffer, 17, "%d.%dV", val1, val2);
-	buffer[16] = 0;
-	ucPrintAt(20, 22, buffer, FONT_16x32);
-	uint32_t h = (uint32_t)(((averageBatteryVoltage - CUTOFF_VOLTAGE_UPPER_HYST) * MAX_BATTERY_BAR_HEIGHT) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));
-
-	if (h > MAX_BATTERY_BAR_HEIGHT)
+	switch (displayMode)
 	{
-		h = MAX_BATTERY_BAR_HEIGHT;
+		case BATTERY_LEVEL:
+		{
+			const int MAX_BATTERY_BAR_HEIGHT = 36;
+			char buffer[17];
+
+			// Clear drawing region
+			ucFillRect(0, 14, 128, 64 - 14, true);
+
+			int val1 = averageBatteryVoltage/10;
+			int val2 = averageBatteryVoltage - (val1 * 10);
+
+			snprintf(buffer, 17, "%d.%dV", val1, val2);
+			buffer[16] = 0;
+			ucPrintAt(20, 22, buffer, FONT_16x32);
+			uint32_t h = (uint32_t)(((averageBatteryVoltage - CUTOFF_VOLTAGE_UPPER_HYST) * MAX_BATTERY_BAR_HEIGHT) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));
+
+			if (h > MAX_BATTERY_BAR_HEIGHT)
+			{
+				h = MAX_BATTERY_BAR_HEIGHT;
+			}
+
+			// Inner body frame
+			ucDrawRoundRect(97, 20, 26, 42, 3, true);
+			// Outer body frame
+			ucDrawRoundRect(96, 19, 28, 44, 3, true);
+			// Positive pole frame
+			ucFillRoundRect(96+9, 15, 10, 6, 2, true);
+			// Level
+			ucFillRoundRect(100, 23 + MAX_BATTERY_BAR_HEIGHT - h , 20, h, 2, true);
+
+			// low blinking triangle
+			ucFillTriangle(63, 63, 59, 59, 67, 59, blink);
+		}
+		break;
+
+		case BATTERY_GRAPH:
+		{
+			int32_t hist[120];
+			size_t histLen = batteryGetHistoryData(hist, (sizeof(hist) / sizeof(hist[0])));
+			char buf[17];
+
+			sprintf(buf, "%ld", histLen);
+
+			// Clear drawing region
+			ucFillRect(0, 14, 128, 64 - 14, true);
+
+			ucPrintCentered(32, buf, FONT_8x16);
+
+			// low blinking triangle
+			ucFillTriangle(63, 59, 59, 63, 67, 63, blink);
+		}
+		break;
 	}
 
-	// Inner body frame
-	ucDrawRoundRect(97, 20, 26, 42, 3, true);
-	// Outer body frame
-	ucDrawRoundRect(96, 19, 28, 44, 3, true);
-	// Positive pole frame
-	ucFillRoundRect(96+9, 15, 10, 6, 2, true);
-	// Level
-	ucFillRoundRect(100, 23 + MAX_BATTERY_BAR_HEIGHT - h , 20, h, 2, true);
+	//ucPrintCore(0, 56, "x", FONT_8x8, TEXT_ALIGN_LEFT, blink);
+	blink = !blink;
 
 	ucRender();
 	displayLightTrigger();
@@ -88,5 +128,21 @@ static void handleEvent(uiEvent_t *ev)
 	{
 		menuSystemPopAllAndDisplayRootMenu();
 		return;
+	}
+	else if (KEYCHECK_PRESS(ev->keys,KEY_DOWN))
+	{
+		if (displayMode == BATTERY_LEVEL)
+		{
+			displayMode = BATTERY_GRAPH;
+			updateScreen();
+		}
+	}
+	else if (KEYCHECK_PRESS(ev->keys,KEY_UP))
+	{
+		if (displayMode == BATTERY_GRAPH)
+		{
+			displayMode = BATTERY_LEVEL;
+			updateScreen();
+		}
 	}
 }

@@ -35,22 +35,22 @@ static bool reboot=false;
 static const int BATTERY_VOLTAGE_TICK_RELOAD = 2000;
 static const int AVERAGE_BATTERY_VOLTAGE_SAMPLE_WINDOW = 60.0f;// 120 secs = Sample window * BATTERY_VOLTAGE_TICK_RELOAD in milliseconds
 
-#define VOLTAGE_BUFFER_LEN 128 // At one sample each 2 minutes: ~ 4.3 hours
+#define VOLTAGE_BUFFER_LEN 128 // At one sample each 2 secs (BATTERY_VOLTAGE_TICK_RELOAD): ~ 4.3 minutes ATM
 
 typedef struct
 {
 	int32_t  buffer[VOLTAGE_BUFFER_LEN];
-	int32_t *buffer_end;
 	size_t   capacity;
 	int32_t *head;
 	int32_t *tail;
+	int32_t *end;
 } voltageCircularBuffer_t;
 
 voltageCircularBuffer_t batteryVoltageHistory;
 
 static void circularBufferInit(voltageCircularBuffer_t *cb, size_t capacity)
 {
-	cb->buffer_end = &cb->buffer[VOLTAGE_BUFFER_LEN - 1];
+	cb->end = &cb->buffer[VOLTAGE_BUFFER_LEN - 1];
 	cb->capacity = capacity;
 	cb->head = cb->buffer;
 	cb->tail = cb->buffer;
@@ -61,14 +61,14 @@ static void circularBufferPushBack(voltageCircularBuffer_t *cb, const int32_t it
 	*cb->head = item;
 	cb->head++;
 
-    if(cb->head == cb->buffer_end)
+    if(cb->head == cb->end)
     	cb->head = cb->buffer;
 
     if (cb->tail == cb->head)
     {
     	cb->tail++;
 
-    	if(cb->tail == cb->buffer_end)
+    	if(cb->tail == cb->end)
     		cb->tail = cb->buffer;
     }
 }
@@ -85,7 +85,7 @@ static size_t circularBufferGetData(voltageCircularBuffer_t *cb, int32_t *data, 
     	 p++;
     	 count++;
 
-    	 if (p == cb->buffer_end)
+    	 if (p == cb->end)
     		 p = cb->buffer;
      }
 

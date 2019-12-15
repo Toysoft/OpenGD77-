@@ -35,5 +35,6 @@ void init_watchdog(void);
 void fw_watchdog_task(void *data);
 void tick_watchdog(void);
 void watchdogReboot(void);
+size_t batteryGetHistoryData(int32_t *data, size_t dataLen);
 
 #endif /* _FW_WDOG_H_ */
