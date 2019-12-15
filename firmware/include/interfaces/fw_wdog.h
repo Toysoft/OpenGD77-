@@ -23,6 +23,8 @@
 
 #include "fw_adc.h"
 
+typedef void (*batteryHistoryCallback_t)(int32_t);
+
 extern volatile bool alive_maintask;
 extern volatile bool alive_beeptask;
 extern volatile bool alive_hrc6000task;
@@ -31,10 +33,9 @@ extern int battery_voltage;
 extern int battery_voltage_tick;
 extern float averageBatteryVoltage;
 
-void init_watchdog(void);
+void init_watchdog(batteryHistoryCallback_t cb);
 void fw_watchdog_task(void *data);
 void tick_watchdog(void);
 void watchdogReboot(void);
-size_t batteryGetHistoryData(int32_t *data, size_t dataLen);
 
 #endif /* _FW_WDOG_H_ */

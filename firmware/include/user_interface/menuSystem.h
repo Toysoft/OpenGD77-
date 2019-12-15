@@ -84,6 +84,10 @@ void menuUpdateCursor(int pos, bool moved, bool render);
 void moveCursorLeftInString(char *str, int *pos, bool delete);
 void moveCursorRightInString(char *str, int *pos, int max, bool insert);
 
+void menuBatteryInit(void);
+void menuBatteryPushBackVoltage(int32_t voltage);
+
+
 /*
  * ---------------------- IMPORTANT ----------------------------
  *
