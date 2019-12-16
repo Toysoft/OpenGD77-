@@ -36,11 +36,13 @@ voltageCircularBuffer_t batteryVoltageHistory;
 
 
 enum { BATTERY_LEVEL = 0, BATTERY_GRAPH };
+enum { GRAPH_FILL = 0, GRAPH_LINE };
 
 static void updateScreen(bool forceRedraw);
 static void handleEvent(uiEvent_t *ev);
 
 static int displayMode = BATTERY_LEVEL;
+static int graphStyle = GRAPH_FILL;
 
 static void circularBufferInit(voltageCircularBuffer_t *cb)
 {
@@ -116,7 +118,7 @@ int menuBattery(uiEvent_t *ev, bool isFirstRun)
 static void updateScreen(bool forceRedraw)
 {
 	static bool blink = false;
-	bool renderArrow = true;
+	bool renderArrowOnly = true;
 
 	switch (displayMode)
 	{
@@ -136,11 +138,11 @@ static void updateScreen(bool forceRedraw)
 				snprintf(buffer, 17, "%1d.%1dV", val1, val2);
 				buffer[16] = 0;
 
-				renderArrow = false;
+				renderArrowOnly = false;
 
 				if (forceRedraw)
 				{
-					// Clear drawing region
+					// Clear whole drawing region
 					ucFillRect(0, 14, 128, 64 - 14, true);
 
 					// Draw...
@@ -171,20 +173,21 @@ static void updateScreen(bool forceRedraw)
 				ucFillRoundRect(100, 23 + MAX_BATTERY_BAR_HEIGHT - h , 20, h, 2, (h < 6) /* < ~16.7%: 6.6V */ ? blink : true);
 			}
 
-			// low blinking arrow
+			// Low blinking arrow
 			ucFillTriangle(63, 63, 59, 59, 67, 59, blink);
 		}
 		break;
 
-		// Handle small redraw when possible
-		// only redraw blinking arrow
 		case BATTERY_GRAPH:
 		{
-			int32_t hist[120];
+			static const uint8_t chartWidth = 104;
+			int32_t hist[chartWidth];
 			size_t histLen = 0;
 			bool newHistAvailable = false;
-			char buf[17];
 
+			// Grab history values.
+			// There is a 10 ticks timeout, if it kicks in, history length will be 0, then
+			// redraw will be done on the next run
 			if (xSemaphoreTake(battSemaphore, (TickType_t)10) == pdTRUE)
 			{
 				if ((newHistAvailable = batteryVoltageHistory.modified) == true)
@@ -197,27 +200,71 @@ static void updateScreen(bool forceRedraw)
 
 			if (newHistAvailable || forceRedraw)
 			{
-				renderArrow = false;
+				static const uint8_t chartX = 2 + (2 * 6) + 3 + 2;
+				static const uint8_t chartY = 14 + 1 + 2;
+				static const uint8_t chartHeight = 38;
+				// Min is 6.4V, Max is 8.2V
+				// Pick: MIN @ 7V, MAX @ 8V
+				uint32_t minVH = (uint32_t)(((70 - CUTOFF_VOLTAGE_UPPER_HYST) * chartHeight) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));
+				uint32_t maxVH = (uint32_t)(((80 - CUTOFF_VOLTAGE_UPPER_HYST) * chartHeight) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));
 
-				// Update
-				sprintf(buf, "%ld", histLen);
+				renderArrowOnly = false;
 
-				// Clear drawing region
-				ucFillRect(0, 14, 128, 64 - 14, true);
+				// Redraw chart's axes, ticks and so on
+				if (forceRedraw)
+				{
+					// Clear whole drawing region
+					ucFillRect(0, 14, 128, 64 - 14, true);
 
-				ucPrintCentered(32, buf, FONT_8x16);
+					// 2 axis chart
+					ucDrawFastVLine(chartX - 3, chartY - 2, chartHeight + 2 + 3, true);
+					ucDrawFastVLine(chartX - 2, chartY - 2, chartHeight + 2 + 2, true);
+					ucDrawFastHLine(chartX - 3, chartY + chartHeight + 2, chartWidth + 3 + 3, true);
+					ucDrawFastHLine(chartX - 2, chartY + chartHeight + 1, chartWidth + 3 + 2, true);
+
+					// Min/Max Voltage ticks and values
+					ucDrawFastHLine(chartX - 6, (chartY + chartHeight) - minVH, 3, true);
+					ucPrintAt(chartX - 3 - 12 - 3, ((chartY + chartHeight) - minVH) - 3, "7V", FONT_6x8);
+					ucDrawFastHLine(chartX - 6, (chartY + chartHeight) - maxVH, 3, true);
+					ucPrintAt(chartX - 3 - 12 - 3, ((chartY + chartHeight) - maxVH) - 3, "8V", FONT_6x8);
+
+					// Time ticks
+					// TODO
+				}
+				else
+				{
+					// Unneeded, chart is growing, always
+					//ucFillRect(chartX, chartY, chartWidth, chartHeight, true);
+				}
+
+				// Draw chart values, according to style
+				for (size_t i = 0; i < histLen; i++)
+				{
+					uint32_t y = (uint32_t)(((hist[i] - CUTOFF_VOLTAGE_UPPER_HYST) * chartHeight) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));
+
+					if (graphStyle == GRAPH_FILL)
+						ucDrawFastVLine(chartX + i, ((chartY + chartHeight) - y), y, true);
+					else
+						ucSetPixel(chartX + i, ((chartY + chartHeight) - y), true);
+				}
+
+				// Min/Max dot lines
+				for (uint8_t i = 0; i < chartWidth; i++)
+				{
+					ucSetPixel(chartX + i, ((chartY + chartHeight) - minVH), (i % 2) ? false : true);
+					ucSetPixel(chartX + i, ((chartY + chartHeight) - maxVH), (i % 2) ? false : true);
+				}
 			}
 
-			// low blinking arrow
+			// Low blinking arrow
 			ucFillTriangle(63, 59, 59, 63, 67, 63, blink);
 		}
 		break;
 	}
 
-	//ucPrintCore(0, 56, "x", FONT_8x8, TEXT_ALIGN_LEFT, blink);
 	blink = !blink;
 
-	if (renderArrow)
+	if (renderArrowOnly)
 		ucRenderRows(7, 8);
 	else
 		ucRender();
@@ -242,6 +289,7 @@ static void handleEvent(uiEvent_t *ev)
 		if (displayMode == BATTERY_LEVEL)
 		{
 			displayMode = BATTERY_GRAPH;
+			graphStyle = GRAPH_FILL;
 			updateScreen(true);
 		}
 	}
@@ -251,6 +299,28 @@ static void handleEvent(uiEvent_t *ev)
 		{
 			displayMode = BATTERY_LEVEL;
 			updateScreen(true);
+		}
+	}
+	else if (KEYCHECK_PRESS(ev->keys,KEY_LEFT))
+	{
+		if (displayMode == BATTERY_GRAPH)
+		{
+			if (graphStyle == GRAPH_LINE)
+			{
+				graphStyle = GRAPH_FILL;
+				updateScreen(true);
+			}
+		}
+	}
+	else if (KEYCHECK_PRESS(ev->keys,KEY_RIGHT))
+	{
+		if (displayMode == BATTERY_GRAPH)
+		{
+			if (graphStyle == GRAPH_FILL)
+			{
+				graphStyle = GRAPH_LINE;
+				updateScreen(true);
+			}
 		}
 	}
 }
