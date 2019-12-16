@@ -116,15 +116,16 @@ void tick_watchdog(void)
 	{
 		int tmp_battery_voltage = get_battery_voltage();
 
-		if (batteryCallbackFunction)
-			batteryCallbackFunction(battery_voltage);
-
 		if (battery_voltage!=tmp_battery_voltage)
 		{
 			battery_voltage=tmp_battery_voltage;
 			averageBatteryVoltage = (averageBatteryVoltage * (AVERAGE_BATTERY_VOLTAGE_SAMPLE_WINDOW-1) + battery_voltage) / AVERAGE_BATTERY_VOLTAGE_SAMPLE_WINDOW;
 		}
 		battery_voltage_tick=0;
+
+		if (batteryCallbackFunction)
+			batteryCallbackFunction(averageBatteryVoltage);
+
 	}
 	trigger_adc();// need the ADC value next time though, so request conversion now, so that its ready by the time we need it
 }

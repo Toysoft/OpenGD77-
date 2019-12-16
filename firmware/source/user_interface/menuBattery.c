@@ -21,7 +21,7 @@
 
 SemaphoreHandle_t battSemaphore = NULL;
 
-#define VOLTAGE_BUFFER_LEN 128 // At one sample each 2 secs (BATTERY_VOLTAGE_TICK_RELOAD): ~ 4.3 minutes ATM
+#define VOLTAGE_BUFFER_LEN 128
 
 typedef struct
 {
@@ -34,15 +34,18 @@ typedef struct
 
 voltageCircularBuffer_t batteryVoltageHistory;
 
-
 enum { BATTERY_LEVEL = 0, BATTERY_GRAPH };
 enum { GRAPH_FILL = 0, GRAPH_LINE };
+
+static int displayMode = BATTERY_LEVEL;
+static int graphStyle = GRAPH_FILL;
+static int battery_stack_iter = 0;
+static const int BATTERY_ITER_PUSHBACK = 20;
+
 
 static void updateScreen(bool forceRedraw);
 static void handleEvent(uiEvent_t *ev);
 
-static int displayMode = BATTERY_LEVEL;
-static int graphStyle = GRAPH_FILL;
 
 static void circularBufferInit(voltageCircularBuffer_t *cb)
 {
@@ -180,9 +183,9 @@ static void updateScreen(bool forceRedraw)
 
 		case BATTERY_GRAPH:
 		{
-			static const uint8_t chartWidth = 104;
-			int32_t hist[chartWidth];
-			size_t histLen = 0;
+#define  chartWidth 104
+			static int32_t hist[chartWidth];
+			static size_t histLen = 0;
 			bool newHistAvailable = false;
 
 			// Grab history values.
@@ -229,7 +232,10 @@ static void updateScreen(bool forceRedraw)
 					ucPrintAt(chartX - 3 - 12 - 3, ((chartY + chartHeight) - maxVH) - 3, "8V", FONT_6x8);
 
 					// Time ticks
-					// TODO
+					for (uint8_t i = 0; i < chartWidth + 2; i += 22 /* ~ 15 minutes */)
+					{
+						ucSetPixel(chartX + i, (chartY + chartHeight) + 3, true);
+					}
 				}
 				else
 				{
@@ -336,25 +342,21 @@ void menuBatteryInit(void)
 	circularBufferInit(&batteryVoltageHistory);
 }
 
+// called every 2000 ticks
 void menuBatteryPushBackVoltage(int32_t voltage)
 {
-	if (xSemaphoreTake(battSemaphore, (TickType_t)10) == pdTRUE)
+	// Store value each 40k ticks
+	if ((battery_stack_iter == 0) || (battery_stack_iter > BATTERY_ITER_PUSHBACK))
 	{
-		circularBufferPushBack(&batteryVoltageHistory, voltage);
-		xSemaphoreGive(battSemaphore);
+		if (xSemaphoreTake(battSemaphore, (TickType_t)10) == pdTRUE)
+		{
+			circularBufferPushBack(&batteryVoltageHistory, voltage);
+			xSemaphoreGive(battSemaphore);
+		}
+
+		battery_stack_iter = 0;
 	}
+
+	battery_stack_iter++;
 }
-
-/*
-size_t batteryGetHistoryData(int32_t *data, size_t dataLen)
-{
-	size_t l = 0;
-
-	taskENTER_CRITICAL();
-	l = circularBufferGetData(&batteryVoltageHistory, data, dataLen);
-	taskEXIT_CRITICAL();
-
-	return l;
-}
-*/
 
