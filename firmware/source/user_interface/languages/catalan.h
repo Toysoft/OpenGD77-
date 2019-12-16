@@ -34,9 +34,9 @@
  ********************************************************************/
 const stringsTable_t catalanLanguage=
 {
-.LANGUAGE_NAME			= "Català",
+.LANGUAGE_NAME			= "CatalÃ ",
 .language				= "Idioma",
-.menu					= "Menú",
+.menu					= "MenÃº",
 .credits				= "Credits",
 .zone					= "Zona",
 .rssi					= "RSSI",
@@ -46,7 +46,7 @@ const stringsTable_t catalanLanguage=
 .last_heard				= "Escoltats",
 .options				= "Opcions",
 .display_options		= "Opcions display",
-.channel_details		= "Menú ràpid",
+.channel_details		= "MenÃº rÃ pid",
 .new_contact			= "Nou contacte",
 .contact_list			= "Contactes",
 .hotspot_mode			= "Mode Hotspot",
@@ -71,9 +71,9 @@ const stringsTable_t catalanLanguage=
 .accept_call			= "Acceptar PC?",
 .private_call			= "Trucada privada",
 .squelch				= "Squelch",
-.quick_menu				= "Menú Ràpid",
+.quick_menu				= "MenÃº RÃ pid",
 .filter					= "Filtre",
-.all_channels			= "Tots els canals",
+.all_channels			= "Tots Canals",
 .gotoChannel			= "Anar canal",
 .scan					= "Scan",
 .channelToVfo			= "Canal --> VFO",
@@ -133,9 +133,9 @@ const stringsTable_t catalanLanguage=
 .delete_contact				= "Esborrar Contacte",
 .group_call				= "Cridada Grup",
 .all_call				= "Cridada Tots",
-.tone_scan				= "Tone scan",//// MaxLen: 16
-.cc_scan				= "CC scan",//// MaxLen: 16
-.low_battery			= "LOW BATTERY !!!",//// MaxLen: 16
+.tone_scan				= "Scan To",//// MaxLen: 16
+.cc_scan				= "Scan CC",//// MaxLen: 16
+.low_battery			= "BATERIA BAIXA !!",//// MaxLen: 16
 };
 /********************************************************************
  *
