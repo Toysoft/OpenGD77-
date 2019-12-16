@@ -233,8 +233,7 @@ static void updateScreen(bool forceRedraw)
 				}
 				else
 				{
-					// Unneeded, chart is growing, always
-					//ucFillRect(chartX, chartY, chartWidth, chartHeight, true);
+					ucFillRect(chartX, chartY, chartWidth, chartHeight, true);
 				}
 
 				// Draw chart values, according to style
@@ -249,7 +248,7 @@ static void updateScreen(bool forceRedraw)
 				}
 
 				// Min/Max dot lines
-				for (uint8_t i = 0; i < chartWidth; i++)
+				for (uint8_t i = 0; i < chartWidth + 2; i++)
 				{
 					ucSetPixel(chartX + i, ((chartY + chartHeight) - minVH), (i % 2) ? false : true);
 					ucSetPixel(chartX + i, ((chartY + chartHeight) - maxVH), (i % 2) ? false : true);
