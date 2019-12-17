@@ -101,6 +101,7 @@ int menuBattery(uiEvent_t *ev, bool isFirstRun)
 	{
 		ucClearBuf();
 		menuDisplayTitle(currentLanguage->battery);
+		ucRenderRows(0, 2);
 
 		updateScreen(true);
 	}
@@ -269,10 +270,7 @@ static void updateScreen(bool forceRedraw)
 
 	blink = !blink;
 
-	if (renderArrowOnly)
-		ucRenderRows(7, 8);
-	else
-		ucRender();
+	ucRenderRows((renderArrowOnly ? 7 : 1), 8);
 
 	displayLightTrigger();
 }
