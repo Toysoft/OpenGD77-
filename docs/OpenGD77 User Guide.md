@@ -1,7 +1,7 @@
 ![](media/OpenGD77-logo.svg)
 
 # OpenGD77 User Guide
-(9th December 2019)
+(17 December 2019)
 
 <!-- MDTOC maxdepth:6 firsth1:1 numbering:0 flatten:0 bullets:1 updateOnSave:1 -->
 
@@ -117,7 +117,7 @@
 ![](media/OpenGD77-logo.svg)
 
 # OpenGD77 User Guide
-(19th November 2019; Updated 10th December 2019)
+(17 December 2019)
 
 ## Introduction
 
