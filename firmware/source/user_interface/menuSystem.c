@@ -114,7 +114,7 @@ void menuSystemPopPreviousMenu(void)
 
 	fw_reset_keyboard();
 	menuControlData.itemIndex[menuControlData.stackPosition] = 0;
-	menuControlData.stackPosition--;
+	menuControlData.stackPosition -= (menuControlData.stackPosition > 0) ? 1 : 0; // Avoid crashing if something goes wrong.
 	gMenusCurrentItemIndex = menuControlData.itemIndex[menuControlData.stackPosition];
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](&ev,true);
 }
