@@ -55,6 +55,7 @@
             - [TOT](#tot)   
    - [Other screens](#other-screens)   
          - [Lock screen](#lock-screen)   
+         - [Text entry](#text-entry)   
    - [The control keys and buttons](#the-control-keys-and-buttons)   
    - [The Menu System](#the-menu-system)   
    - [Main Menu](#main-menu)   
@@ -553,6 +554,14 @@ To the lock the keypad.
 On either the VFO or the Channel screen, press the **Green** menu key to display the Main menu, then press the **Star** key. Pressing the **Star** key from any top-level item within the Main menu locks the keypad.
 
 To unlock the keypad, press and hold the **Function** button and press the **Star** key
+
+#### Text entry
+
+OpenGD77 now supports alphanumeric text entry while creating a new contact or editing an existing one.
+
+![](media/text-entry.png)
+
+Press **Left** and **Right** to move the cursor. Press **Function-Left** as backspace, and **Function-Right** to insert a space. The keypad entry follows the same functionality as stock GD77 firmware.
 
 ## The control keys and buttons
 
