@@ -206,7 +206,7 @@ The OpenGD77 firmware has 2 main screens.  The VFO screen and the Channel screen
 
 Initially after the OpenGD77 firmware is installed, the VFO screen will be displayed.
 
-![](media/vfo-screen.jpg)
+![](media/vfo-screen.png)
 
 The frequency used in the VFO for both Tx and Rx will be read from the “VFO A” settings of the codeplug.
 
@@ -220,9 +220,9 @@ On the VFO screen, the TX and RX frequency are shown, as well as the TalkGroup w
 
 The arrow to the left of the R (receive frequency) indicates that the keypad up and down arrows and number entry keys will control the RX frequency.
 
-The channel screen displays the same information in the top row, but displays the Channel name (in this example “VK3RZU DMR”) as well as the Zone (“VK3 DMR”). In DMR mode the TalkGroup will also be displayed
+The channel screen displays the same information in the top row, but displays the Channel name (in this example “OpenSpot”) as well as the Zone (“Hotspots”). In DMR mode the TalkGroup will also be displayed
 
-![](media/dmr-screen.jpg)
+![](media/dmr-screen.png)
 
 On both the VFO and Channel screens:
 
@@ -254,12 +254,12 @@ In DMR mode the signal meter will only be active when the DMR hardware detects a
 
 In FM mode the signal meter should operate all the time.
 
-![](media/signal-meter.jpg)
+![](media/signal-meter.png)
 
 ### Channel screen specific functionality
 The Channel screen displays the current Channel number as well as the current zone.
 
-![](media/channel-and-zone.jpg)
+![](media/channel-and-zone.png)
 
 #### Changing channels within the current zone
 
@@ -269,7 +269,7 @@ Pressing the **Up** or **Down arrow** keys changes channel in current zone, and 
 
 Pressing **Function + Up arrow** or **Function + Down arrow** changes to the next or previous zone, respectively.
 
-![](media/changing-zones.jpg)
+![](media/changing-zones.png)
 
 #### Channel screen Quick Menu
 
@@ -291,7 +291,7 @@ Press the **Orange** button or **Green** key to confirm and save the updated cha
 
 Use the **Right** or **Left** arrows to select **TS** (for filtering by the selected timeslot) or **None** (for no filtering, i.e. "promiscuous" mode).
 
-![](media/channel-quick-menu.jpg)
+![](media/channel-quick-menu.png)
 
 #### VFO Quick Menu
 
@@ -323,7 +323,7 @@ In analog mode, this scans for any CTCSS tone. In DMR mode, it scans across the 
 
 Press the **Orange** button or **Green** key to confirm the copy or **Red** key to cancel.
 
-![](media/vfo-quick-menu.jpg)
+![](media/vfo-quick-menu.png)
 
 *Note.*
 
@@ -343,23 +343,23 @@ The **Star** key toggles between TimeSlot 1 and TimeSlot 2
 
 When a DMR signal is received which uses the same Colour Code as selected for the VFO or Channel, the radio display will show the station’s Talkgroup and DMR ID
 
-![](media/talkgroup-and-dmr-id.jpg)
+![](media/talkgroup-and-dmr-id.png)
 
 If the DMR ID is in the DMR ID database previously loaded into the radio, the callsign and name will be displayed.
 
-![](media/callsign-and-name.jpg)
+![](media/callsign-and-name.png)
 
 #### Talker Alias display
 
 If receiving a signal from the Brandmeister network, and if the station’s DMR ID is not in the radio's DMR ID database, the display will show the Talker Alias information sent by Brandmeister.
 
-![](media/talker-alias.jpg)
+![](media/talker-alias.png)
 
 The callsign will be displayed in the centre of the screen, and additional information will be displayed at the bottom of the screen. The additional information will default to the text “DMR ID:” followed by the stations DMR ID number.
 
 If the station has entered any data into the APRS section of their Brandmeister “Self care” page, that text will be display in place of the DMR ID number.
 
-![](media/talker-alias-data.jpg)
+![](media/talker-alias-data.png)
 
 Note: As the Talker Alias data is sent slowly as it is embedded inside the DMR audio data frames, the callsign will appear first and about half a second later the DMR ID or other text will arrive via the DMR data and be displayed.
 
@@ -382,7 +382,7 @@ If a Talkgroup is displayed in inverse video during reception of a DMR signal, t
 
 If you want to transmit on the same TalkGroup as the currently received signal, press the **Function** button on the side of the radio while the TalkGroup is being displayed in inverse. The TX TalkGroup will now be set to the RX TalkGroup.
 
-![](media/talkgroup-inverse-video.jpg)
+![](media/talkgroup-inverse-video.png)
 
 #### Manual TalkGroup number entry
 
@@ -390,13 +390,13 @@ Press the **Hash (#)** key to enter an *ad hoc* TalkGroup number, followed by th
 If the entered TG is in the Digital Contacts the name of the TG Contact will be displayed, otherwise the number will be displayed e.g. TG 505.
 When a TG has been manually entered, the display shows a 1 pixel box around the TG display area to indicate that this TG has been manually entered, even if the Contact / TG name is displayed rather than the TG nunber.
 
-![](media/talkgroup-entry.jpg)
+![](media/talkgroup-entry.png)
 
 #### Private Call number entry
 
 Press the **Hash (#)** two times to enter a Private Call DMR ID number.
 
-![](media/private-call-entry.jpg)
+![](media/private-call-entry.png)
 
 In all numeric entry screens, pressing the Red menu key exits back to the previous screen, either the VFO or Channel screen.
 
@@ -404,7 +404,7 @@ In all numeric entry screens, pressing the Red menu key exits back to the previo
 
 Press the **Hash (#)** three times to access the Digital contacts defined in the CPS.
 
-![](media/contact-selection.jpg)
+![](media/contact-selection.png)
 
 The contact name is show in the middle of the screen, e.g. “TG 505 TS2” and the TalkGroup or PC number is shown in smaller text at the bottom of the screen.
 
@@ -414,7 +414,7 @@ Press **Green** to select or **Red** to cancel.
 
 Private calls can also be selected in this manner.
 
-![](media/private-call-selection.jpg)
+![](media/private-call-selection.png)
 
 #### Station DMR ID number entry
 
@@ -424,7 +424,7 @@ This DMR ID will be used for transmission *until* the radio is rebooted or you e
 
 To make the change permanent, so that its written back to the codeplug Press **Function + Green** instead of **Green** to confirm the number.
 
-![](media/user-dmr-id.jpg)
+![](media/user-dmr-id.png)
 
 ### FM specific functionality (VFO and Channel screens)
 
@@ -438,13 +438,13 @@ This can be set for the Channel or VFO, the letters **CT** **CR** or **CTR** wil
 
 **CT** means CTCSS TX tone only. **CR** means CTCSS RX tone only. **CTR** means CTCSS TX and RX tones.
 
-![](media/ctcss-tone.jpg)
+![](media/ctcss-tone.png)
 
 #### Squelch
 
 Pressing **Left** or **Right** keys, controls the FM squelch.
 
-![](media/squelch.jpg)
+![](media/squelch.png)
 
 Once in squelch control mode, pressing **Right** tightens the squelch incrementally, **Left** opens up the squelch incrementally. The VFO and each channel have individual squelch settings that can be set in this manner.
 
@@ -471,7 +471,7 @@ The tone will also be audible through the speaker.
 
 ### VFO specific functionality
 
-![](media/vfo-screen.jpg)
+![](media/vfo-screen.png)
 
 The VFO displays both the TX and RX frequency at all times.
 
@@ -487,7 +487,7 @@ The step can be adjusted by pressing **Function + Green** to enter the Channel D
 
 Pressing any of the number keys allows the direct entry of the frequency.
 
-![](media/frequency-entry.jpg)
+![](media/frequency-entry.png)
 
 When all digits have been entered, the accept beep tones are played, and the display returns to the VFO screen.
 
@@ -527,7 +527,7 @@ In DMR Tier2 the timer will not start counting until the repeater becomes active
 
 During DMR TX a VU meter is displayed showing the input microphone level, in the form of a bar graph across the top of the screen.
 
-![](media/dmr-mic-level.jpg)
+![](media/dmr-mic-level.png)
 
 ##### Timeout warning beep
 
@@ -537,13 +537,13 @@ A timeout warning can be configured in the Utilities menu. The radio will beep e
 
 If TOT is setup for the current channel or VFO, when the timer counts down to zero the transmission will stop, a warning beep will be played and the radio will stop transmitting.
 
-![](media/timeout.jpg)
+![](media/timeout.png)
 
 ## Other screens
 
 #### Lock screen
 
-![](media/lock-screen.jpg)
+![](media/lock-screen.png)
 
 To the lock the keypad.
 
