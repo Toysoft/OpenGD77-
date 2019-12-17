@@ -1,4 +1,4 @@
-![](media/OpenGD77-logo.svg)
+![](media/OpenGD77-logo.png)
 
 # OpenGD77 User Guide
 (17 December 2019)
