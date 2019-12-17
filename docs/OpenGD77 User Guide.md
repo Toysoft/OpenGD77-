@@ -790,7 +790,7 @@ Pressing the **Green** menu key confirms the changes and saves the settings to t
 
 ### Credits
 
-![](media/credits.jpg)
+![](media/credits.png)
 
 Details of the creators of OpenGD77 firmware.
 
