@@ -7,11 +7,11 @@
 
 - [OpenGD77 User Guide](#opengd77-user-guide)   
    - [Introduction](#introduction)   
-         - [Credits:](#credits)   
+         - [Credits](#credits)   
          - [Download links and other resources](#download-links-and-other-resources)   
    - [Installation](#installation)   
    - [Main screens (VFO and Channel screens)](#main-screens-vfo-and-channel-screens)   
-         - [Changing from VFO < -- > Channel](#changing-from-vfo-channel)   
+         - [Changing between VFO and Channel](#changing-between-vfo-and-channel)   
          - [Changing Timeslot in DMR mode](#changing-timeslot-in-dmr-mode)   
          - [Controlling Tx power](#controlling-tx-power)   
          - [Signal strength bar graph](#signal-strength-bar-graph)   
@@ -25,7 +25,7 @@
             - [Filter (DMR only)](#filter-dmr-only)   
          - [VFO Quick menu](#vfo-quick-menu)   
             - [VFO selection A or B](#vfo-selection-a-or-b)   
-            - [Filter (by timeslot- DMR mode only)](#filter-by-timeslot-dmr-mode-only)   
+            - [Filter by timeslot (DMR mode only)](#filter-by-timeslot-dmr-mode-only)   
             - [Copy TX frequency to the RX frequency](#copy-tx-frequency-to-the-rx-frequency)   
             - [Exchange the TX and RX frequencies](#exchange-the-tx-and-rx-frequencies)   
             - [Copy the RX frequency to the TX frequency](#copy-the-rx-frequency-to-the-tx-frequency)   
@@ -41,7 +41,7 @@
          - [Digital Contact selection](#digital-contact-selection)   
          - [Station DMR ID number entry](#station-dmr-id-number-entry)   
       - [FM specific functionality (VFO and Channel screens)](#fm-specific-functionality-vfo-and-channel-screens)   
-         - [FM / FM Narrow](#fm-fm-narrow)   
+         - [FM and FM Narrow](#fm-and-fm-narrow)   
          - [CTCSS tone](#ctcss-tone)   
          - [Squelch](#squelch)   
          - [1750Hz Tone for repeater operation](#1750hz-tone-for-repeater-operation)   
@@ -155,7 +155,7 @@ These include direct numerical entry of DMR TalkGroup numbers and use of the Rx 
 
 Also, as far as possible the firmware is open source. This allows anyone to modify the firmware to suit their own individual needs, and also for peer review and improvement of the firmware source code.
 
-#### Credits:
+### Credits
 
 The project was conceived by Kai DG4KLU, who developed the initial framework and all the FM and DMR TX and RX (Tier 1) functionality.
 
@@ -173,7 +173,7 @@ This user guide was written by Roger VK3KYY based on work by Alister G0NEF. Addi
 
 Thanks to all the Beta Testers that provide detailed bug reports and user feedback, especially VK7ZCR, W1RHS and G4TSN
 
-#### Download links and other resources
+### Download links and other resources
 
 **Firmware source code and binaries:**
 
@@ -235,7 +235,7 @@ Press **Function + Green** for quick access to the Channel details screen, which
 *Note:*
 The VFO is actually a special type of channel; hence the Channel Details screen also works for the VFO.
 
-#### Changing from VFO < -- > Channel
+#### Changing between VFO and Channel
 
 Press the **Function + Star** key to toggle between FM and DMR mode on either the VFO or Channel screens.
 
@@ -314,7 +314,7 @@ Copies the RX frequency to the TX frequency. Press **Green** key or **Orange** b
 
 Copies the TX frequency to the RX frequency. Press **Green** key or **Orange** button to confirm.
 
-##### Filter (by timeslot- DMR mode only)
+##### Filter by timeslot (DMR mode only)
 
 **TS** Filters by TimeSlot. **None** results in radio listening to both timeslots (equivalent to Promiscuous Mode).
 
@@ -432,7 +432,7 @@ To make the change permanent, so that its written back to the codeplug Press **F
 
 ### FM specific functionality (VFO and Channel screens)
 
-#### FM / FM Narrow
+#### FM and FM Narrow
 
 For FM with 25kHz bandwidth with the text “FM” is displayed in the top left of the screen. For narrow band with 12.5kHz bandwidth the text “FMN” is displayed.
 
