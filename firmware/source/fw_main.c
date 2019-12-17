@@ -132,7 +132,8 @@ void fw_main_task(void *data)
 
 	init_hrc6000_task();
 
-	init_watchdog();
+	menuBatteryInit(); // Initialize circular buffer
+	init_watchdog(menuBatteryPushBackVoltage);
 
     fw_init_beep_task();
 
