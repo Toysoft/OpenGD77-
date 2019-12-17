@@ -625,6 +625,10 @@ Displays the current battery voltage.
 
 ![](media/battery.jpg)
 
+Press the **Down** key to display the battery usage chart. This shows the history of battery voltage on an hourly basis.
+
+![](media/battery-graph.png)
+
 ### Last Heard
 
 Displays a record of the last 16 DMR stations that the radio has received.
