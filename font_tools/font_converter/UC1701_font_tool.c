@@ -1017,7 +1017,10 @@ static void language_to_utf8(const char *inputFile)
 	       {
 		    // DOS 2 UNIX
 		    if (*p == '\r')
+		    {
+			 p++;
 			 continue;
+		    }
 		    else if (*p == '\n')
 			 line++;
 
