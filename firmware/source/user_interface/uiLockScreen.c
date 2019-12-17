@@ -36,12 +36,13 @@ int menuLockScreen(uiEvent_t *ev, bool isFirstRun)
 	if (isFirstRun)
 	{
 		m = fw_millis();
-		updateScreen();
 		lockScreenState = LOCK_SCREEN_STATE_CHANGED;
+		updateScreen();
+		lockDisplay = true;
 	}
 	else
 	{
-		if ((ev->ticks - m) > TIMEOUT_MS)
+		if (lockDisplay && ((ev->ticks - m) > TIMEOUT_MS))
 		{
 			menuSystemPopPreviousMenu();
 			lockDisplay = false;
@@ -102,6 +103,15 @@ static void handleEvent(uiEvent_t *ev)
 		PTTLocked = false;
 		menuSystemPopAllAndDisplayRootMenu();
 		menuSystemPushNewMenu(MENU_LOCK_SCREEN);
-
+	}
+	else
+	{
+		// Hide immediately the lock/unlock window on key event, without waiting for timeout.
+		if (lockDisplay && (((ev->keys.key != 0) && (ev->keys.event & KEY_MOD_UP)) ||
+				((ev->events & BUTTON_EVENT) && (ev->buttons == BUTTON_NONE))))
+		{
+			menuSystemPopPreviousMenu();
+			lockDisplay = false;
+		}
 	}
 }
