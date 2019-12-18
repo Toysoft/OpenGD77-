@@ -7,28 +7,29 @@
 
 - [OpenGD77 User Guide](#opengd77-user-guide)   
    - [Introduction](#introduction)   
-         - [Credits](#credits)   
-         - [Download links and other resources](#download-links-and-other-resources)   
+      - [Credits](#credits)   
+      - [Download links and other resources](#download-links-and-other-resources)   
    - [Installation](#installation)   
    - [Main screens (VFO and Channel screens)](#main-screens-vfo-and-channel-screens)   
          - [Changing between VFO and Channel](#changing-between-vfo-and-channel)   
          - [Changing Timeslot in DMR mode](#changing-timeslot-in-dmr-mode)   
          - [Controlling Tx power](#controlling-tx-power)   
          - [Signal strength bar graph](#signal-strength-bar-graph)   
-      -  [Channel screen specific functionality](#channel-screen-specific-functionality)   
+      - [Channel screen specific functionality](#channel-screen-specific-functionality)   
          - [Changing channels within the current zone](#changing-channels-within-the-current-zone)   
          - [Changing zones](#changing-zones)   
-         - [Channel screen Quick menu](#channel-screen-quick-menu)   
+         - [Channel screen Quick Menu](#channel-screen-quick-menu)   
             - [Scan](#scan)   
             - [Copying a channel to VFO](#copying-a-channel-to-vfo)   
             - [Read the VFO into the current channel](#read-the-vfo-into-the-current-channel)   
             - [Filter (DMR only)](#filter-dmr-only)   
-         - [VFO Quick menu](#vfo-quick-menu)   
+         - [VFO Quick Menu](#vfo-quick-menu)   
             - [VFO selection A or B](#vfo-selection-a-or-b)   
-            - [Filter by timeslot (DMR mode only)](#filter-by-timeslot-dmr-mode-only)   
-            - [Copy TX frequency to the RX frequency](#copy-tx-frequency-to-the-rx-frequency)   
             - [Exchange the TX and RX frequencies](#exchange-the-tx-and-rx-frequencies)   
             - [Copy the RX frequency to the TX frequency](#copy-the-rx-frequency-to-the-tx-frequency)   
+            - [Copy TX frequency to the RX frequency](#copy-tx-frequency-to-the-rx-frequency)   
+            - [Filter by timeslot (DMR mode only)](#filter-by-timeslot-dmr-mode-only)   
+            - [Tone Scan for CTCSS tone in FM, or CC Scan for DMR Colour Code in DMR mode](#tone-scan-for-ctcss-tone-in-fm-or-cc-scan-for-dmr-colour-code-in-dmr-mode)   
       - [DMR specific functionality (VFO and Channel screens)](#dmr-specific-functionality-vfo-and-channel-screens)   
          - [Timeslot selection](#timeslot-selection)   
          - [DMR ID callsign and name display](#dmr-id-callsign-and-name-display)   
@@ -49,7 +50,7 @@
       - [VFO specific functionality](#vfo-specific-functionality)   
          - [Frequency change up/down step](#frequency-change-updown-step)   
          - [Numerical frequency entry](#numerical-frequency-entry)   
-         - [To adjust the TX frequency, independent of the RX frequency.](#to-adjust-the-tx-frequency-independent-of-the-rx-frequency)   
+         - [To adjust the TX frequency, independent of the RX frequency](#to-adjust-the-tx-frequency-independent-of-the-rx-frequency)   
    - [Transmitting](#transmitting)   
             - [Timeout warning beep](#timeout-warning-beep)   
             - [TOT](#tot)   
@@ -98,18 +99,18 @@
          - [Zone Skip](#zone-skip)   
          - [All Skip](#all-skip)   
          - [RX Grp](#rx-grp)   
-      - [Credits](#credits)   
+      - [Credits Screen](#credits-screen)   
    - [Making and receiving DMR Private Calls](#making-and-receiving-dmr-private-calls)   
       - [To make a Private Call](#to-make-a-private-call)   
       - [To Receive a Private Call](#to-receive-a-private-call)   
    - [Hotspot mode](#hotspot-mode)   
-   - [Programming Channels and Talkgroups for use with OpenGD77.](#programming-channels-and-talkgroups-for-use-with-opengd77)   
+   - [Programming Channels and Talkgroups for use with OpenGD77](#programming-channels-and-talkgroups-for-use-with-opengd77)   
       - [Overview](#overview)   
          - [New Driver Installation](#new-driver-installation)   
          - [OpenGD77 Menu](#opengd77-menu)   
          - [Backup Before You Do Anything Else](#backup-before-you-do-anything-else)   
          - [Reading and Writing Your Codeplug](#reading-and-writing-your-codeplug)   
-         - [Writing DMR ID’s](#writing-dmr-id’s)   
+         - [Writing DMR IDs -- the User Database](#writing-dmr-ids-the-user-database)   
 
 <!-- /MDTOC -->
 <div style="page-break-after: always; break-after: page;"></div>
@@ -117,7 +118,6 @@
 
 ![](media/OpenGD77-logo.png)
 
-# OpenGD77 User Guide
 (17 December 2019)
 
 ## Introduction
@@ -184,11 +184,14 @@ Thanks to all the Beta Testers that provide detailed bug reports and user feedba
 **Tier 2 “Alpha 2” version:** (includes Hotspot mode)
 <https://github.com/rogerclarkmelbourne/OpenGD77/blob/master/firmware_binaries/daily_builds/OpenGD77_latest.sgl>
 
-**GD-77 Community CPS with support for OpenGD77:**
+**GD-77 Community CPS with support for OpenGD77:**<br>
 <https://github.com/rogerclarkmelbourne/radioddity_gd-77_cps/blob/master/installer/OpenGD77CPSInstaller.exe>
 
 **OpenGD77 CPS with support new features like 80 channel zones:**
 <https://github.com/rogerclarkmelbourne/radioddity_gd-77_cps/raw/master/installer/OpenGD77CPSInstaller.exe>
+
+**OpenGD77Forum:**<br>
+<http://www.opengd77.com/>
 
 ## Installation
 
@@ -222,7 +225,7 @@ On the VFO screen, the TX and RX frequency are shown, as well as the TalkGroup w
 
 The arrow to the left of the R (receive frequency) indicates that the keypad up and down arrows and number entry keys will control the RX frequency.
 
-The channel screen displays the same information in the top row, but displays the Channel name (in this example “OpenSpot”) as well as the Zone (“Hotspots”). In DMR mode the TalkGroup will also be displayed
+The channel screen displays the same information in the top row, but displays the Channel name (in this example “Lee Hill”) as well as the Zone (“Home DMR”). In DMR mode the TalkGroup (in this case "ColoradoHD") will also be displayed
 
 ![](media/dmr-screen.png)
 
@@ -504,7 +507,7 @@ Pressing the **Red** key cancels the entry
 
 Pressing **Left** arrow deletes the digits one by one.
 
-#### To adjust the TX frequency, independent of the RX frequency.
+#### To adjust the TX frequency, independent of the RX frequency
 
 Press the **Function** button on the side of the radio, and then the **Down** arrow.
 
@@ -798,7 +801,7 @@ Selects which RX group is assigned to teh current channel (DMR only).
 
 Pressing the **Green** menu key confirms the changes and saves the settings to the codeplug, or in the case of the VFO the changes are saved to the non-volatile settings. Pressing the **Red** menu key closes the menu without making any changes to the channel.
 
-### Credits
+### Credits Screen 
 
 ![](media/credits.png)
 
@@ -907,7 +910,7 @@ When PiStar receives traffic from the Internet and sends it to the hotspot for t
 
 The LED on the top of the radio also turns red to indicate the radio is transmitting
 
-## Programming Channels and Talkgroups for use with OpenGD77.
+## Programming Channels and Talkgroups for use with OpenGD77
 
 **NOTE**: You cannot use the standard Radioddity CPS to write to a GD-77 flashed with the OpenGD77 firmware. If you wish to use the Radioddity CPS the radio will need to run the official Radioddity firmware. Once the codeplug has been written to the GD-77 with your ID and callsign, you can then flash the OpenGD77 firmware to the radio and it will then read and operate with the code plug written to it with the standard firmware and CPS software.
 
