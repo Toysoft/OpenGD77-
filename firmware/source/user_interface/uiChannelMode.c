@@ -203,6 +203,11 @@ static void loadChannelData(bool useChannelDataInMemory)
 		if (nonVolatileSettings.overrideTG == 0)
 		{
 			trxTalkGroupOrPcId = contactData.tgNumber;
+
+			if (contactData.callType == CONTACT_CALLTYPE_PC)
+			{
+				trxTalkGroupOrPcId |= (PC_CALL_FLAG << 24);
+			}
 		}
 		else
 		{
