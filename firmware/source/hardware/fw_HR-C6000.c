@@ -75,8 +75,9 @@ volatile bool hasEncodedAudio=false;
 volatile bool hotspotDMRTxFrameBufferEmpty=false;
 volatile bool hotspotDMRRxFrameBufferAvailable=false;
 
-volatile uint8_t DMR_frame_buffer[DRM_FRAME_BUFFER_SIZE];
-volatile uint8_t deferredUpdateBuffer[DRM_FRAME_BUFFER_SIZE];
+volatile uint8_t DMR_frame_buffer[DMR_FRAME_BUFFER_SIZE];
+volatile uint8_t deferredUpdateBuffer[DMR_FRAME_BUFFER_SIZE];
+
 
 static volatile int int_timeout;
 
