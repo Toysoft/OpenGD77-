@@ -558,6 +558,29 @@ static void handleEvent(uiEvent_t *ev)
 				}
 			}
 		}
+		else if (KEYCHECK_LONGDOWN(ev->keys, KEY_STAR))
+		{
+			if (trxGetMode() == RADIO_MODE_DIGITAL)
+			{
+				nonVolatileSettings.tsManualOverride &= 0x0F; // remove TS override for VFO
+				// Check if this channel has an Rx Group
+				if (rxGroupData.name[0]!=0 && nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber] < rxGroupData.NOT_IN_MEMORY_numTGsInGroup)
+				{
+					codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber]],&contactData);
+				}
+				else
+				{
+					codeplugContactGetDataForIndex(currentChannelData->contact,&contactData);
+				}
+
+				trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
+
+				clearActiveDMRID();
+				lastHeardClearLastID();
+				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+				menuVFOModeUpdateScreen(0);
+			}
+		}
 		else if (KEYCHECK_PRESS(ev->keys,KEY_DOWN))
 		{
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
