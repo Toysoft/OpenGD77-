@@ -341,7 +341,7 @@ void trxSetFrequency(int fRx,int fTx, int dmrMode)
 
 		if (!txPAEnabled)
 		{
-			if (trxCurrentBand[TRX_TX_FREQ_BAND] == RADIO_BAND_UHF)
+			if (trxCurrentBand[TRX_RX_FREQ_BAND] == RADIO_BAND_UHF)
 			{
 				GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 0);
 				GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 1);
