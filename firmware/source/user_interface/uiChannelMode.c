@@ -639,7 +639,7 @@ static void handleEvent(uiEvent_t *ev)
 
 		}
 	}
-	else if (KEYCHECK_PRESS(ev->keys,KEY_STAR))
+	else if (KEYCHECK_SHORTUP(ev->keys,KEY_STAR))
 	{
 		// Toggle TimeSlot
 		if (ev->buttons & BUTTON_SK2 )
@@ -677,6 +677,28 @@ static void handleEvent(uiEvent_t *ev)
 			{
 				set_melody(melody_ERROR_beep);
 			}
+		}
+	}
+	else if (KEYCHECK_LONGDOWN(ev->keys, KEY_STAR))
+	{
+		if (trxGetMode() == RADIO_MODE_DIGITAL)
+		{
+			nonVolatileSettings.tsManualOverride &= 0xF0; // remove TS override from channel
+			if (rxGroupData.name[0]!=0 && nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE] < rxGroupData.NOT_IN_MEMORY_numTGsInGroup)
+			{
+				codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE]],&contactData);
+			}
+			else
+			{
+				codeplugContactGetDataForIndex(channelScreenChannelData.contact,&contactData);
+			}
+
+			trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
+
+			clearActiveDMRID();
+			lastHeardClearLastID();
+			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+			menuChannelModeUpdateScreen(0);
 		}
 	}
 	else if (KEYCHECK_PRESS(ev->keys,KEY_DOWN))
