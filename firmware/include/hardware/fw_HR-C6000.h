@@ -57,12 +57,12 @@
 #define GPIO_INT_C6000_PWD   GPIOE
 #define Pin_INT_C6000_PWD    1
 
-#define DRM_FRAME_BUFFER_SIZE 64
+#define DMR_FRAME_BUFFER_SIZE 64
 
 extern const uint8_t TG_CALL_FLAG;
 extern const uint8_t PC_CALL_FLAG;
 extern volatile int slot_state;
-extern volatile uint8_t DMR_frame_buffer[DRM_FRAME_BUFFER_SIZE];
+extern volatile uint8_t DMR_frame_buffer[DMR_FRAME_BUFFER_SIZE];
 extern volatile bool updateLastHeard;
 extern volatile int dmrMonitorCapturedTS;
 
