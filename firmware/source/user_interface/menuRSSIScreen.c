@@ -90,7 +90,6 @@ static void updateScreen(void)
 
 		ucPrintCore(5,50,"S1  S3  S5  S7  S9", FONT_6x8, TEXT_ALIGN_LEFT, false);
 		ucRender();
-		displayLightTrigger();
 		trxRxSignal=0;
 
 }
@@ -108,4 +107,6 @@ static void handleEvent(uiEvent_t *ev)
 		menuSystemPopAllAndDisplayRootMenu();
 		return;
 	}
+
+	displayLightTrigger();
 }

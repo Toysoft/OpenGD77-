@@ -271,8 +271,6 @@ static void updateScreen(bool forceRedraw)
 	blink = !blink;
 
 	ucRenderRows((renderArrowOnly ? 7 : 1), 8);
-
-	displayLightTrigger();
 }
 
 static void handleEvent(uiEvent_t *ev)
@@ -326,6 +324,8 @@ static void handleEvent(uiEvent_t *ev)
 			}
 		}
 	}
+
+	displayLightTrigger();
 }
 
 void menuBatteryInit(void)
