@@ -34,6 +34,7 @@
 #define GPIO_Orange		GPIOA
 #define Pin_Orange		2
 
+#define BUTTON_NONE   0x00000000
 #define BUTTON_PTT    0x00000001
 #define BUTTON_SK1    0x00000002
 #define BUTTON_SK2    0x00000004

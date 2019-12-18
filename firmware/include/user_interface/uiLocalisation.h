@@ -18,7 +18,7 @@
 #ifndef _UI_LOCALISATION_H_
 #define _UI_LOCALISATION_H_
 
-#define NUM_LANGUAGES 9
+#define NUM_LANGUAGES 10
 #define LANGUAGE_TEXTS_LENGTH 24
 
 typedef struct stringsTable
@@ -122,7 +122,9 @@ typedef struct stringsTable
    const char delete_contact[LANGUAGE_TEXTS_LENGTH];
    const char group_call[LANGUAGE_TEXTS_LENGTH];
    const char all_call[LANGUAGE_TEXTS_LENGTH];
-
+   const char tone_scan[LANGUAGE_TEXTS_LENGTH];
+   const char cc_scan[LANGUAGE_TEXTS_LENGTH];
+   const char low_battery[LANGUAGE_TEXTS_LENGTH];
 } stringsTable_t;
 
 extern const stringsTable_t languages[];

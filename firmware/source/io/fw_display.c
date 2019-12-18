@@ -79,7 +79,7 @@ void fw_init_display(bool isInverseColour)
 	GPIO_PinWrite(GPIO_Display_RST, Pin_Display_RST, 1);
 	vTaskDelay(portTICK_PERIOD_MS * 5);
 
-    UC1701_begin(isInverseColour);
+    ucBegin(isInverseColour);
 }
 
 void fw_displayEnableBacklight(bool onof)

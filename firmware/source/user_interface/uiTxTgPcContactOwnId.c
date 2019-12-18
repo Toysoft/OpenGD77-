@@ -29,14 +29,14 @@ static struct_codeplugContact_t contact;
 
 static void updateCursor(void);
 static void updateScreen(void);
-static void handleEvent(ui_event_t *ev);
+static void handleEvent(uiEvent_t *ev);
 
 static const uint32_t CURSOR_UPDATE_TIMEOUT = 1000;
 
 static const char *menuName[4];
 enum DISPLAY_MENU_LIST { ENTRY_TG = 0, ENTRY_PC, ENTRY_SELECT_CONTACT, ENTRY_USER_DMR_ID, NUM_ENTRY_ITEMS};
 // public interface
-int menuNumericalEntry(ui_event_t *ev, bool isFirstRun)
+int menuNumericalEntry(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -57,7 +57,15 @@ int menuNumericalEntry(ui_event_t *ev, bool isFirstRun)
 		}
 		else
 		{
-			handleEvent(ev);
+			if (ev->hasEvent)
+				handleEvent(ev);
+			else
+			{
+				if ((gMenusCurrentItemIndex != ENTRY_SELECT_CONTACT) && (strlen(digits) <= 7))
+				{
+					updateCursor();
+				}
+			}
 		}
 	}
 	return 0;
@@ -78,12 +86,12 @@ static void updateCursor(void)
 		{
 			sLen *= 8;
 
-			UC1701_printCore((((128 - sLen) >> 1) + sLen), 32, "_", UC1701_FONT_8x16, 0, blink);
+			ucPrintCore((((128 - sLen) >> 1) + sLen), 32, "_", FONT_8x16, 0, blink);
 
 			blink = !blink;
 			lastBlink = m;
 
-			UC1701_render();
+			ucRender();
 		}
 	}
 }
@@ -94,26 +102,26 @@ static void updateScreen(void)
 	size_t sLen = strlen(menuName[gMenusCurrentItemIndex]) * 8;
 	int16_t y = 8;
 
-	UC1701_clearBuf();
+	ucClearBuf();
 
-	UC1701_drawRoundRectWithDropShadow(2, y - 1, (128 - 6), 21, 3, true);
+	ucDrawRoundRectWithDropShadow(2, y - 1, (128 - 6), 21, 3, true);
 
 	// Not really centered, off by 2 pixels
-	UC1701_printAt(((128 - sLen) >> 1) - 2, y, (char *)menuName[gMenusCurrentItemIndex], UC1701_FONT_8x16);
+	ucPrintAt(((128 - sLen) >> 1) - 2, y, (char *)menuName[gMenusCurrentItemIndex], FONT_8x16);
 
 	if (pcIdx == 0)
 	{
-		UC1701_printCentered(32, (char *)digits,UC1701_FONT_8x16);
+		ucPrintCentered(32, (char *)digits, FONT_8x16);
 	}
 	else
 	{
 		codeplugUtilConvertBufToString(contact.name, buf, 16);
-		UC1701_printCentered(32, buf, UC1701_FONT_8x16);
-		UC1701_printCentered(52, (char *)digits,UC1701_FONT_6x8);
+		ucPrintCentered(32, buf, FONT_8x16);
+		ucPrintCentered(52, (char *)digits, FONT_6x8);
 	}
-	displayLightTrigger();
 
-	UC1701_render();
+	displayLightTrigger();
+	ucRender();
 }
 
 static int getNextContact(int curidx, int dir, struct_codeplugContact_t *contact)
@@ -141,9 +149,10 @@ static int getNextContact(int curidx, int dir, struct_codeplugContact_t *contact
 	return idx;
 }
 
-static void handleEvent(ui_event_t *ev)
+static void handleEvent(uiEvent_t *ev)
 {
 	size_t sLen;
+	uint32_t tmpID;
 
 	if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{
@@ -152,30 +161,33 @@ static void handleEvent(ui_event_t *ev)
 	}
 	else if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 	{
-		if (gMenusCurrentItemIndex != ENTRY_USER_DMR_ID)
-		{
-			uint32_t saveTrxTalkGroupOrPcId = trxTalkGroupOrPcId;
-			trxTalkGroupOrPcId = atoi(digits);
-			nonVolatileSettings.overrideTG = trxTalkGroupOrPcId;
-			if (gMenusCurrentItemIndex == ENTRY_PC || (pcIdx != 0 && contact.callType == 0x01))
+		tmpID = atoi(digits);
+		if (tmpID > 0 && tmpID <= 9999999) {
+			if (gMenusCurrentItemIndex != ENTRY_USER_DMR_ID)
 			{
-				// Private Call
-
-				if ((saveTrxTalkGroupOrPcId >> 24) != PC_CALL_FLAG)
+				uint32_t saveTrxTalkGroupOrPcId = trxTalkGroupOrPcId;
+				trxTalkGroupOrPcId = tmpID;
+				nonVolatileSettings.overrideTG = trxTalkGroupOrPcId;
+				if (gMenusCurrentItemIndex == ENTRY_PC || (pcIdx != 0 && contact.callType == 0x01))
 				{
-					// if the current Tx TG is a TalkGroup then save it so it can be stored after the end of the private call
-					menuUtilityTgBeforePcMode = saveTrxTalkGroupOrPcId;
+					// Private Call
+
+					if ((saveTrxTalkGroupOrPcId >> 24) != PC_CALL_FLAG)
+					{
+						// if the current Tx TG is a TalkGroup then save it so it can be stored after the end of the private call
+						menuUtilityTgBeforePcMode = saveTrxTalkGroupOrPcId;
+					}
+					nonVolatileSettings.overrideTG |= (PC_CALL_FLAG << 24);
 				}
-				nonVolatileSettings.overrideTG |= (PC_CALL_FLAG << 24);
 			}
-		}
-		else
-		{
-			trxDMRID = atoi(digits);
-			if (ev->buttons & BUTTON_SK2)
+			else
 			{
-				// make the change to DMR ID permanent if Function + Green is pressed
-				codeplugSetUserDMRID(trxDMRID);
+				trxDMRID = tmpID;
+				if (ev->buttons & BUTTON_SK2)
+				{
+					// make the change to DMR ID permanent if Function + Green is pressed
+					codeplugSetUserDMRID(trxDMRID);
+				}
 			}
 		}
 		menuSystemPopAllAndDisplayRootMenu();

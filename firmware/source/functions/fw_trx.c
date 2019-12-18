@@ -532,7 +532,7 @@ uint16_t trxGetPower(void)
 	return txPower;
 }
 
-void trxCalcBandAndFrequencyOffset(int *band_offset, int *freq_offset)
+void trxCalcBandAndFrequencyOffset(uint32_t *band_offset, uint32_t *freq_offset)
 {
 // NOTE. For crossband duplex DMR, the calibration potentially needs to be changed every time the Tx/Rx is switched over on each 30ms cycle
 // But at the moment this is an unnecessary complication and I'll just use the Rx frequency to get the calibration offsets
@@ -540,81 +540,24 @@ void trxCalcBandAndFrequencyOffset(int *band_offset, int *freq_offset)
 	if (trxCurrentBand[TRX_RX_FREQ_BAND] == RADIO_BAND_UHF)
 	{
 		*band_offset=0x00000000;
-		if (currentRxFrequency<4100000)
-		{
-			*freq_offset=0x00000000;
-		}
-		else if (currentRxFrequency<4200000)
-		{
-			*freq_offset=0x00000001;
-		}
-		else if (currentRxFrequency<4300000)
-		{
-			*freq_offset=0x00000002;
-		}
-		else if (currentRxFrequency<4400000)
-		{
-			*freq_offset=0x00000003;
-		}
-		else if (currentRxFrequency<4500000)
-		{
-			*freq_offset=0x00000004;
-		}
-		else if (currentRxFrequency<4600000)
-		{
-			*freq_offset=0x00000005;
-		}
-		else if (currentRxFrequency<4700000)
-		{
-			*freq_offset=0x00000006;
-		}
-		else
-		{
-			*freq_offset=0x00000007;
-		}
+		*freq_offset = (currentTxFrequency - 40000000)/1000000;
 	}
 	else
 	{
 		*band_offset=0x00000070;
-		if (currentRxFrequency<1380000)
-		{
-			*freq_offset=0x00000000;
-		}
-		else if (currentRxFrequency<1425000)
-		{
-			*freq_offset=0x00000001;
-		}
-		else if (currentRxFrequency<1475000)
-		{
-			*freq_offset=0x00000002;
-		}
-		else if (currentRxFrequency<1525000)
-		{
-			*freq_offset=0x00000003;
-		}
-		else if (currentRxFrequency<1575000)
-		{
-			*freq_offset=0x00000004;
-		}
-		else if (currentRxFrequency<1625000)
-		{
-			*freq_offset=0x00000005;
-		}
-		else if (currentRxFrequency<1685000)
-		{
-			*freq_offset=0x00000006;
-		}
-		else
-		{
-			*freq_offset=0x00000007;
-		}
+		*freq_offset = (currentTxFrequency - 13250000)/500000;
+	}
+	// Limit VHF freq calculation exceeds the max lookup table index (of 7)
+	if (*freq_offset > 7)
+	{
+		*freq_offset = 7;
 	}
 }
 
 void trxUpdateC6000Calibration(void)
 {
-	int band_offset=0x00000000;
-	int freq_offset=0x00000000;
+	uint32_t band_offset=0x00000000;
+	uint32_t freq_offset=0x00000000;
 
 	if (nonVolatileSettings.useCalibration==false)
 	{
@@ -651,8 +594,8 @@ void I2C_AT1846_set_register_with_mask(uint8_t reg, uint16_t mask, uint16_t valu
 
 void trxUpdateAT1846SCalibration(void)
 {
-	int band_offset=0x00000000;
-	int freq_offset=0x00000000;
+	uint32_t band_offset=0x00000000;
+	uint32_t freq_offset=0x00000000;
 
 	if (nonVolatileSettings.useCalibration==false)
 	{

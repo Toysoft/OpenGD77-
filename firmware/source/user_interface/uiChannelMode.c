@@ -23,14 +23,14 @@
 #include "fw_settings.h"
 
 
-static void handleEvent(ui_event_t *ev);
+static void handleEvent(uiEvent_t *ev);
 static void loadChannelData(bool useChannelDataInMemory);
 static void scanning(void);
 static void startScan(void);
-static void handleUpKey(ui_event_t *ev);
+static void handleUpKey(uiEvent_t *ev);
 
 static void updateQuickMenuScreen(void);
-static void handleQuickMenuEvent(ui_event_t *ev);
+static void handleQuickMenuEvent(uiEvent_t *ev);
 
 static struct_codeplugZone_t currentZone;
 static struct_codeplugRxGroup_t rxGroupData;
@@ -64,9 +64,9 @@ static int nuisanceDeleteIndex = 0;
 
 static int tmpQuickMenuDmrFilterLevel;
 
-int menuChannelMode(ui_event_t *ev, bool isFirstRun)
+int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 {
-	static uint32_t m = 0;
+	static uint32_t m = 0, sqm = 0;
 
 	if (isFirstRun)
 	{
@@ -95,7 +95,7 @@ int menuChannelMode(ui_event_t *ev, bool isFirstRun)
 	}
 	else
 	{
-		if (ev->events==0)
+		if (ev->events == NO_EVENT)
 		{
 			// is there an incoming DMR signal
 			if (menuDisplayQSODataState != QSO_DISPLAY_IDLE)
@@ -104,14 +104,23 @@ int menuChannelMode(ui_event_t *ev, bool isFirstRun)
 			}
 			else
 			{
+				// Clear squelch region
+				if (displaySquelch && ((ev->ticks - sqm) > 2000))
+				{
+					displaySquelch = false;
+
+					ucFillRect(0, 16, 128, 16, true);
+					ucRenderRows(2,4);
+				}
+
 				if ((ev->ticks - m) > RSSI_UPDATE_COUNTER_RELOAD)
 				{
 					m = ev->ticks;
 					drawRSSIBarGraph();
-					UC1701RenderRows(1,2);// Only render the second row which contains the bar graph, as there is no need to redraw the rest of the screen
-					//UC1701_render();
+					ucRenderRows(1,2);// Only render the second row which contains the bar graph, as there is no need to redraw the rest of the screen
 				}
 			}
+
 			if(uiChannelModeScanActive==true)
 			{
 				scanning();
@@ -120,7 +129,15 @@ int menuChannelMode(ui_event_t *ev, bool isFirstRun)
 		else
 		{
 			if (ev->hasEvent)
+			{
+				if ((trxGetMode() == RADIO_MODE_ANALOG) &&
+						(ev->events & KEY_EVENT) && ((ev->keys.key == KEY_LEFT) || (ev->keys.key == KEY_RIGHT)))
+				{
+					sqm = ev->ticks;
+				}
+
 				handleEvent(ev);
+			}
 		}
 	}
 	return 0;
@@ -210,7 +227,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 	struct_codeplugContact_t contact;
 	int contactIndex;
 
-	UC1701_clearBuf();
+	ucClearBuf();
 	menuUtilityRenderHeader();
 
 	switch(menuDisplayQSODataState)
@@ -220,9 +237,17 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 			menuUtilityReceivedPcId = 0x00;
 			if (trxIsTransmitting)
 			{
+				// Squelch is displayed, PTT was pressed
+				// Clear its region
+				if (displaySquelch)
+				{
+					displaySquelch = false;
+					ucFillRect(0, 16, 128, 16, true);
+				}
+
 				snprintf(buffer, bufferLen, " %d ", txTimeSecs);
 				buffer[bufferLen - 1] = 0;
-				UC1701_printCentered(TX_TIMER_Y_OFFSET, buffer, UC1701_FONT_16x32);
+				ucPrintCentered(TX_TIMER_Y_OFFSET, buffer, FONT_16x32);
 				verticalPositionOffset=16;
 			}
 			else
@@ -239,7 +264,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 						snprintf(nameBuf, nameBufferLen, "%s Ch:%d",currentLanguage->all_channels, channelNumber);
 					}
 					nameBuf[nameBufferLen - 1] = 0;
-					UC1701_printCentered(50 , nameBuf, UC1701_FONT_6x8);
+					ucPrintCentered(50 , nameBuf, FONT_6x8);
 				}
 				else
 				{
@@ -254,12 +279,12 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 						snprintf(nameBuf, nameBufferLen, "%s Ch:%d", currentZoneName,channelNumber);
 						nameBuf[nameBufferLen - 1] = 0;
 					}
-					UC1701_printCentered(50, (char *)nameBuf,UC1701_FONT_6x8);
+					ucPrintCentered(50, (char *)nameBuf, FONT_6x8);
 				}
 			}
 
 			codeplugUtilConvertBufToString(channelScreenChannelData.name, nameBuf, 16);
-			UC1701_printCentered(32 + verticalPositionOffset, nameBuf, UC1701_FONT_8x16);
+			ucPrintCentered(32 + verticalPositionOffset, nameBuf, FONT_8x16);
 
 			if (trxGetMode() == RADIO_MODE_DIGITAL)
 			{
@@ -286,22 +311,22 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 						}
 					}
 					nameBuf[bufferLen - 1] = 0;
-					UC1701_drawRect(0, CONTACT_Y_POS + verticalPositionOffset, 128, 16, true);
+					ucDrawRect(0, CONTACT_Y_POS + verticalPositionOffset, 128, 16, true);
 				}
 				else
 				{
 					codeplugUtilConvertBufToString(contactData.name, nameBuf, 16);
 				}
-				UC1701_printCentered(CONTACT_Y_POS + verticalPositionOffset, nameBuf, UC1701_FONT_8x16);
+				ucPrintCentered(CONTACT_Y_POS + verticalPositionOffset, nameBuf, FONT_8x16);
 			}
+			// Squelch will be cleared later, 2000 ticks after last change
 			else if(displaySquelch && !trxIsTransmitting)
 			{
 				strncpy(buffer, currentLanguage->squelch, 8);
 				buffer[7] = 0; // Avoid overlap with bargraph
-				UC1701_printAt(0, 16, buffer, UC1701_FONT_8x16);
+				ucPrintAt(0, 16, buffer, FONT_8x16);
 				int bargraph= 1 + ((currentChannelData->sql-1)*5)/2 ;
-				UC1701_fillRect(62, 21, bargraph, 8, false);
-				displaySquelch=false;
+				ucFillRect(62, 21, bargraph, 8, false);
 			}
 
 			if (!((uiChannelModeScanActive) & (scanState==SCAN_SCANNING)))
@@ -309,30 +334,29 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				displayLightTrigger();
 			}
 
-			UC1701_render();
+			ucRender();
 			break;
 
 		case QSO_DISPLAY_CALLER_DATA:
 			isDisplayingQSOData=true;
 			menuUtilityRenderQSOData();
 			displayLightTrigger();
-			UC1701_render();
+			ucRender();
 			break;
 	}
 
 	menuDisplayQSODataState = QSO_DISPLAY_IDLE;
 }
 
-static void handleEvent(ui_event_t *ev)
+static void handleEvent(uiEvent_t *ev)
 {
-	uint32_t tg = (LinkHead->talkGroupOrPcId & 0xFFFFFF);
-
-	if((scanState==SCAN_PAUSED) && (KEYCHAR(ev->keys) == KEY_DOWN) && (!(ev->buttons & BUTTON_SK2)))                    // if we are scanning and down key is pressed then enter current channel into nuisance delete array.
+	// if we are scanning and down key is pressed then enter current channel into nuisance delete array.
+	if((scanState==SCAN_PAUSED) && ((ev->events & KEY_EVENT) && (ev->keys.key == KEY_DOWN)) && (!(ev->buttons & BUTTON_SK2)))
 	{
 		nuisanceDelete[nuisanceDeleteIndex++]=settingsCurrentChannelNumber;
 		if(nuisanceDeleteIndex > (MAX_ZONE_SCAN_NUISANCE_CHANNELS - 1))
 		{
-			nuisanceDeleteIndex = 0;																			//rolling list of last MAX_NUISANCE_CHANNELS deletes.
+			nuisanceDeleteIndex = 0; //rolling list of last MAX_NUISANCE_CHANNELS deletes.
 		}
 		scanTimer = SCAN_SKIP_CHANNEL_INTERVAL;	//force scan to continue;
 		scanState=SCAN_SCANNING;
@@ -340,7 +364,10 @@ static void handleEvent(ui_event_t *ev)
 		return;
 	}
 
-	if ((uiChannelModeScanActive) && (!(ev->keys==0)) && ((KEYCHAR(ev->keys) != KEY_UP) && (!(ev->buttons & BUTTON_SK2))))    // stop the scan on any button except UP without Shift ( allows scan to be manually continued) or SK2 on its own (allows Backlight to be triggered)
+	// stop the scan on any button except UP without Shift (allows scan to be manually continued)
+	// or SK2 on its own (allows Backlight to be triggered)
+	if (uiChannelModeScanActive &&
+			( (ev->events & KEY_EVENT) && ( ((ev->keys.key == KEY_UP) && ((ev->buttons & BUTTON_SK2) == 0)) == false ) ) )
 	{
 		uiChannelModeScanActive = false;
 		displayLightTrigger();
@@ -348,36 +375,36 @@ static void handleEvent(ui_event_t *ev)
 		return;
 	}
 
-
-	// If Blue button is pressed during reception it sets the Tx TG to the incoming TG
-	if (isDisplayingQSOData && (ev->buttons & BUTTON_SK2)!=0 && trxGetMode() == RADIO_MODE_DIGITAL &&
-			(trxTalkGroupOrPcId != tg ||
-			(dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot())))
+	if (ev->events & BUTTON_EVENT)
 	{
-		lastHeardClearLastID();
+		uint32_t tg = (LinkHead->talkGroupOrPcId & 0xFFFFFF);
 
-
-		// Set TS to overriden TS
-		if (dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot())
+		// If Blue button is pressed during reception it sets the Tx TG to the incoming TG
+		if (isDisplayingQSOData && (ev->buttons & BUTTON_SK2) && trxGetMode() == RADIO_MODE_DIGITAL &&
+				(trxTalkGroupOrPcId != tg ||
+				(dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot())))
 		{
-			trxSetDMRTimeSlot(dmrMonitorCapturedTS);
-			nonVolatileSettings.tsManualOverride &= 0xF0;// Clear lower nibble value
-			nonVolatileSettings.tsManualOverride |= (dmrMonitorCapturedTS+1);// Store manual TS override
+			lastHeardClearLastID();
+
+
+			// Set TS to overriden TS
+			if (dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot())
+			{
+				trxSetDMRTimeSlot(dmrMonitorCapturedTS);
+				nonVolatileSettings.tsManualOverride &= 0xF0;// Clear lower nibble value
+				nonVolatileSettings.tsManualOverride |= (dmrMonitorCapturedTS+1);// Store manual TS override
+			}
+			if (trxTalkGroupOrPcId != tg)
+			{
+				trxTalkGroupOrPcId = tg;
+				nonVolatileSettings.overrideTG = trxTalkGroupOrPcId;
+			}
+
+			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+			menuChannelModeUpdateScreen(0);
+			return;
 		}
-		if (trxTalkGroupOrPcId != tg)
-		{
-			trxTalkGroupOrPcId = tg;
-			nonVolatileSettings.overrideTG = trxTalkGroupOrPcId;
-		}
 
-		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-		menuChannelModeUpdateScreen(0);
-		return;
-	}
-
-
-	if (ev->events & 0x02)
-	{
 		if (ev->buttons & BUTTON_ORANGE)
 		{
 			if (ev->buttons & BUTTON_SK2)
@@ -391,6 +418,7 @@ static void handleEvent(ui_event_t *ev)
 				// ToDo Quick Menu
 				menuSystemPushNewMenu(MENU_CHANNEL_QUICK_MENU);
 			}
+
 			return;
 		}
 
@@ -696,50 +724,11 @@ static void handleEvent(ui_event_t *ev)
 	{
 		handleUpKey(ev);
 	}
+	else
+	{
+		int keyval = menuGetKeypadKeyValue(ev, true);
 
-		int keyval=99;
-		if (KEYCHECK_PRESS(ev->keys,KEY_1))
-		{
-			keyval=1;
-		}
-		if (KEYCHECK_PRESS(ev->keys,KEY_2))
-		{
-			keyval=2;
-		}
-		if (KEYCHECK_PRESS(ev->keys,KEY_3))
-		{
-			keyval=3;
-		}
-		if (KEYCHECK_PRESS(ev->keys,KEY_4))
-		{
-			keyval=4;
-		}
-		if (KEYCHECK_PRESS(ev->keys,KEY_5))
-		{
-			keyval=5;
-		}
-		if (KEYCHECK_PRESS(ev->keys,KEY_6))
-		{
-			keyval=6;
-		}
-		if (KEYCHECK_PRESS(ev->keys,KEY_7))
-		{
-			keyval=7;
-		}
-		if (KEYCHECK_PRESS(ev->keys,KEY_8))
-		{
-			keyval=8;
-		}
-		if (KEYCHECK_PRESS(ev->keys,KEY_9))
-		{
-			keyval=9;
-		}
-		if (KEYCHECK_PRESS(ev->keys,KEY_0))
-		{
-			keyval=0;
-		}
-
-		if (keyval<10)
+		if (keyval < 10)
 		{
 			directChannelNumber=(directChannelNumber*10) + keyval;
 			if (strcmp(currentZoneName,currentLanguage->all_channels)==0)
@@ -763,10 +752,11 @@ static void handleEvent(ui_event_t *ev)
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 			menuChannelModeUpdateScreen(0);
 		}
+	}
 }
 
 
-static void handleUpKey(ui_event_t *ev)
+static void handleUpKey(uiEvent_t *ev)
 {
 	if (ev->buttons & BUTTON_SK2)
 	{
@@ -825,7 +815,7 @@ static void updateQuickMenuScreen(void)
 	static const int bufferLen = 17;
 	char buf[bufferLen];
 
-	UC1701_clearBuf();
+	ucClearBuf();
 	menuDisplayTitle(currentLanguage->quick_menu);
 
 	for(int i =- 1; i <= 1; i++)
@@ -845,7 +835,7 @@ static void updateQuickMenuScreen(void)
 				strncpy(buf, currentLanguage->vfoToChannel, bufferLen);
 				break;
 			case CH_SCREEN_QUICK_MENU_DMR_FILTER:
-				snprintf(buf, bufferLen, "%s:%s", currentLanguage->filter, DMR_FILTER_LEVELS[tmpQuickMenuDmrFilterLevel]);
+				snprintf(buf, bufferLen, "%s:%s", currentLanguage->filter, (tmpQuickMenuDmrFilterLevel == 0) ? currentLanguage->none : DMR_FILTER_LEVELS[tmpQuickMenuDmrFilterLevel]);
 				break;
 			default:
 				strcpy(buf, "");
@@ -855,12 +845,12 @@ static void updateQuickMenuScreen(void)
 		menuDisplayEntry(i, mNum, buf);
 	}
 
-	UC1701_render();
+	ucRender();
 	displayLightTrigger();
 }
 
 
-static void handleQuickMenuEvent(ui_event_t *ev)
+static void handleQuickMenuEvent(uiEvent_t *ev)
 {
 	if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{
@@ -925,7 +915,7 @@ static void handleQuickMenuEvent(ui_event_t *ev)
 	{
 		MENU_DEC(gMenusCurrentItemIndex, NUM_CH_SCREEN_QUICK_MENU_ITEMS);
 	}
-	else if ((ev->buttons & BUTTON_ORANGE) && (gMenusCurrentItemIndex==CH_SCREEN_QUICK_MENU_SCAN))
+	else if (((ev->events & BUTTON_EVENT) && (ev->buttons & BUTTON_ORANGE)) && (gMenusCurrentItemIndex==CH_SCREEN_QUICK_MENU_SCAN))
 	{
 		startScan();
 	}
@@ -934,9 +924,7 @@ static void handleQuickMenuEvent(ui_event_t *ev)
 }
 
 
-
-//int menuChannelModeQuickMenu(int buttons, int keys, int events, bool isFirstRun)
-int menuChannelModeQuickMenu(ui_event_t *ev, bool isFirstRun)
+int menuChannelModeQuickMenu(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -946,10 +934,8 @@ int menuChannelModeQuickMenu(ui_event_t *ev, bool isFirstRun)
 	}
 	else
 	{
-		if (ev->events)
-		{
+		if (ev->hasEvent)
 			handleQuickMenuEvent(ev);
-		}
 	}
 	return 0;
 }
@@ -1007,7 +993,7 @@ static void scanning(void)
 	{
 
 		trx_measure_count=0;														//needed to allow time for Rx to settle after channel change.
-		ui_event_t tmpEvent={.buttons=0,.keys=0,.events=0,.hasEvent=0,.ticks=0};
+		uiEvent_t tmpEvent={ .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = 0, .ticks = 0 };
 
 		handleUpKey(&tmpEvent);
 		scanTimer = SCAN_TOTAL_INTERVAL;

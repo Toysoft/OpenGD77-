@@ -348,7 +348,7 @@ bool dmrIDLookup( int targetId,dmrIdDataStruct_t *foundRecord)
 	return false;
 }
 
-bool menuUtilityHandlePrivateCallActions(ui_event_t *ev)
+bool menuUtilityHandlePrivateCallActions(uiEvent_t *ev)
 {
 	if ((ev->buttons & BUTTON_SK2 )!=0 &&   menuUtilityTgBeforePcMode != 0 && KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{
@@ -392,13 +392,13 @@ static void displayChannelNameOrRxFrequency(char *buffer, size_t maxLen)
 		snprintf(buffer, maxLen, "%d.%05d MHz", val_before_dp, val_after_dp);
 		buffer[maxLen - 1] = 0;
 	}
-	UC1701_printCentered(52, buffer, UC1701_FONT_6x8);
+	ucPrintCentered(52, buffer, FONT_6x8);
 }
 
 /*
  * Try to extract callsign and extra text from TA or DMR ID data, then display that on
  * two lines, if possible.
- * We don't care if extra text is larger than 16 chars, UC1701_print*() functions cut them.
+ * We don't care if extra text is larger than 16 chars, ucPrint*() functions cut them.
  *.
  */
 static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalkerAlias)
@@ -415,7 +415,7 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 			// Callsign found
 			memcpy(buffer, text, cpos);
 			buffer[cpos] = 0;
-			UC1701_printCentered(32, chomp(buffer), UC1701_FONT_8x16);
+			ucPrintCentered(32, chomp(buffer), FONT_8x16);
 
 			memcpy(buffer, text + (cpos + 1), (maxLen - (cpos + 1)));
 			buffer[(strlen(text) - (cpos + 1))] = 0;
@@ -423,7 +423,7 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 			pbuf = chomp(buffer);
 
 			if (strlen(pbuf))
-				UC1701_printAt(0, 48, pbuf, UC1701_FONT_8x16);
+				ucPrintAt(0, 48, pbuf, FONT_8x16);
 			else
 				displayChannelNameOrRxFrequency(buffer, (sizeof(buffer) / sizeof(buffer[0])));
 		}
@@ -433,7 +433,7 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 			memcpy(buffer, text, 6);
 			buffer[6] = 0;
 
-			UC1701_printCentered(32, chomp(buffer), UC1701_FONT_8x16);
+			ucPrintCentered(32, chomp(buffer), FONT_8x16);
 
 			memcpy(buffer, text + 6, (maxLen - 6));
 			buffer[(strlen(text) - 6)] = 0;
@@ -441,7 +441,7 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 			pbuf = chomp(buffer);
 
 			if (strlen(pbuf))
-				UC1701_printAt(0, 48, pbuf, UC1701_FONT_8x16);
+				ucPrintAt(0, 48, pbuf, FONT_8x16);
 			else
 				displayChannelNameOrRxFrequency(buffer, (sizeof(buffer) / sizeof(buffer[0])));
 		}
@@ -450,7 +450,7 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 	{
 		memcpy(buffer, text, strlen(text));
 		buffer[strlen(text)] = 0;
-		UC1701_printCentered(32, chomp(buffer), UC1701_FONT_8x16);
+		ucPrintCentered(32, chomp(buffer), FONT_8x16);
 		displayChannelNameOrRxFrequency(buffer, (sizeof(buffer) / sizeof(buffer[0])));
 	}
 }
@@ -475,26 +475,26 @@ void menuUtilityRenderQSOData(void)
 	 * but I thought it was safer to disregard any PC's from IDs the same as the current TG
 	 * rather than testing if the TG is the user's ID, though that may work as well.
 	 */
-	if ((LinkHead->talkGroupOrPcId>>24) == PC_CALL_FLAG &&  (LinkHead->id & 0xFFFFFF) != (trxTalkGroupOrPcId & 0xFFFFFF))
+	if ((LinkHead->talkGroupOrPcId>>24) == PC_CALL_FLAG) // &&  (LinkHead->id & 0xFFFFFF) != (trxTalkGroupOrPcId & 0xFFFFFF))
 	{
 		// Its a Private call
 		dmrIDLookup( (LinkHead->id & 0xFFFFFF),&currentRec);
 		strncpy(buffer, currentRec.text, 16);
 		buffer[16] = 0;
-		UC1701_printCentered(16, buffer, UC1701_FONT_8x16);
+		ucPrintCentered(16, buffer, FONT_8x16);
 
 		// Are we already in PC mode to this caller ?
-		if ((trxTalkGroupOrPcId != (LinkHead->id | (PC_CALL_FLAG<<24))) & ((LinkHead->talkGroupOrPcId & 0xFFFFFF)==trxDMRID) )
+		if (((trxTalkGroupOrPcId & 0xFFFFFF) != (LinkHead->id & 0xFFFFFF)) && ((LinkHead->talkGroupOrPcId & 0xFFFFFF)==trxDMRID))
 		{
 			// No either we are not in PC mode or not on a Private Call to this station
-			UC1701_printCentered(32, currentLanguage->accept_call,UC1701_FONT_8x16);
-			UC1701_drawChoice(UC1701_CHOICE_YESNO, false);
+			ucPrintCentered(32, currentLanguage->accept_call, FONT_8x16);
+			ucDrawChoice(CHOICE_YESNO, false);
 			menuUtilityReceivedPcId = LinkHead->id | (PC_CALL_FLAG<<24);
 		    set_melody(melody_private_call);
 		}
 		else
 		{
-			UC1701_printCentered(32, currentLanguage->private_call,UC1701_FONT_8x16);
+			ucPrintCentered(32, currentLanguage->private_call, FONT_8x16);
 		}
 	}
 	else
@@ -505,16 +505,16 @@ void menuUtilityRenderQSOData(void)
 		buffer[16] = 0;
 		if (tg != trxTalkGroupOrPcId || (dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot()))
 		{
-			UC1701_fillRect(0,16,128,16,false);// fill background with black
-			UC1701_printCore(0, CONTACT_Y_POS, buffer, UC1701_FONT_8x16, UC1701_TEXT_ALIGN_CENTER, true);// draw the text in inverse video
+			ucFillRect(0,16,128,16,false);// fill background with black
+			ucPrintCore(0, CONTACT_Y_POS, buffer, FONT_8x16, TEXT_ALIGN_CENTER, true);// draw the text in inverse video
 		}
 		else
 		{
-			UC1701_printCentered(CONTACT_Y_POS, buffer, UC1701_FONT_8x16);
+			ucPrintCentered(CONTACT_Y_POS, buffer, FONT_8x16);
 		}
 
 		// first check if we have this ID in the DMR ID data
-		if (dmrIDLookup(LinkHead->id, &currentRec))
+		if (dmrIDLookup((LinkHead->id & 0xFFFFFF), &currentRec))
 		{
 			displayContactTextInfos(currentRec.text, sizeof(currentRec.text),false);
 		}
@@ -528,9 +528,9 @@ void menuUtilityRenderQSOData(void)
 			else
 			{
 				// No talker alias. So we can only show the ID.
-				snprintf(buffer, bufferLen, "%ID: %d", LinkHead->id);
+				snprintf(buffer, bufferLen, "ID: %d", LinkHead->id);
 				buffer[bufferLen - 1] = 0;
-				UC1701_printCentered(32, buffer, UC1701_FONT_8x16);
+				ucPrintCentered(32, buffer, FONT_8x16);
 				displayChannelNameOrRxFrequency(buffer, bufferLen);
 			}
 		}
@@ -576,30 +576,30 @@ void menuUtilityRenderHeader(void)
 			{
 				strcat(buffer,"R");
 			}
-			UC1701_printAt(0, Y_OFFSET, buffer, UC1701_FONT_6x8);
+			ucPrintAt(0, Y_OFFSET, buffer, FONT_6x8);
 			break;
 		case RADIO_MODE_DIGITAL:
 
 
 			if (settingsUsbMode == USB_MODE_HOTSPOT)
 			{
-				UC1701_printAt(0, Y_OFFSET, "DMR", UC1701_FONT_6x8);
+				ucPrintAt(0, Y_OFFSET, "DMR", FONT_6x8);
 			}
 			else
 			{
 //				(trxGetMode() == RADIO_MODE_DIGITAL && settingsPrivateCallMuteMode == true)?" MUTE":"");// The location that this was displayed is now used for the power level
 
-				UC1701_printAt(0, Y_OFFSET, "DMR", UC1701_FONT_6x8);
+				ucPrintAt(0, Y_OFFSET, "DMR", FONT_6x8);
 				snprintf(buffer, bufferLen, "%s%d", currentLanguage->ts, trxGetDMRTimeSlot() + 1);
 				buffer[bufferLen - 1] = 0;
 				if (nonVolatileSettings.dmrFilterLevel < DMR_FILTER_TS)
 				{
-					UC1701_fillRect(20, Y_OFFSET, 20, 8, false);
-					UC1701_printCore(22, Y_OFFSET, buffer, UC1701_FONT_6x8,UC1701_TEXT_ALIGN_LEFT, true);
+					ucFillRect(20, Y_OFFSET, 20, 8, false);
+					ucPrintCore(22, Y_OFFSET, buffer, FONT_6x8, TEXT_ALIGN_LEFT, true);
 				}
 				else
 				{
-					UC1701_printCore(22, Y_OFFSET, buffer, UC1701_FONT_6x8,UC1701_TEXT_ALIGN_LEFT, false);
+					ucPrintCore(22, Y_OFFSET, buffer, FONT_6x8, TEXT_ALIGN_LEFT, false);
 				}
 			}
 			break;
@@ -611,7 +611,7 @@ void menuUtilityRenderHeader(void)
 		strcat(buffer," L");
 	}*/
 
-	UC1701_printCentered(Y_OFFSET,(char *)POWER_LEVELS[nonVolatileSettings.txPowerLevel],UC1701_FONT_6x8);
+	ucPrintCentered(Y_OFFSET, (char *)POWER_LEVELS[nonVolatileSettings.txPowerLevel], FONT_6x8);
 
 
 	int  batteryPerentage = (int)(((averageBatteryVoltage - CUTOFF_VOLTAGE_UPPER_HYST) * 100) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));
@@ -633,14 +633,14 @@ void menuUtilityRenderHeader(void)
 		snprintf(buffer, bufferLen, "C%d %d%%", trxGetDMRColourCode(), batteryPerentage);
 	}
 	buffer[bufferLen - 1] = 0;
-	UC1701_printCore(0, Y_OFFSET, buffer, UC1701_FONT_6x8,UC1701_TEXT_ALIGN_RIGHT, false);// Display battery percentage at the right
+	ucPrintCore(0, Y_OFFSET, buffer, FONT_6x8, TEXT_ALIGN_RIGHT, false);// Display battery percentage at the right
 }
 
 void drawRSSIBarGraph(void)
 {
 	int dBm,barGraphLength;
 
-	UC1701_fillRect(0, BAR_Y_POS,128,4,true);
+	ucFillRect(0, BAR_Y_POS,128,4,true);
 
 	if (trxCurrentBand[TRX_RX_FREQ_BAND] == RADIO_BAND_UHF)
 	{
@@ -664,7 +664,7 @@ void drawRSSIBarGraph(void)
 	{
 		barGraphLength=123;
 	}
-	UC1701_fillRect(0, BAR_Y_POS,barGraphLength,4,false);
+	ucFillRect(0, BAR_Y_POS,barGraphLength,4,false);
 	trxRxSignal=0;
 }
 
@@ -672,39 +672,37 @@ void drawDMRMicLevelBarGraph(void)
 {
 	float barGraphLength = sqrt(micAudioSamplesTotal)*1.5;
 
-	UC1701_fillRect(0, BAR_Y_POS,128,3,true);
+	ucFillRect(0, BAR_Y_POS,128,3,true);
 
 	if (barGraphLength > 127)
 	{
 		barGraphLength = 127;
 	}
 
-	UC1701_fillRect(0, BAR_Y_POS,(int)barGraphLength,3,false);
+	ucFillRect(0, BAR_Y_POS,(int)barGraphLength,3,false);
 }
 
 void setOverrideTGorPC(int tgOrPc, bool privateCall) {
-	uint32_t saveTrxTalkGroupOrPcId = trxTalkGroupOrPcId;
 	nonVolatileSettings.overrideTG = tgOrPc;
 	if (privateCall == true)
 	{
 		// Private Call
 
-		if ((saveTrxTalkGroupOrPcId >> 24) != PC_CALL_FLAG)
+		if ((trxTalkGroupOrPcId >> 24) != PC_CALL_FLAG)
 		{
 			// if the current Tx TG is a TalkGroup then save it so it can be stored after the end of the private call
-			menuUtilityTgBeforePcMode = saveTrxTalkGroupOrPcId;
+			menuUtilityTgBeforePcMode = trxTalkGroupOrPcId;
 		}
 		nonVolatileSettings.overrideTG |= (PC_CALL_FLAG << 24);
 	}
 }
 
-char keypressToNumberChar(int keys)
+char keypressToNumberChar(keyboardCode_t keys)
 {
-	char keycode = KEYCHAR(keys);
-	if (KEYCHECK_MOD(keys, KEY_MOD_PRESS, KEY_MOD_PRESS)) {
-		if (keycode >= '0' && keycode <= '9')
+	if (keys.event & KEY_MOD_PRESS) {
+		if (keys.key >= '0' && keys.key <= '9')
 		{
-			return keycode;
+			return keys.key;
 		}
 	}
 	return '\0';

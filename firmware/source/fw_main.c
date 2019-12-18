@@ -19,8 +19,10 @@
 #include <functions/fw_ticks.h>
 #include <user_interface/menuSystem.h>
 #include <user_interface/menuUtilityQSOData.h>
+#include <user_interface/uiLocalisation.h>
 #include "fw_main.h"
 #include "fw_settings.h"
+
 
 #if defined(USE_SEGGER_RTT)
 #include <SeggerRTT/RTT/SEGGER_RTT.h>
@@ -51,21 +53,19 @@ void fw_init(void)
 
 static void show_lowbattery(void)
 {
-	UC1701_clearBuf();
-	UC1701_printCentered(32, "LOW BATTERY !!!", UC1701_FONT_8x16);
-	UC1701_render();
+	ucClearBuf();
+	ucPrintCentered(32, currentLanguage->low_battery, FONT_8x16);
+	ucRender();
 }
 
 void fw_main_task(void *data)
 {
-	uint32_t keys;
+	keyboardCode_t keys;
 	int key_event;
 	uint32_t buttons;
 	int button_event;
-	ui_event_t ev = { .buttons = 0, .keys = 0, .events = 0, .hasEvent = false, .ticks = 0 };
-	int oldButtons = 0;
-	int oldKeys = 0;
-	int oldEvents = 0;
+	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .ticks = 0 };
+	bool keyOrButtonChanged = false;
 	
     USB_DeviceApplicationInit();
 
@@ -132,7 +132,8 @@ void fw_main_task(void *data)
 
 	init_hrc6000_task();
 
-	init_watchdog();
+	menuBatteryInit(); // Initialize circular buffer
+	init_watchdog(menuBatteryPushBackVoltage);
 
     fw_init_beep_task();
 
@@ -168,6 +169,9 @@ void fw_main_task(void *data)
 			fw_check_button_event(&buttons, &button_event); // Read button state and event
 			fw_check_key_event(&keys, &key_event); // Read keyboard state and event
 
+			// EVENT_*_CHANGED can be cleared later, so check this now as hasEvent has to be set anyway.
+			keyOrButtonChanged = ((key_event != NO_EVENT) || (button_event != NO_EVENT));
+
 			if (keypadLocked)
 			{
 				if (key_event == EVENT_KEY_CHANGE)
@@ -178,14 +182,14 @@ void fw_main_task(void *data)
 						menuSystemPushNewMenu(MENU_LOCK_SCREEN);
 					}
 				}
-				if (button_event == EVENT_BUTTON_CHANGE
-						&& (buttons & BUTTON_ORANGE) != 0)
+				// Lockout ORANGE AND BLUE (BLACK stay active regarless lock status, useful to trigger backlight)
+				if (button_event == EVENT_BUTTON_CHANGE && ((buttons & BUTTON_ORANGE) || (buttons & BUTTON_SK2)))
 				{
-					button_event = EVENT_BUTTON_NONE;
 					if (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN)
 					{
 						menuSystemPushNewMenu(MENU_LOCK_SCREEN);
 					}
+					button_event = EVENT_BUTTON_NONE;
 				}
 			}
 
@@ -198,11 +202,11 @@ void fw_main_task(void *data)
 				}
 			}
 
-			if (key_event == EVENT_KEY_CHANGE && (buttons & BUTTON_PTT) == 0 && keys != 0) {
-				if (keys & KEY_MOD_PRESS)
+			if (key_event == EVENT_KEY_CHANGE && (buttons & BUTTON_PTT) == 0 && keys.key != 0) {
+				if (keys.event & KEY_MOD_PRESS)
 				{
 					set_melody(melody_key_beep);
-				} else if  ((keys & (KEY_MOD_LONG | KEY_MOD_DOWN)) == (KEY_MOD_LONG | KEY_MOD_DOWN)) {
+				} else if  ((keys.event & (KEY_MOD_LONG | KEY_MOD_DOWN)) == (KEY_MOD_LONG | KEY_MOD_DOWN)) {
 					set_melody(melody_key_long_beep);
 				}
 				if (KEYCHECK_LONGDOWN(keys, KEY_RED))
@@ -247,13 +251,20 @@ void fw_main_task(void *data)
 					}
 					else
 					{
+						int currentMenu = menuSystemGetCurrentMenuNumber();
+
 						if ((slot_state == DMR_STATE_IDLE || trxDMRMode == DMR_MODE_PASSIVE) &&
 								trxGetMode() != RADIO_MODE_NONE &&
 								settingsUsbMode != USB_MODE_HOTSPOT &&
-								menuSystemGetCurrentMenuNumber() != MENU_POWER_OFF &&
-								menuSystemGetCurrentMenuNumber() != MENU_SPLASH_SCREEN &&
-								menuSystemGetCurrentMenuNumber() != MENU_TX_SCREEN )
+								currentMenu != MENU_POWER_OFF &&
+								currentMenu != MENU_SPLASH_SCREEN &&
+								currentMenu != MENU_TX_SCREEN )
 						{
+							if (currentMenu == MENU_VFO_MODE)
+								menuVFOModeStopScan();
+							else if (currentMenu == MENU_LOCK_SCREEN)
+								menuSystemPopPreviousMenu();
+
 							menuSystemPushNewMenu(MENU_TX_SCREEN);
 						}
 					}
@@ -275,12 +286,8 @@ void fw_main_task(void *data)
     		ev.buttons = buttons;
     		ev.keys = keys;
     		ev.events = (button_event<<1) | key_event;
-    		ev.hasEvent = (ev.buttons != oldButtons) || (ev.keys != oldKeys) || (ev.events != oldEvents);
+    		ev.hasEvent = keyOrButtonChanged;
     		ev.ticks = fw_millis();
-
-    		oldButtons = ev.buttons;
-    		oldKeys = ev.keys;
-    		oldEvents = ev.events;
 
         	menuSystemCallCurrentMenuTick(&ev);
 

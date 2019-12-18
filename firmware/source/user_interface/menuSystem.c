@@ -61,9 +61,10 @@ const menuItemNew_t * menusData[] = { 	NULL,// splash
 										NULL,// Contact Quick List (SK2+#)
 										NULL,// Contact List Quick Menu
 										NULL,// Contact Details
+										NULL,// New Contact
 								};
 
-const MenuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
+const menuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
 												menuPowerOff,
 												menuVFOMode,
 												menuChannelMode,
@@ -89,6 +90,7 @@ const MenuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
 												menuContactList,
 												menuContactListSubMenu,
 												menuContactDetails,
+												menuContactDetails,
 												menuLanguage,
 };
 
@@ -96,65 +98,66 @@ void menuSystemPushNewMenu(int menuNumber)
 {
 	if (menuControlData.stackPosition < 15)
 	{
-		ui_event_t ev = { .buttons = 0, .keys = 0, .events = 0, .hasEvent = false, .ticks = fw_millis() };
+		uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
 
+		fw_reset_keyboard();
 		menuControlData.itemIndex[menuControlData.stackPosition] = gMenusCurrentItemIndex;
 		menuControlData.stackPosition++;
 		menuControlData.stack[menuControlData.stackPosition] = menuNumber;
 		gMenusCurrentItemIndex = (menuNumber == MENU_MAIN_MENU) ? 1 : 0;
 		menuFunctions[menuControlData.stack[menuControlData.stackPosition]](&ev, true);
-		fw_reset_keyboard();
 	}
 }
 void menuSystemPopPreviousMenu(void)
 {
-	ui_event_t ev = { .buttons = 0, .keys = 0, .events = 0, .hasEvent = false, .ticks = fw_millis() };
+	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
 
+	fw_reset_keyboard();
 	menuControlData.itemIndex[menuControlData.stackPosition] = 0;
-	menuControlData.stackPosition--;
+	menuControlData.stackPosition -= (menuControlData.stackPosition > 0) ? 1 : 0; // Avoid crashing if something goes wrong.
 	gMenusCurrentItemIndex = menuControlData.itemIndex[menuControlData.stackPosition];
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](&ev,true);
-	fw_reset_keyboard();
 }
 
 void menuSystemPopAllAndDisplayRootMenu(void)
 {
-	ui_event_t ev = { .buttons = 0, .keys = 0, .events = 0, .hasEvent = false, .ticks = fw_millis() };
+	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
 
+	fw_reset_keyboard();
 	memset(menuControlData.itemIndex, 0, sizeof(menuControlData.itemIndex));
 	menuControlData.stackPosition = 0;
 	gMenusCurrentItemIndex = 0;
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](&ev,true);
-	fw_reset_keyboard();
 }
 
 void menuSystemPopAllAndDisplaySpecificRootMenu(int newRootMenu)
 {
-	ui_event_t ev = { .buttons = 0, .keys = 0, .events = 0, .hasEvent = false, .ticks = fw_millis() };
+	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
 
+	fw_reset_keyboard();
 	memset(menuControlData.itemIndex, 0, sizeof(menuControlData.itemIndex));
 	menuControlData.stack[0]  = newRootMenu;
 	menuControlData.stackPosition = 0;
 	gMenusCurrentItemIndex = (newRootMenu == MENU_MAIN_MENU) ? 1 : 0;
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](&ev,true);
-	fw_reset_keyboard();
 }
 
 void menuSystemSetCurrentMenu(int menuNumber)
 {
-	ui_event_t ev = { .buttons = 0, .keys = 0, .events = 0, .hasEvent = false, .ticks = fw_millis() };
+	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
 
+	fw_reset_keyboard();
 	menuControlData.stack[menuControlData.stackPosition] = menuNumber;
 	gMenusCurrentItemIndex = menuControlData.itemIndex[menuControlData.stackPosition];
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](&ev,true);
-	fw_reset_keyboard();
 }
+
 int menuSystemGetCurrentMenuNumber(void)
 {
 	return menuControlData.stack[menuControlData.stackPosition];
 }
 
-void menuSystemCallCurrentMenuTick(ui_event_t *ev)
+void menuSystemCallCurrentMenuTick(uiEvent_t *ev)
 {
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](ev,false);
 }
@@ -180,7 +183,7 @@ int gMenusEndIndex;// as above
 
 void menuInitMenuSystem(void)
 {
-	ui_event_t ev = { .buttons = 0, .keys = 0, .events = 0, .hasEvent = false, .ticks = fw_millis() };
+	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
 
 	menuDisplayLightTimer = -1;
 	menuControlData.stack[menuControlData.stackPosition]  = MENU_SPLASH_SCREEN;// set the very first screen as the splash screen
@@ -241,7 +244,7 @@ const menuItemNew_t menuDataMainMenu[] = {
 };
 const menuItemNew_t menuDataContact[] = {
 	{ 2, 2} ,// length
-	{ 13 , MENU_CONTACT_DETAILS },// 7 New Contact
+	{ 13 , MENU_CONTACT_NEW },// 7 New Contact
 	{ 14, MENU_CONTACT_LIST },// 24 Contacts List
 	{ -1, MENU_CONTACT_LIST },// 24 Contacts Lis
 };
@@ -259,8 +262,8 @@ const menuItemNew_t menuDataContactContact [] = {
 
 void menuDisplayTitle(const char *title)
 {
-	UC1701_drawFastHLine(0, 13, 128, true);
-	UC1701_printCore(0, 3, title, UC1701_FONT_8x8, UC1701_TEXT_ALIGN_CENTER, false);
+	ucDrawFastHLine(0, 13, 128, true);
+	ucPrintCore(0, 3, title, FONT_8x8, TEXT_ALIGN_CENTER, false);
 }
 
 void menuDisplayEntry(int loopOffset, int focusedItem,const char *entryText)
@@ -268,9 +271,9 @@ void menuDisplayEntry(int loopOffset, int focusedItem,const char *entryText)
 	bool focused = (focusedItem == gMenusCurrentItemIndex);
 
 	if (focused)
-		UC1701_fillRoundRect(0, (loopOffset + 2) * 16, 128, 16, 2, true);
+		ucFillRoundRect(0, (loopOffset + 2) * 16, 128, 16, 2, true);
 
-	UC1701_printCore(0, (loopOffset + 2) * 16, entryText, UC1701_FONT_8x16, UC1701_TEXT_ALIGN_LEFT, focused);
+	ucPrintCore(0, (loopOffset + 2) * 16, entryText, FONT_8x16, TEXT_ALIGN_LEFT, focused);
 }
 
 int menuGetMenuOffset(int maxMenuEntries, int loopOffset)
@@ -299,3 +302,82 @@ int menuGetMenuOffset(int maxMenuEntries, int loopOffset)
      return offset;
 }
 
+/*
+ * Returns 99 if key is unknown, or not numerical when digitsOnly is true
+ */
+int menuGetKeypadKeyValue(uiEvent_t *ev, bool digitsOnly)
+{
+	uint32_t keypadKeys[] = {
+			KEY_0, KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9,
+			KEY_LEFT, KEY_UP, KEY_DOWN, KEY_RIGHT, KEY_STAR, KEY_HASH
+	};
+
+	for (int i = 0; i < ((sizeof(keypadKeys) / sizeof(keypadKeys[0])) - (digitsOnly ? 6 : 0 )); i++)
+	{
+		if (KEYCHECK_PRESS(ev->keys, keypadKeys[i]))
+				return i;
+	}
+
+	return 99;
+}
+
+void menuUpdateCursor(int pos, bool moved, bool render)
+{
+	static uint32_t lastBlink = 0;
+	static bool     blink = false;
+	uint32_t        m = fw_millis();
+
+	if (moved) {
+		blink = true;
+	}
+	if ((m - lastBlink) > 1000 || moved)
+	{
+		ucDrawFastHLine(pos*8-1, 46, 8, blink);
+
+		blink = !blink;
+		lastBlink = m;
+
+		if (render) {
+			ucRenderRows(5,6);
+		}
+	}
+}
+
+void moveCursorLeftInString(char *str, int *pos, bool delete)
+{
+	int nLen = strlen(str);
+
+	if (*pos > 0) {
+		*pos -=1;
+		if (delete)
+		{
+			for (int i = *pos; i <= nLen; i++)
+			{
+				str[i] = str[i + 1];
+			}
+		}
+	}
+}
+
+void moveCursorRightInString(char *str, int *pos, int max, bool insert)
+{
+	int nLen = strlen(str);
+
+	if (*pos < strlen(str))
+	{
+		if (insert)
+		{
+			if (nLen < max)
+			{
+				for (int i = nLen; i > *pos; i--)
+				{
+					str[i] = str[i - 1];
+				}
+				str[*pos] = ' ';
+			}
+		}
+		if (*pos < max-1) {
+			*pos += 1;
+		}
+	}
+}
