@@ -327,11 +327,15 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 			// Squelch will be cleared later, 2000 ticks after last change
 			else if(displaySquelch && !trxIsTransmitting)
 			{
-				strncpy(buffer, currentLanguage->squelch, 8);
-				buffer[7] = 0; // Avoid overlap with bargraph
-				ucPrintAt(0, 16, buffer, FONT_8x16);
-				int bargraph= 1 + ((currentChannelData->sql-1)*5)/2 ;
-				ucFillRect(62, 21, bargraph, 8, false);
+				static const int xbar = 74; // 128 - (51 /* max squelch px */ + 3);
+
+				strncpy(buffer, currentLanguage->squelch, 9);
+				buffer[8] = 0; // Avoid overlap with bargraph
+				// Center squelch word between col0 and bargraph, if possible.
+				ucPrintAt(0 + ((strlen(buffer) * 8) < xbar - 2 ? (((xbar - 2) - (strlen(buffer) * 8)) >> 1) : 0), 16, buffer, FONT_8x16);
+				int bargraph = 1 + ((currentChannelData->sql - 1) * 5) /2;
+				ucDrawRect(xbar - 2, 17, 55, 13, true);
+				ucFillRect(xbar, 19, bargraph, 9, false);
 			}
 
 			if (!((uiChannelModeScanActive) & (scanState==SCAN_SCANNING)))
@@ -561,7 +565,6 @@ static void handleEvent(uiEvent_t *ev)
 				else
 				{
 					if (currentChannelData->sql < CODEPLUG_MAX_VARIABLE_SQUELCH)
-
 					{
 						currentChannelData->sql++;
 					}
