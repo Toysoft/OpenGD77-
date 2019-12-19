@@ -594,7 +594,7 @@ void menuUtilityRenderHeader(void)
 				buffer[bufferLen - 1] = 0;
 				if (nonVolatileSettings.dmrFilterLevel < DMR_FILTER_TS)
 				{
-					ucFillRect(20, Y_OFFSET, 20, 8, false);
+					ucFillRect(20, Y_OFFSET - 1, 20, 9, false);
 					ucPrintCore(22, Y_OFFSET, buffer, FONT_6x8, TEXT_ALIGN_LEFT, true);
 				}
 				else
