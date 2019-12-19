@@ -87,6 +87,7 @@ void moveCursorRightInString(char *str, int *pos, int max, bool insert);
 void menuBatteryInit(void);
 void menuBatteryPushBackVoltage(int32_t voltage);
 
+void menuLockScreenPop(void);
 
 /*
  * ---------------------- IMPORTANT ----------------------------
