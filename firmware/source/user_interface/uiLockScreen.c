@@ -26,7 +26,7 @@ static void updateScreen(bool update);
 static void handleEvent(uiEvent_t *ev);
 
 static bool lockDisplayed = false;
-static const uint32_t TIMEOUT_MS = 2000;
+static const uint32_t TIMEOUT_MS = 1000;
 int lockState = LOCK_NONE;
 
 int menuLockScreen(uiEvent_t *ev, bool isFirstRun)
@@ -184,5 +184,7 @@ static void handleEvent(uiEvent_t *ev)
 void menuLockScreenPop(void)
 {
 	lockDisplayed = false;
-	menuSystemPopPreviousMenu();
+
+	if (menuSystemGetCurrentMenuNumber() == MENU_LOCK_SCREEN)
+		menuSystemPopPreviousMenu();
 }

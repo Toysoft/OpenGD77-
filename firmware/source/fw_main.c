@@ -178,8 +178,6 @@ void fw_main_task(void *data)
 				{
 					if (key_event == EVENT_KEY_CHANGE)
 					{
-						set_melody(melody_ERROR_beep);
-
 						if (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN)
 						{
 							menuSystemPushNewMenu(MENU_LOCK_SCREEN);
@@ -191,8 +189,6 @@ void fw_main_task(void *data)
 					// Lockout ORANGE AND BLUE (BLACK stay active regardless lock status, useful to trigger backlight)
 					if (button_event == EVENT_BUTTON_CHANGE && ((buttons & BUTTON_ORANGE) || (buttons & BUTTON_SK2)))
 					{
-						set_melody(melody_ERROR_beep);
-
 						if (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN)
 						{
 							menuSystemPushNewMenu(MENU_LOCK_SCREEN);
@@ -212,8 +208,6 @@ void fw_main_task(void *data)
 							menuSystemPushNewMenu(MENU_LOCK_SCREEN);
 						}
 
-						// Cancels event
-						//keyOrButtonChanged = false;
 						button_event = EVENT_BUTTON_NONE;
 						// Clear PTT button
 						buttons &= ~BUTTON_PTT;
