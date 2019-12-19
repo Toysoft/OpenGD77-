@@ -75,7 +75,10 @@ static void updateScreen(void)
 				snprintf(buf, bufferLen, "%s:%d", currentLanguage->contrast, contrast);
 				break;
 			case DISPLAY_MENU_TIMEOUT:
-				snprintf(buf, bufferLen, "%s:%d", currentLanguage->backlight_timeout, backLightTimeout);
+				if (backLightTimeout == 0)
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->backlight_timeout, currentLanguage->no);
+				else
+					snprintf(buf, bufferLen, "%s:%d", currentLanguage->backlight_timeout, backLightTimeout);
 				break;
 			case DISPLAY_MENU_COLOUR_INVERT:
 				if (inverseVideo)
