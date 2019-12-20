@@ -21,10 +21,12 @@
 static void updateScreen(void);
 static void handleEvent(uiEvent_t *ev);
 
+
 int menuSplashScreen(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
+	    set_melody(melody_poweron);
 		updateScreen();
 	}
 	else
@@ -61,7 +63,8 @@ static void handleEvent(uiEvent_t *ev)
 		return;
 	}
 
-	if ((ev->ticks - m) > 2000)
+	//if (ev->ticks - m) > 2000)
+	if (melody_play==NULL)
 	{
 		menuSystemSetCurrentMenu(nonVolatileSettings.initialMenuNumber);
 	}

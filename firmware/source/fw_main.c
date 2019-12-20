@@ -137,7 +137,6 @@ void fw_main_task(void *data)
 
     fw_init_beep_task();
 
-    set_melody(melody_poweron);
 
 #if defined(USE_SEGGER_RTT)
     SEGGER_RTT_ConfigUpBuffer(0, NULL, NULL, 0, SEGGER_RTT_MODE_NO_BLOCK_TRIM);
