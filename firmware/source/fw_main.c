@@ -174,24 +174,24 @@ void fw_main_task(void *data)
 			if (keypadLocked || PTTLocked)
 			{
 				if (keypadLocked && (buttons & BUTTON_PTT) == 0)
-			{
-				if (key_event == EVENT_KEY_CHANGE)
 				{
+					if (key_event == EVENT_KEY_CHANGE)
+					{
 						if (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN)
 						{
 							menuSystemPushNewMenu(MENU_LOCK_SCREEN);
 						}
 
-					key_event = EVENT_KEY_NONE;
+						key_event = EVENT_KEY_NONE;
 					}
 
 					// Lockout ORANGE AND BLUE (BLACK stay active regardless lock status, useful to trigger backlight)
-				if (button_event == EVENT_BUTTON_CHANGE && ((buttons & BUTTON_ORANGE) || (buttons & BUTTON_SK2)))
-				{
-					if (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN)
+					if (button_event == EVENT_BUTTON_CHANGE && ((buttons & BUTTON_ORANGE) || (buttons & BUTTON_SK2)))
 					{
-						menuSystemPushNewMenu(MENU_LOCK_SCREEN);
-					}
+						if (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN)
+						{
+							menuSystemPushNewMenu(MENU_LOCK_SCREEN);
+						}
 
 						button_event = EVENT_BUTTON_NONE;
 					}
