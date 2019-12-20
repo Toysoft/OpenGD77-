@@ -34,10 +34,10 @@
  ********************************************************************/
 const stringsTable_t catalanLanguage=
 {
-.LANGUAGE_NAME			= "Catala",
+.LANGUAGE_NAME			= "Català",
 .language				= "Idioma",
 .menu					= "Menú",
-.credits				= "Credits",
+.credits				= "Crèdits",
 .zone					= "Zona",
 .rssi					= "RSSI",
 .battery				= "Bateria",
@@ -71,7 +71,7 @@ const stringsTable_t catalanLanguage=
 .accept_call			= "Acceptar PC?",
 .private_call			= "Trucada privada",
 .squelch				= "Squelch",
-.quick_menu				= "Menú Rapid",
+.quick_menu				= "Menú Ràpid",
 .filter					= "Filtre",
 .all_channels			= "Tots Canals",
 .gotoChannel			= "Anar canal",

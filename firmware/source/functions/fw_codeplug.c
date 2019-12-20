@@ -48,6 +48,10 @@ const int CODEPLUG_DTMF_CONTACTS_MAX_COUNT = 32;
 const int CODEPLUG_ADDR_USER_DMRID = 0x00E8;
 const int CODEPLUG_ADDR_USER_CALLSIGN = 0x00E0;
 
+const int CODEPLUG_ADDR_BOOT_INTRO_SCREEN = 0x7518;// 0x01 = Chars 0x00 = Picture
+const int CODEPLUG_ADDR_BOOT_PASSWORD_ENABLE= 0x7519;// 0x00 = password disabled 0x01 = password enable
+const int CODEPLUG_ADDR_BOOT_PASSWORD_AREA = 0x751C;// Seems to be 3 bytes coded as BCD e.f. 0x12 0x34 0x56
+const int CODEPLUG_BOOT_PASSWORD_LEN = 3;
 const int CODEPLUG_ADDR_BOOT_LINE1 = 0x7540;
 const int CODEPLUG_ADDR_BOOT_LINE2 = 0x7550;
 const int CODEPLUG_ADDR_VFO_A_CHANNEL = 0x7590;
@@ -617,8 +621,9 @@ void codeplugGetRadioName(char *buf)
 }
 
 // Max length the user can enter is 15. Hence buf must be 16 chars to allow for the termination
-void codeplugGetBootItemTexts(char *line1, char *line2)
+void codeplugGetBootScreenData(char *line1, char *line2,uint8_t *displayType, uint8_t *passwordEnable, uint32_t *passwordNumber)
 {
+	uint8_t tmp[8];
 	memset(line1,0,16);
 	memset(line2,0,16);
 
@@ -626,6 +631,11 @@ void codeplugGetBootItemTexts(char *line1, char *line2)
 	codeplugUtilConvertBufToString(line1,line1,15);
 	EEPROM_Read(CODEPLUG_ADDR_BOOT_LINE2,(uint8_t *)line2,15);
 	codeplugUtilConvertBufToString(line2,line2,15);
+
+	EEPROM_Read(CODEPLUG_ADDR_BOOT_INTRO_SCREEN,(uint8_t *)tmp,8);// read the display type, and password enable and password
+	*displayType = tmp[0];
+	*passwordEnable = tmp[1];
+	*passwordNumber = bcd2int((tmp[4]<<16) + (tmp[5]<<8) + tmp[6]);
 }
 
 

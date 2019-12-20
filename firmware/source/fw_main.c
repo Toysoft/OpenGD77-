@@ -137,7 +137,6 @@ void fw_main_task(void *data)
 
     fw_init_beep_task();
 
-    set_melody(melody_poweron);
 
 #if defined(USE_SEGGER_RTT)
     SEGGER_RTT_ConfigUpBuffer(0, NULL, NULL, 0, SEGGER_RTT_MODE_NO_BLOCK_TRIM);
@@ -172,43 +171,67 @@ void fw_main_task(void *data)
 			// EVENT_*_CHANGED can be cleared later, so check this now as hasEvent has to be set anyway.
 			keyOrButtonChanged = ((key_event != NO_EVENT) || (button_event != NO_EVENT));
 
-			if (keypadLocked)
+			if (keypadLocked || PTTLocked)
 			{
-				if (key_event == EVENT_KEY_CHANGE)
+				if (keypadLocked && (buttons & BUTTON_PTT) == 0)
 				{
-					key_event = EVENT_KEY_NONE;
-					if (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN)
+					if (key_event == EVENT_KEY_CHANGE)
 					{
-						menuSystemPushNewMenu(MENU_LOCK_SCREEN);
+						if (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN)
+						{
+							menuSystemPushNewMenu(MENU_LOCK_SCREEN);
+						}
+
+						key_event = EVENT_KEY_NONE;
+					}
+
+					// Lockout ORANGE AND BLUE (BLACK stay active regardless lock status, useful to trigger backlight)
+					if (button_event == EVENT_BUTTON_CHANGE && ((buttons & BUTTON_ORANGE) || (buttons & BUTTON_SK2)))
+					{
+						if (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN)
+						{
+							menuSystemPushNewMenu(MENU_LOCK_SCREEN);
+						}
+
+						button_event = EVENT_BUTTON_NONE;
 					}
 				}
-				// Lockout ORANGE AND BLUE (BLACK stay active regarless lock status, useful to trigger backlight)
-				if (button_event == EVENT_BUTTON_CHANGE && ((buttons & BUTTON_ORANGE) || (buttons & BUTTON_SK2)))
+				else if (PTTLocked)
 				{
-					if (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN)
+					if ((buttons & BUTTON_PTT) && (button_event == EVENT_BUTTON_CHANGE))
 					{
-						menuSystemPushNewMenu(MENU_LOCK_SCREEN);
+						set_melody(melody_ERROR_beep);
+
+						if (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN)
+						{
+							menuSystemPushNewMenu(MENU_LOCK_SCREEN);
+						}
+
+						button_event = EVENT_BUTTON_NONE;
+						// Clear PTT button
+						buttons &= ~BUTTON_PTT;
 					}
-					button_event = EVENT_BUTTON_NONE;
+					else if ((buttons & BUTTON_SK2) && KEYCHECK_DOWN(keys, KEY_STAR))
+					{
+						if (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN)
+						{
+							menuSystemPushNewMenu(MENU_LOCK_SCREEN);
+						}
+					}
 				}
 			}
 
-			// Only PTT is locked, user ask to unlock
-			if (PTTLocked && ((buttons & BUTTON_PTT) != 0))
+			if ((key_event == EVENT_KEY_CHANGE) && ((buttons & BUTTON_PTT) == 0) && (keys.key != 0))
 			{
-				if (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN)
-				{
-					menuSystemPushNewMenu(MENU_LOCK_SCREEN);
-				}
-			}
-
-			if (key_event == EVENT_KEY_CHANGE && (buttons & BUTTON_PTT) == 0 && keys.key != 0) {
 				if (keys.event & KEY_MOD_PRESS)
 				{
 					set_melody(melody_key_beep);
-				} else if  ((keys.event & (KEY_MOD_LONG | KEY_MOD_DOWN)) == (KEY_MOD_LONG | KEY_MOD_DOWN)) {
+				}
+				else if ((keys.event & (KEY_MOD_LONG | KEY_MOD_DOWN)) == (KEY_MOD_LONG | KEY_MOD_DOWN))
+				{
 					set_melody(melody_key_long_beep);
 				}
+
 				if (KEYCHECK_LONGDOWN(keys, KEY_RED))
 				{
 					contactListContactIndex = 0;
@@ -240,33 +263,24 @@ void fw_main_task(void *data)
 			if (button_event == EVENT_BUTTON_CHANGE)
 			{
 				displayLightTrigger();
-				if ((buttons & BUTTON_PTT)!=0)
+
+				if ((buttons & BUTTON_PTT) != 0)
 				{
-					if (PTTLocked)
-					{
-						button_event = EVENT_BUTTON_NONE;
-						buttons = 0;
-						set_melody(melody_ERROR_beep);
-						menuSystemPushNewMenu(MENU_LOCK_SCREEN);
-					}
-					else
-					{
-						int currentMenu = menuSystemGetCurrentMenuNumber();
+					int currentMenu = menuSystemGetCurrentMenuNumber();
 
-						if ((slot_state == DMR_STATE_IDLE || trxDMRMode == DMR_MODE_PASSIVE) &&
-								trxGetMode() != RADIO_MODE_NONE &&
-								settingsUsbMode != USB_MODE_HOTSPOT &&
-								currentMenu != MENU_POWER_OFF &&
-								currentMenu != MENU_SPLASH_SCREEN &&
-								currentMenu != MENU_TX_SCREEN )
-						{
-							if (currentMenu == MENU_VFO_MODE)
-								menuVFOModeStopScan();
-							else if (currentMenu == MENU_LOCK_SCREEN)
-								menuSystemPopPreviousMenu();
+					if ((slot_state == DMR_STATE_IDLE || trxDMRMode == DMR_MODE_PASSIVE) &&
+							trxGetMode() != RADIO_MODE_NONE &&
+							settingsUsbMode != USB_MODE_HOTSPOT &&
+							currentMenu != MENU_POWER_OFF &&
+							currentMenu != MENU_SPLASH_SCREEN &&
+							currentMenu != MENU_TX_SCREEN )
+					{
+						if (currentMenu == MENU_VFO_MODE)
+							menuVFOModeStopScan();
+						else if (currentMenu == MENU_LOCK_SCREEN)
+							menuLockScreenPop();
 
-							menuSystemPushNewMenu(MENU_TX_SCREEN);
-						}
+						menuSystemPushNewMenu(MENU_TX_SCREEN);
 					}
 				}
 
