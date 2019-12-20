@@ -107,10 +107,10 @@ void create_song(const uint8_t *melody)
 		if (melody[2*i+1]!=0)
 		{
 			melody_generic[song_idx]=get_freq(melody[2*i]);
-			melody_generic[song_idx+1]=melody[2*i+1]*108;
-			melody_generic[song_idx+2]=0;
-			melody_generic[song_idx+3]=melody[2*i+1]*12;
-			song_idx=song_idx+4;
+			melody_generic[song_idx+1]=melody[2*i+1]*54;
+			//melody_generic[song_idx+2]=0;
+			//melody_generic[song_idx+3]=melody[2*i+1]*6;
+			song_idx=song_idx+2;
 		}
 		else
 		{
