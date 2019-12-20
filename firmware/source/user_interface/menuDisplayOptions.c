@@ -192,16 +192,21 @@ static void handleEvent(uiEvent_t *ev)
 	}
 	else if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 	{
+		// All parameters has already been applied
 		nonVolatileSettings.displayInverseVideo = inverseVideo;
 		nonVolatileSettings.displayContrast = contrast;
 		nonVolatileSettings.backLightTimeout = backLightTimeout;
-		fw_init_display(nonVolatileSettings.displayInverseVideo);// Need to perform a full reset on the display to change back to non-inverted
 		menuSystemPopAllAndDisplayRootMenu();
 		return;
 	}
 	else if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{
-		if (nonVolatileSettings.displayContrast != contrast || nonVolatileSettings.displayInverseVideo != inverseVideo)
+		if (nonVolatileSettings.displayContrast != contrast)
+		{
+			ucSetContrast(nonVolatileSettings.displayContrast);
+		}
+
+		if (nonVolatileSettings.displayInverseVideo != inverseVideo)
 		{
 			fw_init_display(nonVolatileSettings.displayInverseVideo);// Need to perform a full reset on the display to change back to non-inverted
 		}
