@@ -78,7 +78,7 @@ static void updateScreen(void)
 				if (backLightTimeout == 0)
 					snprintf(buf, bufferLen, "%s:%s", currentLanguage->backlight_timeout, currentLanguage->no);
 				else
-					snprintf(buf, bufferLen, "%s:%d", currentLanguage->backlight_timeout, backLightTimeout);
+					snprintf(buf, bufferLen, "%s:%ds", currentLanguage->backlight_timeout, backLightTimeout);
 				break;
 			case DISPLAY_MENU_COLOUR_INVERT:
 				if (inverseVideo)
@@ -141,7 +141,7 @@ static void handleEvent(uiEvent_t *ev)
 				backLightTimeout += 5;
 				if (backLightTimeout > BACKLIGHT_MAX_TIMEOUT)
 				{
-					backLightTimeout=0;
+					backLightTimeout = BACKLIGHT_MAX_TIMEOUT;
 				}
 				break;
 			case DISPLAY_MENU_COLOUR_INVERT:
@@ -181,7 +181,7 @@ static void handleEvent(uiEvent_t *ev)
 				backLightTimeout -= 5;
 				if (backLightTimeout < 0)
 				{
-					backLightTimeout = BACKLIGHT_MAX_TIMEOUT;
+					backLightTimeout = 0;
 				}
 				break;
 			case DISPLAY_MENU_COLOUR_INVERT:
