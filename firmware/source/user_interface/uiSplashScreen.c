@@ -38,8 +38,11 @@ static void updateScreen(void)
 {
 	char line1[16];
 	char line2[16];
+	uint8_t bootScreenType;
+	uint8_t bootScreenPasswordEnabled;
+	uint32_t bootScreenPassword;
 
-	codeplugGetBootItemTexts(line1,line2);
+	codeplugGetBootScreenData(line1,line2,&bootScreenType,&bootScreenPasswordEnabled,&bootScreenPassword);
 	ucClearBuf();
 	ucPrintCentered(10, "OpenGD77", FONT_8x16);
 	ucPrintCentered(28, line1, FONT_8x16);
