@@ -130,7 +130,8 @@ int menuTxScreen(uiEvent_t *ev, bool isFirstRun)
 		}
 
 		// Got an event, or
-		if (ev->hasEvent || // Timeout triggered, or waiting for DMR ending (meanwhile, updating every 200 ticks)
+		if (ev->hasEvent || // PTT released
+				((ev->buttons & BUTTON_PTT) == 0) || // Timeout triggered, or waiting for DMR ending (meanwhile, updating every 200 ticks)
 				( ((currentChannelData->tot != 0) && (timeInSeconds == 0)) || ((trxIsTransmitting == false) &&
 						((ev->ticks - m) > 200))))
 		{
