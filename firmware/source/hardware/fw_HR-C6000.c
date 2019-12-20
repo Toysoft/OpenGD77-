@@ -708,7 +708,7 @@ inline static void HRC6000SysInterruptHandler(void)
 		read_SPI_page_reg_byte_SPI0(0x04, 0x51, &tmp_val_0x51);
 		bool rxCRCStatus = (((tmp_val_0x51 >> 2) & 0x01)==0);// CRC is OK if its 0
 
-		if (rxCRCStatus && LCBuf[1] == 0x00 && (LCBuf[0]==TG_CALL_FLAG || LCBuf[0]==PC_CALL_FLAG  || (LCBuf[0]>=0x04 && LCBuf[0]<=0x07)) &&
+		if (rxCRCStatus && (LCBuf[0]==TG_CALL_FLAG || LCBuf[0]==PC_CALL_FLAG  || (LCBuf[0]>=0x04 && LCBuf[0]<=0x07)) &&
 			memcmp((uint8_t *)previousLCBuf,LCBuf,12)!=0)
 		{
 			read_SPI_page_reg_byte_SPI0(0x04, 0x52, &reg0x52);  //Read Received CC and CACH Register to get the timecode (TS number)
