@@ -123,7 +123,7 @@ void codeplugDTMFContactGetDataForIndex(struct_codeplugDTMFContactList_t *contac
 int codeplugGetUserDMRID(void);
 void codeplugSetUserDMRID(uint32_t dmrId);
 void codeplugGetRadioName(char *buf);
-void codeplugGetBootItemTexts(char *line1, char *line2);
+void codeplugGetBootScreenData(char *line1, char *line2,uint8_t *displayType, uint8_t *passwordEnable, uint32_t *passwordNumber);
 void codeplugGetVFO_ChannelData(struct_codeplugChannel_t *vfoBuf,int VFONumber);
 void codeplugSetVFO_ChannelData(struct_codeplugChannel_t *vfoBuf,int VFONumber);
 bool codeplugChannelIndexIsValid(int index);
