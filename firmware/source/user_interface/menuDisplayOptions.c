@@ -141,7 +141,7 @@ static void handleEvent(uiEvent_t *ev)
 				backLightTimeout += 5;
 				if (backLightTimeout > BACKLIGHT_MAX_TIMEOUT)
 				{
-					backLightTimeout=0;
+					backLightTimeout = BACKLIGHT_MAX_TIMEOUT;
 				}
 				break;
 			case DISPLAY_MENU_COLOUR_INVERT:
@@ -181,7 +181,7 @@ static void handleEvent(uiEvent_t *ev)
 				backLightTimeout -= 5;
 				if (backLightTimeout < 0)
 				{
-					backLightTimeout = BACKLIGHT_MAX_TIMEOUT;
+					backLightTimeout = 0;
 				}
 				break;
 			case DISPLAY_MENU_COLOUR_INVERT:
