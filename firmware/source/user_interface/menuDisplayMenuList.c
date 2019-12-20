@@ -91,7 +91,7 @@ static void handleEvent(uiEvent_t *ev)
 	}
 	else if (KEYCHECK_SHORTUP(ev->keys,KEY_HASH) && (menuSystemGetCurrentMenuNumber() == MENU_MAIN_MENU))
 	{
-		PTTLocked = true;
+		PTTLocked = !PTTLocked;
 		menuSystemPopAllAndDisplayRootMenu();
 		menuSystemPushNewMenu(MENU_LOCK_SCREEN);
 		return;
