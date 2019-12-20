@@ -705,8 +705,10 @@ inline static void HRC6000SysInterruptHandler(void)
 		uint8_t reg0x52;
 		uint8_t LCBuf[12];
 		read_SPI_page_reg_bytearray_SPI0(0x02, 0x00, LCBuf, 12);// read the LC from the C6000
+		read_SPI_page_reg_byte_SPI0(0x04, 0x51, &tmp_val_0x51);
+		bool rxCRCStatus = (((tmp_val_0x51 >> 2) & 0x01)==0);// CRC is OK if its 0
 
-		if (LCBuf[1] == 0x00 && (LCBuf[0]==TG_CALL_FLAG || LCBuf[0]==PC_CALL_FLAG  || (LCBuf[0]>=0x04 && LCBuf[0]<=0x07)) &&
+		if (rxCRCStatus && (LCBuf[0]==TG_CALL_FLAG || LCBuf[0]==PC_CALL_FLAG  || (LCBuf[0]>=0x04 && LCBuf[0]<=0x07)) &&
 			memcmp((uint8_t *)previousLCBuf,LCBuf,12)!=0)
 		{
 			read_SPI_page_reg_byte_SPI0(0x04, 0x52, &reg0x52);  //Read Received CC and CACH Register to get the timecode (TS number)
@@ -715,7 +717,7 @@ inline static void HRC6000SysInterruptHandler(void)
 
 			if ((checkTimeSlotFilter() || trxDMRMode == DMR_MODE_ACTIVE) && (rxColorCode == trxGetDMRColourCode())) // only do this for the selected timeslot, or when in Active mode
 			{
-				if (DMR_frame_buffer[0]==TG_CALL_FLAG || DMR_frame_buffer[0]==PC_CALL_FLAG)
+				if (LCBuf[0]==TG_CALL_FLAG || LCBuf[0]==PC_CALL_FLAG)
 				{
 					receivedTgOrPcId 	= (LCBuf[3]<<16)+(LCBuf[4]<<8)+(LCBuf[5]<<0);// used by the call accept filter
 					receivedSrcId 		= (LCBuf[6]<<16)+(LCBuf[7]<<8)+(LCBuf[8]<<0);// used by the call accept filter
@@ -732,7 +734,7 @@ inline static void HRC6000SysInterruptHandler(void)
 				}
 				else
 				{
-					if (updateLastHeard == false)
+					if (updateLastHeard == false && receivedTgOrPcId != 0)
 					{
 						memcpy((uint8_t *)DMR_frame_buffer,LCBuf,12);
 						updateLastHeard=true;//lastHeardListUpdate((uint8_t *)DMR_frame_buffer);
@@ -1481,4 +1483,9 @@ void clearActiveDMRID(void)
 	memset((uint8_t *)DMR_frame_buffer,0x00,12);
 	receivedTgOrPcId 	= 0x00;
 	receivedSrcId 		= 0x00;
+}
+
+int HRC6000GetReveivedTgOrPcId(void)
+{
+	return receivedTgOrPcId;
 }
