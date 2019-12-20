@@ -264,25 +264,25 @@ void fw_main_task(void *data)
 			{
 				displayLightTrigger();
 
-				if ((buttons & BUTTON_PTT)!=0)
-					{
-						int currentMenu = menuSystemGetCurrentMenuNumber();
+				if ((buttons & BUTTON_PTT) != 0)
+				{
+					int currentMenu = menuSystemGetCurrentMenuNumber();
 
-						if ((slot_state == DMR_STATE_IDLE || trxDMRMode == DMR_MODE_PASSIVE) &&
-								trxGetMode() != RADIO_MODE_NONE &&
-								settingsUsbMode != USB_MODE_HOTSPOT &&
-								currentMenu != MENU_POWER_OFF &&
-								currentMenu != MENU_SPLASH_SCREEN &&
-								currentMenu != MENU_TX_SCREEN )
-						{
-							if (currentMenu == MENU_VFO_MODE)
-								menuVFOModeStopScan();
-							else if (currentMenu == MENU_LOCK_SCREEN)
+					if ((slot_state == DMR_STATE_IDLE || trxDMRMode == DMR_MODE_PASSIVE) &&
+							trxGetMode() != RADIO_MODE_NONE &&
+							settingsUsbMode != USB_MODE_HOTSPOT &&
+							currentMenu != MENU_POWER_OFF &&
+							currentMenu != MENU_SPLASH_SCREEN &&
+							currentMenu != MENU_TX_SCREEN )
+					{
+						if (currentMenu == MENU_VFO_MODE)
+							menuVFOModeStopScan();
+						else if (currentMenu == MENU_LOCK_SCREEN)
 							menuLockScreenPop();
 
-							menuSystemPushNewMenu(MENU_TX_SCREEN);
-						}
+						menuSystemPushNewMenu(MENU_TX_SCREEN);
 					}
+				}
 
         		if (buttons & BUTTON_SK1 && buttons & BUTTON_SK2)
         		{
