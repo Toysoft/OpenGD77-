@@ -20,14 +20,14 @@
 #include <functions/fw_ticks.h>
 #include "fw_settings.h"
 
-static void updateScreen(void);
+enum LOCK_STATE { LOCK_NONE = 0x00, LOCK_KEYPAD = 0x01, LOCK_PTT = 0x02, LOCK_BOTH = 0x03 };
+
+static void updateScreen(bool update);
 static void handleEvent(uiEvent_t *ev);
 
-static bool lockDisplay = false;
-static const uint32_t TIMEOUT_MS = 2000;
-static int lockScreenState;
-
-enum LOCK_SCREEN_STATE { LOCK_SCREEN_STATE_IDLE=0, LOCK_SCREEN_STATE_CHANGED };
+static bool lockDisplayed = false;
+static const uint32_t TIMEOUT_MS = 1000;
+int lockState = LOCK_NONE;
 
 int menuLockScreen(uiEvent_t *ev, bool isFirstRun)
 {
@@ -36,63 +36,135 @@ int menuLockScreen(uiEvent_t *ev, bool isFirstRun)
 	if (isFirstRun)
 	{
 		m = fw_millis();
-		lockScreenState = LOCK_SCREEN_STATE_CHANGED;
-		updateScreen();
-		lockDisplay = true;
+
+		updateScreen(lockDisplayed);
 	}
 	else
 	{
-		if (lockDisplay && ((ev->ticks - m) > TIMEOUT_MS))
+		if (lockDisplayed && ((ev->ticks - m) > TIMEOUT_MS))
 		{
+			lockDisplayed = false;
 			menuSystemPopPreviousMenu();
-			lockDisplay = false;
 			return 0;
 		}
 
 		if (ev->hasEvent)
+		{
+			m = fw_millis(); // reset timer on each key button/event.
+
 			handleEvent(ev);
+		}
 	}
 	return 0;
 }
 
-static void updateScreen(void)
+static void redrawScreen(bool update, bool state)
 {
-	if (lockScreenState == LOCK_SCREEN_STATE_CHANGED)
+	if (update)
 	{
+		// Clear inner rect only
+		ucFillRoundRect(5, 3, 118, 56, 5, false);
+	}
+	else
+	{
+		// Clear whole screen
 		ucClearBuf();
 		ucDrawRoundRectWithDropShadow(4, 4, 120, 58, 5, true);
-		if (keypadLocked || PTTLocked)
+	}
+
+	if (state)
+	{
+		int bufferLen = strlen(currentLanguage->keypad) + 3 + strlen(currentLanguage->ptt) + 1;
+		char buf[bufferLen];
+
+		memset(buf, 0, bufferLen);
+
+		if (keypadLocked)
+			strcat(buf, currentLanguage->keypad);
+
+		if (PTTLocked)
 		{
-			size_t bufferLen = strlen(currentLanguage->keypad) + 3 + strlen(currentLanguage->ptt) + 1;
-			char buf[bufferLen];
-
-			memset(buf, 0, bufferLen);
-
 			if (keypadLocked)
-				strcat(buf, currentLanguage->keypad);
+				strcat(buf, " & ");
 
-			if (PTTLocked)
-			{
-				if (keypadLocked)
-					strcat(buf, " & ");
+			strcat(buf, currentLanguage->ptt);
+		}
+		buf[bufferLen - 1] = 0;
 
-				strcat(buf, currentLanguage->ptt);
-			}
-			buf[bufferLen -1] = 0;
+		ucPrintCentered(6, buf, FONT_8x16);
+		ucPrintCentered(22, currentLanguage->locked, FONT_8x16);
+		ucPrintCentered(40, currentLanguage->press_blue_plus_star, FONT_6x8);
+		ucPrintCentered(48, currentLanguage->to_unlock, FONT_6x8);
+	}
+	else
+	{
+		ucPrintCentered(24, currentLanguage->unlocked, FONT_8x16);
+	}
 
-			ucPrintCentered(6, buf, FONT_8x16);
-			ucPrintCentered(22, currentLanguage->locked, FONT_8x16);
-			ucPrintCentered(40, currentLanguage->press_blue_plus_star, FONT_6x8);
-			ucPrintCentered(48, currentLanguage->to_unlock, FONT_6x8);
+	ucRender();
+	displayLightTrigger();
+
+	lockDisplayed = true;
+}
+
+static void updateScreen(bool updateOnly)
+{
+	bool keypadChanged = false;
+	bool PTTChanged = false;
+
+	if (keypadLocked)
+	{
+		if ((lockState & LOCK_KEYPAD) == 0)
+		{
+			keypadChanged = true;
+			lockState |= LOCK_KEYPAD;
+		}
+	}
+	else
+	{
+		if ((lockState & LOCK_KEYPAD))
+		{
+			keypadChanged = true;
+			lockState &= ~LOCK_KEYPAD;
+		}
+	}
+
+	if (PTTLocked)
+	{
+		if ((lockState & LOCK_PTT) == 0)
+		{
+			PTTChanged = true;
+			lockState |= LOCK_PTT;
+		}
+	}
+	else
+	{
+		if ((lockState & LOCK_PTT))
+		{
+			PTTChanged = true;
+			lockState &= ~LOCK_PTT;
+		}
+	}
+
+	if (updateOnly)
+	{
+		if (keypadChanged || PTTChanged)
+		{
+			redrawScreen(updateOnly, ((lockState & LOCK_KEYPAD) || (lockState & LOCK_PTT)));
 		}
 		else
 		{
-			ucPrintCentered(24, currentLanguage->unlocked, FONT_8x16);
+			if (lockDisplayed == false)
+			{
+				redrawScreen(updateOnly, false);
+			}
 		}
-		ucRender();
-		displayLightTrigger();
 	}
-	lockScreenState = LOCK_SCREEN_STATE_IDLE;
+	else
+	{
+		// Draw everything
+		redrawScreen(false, keypadLocked || PTTLocked);
+	}
 }
 
 static void handleEvent(uiEvent_t *ev)
@@ -101,17 +173,18 @@ static void handleEvent(uiEvent_t *ev)
 	{
 		keypadLocked = false;
 		PTTLocked = false;
+		lockDisplayed = false;
 		menuSystemPopAllAndDisplayRootMenu();
 		menuSystemPushNewMenu(MENU_LOCK_SCREEN);
 	}
-	else
-	{
-		// Hide immediately the lock/unlock window on key event, without waiting for timeout.
-		if (lockDisplay && (((ev->keys.key != 0) && (ev->keys.event & KEY_MOD_UP)) ||
-				((ev->events & BUTTON_EVENT) && (ev->buttons == BUTTON_NONE))))
-		{
-			menuSystemPopPreviousMenu();
-			lockDisplay = false;
-		}
-	}
+
+	displayLightTrigger();
+}
+
+void menuLockScreenPop(void)
+{
+	lockDisplayed = false;
+
+	if (menuSystemGetCurrentMenuNumber() == MENU_LOCK_SCREEN)
+		menuSystemPopPreviousMenu();
 }
