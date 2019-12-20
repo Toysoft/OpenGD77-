@@ -478,11 +478,7 @@ void menuUtilityRenderQSOData(void)
 	 * but I thought it was safer to disregard any PC's from IDs the same as the current TG
 	 * rather than testing if the TG is the user's ID, though that may work as well.
 	 */
-	if (HRC6000GetReveivedTgOrPcId() == 0)
-	{
-		ucPrintCentered(16, "Waiting...", FONT_8x16);
-	}
-	else
+	if (HRC6000GetReveivedTgOrPcId() != 0)
 	{
 		if ((LinkHead->talkGroupOrPcId>>24) == PC_CALL_FLAG) // &&  (LinkHead->id & 0xFFFFFF) != (trxTalkGroupOrPcId & 0xFFFFFF))
 		{
