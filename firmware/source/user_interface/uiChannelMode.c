@@ -338,11 +338,6 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				ucFillRect(xbar, 19, bargraph, 9, false);
 			}
 
-			if (!((uiChannelModeScanActive) & (scanState==SCAN_SCANNING)))
-			{
-				displayLightTrigger();
-			}
-
 			ucRender();
 			break;
 
@@ -359,6 +354,8 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 
 static void handleEvent(uiEvent_t *ev)
 {
+	displayLightTrigger();
+
 	// if we are scanning and down key is pressed then enter current channel into nuisance delete array.
 	if((scanState==SCAN_PAUSED) && ((ev->events & KEY_EVENT) && (ev->keys.key == KEY_DOWN)) && (!(ev->buttons & BUTTON_SK2)))
 	{
@@ -379,7 +376,6 @@ static void handleEvent(uiEvent_t *ev)
 			( (ev->events & KEY_EVENT) && ( ((ev->keys.key == KEY_UP) && ((ev->buttons & BUTTON_SK2) == 0)) == false ) ) )
 	{
 		uiChannelModeScanActive = false;
-		displayLightTrigger();
 		fw_reset_keyboard();
 		return;
 	}
