@@ -1023,7 +1023,7 @@ static void scanning(void)
 		uiEvent_t tmpEvent={ .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = 0, .ticks = 0 };
 
 		handleUpKey(&tmpEvent);
-		if ((trxGetMode() == RADIO_MODE_DIGITAL) && (channelScreenChannelData.rxFreq==channelScreenChannelData.txFreq) && (SCAN_TOTAL_INTERVAL < SCAN_DMR_SIMPLEX_MIN_INTERVAL) )				//allow extra time if scanning a simplex DMR channel.
+		if ((trxGetMode() == RADIO_MODE_DIGITAL) && (trxDMRMode == DMR_MODE_ACTIVE) && (SCAN_TOTAL_INTERVAL < SCAN_DMR_SIMPLEX_MIN_INTERVAL) )				//allow extra time if scanning a simplex DMR channel.
 		{
 			scanTimer = SCAN_DMR_SIMPLEX_MIN_INTERVAL;
 		}
