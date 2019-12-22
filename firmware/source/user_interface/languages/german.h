@@ -20,7 +20,7 @@
  * Translators: DG3GSP, DL4LEX
  *
  *
- * Rev: 3
+ * Rev: 3.1
  */
 #ifndef USER_INTERFACE_LANGUAGES_GERMAN_H_
 #define USER_INTERFACE_LANGUAGES_GERMAN_H_
@@ -135,7 +135,7 @@ const stringsTable_t germanLanguage =
 .all_call				= "Ruf an alle", // MaxLen: 16
 .tone_scan				= "CTCSS Scan",//// MaxLen: 16
 .cc_scan				= "CC Scan",//// MaxLen: 16
-.low_battery			= "LOW BATTERY !!!",//// MaxLen: 16
+.low_battery			= "BATTERIE LEER!",//// MaxLen: 16
 };
 /********************************************************************
  *
