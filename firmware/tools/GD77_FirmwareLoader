@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+let ret=0
+
+OS=`uname -s`
+
+case $OS in
+    'Linux')
+	mono "$1/GD77_FirmwareLoader-Linux.exe" ${@:2}
+	ret=$?
+	;;
+    'Darwin')
+	# doesn't even exist yet. Use Python script instead ?
+	#mono "$1/GD77_FirmwareLoader-Darwin.exe" ${@:2}
+	ret=$?
+	;;
+    *)
+	ret=1
+	;;
+esac
+
+exit $ret
