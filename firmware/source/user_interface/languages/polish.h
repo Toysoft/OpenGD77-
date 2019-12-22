@@ -20,7 +20,7 @@
  *
  * Translators: SQ7PTE
  *
- * Rev: 1
+ * Rev: 3.0
  */
 #ifndef USER_INTERFACE_LANGUAGES_POLISH_H_
 #define USER_INTERFACE_LANGUAGES_POLISH_H_
@@ -83,7 +83,7 @@ const stringsTable_t polishLanguage =
 .all					= "Wszystko", // MaxLen: 16 (with .type)
 .type					= "Typ", // MaxLen: 16 (with .type)
 .timeSlot				= "Time Slot", // MaxLen: 16 (plus ':' and  .none, '1' or '2')
-.none					= "‘aden", // MaxLen: 16 (with .timeSlot, "Rx CTCSS:" and ""Tx CTCSS:", and .filter)
+.none					= "Brak", // MaxLen: 16 (with .timeSlot, "Rx CTCSS:" and ""Tx CTCSS:", and .filter)
 .contact_saved				= "Zapisz kontakt", // MaxLen: 16
 .duplicate				= "Duplikat", // MaxLen: 16
 .tg					= "TG",  // MaxLen: 8
@@ -95,13 +95,13 @@ const stringsTable_t polishLanguage =
 .bandwidth				= "Pasmo", // MaxLen: 16 (with ':' + .n_a, "25kHz" or "12.5kHz")
 .stepFreq				= "Krok", // MaxLen: 7 (with ':' + xx.xxkHz fitted)
 .tot					= "TOT", // MaxLen: 16 (with ':' + .off or 15..3825)
-.off					= "OFF", // MaxLen: 16 (with ':' + .timeout_beep, .calibration or .band_limits)
+.off					= "Wyˆ.", // MaxLen: 16 (with ':' + .timeout_beep, .calibration or .band_limits)
 .zone_skip				= "Pomi‹ Zone", // MaxLen: 16 (with ':' + .yes or .no) 
 .all_skip				= "Pomi‹ All", // MaxLen: 16 (with ':' + .yes or .no)
 .yes					= "Tak", // MaxLen: 16 (with ':' + .zone_skip, .all_skip or .factory_reset)
 .no					= "Nie", // MaxLen: 16 (with ':' + .zone_skip, .all_skip or .factory_reset)
 .rx_group				= "Rx Grup", // MaxLen: 16 (with ':' and codeplug group name)
-.on					= "ON", // MaxLen: 16 (with ':' + .calibration or .band_limits)
+.on					= "Wˆ.", // MaxLen: 16 (with ':' + .calibration or .band_limits)
 .timeout_beep				= "Czas bip", // MaxLen: 16 (with ':' + .off or 5..20)
 .factory_reset				= "Reset", // MaxLen: 16 (with ':' + .yes or .no)
 .calibration				= "Kalibracja", // MaxLen: 16 (with ':' + .on or .off)
@@ -124,13 +124,13 @@ const stringsTable_t polishLanguage =
 .hold					= "Stop", // MaxLen: 16 (with ':' + .scan_mode)
 .pause					= "Pauza", // MaxLen: 16 (with ':' + .scan_mode)
 .empty_list				= "Lista pusta", // MaxLen: 16
-.delete_contact_qm			= "Kasuj kontakt?", // MaxLen: 16
+.delete_contact_qm			= "Usu‹ kontakt?", // MaxLen: 16
 .contact_deleted			= "Kontakt usuniety", // MaxLen: 16
 .contact_used				= "Kontakt istnieje", // MaxLen: 16
 .in_rx_group				= "W grupie RX", // MaxLen: 16
 .select_tx				= "Wybierz TX", // MaxLen: 16
 .edit_contact				= "Edytuj kontakt", // MaxLen: 16
-.delete_contact				= "Kasuj kontakt", // MaxLen: 16
+.delete_contact				= "Usu‹ kontakt", // MaxLen: 16
 .group_call				= "Lista kontaktów", // MaxLen: 16
 .all_call				= "‡„cze wszystkich", // MaxLen: 16
 .tone_scan				= "Skan. tonu.",//// MaxLen: 16
