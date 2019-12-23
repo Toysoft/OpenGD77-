@@ -301,6 +301,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					// if CC scan is active, Rx freq is moved down to the Tx location,
 					// as Contact Info will be displayed here
 					ucPrintCentered((CCScanActive ? 48 : 32), buffer, FONT_8x16);
+					ucPrintAt(16, (CCScanActive ? 48 : 32) + 8, (nonVolatileSettings.currentVFONumber == 0) ? "A" : "B", FONT_8x8);
 
 					if (CCScanActive)
 					{
@@ -330,6 +331,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					snprintf(buffer, bufferLen, "%cT %d.%05d MHz", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX || trxIsTransmitting) ? '>' : ' ', val_before_dp, val_after_dp);
 					buffer[bufferLen - 1 ] = 0;
 					ucPrintCentered(48, buffer, FONT_8x16);
+				ucPrintAt(16, 48 + 8, (nonVolatileSettings.currentVFONumber == 0) ? "A" : "B", FONT_8x8);
 				}
 			}
 			else
@@ -929,11 +931,12 @@ static void updateQuickMenuScreen(void)
 	}
 
 	ucRender();
-	displayLightTrigger();
 }
 
 static void handleQuickMenuEvent(uiEvent_t *ev)
 {
+	displayLightTrigger();
+
 	if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{
 		toneScanActive=false;

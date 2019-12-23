@@ -95,4 +95,6 @@ void ucSetInverseVideo(bool isInverted);
 
 void ucDrawChoice(ucChoice_t choice, bool clearRegion);
 
+uint8_t * ucGetDisplayBuffer(void);
+
 #endif /* __UC1701_H__ */
