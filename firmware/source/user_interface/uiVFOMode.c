@@ -50,8 +50,8 @@ static void CCscan(void);
 static bool isDisplayingQSOData=false;
 static int tmpQuickMenuDmrFilterLevel;
 
-bool toneScanActive = false;					//tone scan active flag  (CTCSS)
-bool CCScanActive=false;						//colour code scan active
+static bool toneScanActive = false;					//tone scan active flag  (CTCSS)
+static bool CCScanActive = false;					//colour code scan active
 static int scanTimer=0;
 static const int TONESCANINTERVAL=200;			//time between each tone for lowest tone. (higher tones take less time.)
 static const int CCSCANINTERVAL=500;
@@ -114,7 +114,6 @@ int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
 					nonVolatileSettings.overrideTG = 9;// If the VFO does not have an Rx Group list assigned to it. We can't get a TG from the codeplug. So use TG 9.
 				}
 
-
 			}
 			else
 			{
@@ -164,8 +163,7 @@ int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
 			{
 				toneScan();
 			}
-
-			if(CCScanActive==true)
+			else if(CCScanActive==true)
 			{
 				CCscan();
 			}
@@ -180,16 +178,24 @@ int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
 					sqm = ev->ticks;
 				}
 
-				if(toneScanActive || CCScanActive)
+				// Scanning barrier
+				if (toneScanActive || CCScanActive)
 				{
-					if (CCScanActive)
+					if (((ev->events & BUTTON_EVENT) && (ev->buttons == BUTTON_NONE)) ||
+							((ev->keys.key != 0) && (ev->keys.event & KEY_MOD_UP)))
 					{
-						trxSetDMRColourCode(currentChannelData->rxColor);
+						if (CCScanActive)
+						{
+							trxSetDMRColourCode(currentChannelData->rxColor);
+						}
+						toneScanActive = false;
+						CCScanActive = false;
+						menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+						menuVFOModeUpdateScreen(0); // Needs to redraw the screen now
+						displayLightTrigger();
 					}
-					toneScanActive = false;
-					CCScanActive = false;
-					menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-					menuVFOModeUpdateScreen(0); // Needs to redraw the screen now
+
+					return 0;
 				}
 
 				handleEvent(ev);
@@ -369,7 +375,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 	menuDisplayQSODataState = QSO_DISPLAY_IDLE;
 }
 
-void menuVFOModeStopScan(void)
+void menuVFOModeStopScanning(void)
 {
 	toneScanActive = false;
 	CCScanActive = false;
@@ -1011,44 +1017,43 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 		return;
 	}
 	else if (KEYCHECK_PRESS(ev->keys,KEY_RIGHT))
+	{
+		switch(gMenusCurrentItemIndex)
 		{
-			switch(gMenusCurrentItemIndex)
-			{
-				case VFO_SCREEN_QUICK_MENU_DMR_FILTER:
-					if (tmpQuickMenuDmrFilterLevel < DMR_FILTER_TS)
-					{
-						tmpQuickMenuDmrFilterLevel++;
-					}
-					break;
-				case VFO_SCREEN_QUICK_MENU_VFO_A_B:
-					if (nonVolatileSettings.currentVFONumber==0)
-					{
-						nonVolatileSettings.currentVFONumber++;
-						currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];
-					}
-					break;
-
+			case VFO_SCREEN_QUICK_MENU_DMR_FILTER:
+				if (tmpQuickMenuDmrFilterLevel < DMR_FILTER_TS)
+				{
+					tmpQuickMenuDmrFilterLevel++;
+				}
+				break;
+			case VFO_SCREEN_QUICK_MENU_VFO_A_B:
+				if (nonVolatileSettings.currentVFONumber==0)
+				{
+					nonVolatileSettings.currentVFONumber++;
+					currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];
+				}
+				break;
 			}
-		}
-		else if (KEYCHECK_PRESS(ev->keys,KEY_LEFT))
+	}
+	else if (KEYCHECK_PRESS(ev->keys,KEY_LEFT))
+	{
+		switch(gMenusCurrentItemIndex)
 		{
-			switch(gMenusCurrentItemIndex)
-			{
-				case VFO_SCREEN_QUICK_MENU_DMR_FILTER:
-					if (tmpQuickMenuDmrFilterLevel > DMR_FILTER_NONE)
-					{
-						tmpQuickMenuDmrFilterLevel--;
-					}
-					break;
-				case VFO_SCREEN_QUICK_MENU_VFO_A_B:
-					if (nonVolatileSettings.currentVFONumber==1)
-					{
-						nonVolatileSettings.currentVFONumber--;
-						currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];
-					}
-					break;
-			}
+			case VFO_SCREEN_QUICK_MENU_DMR_FILTER:
+				if (tmpQuickMenuDmrFilterLevel > DMR_FILTER_NONE)
+				{
+					tmpQuickMenuDmrFilterLevel--;
+				}
+				break;
+			case VFO_SCREEN_QUICK_MENU_VFO_A_B:
+				if (nonVolatileSettings.currentVFONumber==1)
+				{
+					nonVolatileSettings.currentVFONumber--;
+					currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];
+				}
+				break;
 		}
+	}
 	else if (KEYCHECK_PRESS(ev->keys,KEY_DOWN))
 	{
 		MENU_INC(gMenusCurrentItemIndex, NUM_VFO_SCREEN_QUICK_MENU_ITEMS);
@@ -1058,6 +1063,11 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 		MENU_DEC(gMenusCurrentItemIndex, NUM_VFO_SCREEN_QUICK_MENU_ITEMS);
 	}
 	updateQuickMenuScreen();
+}
+
+bool menuVFOModeIsScanning(void)
+{
+	return (toneScanActive || CCScanActive);
 }
 
 static void toneScan(void)
