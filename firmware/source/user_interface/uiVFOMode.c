@@ -200,10 +200,28 @@ int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
 	return 0;
 }
 
+void displayFrequency(bool isTX, bool hasFocus, uint8_t y, uint32_t frequency)
+{
+	static const int bufferLen = 17;
+	char buffer[bufferLen];
+	int val_before_dp = frequency / 100000;
+	int val_after_dp = frequency - val_before_dp * 100000;
+
+	// Focus + direction
+	snprintf(buffer, bufferLen, "%c%c", (hasFocus ? '>' : ' '), (isTX ? 'T' : 'R'));
+	ucPrintAt(0, y, buffer, FONT_8x16);
+	// VFO
+	ucPrintAt(16, y + 8, (nonVolatileSettings.currentVFONumber == 0) ? "A" : "B", FONT_8x8);
+	// Frequency
+	snprintf(buffer, bufferLen, "%d.%05d", val_before_dp, val_after_dp);
+	buffer[bufferLen - 1] = 0;
+	ucPrintAt(FREQUENCY_X_POS, y, buffer, FONT_8x16);
+	// Unit
+	ucPrintAt(128 - (3 * 8), y, "MHz", FONT_8x16);
+}
+
 void menuVFOModeUpdateScreen(int txTimeSecs)
 {
-	int val_before_dp;
-	int val_after_dp;
 	static const int bufferLen = 17;
 	char buffer[bufferLen];
 	struct_codeplugContact_t contact;
@@ -293,23 +311,10 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 			{
 				if (!trxIsTransmitting)
 				{
-					val_before_dp = currentChannelData->rxFreq/100000;
-					val_after_dp = currentChannelData->rxFreq - val_before_dp*100000;
-
 					// if CC scan is active, Rx freq is moved down to the Tx location,
 					// as Contact Info will be displayed here
 
-					// Focus + direction
-					snprintf(buffer, bufferLen, "%cR", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_RX) ? '>' : ' ');
-					ucPrintAt(0, (CCScanActive ? 48 : 32), buffer, FONT_8x16);
-					// VFO
-					ucPrintAt(16, (CCScanActive ? 48 : 32) + 8, (nonVolatileSettings.currentVFONumber == 0) ? "A" : "B", FONT_8x8);
-					// Frequency
-					snprintf(buffer, bufferLen, "%d.%05d", val_before_dp, val_after_dp);
-					buffer[bufferLen - 1] = 0;
-					ucPrintAt(FREQUENCY_X_POS, (CCScanActive ? 48 : 32), buffer, FONT_8x16);
-					// Unit
-					ucPrintAt(128 - (3 * 8), (CCScanActive ? 48 : 32), "MHz", FONT_8x16);
+					displayFrequency(false, (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_RX), (CCScanActive ? 48 : 32), currentChannelData->rxFreq);
 
 					if (CCScanActive)
 					{
@@ -334,19 +339,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 
 				if (CCScanActive == false)
 				{
-					val_before_dp = currentChannelData->txFreq/100000;
-					val_after_dp = currentChannelData->txFreq - val_before_dp*100000;
-					// Focus + direction
-					snprintf(buffer, bufferLen, "%cT", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX || trxIsTransmitting) ? '>' : ' ');
-					ucPrintAt(0, 48, buffer, FONT_8x16);
-					// VFO
-					ucPrintAt(16, 48 + 8, (nonVolatileSettings.currentVFONumber == 0) ? "A" : "B", FONT_8x8);
-					// Frequency
-					snprintf(buffer, bufferLen, "%d.%05d", val_before_dp, val_after_dp);
-					buffer[bufferLen - 1] = 0;
-					ucPrintAt(FREQUENCY_X_POS, 48, buffer, FONT_8x16);
-					// Unit
-					ucPrintAt(128 - (3 * 8), 48, "MHz", FONT_8x16);
+					displayFrequency(true, (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX || trxIsTransmitting), 48, currentChannelData->txFreq);
 				}
 			}
 			else
