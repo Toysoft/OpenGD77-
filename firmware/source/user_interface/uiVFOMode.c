@@ -294,6 +294,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					snprintf(buffer, bufferLen, "%cR %d.%05d MHz", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_RX) ? '>' : ' ', val_before_dp, val_after_dp);
 					buffer[bufferLen - 1 ] = 0;
 					ucPrintCentered(32, buffer, FONT_8x16);
+					ucPrintAt(16, 32 + 7, (nonVolatileSettings.currentVFONumber == 0) ? "A" : "B", FONT_8x8);
 				}
 				else
 				{
@@ -314,6 +315,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 				snprintf(buffer, bufferLen, "%cT %d.%05d MHz", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX || trxIsTransmitting) ? '>' : ' ', val_before_dp, val_after_dp);
 				buffer[bufferLen - 1 ] = 0;
 				ucPrintCentered(48, buffer, FONT_8x16);
+				ucPrintAt(16, 48 + 7, (nonVolatileSettings.currentVFONumber == 0) ? "A" : "B", FONT_8x8);
 			}
 			else
 			{
@@ -434,6 +436,8 @@ static void loadContact(void)
 
 static void handleEvent(uiEvent_t *ev)
 {
+	displayLightTrigger();
+
 	if (ev->events & BUTTON_EVENT)
 	{
 		uint32_t tg = (LinkHead->talkGroupOrPcId & 0xFFFFFF);
@@ -911,11 +915,12 @@ static void updateQuickMenuScreen(void)
 	}
 
 	ucRender();
-	displayLightTrigger();
 }
 
 static void handleQuickMenuEvent(uiEvent_t *ev)
 {
+	displayLightTrigger();
+
 	if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{
 		toneScanActive=false;
