@@ -344,7 +344,6 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 				}
 			}
 
-			displayLightTrigger();
 			ucRender();
 			break;
 
@@ -449,6 +448,8 @@ static void loadContact(void)
 
 static void handleEvent(uiEvent_t *ev)
 {
+	displayLightTrigger();
+
 	if (ev->events & BUTTON_EVENT)
 	{
 		uint32_t tg = (LinkHead->talkGroupOrPcId & 0xFFFFFF);
