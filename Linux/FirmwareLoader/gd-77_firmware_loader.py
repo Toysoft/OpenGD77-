@@ -298,7 +298,7 @@ def usage():
 # Main function.
 #####################################################
 def main():
-    sglFile = "GD-77_V3.1.2.sgl"
+    sglFile = "firmware.sgl"
     dev = usb.core.find(idVendor=0x15a2, idProduct=0x0073)
     if (dev):
         encodeKey = [ (0x61 + 0x00), (0x61 + 0x0C), (0x61 + 0x0D), (0x61 + 0x01) ]
