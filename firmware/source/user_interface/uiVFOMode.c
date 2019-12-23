@@ -295,13 +295,21 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 				{
 					val_before_dp = currentChannelData->rxFreq/100000;
 					val_after_dp = currentChannelData->rxFreq - val_before_dp*100000;
-					snprintf(buffer, bufferLen, "%cR %d.%05d MHz", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_RX) ? '>' : ' ', val_before_dp, val_after_dp);
-					buffer[bufferLen - 1 ] = 0;
 
 					// if CC scan is active, Rx freq is moved down to the Tx location,
 					// as Contact Info will be displayed here
-					ucPrintCentered((CCScanActive ? 48 : 32), buffer, FONT_8x16);
+
+					// Focus + direction
+					snprintf(buffer, bufferLen, "%cR", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_RX) ? '>' : ' ');
+					ucPrintAt(0, (CCScanActive ? 48 : 32), buffer, FONT_8x16);
+					// VFO
 					ucPrintAt(16, (CCScanActive ? 48 : 32) + 8, (nonVolatileSettings.currentVFONumber == 0) ? "A" : "B", FONT_8x8);
+					// Frequency
+					snprintf(buffer, bufferLen, "%d.%05d", val_before_dp, val_after_dp);
+					buffer[bufferLen - 1] = 0;
+					ucPrintAt(FREQUENCY_X_POS, (CCScanActive ? 48 : 32), buffer, FONT_8x16);
+					// Unit
+					ucPrintAt(128 - (3 * 8), (CCScanActive ? 48 : 32), "MHz", FONT_8x16);
 
 					if (CCScanActive)
 					{
@@ -328,10 +336,17 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 				{
 					val_before_dp = currentChannelData->txFreq/100000;
 					val_after_dp = currentChannelData->txFreq - val_before_dp*100000;
-					snprintf(buffer, bufferLen, "%cT %d.%05d MHz", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX || trxIsTransmitting) ? '>' : ' ', val_before_dp, val_after_dp);
-					buffer[bufferLen - 1 ] = 0;
-					ucPrintCentered(48, buffer, FONT_8x16);
-				ucPrintAt(16, 48 + 8, (nonVolatileSettings.currentVFONumber == 0) ? "A" : "B", FONT_8x8);
+					// Focus + direction
+					snprintf(buffer, bufferLen, "%cT", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX || trxIsTransmitting) ? '>' : ' ');
+					ucPrintAt(0, 48, buffer, FONT_8x16);
+					// VFO
+					ucPrintAt(16, 48 + 8, (nonVolatileSettings.currentVFONumber == 0) ? "A" : "B", FONT_8x8);
+					// Frequency
+					snprintf(buffer, bufferLen, "%d.%05d", val_before_dp, val_after_dp);
+					buffer[bufferLen - 1] = 0;
+					ucPrintAt(FREQUENCY_X_POS, 48, buffer, FONT_8x16);
+					// Unit
+					ucPrintAt(128 - (3 * 8), 48, "MHz", FONT_8x16);
 				}
 			}
 			else
