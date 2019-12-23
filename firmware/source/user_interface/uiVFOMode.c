@@ -180,16 +180,17 @@ int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
 					sqm = ev->ticks;
 				}
 
-				handleEvent(ev);
-
 				toneScanActive = false;
 
 				if(CCScanActive == true)
 				{
 					CCScanActive = false;
 					trxSetDMRColourCode(currentChannelData->rxColor);
+					menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+					menuVFOModeUpdateScreen(0); // Needs to redraw the screen now
 				}
 
+				handleEvent(ev);
 			}
 
 		}
@@ -243,7 +244,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					if (trxIsTransmitting) {
 						ucDrawRect(0, 34, 128, 16, true);
 					} else {
-						ucDrawRect(0, CONTACT_Y_POS, 128, 16, true);
+						ucDrawRect(0, (CCScanActive ? 32 : CONTACT_Y_POS), 128, 16, true);
 					}
 				}
 				else
@@ -259,7 +260,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 				}
 				else
 				{
-					ucPrintCentered(CONTACT_Y_POS, buffer, FONT_8x16);
+					ucPrintCentered((CCScanActive ? 32 : CONTACT_Y_POS), buffer, FONT_8x16);
 				}
 			}
 			else
@@ -285,6 +286,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 				}
 
 			}
+
 			if (freq_enter_idx==0)
 			{
 				if (!trxIsTransmitting)
@@ -293,7 +295,17 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					val_after_dp = currentChannelData->rxFreq - val_before_dp*100000;
 					snprintf(buffer, bufferLen, "%cR %d.%05d MHz", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_RX) ? '>' : ' ', val_before_dp, val_after_dp);
 					buffer[bufferLen - 1 ] = 0;
-					ucPrintCentered(32, buffer, FONT_8x16);
+
+					// if CC scan is active, Rx freq is moved down to the Tx location,
+					// as Contact Info will be displayed here
+					ucPrintCentered((CCScanActive ? 48 : 32), buffer, FONT_8x16);
+
+					if (CCScanActive)
+					{
+						snprintf(buffer, bufferLen, "%s %d", currentLanguage->colour_code, trxGetDMRColourCode());
+						buffer[bufferLen - 1 ] = 0;
+						ucPrintCentered(16, buffer, FONT_8x16);
+					}
 				}
 				else
 				{
@@ -309,11 +321,14 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					ucPrintCentered(TX_TIMER_Y_OFFSET, buffer, FONT_16x32);
 				}
 
-				val_before_dp = currentChannelData->txFreq/100000;
-				val_after_dp = currentChannelData->txFreq - val_before_dp*100000;
-				snprintf(buffer, bufferLen, "%cT %d.%05d MHz", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX || trxIsTransmitting) ? '>' : ' ', val_before_dp, val_after_dp);
-				buffer[bufferLen - 1 ] = 0;
-				ucPrintCentered(48, buffer, FONT_8x16);
+				if (CCScanActive == false)
+				{
+					val_before_dp = currentChannelData->txFreq/100000;
+					val_after_dp = currentChannelData->txFreq - val_before_dp*100000;
+					snprintf(buffer, bufferLen, "%cT %d.%05d MHz", (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX || trxIsTransmitting) ? '>' : ' ', val_before_dp, val_after_dp);
+					buffer[bufferLen - 1 ] = 0;
+					ucPrintCentered(48, buffer, FONT_8x16);
+				}
 			}
 			else
 			{
@@ -1071,8 +1086,8 @@ static void CCscan(void)
 	{
 		currentChannelData->rxColor=scanIndex;
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-		menuVFOModeUpdateScreen(0);
 		CCScanActive=false;
+		menuVFOModeUpdateScreen(0);
 		return;
 	}
 
