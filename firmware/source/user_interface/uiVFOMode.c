@@ -375,7 +375,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 	menuDisplayQSODataState = QSO_DISPLAY_IDLE;
 }
 
-void menuVFOModeStopScan(void)
+void menuVFOModeStopScanning(void)
 {
 	toneScanActive = false;
 	CCScanActive = false;

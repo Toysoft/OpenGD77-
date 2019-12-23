@@ -280,7 +280,7 @@ void fw_main_task(void *data)
 							currentMenu != MENU_TX_SCREEN )
 					{
 						if (currentMenu == MENU_VFO_MODE)
-							menuVFOModeStopScan();
+							menuVFOModeStopScanning();
 						else if (currentMenu == MENU_LOCK_SCREEN)
 							menuLockScreenPop();
 
