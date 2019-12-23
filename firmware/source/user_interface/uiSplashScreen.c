@@ -43,12 +43,23 @@ static void updateScreen(void)
 	uint8_t bootScreenType;
 	uint8_t bootScreenPasswordEnabled;
 	uint32_t bootScreenPassword;
+	bool customDataHasImage=false;
 
 	codeplugGetBootScreenData(line1,line2,&bootScreenType,&bootScreenPasswordEnabled,&bootScreenPassword);
-	ucClearBuf();
-	ucPrintCentered(10, "OpenGD77", FONT_8x16);
-	ucPrintCentered(28, line1, FONT_8x16);
-	ucPrintCentered(42, line2, FONT_8x16);
+
+	if (bootScreenType==0)
+	{
+		customDataHasImage = codeplugGetOpenGD77CustomData(CODEPLUG_CUSTOM_DATA_TYPE_IMAGE,ucGetDisplayBuffer() );
+	}
+
+	if (!customDataHasImage)
+	{
+		ucClearBuf();
+		ucPrintCentered(10, "OpenGD77", FONT_8x16);
+		ucPrintCentered(28, line1, FONT_8x16);
+		ucPrintCentered(42, line2, FONT_8x16);
+	}
+
 	ucRender();
 	displayLightTrigger();
 }

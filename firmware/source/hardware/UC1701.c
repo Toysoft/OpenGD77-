@@ -1119,3 +1119,8 @@ void ucDrawChoice(ucChoice_t choice, bool clearRegion)
 		ucPrintAt(x, y, rText, FONT_8x16);
 	}
 }
+
+uint8_t *ucGetDisplayBuffer(void)
+{
+	return screenBuf;
+}

@@ -674,3 +674,36 @@ void codeplugInitChannelsPerZone(void)
 		codeplugChannelsPerZone=80;// Must be the new 80 channel per zone format
 	}
 }
+
+typedef struct
+{
+	int dataType;
+	int dataLength;
+} codeplugCustomDataBlockHeader_t;
+
+bool codeplugGetOpenGD77CustomData(codeplugCustomDataType_t dataType,uint8_t *dataBuf)
+{
+	uint8_t tmpBuf[12];
+	int dataHeaderAddress = 12;
+	const int MAX_BLOCK_ADDRESS = 0x10000;
+
+	SPI_Flash_read(0,tmpBuf,12);
+
+	if (memcmp("OpenGD77",tmpBuf,8)==0)
+	{
+		codeplugCustomDataBlockHeader_t blockHeader;
+		do
+		{
+			SPI_Flash_read(dataHeaderAddress,(uint8_t *)&blockHeader,sizeof(codeplugCustomDataBlockHeader_t));
+			if (blockHeader.dataType == dataType)
+			{
+				SPI_Flash_read(dataHeaderAddress + sizeof(codeplugCustomDataBlockHeader_t),dataBuf,blockHeader.dataLength);
+				return true;
+			}
+			dataHeaderAddress += sizeof(codeplugCustomDataBlockHeader_t) + blockHeader.dataLength;
+
+		} while (dataHeaderAddress < MAX_BLOCK_ADDRESS);
+
+	}
+	return false;
+}
