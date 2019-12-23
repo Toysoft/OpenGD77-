@@ -180,12 +180,14 @@ int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
 					sqm = ev->ticks;
 				}
 
-				toneScanActive = false;
-
-				if(CCScanActive == true)
+				if(toneScanActive || CCScanActive)
 				{
+					if (CCScanActive)
+					{
+						trxSetDMRColourCode(currentChannelData->rxColor);
+					}
+					toneScanActive = false;
 					CCScanActive = false;
-					trxSetDMRColourCode(currentChannelData->rxColor);
 					menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 					menuVFOModeUpdateScreen(0); // Needs to redraw the screen now
 				}
