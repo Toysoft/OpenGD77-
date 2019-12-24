@@ -174,7 +174,7 @@ static void updateScreen(bool forceRedraw)
 				}
 
 				// Draw Level
-				ucFillRoundRect(100, 23 + MAX_BATTERY_BAR_HEIGHT - h , 20, h, 2, (h < 6) /* < ~16.7%: 6.6V */ ? blink : true);
+				ucFillRoundRect(100, 23 + MAX_BATTERY_BAR_HEIGHT - h , 20, h, 2, (averageBatteryVoltage <= 66) ? blink : true);
 			}
 
 			// Low blinking arrow
