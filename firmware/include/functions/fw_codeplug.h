@@ -102,6 +102,8 @@ typedef struct struct_codeplugDTMFContactList
 	int numContacts;
 } struct_codeplugDTMFContactList_t;
 
+typedef enum { CODEPLUG_CUSTOM_DATA_TYPE_NONE = 0, CODEPLUG_CUSTOM_DATA_TYPE_IMAGE = 1, CODEPLUG_CUSTOM_DATA_TYPE_BEEP = 2 } codeplugCustomDataType_t;
+
 /*
  * deprecated. Use our own non volatile storage instead
  *
@@ -136,5 +138,6 @@ int codeplugContactSaveDataForIndex(int index, struct_codeplugContact_t *contact
 int codeplugContactGetFreeIndex(void);
 bool codeplugContactGetRXGroup(int index);
 void codeplugInitChannelsPerZone(void);
+bool codeplugGetOpenGD77CustomData(codeplugCustomDataType_t dataType,uint8_t *dataBuf);
 
 #endif

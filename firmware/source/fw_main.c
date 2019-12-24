@@ -223,16 +223,20 @@ void fw_main_task(void *data)
 
 			if ((key_event == EVENT_KEY_CHANGE) && ((buttons & BUTTON_PTT) == 0) && (keys.key != 0))
 			{
+				// Do not send any beep while scanning, otherwise enabling the AMP will be handled as a valid signal detection.
 				if (keys.event & KEY_MOD_PRESS)
 				{
-					set_melody(melody_key_beep);
+					if (((menuSystemGetCurrentMenuNumber() == MENU_VFO_MODE) && menuVFOModeIsScanning()) == false)
+						set_melody(melody_key_beep);
 				}
 				else if ((keys.event & (KEY_MOD_LONG | KEY_MOD_DOWN)) == (KEY_MOD_LONG | KEY_MOD_DOWN))
 				{
-					set_melody(melody_key_long_beep);
+					if (((menuSystemGetCurrentMenuNumber() == MENU_VFO_MODE) && menuVFOModeIsScanning()) == false)
+						set_melody(melody_key_long_beep);
 				}
 
-				if (KEYCHECK_LONGDOWN(keys, KEY_RED))
+				if (KEYCHECK_LONGDOWN(keys, KEY_RED) &&
+						(((menuSystemGetCurrentMenuNumber() == MENU_VFO_MODE) && menuVFOModeIsScanning()) == false))
 				{
 					contactListContactIndex = 0;
 					menuSystemPopAllAndDisplayRootMenu();
@@ -276,7 +280,7 @@ void fw_main_task(void *data)
 							currentMenu != MENU_TX_SCREEN )
 					{
 						if (currentMenu == MENU_VFO_MODE)
-							menuVFOModeStopScan();
+							menuVFOModeStopScanning();
 						else if (currentMenu == MENU_LOCK_SCREEN)
 							menuLockScreenPop();
 

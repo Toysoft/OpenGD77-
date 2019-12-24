@@ -54,6 +54,7 @@ static ScanZoneState_t scanState = SCAN_SCANNING;		//state flag for scan routine
 bool uiChannelModeScanActive = false;					//scan active flag
 static const int SCAN_SHORT_PAUSE_TIME = 500;			//time to wait after carrier detected to allow time for full signal detection. (CTCSS or DMR)
 static const int SCAN_TOTAL_INTERVAL = 30;			    //time between each scan step
+static const int SCAN_DMR_SIMPLEX_MIN_INTERVAL=60;		//minimum time between steps when scanning DMR Simplex. (needs extra time to capture TDMA Pulsing)
 static const int SCAN_FREQ_CHANGE_SETTLING_INTERVAL = 1;//Time after frequency is changed before RSSI sampling starts
 static const int SCAN_SKIP_CHANNEL_INTERVAL = 1;		//This is actually just an implicit flag value to indicate the channel should be skipped
 
@@ -1022,7 +1023,15 @@ static void scanning(void)
 		uiEvent_t tmpEvent={ .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = 0, .ticks = 0 };
 
 		handleUpKey(&tmpEvent);
-		scanTimer = SCAN_TOTAL_INTERVAL;
+		if ((trxGetMode() == RADIO_MODE_DIGITAL) && (trxDMRMode == DMR_MODE_ACTIVE) && (SCAN_TOTAL_INTERVAL < SCAN_DMR_SIMPLEX_MIN_INTERVAL) )				//allow extra time if scanning a simplex DMR channel.
+		{
+			scanTimer = SCAN_DMR_SIMPLEX_MIN_INTERVAL;
+		}
+		else
+		{
+			scanTimer = SCAN_TOTAL_INTERVAL;
+		}
+
 		scanState = SCAN_SCANNING;													//state 0 = settling and test for carrier present.
 
 		if (strcmp(currentZoneName,currentLanguage->all_channels)==0)
