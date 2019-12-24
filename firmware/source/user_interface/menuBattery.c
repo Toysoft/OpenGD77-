@@ -130,7 +130,7 @@ static void updateScreen(bool forceRedraw)
 		{
 			static float prevAverageBatteryVoltage = 0.0f;
 
-			if ((prevAverageBatteryVoltage != averageBatteryVoltage) || forceRedraw)
+			if ((prevAverageBatteryVoltage != averageBatteryVoltage) || (averageBatteryVoltage <= 66) || forceRedraw)
 			{
 				const int MAX_BATTERY_BAR_HEIGHT = 36;
 				char buffer[17];
