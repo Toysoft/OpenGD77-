@@ -22,6 +22,7 @@
 SemaphoreHandle_t battSemaphore = NULL;
 
 #define VOLTAGE_BUFFER_LEN 128
+static const float BATTERY_CRITICAL_VOLTAGE = 66.7f;
 
 typedef struct
 {
@@ -130,7 +131,7 @@ static void updateScreen(bool forceRedraw)
 		{
 			static float prevAverageBatteryVoltage = 0.0f;
 
-			if ((prevAverageBatteryVoltage != averageBatteryVoltage) || forceRedraw)
+			if ((prevAverageBatteryVoltage != averageBatteryVoltage) || (averageBatteryVoltage < BATTERY_CRITICAL_VOLTAGE) || forceRedraw)
 			{
 				const int MAX_BATTERY_BAR_HEIGHT = 36;
 				char buffer[17];
@@ -174,7 +175,7 @@ static void updateScreen(bool forceRedraw)
 				}
 
 				// Draw Level
-				ucFillRoundRect(100, 23 + MAX_BATTERY_BAR_HEIGHT - h , 20, h, 2, (h < 6) /* < ~16.7%: 6.6V */ ? blink : true);
+				ucFillRoundRect(100, 23 + MAX_BATTERY_BAR_HEIGHT - h , 20, h, 2, (averageBatteryVoltage < BATTERY_CRITICAL_VOLTAGE) ? blink : true);
 			}
 
 			// Low blinking arrow
