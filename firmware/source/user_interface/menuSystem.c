@@ -330,9 +330,9 @@ void menuUpdateCursor(int pos, bool moved, bool render)
 	if (moved) {
 		blink = true;
 	}
-	if ((m - lastBlink) > 1000 || moved)
+	if (moved || (m - lastBlink) > 1000)
 	{
-		ucDrawFastHLine(pos*8-1, 46, 8, blink);
+		ucDrawFastHLine(pos*8, 46, 8, blink);
 
 		blink = !blink;
 		lastBlink = m;
