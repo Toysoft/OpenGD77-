@@ -64,6 +64,8 @@ void menuChannelColdStart();
 void menuVFOModeUpdateScreen(int txTimeSecs);
 void menuVFOModeStopScanning(void);
 bool menuVFOModeIsScanning(void);
+bool menuChannelModeIsScanning(void);
+void menuChannelModeStopScanning(void);
 void menuCPSUpdate(int command,int x, int y, ucFont_t fontSize, ucTextAlign_t alignment, bool isInverted,char *szMsg);
 
 void menuInitMenuSystem(void);

@@ -279,12 +279,30 @@ void fw_main_task(void *data)
 							currentMenu != MENU_SPLASH_SCREEN &&
 							currentMenu != MENU_TX_SCREEN )
 					{
-						if (currentMenu == MENU_VFO_MODE)
-							menuVFOModeStopScanning();
-						else if (currentMenu == MENU_LOCK_SCREEN)
-							menuLockScreenPop();
-
-						menuSystemPushNewMenu(MENU_TX_SCREEN);
+						bool wasScanning = false;
+						if (menuVFOModeIsScanning() || menuChannelModeIsScanning())
+						{
+							if (currentMenu == MENU_VFO_MODE)
+							{
+								menuVFOModeStopScanning();
+							}
+							else
+							{
+								menuChannelModeStopScanning();
+							}
+							wasScanning = true;
+						}
+						else
+						{
+							if (currentMenu == MENU_LOCK_SCREEN)
+							{
+								menuLockScreenPop();
+							}
+						}
+						if (!wasScanning)
+						{
+							menuSystemPushNewMenu(MENU_TX_SCREEN);
+						}
 					}
 				}
 
