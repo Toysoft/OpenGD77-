@@ -184,15 +184,7 @@ int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
 					if (((ev->events & BUTTON_EVENT) && (ev->buttons == BUTTON_NONE)) ||
 							((ev->keys.key != 0) && (ev->keys.event & KEY_MOD_UP)))
 					{
-						if (CCScanActive)
-						{
-							trxSetDMRColourCode(currentChannelData->rxColor);
-						}
-						toneScanActive = false;
-						CCScanActive = false;
-						menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-						menuVFOModeUpdateScreen(0); // Needs to redraw the screen now
-						displayLightTrigger();
+						menuVFOModeStopScanning();
 					}
 
 					return 0;
@@ -377,8 +369,15 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 
 void menuVFOModeStopScanning(void)
 {
+	if (CCScanActive)
+	{
+		trxSetDMRColourCode(currentChannelData->rxColor);
+	}
 	toneScanActive = false;
 	CCScanActive = false;
+	menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+	menuVFOModeUpdateScreen(0); // Needs to redraw the screen now
+	displayLightTrigger();
 }
 
 static void reset_freq_enter_digits(void)
