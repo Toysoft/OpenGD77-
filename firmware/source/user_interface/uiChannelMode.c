@@ -376,7 +376,7 @@ static void handleEvent(uiEvent_t *ev)
 	if (uiChannelModeScanActive &&
 			( (ev->events & KEY_EVENT) && ( ((ev->keys.key == KEY_UP) && ((ev->buttons & BUTTON_SK2) == 0)) == false ) ) )
 	{
-		uiChannelModeScanActive = false;
+		menuChannelModeStopScanning();
 		fw_reset_keyboard();
 		return;
 	}
@@ -881,7 +881,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 {
 	if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{
-		uiChannelModeScanActive=false;
+		menuChannelModeStopScanning();
 		menuSystemPopPreviousMenu();
 		return;
 	}
@@ -955,7 +955,7 @@ int menuChannelModeQuickMenu(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		uiChannelModeScanActive=false;
+		menuChannelModeStopScanning();
 		tmpQuickMenuDmrFilterLevel = nonVolatileSettings.dmrFilterLevel;
 		updateQuickMenuScreen();
 	}
@@ -1066,6 +1066,17 @@ static void scanning(void)
 		}
 	}
 }
+
+bool menuChannelModeIsScanning(void)
+{
+	return uiChannelModeScanActive;
+}
+
+void menuChannelModeStopScanning(void)
+{
+	uiChannelModeScanActive = false;
+}
+
 
 void menuChannelColdStart(void)
 {
