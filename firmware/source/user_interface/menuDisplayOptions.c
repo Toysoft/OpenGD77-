@@ -28,7 +28,6 @@ static uint8_t contrast;
 static uint8_t inverseVideo;
 static int8_t backLightTimeout;// used int_8 to save space
 static uint8_t backlightMode;
-static uint8_t originalbacklightMode;
 
 const int BACKLIGHT_MAX_TIMEOUT = 30;
 const int CONTRAST_MAX_VALUE = 30;// Maximum value which still seems to be readable
@@ -45,7 +44,6 @@ int menuDisplayOptions(uiEvent_t *ev, bool isFirstRun)
 		inverseVideo = nonVolatileSettings.displayInverseVideo;
 		backLightTimeout = 	nonVolatileSettings.backLightTimeout;
 		backlightMode = nonVolatileSettings.backlightMode;
-		originalbacklightMode = nonVolatileSettings.backlightMode;
 		updateScreen();
 	}
 	else
