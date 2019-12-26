@@ -146,10 +146,9 @@ static void handleEvent(uiEvent_t *ev)
 				}
 				break;
 			case DISPLAY_MENU_CONTRAST:
-				contrast++;
-				if (contrast > CONTRAST_MAX_VALUE)
+				if (contrast < CONTRAST_MAX_VALUE)
 				{
-					contrast = CONTRAST_MAX_VALUE;
+					contrast++;
 				}
 				ucSetContrast(contrast);
 				break;
@@ -192,10 +191,9 @@ static void handleEvent(uiEvent_t *ev)
 				}
 				break;
 			case DISPLAY_MENU_CONTRAST:
-				contrast--;
-				if (contrast < CONTRAST_MIN_VALUE)
+				if (contrast > CONTRAST_MIN_VALUE)
 				{
-					contrast = CONTRAST_MIN_VALUE;
+					contrast--;
 				}
 				ucSetContrast(contrast);
 				break;
