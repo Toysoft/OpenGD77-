@@ -43,6 +43,7 @@ typedef struct settingsStruct
 	int16_t			currentChannelIndexInAllZone;
 	int16_t			currentIndexInTRxGroupList[3];// Current Channel, VFO A and VFO B
 	int16_t			currentZone;
+	uint8_t			backlightMode; // see BACKLIGHT_MODE enum
 	uint8_t			backLightTimeout;//0 = never timeout. 1 - 255 time in seconds
 	int8_t			displayContrast;
 	uint8_t			initialMenuNumber;
@@ -65,7 +66,6 @@ typedef struct settingsStruct
 	uint8_t			scanDelay;
 	bool			scanModePause;
 	uint8_t			squelchDefaults[RADIO_BANDS_TOTAL_NUM];// VHF,200Mhz and UHF
-	uint8_t			backlightMode; // see BACKLIGHT_MODE enum
 } settingsStruct_t;
 
 typedef enum {DMR_FILTER_NONE = 0, DMR_FILTER_TS = 1, DMR_FILTER_TS_TG = 2} dmrFilter_t;
