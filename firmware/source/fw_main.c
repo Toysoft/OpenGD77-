@@ -310,6 +310,12 @@ void fw_main_task(void *data)
         		{
         			settingsSaveSettings(true);
         		}
+
+    			// Toggle backlight
+        		if ((nonVolatileSettings.backlightMode == BACKLIGHT_MODE_MANUAL) && (buttons == BUTTON_SK1))
+        		{
+        			fw_displayEnableBacklight(! fw_displayIsBacklightLit());
+        		}
         	}
 
 
@@ -357,7 +363,7 @@ void fw_main_task(void *data)
     		    set_melody(NULL);
         	}
 
-    		if (menuDisplayLightTimer > 0)
+    		if ((nonVolatileSettings.backlightMode == BACKLIGHT_MODE_AUTO) && (menuDisplayLightTimer > 0))
     		{
     			menuDisplayLightTimer--;
     			if (menuDisplayLightTimer==0)

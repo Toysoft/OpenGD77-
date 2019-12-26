@@ -83,7 +83,7 @@ const stringsTable_t englishLanguage =
 .all					= "All", // MaxLen: 16 (with .type)
 .type					= "Type", // MaxLen: 16 (with .type)
 .timeSlot				= "Timeslot", // MaxLen: 16 (plus ':' and  .none, '1' or '2')
-.none					= "none", // MaxLen: 16 (with .timeSlot, "Rx CTCSS:" and ""Tx CTCSS:", and .filter)
+.none					= "None", // MaxLen: 16 (with .timeSlot, "Rx CTCSS:" and ""Tx CTCSS:", .filter and .mode )
 .contact_saved				= "Contact saved", // MaxLen: 16
 .duplicate				= "Duplicate", // MaxLen: 16
 .tg					= "TG",  // MaxLen: 8
@@ -133,9 +133,11 @@ const stringsTable_t englishLanguage =
 .delete_contact				= "Delete Contact", // MaxLen: 16
 .group_call				= "Group Call", // MaxLen: 16
 .all_call				= "All Call", // MaxLen: 16
-.tone_scan				= "Tone scan",//// MaxLen: 16
-.cc_scan				= "CC scan",//// MaxLen: 16
-.low_battery			= "LOW BATTERY !!!",//// MaxLen: 16
+.tone_scan				= "Tone scan", // MaxLen: 16
+.cc_scan				= "CC scan", // MaxLen: 16
+.low_battery				= "LOW BATTERY !!!", // MaxLen: 16
+.Auto					= "Auto", // MaxLen 16 (with .mode + ':') 
+.manual					= "Manual",  // MaxLen 16 (with .mode + ':') 
 };
 /********************************************************************
  *

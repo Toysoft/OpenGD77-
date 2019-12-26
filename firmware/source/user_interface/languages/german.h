@@ -83,7 +83,7 @@ const stringsTable_t germanLanguage =
 .all					= "Alle", // MaxLen: 16 (with .type)
 .type					= "Type", // MaxLen: 16 (with .type)
 .timeSlot				= "Zeitschlitz", // MaxLen: 16 (plus ':' and  .none, '1' or '2')
-.none					= "kein", // MaxLen: 16 (with .timeSlot, "Rx CTCSS:" and ""Tx CTCSS:")
+.none					= "Kein", // MaxLen: 16 (with .timeSlot, "Rx CTCSS:" and ""Tx CTCSS:")
 .contact_saved			= "Kontakt gesp.", // MaxLen: 16
 .duplicate				=  "Duplikat", // MaxLen: 16
 .tg						= "TG", // MaxLen: 8
@@ -136,6 +136,8 @@ const stringsTable_t germanLanguage =
 .tone_scan				= "CTCSS Scan",//// MaxLen: 16
 .cc_scan				= "CC Scan",//// MaxLen: 16
 .low_battery			= "BATTERIE LEER!",//// MaxLen: 16
+.Auto					= "Auto", // MaxLen 16 (with .mode + ':') 
+.manual					= "Manual",  // MaxLen 16 (with .mode + ':') 
 };
 /********************************************************************
  *

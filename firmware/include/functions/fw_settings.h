@@ -31,6 +31,7 @@ extern const int BAND_UHF_MAX;
 #define VFO_COUNT 4
 enum USB_MODE { USB_MODE_CPS, USB_MODE_HOTSPOT, USB_MODE_DEBUG};
 enum SETTINGS_UI_MODE { SETTINGS_CHANNEL_MODE=0, SETTINGS_VFO_A_MODE, SETTINGS_VFO_B_MODE};
+enum BACKLIGHT_MODE { BACKLIGHT_MODE_AUTO = 0, BACKLIGHT_MODE_MANUAL, BACKLIGHT_MODE_NONE };
 extern int settingsCurrentChannelNumber;
 extern bool settingsPrivateCallMuteMode;
 extern struct_codeplugChannel_t settingsVFOChannel[2];
@@ -64,6 +65,7 @@ typedef struct settingsStruct
 	uint8_t			scanDelay;
 	bool			scanModePause;
 	uint8_t			squelchDefaults[RADIO_BANDS_TOTAL_NUM];// VHF,200Mhz and UHF
+	uint8_t			backlightMode; // see BACKLIGHT_MODE enum
 } settingsStruct_t;
 
 typedef enum {DMR_FILTER_NONE = 0, DMR_FILTER_TS = 1, DMR_FILTER_TS_TG = 2} dmrFilter_t;

@@ -136,6 +136,8 @@ const stringsTable_t finnishLanguage =
 .tone_scan		= "Ali‰‰ni scan",	// MaxLen: 16
 .cc_scan		= "V‰rikoodi scan", 	// MaxLen: 16
 .low_battery		= "Akku V‰hiss‰ !",	// MaxLen: 16
+.Auto					= "Auto", // MaxLen 16 (with .mode + ':') 
+.manual					= "Manual",  // MaxLen 16 (with .mode + ':') 
 };
 /********************************************************************
  *
