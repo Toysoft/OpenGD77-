@@ -46,6 +46,7 @@
 void fw_init_display(bool isInverseColour);
 
 void fw_displayEnableBacklight(bool onof);
+bool fw_displayIsBacklightLit(void);
 
 #ifdef DISPLAY_LED_PWM
 

@@ -136,6 +136,8 @@ const stringsTable_t catalanLanguage=
 .tone_scan				= "Scan To",//// MaxLen: 16
 .cc_scan				= "Scan CC",//// MaxLen: 16
 .low_battery			= "BATERIA BAIXA !!",//// MaxLen: 16
+.Auto					= "Auto", // MaxLen 16 (with .mode + ':') 
+.manual					= "Manual",  // MaxLen 16 (with .mode + ':') 
 };
 /********************************************************************
  *

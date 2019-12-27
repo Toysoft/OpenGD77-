@@ -83,7 +83,7 @@ const stringsTable_t italianLanguage =
 .all					= "Tutti",
 .type					= "Tipo",
 .timeSlot				= "Timeslot",
-.none					= "no",
+.none					= "No",
 .contact_saved			= "Salvato",
 .duplicate				= "Duplicato",
 .tg						= "TG",
@@ -136,6 +136,8 @@ const stringsTable_t italianLanguage =
 .tone_scan				= "Scansione Toni",//// MaxLen: 16
 .cc_scan				= "Scansione CC",//// MaxLen: 16
 .low_battery			= "LOW BATTERY !!!",//// MaxLen: 16
+.Auto					= "Auto", // MaxLen 16 (with .mode + ':') 
+.manual					= "Manual",  // MaxLen 16 (with .mode + ':') 
 };
 /********************************************************************
  *

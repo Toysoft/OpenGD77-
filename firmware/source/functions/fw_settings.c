@@ -31,7 +31,7 @@ const int BAND_UHF_MIN 	= 43000000;
 const int BAND_UHF_MAX 	= 45000000;
 
 static const int STORAGE_BASE_ADDRESS 		= 0x6000;
-static const int STORAGE_MAGIC_NUMBER 		= 0x472C;
+static const int STORAGE_MAGIC_NUMBER 		= 0x472D;
 
 settingsStruct_t nonVolatileSettings;
 struct_codeplugChannel_t *currentChannelData;
@@ -136,6 +136,7 @@ void settingsRestoreDefaultSettings(void)
 	nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE]=0;
 	nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_B_MODE]=0;
 	nonVolatileSettings.currentZone = 0;
+	nonVolatileSettings.backlightMode = BACKLIGHT_MODE_AUTO;
 	nonVolatileSettings.backLightTimeout = 0;//0 = never timeout. 1 - 255 time in seconds
 	nonVolatileSettings.displayContrast = 0x12;
 	nonVolatileSettings.initialMenuNumber=MENU_VFO_MODE;

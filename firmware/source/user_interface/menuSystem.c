@@ -164,15 +164,21 @@ void menuSystemCallCurrentMenuTick(uiEvent_t *ev)
 
 void displayLightTrigger(void)
 {
-	menuDisplayLightTimer = nonVolatileSettings.backLightTimeout * 1000;
-	fw_displayEnableBacklight(true);
+	if (nonVolatileSettings.backlightMode == BACKLIGHT_MODE_AUTO)
+	{
+		menuDisplayLightTimer = nonVolatileSettings.backLightTimeout * 1000;
+		fw_displayEnableBacklight(true);
+	}
 }
 
 // use -1 to force LED on all the time
 void displayLightOverrideTimeout(int timeout)
 {
-	menuDisplayLightTimer = timeout;
-	fw_displayEnableBacklight(true);
+	if (nonVolatileSettings.backlightMode == BACKLIGHT_MODE_AUTO)
+	{
+		menuDisplayLightTimer = timeout;
+		fw_displayEnableBacklight(true);
+	}
 }
 
 const int MENU_EVENT_SAVE_SETTINGS = -1;
