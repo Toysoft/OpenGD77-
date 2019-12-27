@@ -28,6 +28,7 @@ static void handleEvent(uiEvent_t *ev);
 static const int PIT_COUNTS_PER_SECOND = 10000;
 static int timeInSeconds;
 static uint32_t nextSecondPIT;
+static bool isShowingLastHeard;
 
 int menuTxScreen(uiEvent_t *ev, bool isFirstRun)
 {
@@ -38,6 +39,7 @@ int menuTxScreen(uiEvent_t *ev, bool isFirstRun)
 		uiChannelModeScanActive = false;
 		trxIsTransmittingTone = false;
 		settingsPrivateCallMuteMode = false;
+		isShowingLastHeard = false;
 
 		if ((currentChannelData->flag4 & 0x04) == 0x00 && (trxCheckFrequencyInAmateurBand(currentChannelData->txFreq) || nonVolatileSettings.txFreqLimited == false))
 		{
@@ -110,7 +112,10 @@ int menuTxScreen(uiEvent_t *ev, bool isFirstRun)
 				}
 				else
 				{
-					updateScreen();
+					if (!isShowingLastHeard)
+					{
+						updateScreen();
+					}
 				}
 
 				nextSecondPIT = PITCounter + PIT_COUNTS_PER_SECOND;
@@ -167,6 +172,7 @@ static void handleEvent(uiEvent_t *ev)
 		{
 			trxIsTransmitting = false;
 			trxIsTransmittingTone = false;
+
 			if (trxGetMode() == RADIO_MODE_ANALOG)
 			{
 				// In analog mode. Stop transmitting immediately
@@ -177,6 +183,14 @@ static void handleEvent(uiEvent_t *ev)
 				trxActivateRx();
 				taskEXIT_CRITICAL();
 				menuSystemPopPreviousMenu();
+			}
+			else
+			{
+				if (isShowingLastHeard)
+				{
+					isShowingLastHeard=false;
+					updateScreen();
+				}
 			}
 			// When not in analogue mode, only the trxIsTransmitting flag is cleared
 			// This screen keeps getting called via the handleEvent function and goes into the else clause - below.
@@ -225,6 +239,20 @@ static void handleEvent(uiEvent_t *ev)
 		trxIsTransmittingTone = false;
 		trxSelectVoiceChannel(AT1846_VOICE_CHANNEL_MIC);
 		GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
+	}
+
+	if (trxGetMode() == RADIO_MODE_DIGITAL && ev->buttons & BUTTON_SK1 && isShowingLastHeard==false && trxIsTransmitting==true)
+	{
+		isShowingLastHeard=true;
+		menuLastHeardupdateScreen(false);
+	}
+	else
+	{
+		if (isShowingLastHeard)
+		{
+			isShowingLastHeard=false;
+			updateScreen();
+		}
 	}
 
 }
