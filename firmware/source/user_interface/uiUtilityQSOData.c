@@ -351,6 +351,19 @@ bool dmrIDLookup( int targetId,dmrIdDataStruct_t *foundRecord)
 	return false;
 }
 
+bool contactPCIDLookup(uint32_t id, char *buffer)
+{
+	struct_codeplugContact_t contact;
+
+	int contactIndex = codeplugContactIndexByTGorPC((id & 0x00FFFFFF), CONTACT_CALLTYPE_PC, &contact);
+	if (contactIndex != 0)
+	{
+		codeplugUtilConvertBufToString(contact.name, buffer, 16);
+		return true;
+	}
+	return false;
+}
+
 bool menuUtilityHandlePrivateCallActions(uiEvent_t *ev)
 {
 	if ((ev->buttons & BUTTON_SK2 )!=0 &&   menuUtilityTgBeforePcMode != 0 && KEYCHECK_SHORTUP(ev->keys,KEY_RED))
@@ -483,9 +496,13 @@ void menuUtilityRenderQSOData(void)
 		if ((LinkHead->talkGroupOrPcId>>24) == PC_CALL_FLAG) // &&  (LinkHead->id & 0xFFFFFF) != (trxTalkGroupOrPcId & 0xFFFFFF))
 		{
 			// Its a Private call
-			dmrIDLookup( (LinkHead->id & 0xFFFFFF),&currentRec);
-			strncpy(buffer, currentRec.text, 16);
-			buffer[16] = 0;
+
+			if (!contactPCIDLookup(LinkHead->id, buffer))
+			{
+				dmrIDLookup( (LinkHead->id & 0xFFFFFF),&currentRec);
+				strncpy(buffer, currentRec.text, 16);
+				buffer[16] = 0;
+			}
 			ucPrintCentered(16, buffer, FONT_8x16);
 
 			// Are we already in PC mode to this caller ?
@@ -519,7 +536,11 @@ void menuUtilityRenderQSOData(void)
 			}
 
 			// first check if we have this ID in the DMR ID data
-			if (dmrIDLookup((LinkHead->id & 0xFFFFFF), &currentRec))
+			if (contactPCIDLookup(LinkHead->id, buffer))
+			{
+				displayContactTextInfos(buffer, 16,false);
+			}
+			else if (dmrIDLookup((LinkHead->id & 0xFFFFFF), &currentRec))
 			{
 				displayContactTextInfos(currentRec.text, sizeof(currentRec.text),false);
 			}
