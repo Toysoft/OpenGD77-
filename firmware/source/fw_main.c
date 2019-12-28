@@ -18,7 +18,7 @@
 
 #include <functions/fw_ticks.h>
 #include <user_interface/menuSystem.h>
-#include <user_interface/menuUtilityQSOData.h>
+#include <user_interface/uiUtilityQSOData.h>
 #include <user_interface/uiLocalisation.h>
 #include "fw_main.h"
 #include "fw_settings.h"

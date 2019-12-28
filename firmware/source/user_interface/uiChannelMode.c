@@ -16,7 +16,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 #include <user_interface/menuSystem.h>
-#include <user_interface/menuUtilityQSOData.h>
+#include <user_interface/uiUtilityQSOData.h>
 #include <user_interface/uiLocalisation.h>
 #include "fw_trx.h"
 #include "fw_codeplug.h"
@@ -64,6 +64,7 @@ static int nuisanceDelete[MAX_ZONE_SCAN_NUISANCE_CHANNELS];
 static int nuisanceDeleteIndex = 0;
 
 static int tmpQuickMenuDmrFilterLevel;
+static bool displayChannelSettings;
 
 int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 {
@@ -72,6 +73,7 @@ int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 	if (isFirstRun)
 	{
 		nonVolatileSettings.initialMenuNumber = MENU_CHANNEL_MODE;// This menu.
+		displayChannelSettings = false;
 		currentChannelData = &channelScreenChannelData;// Need to set this as currentChannelData is used by functions called by loadChannelData()
 		lastHeardClearLastID();
 
@@ -258,6 +260,49 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 			}
 			else
 			{
+				// Display some channel settings
+				if (displayChannelSettings)
+				{
+					char buf[24];
+					if (trxGetMode() == RADIO_MODE_DIGITAL)
+					{
+						snprintf(buf, 24, "TS:%d - CC:%d", (((currentChannelData->flag2 & 0x40) >> 6) + 1), currentChannelData->rxColor);
+						ucPrintCentered(16, buf, FONT_6x8);
+					}
+					else
+					{
+						if (currentChannelData->rxTone == TRX_CTCSS_TONE_NONE)
+						{
+							snprintf(buf, 24, "CTCSS:%s|", currentLanguage->none);
+							buf[23] = 0;
+						}
+						else
+						{
+							snprintf(buf, 24, "CTCSS:%d.%dHz|", currentChannelData->rxTone / 10 , currentChannelData->rxTone % 10);
+						}
+
+						if (currentChannelData->txTone == TRX_CTCSS_TONE_NONE)
+						{
+							snprintf(buf, 24, "%s%s", buf, currentLanguage->none);
+							buf[23] = 0;
+						}
+						else
+						{
+							snprintf(buf, 24, "%s%d.%dHz", buf, currentChannelData->txTone / 10 , currentChannelData->txTone % 10);
+						}
+						ucPrintCentered(16, buf, FONT_6x8);
+
+						snprintf(buf, 24, "SQL:%d", (currentChannelData->sql == 0) ? nonVolatileSettings.squelchDefaults[trxCurrentBand[TRX_RX_FREQ_BAND]] : currentChannelData->sql);
+						ucPrintCentered(24 + 1, buf, FONT_6x8);
+					}
+
+					printFrequency(false, false, 32, currentChannelData->rxFreq, false);
+					printFrequency(true, false, 48, currentChannelData->txFreq, false);
+
+					ucRender();
+					return;
+				}
+
 				if (strcmp(currentZoneName,currentLanguage->all_channels) == 0)
 				{
 					channelNumber=nonVolatileSettings.currentChannelIndexInAllZone;
@@ -344,6 +389,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 
 		case QSO_DISPLAY_CALLER_DATA:
 			isDisplayingQSOData=true;
+			displayChannelSettings = false;
 			menuUtilityRenderQSOData();
 			displayLightTrigger();
 			ucRender();
@@ -410,6 +456,23 @@ static void handleEvent(uiEvent_t *ev)
 			menuChannelModeUpdateScreen(0);
 			return;
 		}
+
+		// Display channel settings (RX/TX/etc) while SK1 is pressed
+		if ((displayChannelSettings == false) && (ev->buttons == BUTTON_SK1))
+		{
+			displayChannelSettings = true;
+			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+			menuChannelModeUpdateScreen(0);
+			return;
+		}
+		else if (displayChannelSettings && ((ev->buttons & BUTTON_SK1) == 0))
+		{
+			displayChannelSettings = false;
+			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+			menuChannelModeUpdateScreen(0);
+			return;
+		}
+
 
 		if (ev->buttons & BUTTON_ORANGE)
 		{
