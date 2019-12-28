@@ -300,7 +300,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 					printFrequency(true, false, 48, currentChannelData->txFreq, false);
 
 					ucRender();
-					return;
+					break;
 				}
 
 				if (strcmp(currentZoneName,currentLanguage->all_channels) == 0)
