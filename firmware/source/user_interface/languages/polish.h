@@ -136,6 +136,8 @@ const stringsTable_t polishLanguage =
 .tone_scan				= "Skan. tonu.",//// MaxLen: 16
 .cc_scan				= "Skan. CC",//// MaxLen: 16
 .low_battery				= "S‡ABA BATERIA!!!",//// MaxLen: 16
+.Auto					= "Auto", // MaxLen 16 (with .mode + ':') 
+.manual					= "Manual",  // MaxLen 16 (with .mode + ':') 
 };
 /********************************************************************
  *

@@ -20,7 +20,6 @@
 #include <user_interface/uiLocalisation.h>
 const int LAST_HEARD_NUM_LINES_ON_DISPLAY = 3;
 
-static void updateScreen(void);
 static void handleEvent(uiEvent_t *ev);
 
 int menuLastHeard(uiEvent_t *ev, bool isFirstRun)
@@ -29,7 +28,7 @@ int menuLastHeard(uiEvent_t *ev, bool isFirstRun)
 	{
 		gMenusStartIndex = LinkHead->id;// reuse this global to store the ID of the first item in the list
 		gMenusEndIndex=0;
-		updateScreen();
+		menuLastHeardupdateScreen(true);
 	}
 	else
 	{
@@ -39,7 +38,7 @@ int menuLastHeard(uiEvent_t *ev, bool isFirstRun)
 			gMenusStartIndex = LinkHead->id;
 			gMenusCurrentItemIndex=0;
 			gMenusEndIndex=0;
-			updateScreen();
+			menuLastHeardupdateScreen(true);
 		}
 
 		if (ev->hasEvent)
@@ -48,7 +47,9 @@ int menuLastHeard(uiEvent_t *ev, bool isFirstRun)
 	return 0;
 }
 
-static void updateScreen(void)
+
+
+void menuLastHeardupdateScreen(bool showTitleOrHeader)
 {
 	static const int bufferLen = 17;
 	char buffer[bufferLen];
@@ -57,7 +58,14 @@ static void updateScreen(void)
 	LinkItem_t *item = LinkHead;
 
 	ucClearBuf();
-	menuDisplayTitle(currentLanguage->last_heard);
+	if (showTitleOrHeader)
+	{
+		menuDisplayTitle(currentLanguage->last_heard);
+	}
+	else
+	{
+		menuUtilityRenderHeader();
+	}
 
 	// skip over the first gMenusCurrentItemIndex in the listing
 	for(int i=0;i<gMenusCurrentItemIndex;i++)
@@ -130,5 +138,5 @@ static void handleEvent(uiEvent_t *ev)
 		menuSystemPopAllAndDisplayRootMenu();
 		return;
 	}
-	updateScreen();
+	menuLastHeardupdateScreen(true);
 }

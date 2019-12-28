@@ -92,6 +92,8 @@ void menuBatteryPushBackVoltage(int32_t voltage);
 
 void menuLockScreenPop(void);
 
+void menuLastHeardupdateScreen(bool showTitleOrHeader);
+
 /*
  * ---------------------- IMPORTANT ----------------------------
  *
