@@ -137,7 +137,8 @@ const stringsTable_t frenchLanguage =
 .cc_scan				= "Scan CC",
 .low_battery			        = "BATT. FAIBLE !!!",//// MaxLen: 16
 .Auto					= "Auto", // MaxLen 16 (with .mode + ':') 
-.manual					= "Manuel",  // MaxLen 16 (with .mode + ':') 
+.manual					= "Manuel",  // MaxLen 16 (with .mode + ':') }
+.ptt_toggle				= "Bascule PTT", // MaxLen 16 (with ':' + .on or .off)
 };
 /********************************************************************
  *
