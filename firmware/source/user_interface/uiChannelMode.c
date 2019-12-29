@@ -264,12 +264,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				if (displayChannelSettings)
 				{
 					char buf[24];
-					if (trxGetMode() == RADIO_MODE_DIGITAL)
-					{
-						snprintf(buf, 24, "TS:%d - CC:%d", (((currentChannelData->flag2 & 0x40) >> 6) + 1), currentChannelData->rxColor);
-						ucPrintCentered(16, buf, FONT_6x8);
-					}
-					else
+					if (trxGetMode() == RADIO_MODE_ANALOG)
 					{
 						if (currentChannelData->rxTone == TRX_CTCSS_TONE_NONE)
 						{
