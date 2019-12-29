@@ -20,7 +20,7 @@
  * Translators: DG3GSP, DL4LEX
  *
  *
- * Rev: 3.1
+ * Rev: 3.2
  */
 #ifndef USER_INTERFACE_LANGUAGES_GERMAN_H_
 #define USER_INTERFACE_LANGUAGES_GERMAN_H_
@@ -137,7 +137,7 @@ const stringsTable_t germanLanguage =
 .cc_scan				= "CC Scan",//// MaxLen: 16
 .low_battery			= "BATTERIE LEER!",//// MaxLen: 16
 .Auto					= "Auto", // MaxLen 16 (with .mode + ':') 
-.manual					= "Manual",  // MaxLen 16 (with .mode + ':') 
+.manual					= "Manuell",  // MaxLen 16 (with .mode + ':') 
 .ptt_toggle				= "PTT toggle", // MaxLen 16 (with ':' + .on or .off)
 };
 /********************************************************************
