@@ -50,6 +50,9 @@ uint32_t menuUtilityTgBeforePcMode 	= 0;// No TG saved, prior to a Private call 
 const char *POWER_LEVELS[]={"250mW","500mW","750mW","1W","2W","3W","4W","5W"};
 const char *DMR_FILTER_LEVELS[]={"None","TS","TS,TG"};
 
+volatile uint32_t lastID=0;// This needs to be volatile as lastHeardClearLastID() is called from an ISR
+uint32_t lastTG=0;
+
 /*
  * Remove space at the end of the array, and return pointer to first non space character
  */
@@ -79,7 +82,6 @@ static char *chomp(char *str)
 
 	return sp;
 }
-
 
 static int32_t getCallsignEndingPos(char *str)
 {
@@ -140,8 +142,64 @@ LinkItem_t * findInList(int id)
     return NULL;
 }
 
-volatile uint32_t lastID=0;// This needs to be volatile as lastHeardClearLastID() is called from an ISR
-uint32_t lastTG=0;
+static uint8_t *decodeTA(uint8_t *TA)
+{
+	uint8_t *b;
+	uint8_t c;
+	int8_t j;
+    uint8_t i, t1, t2;
+    static uint8_t buffer[32];
+    uint8_t *talkerAlias = TA;
+    uint8_t TAformat = (talkerAlias[0] >> 6U) & 0x03U;
+    uint8_t TAsize   = (talkerAlias[0] >> 1U) & 0x1FU;
+
+    switch (TAformat)
+    {
+		case 0U:		// 7 bit
+			memset(&buffer, 0, sizeof(buffer));
+			b = &talkerAlias[0];
+			t1 = 0U; t2 = 0U; c = 0U;
+
+			for (i = 0U; (i < 32U) && (t2 < TAsize); i++)
+			{
+				for (j = 7; j >= 0; j--)
+				{
+					c = (c << 1U) | (b[i] >> j);
+
+					if (++t1 == 7U)
+					{
+						if (i > 0U)
+							buffer[t2++] = c & 0x7FU;
+
+						t1 = 0U;
+						c = 0U;
+					}
+				}
+			}
+			buffer[TAsize] = 0;
+			break;
+
+		case 1U:		// ISO 8 bit
+		case 2U:		// UTF8
+			memcpy(&buffer, talkerAlias + 1U, sizeof(buffer));
+			break;
+
+		case 3U:		// UTF16 poor man's conversion
+			t2=0;
+			memset(&buffer, 0, sizeof(buffer));
+			for (i = 0U; (i < 15U) && (t2 < TAsize); i++)
+			{
+				if (talkerAlias[2U * i + 1U] == 0)
+					buffer[t2++] = talkerAlias[2U * i + 2U];
+				else
+					buffer[t2++] = '?';
+			}
+			buffer[TAsize] = 0;
+			break;
+    }
+
+	return &buffer[0];
+}
 
 void lastHeardClearLastID(void)
 {
@@ -150,9 +208,10 @@ void lastHeardClearLastID(void)
 
 bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 {
+	static uint8_t bufferTA[32];
+	static uint8_t blocksTA = 0x00;
 	bool retVal = false;
 	uint32_t talkGroupOrPcId = (dmrDataBuffer[0]<<24) + (dmrDataBuffer[3]<<16)+(dmrDataBuffer[4]<<8)+(dmrDataBuffer[5]<<0);
-
 
 	if (HRC6000GetReveivedTgOrPcId() != 0)
 	{
@@ -162,6 +221,9 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 
 			if (id!=lastID)
 			{
+				memset(bufferTA, 0, 32);// Clear any TA data in TA buffer (used for decode)
+				blocksTA = 0x00;
+
 				retVal = true;// something has changed
 				lastID=id;
 
@@ -230,7 +292,7 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 					item->talkGroupOrPcId =  talkGroupOrPcId;
 					item->time = fw_millis();
 					lastTG = talkGroupOrPcId;
-					memset(item->talkerAlias,0,32);// Clear any TA data
+					memset(item->talkerAlias, 0, 32);// Clear any TA data
 					if (item->talkGroupOrPcId!=0)
 					{
 						menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;// flag that the display needs to update
@@ -256,47 +318,45 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 		}
 		else
 		{
-			size_t TAStartPos;
-			size_t TABlockLen;
-			size_t TAOffset;
-
 			// Data contains the Talker Alias Data
-			switch(DMR_frame_buffer[0])
-			{
-				case 0x04:
-					TAOffset=0;
-					TAStartPos=3;
-					TABlockLen=6;
-					break;
-				case 0x05:
-					TAOffset=6;
-					TAStartPos=2;
-					TABlockLen=7;
-					break;
-				case 0x06:
-					TAOffset=13;
-					TAStartPos=2;
-					TABlockLen=7;
-					break;
-				case 0x07:
-					TAOffset=20;
-					TAStartPos=2;
-					TABlockLen=7;
-					break;
-				default:
-					TAOffset=0;
-					TAStartPos=0;
-					TABlockLen=0;
-					break;
-			}
+			uint8_t blockID = DMR_frame_buffer[0] - 4;
 
-			if (LinkHead->talkerAlias[TAOffset] == 0x00 && TABlockLen!=0)
+			if (blockID < 4)
 			{
-				memcpy(&LinkHead->talkerAlias[TAOffset],(uint8_t *)&DMR_frame_buffer[TAStartPos],TABlockLen);// Brandmeister seems to send callsign as 6 chars only
-				menuDisplayQSODataState=QSO_DISPLAY_CALLER_DATA;
+				// We don't already have this TA block
+				if ((blocksTA & (1 << blockID)) == 0)
+				{
+					static const uint8_t blockLen = 7;
+					uint32_t blockOffset = blockID * blockLen;
+
+					blocksTA |= (1 << blockID);
+
+					if ((blockOffset + blockLen) < sizeof(bufferTA))
+					{
+						memcpy(bufferTA + blockOffset, (void *)&DMR_frame_buffer[2], blockLen);
+
+						// Format and length infos are available, we can decode now
+						if (bufferTA[0] != 0x0)
+						{
+							uint8_t *decodedTA;
+
+							if ((decodedTA = decodeTA(&bufferTA[0])) != NULL)
+							{
+								// TAs doesn't match, update contact and screen.
+								if (strlen((const char *)decodedTA) > strlen((const char *)&LinkHead->talkerAlias))
+								{
+									memcpy(&LinkHead->talkerAlias, decodedTA, 31);// Brandmeister seems to send callsign as 6 chars only
+
+									menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;
+								}
+							}
+						}
+					}
+				}
 			}
 		}
 	}
+
 	return retVal;
 }
 
