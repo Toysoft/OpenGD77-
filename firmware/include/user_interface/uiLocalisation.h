@@ -127,6 +127,7 @@ typedef struct stringsTable
    const char low_battery[LANGUAGE_TEXTS_LENGTH];
    const char Auto[LANGUAGE_TEXTS_LENGTH];
    const char manual[LANGUAGE_TEXTS_LENGTH];
+   const char ptt_toggle[LANGUAGE_TEXTS_LENGTH];
 } stringsTable_t;
 
 extern const stringsTable_t languages[];

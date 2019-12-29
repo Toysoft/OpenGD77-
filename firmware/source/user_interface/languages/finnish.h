@@ -138,6 +138,7 @@ const stringsTable_t finnishLanguage =
 .low_battery		= "Akku Vähissä !",	// MaxLen: 16
 .Auto			= "Automaatti",		// MaxLen 16 (with .mode + ':') 
 .manual			= "Manuaali",  		// MaxLen 16 (with .mode + ':') 
+.ptt_toggle		= "PTT toggle",    	// MaxLen 16 (with ':' + .on or .off)
 };
 /********************************************************************
  *
