@@ -138,6 +138,7 @@ const stringsTable_t spanishLanguage =
 .low_battery			= "BATERÍA BAJA!!!",//// MaxLen: 16
 .Auto					= "Auto", // MaxLen 16 (with .mode + ':') 
 .manual					= "Manual",  // MaxLen 16 (with .mode + ':') 
+.ptt_toggle				= "PTT toggle", // MaxLen 16 (with ':' + .on or .off)
 };
 /********************************************************************
  *

@@ -28,7 +28,7 @@ enum OPTIONS_MENU_LIST { OPTIONS_MENU_TIMEOUT_BEEP=0,OPTIONS_MENU_FACTORY_RESET,
 							OPTIONS_MENU_KEYPAD_TIMER_LONG, OPTIONS_MENU_KEYPAD_TIMER_REPEAT, OPTIONS_MENU_DMR_MONITOR_CAPTURE_TIMEOUT,
 							OPTIONS_MENU_SCAN_DELAY,OPTIONS_MENU_SCAN_MODE,
 							OPTIONS_MENU_SQUELCH_DEFAULT_VHF,OPTIONS_MENU_SQUELCH_DEFAULT_220MHz,OPTIONS_MENU_SQUELCH_DEFAULT_UHF,
-							NUM_OPTIONS_MENU_ITEMS};
+							OPTIONS_MENU_PTT_TOGGLE, NUM_OPTIONS_MENU_ITEMS};
 
 
 int menuOptions(uiEvent_t *ev, bool isFirstRun)
@@ -141,6 +141,9 @@ static void updateScreen(void)
 			case OPTIONS_MENU_SQUELCH_DEFAULT_UHF:
 				snprintf(buf, bufferLen, "%s UHF:%d%%", currentLanguage->squelch, (nonVolatileSettings.squelchDefaults[RADIO_BAND_UHF] - 1) * 5);// 5% steps
 				break;
+			case OPTIONS_MENU_PTT_TOGGLE:
+				snprintf(buf, bufferLen, "%s:%s", currentLanguage->ptt_toggle, (nonVolatileSettings.pttToggle ? currentLanguage->on : currentLanguage->off));
+				break;
 		}
 
 		buf[bufferLen - 1] = 0;
@@ -238,6 +241,9 @@ static void handleEvent(uiEvent_t *ev)
 					nonVolatileSettings.squelchDefaults[RADIO_BAND_UHF]++;
 				}
 				break;
+			case OPTIONS_MENU_PTT_TOGGLE:
+				nonVolatileSettings.pttToggle = true;
+				break;
 
 		}
 	}
@@ -318,6 +324,9 @@ static void handleEvent(uiEvent_t *ev)
 				{
 					nonVolatileSettings.squelchDefaults[RADIO_BAND_UHF]--;
 				}
+				break;
+			case OPTIONS_MENU_PTT_TOGGLE:
+				nonVolatileSettings.pttToggle = false;
 				break;
 		}
 	}

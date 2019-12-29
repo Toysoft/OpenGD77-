@@ -33,6 +33,8 @@
 #error Change target build to Debug then Clean the build and recompile
 #endif
 
+bool PTTToggledDown = false; // PTT toggle feature
+
 void fw_main_task(void *data);
 
 const char *FIRMWARE_VERSION_STRING = "VK3KYY";//"V0.3.5";
@@ -183,6 +185,11 @@ void fw_main_task(void *data)
 						}
 
 						key_event = EVENT_KEY_NONE;
+
+						if (nonVolatileSettings.pttToggle && PTTToggledDown)
+						{
+							PTTToggledDown = false;
+						}
 					}
 
 					// Lockout ORANGE AND BLUE (BLACK stay active regardless lock status, useful to trigger backlight)
@@ -194,6 +201,11 @@ void fw_main_task(void *data)
 						}
 
 						button_event = EVENT_BUTTON_NONE;
+
+						if (nonVolatileSettings.pttToggle && PTTToggledDown)
+						{
+							PTTToggledDown = false;
+						}
 					}
 				}
 				else if (PTTLocked)
@@ -263,6 +275,54 @@ void fw_main_task(void *data)
 				}
 			}
 */
+
+			//
+			// PTT toggle feature
+			//
+			// PTT is locked down, but any button but SK1 is pressed, virtually release PTT
+			if ((nonVolatileSettings.pttToggle && PTTToggledDown) &&
+					(((button_event & EVENT_BUTTON_CHANGE) && ((buttons & BUTTON_ORANGE) || (buttons & BUTTON_SK2))) ||
+							((keys.key != 0) && (keys.event & KEY_MOD_UP))))
+			{
+				PTTToggledDown = false;
+				button_event = EVENT_BUTTON_CHANGE;
+				buttons = BUTTON_NONE;
+				key_event = NO_EVENT;
+				keys.key = 0;
+			}
+			// PTT toggle action
+			if (nonVolatileSettings.pttToggle)
+			{
+				if (button_event == EVENT_BUTTON_CHANGE)
+				{
+					if (buttons & BUTTON_PTT)
+					{
+						if (PTTToggledDown == false)
+						{
+							// PTT toggle works only if a TOT value is defined.
+							if (currentChannelData->tot != 0)
+							{
+								PTTToggledDown = true;
+							}
+						}
+						else
+						{
+							PTTToggledDown = false;
+						}
+					}
+				}
+
+				if (PTTToggledDown && ((buttons & BUTTON_PTT) == 0))
+				{
+					buttons |= BUTTON_PTT;
+				}
+			}
+			else
+			{
+				if (PTTToggledDown)
+					PTTToggledDown = false;
+			}
+
 
 			if (button_event == EVENT_BUTTON_CHANGE)
 			{

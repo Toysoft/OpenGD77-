@@ -29,10 +29,11 @@ static const int PIT_COUNTS_PER_SECOND = 10000;
 static int timeInSeconds;
 static uint32_t nextSecondPIT;
 static bool isShowingLastHeard;
+extern bool PTTToggledDown;
 
 int menuTxScreen(uiEvent_t *ev, bool isFirstRun)
 {
-	static uint32_t m = 0, micm = 0;
+	static uint32_t m = 0, micm = 0, mto = 0;
 
 	if (isFirstRun)
 	{
@@ -77,6 +78,7 @@ int menuTxScreen(uiEvent_t *ev, bool isFirstRun)
 			ucRender();
 			displayLightOverrideTimeout(-1);
 			set_melody(melody_ERROR_beep);
+			PTTToggledDown = false;
 		}
 
 		m = micm = ev->ticks;
@@ -109,6 +111,8 @@ int menuTxScreen(uiEvent_t *ev, bool isFirstRun)
 					ucClearBuf();
 					ucPrintCentered(20, currentLanguage->timeout, FONT_16x32);
 					ucRender();
+					PTTToggledDown = false;
+					mto = ev->ticks;
 				}
 				else
 				{
@@ -133,6 +137,15 @@ int menuTxScreen(uiEvent_t *ev, bool isFirstRun)
 				}
 			}
 		}
+
+		// Timeout happened, postpone going further otherwise timeout
+		// screen won't be visible at all.
+		if ((currentChannelData->tot != 0) && (timeInSeconds == 0))
+		{
+			if ((ev->ticks - mto) < 1000)
+				return 0;
+		}
+
 
 		// Got an event, or
 		if (ev->hasEvent || // PTT released, Timeout triggered,

@@ -66,6 +66,7 @@ typedef struct settingsStruct
 	uint8_t			scanDelay;
 	bool			scanModePause;
 	uint8_t			squelchDefaults[RADIO_BANDS_TOTAL_NUM];// VHF,200Mhz and UHF
+	bool			pttToggle;
 } settingsStruct_t;
 
 typedef enum {DMR_FILTER_NONE = 0, DMR_FILTER_TS = 1, DMR_FILTER_TS_TG = 2} dmrFilter_t;
