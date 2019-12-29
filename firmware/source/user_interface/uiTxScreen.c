@@ -222,26 +222,29 @@ static void handleEvent(uiEvent_t *ev)
 	// Key action while xmitting (ANALOG), Tone triggering
 	if (!trxIsTransmittingTone && ((ev->buttons & BUTTON_PTT) != 0) && trxIsTransmitting && (trxGetMode() == RADIO_MODE_ANALOG))
 	{
-		// Send 1750Hz
-		if ((ev->buttons & BUTTON_SK2) != 0)
+		if (PTTToggledDown == false)
 		{
-			trxIsTransmittingTone = true;
-			trxSetTone1(1750);
-			trxSelectVoiceChannel(AT1846_VOICE_CHANNEL_TONE1);
-			GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1);
-			GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 1);
-		}
-		else
-		{ // Send DTMF
-			int keyval = menuGetKeypadKeyValue(ev, false);
-
-			if (keyval != 99)
+			// Send 1750Hz
+			if ((ev->buttons & BUTTON_SK2) != 0)
 			{
-				trxSetDTMF(keyval);
 				trxIsTransmittingTone = true;
-				trxSelectVoiceChannel(AT1846_VOICE_CHANNEL_DTMF);
+				trxSetTone1(1750);
+				trxSelectVoiceChannel(AT1846_VOICE_CHANNEL_TONE1);
 				GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1);
 				GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 1);
+			}
+			else
+			{ // Send DTMF
+				int keyval = menuGetKeypadKeyValue(ev, false);
+
+				if (keyval != 99)
+				{
+					trxSetDTMF(keyval);
+					trxIsTransmittingTone = true;
+					trxSelectVoiceChannel(AT1846_VOICE_CHANNEL_DTMF);
+					GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1);
+					GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 1);
+				}
 			}
 		}
 	}

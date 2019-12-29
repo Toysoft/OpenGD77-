@@ -238,12 +238,12 @@ void fw_main_task(void *data)
 				// Do not send any beep while scanning, otherwise enabling the AMP will be handled as a valid signal detection.
 				if (keys.event & KEY_MOD_PRESS)
 				{
-					if (((menuSystemGetCurrentMenuNumber() == MENU_VFO_MODE) && menuVFOModeIsScanning()) == false)
+					if ((PTTToggledDown == false) && (((menuSystemGetCurrentMenuNumber() == MENU_VFO_MODE) && menuVFOModeIsScanning()) == false))
 						set_melody(melody_key_beep);
 				}
 				else if ((keys.event & (KEY_MOD_LONG | KEY_MOD_DOWN)) == (KEY_MOD_LONG | KEY_MOD_DOWN))
 				{
-					if (((menuSystemGetCurrentMenuNumber() == MENU_VFO_MODE) && menuVFOModeIsScanning()) == false)
+					if ((PTTToggledDown == false) && (((menuSystemGetCurrentMenuNumber() == MENU_VFO_MODE) && menuVFOModeIsScanning()) == false))
 						set_melody(melody_key_long_beep);
 				}
 
