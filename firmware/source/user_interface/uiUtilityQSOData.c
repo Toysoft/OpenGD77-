@@ -20,7 +20,7 @@
 #include <hardware/fw_HR-C6000.h>
 #include <hardware/fw_SPI_Flash.h>
 #include <user_interface/menuSystem.h>
-#include <user_interface/menuUtilityQSOData.h>
+#include <user_interface/uiUtilityQSOData.h>
 #include <user_interface/uiLocalisation.h>
 #include "fw_trx.h"
 #include "fw_settings.h"
@@ -739,4 +739,27 @@ char keypressToNumberChar(keyboardCode_t keys)
 		}
 	}
 	return '\0';
+}
+
+void printFrequency(bool isTX, bool hasFocus, uint8_t y, uint32_t frequency, bool displayVFOChannel)
+{
+	static const int bufferLen = 17;
+	char buffer[bufferLen];
+	int val_before_dp = frequency / 100000;
+	int val_after_dp = frequency - val_before_dp * 100000;
+
+	// Focus + direction
+	snprintf(buffer, bufferLen, "%c%c", (hasFocus ? '>' : ' '), (isTX ? 'T' : 'R'));
+	ucPrintAt(0, y, buffer, FONT_8x16);
+	// VFO
+	if (displayVFOChannel)
+	{
+		ucPrintAt(16, y + 8, (nonVolatileSettings.currentVFONumber == 0) ? "A" : "B", FONT_8x8);
+	}
+	// Frequency
+	snprintf(buffer, bufferLen, "%d.%05d", val_before_dp, val_after_dp);
+	buffer[bufferLen - 1] = 0;
+	ucPrintAt(FREQUENCY_X_POS, y, buffer, FONT_8x16);
+	// Unit
+	ucPrintAt(128 - (3 * 8), y, "MHz", FONT_8x16);
 }

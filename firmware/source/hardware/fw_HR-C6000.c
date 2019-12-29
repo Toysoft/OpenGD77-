@@ -22,7 +22,7 @@
 #include "fw_settings.h"
 #include <SeggerRTT/RTT/SEGGER_RTT.h>
 #include <user_interface/menuHotspot.h>
-#include <user_interface/menuUtilityQSOData.h>
+#include <user_interface/uiUtilityQSOData.h>
 #include "fw_trx.h"
 
 

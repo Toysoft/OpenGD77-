@@ -71,5 +71,6 @@ void drawRSSIBarGraph(void);
 void drawDMRMicLevelBarGraph(void);
 void setOverrideTGorPC(int tgOrPc, bool privateCall);
 char keypressToNumberChar(keyboardCode_t keys);
+void printFrequency(bool isTX, bool hasFocus, uint8_t y, uint32_t frequency, bool displayVFOChannel);
 
 #endif
