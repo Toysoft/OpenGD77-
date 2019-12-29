@@ -312,6 +312,8 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 						item->time = fw_millis();
 					}
 					lastTG = talkGroupOrPcId;
+					memset(bufferTA, 0, 32);// Clear any TA data in TA buffer (used for decode)
+					blocksTA = 0x00;
 					retVal = true;// something has changed
 				}
 			}
