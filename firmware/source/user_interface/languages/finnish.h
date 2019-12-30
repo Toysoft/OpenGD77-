@@ -20,7 +20,7 @@
  * Translators: OH1E
  *
  *
- * Rev: 7
+ * Rev: 8 
  */
 #ifndef USER_INTERFACE_LANGUAGES_FINNISH_H_
 #define USER_INTERFACE_LANGUAGES_FINNISH_H_
@@ -138,7 +138,7 @@ const stringsTable_t finnishLanguage =
 .low_battery		= "Akku Vähissä !",	// MaxLen: 16
 .Auto			= "Automaatti",		// MaxLen 16 (with .mode + ':') 
 .manual			= "Manuaali",  		// MaxLen 16 (with .mode + ':') 
-.ptt_toggle		= "PTT toggle",    	// MaxLen 16 (with ':' + .on or .off)
+.ptt_toggle		= "PTT Lukko",    	// MaxLen 16 (with ':' + .on or .off)
 };
 /********************************************************************
  *
