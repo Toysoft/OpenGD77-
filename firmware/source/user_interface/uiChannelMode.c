@@ -287,7 +287,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 						}
 						ucPrintCentered(16, buf, FONT_6x8);
 
-						snprintf(buf, 24, "SQL:%d", (currentChannelData->sql == 0) ? nonVolatileSettings.squelchDefaults[trxCurrentBand[TRX_RX_FREQ_BAND]] : currentChannelData->sql);
+						snprintf(buf, 24, "SQL:%d%%", 5*(((currentChannelData->sql == 0) ? nonVolatileSettings.squelchDefaults[trxCurrentBand[TRX_RX_FREQ_BAND]] : currentChannelData->sql)-1));
 						ucPrintCentered(24 + 1, buf, FONT_6x8);
 					}
 
