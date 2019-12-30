@@ -263,34 +263,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				// Display some channel settings
 				if (displayChannelSettings)
 				{
-					char buf[24];
-					if (trxGetMode() == RADIO_MODE_ANALOG)
-					{
-						if (currentChannelData->rxTone == TRX_CTCSS_TONE_NONE)
-						{
-							snprintf(buf, 24, "CTCSS:%s|", currentLanguage->none);
-							buf[23] = 0;
-						}
-						else
-						{
-							snprintf(buf, 24, "CTCSS:%d.%dHz|", currentChannelData->rxTone / 10 , currentChannelData->rxTone % 10);
-						}
-
-						if (currentChannelData->txTone == TRX_CTCSS_TONE_NONE)
-						{
-							snprintf(buf, 24, "%s%s", buf, currentLanguage->none);
-							buf[23] = 0;
-						}
-						else
-						{
-							snprintf(buf, 24, "%s%d.%dHz", buf, currentChannelData->txTone / 10 , currentChannelData->txTone % 10);
-						}
-						ucPrintCentered(16, buf, FONT_6x8);
-
-						snprintf(buf, 24, "SQL:%d%%", 5*(((currentChannelData->sql == 0) ? nonVolatileSettings.squelchDefaults[trxCurrentBand[TRX_RX_FREQ_BAND]] : currentChannelData->sql)-1));
-						ucPrintCentered(24 + 1, buf, FONT_6x8);
-					}
-
+					printToneAndSquelch();
 					printFrequency(false, false, 32, currentChannelData->rxFreq, false);
 					printFrequency(true, false, 48, currentChannelData->txFreq, false);
 				}
