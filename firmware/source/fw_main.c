@@ -393,7 +393,8 @@ void fw_main_task(void *data)
 				ev.function = codeplugGetQuickkeyFunctionID(keys.key-'0');
 				if (ev.function > 0 && ev.function < NUM_MENU_ENTRIES)
 				{
-					if (menuSystemGetCurrentMenuNumber() != ev.function)
+					int currentMenu = menuSystemGetCurrentMenuNumber();
+					if ((currentMenu == MENU_VFO_MODE || currentMenu == MENU_CHANNEL_MODE) && currentMenu != ev.function)
 					{
 						menuSystemPushNewMenu(ev.function);
 					}
@@ -403,6 +404,8 @@ void fw_main_task(void *data)
 				}
 				key_event = EVENT_KEY_NONE;
 				button_event = EVENT_BUTTON_NONE;
+				keys.event = 0;
+				keys.key = 0;
 			}
     		ev.buttons = buttons;
     		ev.keys = keys;
