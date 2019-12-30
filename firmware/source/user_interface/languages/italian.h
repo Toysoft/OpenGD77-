@@ -138,7 +138,7 @@ const stringsTable_t italianLanguage =
 .low_battery			= "Batteria scarica",//// MaxLen: 16
 .Auto					= "Automatico", // MaxLen 16 (with .mode + ':') 
 .manual					= "Manuale",  // MaxLen 16 (with .mode + ':') 
-.ptt_toggle				= "PTT toggle", // MaxLen 16 (with ':' + .on or .off)
+.ptt_toggle				= "Auto-PTT", // MaxLen 16 (with ':' + .on or .off)
 };
 /********************************************************************
  *
