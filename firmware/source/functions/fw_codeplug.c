@@ -56,6 +56,8 @@ const int CODEPLUG_ADDR_BOOT_LINE1 = 0x7540;
 const int CODEPLUG_ADDR_BOOT_LINE2 = 0x7550;
 const int CODEPLUG_ADDR_VFO_A_CHANNEL = 0x7590;
 
+const int CODEPLUG_ADDR_QUICKKEYS = 0x7524;   // LSB,HSB
+
 int codeplugChannelsPerZone = 16;
 
 const int VFO_FREQ_STEP_TABLE[8] = {250,500,625,1000,1250,2500,3000,5000};
@@ -706,4 +708,16 @@ bool codeplugGetOpenGD77CustomData(codeplugCustomDataType_t dataType,uint8_t *da
 
 	}
 	return false;
+}
+
+int codeplugGetQuickkeyFunctionID(int key)
+{
+	uint16_t functionId = 0;
+
+	if (key >=0 && key <=9)
+	{
+		EEPROM_Read(CODEPLUG_ADDR_QUICKKEYS+2*key,(uint8_t *)&functionId,2);
+	}
+
+	return functionId;
 }
