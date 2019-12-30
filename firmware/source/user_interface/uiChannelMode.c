@@ -293,9 +293,6 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 
 					printFrequency(false, false, 32, currentChannelData->rxFreq, false);
 					printFrequency(true, false, 48, currentChannelData->txFreq, false);
-
-//					ucRender();
-//					break;
 				}
 				else
 				{
