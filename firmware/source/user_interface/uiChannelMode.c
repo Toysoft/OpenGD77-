@@ -294,43 +294,45 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 					printFrequency(false, false, 32, currentChannelData->rxFreq, false);
 					printFrequency(true, false, 48, currentChannelData->txFreq, false);
 
-					ucRender();
-					break;
-				}
-
-				if (strcmp(currentZoneName,currentLanguage->all_channels) == 0)
-				{
-					channelNumber=nonVolatileSettings.currentChannelIndexInAllZone;
-					if (directChannelNumber>0)
-					{
-						snprintf(nameBuf, nameBufferLen, "%s %d", currentLanguage->gotoChannel, directChannelNumber);
-					}
-					else
-					{
-						snprintf(nameBuf, nameBufferLen, "%s Ch:%d",currentLanguage->all_channels, channelNumber);
-					}
-					nameBuf[nameBufferLen - 1] = 0;
-					ucPrintCentered(50 , nameBuf, FONT_6x8);
+//					ucRender();
+//					break;
 				}
 				else
 				{
-					channelNumber=nonVolatileSettings.currentChannelIndexInZone+1;
-					if (directChannelNumber>0)
+					if (strcmp(currentZoneName,currentLanguage->all_channels) == 0)
 					{
-						snprintf(nameBuf, nameBufferLen, "%s %d", currentLanguage->gotoChannel, directChannelNumber);
+						channelNumber=nonVolatileSettings.currentChannelIndexInAllZone;
+						if (directChannelNumber>0)
+						{
+							snprintf(nameBuf, nameBufferLen, "%s %d", currentLanguage->gotoChannel, directChannelNumber);
+						}
+						else
+						{
+							snprintf(nameBuf, nameBufferLen, "%s Ch:%d",currentLanguage->all_channels, channelNumber);
+						}
 						nameBuf[nameBufferLen - 1] = 0;
+						ucPrintCentered(50 , nameBuf, FONT_6x8);
 					}
 					else
 					{
-						snprintf(nameBuf, nameBufferLen, "%s Ch:%d", currentZoneName,channelNumber);
-						nameBuf[nameBufferLen - 1] = 0;
+						channelNumber=nonVolatileSettings.currentChannelIndexInZone+1;
+						if (directChannelNumber>0)
+						{
+							snprintf(nameBuf, nameBufferLen, "%s %d", currentLanguage->gotoChannel, directChannelNumber);
+							nameBuf[nameBufferLen - 1] = 0;
+						}
+						else
+						{
+							snprintf(nameBuf, nameBufferLen, "%s Ch:%d", currentZoneName,channelNumber);
+							nameBuf[nameBufferLen - 1] = 0;
+						}
+						ucPrintCentered(50, (char *)nameBuf, FONT_6x8);
 					}
-					ucPrintCentered(50, (char *)nameBuf, FONT_6x8);
+
+					codeplugUtilConvertBufToString(channelScreenChannelData.name, nameBuf, 16);
+					ucPrintCentered(32 + verticalPositionOffset, nameBuf, FONT_8x16);
 				}
 			}
-
-			codeplugUtilConvertBufToString(channelScreenChannelData.name, nameBuf, 16);
-			ucPrintCentered(32 + verticalPositionOffset, nameBuf, FONT_8x16);
 
 			if (trxGetMode() == RADIO_MODE_DIGITAL)
 			{
@@ -366,7 +368,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				ucPrintCentered(CONTACT_Y_POS + verticalPositionOffset, nameBuf, FONT_8x16);
 			}
 			// Squelch will be cleared later, 2000 ticks after last change
-			else if(displaySquelch && !trxIsTransmitting)
+			else if(displaySquelch && !trxIsTransmitting && !displayChannelSettings)
 			{
 				static const int xbar = 74; // 128 - (51 /* max squelch px */ + 3);
 
@@ -377,6 +379,12 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				int bargraph = 1 + ((currentChannelData->sql - 1) * 5) /2;
 				ucDrawRect(xbar - 2, 17, 55, 13, true);
 				ucFillRect(xbar, 19, bargraph, 9, false);
+			}
+
+			// SK1 is pressed, we don't want to clear the first info row after 2000 ticks
+			if (displayChannelSettings && displaySquelch)
+			{
+				displaySquelch = false;
 			}
 
 			ucRender();
