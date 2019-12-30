@@ -386,16 +386,25 @@ void fw_main_task(void *data)
     			updateLastHeard=false;
     		}
 
+			ev.function = 0;
+			function_event = NO_EVENT;
 			if ((key_event == EVENT_KEY_CHANGE) && (buttons & BUTTON_SK2) != 0 && (keys.event & KEY_MOD_PRESS) && (keys.key >= '0' && keys.key <= '9'))
 			{
-				ev.function = codeplugGetQuickkeyFunctionID(keys.key);
-
-				function_event = FUNCTION_EVENT;
-			}
-			else
-			{
-				ev.function = 0;
-				function_event = NO_EVENT;
+				ev.function = codeplugGetQuickkeyFunctionID(keys.key-'0');
+				if (ev.function > 0 && ev.function < NUM_MENU_ENTRIES)
+				{
+					if (menuSystemGetCurrentMenuNumber() != ev.function)
+					{
+						menuSystemPushNewMenu(ev.function);
+						key_event = EVENT_KEY_NONE;
+						button_event = EVENT_BUTTON_NONE;
+					}
+				}
+				else if (ev.function > 0) {
+					function_event = FUNCTION_EVENT;
+					key_event = EVENT_KEY_NONE;
+					button_event = EVENT_BUTTON_NONE;
+				}
 			}
     		ev.buttons = buttons;
     		ev.keys = keys;

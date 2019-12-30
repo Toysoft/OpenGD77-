@@ -130,6 +130,7 @@ enum MENU_SCREENS { MENU_SPLASH_SCREEN=0,
 					MENU_CONTACT_DETAILS,
 					MENU_CONTACT_NEW,
 					MENU_LANGUAGE,
+					NUM_MENU_ENTRIES
 };
 
 // This is used to store current position in menus. The system keeps track of its value, e.g entering in
