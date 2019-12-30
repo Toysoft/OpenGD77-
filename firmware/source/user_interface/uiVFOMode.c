@@ -57,6 +57,7 @@ static const int TONESCANINTERVAL=200;			//time between each tone for lowest ton
 static const int CCSCANINTERVAL=500;
 static int scanIndex=0;
 static bool displayChannelSettings;
+static int prevDisplayQSODataState;
 
 // public interface
 int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
@@ -215,7 +216,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 	switch(menuDisplayQSODataState)
 	{
 		case QSO_DISPLAY_DEFAULT_SCREEN:
-
+			prevDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 			isDisplayingQSOData=false;
 			menuUtilityReceivedPcId = 0x00;
 			if (trxGetMode() == RADIO_MODE_DIGITAL)
@@ -353,6 +354,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 			break;
 
 		case QSO_DISPLAY_CALLER_DATA:
+			prevDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;
 			isDisplayingQSOData=true;
 			displayChannelSettings = false;
 			menuUtilityRenderQSOData();
@@ -496,15 +498,18 @@ static void handleEvent(uiEvent_t *ev)
 		// Display channel settings (CTCSS, Squelch) while SK1 is pressed
 		if ((displayChannelSettings == false) && (ev->buttons == BUTTON_SK1))
 		{
+			int prevQSODisp = prevDisplayQSODataState;
+
 			displayChannelSettings = true;
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 			menuVFOModeUpdateScreen(0);
+			prevDisplayQSODataState = prevQSODisp;
 			return;
 		}
 		else if (displayChannelSettings && ((ev->buttons & BUTTON_SK1) == 0))
 		{
 			displayChannelSettings = false;
-			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+			menuDisplayQSODataState = prevDisplayQSODataState;
 			menuVFOModeUpdateScreen(0);
 			return;
 		}
