@@ -396,15 +396,13 @@ void fw_main_task(void *data)
 					if (menuSystemGetCurrentMenuNumber() != ev.function)
 					{
 						menuSystemPushNewMenu(ev.function);
-						key_event = EVENT_KEY_NONE;
-						button_event = EVENT_BUTTON_NONE;
 					}
 				}
 				else if (ev.function > 0) {
 					function_event = FUNCTION_EVENT;
-					key_event = EVENT_KEY_NONE;
-					button_event = EVENT_BUTTON_NONE;
 				}
+				key_event = EVENT_KEY_NONE;
+				button_event = EVENT_BUTTON_NONE;
 			}
     		ev.buttons = buttons;
     		ev.keys = keys;
