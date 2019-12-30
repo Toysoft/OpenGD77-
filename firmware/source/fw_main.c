@@ -386,9 +386,10 @@ void fw_main_task(void *data)
     			updateLastHeard=false;
     		}
 
-			if ((key_event == EVENT_KEY_CHANGE) && (button & BUTTON_SK2) != 0 && (keys.event & KEY_MOD_PRESS) && (keys.key >= '0' && keys.key <= '9'))
+			if ((key_event == EVENT_KEY_CHANGE) && (buttons & BUTTON_SK2) != 0 && (keys.event & KEY_MOD_PRESS) && (keys.key >= '0' && keys.key <= '9'))
 			{
 				ev.function = codeplugGetQuickkeyFunctionID(keys.key);
+
 				function_event = FUNCTION_EVENT;
 			}
 			else
