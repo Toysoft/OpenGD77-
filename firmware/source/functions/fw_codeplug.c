@@ -710,7 +710,7 @@ bool codeplugGetOpenGD77CustomData(codeplugCustomDataType_t dataType,uint8_t *da
 	return false;
 }
 
-int codeplugGetQuickkeyFunctionID(int key)
+uint16_t codeplugGetQuickkeyFunctionID(int key)
 {
 	uint16_t functionId = 0;
 

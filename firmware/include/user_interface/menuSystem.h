@@ -19,12 +19,13 @@
 #define _FW_MENUSYSTEM_H_
 #include "fw_main.h"
 
-typedef enum { NO_EVENT = 0, KEY_EVENT=0x01, BUTTON_EVENT = 0x02 } uiEventInput_t;
+typedef enum { NO_EVENT = 0, KEY_EVENT=0x01, BUTTON_EVENT = 0x02, FUNCTION_EVENT = 0x04 } uiEventInput_t;
 
 typedef struct
 {
 	uint32_t	    buttons;
 	keyboardCode_t  keys;
+	uint16_t		function;
 	uiEventInput_t	events;
 	bool		    hasEvent;
 	uint32_t 	    ticks;

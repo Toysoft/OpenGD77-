@@ -66,7 +66,8 @@ void fw_main_task(void *data)
 	int key_event;
 	uint32_t buttons;
 	int button_event;
-	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .ticks = 0 };
+	int function_event;
+	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .function = 0, .events = NO_EVENT, .hasEvent = false, .ticks = 0 };
 	bool keyOrButtonChanged = false;
 	
     USB_DeviceApplicationInit();
@@ -169,9 +170,9 @@ void fw_main_task(void *data)
 
 			fw_check_button_event(&buttons, &button_event); // Read button state and event
 			fw_check_key_event(&keys, &key_event); // Read keyboard state and event
-
 			// EVENT_*_CHANGED can be cleared later, so check this now as hasEvent has to be set anyway.
 			keyOrButtonChanged = ((key_event != NO_EVENT) || (button_event != NO_EVENT));
+
 
 			if (keypadLocked || PTTLocked)
 			{
@@ -385,10 +386,20 @@ void fw_main_task(void *data)
     			updateLastHeard=false;
     		}
 
+			if ((key_event == EVENT_KEY_CHANGE) && (button & BUTTON_SK2) != 0 && (keys.event & KEY_MOD_PRESS) && (keys.key >= '0' && keys.key <= '9'))
+			{
+				ev.function = codeplugGetQuickkeyFunctionID(keys.key);
+				function_event = FUNCTION_EVENT;
+			}
+			else
+			{
+				ev.function = 0;
+				function_event = NO_EVENT;
+			}
     		ev.buttons = buttons;
     		ev.keys = keys;
-    		ev.events = (button_event<<1) | key_event;
-    		ev.hasEvent = keyOrButtonChanged;
+    		ev.events = function_event | (button_event<<1) | key_event;
+    		ev.hasEvent = keyOrButtonChanged || (function_event == FUNCTION_EVENT);
     		ev.ticks = fw_millis();
 
         	menuSystemCallCurrentMenuTick(&ev);
