@@ -56,6 +56,7 @@ static int scanTimer=0;
 static const int TONESCANINTERVAL=200;			//time between each tone for lowest tone. (higher tones take less time.)
 static const int CCSCANINTERVAL=500;
 static int scanIndex=0;
+static bool displayChannelSettings;
 
 // public interface
 int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
@@ -68,6 +69,8 @@ int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
 		nonVolatileSettings.initialMenuNumber=MENU_VFO_MODE;
 		currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];
 		settingsCurrentChannelNumber = -1;// This is not a regular channel. Its the special VFO channel!
+		displayChannelSettings = false;
+
 		trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq,DMR_MODE_AUTO);
 
 		//Need to load the Rx group if specified even if TG is currently overridden as we may need it later when the left or right button is pressed
@@ -263,8 +266,37 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 			}
 			else
 			{
+				// Display some channel settings
+				if (displayChannelSettings)
+				{
+					char buf[24];
+					if (currentChannelData->rxTone == TRX_CTCSS_TONE_NONE)
+					{
+						snprintf(buf, 24, "CTCSS:%s|", currentLanguage->none);
+						buf[23] = 0;
+					}
+					else
+					{
+						snprintf(buf, 24, "CTCSS:%d.%dHz|", currentChannelData->rxTone / 10 , currentChannelData->rxTone % 10);
+					}
+
+					if (currentChannelData->txTone == TRX_CTCSS_TONE_NONE)
+					{
+						snprintf(buf, 24, "%s%s", buf, currentLanguage->none);
+						buf[23] = 0;
+					}
+					else
+					{
+						snprintf(buf, 24, "%s%d.%dHz", buf, currentChannelData->txTone / 10 , currentChannelData->txTone % 10);
+					}
+					ucPrintCentered(16, buf, FONT_6x8);
+
+					snprintf(buf, 24, "SQL:%d%%", 5*(((currentChannelData->sql == 0) ? nonVolatileSettings.squelchDefaults[trxCurrentBand[TRX_RX_FREQ_BAND]] : currentChannelData->sql)-1));
+					ucPrintCentered(24 + 1, buf, FONT_6x8);
+				}
+
 				// Squelch will be cleared later, 2000 ticks after last change
-				if(displaySquelch)
+				if(displaySquelch && !displayChannelSettings)
 				{
 					static const int xbar = 74; // 128 - (51 /* max squelch px */ + 3);
 
@@ -275,6 +307,12 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					int bargraph = 1 + ((currentChannelData->sql - 1) * 5) /2;
 					ucDrawRect(xbar - 2, 17, 55, 13, true);
 					ucFillRect(xbar, 19, bargraph, 9, false);
+				}
+
+				// SK1 is pressed, we don't want to clear the first info row after 2000 ticks
+				if (displayChannelSettings && displaySquelch)
+				{
+					displaySquelch = false;
 				}
 
 				if(toneScanActive == true)
@@ -339,11 +377,13 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 
 		case QSO_DISPLAY_CALLER_DATA:
 			isDisplayingQSOData=true;
+			displayChannelSettings = false;
 			menuUtilityRenderQSOData();
 			displayLightTrigger();
 			ucRender();
 			break;
 	}
+
 	menuDisplayQSODataState = QSO_DISPLAY_IDLE;
 }
 
@@ -471,6 +511,22 @@ static void handleEvent(uiEvent_t *ev)
 				nonVolatileSettings.overrideTG = trxTalkGroupOrPcId;
 			}
 
+			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+			menuVFOModeUpdateScreen(0);
+			return;
+		}
+
+		// Display channel settings (CTCSS, Squelch) while SK1 is pressed
+		if ((displayChannelSettings == false) && (ev->buttons == BUTTON_SK1))
+		{
+			displayChannelSettings = true;
+			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+			menuVFOModeUpdateScreen(0);
+			return;
+		}
+		else if (displayChannelSettings && ((ev->buttons & BUTTON_SK1) == 0))
+		{
+			displayChannelSettings = false;
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 			menuVFOModeUpdateScreen(0);
 			return;
