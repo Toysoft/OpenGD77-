@@ -352,11 +352,12 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 			ucRender();
 			break;
 
+		case QSO_DISPLAY_CALLER_DATA_UPDATE:
+			displayLightTrigger();
 		case QSO_DISPLAY_CALLER_DATA:
 			isDisplayingQSOData=true;
 			displayChannelSettings = false;
 			menuUtilityRenderQSOData();
-			displayLightTrigger();
 			ucRender();
 			break;
 	}
