@@ -65,6 +65,7 @@ static int nuisanceDeleteIndex = 0;
 
 static int tmpQuickMenuDmrFilterLevel;
 static bool displayChannelSettings;
+static int prevDisplayQSODataState;
 
 int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 {
@@ -74,6 +75,7 @@ int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 	{
 		nonVolatileSettings.initialMenuNumber = MENU_CHANNEL_MODE;// This menu.
 		displayChannelSettings = false;
+		prevDisplayQSODataState = QSO_DISPLAY_IDLE;
 		currentChannelData = &channelScreenChannelData;// Need to set this as currentChannelData is used by functions called by loadChannelData()
 		lastHeardClearLastID();
 
@@ -241,6 +243,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 	switch(menuDisplayQSODataState)
 	{
 		case QSO_DISPLAY_DEFAULT_SCREEN:
+			prevDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 			isDisplayingQSOData=false;
 			menuUtilityReceivedPcId = 0x00;
 			if (trxIsTransmitting)
@@ -363,6 +366,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 		case QSO_DISPLAY_CALLER_DATA:
 			displayLightTrigger();
 		case QSO_DISPLAY_CALLER_DATA_UPDATE:
+			prevDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;
 			isDisplayingQSOData=true;
 			displayChannelSettings = false;
 			menuUtilityRenderQSOData();
@@ -434,15 +438,18 @@ static void handleEvent(uiEvent_t *ev)
 		// Display channel settings (RX/TX/etc) while SK1 is pressed
 		if ((displayChannelSettings == false) && (ev->buttons == BUTTON_SK1))
 		{
+			int prevQSODisp = prevDisplayQSODataState;
+
 			displayChannelSettings = true;
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 			menuChannelModeUpdateScreen(0);
+			prevDisplayQSODataState = prevQSODisp;
 			return;
 		}
 		else if (displayChannelSettings && ((ev->buttons & BUTTON_SK1) == 0))
 		{
 			displayChannelSettings = false;
-			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+			menuDisplayQSODataState = prevDisplayQSODataState;
 			menuChannelModeUpdateScreen(0);
 			return;
 		}

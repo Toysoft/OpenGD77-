@@ -919,6 +919,8 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 		case DMR_STATE_TX_1: // Ongoing TX (inactive timeslot)
 			if ((trxIsTransmitting==false) && (tx_sequence==0))
 			{
+				//write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50); // Receive during next Timeslot (no Layer 2 Access)
+				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00); 	//Do nothing on the next TS
 				slot_state = DMR_STATE_TX_END_1; // only exit here to ensure staying in the correct timeslot
 			}
 			else
