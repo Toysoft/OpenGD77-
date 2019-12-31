@@ -107,7 +107,7 @@ void lastheardInitList(void)
     	callsList[i].id=0;
         callsList[i].talkGroupOrPcId=0;
         callsList[i].talkerAlias[0] = 0;
-        callsList[i].location[0] = 0;
+        callsList[i].locator[0] = 0;
         callsList[i].time = 0;
         if (i==0)
         {
@@ -402,7 +402,7 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 					item->time = fw_millis();
 					lastTG = talkGroupOrPcId;
 					memset(item->talkerAlias, 0, 32);// Clear any TA data
-					memset(item->location, 0, 7);
+					memset(item->locator, 0, 7);
 					if (item->talkGroupOrPcId!=0)
 					{
 						menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;// flag that the display needs to update
@@ -469,13 +469,13 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 			}
 			else if (blockID == 4) // ID 0x08: GPS
 			{
-				uint8_t *location = decodeGPSPosition((uint8_t *)&DMR_frame_buffer[0]);
+				uint8_t *locator = decodeGPSPosition((uint8_t *)&DMR_frame_buffer[0]);
 
-				USB_DEBUG_printf("GPS: '%s'\n", location);
+				USB_DEBUG_printf("GPS: '%s'\n", locator);
 
-				if (strncmp((char *)&LinkHead->location, (char *)location, 7) != 0)
+				if (strncmp((char *)&LinkHead->locator, (char *)locator, 7) != 0)
 				{
-					memcpy(&LinkHead->location, location, 7);
+					memcpy(&LinkHead->locator, locator, 7);
 					menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA_UPDATE;
 				}
 			}
@@ -666,7 +666,7 @@ void printSplitOrSpanText(uint8_t y, char *text)
  */
 static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalkerAlias)
 {
-	char buffer[41]; // Max: TA 31 (in 7bit format) + ' [' + 6 (Maidenhead)  + ']' + NULL
+	char buffer[37]; // Max: TA 27 (in 7bit format) + ' [' + 6 (Maidenhead)  + ']' + NULL
 
 	if (strlen(text) >= 5 && isFromTalkerAlias) // if it's Talker Alias and there is more text than just the callsign, split across 2 lines
 	{
@@ -802,12 +802,12 @@ void menuUtilityRenderQSOData(void)
 				// We don't have this ID, so try looking in the Talker alias data
 				if (LinkHead->talkerAlias[0] != 0x00)
 				{
-					if (LinkHead->location[0] != 0)
+					if (LinkHead->locator[0] != 0)
 					{
-						char bufferTA[41]; // TA + ' [' + Maidenhead + ']' + NULL
+						char bufferTA[37]; // TA + ' [' + Maidenhead + ']' + NULL
 
 						memset(bufferTA, 0, sizeof(bufferTA));
-						snprintf(bufferTA, 41, "%s [%s]", LinkHead->talkerAlias, LinkHead->location);
+						snprintf(bufferTA, 36, "%s [%s]", LinkHead->talkerAlias, LinkHead->locator);
 						displayContactTextInfos(bufferTA, sizeof(bufferTA), true);
 					}
 					else
