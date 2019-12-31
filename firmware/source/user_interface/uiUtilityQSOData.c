@@ -469,8 +469,9 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 			}
 			else if (blockID == 4) // ID 0x08: GPS
 			{
-				USB_DEBUG_PRINT("GPS\n");
 				uint8_t *location = decodeGPSPosition((uint8_t *)&DMR_frame_buffer[0]);
+
+				USB_DEBUG_printf("GPS: '%s'\n", location);
 
 				if (strncmp((char *)&LinkHead->location, (char *)location, 7) != 0)
 				{
@@ -599,10 +600,12 @@ void printSplitOrSpanText(uint8_t y, char *text)
 {
 	uint8_t len = strlen(text);
 
+	if (len == 0)
+		return;
+
 	if (len <= 16)
 	{
-		if (len)
-			ucPrintCentered(y, text, FONT_8x16); //sprintf("LARGE Part0: '%s'\n", pbuf);
+		ucPrintCentered(y, text, FONT_8x16);
 	}
 	else
 	{
@@ -628,31 +631,30 @@ void printSplitOrSpanText(uint8_t y, char *text)
 			// rest is too long, just split the line in two chunks
 			if (rest > 21)
 			{
-				char c = buffer[20];
+				char c = buffer[21];
 
 				buffer[21] = 0;
 
-				ucPrintCentered(y, buffer, FONT_6x8);// printf("SMALL Part1: '%s'\n", buffer);
+				ucPrintCentered(y, buffer, FONT_6x8); // 2 pixels are saved, could center
 
 				buffer[21] = c;
 				buffer[42] = 0;
 
-				ucPrintCentered(y + 9, buffer + 21, FONT_6x8);// printf("SMALL Part2: '%s'\n", buffer + 21);
+				ucPrintCentered(y + 8, buffer + 21, FONT_6x8);
 			}
 			else
 			{
 				*p = 0;
 
-				ucPrintCentered(y, buffer, FONT_6x8);// printf("SMALL Partx: '%s'\n", buffer);
-				ucPrintCentered(y + 9, p + 1, FONT_6x8);//printf("SMALL Partx: '%s'\n", p + 1);
+				ucPrintCentered(y, buffer, FONT_6x8);
+				ucPrintCentered(y + 8, p + 1, FONT_6x8);
 			}
 		}
-		else // One line of 21 chars
+		else // One line of 21 chars max
 		{
-			ucPrintCentered(y + 4, text, FONT_6x8);// printf("SMALL: %s\n", pbuf);
+			ucPrintCentered(y + 4, text, FONT_6x8);
 		}
 	}
-
 }
 
 
@@ -664,9 +666,9 @@ void printSplitOrSpanText(uint8_t y, char *text)
  */
 static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalkerAlias)
 {
-	char buffer[32];
+	char buffer[41]; // Max: TA 31 (in 7bit format) + ' [' + 6 (Maidenhead)  + ']' + NULL
 
-	if (strlen(text) >= 5 && isFromTalkerAlias) // if its Talker Alias and there is more text than just the callsign, split across 2 lines
+	if (strlen(text) >= 5 && isFromTalkerAlias) // if it's Talker Alias and there is more text than just the callsign, split across 2 lines
 	{
 		char    *pbuf;
 		int32_t  cpos;
@@ -684,7 +686,13 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 			pbuf = chomp(buffer);
 
 			if (strlen(pbuf))
+			{
+#warning REMOVE ME
+				sprintf(pbuf, "%s %s", pbuf, "JN25UE");
+				//pbuf[] + 40) = 0;
+
 				printSplitOrSpanText(48, pbuf);
+			}
 			else
 				displayChannelNameOrRxFrequency(buffer, (sizeof(buffer) / sizeof(buffer[0])));
 		}
@@ -796,10 +804,10 @@ void menuUtilityRenderQSOData(void)
 				{
 					if (LinkHead->location[0] != 0)
 					{
-						char bufferTA[38]; // TA + Maidenhead + NULL
+						char bufferTA[41]; // TA + ' [' + Maidenhead + ']' + NULL
 
-						snprintf(bufferTA, 38, "%s - %s", LinkHead->talkerAlias, LinkHead->location);
-						bufferTA[37] = 0;
+						memset(bufferTA, 0, sizeof(bufferTA));
+						snprintf(bufferTA, 41, "%s [%s]", LinkHead->talkerAlias, LinkHead->location);
 						displayContactTextInfos(bufferTA, sizeof(bufferTA), true);
 					}
 					else
