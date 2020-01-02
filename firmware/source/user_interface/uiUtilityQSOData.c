@@ -462,6 +462,18 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 
 									menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;
 								}
+#warning REMOVE ME
+#if 0
+								uint8_t *locator = coordsToMaidenhead(-1.0, -20.0, false);
+
+								USB_DEBUG_printf("GPS: '%s'\n", locator);
+
+								if (strncmp((char *)&LinkHead->locator, (char *)locator, 7) != 0)
+								{
+									memcpy(&LinkHead->locator, locator, 7);
+									menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA_UPDATE;
+								}
+#endif
 							}
 						}
 					}
@@ -686,13 +698,7 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 			pbuf = chomp(buffer);
 
 			if (strlen(pbuf))
-			{
-#warning REMOVE ME
-				sprintf(pbuf, "%s %s", pbuf, "JN25UE");
-				//pbuf[] + 40) = 0;
-
 				printSplitOrSpanText(48, pbuf);
-			}
 			else
 				displayChannelNameOrRxFrequency(buffer, (sizeof(buffer) / sizeof(buffer[0])));
 		}
