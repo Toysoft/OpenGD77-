@@ -1220,7 +1220,8 @@ void handleHotspotRequest(void)
 
 			default:
 				//SEGGER_RTT_printf(0, "Unhandled command type %d\n",com_requestbuffer[2]);
-				sendNAK(com_requestbuffer[2]);
+				sendNAK(1U);
+				//sendNAK(com_requestbuffer[2]);
 				break;
 		}
 	}
