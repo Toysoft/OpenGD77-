@@ -413,11 +413,11 @@ bool dmrIDLookup( int targetId,dmrIdDataStruct_t *foundRecord)
 	return false;
 }
 
-bool contactPCIDLookup(uint32_t id, char *buffer)
+bool contactIDLookup(uint32_t id, int calltype, char *buffer)
 {
 	struct_codeplugContact_t contact;
 
-	int contactIndex = codeplugContactIndexByTGorPC((id & 0x00FFFFFF), CONTACT_CALLTYPE_PC, &contact);
+	int contactIndex = codeplugContactIndexByTGorPC((id & 0x00FFFFFF), calltype, &contact);
 	if (contactIndex != 0)
 	{
 		codeplugUtilConvertBufToString(contact.name, buffer, 16);
@@ -559,7 +559,7 @@ void menuUtilityRenderQSOData(void)
 		{
 			// Its a Private call
 
-			if (!contactPCIDLookup(LinkHead->id, buffer))
+			if (!contactIDLookup(LinkHead->id, CONTACT_CALLTYPE_PC, buffer))
 			{
 				dmrIDLookup( (LinkHead->id & 0xFFFFFF),&currentRec);
 				strncpy(buffer, currentRec.text, 16);
@@ -585,8 +585,11 @@ void menuUtilityRenderQSOData(void)
 		{
 			// Group call
 			uint32_t tg = (LinkHead->talkGroupOrPcId & 0xFFFFFF);
-			snprintf(buffer, bufferLen, "%s %d", currentLanguage->tg, tg);
-			buffer[16] = 0;
+			if (!contactIDLookup(LinkHead->talkGroupOrPcId, CONTACT_CALLTYPE_TG, buffer))
+			{
+				snprintf(buffer, bufferLen, "%s %d", currentLanguage->tg, tg);
+				buffer[16] = 0;
+			}
 			if (tg != trxTalkGroupOrPcId || (dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot()))
 			{
 				ucFillRect(0,16,128,16,false);// fill background with black
@@ -598,7 +601,7 @@ void menuUtilityRenderQSOData(void)
 			}
 
 			// first check if we have this ID in the DMR ID data
-			if (contactPCIDLookup(LinkHead->id, buffer))
+			if (contactIDLookup(LinkHead->id, CONTACT_CALLTYPE_PC, buffer))
 			{
 				displayContactTextInfos(buffer, 16,false);
 			}
