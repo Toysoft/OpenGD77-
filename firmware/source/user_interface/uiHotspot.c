@@ -33,19 +33,19 @@
 #include <user_interface/menuSystem.h>
 #include <user_interface/uiUtilityQSOData.h>
 
-#define MMDVM_FRAME_START   0xE0
+#define MMDVM_FRAME_START   0xE0U
 
-#define MMDVM_GET_VERSION   0x00
-#define MMDVM_GET_STATUS    0x01
-#define MMDVM_SET_CONFIG    0x02
-#define MMDVM_SET_MODE      0x03
-#define MMDVM_SET_FREQ      0x04
-#define MMDVM_CAL_DATA      0x08
-#define MMDVM_RSSI_DATA     0x09
-#define MMDVM_SEND_CWID     0x0A
+#define MMDVM_GET_VERSION   0x00U
+#define MMDVM_GET_STATUS    0x01U
+#define MMDVM_SET_CONFIG    0x02U
+#define MMDVM_SET_MODE      0x03U
+#define MMDVM_SET_FREQ      0x04U
+#define MMDVM_CAL_DATA      0x08U
+#define MMDVM_RSSI_DATA     0x09U
+#define MMDVM_SEND_CWID     0x0AU
 
-#define MMDVM_DMR_DATA1     0x18
-#define MMDVM_DMR_LOST1     0x19
+#define MMDVM_DMR_DATA1     0x18U
+#define MMDVM_DMR_LOST1     0x19U
 #define MMDVM_DMR_DATA2     0x1AU
 #define MMDVM_DMR_LOST2     0x1BU
 #define MMDVM_DMR_SHORTLC   0x1CU
@@ -339,11 +339,7 @@ void hotspotRxFrameHandler(uint8_t* frameBuf)
 	taskENTER_CRITICAL();
 	memcpy((uint8_t *)&audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufWriteIdx],frameBuf,27 + 0x0c  + 2);// 27 audio + 0x0c header + 2 hotspot signalling bytes
 	rfFrameBufCount++;
-	rfFrameBufWriteIdx++;
-	if (rfFrameBufWriteIdx > (HOTSPOT_BUFFER_COUNT - 1))
-	{
-		rfFrameBufWriteIdx=0;
-	}
+	rfFrameBufWriteIdx = ((rfFrameBufWriteIdx + 1) % HOTSPOT_BUFFER_COUNT);
 	taskEXIT_CRITICAL();
 }
 
@@ -472,11 +468,7 @@ static void storeNetFrame(uint8_t *com_requestbuffer)
 
 		memcpy((uint8_t *)&audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_write_idx],hotspotTxLC,9);// copy the current LC into the data (mainly for use with the embedded data);
 		wavbuffer_count++;
-		wavbuffer_write_idx++;
-		if (wavbuffer_write_idx > (HOTSPOT_BUFFER_COUNT - 1))
-		{
-			wavbuffer_write_idx=0;
-		}
+		wavbuffer_write_idx = ((wavbuffer_write_idx + 1) % HOTSPOT_BUFFER_COUNT);
 		taskEXIT_CRITICAL();
 	}
 
@@ -645,11 +637,7 @@ static void hotspotStateMachine(void)
 							break;
 					}
 
-					rfFrameBufReadIdx++;
-					if (rfFrameBufReadIdx > (HOTSPOT_BUFFER_COUNT-1))
-					{
-						rfFrameBufReadIdx=0;
-					}
+					rfFrameBufReadIdx = ((rfFrameBufReadIdx + 1) % HOTSPOT_BUFFER_COUNT);
 
 					if (rfFrameBufCount>0)
 					{
@@ -997,6 +985,7 @@ static void getStatus(void)
 	{
 		buf[5U] |= 0x08U;
 	}
+
 	buf[6U] = 	0U;// No DSTAR
 	buf[7U] = 	10U;// DMR
 	buf[8U] = 	HOTSPOT_BUFFER_COUNT - wavbuffer_count;
@@ -1091,12 +1080,12 @@ static void getVersion(void)
 	enqueueUSBData(buf,buf[1]);
 }
 
-static void handleDMRShortLC(void)
-{
-//	uint8_t LCBuf[5];
-//	DMRShortLC_decode((uint8_t *) com_requestbuffer + 3U,LCBuf);
-//	//SEGGER_RTT_printf(0, "MMDVM ShortLC\n %02X %02X %02X %02X %02X\n",LCBuf[0U],LCBuf[1U],LCBuf[2U],LCBuf[3U],LCBuf[4U],LCBuf[5U]);
-}
+//static void handleDMRShortLC(void)
+//{
+////	uint8_t LCBuf[5];
+////	DMRShortLC_decode((uint8_t *) com_requestbuffer + 3U,LCBuf);
+////	//SEGGER_RTT_printf(0, "MMDVM ShortLC\n %02X %02X %02X %02X %02X\n",LCBuf[0U],LCBuf[1U],LCBuf[2U],LCBuf[3U],LCBuf[4U],LCBuf[5U]);
+//}
 
 void handleHotspotRequest(void)
 {
@@ -1107,11 +1096,12 @@ void handleHotspotRequest(void)
 		//SEGGER_RTT_printf(0, "MMDVM %02x\n",com_requestbuffer[2]);
 		switch(com_requestbuffer[2])
 		{
-			case MMDVM_GET_VERSION:
-				getVersion();
-				break;
 			case MMDVM_GET_STATUS:
 				getStatus();
+				break;
+
+			case MMDVM_GET_VERSION:
+				getVersion();
 				break;
 
 			case MMDVM_SET_CONFIG:
@@ -1126,6 +1116,7 @@ void handleHotspotRequest(void)
 				  sendNAK(err);
 				}
 				break;
+
 			case MMDVM_SET_MODE:
 				err = setMode(com_requestbuffer + 3U, com_requestbuffer[1] - 3U);
 				if (err == 0U)
@@ -1137,6 +1128,7 @@ void handleHotspotRequest(void)
 					sendNAK(err);
 				}
 				break;
+
 			case MMDVM_SET_FREQ:
 	            err = setFreq(com_requestbuffer + 3U, com_requestbuffer[1] - 3U);
 	            if (err == 0x00)
@@ -1155,77 +1147,68 @@ void handleHotspotRequest(void)
 				//SEGGER_RTT_printf(0, "MMDVM_CAL_DATA\n");
 				sendACK();
 				break;
-			case MMDVM_RSSI_DATA:
-				//SEGGER_RTT_printf(0, "MMDVM_RSSI_DATA\n");
-				sendACK();
-				break;
+
+//			case MMDVM_RSSI_DATA: // That could be send back to MMDVM
+//				//SEGGER_RTT_printf(0, "MMDVM_RSSI_DATA\n");
+//				sendACK();
+//				break;
+
 			case MMDVM_SEND_CWID:
 				//SEGGER_RTT_printf(0, "MMDVM_SEND_CWID\n");
 				sendACK();
 				break;
-			case MMDVM_DMR_DATA1:
-				//SEGGER_RTT_printf(0, "MMDVM_DMR_DATA1\n");
-				hotspotModeReceiveNetFrame((uint8_t *)com_requestbuffer,1);
 
+			case MMDVM_DMR_DATA1: // We are a simplex hotspot, no TS1 support
+//				//SEGGER_RTT_printf(0, "MMDVM_DMR_DATA1\n");
+//				hotspotModeReceiveNetFrame((uint8_t *)com_requestbuffer,1);
 				break;
-			case MMDVM_DMR_LOST1:
-				//SEGGER_RTT_printf(0, "MMDVM_DMR_LOST1\n");
-				sendACK();
-				break;
+
 			case MMDVM_DMR_DATA2:
 				//SEGGER_RTT_printf(0, "MMDVM_DMR_DATA2\n");
 				hotspotModeReceiveNetFrame((uint8_t *)com_requestbuffer,2);
 				break;
-			case MMDVM_DMR_LOST2:
-				//SEGGER_RTT_printf(0, "MMDVM_DMR_LOST2\n");
-				sendACK();
+
+//			case MMDVM_DMR_LOST1: // That could be send back to MMDVM
+//				//SEGGER_RTT_printf(0, "MMDVM_DMR_LOST1\n");
+//				sendACK();
+//				break;
+//			case MMDVM_DMR_LOST2: // That could be send back to MMDVM
+//				//SEGGER_RTT_printf(0, "MMDVM_DMR_LOST2\n");
+//				sendACK();
+//				break;
+
+			case MMDVM_DMR_START: // Only for duplex
+//				//SEGGER_RTT_printf(0, "MMDVM_DMR_START\n");
+//				sendACK();
 				break;
-			case MMDVM_DMR_SHORTLC:
-				//SEGGER_RTT_printf(0, "MMDVM_DMR_SHORTLC\n");
-				handleDMRShortLC();
-				sendACK();
+			case MMDVM_DMR_SHORTLC: // Only for duplex
+//				//SEGGER_RTT_printf(0, "MMDVM_DMR_SHORTLC\n");
+//				handleDMRShortLC();
+//				sendACK();
 				break;
-			case MMDVM_DMR_START:
-				//SEGGER_RTT_printf(0, "MMDVM_DMR_START\n");
-				sendACK();
+			case MMDVM_DMR_ABORT: // Only for duplex
+//				//SEGGER_RTT_printf(0, "MMDVM_DMR_ABORT\n");
+//				sendACK();
 				break;
-			case MMDVM_DMR_ABORT:
-				//SEGGER_RTT_printf(0, "MMDVM_DMR_ABORT\n");
-				sendACK();
-				break;
-			case MMDVM_SERIAL:
-				//SEGGER_RTT_printf(0, "MMDVM_SERIAL\n");
-				//displayDataBytes(com_requestbuffer, com_requestbuffer[1]);
-				sendACK();
-				break;
-			case MMDVM_TRANSPARENT:
-				//SEGGER_RTT_printf(0, "MMDVM_TRANSPARENT\n");
-				sendACK();
-				break;
+
+//			case MMDVM_SERIAL: // Serial passthrough (a.k.a Nextion serial port), unhandled
+//				//SEGGER_RTT_printf(0, "MMDVM_SERIAL\n");
+//				//displayDataBytes(com_requestbuffer, com_requestbuffer[1]);
+//				//sendACK();
+//				break;
+
+			case MMDVM_TRANSPARENT: // Do nothing, stay silent
 			case MMDVM_QSO_INFO:
-				//SEGGER_RTT_printf(0, "MMDVM_QSO_INFO\n");
-				sendACK();
 				break;
-			case MMDVM_DEBUG1:
-				//SEGGER_RTT_printf(0, "MMDVM_DEBUG1\n");
-				sendACK();
-				break;
-			case MMDVM_DEBUG2:
-				//SEGGER_RTT_printf(0, "MMDVM_DEBUG2\n");
-				sendACK();
-				break;
-			case MMDVM_DEBUG3:
-				//SEGGER_RTT_printf(0, "MMDVM_DEBUG3\n");
-				sendACK();
-				break;
-			case MMDVM_DEBUG4:
-				//SEGGER_RTT_printf(0, "MMDVM_DEBUG4\n");
-				sendACK();
-				break;
-			case MMDVM_DEBUG5:
-				//SEGGER_RTT_printf(0, "MMDVM_DEBUG5\n");
-				sendACK();
-				break;
+
+//			case MMDVM_DEBUG1: // That could be send back to MMDVM, debug number is number of argument in sent frame
+//			case MMDVM_DEBUG2:
+//			case MMDVM_DEBUG3:
+//			case MMDVM_DEBUG4:
+//			case MMDVM_DEBUG5:
+//				break;
+
+#if 0 // What ?
 			case MMDVM_ACK:
 				//MMDVMHostRxState = MMDVMHOST_RX_READY;
 				break;
@@ -1233,6 +1216,8 @@ void handleHotspotRequest(void)
 				MMDVMHostRxState = MMDVMHOST_RX_ERROR;
 				//SEGGER_RTT_printf(0, "MMDVMHost returned NAK\n");
 				break;
+#endif
+
 			default:
 				//SEGGER_RTT_printf(0, "Unhandled command type %d\n",com_requestbuffer[2]);
 				sendNAK(com_requestbuffer[2]);
