@@ -32,6 +32,7 @@
 #include <user_interface/menuHotspot.h>
 #include <user_interface/menuSystem.h>
 #include <user_interface/uiUtilityQSOData.h>
+#include <functions/fw_ticks.h>
 
 #define MMDVM_FRAME_START   0xE0U
 
@@ -65,7 +66,10 @@
 #define PROTOCOL_VERSION    1U
 
 #define MMDVM_HEADER_LENGTH  4U
-const char * HOTSPOT_VERSION_STRING = "OpenGD77 Hotspot v0.0.72";
+#define HOTSPOT_VERSION_STRING "OpenGD77 Hotspot v0.0.72"
+#define concat(a, b) a " GitID #" b ""
+static const char HARDWARE[] = concat(HOTSPOT_VERSION_STRING, GITVERSION);
+
 
 const uint8_t MMDVM_VOICE_SYNC_PATTERN = 0x20U;
 
@@ -104,7 +108,8 @@ static volatile enum
 	MMDVMHOST_RX_ERROR
 } MMDVMHostRxState;
 
-static volatile enum MMDVM_STATE {
+typedef enum
+{
   STATE_IDLE      = 0,
   STATE_DSTAR     = 1,
   STATE_DMR       = 2,
@@ -121,16 +126,24 @@ static volatile enum MMDVM_STATE {
   STATE_DSTARCAL  = 99,
   STATE_INTCAL    = 100,
   STATE_POCSAGCAL = 101
-} modemState = STATE_IDLE;
+} MMDVM_STATE;
 
-static volatile enum { HOTSPOT_STATE_NOT_CONNECTED,
-				HOTSPOT_STATE_INITIALISE,
-				HOTSPOT_STATE_RX_START,
-				HOTSPOT_STATE_RX_PROCESS,
-				HOTSPOT_STATE_RX_END,
-				HOTSPOT_STATE_TX_START_BUFFERING,
-				HOTSPOT_STATE_TRANSMITTING,
-				HOTSPOT_STATE_TX_SHUTDOWN } hotspotState;
+static volatile MMDVM_STATE modemState = STATE_IDLE;
+
+
+typedef enum
+{
+	HOTSPOT_STATE_NOT_CONNECTED,
+	HOTSPOT_STATE_INITIALISE,
+	HOTSPOT_STATE_RX_START,
+	HOTSPOT_STATE_RX_PROCESS,
+	HOTSPOT_STATE_RX_END,
+	HOTSPOT_STATE_TX_START_BUFFERING,
+	HOTSPOT_STATE_TRANSMITTING,
+	HOTSPOT_STATE_TX_SHUTDOWN
+} HOTSPOT_STATE;
+
+static volatile HOTSPOT_STATE hotspotState;
 
 const int USB_SERIAL_TX_RETRIES = 2;
 const unsigned char VOICE_LC_SYNC_FULL[] 		= { 0x04U, 0x6DU, 0x5DU, 0x7FU, 0x77U, 0xFDU, 0x75U, 0x7EU, 0x30U};
@@ -168,44 +181,46 @@ static void displayDataBytes(uint8_t *buf, int len)
 // Queue system is a single byte header containing the length of the item, followed by the data
 // if the block won't fit in the space between the current write location and the end of the buffer,
 // a zero is written to the length for that block and the data and its length byte is put at the beginning of the buffer
-static void enqueueUSBData(uint8_t *buff,int length)
+static void enqueueUSBData(uint8_t *buff, uint8_t length)
 {
 	//SEGGER_RTT_printf(0, "Enqueue: ");
 	//displayDataBytes(buff,length);
 	if ((usbComSendBufWritePosition + length + 1) > (COM_BUFFER_SIZE - 1) )
 	{
 		//SEGGER_RTT_printf(0, "Looping write buffer back to start pos:%d len:%d\n");
-		usbComSendBuf[usbComSendBufWritePosition]=0;// flag that the data block won't fit and will be put at the start of the buffer
-		usbComSendBufWritePosition=0;
+		usbComSendBuf[usbComSendBufWritePosition] = 0;// flag that the data block won't fit and will be put at the start of the buffer
+		usbComSendBufWritePosition = 0;
 	}
 
-	usbComSendBuf[usbComSendBufWritePosition]=length;
-	memcpy(usbComSendBuf + usbComSendBufWritePosition +1,buff,length);
+	usbComSendBuf[usbComSendBufWritePosition] = length;
+	memcpy(usbComSendBuf + usbComSendBufWritePosition + 1, buff, length);
 	usbComSendBufWritePosition += 1 + length;
 	usbComSendBufCount++;
 }
 
 static void processUSBDataQueue(void)
 {
-	if (usbComSendBufCount!=0)
+	if (usbComSendBufCount != 0)
 	{
-		if (usbComSendBuf[usbComSendBufReadPosition]==0)
+		if (usbComSendBuf[usbComSendBufReadPosition] == 0)
 		{
-			usbComSendBufReadPosition=0;
+			usbComSendBufReadPosition = 0;
 		}
 
-		lastUSBSerialTxStatus = USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, &usbComSendBuf[usbComSendBufReadPosition+1],usbComSendBuf[usbComSendBufReadPosition]);
-		if ( lastUSBSerialTxStatus == kStatus_USB_Success)
+		lastUSBSerialTxStatus = USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, &usbComSendBuf[usbComSendBufReadPosition + 1], usbComSendBuf[usbComSendBufReadPosition]);
+		if (lastUSBSerialTxStatus == kStatus_USB_Success)
 		{
 			usbComSendBufReadPosition += usbComSendBuf[usbComSendBufReadPosition] + 1;
-			if (usbComSendBufReadPosition > (COM_BUFFER_SIZE-1))
+			//              Reaching end of buffer                  ||   enqueueUSBData() flagged it as end of buffer
+			if ((usbComSendBufReadPosition > (COM_BUFFER_SIZE - 1)) || (usbComSendBuf[usbComSendBufReadPosition] == 0))
 			{
-				usbComSendBufReadPosition=0;
+				usbComSendBufReadPosition = 0;
 			}
 			usbComSendBufCount--;
 		}
 		else
 		{
+			ucPrintAt(0, 0, "DEAD", FONT_8x16);
 			//SEGGER_RTT_printf(0, "USB Send Fail\n");
 		}
 	}
@@ -219,7 +234,7 @@ static void sendACK(void)
 	buf[1U] = 4U;
 	buf[2U] = MMDVM_ACK;
 	buf[3U] = com_requestbuffer[2U];
-	enqueueUSBData(buf,4);
+	enqueueUSBData(buf, buf[1U]);
 }
 
 static void sendNAK(uint8_t err)
@@ -231,7 +246,7 @@ static void sendNAK(uint8_t err)
 	buf[2U] = MMDVM_NAK;
 	buf[3U] = com_requestbuffer[2U];
 	buf[4U] = err;
-	enqueueUSBData(buf,5);
+	enqueueUSBData(buf, buf[1U]);
 }
 
 static void enableTransmission(void)
@@ -289,7 +304,7 @@ static void hotspotSendVoiceFrame(uint8_t *receivedDMRDataAndAudio)
 		}
 	}
 
-	enqueueUSBData(frameData,DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
+	enqueueUSBData(frameData, DMR_FRAME_LENGTH_BYTES + MMDVM_HEADER_LENGTH);
 }
 
 static void sendVoiceHeaderLC_Frame(volatile uint8_t *receivedDMRDataAndAudio)
@@ -309,7 +324,7 @@ static void sendVoiceHeaderLC_Frame(volatile uint8_t *receivedDMRDataAndAudio)
 	}
 
 	//SEGGER_RTT_printf(0, "sendVoiceHeaderLC_Frame\n");
-	enqueueUSBData(frameData,DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
+	enqueueUSBData(frameData, DMR_FRAME_LENGTH_BYTES + MMDVM_HEADER_LENGTH);
 }
 
 static void sendTerminator_LC_Frame(volatile uint8_t *receivedDMRDataAndAudio)
@@ -328,7 +343,7 @@ static void sendTerminator_LC_Frame(volatile uint8_t *receivedDMRDataAndAudio)
 	}
 
 	//SEGGER_RTT_printf(0, "sendTerminator_LC_Frame\n");
-	enqueueUSBData(frameData,DMR_FRAME_LENGTH_BYTES+MMDVM_HEADER_LENGTH);
+	enqueueUSBData(frameData, DMR_FRAME_LENGTH_BYTES + MMDVM_HEADER_LENGTH);
 }
 
 
@@ -548,6 +563,7 @@ bool hotspotModeReceiveNetFrame(uint8_t *com_requestbuffer, int timeSlot)
 }
 
 
+#define NOSCREEN 1
 
 static void hotspotStateMachine(void)
 {
@@ -557,9 +573,14 @@ static void hotspotStateMachine(void)
 			// do nothing
 			break;
 		case HOTSPOT_STATE_INITIALISE:
+#ifdef NOSCREEN
+			ucClearBuf();
+			ucRender();
+#endif
 			wavbuffer_read_idx=0;
 			wavbuffer_write_idx=0;
 			wavbuffer_count=0;
+
 			hotspotState = HOTSPOT_STATE_RX_START;
 			//SEGGER_RTT_printf(0, "STATE_INITIALISE -> STATE_RX\n");
 			break;
@@ -740,10 +761,18 @@ int menuHotspotMode(uiEvent_t *ev, bool isFirstRun)
 		freq_tx = freq_rx = 43000000;
 		settingsUsbMode = USB_MODE_HOTSPOT;
 		MMDVMHostRxState = MMDVMHOST_RX_READY; // We have not sent anything to MMDVMHost, so it can't be busy yet.
+
+		usbComSendBufWritePosition = usbComSendBufReadPosition = 0;
+		memset(&usbComSendBuf, 0, COM_BUFFER_SIZE);
+
 		ucClearBuf();
+#ifdef NOSCREEN
+		ucPrintAt(0,0, "DMR HS dbg", FONT_8x16);
+#else
 		ucPrintCentered(0, "Hotspot", FONT_8x16);
 		ucPrintCentered(32, "Waiting for", FONT_8x16);
 		ucPrintCentered(48, "PiStar", FONT_8x16);
+#endif
 		ucRender();
 		displayLightTrigger();
 //		updateScreen(HOTSPOT_RX_IDLE);
@@ -773,8 +802,12 @@ static void updateScreen(int rxCommandState)
 	char buffer[bufferLen];
 	dmrIdDataStruct_t currentRec;
 
+#ifndef NOSCREEN
 	ucClearBuf();
 	ucPrintAt(0,0, "DMR Hotspot", FONT_8x16);
+#else
+	buffer[0] = 0;
+#endif
 	int  batteryPerentage = (int)(((averageBatteryVoltage - CUTOFF_VOLTAGE_UPPER_HYST) * 100) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));
 	if (batteryPerentage>100)
 	{
@@ -787,15 +820,20 @@ static void updateScreen(int rxCommandState)
 
 	snprintf(buffer, bufferLen, "%d%%", batteryPerentage);
 	buffer[bufferLen - 1] = 0;
+#ifndef NOSCREEN
 	ucPrintCore(0, 4, buffer, FONT_6x8, TEXT_ALIGN_RIGHT, false);// Display battery percentage at the right
+#endif
 
 	if (trxIsTransmitting)
 	{
 		dmrIDLookup( (trxDMRID & 0xFFFFFF),&currentRec);
 		strncpy(buffer, currentRec.text, bufferLen);
 		buffer[bufferLen - 1] = 0;
+#ifndef NOSCREEN
 		ucPrintCentered(16, buffer, FONT_8x16);
-
+#else
+		buffer[0] = 0;
+#endif
 	//	sprintf(buffer,"ID %d",trxDMRID & 0xFFFFFF);
 	//	UC1701_printCentered(16, buffer,UC1701_FONT_8x16);
 		if ((trxTalkGroupOrPcId & 0xFF000000) == 0)
@@ -807,7 +845,10 @@ static void updateScreen(int rxCommandState)
 			snprintf(buffer, bufferLen, "PC %d", trxTalkGroupOrPcId &0xFFFFFF);
 		}
 		buffer[bufferLen - 1] = 0;
+
+#ifndef NOSCREEN
 		ucPrintCentered(32, buffer, FONT_8x16);
+#endif
 
 		val_before_dp = freq_tx/100000;
 		val_after_dp = freq_tx - val_before_dp*100000;
@@ -824,8 +865,11 @@ static void updateScreen(int rxCommandState)
 			dmrIDLookup(srcId,&currentRec);
 			strncpy(buffer, currentRec.text, bufferLen);
 			buffer[bufferLen - 1] = 0;
+#ifndef NOSCREEN
 			ucPrintCentered(16, buffer, FONT_8x16);
-
+#else
+			buffer[0] = 0;
+#endif
 			if (FLCO == 0)
 			{
 				snprintf(buffer, bufferLen, "TG %d", dstId);
@@ -835,24 +879,41 @@ static void updateScreen(int rxCommandState)
 				snprintf(buffer, bufferLen, "PC %d", dstId);
 			}
 			buffer[bufferLen - 1] = 0;
+#ifndef NOSCREEN
 			ucPrintCentered(32, buffer, FONT_8x16);
+#else
+			buffer[0] = 0;
+#endif
 		}
 		else
 		{
 			snprintf(buffer, bufferLen, "CC:%d", trxGetDMRColourCode());//, trxGetDMRTimeSlot()+1) ;
 			buffer[bufferLen - 1] = 0;
+#warning ENABLE ME
+#ifndef NOSCREEN
 			ucPrintCore(0, 32, buffer, FONT_8x16, TEXT_ALIGN_LEFT, false);
 
 			ucPrintCore(0, 32, (char *)POWER_LEVELS[hotspotPowerLevel], FONT_8x16, TEXT_ALIGN_RIGHT, false);
+#else
+			buffer[0] = 0;
+#endif
 		}
 		val_before_dp = freq_rx/100000;
 		val_after_dp = freq_rx - val_before_dp*100000;
 		snprintf(buffer, bufferLen, "R %d.%05d MHz", val_before_dp, val_after_dp);
 		buffer[bufferLen - 1] = 0;
 	}
+#ifdef NOSCREEN
+	ucFillRect(0, 48, 128, 6, true);
 	ucPrintCentered(48, buffer, FONT_8x16);
+	ucRenderRows(6, 8);
+#else
+	ucPrintCentered(48, buffer, FONT_8x16);
+#endif
 
+#ifndef NOSCREEN
 	ucRender();
+#endif
 	displayLightTrigger();
 }
 
@@ -969,12 +1030,12 @@ static void getStatus(void)
 	buf[0U]  = MMDVM_FRAME_START;
 	buf[1U]  = 13U;
 	buf[2U]  = MMDVM_GET_STATUS;
-	buf[3U]  = 0x00U;
-	buf[3U] |= 0x02U;// DMR ENABLED
+	//buf[3U]  = 0x00U;
+	buf[3U]  = 0x02U;// DMR ENABLED
 	buf[4U]  = modemState;
-	buf[5U]  = (	hotspotState == HOTSPOT_STATE_TX_START_BUFFERING ||
-						hotspotState == HOTSPOT_STATE_TRANSMITTING ||
-						hotspotState == HOTSPOT_STATE_TX_SHUTDOWN)  ? 0x01U : 0x00U;
+	buf[5U]  = ( ((hotspotState == HOTSPOT_STATE_TX_START_BUFFERING) ||
+					(hotspotState == HOTSPOT_STATE_TRANSMITTING) ||
+					(hotspotState == HOTSPOT_STATE_TX_SHUTDOWN)) ) ? 0x01U : 0x00U;
 
 	if (hasRXOverflow())
 	{
@@ -986,17 +1047,17 @@ static void getStatus(void)
 		buf[5U] |= 0x08U;
 	}
 
-	buf[6U] = 	0U;// No DSTAR
-	buf[7U] = 	10U;// DMR
-	buf[8U] = 	HOTSPOT_BUFFER_COUNT - wavbuffer_count;
-	buf[9U] = 	0U;// No YSF
+	buf[6U]  = 0U;// No DSTAR
+	buf[7U]  = 10U;// DMR
+	buf[8U]  = (HOTSPOT_BUFFER_COUNT - wavbuffer_count);
+	buf[9U]  = 0U;// No YSF
 	buf[10U] = 0U;// No P25
 	buf[11U] = 0U;// no NXDN
 	buf[12U] = 0U;// no POCSAG
 
 	//SEGGER_RTT_printf(0, "getStatus buffers=%d\n",s_ComBuf[8U]);
 
-	enqueueUSBData(buf,buf[1U]);
+	enqueueUSBData(buf, buf[1U]);
 }
 
 static uint8_t setConfig(volatile const uint8_t* data, uint8_t length)
@@ -1071,13 +1132,58 @@ uint8_t setMode(volatile const uint8_t* data, uint8_t length)
 
 static void getVersion(void)
 {
-	uint8_t buf[64];
+	uint8_t buf[128];
+	uint8_t count = 0U;
+
 	buf[0U]  = MMDVM_FRAME_START;
-	buf[1U]= 4 + strlen(HOTSPOT_VERSION_STRING);// minus 1 because there is no terminator
+	buf[1U]  = 0U;
 	buf[2U]  = MMDVM_GET_VERSION;
-	buf[3]= PROTOCOL_VERSION;
-	strcpy((char *)&buf[4],HOTSPOT_VERSION_STRING);
-	enqueueUSBData(buf,buf[1]);
+	buf[3U]  = PROTOCOL_VERSION;
+
+	count = 4U;
+
+	for (uint8_t i = 0U; HARDWARE[i] != 0x00U; i++, count++)
+		buf[count] = HARDWARE[i];
+
+	buf[1U] = count;
+
+	enqueueUSBData(buf, buf[1U]);
+}
+
+static void dbgAct(uint8_t cmd)
+{
+	static bool evblink = false;
+	//static uint32_t m = 0;
+	char buf[16];
+
+//	if ((fw_millis() - m) > 100)
+	{
+		ucPrintCore(4, 24, "K", FONT_6x8, TEXT_ALIGN_LEFT, evblink);
+		evblink = !evblink;
+		//m = fw_millis();
+
+		sprintf(buf, "0x%x", cmd);
+		ucFillRect(32, 24, 6*6, 8, true);
+		ucPrintAt(32, 24, buf, FONT_6x8);
+
+		ucRenderRows(3,4);
+	}
+}
+
+static void dbgPrint(char *text)
+{
+	ucFillRect(0, 16, 128, 8, true);
+	ucPrintAt(0, 16, text, FONT_6x8);
+
+	ucRenderRows(2,3);
+}
+
+static void dbgPrint2(char *text)
+{
+	ucFillRect(0, 32, 128, 8, true);
+	ucPrintAt(0, 32, text, FONT_6x8);
+
+	ucRender();//Rows(4,5);
 }
 
 //static void handleDMRShortLC(void)
@@ -1093,18 +1199,23 @@ void handleHotspotRequest(void)
 //	//SEGGER_RTT_printf(0, "handleHotspotRequest 0x%0x 0x%0x 0x%0x\n",com_requestbuffer[0],com_requestbuffer[1],com_requestbuffer[2]);
 	if (com_requestbuffer[0]==MMDVM_FRAME_START)
 	{
+		dbgAct(com_requestbuffer[2]);
+
 		//SEGGER_RTT_printf(0, "MMDVM %02x\n",com_requestbuffer[2]);
 		switch(com_requestbuffer[2])
 		{
 			case MMDVM_GET_STATUS:
+				dbgPrint("MMDVM_GET_STATUS");
 				getStatus();
 				break;
 
 			case MMDVM_GET_VERSION:
+				dbgPrint("MMDVM_GET_VERSION");
 				getVersion();
 				break;
 
 			case MMDVM_SET_CONFIG:
+				dbgPrint("MMDVM_SET_CONFIG");
 				err = setConfig(com_requestbuffer + 3U, com_requestbuffer[1] - 3U);
 				if (err == 0U)
 				{
@@ -1118,6 +1229,7 @@ void handleHotspotRequest(void)
 				break;
 
 			case MMDVM_SET_MODE:
+				dbgPrint("MMDVM_SET_MODE");
 				err = setMode(com_requestbuffer + 3U, com_requestbuffer[1] - 3U);
 				if (err == 0U)
 				{
@@ -1130,6 +1242,7 @@ void handleHotspotRequest(void)
 				break;
 
 			case MMDVM_SET_FREQ:
+				dbgPrint("MMDVM_SET_FREQ");
 	            err = setFreq(com_requestbuffer + 3U, com_requestbuffer[1] - 3U);
 	            if (err == 0x00)
 	            {
@@ -1144,6 +1257,7 @@ void handleHotspotRequest(void)
 				break;
 
 			case MMDVM_CAL_DATA:
+				dbgPrint("MMDVM_CAL_DATA");
 				//SEGGER_RTT_printf(0, "MMDVM_CAL_DATA\n");
 				sendACK();
 				break;
@@ -1154,16 +1268,19 @@ void handleHotspotRequest(void)
 //				break;
 
 			case MMDVM_SEND_CWID:
+				dbgPrint("MMDVM_SEND_CWID");
 				//SEGGER_RTT_printf(0, "MMDVM_SEND_CWID\n");
 				sendACK();
 				break;
 
 			case MMDVM_DMR_DATA1: // We are a simplex hotspot, no TS1 support
+				dbgPrint("MMDVM_DMR_DATA1");
 //				//SEGGER_RTT_printf(0, "MMDVM_DMR_DATA1\n");
 //				hotspotModeReceiveNetFrame((uint8_t *)com_requestbuffer,1);
 				break;
 
 			case MMDVM_DMR_DATA2:
+				dbgPrint("MMDVM_DMR_DATA2");
 				//SEGGER_RTT_printf(0, "MMDVM_DMR_DATA2\n");
 				hotspotModeReceiveNetFrame((uint8_t *)com_requestbuffer,2);
 				break;
@@ -1178,15 +1295,18 @@ void handleHotspotRequest(void)
 //				break;
 
 			case MMDVM_DMR_START: // Only for duplex
+				dbgPrint("MMDVM_DMR_START");
 //				//SEGGER_RTT_printf(0, "MMDVM_DMR_START\n");
 //				sendACK();
 				break;
 			case MMDVM_DMR_SHORTLC: // Only for duplex
+				dbgPrint("MMDVM_DMR_SHORTLC");
 //				//SEGGER_RTT_printf(0, "MMDVM_DMR_SHORTLC\n");
 //				handleDMRShortLC();
-//				sendACK();
+				sendACK();
 				break;
 			case MMDVM_DMR_ABORT: // Only for duplex
+				dbgPrint("MMDVM_DMR_ABORT");
 //				//SEGGER_RTT_printf(0, "MMDVM_DMR_ABORT\n");
 //				sendACK();
 				break;
@@ -1199,6 +1319,7 @@ void handleHotspotRequest(void)
 
 			case MMDVM_TRANSPARENT: // Do nothing, stay silent
 			case MMDVM_QSO_INFO:
+				dbgPrint("MMDVM_QSO_INFO");
 				break;
 
 //			case MMDVM_DEBUG1: // That could be send back to MMDVM, debug number is number of argument in sent frame
@@ -1210,18 +1331,25 @@ void handleHotspotRequest(void)
 
 #if 0 // What ?
 			case MMDVM_ACK:
+				dbgPrint2("MMDVM_ACK");
 				//MMDVMHostRxState = MMDVMHOST_RX_READY;
 				break;
 			case MMDVM_NAK:
+				dbgPrint2("MMDVM_NAK");
 				MMDVMHostRxState = MMDVMHOST_RX_ERROR;
 				//SEGGER_RTT_printf(0, "MMDVMHost returned NAK\n");
 				break;
 #endif
 
 			default:
+			{
+				char buf[16];
+				sprintf(buf, "UNK: %d", com_requestbuffer[2]);
+				dbgPrint2(buf);
 				//SEGGER_RTT_printf(0, "Unhandled command type %d\n",com_requestbuffer[2]);
 				sendNAK(1U);
 				//sendNAK(com_requestbuffer[2]);
+			}
 				break;
 		}
 	}
