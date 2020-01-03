@@ -138,7 +138,7 @@ const stringsTable_t catalanLanguage=
 .low_battery			= "BATERIA BAIXA !!",//// MaxLen: 16
 .Auto					= "Auto", // MaxLen 16 (with .mode + ':') 
 .manual					= "Manual",  // MaxLen 16 (with .mode + ':') 
-.ptt_toggle				= "PTT toggle", // MaxLen 16 (with ':' + .on or .off)
+.ptt_toggle				= "PTT Fixat", // MaxLen 16 (with ':' + .on or .off)
 };
 /********************************************************************
  *
