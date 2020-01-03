@@ -245,9 +245,6 @@ static uint8_t *decodeGPSPosition(uint8_t *data)
 	longitude *= (float)longitudeI;
 	latitude  *= (float)latitudeI;
 
-	//USB_DEBUG_printf("GPS position [%f,%f] (Position error %s)\n", latitude, longitude, error);
-	//LogMessage("GPS position [%f,%f] (Position error %s)", latitude, longitude, error);
-
 	return (coordsToMaidenhead(longitude, latitude, false));
 }
 
@@ -462,18 +459,6 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 
 									menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;
 								}
-#warning REMOVE ME
-#if 0
-								uint8_t *locator = coordsToMaidenhead(-1.0, -20.0, false);
-
-								USB_DEBUG_printf("GPS: '%s'\n", locator);
-
-								if (strncmp((char *)&LinkHead->locator, (char *)locator, 7) != 0)
-								{
-									memcpy(&LinkHead->locator, locator, 7);
-									menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA_UPDATE;
-								}
-#endif
 							}
 						}
 					}
@@ -482,8 +467,6 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 			else if (blockID == 4) // ID 0x08: GPS
 			{
 				uint8_t *locator = decodeGPSPosition((uint8_t *)&DMR_frame_buffer[0]);
-
-				USB_DEBUG_printf("GPS: '%s'\n", locator);
 
 				if (strncmp((char *)&LinkHead->locator, (char *)locator, 7) != 0)
 				{
