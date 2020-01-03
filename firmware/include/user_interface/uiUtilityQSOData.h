@@ -62,7 +62,7 @@ extern uint32_t menuUtilityTgBeforePcMode;
 extern const uint32_t RSSI_UPDATE_COUNTER_RELOAD;
 
 bool dmrIDLookup(int targetId, dmrIdDataStruct_t *foundRecord);
-bool contactPCIDLookup(uint32_t id, char *buffer);
+bool contactIDLookup(uint32_t id, int calltype, char *buffer);
 void menuUtilityRenderQSOData(void);
 void menuUtilityRenderHeader(void);
 void lastheardInitList(void);
