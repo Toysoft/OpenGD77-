@@ -43,7 +43,7 @@ static void updateScreen(void)
 	buf[11] = 0; // git hash id 7 char long;
 
 	ucClearBuf();
-	ucPrintCentered(5, "OpenGD77", FONT_8x16);
+	ucPrintCentered(5, "OpenGD77 f1rmb", FONT_8x16);
 	ucPrintCentered(24, currentLanguage->built, FONT_8x8);
 	ucPrintCentered(34,__TIME__, FONT_8x8);
 	ucPrintCentered(44,__DATE__, FONT_8x8);

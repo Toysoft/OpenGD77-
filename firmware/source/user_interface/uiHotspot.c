@@ -100,6 +100,7 @@ const int TX_BUFFERING_TIMEOUT = 5000;// 500mS
 static int timeoutCounter;
 static int savedPowerLevel=-1;// no power level saved yet
 static int hotspotPowerLevel=0;// no power level saved yet
+static uint32_t rxFrameTicks = 0;
 
 static volatile enum
 {
@@ -162,9 +163,81 @@ const uint8_t DMR_AUDIO_SEQ_SYNC[6][7] = {  {0x07U, 0xF0U, 0x00U, 0x00U, 0x00U, 
 const uint8_t DMR_AUDIO_SEQ_MASK[]  = 		{0x0FU, 0xF0U, 0x00U, 0x00U, 0x00U, 0x0FU, 0xF0U};
 const uint8_t DMR_EMBED_SEQ_MASK[]  = 		{0x00U, 0x0FU, 0xFFU, 0xFFU, 0xFFU, 0xF0U, 0x00U};
 
+static void sendDMRLost(void);
 static void updateScreen(int rxState);
 static void handleEvent(uiEvent_t *ev);
 void handleHotspotRequest(void);
+
+static void dbgAct(uint8_t cmd)
+{
+	static bool evblink = false;
+	//static uint32_t m = 0;
+	char buf[16];
+
+//	if ((fw_millis() - m) > 100)
+	{
+		ucPrintCore(4, 32, "K", FONT_6x8, TEXT_ALIGN_LEFT, evblink);
+		evblink = !evblink;
+		//m = fw_millis();
+
+		sprintf(buf, "0x%x", cmd);
+		ucFillRect(32, 32, 6*6, 8, true);
+		ucPrintAt(32, 32, buf, FONT_6x8);
+
+//		ucRenderRows(3,4);
+		ucRenderRows(4, 5);
+	}
+}
+
+static void dbgAct2(uint8_t cmd)
+{
+	static bool evblink = false;
+	//static uint32_t m = 0;
+	char buf[16];
+
+//	if ((fw_millis() - m) > 100)
+	{
+		ucPrintCore(4, 40, "Q", FONT_6x8, TEXT_ALIGN_LEFT, evblink);
+		evblink = !evblink;
+		//m = fw_millis();
+
+		sprintf(buf, "0x%x", cmd);
+		ucFillRect(32, 40, 6*6, 8, true);
+		ucPrintAt(32, 40, buf, FONT_6x8);
+
+//		ucRenderRows(3,4);
+		ucRenderRows(5, 6);
+	}
+}
+
+static void dbgPrint(char *text)
+{
+	char buf[22];
+	static uint32_t tick = 0;
+
+	snprintf(buf, 21, "%s %d", text, ++tick);
+	buf[21] = 0;
+	ucFillRect(0, 16, 128, 8, true);
+	ucPrintAt(0, 16, buf, FONT_6x8);
+
+	ucRenderRows(2,3);
+}
+
+static void dbgPrint2(char *text)
+{
+	char buf[22];
+	static uint32_t tick = 0;
+
+	snprintf(buf, 21, "%s %d", text, ++tick);
+	buf[21] = 0;
+	ucFillRect(0, 24, 128, 8, true);
+	ucPrintAt(0, 24, buf, FONT_6x8);
+
+	//ucRender();//Rows(4,5);
+	ucRenderRows(3,4);
+}
+
+
 /*
  *
  //Enable when debugging
@@ -567,12 +640,16 @@ bool hotspotModeReceiveNetFrame(uint8_t *com_requestbuffer, int timeSlot)
 
 static void hotspotStateMachine(void)
 {
+    dbgAct2(hotspotState);
+
 	switch(hotspotState)
 	{
 		case HOTSPOT_STATE_NOT_CONNECTED:
+			dbgPrint("NOT_CONNECTED");
 			// do nothing
 			break;
 		case HOTSPOT_STATE_INITIALISE:
+			dbgPrint("INITIALISE");
 #ifdef NOSCREEN
 			ucClearBuf();
 			ucRender();
@@ -585,6 +662,7 @@ static void hotspotStateMachine(void)
 			//SEGGER_RTT_printf(0, "STATE_INITIALISE -> STATE_RX\n");
 			break;
 		case HOTSPOT_STATE_RX_START:
+			dbgPrint("RX_START");
 			//SEGGER_RTT_printf(0, "STATE_RX_START\n");
 
 			// force immediate shutdown of Tx if we get here and the tx is on for some reason.
@@ -600,8 +678,9 @@ static void hotspotStateMachine(void)
 
 			hotspotState = HOTSPOT_STATE_RX_PROCESS;
 			break;
-		case HOTSPOT_STATE_RX_PROCESS:
 
+		case HOTSPOT_STATE_RX_PROCESS:
+			dbgPrint("RX_PROCESS");
         	if (rfFrameBufCount > 0)
         	{
         		if (MMDVMHostRxState == MMDVMHOST_RX_READY)
@@ -612,23 +691,30 @@ static void hotspotStateMachine(void)
         			switch(rx_command)
 					{
 						case HOTSPOT_RX_START:
+		        			dbgPrint2("RX_START");
 							//SEGGER_RTT_printf(0, "RX_START\n",rx_command,wavbuffer_count);
 		        			updateScreen(rx_command);
 							sendVoiceHeaderLC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
 							lastRxState = HOTSPOT_RX_START;
+							rxFrameTicks = fw_millis();
 							break;
 						case HOTSPOT_RX_START_LATE:
+		        			dbgPrint2("RX_START_LATE");
 							//SEGGER_RTT_printf(0, "RX_START_LATE\n");
 		        			updateScreen(rx_command);
 							sendVoiceHeaderLC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
 							lastRxState = HOTSPOT_RX_START_LATE;
+							rxFrameTicks = fw_millis();
 							break;
 						case HOTSPOT_RX_AUDIO_FRAME:
+		        			dbgPrint2("RX_AUDIO_FRAME"); // GET STUCK HERE
 							//SEGGER_RTT_printf(0, "HOTSPOT_RX_AUDIO_FRAME\n");
 							hotspotSendVoiceFrame((uint8_t *)audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
 							lastRxState = HOTSPOT_RX_AUDIO_FRAME;
+							rxFrameTicks = fw_millis();
 							break;
 						case HOTSPOT_RX_STOP:
+		        			dbgPrint2("RX_STOP");
 							//SEGGER_RTT_printf(0, "RX_STOP\n");
 		        			updateScreen(rx_command);
 							sendTerminator_LC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
@@ -636,6 +722,7 @@ static void hotspotStateMachine(void)
 							hotspotState = HOTSPOT_STATE_RX_END;
 							break;
 						case HOTSPOT_RX_IDLE_OR_REPEAT:
+		        			dbgPrint2("RX_IDLE_OR_REPEAT");
 							//SEGGER_RTT_printf(0, "RX_IDLE_OR_REPEAT\n");
 							/*
 							switch(lastRxState)
@@ -654,6 +741,7 @@ static void hotspotStateMachine(void)
 							break;
 
 						default:
+		        			dbgPrint2("UNKNOWN");
 							//SEGGER_RTT_printf(0, "ERROR: Unkown Hotspot RX state\n");
 							break;
 					}
@@ -667,15 +755,31 @@ static void hotspotStateMachine(void)
         		}
         		else
         		{
+        			dbgPrint2("NOT RX_READY");
         			// Rx Error NAK
         			hotspotState = HOTSPOT_STATE_RX_END;
         		}
         	}
+        	else
+        	{
+        		// Timeout: no RF data for too long
+        		if (((lastRxState == HOTSPOT_RX_AUDIO_FRAME) || (lastRxState == HOTSPOT_RX_START)) &&
+        				((fw_millis() - rxFrameTicks) > 600))
+        		{
+        			sendDMRLost();
+        			updateScreen(HOTSPOT_RX_STOP);
+					lastRxState = HOTSPOT_RX_STOP;
+					hotspotState = HOTSPOT_STATE_RX_END;
+					return;
+        		}
+        	}
 			break;
 		case HOTSPOT_STATE_RX_END:
+			dbgPrint("RX_END");
 			hotspotState = HOTSPOT_STATE_RX_START;
 			break;
 		case HOTSPOT_STATE_TX_START_BUFFERING:
+			dbgPrint("TX_START_BUFFERING");
 			// If MMDVMHost tells us to go back to idle. (receiving)
 			if (modemState == STATE_IDLE)
 			{
@@ -706,6 +810,7 @@ static void hotspotStateMachine(void)
 				}
 			break;
 		case HOTSPOT_STATE_TRANSMITTING:
+			dbgPrint("TRANSMITTING");
 			// Stop transmitting when there is no data in the buffer or if MMDVMHost sends the idle command
 			if (wavbuffer_count == 0 || modemState == STATE_IDLE)
 			{
@@ -715,6 +820,7 @@ static void hotspotStateMachine(void)
 			}
 			break;
 		case HOTSPOT_STATE_TX_SHUTDOWN:
+			dbgPrint("TX_SHUTDOWN");
 			if (txstopdelay>0)
 			{
 				txstopdelay--;
@@ -1150,41 +1256,17 @@ static void getVersion(void)
 	enqueueUSBData(buf, buf[1U]);
 }
 
-static void dbgAct(uint8_t cmd)
+static void sendDMRLost(void)
 {
-	static bool evblink = false;
-	//static uint32_t m = 0;
-	char buf[16];
+	uint8_t buf[3U];
 
-//	if ((fw_millis() - m) > 100)
-	{
-		ucPrintCore(4, 24, "K", FONT_6x8, TEXT_ALIGN_LEFT, evblink);
-		evblink = !evblink;
-		//m = fw_millis();
+	buf[0U] = MMDVM_FRAME_START;
+	buf[1U] = 3U;
+	buf[2U] = MMDVM_DMR_LOST2;
 
-		sprintf(buf, "0x%x", cmd);
-		ucFillRect(32, 24, 6*6, 8, true);
-		ucPrintAt(32, 24, buf, FONT_6x8);
-
-		ucRenderRows(3,4);
-	}
+	enqueueUSBData(buf, buf[1U]);
 }
 
-static void dbgPrint(char *text)
-{
-	ucFillRect(0, 16, 128, 8, true);
-	ucPrintAt(0, 16, text, FONT_6x8);
-
-	ucRenderRows(2,3);
-}
-
-static void dbgPrint2(char *text)
-{
-	ucFillRect(0, 32, 128, 8, true);
-	ucPrintAt(0, 32, text, FONT_6x8);
-
-	ucRender();//Rows(4,5);
-}
 
 //static void handleDMRShortLC(void)
 //{
@@ -1205,17 +1287,17 @@ void handleHotspotRequest(void)
 		switch(com_requestbuffer[2])
 		{
 			case MMDVM_GET_STATUS:
-				dbgPrint("MMDVM_GET_STATUS");
+				//dbgPrint("MMDVM_GET_STATUS");
 				getStatus();
 				break;
 
 			case MMDVM_GET_VERSION:
-				dbgPrint("MMDVM_GET_VERSION");
+				//dbgPrint("MMDVM_GET_VERSION");
 				getVersion();
 				break;
 
 			case MMDVM_SET_CONFIG:
-				dbgPrint("MMDVM_SET_CONFIG");
+				//dbgPrint("MMDVM_SET_CONFIG");
 				err = setConfig(com_requestbuffer + 3U, com_requestbuffer[1] - 3U);
 				if (err == 0U)
 				{
@@ -1229,7 +1311,7 @@ void handleHotspotRequest(void)
 				break;
 
 			case MMDVM_SET_MODE:
-				dbgPrint("MMDVM_SET_MODE");
+				//dbgPrint("MMDVM_SET_MODE");
 				err = setMode(com_requestbuffer + 3U, com_requestbuffer[1] - 3U);
 				if (err == 0U)
 				{
@@ -1242,7 +1324,7 @@ void handleHotspotRequest(void)
 				break;
 
 			case MMDVM_SET_FREQ:
-				dbgPrint("MMDVM_SET_FREQ");
+				//dbgPrint("MMDVM_SET_FREQ");
 	            err = setFreq(com_requestbuffer + 3U, com_requestbuffer[1] - 3U);
 	            if (err == 0x00)
 	            {
@@ -1257,7 +1339,7 @@ void handleHotspotRequest(void)
 				break;
 
 			case MMDVM_CAL_DATA:
-				dbgPrint("MMDVM_CAL_DATA");
+				//dbgPrint("MMDVM_CAL_DATA");
 				//SEGGER_RTT_printf(0, "MMDVM_CAL_DATA\n");
 				sendACK();
 				break;
@@ -1268,19 +1350,19 @@ void handleHotspotRequest(void)
 //				break;
 
 			case MMDVM_SEND_CWID:
-				dbgPrint("MMDVM_SEND_CWID");
+				//dbgPrint("MMDVM_SEND_CWID");
 				//SEGGER_RTT_printf(0, "MMDVM_SEND_CWID\n");
 				sendACK();
 				break;
 
 			case MMDVM_DMR_DATA1: // We are a simplex hotspot, no TS1 support
-				dbgPrint("MMDVM_DMR_DATA1");
+				//dbgPrint("MMDVM_DMR_DATA1");
 //				//SEGGER_RTT_printf(0, "MMDVM_DMR_DATA1\n");
 //				hotspotModeReceiveNetFrame((uint8_t *)com_requestbuffer,1);
 				break;
 
 			case MMDVM_DMR_DATA2:
-				dbgPrint("MMDVM_DMR_DATA2");
+				//dbgPrint("MMDVM_DMR_DATA2");
 				//SEGGER_RTT_printf(0, "MMDVM_DMR_DATA2\n");
 				hotspotModeReceiveNetFrame((uint8_t *)com_requestbuffer,2);
 				break;
@@ -1295,18 +1377,18 @@ void handleHotspotRequest(void)
 //				break;
 
 			case MMDVM_DMR_START: // Only for duplex
-				dbgPrint("MMDVM_DMR_START");
+				//dbgPrint("MMDVM_DMR_START");
 //				//SEGGER_RTT_printf(0, "MMDVM_DMR_START\n");
 //				sendACK();
 				break;
 			case MMDVM_DMR_SHORTLC: // Only for duplex
-				dbgPrint("MMDVM_DMR_SHORTLC");
+				//dbgPrint("MMDVM_DMR_SHORTLC");
 //				//SEGGER_RTT_printf(0, "MMDVM_DMR_SHORTLC\n");
 //				handleDMRShortLC();
 				sendACK();
 				break;
 			case MMDVM_DMR_ABORT: // Only for duplex
-				dbgPrint("MMDVM_DMR_ABORT");
+				//dbgPrint("MMDVM_DMR_ABORT");
 //				//SEGGER_RTT_printf(0, "MMDVM_DMR_ABORT\n");
 //				sendACK();
 				break;
@@ -1319,7 +1401,7 @@ void handleHotspotRequest(void)
 
 			case MMDVM_TRANSPARENT: // Do nothing, stay silent
 			case MMDVM_QSO_INFO:
-				dbgPrint("MMDVM_QSO_INFO");
+				//dbgPrint("MMDVM_QSO_INFO");
 				break;
 
 //			case MMDVM_DEBUG1: // That could be send back to MMDVM, debug number is number of argument in sent frame
@@ -1331,11 +1413,11 @@ void handleHotspotRequest(void)
 
 #if 0 // What ?
 			case MMDVM_ACK:
-				dbgPrint2("MMDVM_ACK");
+				//dbgPrint2("MMDVM_ACK");
 				//MMDVMHostRxState = MMDVMHOST_RX_READY;
 				break;
 			case MMDVM_NAK:
-				dbgPrint2("MMDVM_NAK");
+				//dbgPrint2("MMDVM_NAK");
 				MMDVMHostRxState = MMDVMHOST_RX_ERROR;
 				//SEGGER_RTT_printf(0, "MMDVMHost returned NAK\n");
 				break;
@@ -1343,9 +1425,9 @@ void handleHotspotRequest(void)
 
 			default:
 			{
-				char buf[16];
-				sprintf(buf, "UNK: %d", com_requestbuffer[2]);
-				dbgPrint2(buf);
+				//char buf[16];
+				//sprintf(buf, "UNK: %d", com_requestbuffer[2]);
+				//dbgPrint2(buf);
 				//SEGGER_RTT_printf(0, "Unhandled command type %d\n",com_requestbuffer[2]);
 				sendNAK(1U);
 				//sendNAK(com_requestbuffer[2]);
