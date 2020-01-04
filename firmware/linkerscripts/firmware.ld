@@ -22,15 +22,17 @@ SECTIONS
         LONG(LOADADDR(.data));
         LONG(    ADDR(.data));
         LONG(  SIZEOF(.data));
-        LONG(LOADADDR(.data_RAM2));
-        LONG(    ADDR(.data_RAM2));
-        LONG(  SIZEOF(.data_RAM2));
+        LONG(LOADADDR(.data_RAM4));
+        LONG(    ADDR(.data_RAM4));
+        LONG(  SIZEOF(.data_RAM4));
         __data_section_table_end = .;
         __bss_section_table = .;
         LONG(    ADDR(.bss));
         LONG(  SIZEOF(.bss));
         LONG(    ADDR(.bss_RAM2));
         LONG(  SIZEOF(.bss_RAM2));
+        LONG(    ADDR(.bss_RAM4));
+        LONG(  SIZEOF(.bss_RAM4));
         __bss_section_table_end = .;
         __section_table_end = . ;
         /* End of Global Section Table */
@@ -54,27 +56,32 @@ SECTIONS
     } > PROGRAM_FLASH
     
     /* DATA section for SRAM_LOWER */
-    .data_RAM2 : ALIGN(4)
+    .data_RAM4 : ALIGN(4)
     {
         FILL(0xff)
         PROVIDE(__start_data_RAM2 = .) ;
-        *(.ramfunc.$RAM2)
-        *(.ramfunc.$SRAM_LOWER)
-        *(.data.$RAM2*)
-        *(.data.$SRAM_LOWER*)
+        *(.ramfunc.$RAM4)
+        *(.ramfunc.$SRAM_LOWER_TOP)
+        *(.data.$RAM4*)
+        *(.data.$SRAM_LOWER_TOP*)
         . = ALIGN(4) ;
         PROVIDE(__end_data_RAM2 = .) ;
-     } > SRAM_LOWER AT>PROGRAM_FLASH
+     } > SRAM_LOWER_TOP AT>PROGRAM_FLASH
      
-    /* MAIN DATA SECTION */
-    .uninit_RESERVED : ALIGN(4)
+    /* DATA section for SRAM_LOWER */
+    .data_AMBE : ALIGN(4)
     {
-        KEEP(*(.bss.$RESERVED*))
+        FILL(0xff)
+        PROVIDE(__start_data_RAM3 = .) ;
+        *(.ramfunc.$AMBE)
+        *(.ramfunc.$SRAM_LOWER_AMBE)
+        *(.data.$AMBE*)
+        *(.data.$SRAM_LOWER_AMBE*)
         . = ALIGN(4) ;
-        _end_uninit_RESERVED = .;
-    } > SRAM_UPPER
-
-    /* Main DATA section (SRAM_UPPER) */
+        PROVIDE(__end_data_RAM3 = .) ;
+     } > SRAM_LOWER_AMBE
+     
+         /* Main DATA section (SRAM_UPPER) */
     .data : ALIGN(4)
     {
        FILL(0xff)
@@ -84,7 +91,16 @@ SECTIONS
        *(.data*)
        . = ALIGN(4) ;
        _edata = . ;
-    } > SRAM_UPPER AT>PROGRAM_FLASH
+    } > SRAM_LOWER_BOTTOM AT>PROGRAM_FLASH
+     
+    /* MAIN DATA SECTION */
+    .uninit_RESERVED : ALIGN(4)
+    {
+        KEEP(*(.bss.$RESERVED*))
+        . = ALIGN(4) ;
+        _end_uninit_RESERVED = .;
+    } > SRAM_UPPER
+
 
     .fw_311_0x00050000_0x0007afff : ALIGN(4)
     {
@@ -98,10 +114,21 @@ SECTIONS
     {
        PROVIDE(__start_bss_RAM2 = .) ;
        *(.bss.$RAM2*)
-       *(.bss.$SRAM_LOWER*)
+       *(.bss.$SRAM_LOWER_BOTTOM*)
+       *(COMMON)
        . = ALIGN (. != 0 ? 4 : 1) ; /* avoid empty segment */
        PROVIDE(__end_bss_RAM2 = .) ;
-    } > SRAM_LOWER 
+    } > SRAM_LOWER_BOTTOM 
+
+    /* BSS section for SRAM_LOWER */
+    .bss_RAM4 : ALIGN(4)
+    {
+       PROVIDE(__start_bss_RAM4 = .) ;
+       *(.bss.$RAM4*)
+       *(.bss.$SRAM_LOWER_TOP*)
+       . = ALIGN (. != 0 ? 4 : 1) ; /* avoid empty segment */
+       PROVIDE(__end_bss_RAM4 = .) ;
+    } > SRAM_LOWER_TOP 
 
     /* MAIN BSS SECTION */
     .bss : ALIGN(4)
@@ -114,13 +141,29 @@ SECTIONS
         PROVIDE(end = .);
     } > SRAM_UPPER
 
-    /* NOINIT section for SRAM_LOWER */
+    /* NOINIT section for SRAM_LOWER_BOTTOM */
     .noinit_RAM2 (NOLOAD) : ALIGN(4)
     {
        *(.noinit.$RAM2*)
-       *(.noinit.$SRAM_LOWER*)
+       *(.noinit.$SRAM_LOWER_BOTTOM*)
        . = ALIGN(4) ;
-    } > SRAM_LOWER 
+    } > SRAM_LOWER_BOTTOM 
+    
+    /* NOINIT section for SRAM_LOWER_AMBE */
+    .noinit_AMBE (NOLOAD) : ALIGN(4)
+    {
+       *(.noinit.$AMBE*)
+       *(.noinit.$SRAM_LOWER_AMBE*)
+       . = ALIGN(4) ;
+    } > SRAM_LOWER_AMBE 
+
+    /* NOINIT section for SRAM_LOWER_TOP */
+    .noinit_RAM4 (NOLOAD) : ALIGN(4)
+    {
+       *(.noinit.$RAM4*)
+       *(.noinit.$SRAM_LOWER_TOP*)
+       . = ALIGN(4) ;
+    } > SRAM_LOWER_TOP 
 
     /* DEFAULT NOINIT SECTION */
     .noinit (NOLOAD): ALIGN(4)
@@ -139,21 +182,22 @@ SECTIONS
         . += _HeapSize;
         . = ALIGN(4);
         _pvHeapLimit = .;
-    } > SRAM_UPPER
+    } > SRAM_LOWER_TOP
 
      _StackSize = 0x1000;
      /* Reserve space in memory for Stack */
     .heap2stackfill  :
     {
         . += _StackSize;
-    } > SRAM_UPPER
+    } > SRAM_LOWER_TOP
+    
     /* Locate actual Stack in memory map */
-    .stack ORIGIN(SRAM_UPPER) + LENGTH(SRAM_UPPER) - _StackSize - 0:  ALIGN(4)
+    .stack ORIGIN(SRAM_LOWER_TOP) + LENGTH(SRAM_LOWER_TOP) - _StackSize - 0:  ALIGN(4)
     {
         _vStackBase = .;
         . = ALIGN(4);
         _vStackTop = . + _StackSize;
-    } > SRAM_UPPER
+    } > SRAM_LOWER_TOP
 
     /* Provide basic symbols giving location and size of main text
      * block, including initial values of RW data sections. Note that

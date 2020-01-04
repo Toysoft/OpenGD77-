@@ -301,10 +301,13 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 						}
 						ucPrintCentered(50, (char *)nameBuf, FONT_6x8);
 					}
-
-					codeplugUtilConvertBufToString(channelScreenChannelData.name, nameBuf, 16);
-					ucPrintCentered(32 + verticalPositionOffset, nameBuf, FONT_8x16);
 				}
+			}
+
+			if (!displayChannelSettings)
+			{
+				codeplugUtilConvertBufToString(channelScreenChannelData.name, nameBuf, 16);
+				ucPrintCentered(32 + verticalPositionOffset, nameBuf, FONT_8x16);
 			}
 
 			if (trxGetMode() == RADIO_MODE_DIGITAL)
@@ -364,11 +367,12 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 			break;
 
 		case QSO_DISPLAY_CALLER_DATA:
+			displayLightTrigger();
+		case QSO_DISPLAY_CALLER_DATA_UPDATE:
 			prevDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;
 			isDisplayingQSOData=true;
 			displayChannelSettings = false;
 			menuUtilityRenderQSOData();
-			displayLightTrigger();
 			ucRender();
 			break;
 	}
