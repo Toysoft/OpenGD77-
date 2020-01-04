@@ -19,6 +19,10 @@
 #ifndef _FW_MAIN_H_
 #define _FW_MAIN_H_
 
+#define BSS_LOWER_BOTTOM  __attribute__((section(".bss.$RAM2")))
+#define BSS_LOWER_TOP     __attribute__((section(".bss.$RAM4")))
+#define DATA_LOWER_TOP    __attribute__((section(".data.$RAM4")))
+
 #include <stdint.h>
 #include <stdio.h>
 
