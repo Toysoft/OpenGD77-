@@ -19,6 +19,7 @@
  */
 
 #include <hardware/fw_HR-C6000.h>
+#include <dmr/dmrDefines.h>
 #include "fw_settings.h"
 #include <SeggerRTT/RTT/SEGGER_RTT.h>
 #include <user_interface/menuHotspot.h>
@@ -716,7 +717,7 @@ inline static void HRC6000SysInterruptHandler(void)
 		read_SPI_page_reg_byte_SPI0(0x04, 0x51, &tmp_val_0x51);
 		bool rxCRCStatus = (((tmp_val_0x51 >> 2) & 0x01)==0);// CRC is OK if its 0
 
-		if (rxCRCStatus && (LCBuf[0]==TG_CALL_FLAG || LCBuf[0]==PC_CALL_FLAG  || (LCBuf[0]>=0x04 && LCBuf[0]<=0x07)) &&
+		if (rxCRCStatus && (LCBuf[0]==TG_CALL_FLAG || LCBuf[0]==PC_CALL_FLAG  || (LCBuf[0]>=FLCO_TALKER_ALIAS_HEADER && LCBuf[0]<=FLCO_GPS_INFO)) &&
 			memcmp((uint8_t *)previousLCBuf,LCBuf,12)!=0)
 		{
 

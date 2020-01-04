@@ -39,6 +39,7 @@ typedef struct LinkItem
     uint32_t 	id;
     uint32_t 	talkGroupOrPcId;
     char 		talkerAlias[32];// 4 blocks of data. 6 bytes + 7 bytes + 7 bytes + 7 bytes . plus 1 for termination some more for safety.
+    char 		locator[7];
     uint32_t	time;// current system time when this station was heard
     struct LinkItem *next;
 } LinkItem_t;
@@ -47,7 +48,8 @@ enum QSO_DISPLAY_STATE
 {
 	QSO_DISPLAY_IDLE,
 	QSO_DISPLAY_DEFAULT_SCREEN,
-	QSO_DISPLAY_CALLER_DATA
+	QSO_DISPLAY_CALLER_DATA,
+	QSO_DISPLAY_CALLER_DATA_UPDATE
 };
 
 extern const char *POWER_LEVELS[];
