@@ -301,10 +301,13 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 						}
 						ucPrintCentered(50, (char *)nameBuf, FONT_6x8);
 					}
-
-					codeplugUtilConvertBufToString(channelScreenChannelData.name, nameBuf, 16);
-					ucPrintCentered(32 + verticalPositionOffset, nameBuf, FONT_8x16);
 				}
+			}
+
+			if (!displayChannelSettings)
+			{
+				codeplugUtilConvertBufToString(channelScreenChannelData.name, nameBuf, 16);
+				ucPrintCentered(32 + verticalPositionOffset, nameBuf, FONT_8x16);
 			}
 
 			if (trxGetMode() == RADIO_MODE_DIGITAL)

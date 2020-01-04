@@ -914,7 +914,21 @@ The LED on the top of the radio also turns red to indicate the radio is transmit
 
 **NOTE**: You cannot use the standard Radioddity CPS to write to a GD-77 flashed with the OpenGD77 firmware. If you wish to use the Radioddity CPS the radio will need to run the official Radioddity firmware. Once the codeplug has been written to the GD-77 with your ID and callsign, you can then flash the OpenGD77 firmware to the radio and it will then read and operate with the code plug written to it with the standard firmware and CPS software.
 
-As an alternative to the Radioddity CPS you can use the latest version of the “Community CPS” by Roger Clark that includes support for OpenGD77. Please see the next section for information specific to the Community CPS. The information in the rest of this section is applicable to both the standard Radioddity CPS and the Community CPS.
+As an alternative to the Radioddity CPS you can use the latest version of the “Community CPS” by Roger Clark that includes support for OpenGD77. Community CPS supports both the official GD77 firmware and OpenGD77.
+
+Please download the latest GD77 Community CPS from here:
+<https://github.com/rogerclarkmelbourne/radioddity_gd-77_cps/raw/master/installer/RadioddityGD77CPS31XCommunityEditionInstaller.exe>
+
+Another alternative is to use the OpenGD77 CPS, which has functionalities specificially designed for OpenGD77. Some highlights include:
+
+* 80 channels per zone
+* "TG lists" instead of "Rx lists" to define TalkGroups assigned per channel for Left-Right scrolling
+* Screengrab tool for taking screenshots from the radio's display
+
+Please download the latest OpenGD77 CPS from here:
+<https://github.com/rogerclarkmelbourne/radioddity_gd-77_cps/raw/master/installer/OpenGD77CPSInstaller.exe>
+
+Please see the next section for information specific to the Community CPS and OpenGD77 CPS. The information in the rest of this section is applicable to both the standard Radioddity CPS and the Community CPS.
 
 ### Overview
 
@@ -923,9 +937,6 @@ OpenGD77 simplifies the concept of TalkGroups, for maximum convenience for radio
 In DMR mode when using either the VFO or the Zones and Channels, you can use the LEFT/RIGHT arrow keys to scroll through and select any of the TalkGroups in the Rx Group list assigned to the current channel, or to VFO A.
 
 When programming the radio using the CPS first add all the TalkGroups that you think you may wish to use into the Digital Contacts list.
-
-Please download the latest GD77 Community CPS from here:
-<https://github.com/rogerclarkmelbourne/radioddity_gd-77_cps/raw/master/installer/RadioddityGD77CPS31XCommunityEditionInstaller.exe>
 
 ![](media/cps-treeview-rx-grouplist.png)
 
@@ -961,7 +972,7 @@ Once the driver is installed, the Windows device manager should show the “Open
 
 #### OpenGD77 Menu
 
-In the CPS there is a new menu item under the Extras menu for OpenGD77 Support, which opens this window
+In the CPS there is a new menu item under the Extras menu for OpenGD77 Support, which opens this window.
 
 ![](media/cps-opengd77-support.png)
 
@@ -969,6 +980,8 @@ From here you can backup, the internal 64k EEPOM and the 1 mega byte Flash chip,
 The calibration data store in the Flash chip (At address 0x8f000) can be backed up and restored without backing up the whole of the Flash.
 
 *Note.* If you restore the Flash you will also overwrite the calibration data as it’s stored in the 1Mb Flash chip.
+
+You can also use this window to grab a screenshot from the phone's current display. Screenshots are saved in PNG format.
 
 #### Backup Before You Do Anything Else
 
@@ -983,6 +996,11 @@ To read the codeplug, press the “Read codeplug” button, wait for all 3 data 
 The OpenGD77 supports extended DMR ID information, with up to 15 character for Callsign and name, as well as doubling the memory capacity for DMR IDs.
 
 Please select the “Enhanced firmware mode” Checkbox, and change the Number of characters menu to the desired DMR callsign and name length.
-*Note.* Because the memory size used for the DMR ID is currently limited to 256, you can store more DMR IDs if you assign fewer characters per ID. Depending on actual information, OpenGD77 can store approximately 14,000 to 15,000 IDs in its user database.
+
+Then, you can add in DMR IDs into the database by selecting an ID prefix. You can continue adding DMR IDs based on your commonly heard prefixes until you fill up the allocation.
+
+*Note.* Because the memory size used for the DMR ID is currently limited to 256, you can store more DMR IDs if you assign fewer characters per ID. Depending on actual information, OpenGD77 can store approximately 14,000-15,000 IDs in its user database.
+
+As OpenGD77 supports Talker Alias, you might find this sufficient -- OpenGD77 will display callsign and name data retrieved from the DMR stream, for user IDs not stored in your radio's User Database.
 
 ![](media/cps-dmr-ids.png)
