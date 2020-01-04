@@ -168,6 +168,11 @@ static void updateScreen(int rxState);
 static void handleEvent(uiEvent_t *ev);
 void handleHotspotRequest(void);
 
+
+#warning GET RID OF ME
+#define NOSCREEN 1
+
+#ifdef NOSCREEN
 static void dbgAct(uint8_t cmd)
 {
 	static bool evblink = false;
@@ -210,12 +215,25 @@ static void dbgAct2(uint8_t cmd)
 	}
 }
 
+static void dbgPrint0(char *text)
+{
+	char buf[22];
+	static uint8_t tick = 0;
+
+	snprintf(buf, 21, "%s %03d", text, ++tick);
+	buf[21] = 0;
+	ucFillRect(0, 0, 128, 8, true);
+	ucPrintAt(0, 0, buf, FONT_6x8);
+
+	ucRenderRows(0,1);
+}
+
 static void dbgPrint(char *text)
 {
 	char buf[22];
-	static uint32_t tick = 0;
+	static uint8_t tick = 0;
 
-	snprintf(buf, 21, "%s %d", text, ++tick);
+	snprintf(buf, 21, "%s %03d", text, ++tick);
 	buf[21] = 0;
 	ucFillRect(0, 16, 128, 8, true);
 	ucPrintAt(0, 16, buf, FONT_6x8);
@@ -226,9 +244,9 @@ static void dbgPrint(char *text)
 static void dbgPrint2(char *text)
 {
 	char buf[22];
-	static uint32_t tick = 0;
+	static uint8_t tick = 0;
 
-	snprintf(buf, 21, "%s %d", text, ++tick);
+	snprintf(buf, 21, "%s %03d", text, ++tick);
 	buf[21] = 0;
 	ucFillRect(0, 24, 128, 8, true);
 	ucPrintAt(0, 24, buf, FONT_6x8);
@@ -236,7 +254,13 @@ static void dbgPrint2(char *text)
 	//ucRender();//Rows(4,5);
 	ucRenderRows(3,4);
 }
-
+#else
+#define dbgAct(cmd)     do {} while (0)
+#define dbgAct2(cmd)    do {} while (0)
+#define dbgPrint0(text) do {} while (0)
+#define dbgPrint(text)  do {} while (0)
+#define dbgPrint2(text) do {} while (0)
+#endif
 
 /*
  *
@@ -636,8 +660,6 @@ bool hotspotModeReceiveNetFrame(uint8_t *com_requestbuffer, int timeSlot)
 }
 
 
-#define NOSCREEN 1
-
 static void hotspotStateMachine(void)
 {
     dbgAct2(hotspotState);
@@ -767,10 +789,10 @@ static void hotspotStateMachine(void)
         				((fw_millis() - rxFrameTicks) > 600))
         		{
         			sendDMRLost();
-        			updateScreen(HOTSPOT_RX_STOP);
-					lastRxState = HOTSPOT_RX_STOP;
-					hotspotState = HOTSPOT_STATE_RX_END;
-					return;
+        			updateScreen(HOTSPOT_RX_IDLE);
+        			lastRxState = HOTSPOT_RX_STOP;
+        			hotspotState = HOTSPOT_STATE_RX_END;
+        			return;
         		}
         	}
 			break;
@@ -835,7 +857,8 @@ static void hotspotStateMachine(void)
 			}
 			else
 			{
-				if ((slot_state < DMR_STATE_TX_START_1))
+				if ((slot_state < DMR_STATE_TX_START_1) ||
+						((modemState == STATE_DMR) && trxIsTransmitting)) // MMDVMHost asked to go back to IDLE (mostly on shutdown)
 				{
 					disableTransmission();
 					hotspotState = HOTSPOT_STATE_RX_START;
@@ -995,7 +1018,6 @@ static void updateScreen(int rxCommandState)
 		{
 			snprintf(buffer, bufferLen, "CC:%d", trxGetDMRColourCode());//, trxGetDMRTimeSlot()+1) ;
 			buffer[bufferLen - 1] = 0;
-#warning ENABLE ME
 #ifndef NOSCREEN
 			ucPrintCore(0, 32, buffer, FONT_8x16, TEXT_ALIGN_LEFT, false);
 
