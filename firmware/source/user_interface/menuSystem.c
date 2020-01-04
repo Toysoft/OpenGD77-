@@ -164,9 +164,13 @@ void menuSystemCallCurrentMenuTick(uiEvent_t *ev)
 
 void displayLightTrigger(void)
 {
-	if (nonVolatileSettings.backlightMode == BACKLIGHT_MODE_AUTO)
+	if ((nonVolatileSettings.backlightMode == BACKLIGHT_MODE_AUTO) ||
+			((nonVolatileSettings.backlightMode == BACKLIGHT_MODE_MANUAL) && fw_displayIsBacklightLit()))
 	{
-		menuDisplayLightTimer = nonVolatileSettings.backLightTimeout * 1000;
+		if (nonVolatileSettings.backlightMode == BACKLIGHT_MODE_AUTO)
+		{
+			menuDisplayLightTimer = nonVolatileSettings.backLightTimeout * 1000;
+		}
 		fw_displayEnableBacklight(true);
 	}
 }
