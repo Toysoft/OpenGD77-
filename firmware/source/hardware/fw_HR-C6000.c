@@ -894,6 +894,7 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 			init_digital_DMR_RX();
 			GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
+			menuDisplayQSODataState= QSO_DISPLAY_DEFAULT_SCREEN;
 			slot_state = DMR_STATE_IDLE;
 			break;
 		case DMR_STATE_TX_START_1: // Start TX (second step)
