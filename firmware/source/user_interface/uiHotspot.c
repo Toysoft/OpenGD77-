@@ -1075,12 +1075,12 @@ static void handleEvent(uiEvent_t *ev)
 
 static uint8_t setFreq(volatile const uint8_t* data, uint8_t length)
 {
-// satellite frequencies banned frequency ranges
-const int BAN1_MIN  = 14580000;
-const int BAN1_MAX  = 14600000;
-const int BAN2_MIN  = 43500000;
-const int BAN2_MAX  = 43800000;
-uint32_t fRx,fTx;
+	// satellite frequencies banned frequency ranges
+	const int BAN1_MIN  = 14580000;
+	const int BAN1_MAX  = 14600000;
+	const int BAN2_MIN  = 43500000;
+	const int BAN2_MAX  = 43800000;
+	uint32_t fRx,fTx;
 
 	//SEGGER_RTT_printf(0, "setFreq\n");
 	hotspotState = HOTSPOT_STATE_INITIALISE;
@@ -1138,7 +1138,7 @@ uint32_t fRx,fTx;
 	}
 
 
-  return 0x00;
+  return 0U;
 }
 
 static bool hasRXOverflow(void)
@@ -1154,7 +1154,7 @@ static void getStatus(void)
 {
 	uint8_t buf[16];
 //	//SEGGER_RTT_printf(0, "getStatus\n");
-  // Send all sorts of interesting internal values
+	// Send all sorts of interesting internal values
 	buf[0U]  = MMDVM_FRAME_START;
 	buf[1U]  = 13U;
 	buf[2U]  = MMDVM_GET_STATUS;
@@ -1192,33 +1192,33 @@ static uint8_t setConfig(volatile const uint8_t* data, uint8_t length)
 {
 	//SEGGER_RTT_printf(0, "setConfig \n");
 
-  uint8_t txDelay = data[2U];
-  if (txDelay > 50U)
-  {
-	  return 4U;
-  }
+	uint8_t txDelay = data[2U];
+	if (txDelay > 50U)
+	{
+		return 4U;
+	}
 
-  if (data[3U] != STATE_IDLE && data[3U] != STATE_DMR)
-  {
-	  return 4U;// only DMR mode supported
-  }
-  modemState = data[3U];
+	if (data[3U] != STATE_IDLE && data[3U] != STATE_DMR)
+	{
+		return 4U;// only DMR mode supported
+	}
+	modemState = data[3U];
 
-  uint8_t colorCode = data[6U];
-  if (colorCode > 15U)
-  {
-    return 4U;
-  }
+	uint8_t colorCode = data[6U];
+	if (colorCode > 15U)
+	{
+		return 4U;
+	}
 
-  trxSetDMRColourCode(colorCode);
+	trxSetDMRColourCode(colorCode);
 
-  /* To Do
-  m_cwIdTXLevel = data[5U]>>2;
-  uint8_t dmrTXLevel    = data[10U];
-  io.setDeviations(dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel, nxdnTXLevel, pocsagTXLevel, ysfLoDev);
-  dmrDMOTX.setTXDelay(txDelay);
-   */
-  return 0U;
+	/* To Do
+	 m_cwIdTXLevel = data[5U]>>2;
+     uint8_t dmrTXLevel    = data[10U];
+     io.setDeviations(dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel, nxdnTXLevel, pocsagTXLevel, ysfLoDev);
+     dmrDMOTX.setTXDelay(txDelay);
+	 */
+	return 0U;
 }
 
 uint8_t setMode(volatile const uint8_t* data, uint8_t length)
@@ -1299,7 +1299,7 @@ static void sendDMRLost(void)
 
 void handleHotspotRequest(void)
 {
-	int err;
+	uint8_t err;
 //	//SEGGER_RTT_printf(0, "handleHotspotRequest 0x%0x 0x%0x 0x%0x\n",com_requestbuffer[0],com_requestbuffer[1],com_requestbuffer[2]);
 	if (com_requestbuffer[0]==MMDVM_FRAME_START)
 	{
@@ -1348,7 +1348,7 @@ void handleHotspotRequest(void)
 			case MMDVM_SET_FREQ:
 				//dbgPrint("MMDVM_SET_FREQ");
 	            err = setFreq(com_requestbuffer + 3U, com_requestbuffer[1] - 3U);
-	            if (err == 0x00)
+	            if (err == 0U)
 	            {
 	              sendACK();
 	              updateScreen(HOTSPOT_RX_IDLE);
@@ -1407,7 +1407,7 @@ void handleHotspotRequest(void)
 				//dbgPrint("MMDVM_DMR_SHORTLC");
 //				//SEGGER_RTT_printf(0, "MMDVM_DMR_SHORTLC\n");
 //				handleDMRShortLC();
-				sendACK();
+				sendACK(); // WHY ?!
 				break;
 			case MMDVM_DMR_ABORT: // Only for duplex
 				//dbgPrint("MMDVM_DMR_ABORT");
