@@ -28,5 +28,5 @@ enum {
 		HOTSPOT_RX_AUDIO_FRAME,
 		HOTSPOT_RX_STOP,
 		HOTSPOT_RX_IDLE_OR_REPEAT,
-		} ;
+		};
 #endif
