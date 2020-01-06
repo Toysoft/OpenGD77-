@@ -165,9 +165,9 @@ typedef enum
 
 static volatile HOTSPOT_STATE hotspotState = HOTSPOT_STATE_NOT_CONNECTED;
 
-const int USB_SERIAL_TX_RETRIES = 2;
-const unsigned char VOICE_LC_SYNC_FULL[] 		= { 0x04U, 0x6DU, 0x5DU, 0x7FU, 0x77U, 0xFDU, 0x75U, 0x7EU, 0x30U};
-const unsigned char TERMINATOR_LC_SYNC_FULL[]	= { 0x04U, 0xADU, 0x5DU, 0x7FU, 0x77U, 0xFDU, 0x75U, 0x79U, 0x60U};
+//const int USB_SERIAL_TX_RETRIES = 2;
+const uint8_t VOICE_LC_SYNC_FULL[] 		= { 0x04U, 0x6DU, 0x5DU, 0x7FU, 0x77U, 0xFDU, 0x75U, 0x7EU, 0x30U};
+const uint8_t TERMINATOR_LC_SYNC_FULL[]	= { 0x04U, 0xADU, 0x5DU, 0x7FU, 0x77U, 0xFDU, 0x75U, 0x79U, 0x60U};
 
 const uint8_t LC_SYNC_MASK_FULL[]  = { 0x0FU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xF0U};
 
@@ -680,16 +680,17 @@ static void sendVoiceHeaderLC_Frame(volatile const uint8_t *receivedDMRDataAndAu
 	lc.dstId = (receivedDMRDataAndAudio[3] << 16) + (receivedDMRDataAndAudio[4] << 8) + (receivedDMRDataAndAudio[5] << 0);
 	lc.FLCO = receivedDMRDataAndAudio[0];// Private or group call
 
+	if ((lc.srcId == 0) || (lc.dstId == 0))
+	{
+		dbgPrint6("HEADER_LC_0");
+		return;
+	}
+
 	DMRFullLC_encode(&lc, frameData + MMDVM_HEADER_LENGTH, DT_VOICE_LC_HEADER);// Encode the src and dst Ids etc
 	DMREmbeddedData_setLC(&lc);
 	for (unsigned int i = 0U; i < 8U; i++)
 	{
 		frameData[i + 12U + MMDVM_HEADER_LENGTH] = (frameData[i + 12U + MMDVM_HEADER_LENGTH] & ~LC_SYNC_MASK_FULL[i]) | VOICE_LC_SYNC_FULL[i];
-	}
-
-	if ((lc.srcId == 0) || (lc.dstId == 0))
-	{
-		dbgPrint6("HEADER_LC_0");
 	}
 
 	//SEGGER_RTT_printf(0, "sendVoiceHeaderLC_Frame\n");
@@ -982,6 +983,17 @@ static void hotspotStateMachine(void)
 			if (mmdvmHostIsConnected)
 			{
 				hotspotState = HOTSPOT_STATE_INITIALISE;
+			}
+			else
+			{
+				if ((fw_millis() - mmdvmHostLastActiveTick) > 10000)
+				{
+					wavbuffer_count = 0;
+
+					leaveHotspotMenu();
+					break;
+				}
+
 			}
 			break;
 		case HOTSPOT_STATE_INITIALISE:
