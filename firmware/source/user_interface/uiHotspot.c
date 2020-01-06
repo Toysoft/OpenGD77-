@@ -34,6 +34,10 @@
 #include <user_interface/uiUtilityQSOData.h>
 #include <functions/fw_ticks.h>
 
+// Uncomment this to enable all sendDebug*() functions. You will see the results in the MMDVMHost log file.
+//#define MMDVM_SEND_DEBUG
+
+
 #define MMDVM_FRAME_START   0xE0U
 
 #define MMDVM_GET_VERSION   0x00U
@@ -75,11 +79,13 @@
 #define MMDVM_SERIAL        0x80U
 #define MMDVM_TRANSPARENT   0x90U
 #define MMDVM_QSO_INFO      0x91U
+
 #define MMDVM_DEBUG1        0xF1U
 #define MMDVM_DEBUG2        0xF2U
 #define MMDVM_DEBUG3        0xF3U
 #define MMDVM_DEBUG4        0xF4U
 #define MMDVM_DEBUG5        0xF5U
+
 #define PROTOCOL_VERSION    1U
 
 #define MMDVM_HEADER_LENGTH  4U
@@ -929,6 +935,123 @@ static uint8_t hotspotModeReceiveNetFrame(volatile const uint8_t *com_requestbuf
 	//SEGGER_RTT_printf(0, "hotspotModeReceiveNetFrame\n");
 	return 0U;
 }
+
+#if defined(MMDVM_SEND_DEBUG)
+static void sendDebug1(const char *text)
+{
+	uint8_t buf[130U];
+
+	buf[0U] = MMDVM_FRAME_START;
+	buf[1U] = 0U;
+	buf[2U] = MMDVM_DEBUG1;
+
+	uint8_t count = 3U;
+	for (uint8_t i = 0U; text[i] != '\0'; i++, count++)
+		buf[count] = text[i];
+
+	buf[1U] = count;
+
+	enqueueUSBData(buf, buf[1U]);
+}
+
+static void sendDebug2(const char *text, int16_t n1)
+{
+	uint8_t buf[130U];
+
+	buf[0U] = MMDVM_FRAME_START;
+	buf[1U] = 0U;
+	buf[2U] = MMDVM_DEBUG2;
+
+	uint8_t count = 3U;
+	for (uint8_t i = 0U; text[i] != '\0'; i++, count++)
+		buf[count] = text[i];
+
+	buf[count++] = (n1 >> 8) & 0xFF;
+	buf[count++] = (n1 >> 0) & 0xFF;
+
+	buf[1U] = count;
+
+	enqueueUSBData(buf, buf[1U]);
+}
+
+static void sendDebug3(const char *text, int16_t n1, int16_t n2)
+{
+	uint8_t buf[130U];
+
+	buf[0U] = MMDVM_FRAME_START;
+	buf[1U] = 0U;
+	buf[2U] = MMDVM_DEBUG3;
+
+	uint8_t count = 3U;
+	for (uint8_t i = 0U; text[i] != '\0'; i++, count++)
+		buf[count] = text[i];
+
+	buf[count++] = (n1 >> 8) & 0xFF;
+	buf[count++] = (n1 >> 0) & 0xFF;
+
+	buf[count++] = (n2 >> 8) & 0xFF;
+	buf[count++] = (n2 >> 0) & 0xFF;
+
+	buf[1U] = count;
+
+	enqueueUSBData(buf, buf[1U]);
+}
+
+static void sendDebug4(const char *text, int16_t n1, int16_t n2, int16_t n3)
+{
+	uint8_t buf[130U];
+
+	buf[0U] = MMDVM_FRAME_START;
+	buf[1U] = 0U;
+	buf[2U] = MMDVM_DEBUG4;
+
+	uint8_t count = 3U;
+	for (uint8_t i = 0U; text[i] != '\0'; i++, count++)
+		buf[count] = text[i];
+
+	buf[count++] = (n1 >> 8) & 0xFF;
+	buf[count++] = (n1 >> 0) & 0xFF;
+
+	buf[count++] = (n2 >> 8) & 0xFF;
+	buf[count++] = (n2 >> 0) & 0xFF;
+
+	buf[count++] = (n3 >> 8) & 0xFF;
+	buf[count++] = (n3 >> 0) & 0xFF;
+
+	buf[1U] = count;
+
+	enqueueUSBData(buf, buf[1U]);
+}
+
+static void sendDebug5(const char *text, int16_t n1, int16_t n2, int16_t n3, int16_t n4)
+{
+	uint8_t buf[130U];
+
+	buf[0U] = MMDVM_FRAME_START;
+	buf[1U] = 0U;
+	buf[2U] = MMDVM_DEBUG5;
+
+	uint8_t count = 3U;
+	for (uint8_t i = 0U; text[i] != '\0'; i++, count++)
+		buf[count] = text[i];
+
+	buf[count++] = (n1 >> 8) & 0xFF;
+	buf[count++] = (n1 >> 0) & 0xFF;
+
+	buf[count++] = (n2 >> 8) & 0xFF;
+	buf[count++] = (n2 >> 0) & 0xFF;
+
+	buf[count++] = (n3 >> 8) & 0xFF;
+	buf[count++] = (n3 >> 0) & 0xFF;
+
+	buf[count++] = (n4 >> 8) & 0xFF;
+	buf[count++] = (n4 >> 0) & 0xFF;
+
+	buf[1U] = count;
+
+	enqueueUSBData(buf, buf[1U]);
+}
+#endif
 
 static void sendDMRLost(void)
 {
