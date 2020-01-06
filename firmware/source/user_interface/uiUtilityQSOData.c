@@ -688,13 +688,13 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 		else
 		{
 			// No space found, use a chainsaw
-			memcpy(buffer, text, 6);
-			buffer[6] = 0;
+			memcpy(buffer, text, 16);
+			buffer[16] = 0;
 
 			ucPrintCentered(32, chomp(buffer), FONT_8x16);
 
-			memcpy(buffer, text + 6, (maxLen - 6));
-			buffer[(strlen(text) - 6)] = 0;
+			memcpy(buffer, text + 16, (maxLen - 16));
+			buffer[(strlen(text) - 16)] = 0;
 
 			pbuf = chomp(buffer);
 
