@@ -431,24 +431,23 @@ static void disableTransmission(void)
 
 }
 
-
-static void hotspotSendVoiceFrame(uint8_t *receivedDMRDataAndAudio)
+static void hotspotSendVoiceFrame(volatile const uint8_t *receivedDMRDataAndAudio)
 {
-	uint8_t frameData[DMR_FRAME_LENGTH_BYTES + MMDVM_HEADER_LENGTH] = {0xE0,0x25,MMDVM_DMR_DATA2};
+	uint8_t frameData[DMR_FRAME_LENGTH_BYTES + MMDVM_HEADER_LENGTH] = {0xE0, 0x25, MMDVM_DMR_DATA2};
 	uint8_t embData[DMR_FRAME_LENGTH_BYTES];
 	int i;
-	int sequenceNumber = receivedDMRDataAndAudio[27+0x0c + 1] - 1;
+	int sequenceNumber = receivedDMRDataAndAudio[27 + 0x0c + 1] - 1;
 
 	// copy the audio sections
-	memcpy(frameData + MMDVM_HEADER_LENGTH, receivedDMRDataAndAudio + 0x0C, 14);
-	memcpy(frameData + MMDVM_HEADER_LENGTH + EMBEDDED_DATA_OFFSET + 6, receivedDMRDataAndAudio + 0x0C + EMBEDDED_DATA_OFFSET, 14);
+	memcpy(frameData + MMDVM_HEADER_LENGTH, (uint8_t *)receivedDMRDataAndAudio + 0x0C, 14);
+	memcpy(frameData + MMDVM_HEADER_LENGTH + EMBEDDED_DATA_OFFSET + 6, (uint8_t *)receivedDMRDataAndAudio + 0x0C + EMBEDDED_DATA_OFFSET, 14);
 
 	if (sequenceNumber == 0)
 	{
 		frameData[3] = MMDVM_VOICE_SYNC_PATTERN;// sequence 0
 		for (i = 0U; i < 7U; i++)
 		{
-			frameData[i + EMBEDDED_DATA_OFFSET+MMDVM_HEADER_LENGTH] = (frameData[i + EMBEDDED_DATA_OFFSET+MMDVM_HEADER_LENGTH] & ~SYNC_MASK[i]) | MS_SOURCED_AUDIO_SYNC[i];
+			frameData[i + EMBEDDED_DATA_OFFSET + MMDVM_HEADER_LENGTH] = (frameData[i + EMBEDDED_DATA_OFFSET + MMDVM_HEADER_LENGTH] & ~SYNC_MASK[i]) | MS_SOURCED_AUDIO_SYNC[i];
 		}
 	}
 	else
@@ -465,9 +464,9 @@ static void hotspotSendVoiceFrame(uint8_t *receivedDMRDataAndAudio)
 	enqueueUSBData(frameData, DMR_FRAME_LENGTH_BYTES + MMDVM_HEADER_LENGTH);
 }
 
-static void sendVoiceHeaderLC_Frame(volatile uint8_t *receivedDMRDataAndAudio)
+static void sendVoiceHeaderLC_Frame(volatile const uint8_t *receivedDMRDataAndAudio)
 {
-	uint8_t frameData[DMR_FRAME_LENGTH_BYTES + MMDVM_HEADER_LENGTH] = {0xE0,0x25,0x1A, DMR_SYNC_DATA | DT_VOICE_LC_HEADER};
+	uint8_t frameData[DMR_FRAME_LENGTH_BYTES + MMDVM_HEADER_LENGTH] = {0xE0, 0x25, 0x1A, DMR_SYNC_DATA | DT_VOICE_LC_HEADER};
 	DMRLC_T lc;
 
 	memset(&lc, 0, sizeof(DMRLC_T));// clear automatic variable
@@ -482,13 +481,18 @@ static void sendVoiceHeaderLC_Frame(volatile uint8_t *receivedDMRDataAndAudio)
 		frameData[i + 12U + MMDVM_HEADER_LENGTH] = (frameData[i + 12U + MMDVM_HEADER_LENGTH] & ~LC_SYNC_MASK_FULL[i]) | VOICE_LC_SYNC_FULL[i];
 	}
 
+	if ((lc.srcId == 0) || (lc.dstId == 0))
+	{
+		dbgPrint6("HEADER_LC_0");
+	}
+
 	//SEGGER_RTT_printf(0, "sendVoiceHeaderLC_Frame\n");
 	enqueueUSBData(frameData, DMR_FRAME_LENGTH_BYTES + MMDVM_HEADER_LENGTH);
 }
 
-static void sendTerminator_LC_Frame(volatile uint8_t *receivedDMRDataAndAudio)
+static void sendTerminator_LC_Frame(volatile const uint8_t *receivedDMRDataAndAudio)
 {
-	uint8_t frameData[DMR_FRAME_LENGTH_BYTES + MMDVM_HEADER_LENGTH] = {0xE0,0x25,0x1A, DMR_SYNC_DATA | DT_TERMINATOR_WITH_LC};
+	uint8_t frameData[DMR_FRAME_LENGTH_BYTES + MMDVM_HEADER_LENGTH] = {0xE0, 0x25, 0x1A, DMR_SYNC_DATA | DT_TERMINATOR_WITH_LC};
 	DMRLC_T lc;
 
 	memset(&lc, 0, sizeof(DMRLC_T));// clear automatic variable
@@ -506,9 +510,6 @@ static void sendTerminator_LC_Frame(volatile uint8_t *receivedDMRDataAndAudio)
 	enqueueUSBData(frameData, DMR_FRAME_LENGTH_BYTES + MMDVM_HEADER_LENGTH);
 }
 
-
-
-
 void hotspotRxFrameHandler(uint8_t* frameBuf)
 {
 	taskENTER_CRITICAL();
@@ -518,8 +519,7 @@ void hotspotRxFrameHandler(uint8_t* frameBuf)
 	taskEXIT_CRITICAL();
 }
 
-
-static bool getEmbeddedData(const uint8_t *com_requestbuffer)
+static bool getEmbeddedData(volatile const uint8_t *com_requestbuffer)
 {
 	int lcss;
 	unsigned char DMREMB[2U];
@@ -541,7 +541,7 @@ static bool getEmbeddedData(const uint8_t *com_requestbuffer)
 		startedEmbeddedSearch = true;
 	}
 
-	if (DMREmbeddedData_addData(com_requestbuffer + 4, lcss))
+	if (DMREmbeddedData_addData((uint8_t *)com_requestbuffer + 4, lcss))
 	{
 		//DMRLC_T lc;
 
@@ -598,7 +598,7 @@ static bool getEmbeddedData(const uint8_t *com_requestbuffer)
 	return false;
 }
 
-static void storeNetFrame(const uint8_t *com_requestbuffer)
+static void storeNetFrame(volatile const uint8_t *com_requestbuffer)
 {
 	bool foundEmbedded;
 
@@ -638,7 +638,7 @@ static void storeNetFrame(const uint8_t *com_requestbuffer)
 
 		//displayDataBytes(com_requestbuffer, 16);
 		taskENTER_CRITICAL();
-		memcpy((uint8_t *)&audioAndHotspotDataBuffer. hotspotBuffer[wavbuffer_write_idx][0x0C], com_requestbuffer + 4, 13);//copy the first 13, whole bytes of audio
+		memcpy((uint8_t *)&audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_write_idx][0x0C], (uint8_t *)com_requestbuffer + 4, 13);//copy the first 13, whole bytes of audio
 		audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_write_idx][0x0C + 13] = (com_requestbuffer[17] & 0xF0) | (com_requestbuffer[23] & 0x0F);
 		memcpy((uint8_t *)&audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_write_idx][0x0C + 14], (uint8_t *)&com_requestbuffer[24], 13);//copy the last 13, whole bytes of audio
 
@@ -650,14 +650,14 @@ static void storeNetFrame(const uint8_t *com_requestbuffer)
 
 }
 
-static uint8_t hotspotModeReceiveNetFrame(const uint8_t *com_requestbuffer, uint8_t timeSlot)
+static uint8_t hotspotModeReceiveNetFrame(volatile const uint8_t *com_requestbuffer, uint8_t timeSlot)
 {
 	DMRLC_T lc;
 
 	lc.srcId = 0;// zero these values as they are checked later in the function, but only updated if the data type is DT_VOICE_LC_HEADER
 	lc.dstId = 0;
 
-	DMRFullLC_decode(com_requestbuffer + MMDVM_HEADER_LENGTH, DT_VOICE_LC_HEADER, &lc);// Need to decode the frame to get the source and destination
+	DMRFullLC_decode((uint8_t *)com_requestbuffer + MMDVM_HEADER_LENGTH, DT_VOICE_LC_HEADER, &lc);// Need to decode the frame to get the source and destination
 	/*	DMRSlotType_decode(com_requestbuffer + MMDVM_HEADER_LENGTH,&colorCode,&dataType);
 	//SEGGER_RTT_printf(0, "SlotType:$d %d\n",dataType,colorCode);
 	switch(dataType)
@@ -797,7 +797,7 @@ static void hotspotStateMachine(void)
 						case HOTSPOT_RX_AUDIO_FRAME:
 		        			dbgPrint4("RX_AUD_FRA", modemState, hotspotState, lastRxState);
 							//SEGGER_RTT_printf(0, "HOTSPOT_RX_AUDIO_FRAME\n");
-							hotspotSendVoiceFrame((uint8_t *)audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
+							hotspotSendVoiceFrame(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
 							lastRxState = HOTSPOT_RX_AUDIO_FRAME;
 							rxFrameTicks = fw_millis();
 							break;
@@ -1394,7 +1394,7 @@ static void sendNAK(uint8_t err)
 }
 
 
-static uint8_t handleDMRShortLC(const uint8_t *data, uint8_t length)
+static uint8_t handleDMRShortLC(volatile const uint8_t *data, uint8_t length)
 {
 	////	uint8_t LCBuf[5];
 	////	DMRShortLC_decode((uint8_t *) com_requestbuffer + 3U,LCBuf);
@@ -1505,7 +1505,7 @@ void handleHotspotRequest(void)
 			case MMDVM_DMR_DATA2:
 				dbgPrint2("DMR_DATA2");
 				//SEGGER_RTT_printf(0, "MMDVM_DMR_DATA2\n");
-				err = hotspotModeReceiveNetFrame((uint8_t *)com_requestbuffer, 2U);
+				err = hotspotModeReceiveNetFrame(com_requestbuffer, 2U);
 				if (err == 0U)
 				{
 					sendACK();
