@@ -519,7 +519,7 @@ void hotspotRxFrameHandler(uint8_t* frameBuf)
 }
 
 
-int getEmbeddedData(uint8_t *com_requestbuffer)
+static bool getEmbeddedData(const uint8_t *com_requestbuffer)
 {
 	int lcss;
 	unsigned char DMREMB[2U];
@@ -595,10 +595,10 @@ int getEmbeddedData(uint8_t *com_requestbuffer)
 		startedEmbeddedSearch = false;
 	}
 
-	return 0;
+	return false;
 }
 
-static void storeNetFrame(uint8_t *com_requestbuffer)
+static void storeNetFrame(const uint8_t *com_requestbuffer)
 {
 	bool foundEmbedded;
 
@@ -650,7 +650,7 @@ static void storeNetFrame(uint8_t *com_requestbuffer)
 
 }
 
-bool hotspotModeReceiveNetFrame(uint8_t *com_requestbuffer, uint8_t timeSlot)
+static uint8_t hotspotModeReceiveNetFrame(const uint8_t *com_requestbuffer, uint8_t timeSlot)
 {
 	DMRLC_T lc;
 
@@ -720,8 +720,7 @@ bool hotspotModeReceiveNetFrame(uint8_t *com_requestbuffer, uint8_t timeSlot)
 		storeNetFrame(com_requestbuffer);
 	}
 	//SEGGER_RTT_printf(0, "hotspotModeReceiveNetFrame\n");
-	sendACK();
-	return true;
+	return 0U;
 }
 
 static void hotspotStateMachine(void)
@@ -1395,12 +1394,14 @@ static void sendNAK(uint8_t err)
 }
 
 
-//static void handleDMRShortLC(void)
-//{
-////	uint8_t LCBuf[5];
-////	DMRShortLC_decode((uint8_t *) com_requestbuffer + 3U,LCBuf);
-////	//SEGGER_RTT_printf(0, "MMDVM ShortLC\n %02X %02X %02X %02X %02X\n",LCBuf[0U],LCBuf[1U],LCBuf[2U],LCBuf[3U],LCBuf[4U],LCBuf[5U]);
-//}
+static uint8_t handleDMRShortLC(const uint8_t *data, uint8_t length)
+{
+	////	uint8_t LCBuf[5];
+	////	DMRShortLC_decode((uint8_t *) com_requestbuffer + 3U,LCBuf);
+	////	//SEGGER_RTT_printf(0, "MMDVM ShortLC\n %02X %02X %02X %02X %02X\n",LCBuf[0U],LCBuf[1U],LCBuf[2U],LCBuf[3U],LCBuf[4U],LCBuf[5U]);
+
+	return 0U;
+}
 
 void handleHotspotRequest(void)
 {
@@ -1426,7 +1427,7 @@ void handleHotspotRequest(void)
 
 			case MMDVM_SET_CONFIG:
 				dbgPrint2("SET_CONFIG");
-				err = setConfig(com_requestbuffer + 3U, com_requestbuffer[1] - 3U);
+				err = setConfig(com_requestbuffer + 3U, com_requestbuffer[1U] - 3U);
 				if (err == 0U)
 				{
 				  sendACK();
@@ -1440,7 +1441,7 @@ void handleHotspotRequest(void)
 
 			case MMDVM_SET_MODE:
 				dbgPrint2("SET_MODE");
-				err = setMode(com_requestbuffer + 3U, com_requestbuffer[1] - 3U);
+				err = setMode(com_requestbuffer + 3U, com_requestbuffer[1U] - 3U);
 				if (err == 0U)
 				{
 					sendACK();
@@ -1453,7 +1454,7 @@ void handleHotspotRequest(void)
 
 			case MMDVM_SET_FREQ:
 				dbgPrint2("SET_FREQ");
-	            err = setFreq(com_requestbuffer + 3U, com_requestbuffer[1] - 3U);
+	            err = setFreq(com_requestbuffer + 3U, com_requestbuffer[1U] - 3U);
 	            if (err == 0U)
 	            {
 	              sendACK();
@@ -1498,31 +1499,47 @@ void handleHotspotRequest(void)
 				dbgPrint2("DMR_DATA1");
 //				//SEGGER_RTT_printf(0, "MMDVM_DMR_DATA1\n");
 //				hotspotModeReceiveNetFrame((uint8_t *)com_requestbuffer, 1U);
+				sendNAK(err);
 				break;
 
 			case MMDVM_DMR_DATA2:
 				dbgPrint2("DMR_DATA2");
 				//SEGGER_RTT_printf(0, "MMDVM_DMR_DATA2\n");
-				hotspotModeReceiveNetFrame((uint8_t *)com_requestbuffer, 2U);
+				err = hotspotModeReceiveNetFrame((uint8_t *)com_requestbuffer, 2U);
+				if (err == 0U)
+				{
+					sendACK();
+				}
+				else
+				{
+					sendNAK(err);
+				}
 				break;
 
 			case MMDVM_DMR_START: // Only for duplex
 				dbgPrint2("DMR_START");
 //				//SEGGER_RTT_printf(0, "MMDVM_DMR_START\n");
-//				sendACK();
+				sendACK();
 				break;
 
 			case MMDVM_DMR_SHORTLC: // Only for duplex
 				dbgPrint2("DMR_SHORTLC");
 //				//SEGGER_RTT_printf(0, "MMDVM_DMR_SHORTLC\n");
-//				handleDMRShortLC();
-				sendACK();
+				err = handleDMRShortLC((uint8_t *)com_requestbuffer, com_requestbuffer[1U]);
+				if (err == 0U)
+				{
+					sendACK();
+				}
+				else
+				{
+					sendNAK(err);
+				}
 				break;
 
 			case MMDVM_DMR_ABORT: // Only for duplex
 				dbgPrint2("DMR_ABORT");
 //				//SEGGER_RTT_printf(0, "MMDVM_DMR_ABORT\n");
-//				sendACK();
+				sendACK();
 				break;
 
 #if 0  // Serial passthrough (a.k.a Nextion serial port), unhandled
@@ -1562,7 +1579,7 @@ void handleHotspotRequest(void)
 			default:
 			{
 				char buf[16];
-				sprintf(buf, "UNKN: %d", com_requestbuffer[2]);
+				sprintf(buf, "UNKN: %d", com_requestbuffer[2U]);
 				dbgPrint2(buf);
 				//SEGGER_RTT_printf(0, "Unhandled command type %d\n",com_requestbuffer[2]);
 				sendNAK(1U);
@@ -1571,7 +1588,7 @@ void handleHotspotRequest(void)
 				break;
 		}
 
-		com_requestbuffer[0] = 0xFFU; // Invalidate this one
+		com_requestbuffer[0U] = 0xFFU; // Invalidate this one
 	}
 	else
 	{
