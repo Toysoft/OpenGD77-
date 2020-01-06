@@ -183,14 +183,12 @@ const uint8_t DMR_AUDIO_SEQ_MASK[]  = 		{0x0FU, 0xF0U, 0x00U, 0x00U, 0x00U, 0x0F
 const uint8_t DMR_EMBED_SEQ_MASK[]  = 		{0x00U, 0x0FU, 0xFFU, 0xFFU, 0xFFU, 0xF0U, 0x00U};
 
 
-static void sendACK(void);
-static void sendNAK(uint8_t err);
-static void sendDMRLost(void);
-
-static void leaveHotspotMode(void);
-
-static void updateScreen(int rxState);
+static void updateScreen(uint8_t rxState);
 static void handleEvent(uiEvent_t *ev);
+static void leaveHotspotMenu(void);
+static void hotspotStateMachine(void);
+static void processUSBDataQueue(void);
+
 void handleHotspotRequest(void);
 
 
@@ -349,6 +347,211 @@ static void dbgPrint7(char *text, bool state)
 
 #else
 #endif
+
+
+int menuHotspotMode(uiEvent_t *ev, bool isFirstRun)
+{
+	if (isFirstRun)
+	{
+		hotspotState = HOTSPOT_STATE_NOT_CONNECTED;
+
+		savedTGorPC = trxTalkGroupOrPcId;// Save the current TG or PC
+		trxTalkGroupOrPcId = 0;
+		mmdvmHostIsConnected = false;
+		rfFrameBufCount = 0;
+
+		trxSetModeAndBandwidth(RADIO_MODE_DIGITAL, false);// hotspot mode is for DMR i.e Digital mode
+
+		freq_tx = freq_rx = 43000000;
+		settingsUsbMode = USB_MODE_HOTSPOT;
+		MMDVMHostRxState = MMDVMHOST_RX_READY; // We have not sent anything to MMDVMHost, so it can't be busy yet.
+
+		usbComSendBufWritePosition = usbComSendBufReadPosition = 0;
+		memset(&usbComSendBuf, 0, COM_BUFFER_SIZE);
+
+		ucClearBuf();
+#ifndef NOSCREEN
+		ucPrintCentered(0, "Hotspot", FONT_8x16);
+		ucPrintCentered(32, "Waiting for", FONT_8x16);
+		ucPrintCentered(48, "PiStar", FONT_8x16);
+#endif
+		ucRender();
+		displayLightTrigger();
+//		updateScreen(HOTSPOT_RX_IDLE);
+	}
+	else
+	{
+		if (ev->hasEvent)
+			handleEvent(ev);
+	}
+
+	processUSBDataQueue();
+	if (com_request == 1)
+	{
+		handleHotspotRequest();
+		com_request = 0;
+	}
+	hotspotStateMachine();
+
+	return 0;
+}
+
+static void updateScreen(uint8_t rxCommandState)
+{
+	int val_before_dp;
+	int val_after_dp;
+	static const int bufferLen = 17;
+	char buffer[bufferLen];
+	dmrIdDataStruct_t currentRec;
+
+#ifndef NOSCREEN
+	ucClearBuf();
+	ucPrintAt(0,0, "DMR Hotspot", FONT_8x16);
+#else
+	buffer[0] = 0;
+#endif
+	int  batteryPerentage = (int)(((averageBatteryVoltage - CUTOFF_VOLTAGE_UPPER_HYST) * 100) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));
+	if (batteryPerentage>100)
+	{
+		batteryPerentage=100;
+	}
+	if (batteryPerentage<0)
+	{
+		batteryPerentage=0;
+	}
+
+	snprintf(buffer, bufferLen, "%d%%", batteryPerentage);
+	buffer[bufferLen - 1] = 0;
+#ifndef NOSCREEN
+	ucPrintCore(0, 4, buffer, FONT_6x8, TEXT_ALIGN_RIGHT, false);// Display battery percentage at the right
+#endif
+
+	if (trxIsTransmitting)
+	{
+		dmrIDLookup((trxDMRID & 0xFFFFFF), &currentRec);
+		strncpy(buffer, currentRec.text, bufferLen);
+		buffer[bufferLen - 1] = 0;
+#ifndef NOSCREEN
+		ucPrintCentered(16, buffer, FONT_8x16);
+#else
+		buffer[0] = 0;
+#endif
+	//	sprintf(buffer,"ID %d",trxDMRID & 0xFFFFFF);
+	//	UC1701_printCentered(16, buffer,UC1701_FONT_8x16);
+		if ((trxTalkGroupOrPcId & 0xFF000000) == 0)
+		{
+			snprintf(buffer, bufferLen, "TG %d", trxTalkGroupOrPcId & 0xFFFFFF);
+		}
+		else
+		{
+			snprintf(buffer, bufferLen, "PC %d", trxTalkGroupOrPcId & 0xFFFFFF);
+		}
+		buffer[bufferLen - 1] = 0;
+
+#ifndef NOSCREEN
+		ucPrintCentered(32, buffer, FONT_8x16);
+#endif
+
+		val_before_dp = freq_tx / 100000;
+		val_after_dp = freq_tx - val_before_dp * 100000;
+		sprintf(buffer, "T %d.%05d MHz", val_before_dp, val_after_dp);
+	}
+	else
+	{
+		if (rxCommandState == HOTSPOT_RX_START  || rxCommandState == HOTSPOT_RX_START_LATE)
+		{
+			uint32_t srcId = (audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][6] << 16) + (audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][7] << 8) + (audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][8] << 0);
+			uint32_t dstId = (audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][3] << 16) + (audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][4] << 8) + (audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][5] << 0);
+			uint32_t FLCO  = audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][0];// Private or group call
+
+			dmrIDLookup(srcId, &currentRec);
+			strncpy(buffer, currentRec.text, bufferLen);
+			buffer[bufferLen - 1] = 0;
+#ifndef NOSCREEN
+			ucPrintCentered(16, buffer, FONT_8x16);
+#else
+			buffer[0] = 0;
+#endif
+			if (FLCO == 0)
+			{
+				snprintf(buffer, bufferLen, "TG %d", dstId);
+			}
+			else
+			{
+				snprintf(buffer, bufferLen, "PC %d", dstId);
+			}
+			buffer[bufferLen - 1] = 0;
+#ifndef NOSCREEN
+			ucPrintCentered(32, buffer, FONT_8x16);
+#else
+			buffer[0] = 0;
+#endif
+		}
+		else
+		{
+			snprintf(buffer, bufferLen, "CC:%d", trxGetDMRColourCode());//, trxGetDMRTimeSlot()+1) ;
+			buffer[bufferLen - 1] = 0;
+#ifndef NOSCREEN
+			ucPrintCore(0, 32, buffer, FONT_8x16, TEXT_ALIGN_LEFT, false);
+
+			ucPrintCore(0, 32, (char *)POWER_LEVELS[hotspotPowerLevel], FONT_8x16, TEXT_ALIGN_RIGHT, false);
+#else
+			buffer[0] = 0;
+#endif
+		}
+		val_before_dp = freq_rx / 100000;
+		val_after_dp = freq_rx - val_before_dp * 100000;
+		snprintf(buffer, bufferLen, "R %d.%05d MHz", val_before_dp, val_after_dp);
+		buffer[bufferLen - 1] = 0;
+	}
+#ifdef NOSCREEN
+	//ucFillRect(0, 48, 128, 6, true);
+	//ucPrintCentered(48, buffer, FONT_8x16);
+	//ucRenderRows(6, 8);
+#else
+	ucPrintCentered(48, buffer, FONT_8x16);
+#endif
+
+#ifndef NOSCREEN
+	ucRender();
+#endif
+	displayLightTrigger();
+}
+
+static void handleEvent(uiEvent_t *ev)
+{
+	if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
+	{
+		//enableHotspot = false;
+		if (trxIsTransmitting)
+		{
+			trxIsTransmitting = false;
+			trxActivateRx();
+			trx_setRX();
+
+			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
+			GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
+		}
+
+		leaveHotspotMenu();
+		return;
+	}
+}
+
+static void leaveHotspotMenu(void)
+{
+	trxTalkGroupOrPcId = savedTGorPC;// restore the current TG or PC
+	if (savedPowerLevel != -1)
+	{
+		trxSetPowerFromLevel(savedPowerLevel);
+	}
+
+	trxDMRID = codeplugGetUserDMRID();
+	settingsUsbMode = USB_MODE_CPS;
+
+	menuSystemPopAllAndDisplayRootMenu();
+}
+
 
 /*
  *
@@ -726,6 +929,42 @@ static uint8_t hotspotModeReceiveNetFrame(volatile const uint8_t *com_requestbuf
 	return 0U;
 }
 
+static void sendDMRLost(void)
+{
+	uint8_t buf[3U];
+
+	buf[0U] = MMDVM_FRAME_START;
+	buf[1U] = 3U;
+	buf[2U] = MMDVM_DMR_LOST2;
+
+	enqueueUSBData(buf, buf[1U]);
+}
+
+static void sendACK(void)
+{
+	uint8_t buf[4];
+//	//SEGGER_RTT_printf(0, "sendACK\n");
+	buf[0U] = MMDVM_FRAME_START;
+	buf[1U] = 4U;
+	buf[2U] = MMDVM_ACK;
+	buf[3U] = com_requestbuffer[2U];
+
+	enqueueUSBData(buf, buf[1U]);
+}
+
+static void sendNAK(uint8_t err)
+{
+	uint8_t buf[5];
+	//SEGGER_RTT_printf(0, "sendNAK\n");
+	buf[0U] = MMDVM_FRAME_START;
+	buf[1U] = 5U;
+	buf[2U] = MMDVM_NAK;
+	buf[3U] = com_requestbuffer[2U];
+	buf[4U] = err;
+
+	enqueueUSBData(buf, buf[1U]);
+}
+
 static void hotspotStateMachine(void)
 {
 	static uint32_t rxFrameTicks = 0;
@@ -791,7 +1030,7 @@ static void hotspotStateMachine(void)
 					rfFrameBufCount = 0;
 					wavbuffer_count = 0;
 
-					leaveHotspotMode();
+					leaveHotspotMenu();
 					break;
 				}
 			}
@@ -991,209 +1230,6 @@ static void hotspotStateMachine(void)
 				}
 			}
 			break;
-	}
-}
-
-int menuHotspotMode(uiEvent_t *ev, bool isFirstRun)
-{
-	if (isFirstRun)
-	{
-		hotspotState = HOTSPOT_STATE_NOT_CONNECTED;
-
-		savedTGorPC = trxTalkGroupOrPcId;// Save the current TG or PC
-		trxTalkGroupOrPcId = 0;
-		mmdvmHostIsConnected = false;
-		rfFrameBufCount = 0;
-
-		trxSetModeAndBandwidth(RADIO_MODE_DIGITAL, false);// hotspot mode is for DMR i.e Digital mode
-
-		freq_tx = freq_rx = 43000000;
-		settingsUsbMode = USB_MODE_HOTSPOT;
-		MMDVMHostRxState = MMDVMHOST_RX_READY; // We have not sent anything to MMDVMHost, so it can't be busy yet.
-
-		usbComSendBufWritePosition = usbComSendBufReadPosition = 0;
-		memset(&usbComSendBuf, 0, COM_BUFFER_SIZE);
-
-		ucClearBuf();
-#ifndef NOSCREEN
-		ucPrintCentered(0, "Hotspot", FONT_8x16);
-		ucPrintCentered(32, "Waiting for", FONT_8x16);
-		ucPrintCentered(48, "PiStar", FONT_8x16);
-#endif
-		ucRender();
-		displayLightTrigger();
-//		updateScreen(HOTSPOT_RX_IDLE);
-	}
-	else
-	{
-		if (ev->hasEvent)
-			handleEvent(ev);
-	}
-
-	processUSBDataQueue();
-	if (com_request == 1)
-	{
-		handleHotspotRequest();
-		com_request = 0;
-	}
-	hotspotStateMachine();
-
-	return 0;
-}
-
-static void updateScreen(int rxCommandState)
-{
-	int val_before_dp;
-	int val_after_dp;
-	static const int bufferLen = 17;
-	char buffer[bufferLen];
-	dmrIdDataStruct_t currentRec;
-
-#ifndef NOSCREEN
-	ucClearBuf();
-	ucPrintAt(0,0, "DMR Hotspot", FONT_8x16);
-#else
-	buffer[0] = 0;
-#endif
-	int  batteryPerentage = (int)(((averageBatteryVoltage - CUTOFF_VOLTAGE_UPPER_HYST) * 100) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));
-	if (batteryPerentage>100)
-	{
-		batteryPerentage=100;
-	}
-	if (batteryPerentage<0)
-	{
-		batteryPerentage=0;
-	}
-
-	snprintf(buffer, bufferLen, "%d%%", batteryPerentage);
-	buffer[bufferLen - 1] = 0;
-#ifndef NOSCREEN
-	ucPrintCore(0, 4, buffer, FONT_6x8, TEXT_ALIGN_RIGHT, false);// Display battery percentage at the right
-#endif
-
-	if (trxIsTransmitting)
-	{
-		dmrIDLookup((trxDMRID & 0xFFFFFF), &currentRec);
-		strncpy(buffer, currentRec.text, bufferLen);
-		buffer[bufferLen - 1] = 0;
-#ifndef NOSCREEN
-		ucPrintCentered(16, buffer, FONT_8x16);
-#else
-		buffer[0] = 0;
-#endif
-	//	sprintf(buffer,"ID %d",trxDMRID & 0xFFFFFF);
-	//	UC1701_printCentered(16, buffer,UC1701_FONT_8x16);
-		if ((trxTalkGroupOrPcId & 0xFF000000) == 0)
-		{
-			snprintf(buffer, bufferLen, "TG %d", trxTalkGroupOrPcId & 0xFFFFFF);
-		}
-		else
-		{
-			snprintf(buffer, bufferLen, "PC %d", trxTalkGroupOrPcId & 0xFFFFFF);
-		}
-		buffer[bufferLen - 1] = 0;
-
-#ifndef NOSCREEN
-		ucPrintCentered(32, buffer, FONT_8x16);
-#endif
-
-		val_before_dp = freq_tx / 100000;
-		val_after_dp = freq_tx - val_before_dp * 100000;
-		sprintf(buffer, "T %d.%05d MHz", val_before_dp, val_after_dp);
-	}
-	else
-	{
-		if (rxCommandState == HOTSPOT_RX_START  || rxCommandState == HOTSPOT_RX_START_LATE)
-		{
-			uint32_t srcId = (audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][6] << 16) + (audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][7] << 8) + (audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][8] << 0);
-			uint32_t dstId = (audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][3] << 16) + (audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][4] << 8) + (audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][5] << 0);
-			uint32_t FLCO  = audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][0];// Private or group call
-
-			dmrIDLookup(srcId, &currentRec);
-			strncpy(buffer, currentRec.text, bufferLen);
-			buffer[bufferLen - 1] = 0;
-#ifndef NOSCREEN
-			ucPrintCentered(16, buffer, FONT_8x16);
-#else
-			buffer[0] = 0;
-#endif
-			if (FLCO == 0)
-			{
-				snprintf(buffer, bufferLen, "TG %d", dstId);
-			}
-			else
-			{
-				snprintf(buffer, bufferLen, "PC %d", dstId);
-			}
-			buffer[bufferLen - 1] = 0;
-#ifndef NOSCREEN
-			ucPrintCentered(32, buffer, FONT_8x16);
-#else
-			buffer[0] = 0;
-#endif
-		}
-		else
-		{
-			snprintf(buffer, bufferLen, "CC:%d", trxGetDMRColourCode());//, trxGetDMRTimeSlot()+1) ;
-			buffer[bufferLen - 1] = 0;
-#ifndef NOSCREEN
-			ucPrintCore(0, 32, buffer, FONT_8x16, TEXT_ALIGN_LEFT, false);
-
-			ucPrintCore(0, 32, (char *)POWER_LEVELS[hotspotPowerLevel], FONT_8x16, TEXT_ALIGN_RIGHT, false);
-#else
-			buffer[0] = 0;
-#endif
-		}
-		val_before_dp = freq_rx / 100000;
-		val_after_dp = freq_rx - val_before_dp * 100000;
-		snprintf(buffer, bufferLen, "R %d.%05d MHz", val_before_dp, val_after_dp);
-		buffer[bufferLen - 1] = 0;
-	}
-#ifdef NOSCREEN
-	//ucFillRect(0, 48, 128, 6, true);
-	//ucPrintCentered(48, buffer, FONT_8x16);
-	//ucRenderRows(6, 8);
-#else
-	ucPrintCentered(48, buffer, FONT_8x16);
-#endif
-
-#ifndef NOSCREEN
-	ucRender();
-#endif
-	displayLightTrigger();
-}
-
-static void leaveHotspotMode(void)
-{
-	trxTalkGroupOrPcId = savedTGorPC;// restore the current TG or PC
-	if (savedPowerLevel != -1)
-	{
-		trxSetPowerFromLevel(savedPowerLevel);
-	}
-
-	trxDMRID = codeplugGetUserDMRID();
-	settingsUsbMode = USB_MODE_CPS;
-
-	menuSystemPopAllAndDisplayRootMenu();
-}
-
-static void handleEvent(uiEvent_t *ev)
-{
-	if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
-	{
-		//enableHotspot = false;
-		if (trxIsTransmitting)
-		{
-			trxIsTransmitting = false;
-			trxActivateRx();
-			trx_setRX();
-
-			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
-			GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
-		}
-
-		leaveHotspotMode();
-		return;
 	}
 }
 
@@ -1422,43 +1458,6 @@ static void getVersion(void)
 
 	enqueueUSBData(buf, buf[1U]);
 }
-
-static void sendDMRLost(void)
-{
-	uint8_t buf[3U];
-
-	buf[0U] = MMDVM_FRAME_START;
-	buf[1U] = 3U;
-	buf[2U] = MMDVM_DMR_LOST2;
-
-	enqueueUSBData(buf, buf[1U]);
-}
-
-static void sendACK(void)
-{
-	uint8_t buf[4];
-//	//SEGGER_RTT_printf(0, "sendACK\n");
-	buf[0U] = MMDVM_FRAME_START;
-	buf[1U] = 4U;
-	buf[2U] = MMDVM_ACK;
-	buf[3U] = com_requestbuffer[2U];
-
-	enqueueUSBData(buf, buf[1U]);
-}
-
-static void sendNAK(uint8_t err)
-{
-	uint8_t buf[5];
-	//SEGGER_RTT_printf(0, "sendNAK\n");
-	buf[0U] = MMDVM_FRAME_START;
-	buf[1U] = 5U;
-	buf[2U] = MMDVM_NAK;
-	buf[3U] = com_requestbuffer[2U];
-	buf[4U] = err;
-
-	enqueueUSBData(buf, buf[1U]);
-}
-
 
 static uint8_t handleDMRShortLC(volatile const uint8_t *data, uint8_t length)
 {

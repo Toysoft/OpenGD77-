@@ -29,5 +29,5 @@ enum {
 		HOTSPOT_RX_STOP,
 		HOTSPOT_RX_IDLE_OR_REPEAT,
 		HOTSPOT_RX_UNKNOWN
-		};
+};
 #endif
