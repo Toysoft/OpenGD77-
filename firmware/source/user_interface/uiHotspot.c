@@ -118,6 +118,8 @@ const int TX_BUFFERING_TIMEOUT = 5000;// 500mS
 static int timeoutCounter;
 static int savedPowerLevel = -1;// no power level saved yet
 static int hotspotPowerLevel = 0;// no power level saved yet
+static uint32_t mmdvmHostLastActiveTick = 0;
+static bool mmdvmHostIsConnected = false;
 
 static volatile enum
 {
@@ -161,7 +163,7 @@ typedef enum
 	HOTSPOT_STATE_TX_SHUTDOWN
 } HOTSPOT_STATE;
 
-static volatile HOTSPOT_STATE hotspotState;
+static volatile HOTSPOT_STATE hotspotState = HOTSPOT_STATE_NOT_CONNECTED;
 
 const int USB_SERIAL_TX_RETRIES = 2;
 const unsigned char VOICE_LC_SYNC_FULL[] 		= { 0x04U, 0x6DU, 0x5DU, 0x7FU, 0x77U, 0xFDU, 0x75U, 0x7EU, 0x30U};
@@ -184,6 +186,8 @@ const uint8_t DMR_EMBED_SEQ_MASK[]  = 		{0x00U, 0x0FU, 0xFFU, 0xFFU, 0xFFU, 0xF0
 static void sendACK(void);
 static void sendNAK(uint8_t err);
 static void sendDMRLost(void);
+
+static void leaveHotspotMode(void);
 
 static void updateScreen(int rxState);
 static void handleEvent(uiEvent_t *ev);
@@ -292,7 +296,6 @@ static void dbgPrint4(char *text, MMDVM_STATE mmdvmState, HOTSPOT_STATE HSState,
 {
 	char buf[22];
 	static uint8_t tick = 0;
-	modemState;
 	snprintf(buf, 21, "%s %d %d %u %03d", text, mmdvmState, HSState, lastRXState, ++tick);
 	buf[21] = 0;
 	ucFillRect(0, 32, 128, 8, true);
@@ -330,12 +333,12 @@ static void dbgPrint6(char *text)
 	ucRenderRows(6,7);
 }
 
-static void dbgPrint7(char *text)
+static void dbgPrint7(char *text, bool state)
 {
 	char buf[22];
 	static uint8_t tick = 0;
 
-	snprintf(buf, 21, "%s %03d", text, ++tick);
+	snprintf(buf, 21, "%s %d %03d", text, state, ++tick);
 	buf[21] = 0;
 	ucFillRect(0, 56, 128, 8, true);
 	ucPrintAt(0, 56, buf, FONT_6x8);
@@ -728,12 +731,19 @@ static void hotspotStateMachine(void)
 	static uint32_t rxFrameTicks = 0;
 
 	dbgAct1(hotspotState);
+	dbgPrint7("MMDVMHost", mmdvmHostIsConnected);
 
 	switch(hotspotState)
 	{
 		case HOTSPOT_STATE_NOT_CONNECTED:
 			dbgPrint3("NOT_CONN", rfFrameBufCount);
 			// do nothing
+			lastRxState = HOTSPOT_RX_UNKNOWN;
+			rfFrameBufCount = 0;
+			if (mmdvmHostIsConnected)
+			{
+				hotspotState = HOTSPOT_STATE_INITIALISE;
+			}
 			break;
 		case HOTSPOT_STATE_INITIALISE:
 			dbgPrint3("INIT", rfFrameBufCount);
@@ -744,6 +754,7 @@ static void hotspotStateMachine(void)
 			wavbuffer_read_idx = 0;
 			wavbuffer_write_idx = 0;
 			wavbuffer_count = 0;
+			rfFrameBufCount = 0;
 
 			hotspotState = HOTSPOT_STATE_RX_START;
 			//SEGGER_RTT_printf(0, "STATE_INITIALISE -> STATE_RX\n");
@@ -769,6 +780,29 @@ static void hotspotStateMachine(void)
 
 		case HOTSPOT_STATE_RX_PROCESS:
 			dbgPrint3("RX_PROCESS", rfFrameBufCount);
+
+			if (mmdvmHostIsConnected)
+			{
+				// No activity from MMDVMHost
+				if ((fw_millis() - mmdvmHostLastActiveTick) > 10000)
+				{
+					mmdvmHostIsConnected = false;
+					hotspotState = HOTSPOT_STATE_NOT_CONNECTED;
+					rfFrameBufCount = 0;
+					wavbuffer_count = 0;
+
+					leaveHotspotMode();
+					break;
+				}
+			}
+			else
+			{
+				hotspotState = HOTSPOT_STATE_NOT_CONNECTED;
+				rfFrameBufCount = 0;
+				wavbuffer_count = 0;
+				break;
+			}
+
         	if (rfFrameBufCount > 0)
         	{
         		if (MMDVMHostRxState == MMDVMHOST_RX_READY)
@@ -778,58 +812,68 @@ static void hotspotStateMachine(void)
 
         			switch(rx_command)
 					{
+						case HOTSPOT_RX_IDLE:
+							dbgPrint4("RX_IDLE", modemState, hotspotState, lastRxState);
+							break;
+
 						case HOTSPOT_RX_START:
-		        			dbgPrint4("RX_START", modemState, hotspotState, lastRxState);
+							dbgPrint4("RX_START", modemState, hotspotState, lastRxState);
 							//SEGGER_RTT_printf(0, "RX_START\n",rx_command,wavbuffer_count);
-		        			updateScreen(rx_command);
+							updateScreen(rx_command);
 							sendVoiceHeaderLC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
 							lastRxState = HOTSPOT_RX_START;
 							rxFrameTicks = fw_millis();
 							break;
+
 						case HOTSPOT_RX_START_LATE:
-		        			dbgPrint4("RX_START_L", modemState, hotspotState, lastRxState);
+							dbgPrint4("RX_START_L", modemState, hotspotState, lastRxState);
 							//SEGGER_RTT_printf(0, "RX_START_LATE\n");
-		        			updateScreen(rx_command);
+							updateScreen(rx_command);
 							sendVoiceHeaderLC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
 							lastRxState = HOTSPOT_RX_START_LATE;
 							rxFrameTicks = fw_millis();
 							break;
+
 						case HOTSPOT_RX_AUDIO_FRAME:
-		        			dbgPrint4("RX_AUD_FRA", modemState, hotspotState, lastRxState);
+							dbgPrint4("RX_AUD_FRA", modemState, hotspotState, lastRxState);
 							//SEGGER_RTT_printf(0, "HOTSPOT_RX_AUDIO_FRAME\n");
 							hotspotSendVoiceFrame(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
 							lastRxState = HOTSPOT_RX_AUDIO_FRAME;
 							rxFrameTicks = fw_millis();
 							break;
+
 						case HOTSPOT_RX_STOP:
-		        			dbgPrint4("RX_STOP", modemState, hotspotState, lastRxState);
+							dbgPrint4("RX_STOP", modemState, hotspotState, lastRxState);
 							//SEGGER_RTT_printf(0, "RX_STOP\n");
-		        			updateScreen(rx_command);
+							updateScreen(rx_command);
 							sendTerminator_LC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
 							lastRxState = HOTSPOT_RX_STOP;
 							hotspotState = HOTSPOT_STATE_RX_END;
 							break;
+
 						case HOTSPOT_RX_IDLE_OR_REPEAT:
-		        			dbgPrint4("RX_IDLE_REP", modemState, hotspotState, lastRxState);
+							dbgPrint4("RX_IDLE_REP", modemState, hotspotState, lastRxState);
+							lastRxState = HOTSPOT_RX_IDLE_OR_REPEAT;
 							//SEGGER_RTT_printf(0, "RX_IDLE_OR_REPEAT\n");
 							/*
-							switch(lastRxState)
-							{
-								case HOTSPOT_RX_START:
-									sendVoiceHeaderLC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_read_idx]);
-									break;
-								case HOTSPOT_RX_STOP:
-									sendTerminator_LC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_read_idx]);
-									break;
-								default:
-									//SEGGER_RTT_printf(0, "ERROR: Unkown HOTSPOT_RX_IDLE_OR_REPEAT\n");
-									break;
-							}
-							*/
+								switch(lastRxState)
+								{
+									case HOTSPOT_RX_START:
+										sendVoiceHeaderLC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_read_idx]);
+										break;
+									case HOTSPOT_RX_STOP:
+										sendTerminator_LC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_read_idx]);
+										break;
+									default:
+										//SEGGER_RTT_printf(0, "ERROR: Unkown HOTSPOT_RX_IDLE_OR_REPEAT\n");
+										break;
+								}
+							 */
 							break;
 
 						default:
-		        			dbgPrint4("RX_UNKN", modemState, hotspotState, lastRxState);
+							dbgPrint4("RX_UNKN", modemState, hotspotState, lastRxState);
+							lastRxState = HOTSPOT_RX_UNKNOWN;
 							//SEGGER_RTT_printf(0, "ERROR: Unkown Hotspot RX state\n");
 							break;
 					}
@@ -859,7 +903,10 @@ static void hotspotStateMachine(void)
         			updateScreen(HOTSPOT_RX_IDLE);
         			lastRxState = HOTSPOT_RX_STOP;
         			hotspotState = HOTSPOT_STATE_RX_END;
-        			return;
+    				rfFrameBufCount = 0;
+    				//rfFrameBufReadIdx = 0;
+    				//wavbuffer_count = 0;
+					return;
         		}
         	}
 			break;
@@ -872,11 +919,14 @@ static void hotspotStateMachine(void)
 			// If MMDVMHost tells us to go back to idle. (receiving)
 			if (modemState == STATE_IDLE)
 			{
-				modemState = STATE_DMR;
-				wavbuffer_read_idx = 0;
-				wavbuffer_write_idx = 0;
-				wavbuffer_count = 0;
+				//modemState = STATE_DMR;
+				//wavbuffer_read_idx = 0;
+				//wavbuffer_write_idx = 0;
+				//wavbuffer_count = 0;
+				rfFrameBufCount = 0;
+    			lastRxState = HOTSPOT_RX_IDLE;
 				hotspotState = HOTSPOT_STATE_TX_SHUTDOWN;
+				mmdvmHostIsConnected = false;
 				//SEGGER_RTT_printf(0, "modemState == STATE_IDLE: TX_START_BUFFERING -> HOTSPOT_STATE_TX_SHUTDOWN\n");
 			}
 			else
@@ -926,7 +976,7 @@ static void hotspotStateMachine(void)
 			else
 			{
 				if ((slot_state < DMR_STATE_TX_START_1) ||
-						((modemState == STATE_DMR) && trxIsTransmitting)) // MMDVMHost asked to go back to IDLE (mostly on shutdown)
+						((modemState == STATE_IDLE) && trxIsTransmitting)) // MMDVMHost asked to go back to IDLE (mostly on shutdown)
 				{
 					disableTransmission();
 					hotspotState = HOTSPOT_STATE_RX_START;
@@ -952,6 +1002,8 @@ int menuHotspotMode(uiEvent_t *ev, bool isFirstRun)
 
 		savedTGorPC = trxTalkGroupOrPcId;// Save the current TG or PC
 		trxTalkGroupOrPcId = 0;
+		mmdvmHostIsConnected = false;
+		rfFrameBufCount = 0;
 
 		trxSetModeAndBandwidth(RADIO_MODE_DIGITAL, false);// hotspot mode is for DMR i.e Digital mode
 
@@ -1111,6 +1163,20 @@ static void updateScreen(int rxCommandState)
 	displayLightTrigger();
 }
 
+static void leaveHotspotMode(void)
+{
+	trxTalkGroupOrPcId = savedTGorPC;// restore the current TG or PC
+	if (savedPowerLevel != -1)
+	{
+		trxSetPowerFromLevel(savedPowerLevel);
+	}
+
+	trxDMRID = codeplugGetUserDMRID();
+	settingsUsbMode = USB_MODE_CPS;
+
+	menuSystemPopAllAndDisplayRootMenu();
+}
+
 static void handleEvent(uiEvent_t *ev)
 {
 	if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
@@ -1125,16 +1191,8 @@ static void handleEvent(uiEvent_t *ev)
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 			GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
 		}
-		trxTalkGroupOrPcId = savedTGorPC;// restore the current TG or PC
-		if (savedPowerLevel != -1)
-		{
-			trxSetPowerFromLevel(savedPowerLevel);
-		}
 
-		trxDMRID = codeplugGetUserDMRID();
-		settingsUsbMode = USB_MODE_CPS;
-
-		menuSystemPopAllAndDisplayRootMenu();
+		leaveHotspotMode();
 		return;
 	}
 }
@@ -1150,6 +1208,10 @@ static uint8_t setFreq(volatile const uint8_t* data, uint8_t length)
 
 	//SEGGER_RTT_printf(0, "setFreq\n");
 	hotspotState = HOTSPOT_STATE_INITIALISE;
+
+	if (!mmdvmHostIsConnected)
+		mmdvmHostIsConnected = true;
+
 //	displayLightOverrideTimeout(-1);// turn the backlight on permanently
 
 	// Very old MMDVMHost, set full power
@@ -1252,6 +1314,12 @@ static void getStatus(void)
 
 	//SEGGER_RTT_printf(0, "getStatus buffers=%d\n",s_ComBuf[8U]);
 
+	if (!mmdvmHostIsConnected)
+	{
+		hotspotState = HOTSPOT_STATE_INITIALISE;
+		mmdvmHostIsConnected = true;
+	}
+
 	enqueueUSBData(buf, buf[1U]);
 }
 
@@ -1270,8 +1338,6 @@ static uint8_t setConfig(volatile const uint8_t* data, uint8_t length)
 		return 4U;// only DMR mode supported
 	}
 
-	MMDVM_STATE cfgModemState = (MMDVM_STATE)data[3U];
-
 	uint8_t colorCode = data[6U];
 	if (colorCode > 15U)
 	{
@@ -1286,15 +1352,15 @@ static uint8_t setConfig(volatile const uint8_t* data, uint8_t length)
      io.setDeviations(dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel, nxdnTXLevel, pocsagTXLevel, ysfLoDev);
      dmrDMOTX.setTXDelay(txDelay);
      */
-	if (modemState == STATE_DMRCAL || modemState == STATE_DMRDMO1K || modemState == STATE_RSSICAL || modemState == STATE_INTCAL)
+
+	modemState = (MMDVM_STATE)data[3U];
+
+	if ((modemState == STATE_DMR) && (hotspotState == HOTSPOT_STATE_NOT_CONNECTED))
 	{
-		modemState = STATE_DMR;
-	}
-	else if (modemState == STATE_POCSAGCAL) {
-	}
-	else
-	{
-		modemState = cfgModemState;
+		hotspotState = HOTSPOT_STATE_INITIALISE;
+
+		if (!mmdvmHostIsConnected)
+			mmdvmHostIsConnected = true;
 	}
 
 	return 0U;
@@ -1334,7 +1400,7 @@ static uint8_t setMode(volatile const uint8_t* data, uint8_t length)
 			break;
 	}
 
-  return 0U;
+	return 0U;
 }
 
 static void getVersion(void)
@@ -1411,6 +1477,8 @@ void handleHotspotRequest(void)
 		uint8_t err = 2U;
 
 		dbgAct0(com_requestbuffer[2U]);
+
+		mmdvmHostLastActiveTick = fw_millis();
 
 		//SEGGER_RTT_printf(0, "MMDVM %02x\n",com_requestbuffer[2]);
 		switch(com_requestbuffer[2U])
