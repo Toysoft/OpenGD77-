@@ -281,7 +281,7 @@ Pressing the **Orange** button on the top of the radio in Channel mode displays 
 
 ##### Scan
 
-After pressing the **Orange** button, press it again, or press the the **Green** key to start scanning all channels in the currently selected zome.
+After pressing the **Orange** button, press it again, or press the **Green** key to start scanning all channels in the currently selected zone.
 
 ##### Copying a channel to VFO
 
