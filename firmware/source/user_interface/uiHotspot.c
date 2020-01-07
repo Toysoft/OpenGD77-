@@ -72,6 +72,9 @@ M: 2020-01-07 09:52:15.246 DMR Slot 2, received network end of voice transmissio
 // Uncomment this to enable all sendDebug*() functions. You will see the results in the MMDVMHost log file.
 //#define MMDVM_SEND_DEBUG
 
+// Uncomment this to enable debug screen instead of Hotspot one
+//#define DEBUG_HS_SCREEN
+
 
 #define MMDVM_FRAME_START   0xE0U
 
@@ -233,10 +236,7 @@ static void processUSBDataQueue(void);
 static void handleHotspotRequest(void);
 
 
-#warning GET RID OF ME
-#define NOSCREEN 1
-
-#ifdef NOSCREEN
+#if defined(DEBUG_HS_SCREEN)
 static void dbgAct0(uint8_t cmd)
 {
 	static bool evblink = false;
@@ -387,6 +387,16 @@ static void dbgPrint7(char *text, bool state)
 }
 
 #else
+#define dbgAct0(cmd) do {} while (0)
+#define dbgAct1(cmd) do {} while (0)
+#define dbgPrint0(text) do {} while (0)
+#define dbgPrint1(text) do {} while (0)
+#define dbgPrint2(text) do {} while (0)
+#define dbgPrint3(text, v) do {} while (0)
+#define dbgPrint4(text, mmdvmState, HSState, lastRXState) do {} while (0)
+#define dbgPrint5(text, mmdvmState, HSState, lastRXState) do {} while (0)
+#define dbgPrint6(text) do {} while (0)
+#define dbgPrint7(text, state) do {} while (0)
 #endif
 
 
@@ -411,7 +421,7 @@ int menuHotspotMode(uiEvent_t *ev, bool isFirstRun)
 		memset(&usbComSendBuf, 0, COM_BUFFER_SIZE);
 
 		ucClearBuf();
-#ifndef NOSCREEN
+#if !defined(DEBUG_HS_SCREEN)
 		ucPrintCentered(0, "Hotspot", FONT_8x16);
 		ucPrintCentered(32, "Waiting for", FONT_8x16);
 		ucPrintCentered(48, "PiStar", FONT_8x16);
@@ -445,7 +455,7 @@ static void updateScreen(uint8_t rxCommandState)
 	char buffer[bufferLen];
 	dmrIdDataStruct_t currentRec;
 
-#ifndef NOSCREEN
+#if !defined(DEBUG_HS_SCREEN)
 	ucClearBuf();
 	ucPrintAt(0,0, "DMR Hotspot", FONT_8x16);
 #else
@@ -463,7 +473,7 @@ static void updateScreen(uint8_t rxCommandState)
 
 	snprintf(buffer, bufferLen, "%d%%", batteryPerentage);
 	buffer[bufferLen - 1] = 0;
-#ifndef NOSCREEN
+#if !defined(DEBUG_HS_SCREEN)
 	ucPrintCore(0, 4, buffer, FONT_6x8, TEXT_ALIGN_RIGHT, false);// Display battery percentage at the right
 #endif
 
@@ -472,7 +482,7 @@ static void updateScreen(uint8_t rxCommandState)
 		dmrIDLookup((trxDMRID & 0xFFFFFF), &currentRec);
 		strncpy(buffer, currentRec.text, bufferLen);
 		buffer[bufferLen - 1] = 0;
-#ifndef NOSCREEN
+#if !defined(DEBUG_HS_SCREEN)
 		ucPrintCentered(16, buffer, FONT_8x16);
 #else
 		buffer[0] = 0;
@@ -489,7 +499,7 @@ static void updateScreen(uint8_t rxCommandState)
 		}
 		buffer[bufferLen - 1] = 0;
 
-#ifndef NOSCREEN
+#if !defined(DEBUG_HS_SCREEN)
 		ucPrintCentered(32, buffer, FONT_8x16);
 #endif
 
@@ -508,7 +518,7 @@ static void updateScreen(uint8_t rxCommandState)
 			dmrIDLookup(srcId, &currentRec);
 			strncpy(buffer, currentRec.text, bufferLen);
 			buffer[bufferLen - 1] = 0;
-#ifndef NOSCREEN
+#if !defined(DEBUG_HS_SCREEN)
 			ucPrintCentered(16, buffer, FONT_8x16);
 #else
 			buffer[0] = 0;
@@ -522,7 +532,7 @@ static void updateScreen(uint8_t rxCommandState)
 				snprintf(buffer, bufferLen, "PC %d", dstId);
 			}
 			buffer[bufferLen - 1] = 0;
-#ifndef NOSCREEN
+#if !defined(DEBUG_HS_SCREEN)
 			ucPrintCentered(32, buffer, FONT_8x16);
 #else
 			buffer[0] = 0;
@@ -532,7 +542,7 @@ static void updateScreen(uint8_t rxCommandState)
 		{
 			snprintf(buffer, bufferLen, "CC:%d", trxGetDMRColourCode());//, trxGetDMRTimeSlot()+1) ;
 			buffer[bufferLen - 1] = 0;
-#ifndef NOSCREEN
+#if !defined(DEBUG_HS_SCREEN)
 			ucPrintCore(0, 32, buffer, FONT_8x16, TEXT_ALIGN_LEFT, false);
 
 			ucPrintCore(0, 32, (char *)POWER_LEVELS[hotspotPowerLevel], FONT_8x16, TEXT_ALIGN_RIGHT, false);
@@ -545,15 +555,8 @@ static void updateScreen(uint8_t rxCommandState)
 		snprintf(buffer, bufferLen, "R %d.%05d MHz", val_before_dp, val_after_dp);
 		buffer[bufferLen - 1] = 0;
 	}
-#ifdef NOSCREEN
-	//ucFillRect(0, 48, 128, 6, true);
-	//ucPrintCentered(48, buffer, FONT_8x16);
-	//ucRenderRows(6, 8);
-#else
+#if !defined(DEBUG_HS_SCREEN)
 	ucPrintCentered(48, buffer, FONT_8x16);
-#endif
-
-#ifndef NOSCREEN
 	ucRender();
 #endif
 	displayLightTrigger();
@@ -1103,6 +1106,12 @@ static void sendDebug5(const char *text, int16_t n1, int16_t n2, int16_t n3, int
 
 	enqueueUSBData(buf, buf[1U]);
 }
+#else
+#define sendDebug1(text) do {} while (0)
+#define sendDebug2(text, n1) do {} while (0)
+#define sendDebug3(text, n1, n2) do {} while (0)
+#define sendDebug4(text, n1, n2, n3) do {} while (0)
+#define sendDebug5(text, n1, n2, n3, n4) do {} while (0)
 #endif
 
 static void sendDMRLost(void)
@@ -1173,7 +1182,7 @@ static void hotspotStateMachine(void)
 			break;
 		case HOTSPOT_STATE_INITIALISE:
 			dbgPrint3("INIT", rfFrameBufCount);
-#ifdef NOSCREEN
+#if defined(DEBUG_HS_SCREEN)
 			ucClearBuf();
 			ucRender();
 #endif
