@@ -18,7 +18,7 @@
 
 #include <functions/fw_ticks.h>
 #include <user_interface/menuSystem.h>
-#include <user_interface/menuUtilityQSOData.h>
+#include <user_interface/uiUtilityQSOData.h>
 #include <user_interface/uiLocalisation.h>
 #include "fw_main.h"
 #include "fw_settings.h"
@@ -32,6 +32,8 @@
 #error A firmware compiled in Releae mode will not work, yet
 #error Change target build to Debug then Clean the build and recompile
 #endif
+
+bool PTTToggledDown = false; // PTT toggle feature
 
 void fw_main_task(void *data);
 
@@ -177,23 +179,33 @@ void fw_main_task(void *data)
 				{
 					if (key_event == EVENT_KEY_CHANGE)
 					{
-						if (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN)
+						if ((PTTToggledDown == false) && (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN))
 						{
 							menuSystemPushNewMenu(MENU_LOCK_SCREEN);
 						}
 
 						key_event = EVENT_KEY_NONE;
+
+						if (nonVolatileSettings.pttToggle && PTTToggledDown)
+						{
+							PTTToggledDown = false;
+						}
 					}
 
 					// Lockout ORANGE AND BLUE (BLACK stay active regardless lock status, useful to trigger backlight)
 					if (button_event == EVENT_BUTTON_CHANGE && ((buttons & BUTTON_ORANGE) || (buttons & BUTTON_SK2)))
 					{
-						if (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN)
+						if ((PTTToggledDown == false) && (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN))
 						{
 							menuSystemPushNewMenu(MENU_LOCK_SCREEN);
 						}
 
 						button_event = EVENT_BUTTON_NONE;
+
+						if (nonVolatileSettings.pttToggle && PTTToggledDown)
+						{
+							PTTToggledDown = false;
+						}
 					}
 				}
 				else if (PTTLocked)
@@ -223,16 +235,20 @@ void fw_main_task(void *data)
 
 			if ((key_event == EVENT_KEY_CHANGE) && ((buttons & BUTTON_PTT) == 0) && (keys.key != 0))
 			{
+				// Do not send any beep while scanning, otherwise enabling the AMP will be handled as a valid signal detection.
 				if (keys.event & KEY_MOD_PRESS)
 				{
-					set_melody(melody_key_beep);
+					if ((PTTToggledDown == false) && (((menuSystemGetCurrentMenuNumber() == MENU_VFO_MODE) && menuVFOModeIsScanning()) == false))
+						set_melody(melody_key_beep);
 				}
 				else if ((keys.event & (KEY_MOD_LONG | KEY_MOD_DOWN)) == (KEY_MOD_LONG | KEY_MOD_DOWN))
 				{
-					set_melody(melody_key_long_beep);
+					if ((PTTToggledDown == false) && (((menuSystemGetCurrentMenuNumber() == MENU_VFO_MODE) && menuVFOModeIsScanning()) == false))
+						set_melody(melody_key_long_beep);
 				}
 
-				if (KEYCHECK_LONGDOWN(keys, KEY_RED))
+				if (KEYCHECK_LONGDOWN(keys, KEY_RED) &&
+						(((menuSystemGetCurrentMenuNumber() == MENU_VFO_MODE) && menuVFOModeIsScanning()) == false))
 				{
 					contactListContactIndex = 0;
 					menuSystemPopAllAndDisplayRootMenu();
@@ -260,6 +276,54 @@ void fw_main_task(void *data)
 			}
 */
 
+			//
+			// PTT toggle feature
+			//
+			// PTT is locked down, but any button but SK1 is pressed, virtually release PTT
+			if ((nonVolatileSettings.pttToggle && PTTToggledDown) &&
+					(((button_event & EVENT_BUTTON_CHANGE) && ((buttons & BUTTON_ORANGE) || (buttons & BUTTON_SK2))) ||
+							((keys.key != 0) && (keys.event & KEY_MOD_UP))))
+			{
+				PTTToggledDown = false;
+				button_event = EVENT_BUTTON_CHANGE;
+				buttons = BUTTON_NONE;
+				key_event = NO_EVENT;
+				keys.key = 0;
+			}
+			// PTT toggle action
+			if (nonVolatileSettings.pttToggle)
+			{
+				if (button_event == EVENT_BUTTON_CHANGE)
+				{
+					if (buttons & BUTTON_PTT)
+					{
+						if (PTTToggledDown == false)
+						{
+							// PTT toggle works only if a TOT value is defined.
+							if (currentChannelData->tot != 0)
+							{
+								PTTToggledDown = true;
+							}
+						}
+						else
+						{
+							PTTToggledDown = false;
+						}
+					}
+				}
+
+				if (PTTToggledDown && ((buttons & BUTTON_PTT) == 0))
+				{
+					buttons |= BUTTON_PTT;
+				}
+			}
+			else
+			{
+				if (PTTToggledDown)
+					PTTToggledDown = false;
+			}
+
+
 			if (button_event == EVENT_BUTTON_CHANGE)
 			{
 				displayLightTrigger();
@@ -275,18 +339,42 @@ void fw_main_task(void *data)
 							currentMenu != MENU_SPLASH_SCREEN &&
 							currentMenu != MENU_TX_SCREEN )
 					{
-						if (currentMenu == MENU_VFO_MODE)
-							menuVFOModeStopScan();
-						else if (currentMenu == MENU_LOCK_SCREEN)
-							menuLockScreenPop();
-
-						menuSystemPushNewMenu(MENU_TX_SCREEN);
+						bool wasScanning = false;
+						if (menuVFOModeIsScanning() || menuChannelModeIsScanning())
+						{
+							if (currentMenu == MENU_VFO_MODE)
+							{
+								menuVFOModeStopScanning();
+							}
+							else
+							{
+								menuChannelModeStopScanning();
+							}
+							wasScanning = true;
+						}
+						else
+						{
+							if (currentMenu == MENU_LOCK_SCREEN)
+							{
+								menuLockScreenPop();
+							}
+						}
+						if (!wasScanning)
+						{
+							menuSystemPushNewMenu(MENU_TX_SCREEN);
+						}
 					}
 				}
 
         		if (buttons & BUTTON_SK1 && buttons & BUTTON_SK2)
         		{
         			settingsSaveSettings(true);
+        		}
+
+    			// Toggle backlight
+        		if ((nonVolatileSettings.backlightMode == BACKLIGHT_MODE_MANUAL) && (buttons == BUTTON_SK1))
+        		{
+        			fw_displayEnableBacklight(! fw_displayIsBacklightLit());
         		}
         	}
 
@@ -335,7 +423,7 @@ void fw_main_task(void *data)
     		    set_melody(NULL);
         	}
 
-    		if (menuDisplayLightTimer > 0)
+    		if ((nonVolatileSettings.backlightMode == BACKLIGHT_MODE_AUTO) && (menuDisplayLightTimer > 0))
     		{
     			menuDisplayLightTimer--;
     			if (menuDisplayLightTimer==0)

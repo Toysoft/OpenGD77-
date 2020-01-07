@@ -83,7 +83,7 @@ const stringsTable_t italianLanguage =
 .all					= "Tutti",
 .type					= "Tipo",
 .timeSlot				= "Timeslot",
-.none					= "no",
+.none					= "No",
 .contact_saved			= "Salvato",
 .duplicate				= "Duplicato",
 .tg						= "TG",
@@ -135,7 +135,10 @@ const stringsTable_t italianLanguage =
 .all_call				= "Chiama Tutti",
 .tone_scan				= "Scansione Toni",//// MaxLen: 16
 .cc_scan				= "Scansione CC",//// MaxLen: 16
-.low_battery			= "LOW BATTERY !!!",//// MaxLen: 16
+.low_battery			= "Batteria scarica",//// MaxLen: 16
+.Auto					= "Automatico", // MaxLen 16 (with .mode + ':') 
+.manual					= "Manuale",  // MaxLen 16 (with .mode + ':') 
+.ptt_toggle				= "Auto-PTT", // MaxLen 16 (with ':' + .on or .off)
 };
 /********************************************************************
  *

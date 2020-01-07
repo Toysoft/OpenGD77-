@@ -19,10 +19,11 @@
  */
 
 #include <hardware/fw_HR-C6000.h>
+#include <dmr/dmrDefines.h>
 #include "fw_settings.h"
 #include <SeggerRTT/RTT/SEGGER_RTT.h>
 #include <user_interface/menuHotspot.h>
-#include <user_interface/menuUtilityQSOData.h>
+#include <user_interface/uiUtilityQSOData.h>
 #include "fw_trx.h"
 
 
@@ -93,6 +94,7 @@ static volatile int readDMRRSSI = 0;
 static volatile int tx_sequence=0;
 
 static volatile int timeCode;
+static volatile int receivedTimeCode;
 static volatile int rxColorCode;
 static volatile int repeaterWakeupResponseTimeout=0;
 static volatile int isWaking = WAKING_MODE_NONE;
@@ -530,16 +532,19 @@ inline static void HRC6000SysReceivedDataInt(void)
 
 
 	read_SPI_page_reg_byte_SPI0(0x04, 0x51, &tmp_val_0x51);
-	read_SPI_page_reg_byte_SPI0(0x04, 0x52, &tmp_val_0x52);  //Read Received CC and CACH Register
+
 	//read_SPI_page_reg_byte_SPI0(0x04, 0x57, &tmp_val_0x57);// Kai said that the official firmware uses this register instead of 0x52 for the timecode
 
 	rxDataType 	= (tmp_val_0x51 >> 4) & 0x0f;//Data Type or Voice Frame sequence number
 	rxSyncClass = (tmp_val_0x51 >> 0) & 0x03;//Received Sync Class  0=Sync Header 1=Voice 2=data 3=RC
 	rxCRCStatus = (((tmp_val_0x51 >> 2) & 0x01)==0);// CRC is OK if its 0
 	rpi = (tmp_val_0x51 >> 3) & 0x01;
+
+	/*
+	read_SPI_page_reg_byte_SPI0(0x04, 0x52, &tmp_val_0x52);  //Read Received CC and CACH Register
 	rxColorCode 	= (tmp_val_0x52 >> 4) & 0x0f;
 	timeCode =  ((tmp_val_0x52 & 0x04) >> 2);
-
+*/
 	//SEGGER_RTT_printf(0, "\t\tRXDT\taf:%d\tsc:%02x\tcrc:%02x\trpi:%02x\tcc:%d\ttc:%d\t\n",(rxDataType&0x07),rxSyncClass,rxCRCStatus,rpi,rxColorCode,timeCode);
 
 	if ((slot_state == DMR_STATE_RX_1 || slot_state == DMR_STATE_RX_2) && (rxColorCode != trxGetDMRColourCode() || rpi!=0 || rxCRCStatus != true))
@@ -697,25 +702,28 @@ inline static void HRC6000SysPhysicalLayerInt(void)
 
 inline static void HRC6000SysInterruptHandler(void)
 {
+	uint8_t reg0x52;
 	read_SPI_page_reg_byte_SPI0(0x04, 0x82, &tmp_val_0x82);  //Read Interrupt Flag Register1
 	//SEGGER_RTT_printf(0, "SYS\t0x%02x\n",tmp_val_0x82);
+	read_SPI_page_reg_byte_SPI0(0x04, 0x52, &reg0x52);  //Read Received CC and CACH
+	rxColorCode 	= (reg0x52 >> 4) & 0x0f;
 
 	if (!trxIsTransmitting) // ignore the LC data when we are transmitting
 	{
-		uint8_t reg0x52;
+
 		uint8_t LCBuf[12];
 		read_SPI_page_reg_bytearray_SPI0(0x02, 0x00, LCBuf, 12);// read the LC from the C6000
+		read_SPI_page_reg_byte_SPI0(0x04, 0x51, &tmp_val_0x51);
+		bool rxCRCStatus = (((tmp_val_0x51 >> 2) & 0x01)==0);// CRC is OK if its 0
 
-		if (LCBuf[1] == 0x00 && (LCBuf[0]==TG_CALL_FLAG || LCBuf[0]==PC_CALL_FLAG  || (LCBuf[0]>=0x04 && LCBuf[0]<=0x07)) &&
+		if (rxCRCStatus && (LCBuf[0]==TG_CALL_FLAG || LCBuf[0]==PC_CALL_FLAG  || (LCBuf[0]>=FLCO_TALKER_ALIAS_HEADER && LCBuf[0]<=FLCO_GPS_INFO)) &&
 			memcmp((uint8_t *)previousLCBuf,LCBuf,12)!=0)
 		{
-			read_SPI_page_reg_byte_SPI0(0x04, 0x52, &reg0x52);  //Read Received CC and CACH Register to get the timecode (TS number)
-			timeCode = ((reg0x52 & 0x04) >> 2);// extract the timecode from the CACH register
-			rxColorCode 	= (reg0x52 >> 4) & 0x0f;
+
 
 			if ((checkTimeSlotFilter() || trxDMRMode == DMR_MODE_ACTIVE) && (rxColorCode == trxGetDMRColourCode())) // only do this for the selected timeslot, or when in Active mode
 			{
-				if (DMR_frame_buffer[0]==TG_CALL_FLAG || DMR_frame_buffer[0]==PC_CALL_FLAG)
+				if (LCBuf[0]==TG_CALL_FLAG || LCBuf[0]==PC_CALL_FLAG)
 				{
 					receivedTgOrPcId 	= (LCBuf[3]<<16)+(LCBuf[4]<<8)+(LCBuf[5]<<0);// used by the call accept filter
 					receivedSrcId 		= (LCBuf[6]<<16)+(LCBuf[7]<<8)+(LCBuf[8]<<0);// used by the call accept filter
@@ -732,7 +740,7 @@ inline static void HRC6000SysInterruptHandler(void)
 				}
 				else
 				{
-					if (updateLastHeard == false)
+					if (updateLastHeard == false && receivedTgOrPcId != 0)
 					{
 						memcpy((uint8_t *)DMR_frame_buffer,LCBuf,12);
 						updateLastHeard=true;//lastHeardListUpdate((uint8_t *)DMR_frame_buffer);
@@ -819,6 +827,32 @@ static void HRC6000TransitionToTx(void)
 inline static void HRC6000TimeslotInterruptHandler(void)
 {
 	//SEGGER_RTT_printf(0, "TS\tS:%d\tTC:%d\n",slot_state,timeCode);
+	uint8_t reg0x52;
+	read_SPI_page_reg_byte_SPI0(0x04, 0x52, &reg0x52);  	//Read CACH Register to get the timecode (TS number)
+    receivedTimeCode = ((reg0x52 & 0x04) >> 2);				// extract the timecode from the CACH register
+
+	if (slot_state == DMR_STATE_REPEATER_WAKE_4)			//if we are waking up the repeater
+	{
+		timeCode=receivedTimeCode;							//use the received TC directly from the CACH
+	}
+	else
+	{
+		timeCode=!timeCode;									//toggle the timecode.
+		if(timeCode==receivedTimeCode)						//if this agrees with the received version
+		{
+			if(rxcnt>0) rxcnt--;							//decrement the disagree count
+		}
+		else												//if there is a disagree it might be just a glitch so ignore it a couple of times.
+		{
+			rxcnt++;										//count the number of disagrees.
+			if(rxcnt>3)										//if we have had four disagrees then re-sync.
+			{
+				timeCode=receivedTimeCode;
+				rxcnt=0;
+			}
+		}
+	}
+
 	// RX/TX state machine
 	switch (slot_state)
 	{
@@ -827,7 +861,7 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 			if (trxDMRMode == DMR_MODE_PASSIVE)
 			{
 
-				if( !isWaking &&  trxIsTransmitting && checkTimeSlotFilter())
+				if( !isWaking &&  trxIsTransmitting && !checkTimeSlotFilter() && (rxcnt==0))
 				{
 						HRC6000TransitionToTx();
 				}
@@ -862,6 +896,7 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 			init_digital_DMR_RX();
 			GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
+			menuDisplayQSODataState= QSO_DISPLAY_DEFAULT_SCREEN;
 			slot_state = DMR_STATE_IDLE;
 			break;
 		case DMR_STATE_TX_START_1: // Start TX (second step)
@@ -916,6 +951,8 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 		case DMR_STATE_TX_1: // Ongoing TX (inactive timeslot)
 			if ((trxIsTransmitting==false) && (tx_sequence==0))
 			{
+				//write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50); // Receive during next Timeslot (no Layer 2 Access)
+				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00); 	//Do nothing on the next TS
 				slot_state = DMR_STATE_TX_END_1; // only exit here to ensure staying in the correct timeslot
 			}
 			else
@@ -1043,9 +1080,9 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 			slot_state = DMR_STATE_REPEATER_WAKE_4;
 			break;
 		case DMR_STATE_REPEATER_WAKE_4:
-			if (rxcnt>2)
+			if (rxcnt>3)
 			{
-				// wait for the signal from the repeater to have toggled timecode at least twice, i.e the signal should be stable and we should be able to go into Tx
+				// wait for the signal from the repeater to have toggled timecode at least three times, i.e the signal should be stable and we should be able to go into Tx
 				slot_state = DMR_STATE_RX_1;
 				isWaking = WAKING_MODE_NONE;
 			}
@@ -1481,4 +1518,9 @@ void clearActiveDMRID(void)
 	memset((uint8_t *)DMR_frame_buffer,0x00,12);
 	receivedTgOrPcId 	= 0x00;
 	receivedSrcId 		= 0x00;
+}
+
+int HRC6000GetReveivedTgOrPcId(void)
+{
+	return receivedTgOrPcId;
 }

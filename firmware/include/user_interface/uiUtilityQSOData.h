@@ -24,6 +24,7 @@
 extern const int QSO_TIMER_TIMEOUT;
 extern const int TX_TIMER_Y_OFFSET;
 extern const int CONTACT_Y_POS;
+extern const int FREQUENCY_X_POS;
 
 typedef struct dmrIdDataStruct
 {
@@ -37,7 +38,8 @@ typedef struct LinkItem
     struct LinkItem *prev;
     uint32_t 	id;
     uint32_t 	talkGroupOrPcId;
-    char 		talkerAlias[32];// 4 blocks of data. 6 bytes + 7 bytes + 7 bytes + 7 bytes . plus 1 for termination some more for safety
+    char 		talkerAlias[32];// 4 blocks of data. 6 bytes + 7 bytes + 7 bytes + 7 bytes . plus 1 for termination some more for safety.
+    char 		locator[7];
     uint32_t	time;// current system time when this station was heard
     struct LinkItem *next;
 } LinkItem_t;
@@ -46,7 +48,8 @@ enum QSO_DISPLAY_STATE
 {
 	QSO_DISPLAY_IDLE,
 	QSO_DISPLAY_DEFAULT_SCREEN,
-	QSO_DISPLAY_CALLER_DATA
+	QSO_DISPLAY_CALLER_DATA,
+	QSO_DISPLAY_CALLER_DATA_UPDATE
 };
 
 extern const char *POWER_LEVELS[];
@@ -59,6 +62,7 @@ extern uint32_t menuUtilityTgBeforePcMode;
 extern const uint32_t RSSI_UPDATE_COUNTER_RELOAD;
 
 bool dmrIDLookup(int targetId, dmrIdDataStruct_t *foundRecord);
+bool contactIDLookup(uint32_t id, int calltype, char *buffer);
 void menuUtilityRenderQSOData(void);
 void menuUtilityRenderHeader(void);
 void lastheardInitList(void);
@@ -69,5 +73,7 @@ void drawRSSIBarGraph(void);
 void drawDMRMicLevelBarGraph(void);
 void setOverrideTGorPC(int tgOrPc, bool privateCall);
 char keypressToNumberChar(keyboardCode_t keys);
+void printFrequency(bool isTX, bool hasFocus, uint8_t y, uint32_t frequency, bool displayVFOChannel);
+void printToneAndSquelch(void);
 
 #endif

@@ -62,7 +62,10 @@ int menuGetMenuOffset(int maxMenuEntries, int loopOffset);
 void menuChannelModeUpdateScreen(int txTimeSecs);
 void menuChannelColdStart();
 void menuVFOModeUpdateScreen(int txTimeSecs);
-void menuVFOModeStopScan(void);
+void menuVFOModeStopScanning(void);
+bool menuVFOModeIsScanning(void);
+bool menuChannelModeIsScanning(void);
+void menuChannelModeStopScanning(void);
 void menuCPSUpdate(int command,int x, int y, ucFont_t fontSize, ucTextAlign_t alignment, bool isInverted,char *szMsg);
 
 void menuInitMenuSystem(void);
@@ -88,6 +91,8 @@ void menuBatteryInit(void);
 void menuBatteryPushBackVoltage(int32_t voltage);
 
 void menuLockScreenPop(void);
+
+void menuLastHeardupdateScreen(bool showTitleOrHeader);
 
 /*
  * ---------------------- IMPORTANT ----------------------------

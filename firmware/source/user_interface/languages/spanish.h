@@ -136,6 +136,9 @@ const stringsTable_t spanishLanguage =
 .tone_scan				= "Tono scan",//// MaxLen: 16
 .cc_scan				= "CC scan",//// MaxLen: 16
 .low_battery			= "BATERÍA BAJA!!!",//// MaxLen: 16
+.Auto					= "Auto", // MaxLen 16 (with .mode + ':') 
+.manual					= "Manual",  // MaxLen 16 (with .mode + ':') 
+.ptt_toggle				= "PTT Fijo", // MaxLen 16 (with ':' + .on or .off)
 };
 /********************************************************************
  *

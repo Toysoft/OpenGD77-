@@ -17,7 +17,7 @@
  */
 #include <hardware/fw_HR-C6000.h>
 #include <user_interface/menuSystem.h>
-#include <user_interface/menuUtilityQSOData.h>
+#include <user_interface/uiUtilityQSOData.h>
 #include <user_interface/uiLocalisation.h>
 #include "fw_settings.h"
 
@@ -28,16 +28,19 @@ static void handleEvent(uiEvent_t *ev);
 static const int PIT_COUNTS_PER_SECOND = 10000;
 static int timeInSeconds;
 static uint32_t nextSecondPIT;
+static bool isShowingLastHeard;
+extern bool PTTToggledDown;
 
 int menuTxScreen(uiEvent_t *ev, bool isFirstRun)
 {
-	static uint32_t m = 0, micm = 0;
+	static uint32_t m = 0, micm = 0, mto = 0;
 
 	if (isFirstRun)
 	{
 		uiChannelModeScanActive = false;
 		trxIsTransmittingTone = false;
 		settingsPrivateCallMuteMode = false;
+		isShowingLastHeard = false;
 
 		if ((currentChannelData->flag4 & 0x04) == 0x00 && (trxCheckFrequencyInAmateurBand(currentChannelData->txFreq) || nonVolatileSettings.txFreqLimited == false))
 		{
@@ -75,6 +78,7 @@ int menuTxScreen(uiEvent_t *ev, bool isFirstRun)
 			ucRender();
 			displayLightOverrideTimeout(-1);
 			set_melody(melody_ERROR_beep);
+			PTTToggledDown = false;
 		}
 
 		m = micm = ev->ticks;
@@ -107,10 +111,15 @@ int menuTxScreen(uiEvent_t *ev, bool isFirstRun)
 					ucClearBuf();
 					ucPrintCentered(20, currentLanguage->timeout, FONT_16x32);
 					ucRender();
+					PTTToggledDown = false;
+					mto = ev->ticks;
 				}
 				else
 				{
-					updateScreen();
+					if (!isShowingLastHeard)
+					{
+						updateScreen();
+					}
 				}
 
 				nextSecondPIT = PITCounter + PIT_COUNTS_PER_SECOND;
@@ -128,6 +137,15 @@ int menuTxScreen(uiEvent_t *ev, bool isFirstRun)
 				}
 			}
 		}
+
+		// Timeout happened, postpone going further otherwise timeout
+		// screen won't be visible at all.
+		if ((currentChannelData->tot != 0) && (timeInSeconds == 0))
+		{
+			if ((ev->ticks - mto) < 1000)
+				return 0;
+		}
+
 
 		// Got an event, or
 		if (ev->hasEvent || // PTT released, Timeout triggered,
@@ -167,6 +185,7 @@ static void handleEvent(uiEvent_t *ev)
 		{
 			trxIsTransmitting = false;
 			trxIsTransmittingTone = false;
+
 			if (trxGetMode() == RADIO_MODE_ANALOG)
 			{
 				// In analog mode. Stop transmitting immediately
@@ -177,6 +196,14 @@ static void handleEvent(uiEvent_t *ev)
 				trxActivateRx();
 				taskEXIT_CRITICAL();
 				menuSystemPopPreviousMenu();
+			}
+			else
+			{
+				if (isShowingLastHeard)
+				{
+					isShowingLastHeard=false;
+					updateScreen();
+				}
 			}
 			// When not in analogue mode, only the trxIsTransmitting flag is cleared
 			// This screen keeps getting called via the handleEvent function and goes into the else clause - below.
@@ -195,26 +222,29 @@ static void handleEvent(uiEvent_t *ev)
 	// Key action while xmitting (ANALOG), Tone triggering
 	if (!trxIsTransmittingTone && ((ev->buttons & BUTTON_PTT) != 0) && trxIsTransmitting && (trxGetMode() == RADIO_MODE_ANALOG))
 	{
-		// Send 1750Hz
-		if ((ev->buttons & BUTTON_SK2) != 0)
+		if (PTTToggledDown == false)
 		{
-			trxIsTransmittingTone = true;
-			trxSetTone1(1750);
-			trxSelectVoiceChannel(AT1846_VOICE_CHANNEL_TONE1);
-			GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1);
-			GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 1);
-		}
-		else
-		{ // Send DTMF
-			int keyval = menuGetKeypadKeyValue(ev, false);
-
-			if (keyval != 99)
+			// Send 1750Hz
+			if ((ev->buttons & BUTTON_SK2) != 0)
 			{
-				trxSetDTMF(keyval);
 				trxIsTransmittingTone = true;
-				trxSelectVoiceChannel(AT1846_VOICE_CHANNEL_DTMF);
+				trxSetTone1(1750);
+				trxSelectVoiceChannel(AT1846_VOICE_CHANNEL_TONE1);
 				GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1);
 				GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 1);
+			}
+			else
+			{ // Send DTMF
+				int keyval = menuGetKeypadKeyValue(ev, false);
+
+				if (keyval != 99)
+				{
+					trxSetDTMF(keyval);
+					trxIsTransmittingTone = true;
+					trxSelectVoiceChannel(AT1846_VOICE_CHANNEL_DTMF);
+					GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1);
+					GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 1);
+				}
 			}
 		}
 	}
@@ -225,6 +255,20 @@ static void handleEvent(uiEvent_t *ev)
 		trxIsTransmittingTone = false;
 		trxSelectVoiceChannel(AT1846_VOICE_CHANNEL_MIC);
 		GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
+	}
+
+	if (trxGetMode() == RADIO_MODE_DIGITAL && ev->buttons & BUTTON_SK1 && isShowingLastHeard==false && trxIsTransmitting==true)
+	{
+		isShowingLastHeard=true;
+		menuLastHeardupdateScreen(false);
+	}
+	else
+	{
+		if (isShowingLastHeard)
+		{
+			isShowingLastHeard=false;
+			updateScreen();
+		}
 	}
 
 }

@@ -20,7 +20,7 @@
 #include <hardware/fw_HR-C6000.h>
 #include <hardware/fw_SPI_Flash.h>
 #include <user_interface/menuSystem.h>
-#include <user_interface/menuUtilityQSOData.h>
+#include <user_interface/uiUtilityQSOData.h>
 #include <user_interface/uiLocalisation.h>
 #include "fw_trx.h"
 #include "fw_settings.h"
@@ -32,8 +32,8 @@ void updateLastHeardList(int id,int talkGroup);
 const int QSO_TIMER_TIMEOUT = 2400;
 const int TX_TIMER_Y_OFFSET = 8;
 const int CONTACT_Y_POS = 16;
+const int FREQUENCY_X_POS = /* '>Ta'*/ (3 * 8) + 4;
 static const int BAR_Y_POS = 10;
-
 
 static const int DMRID_MEMORY_STORAGE_START = 0x30000;
 static const int DMRID_HEADER_LENGTH = 0x0C;
@@ -49,6 +49,9 @@ uint32_t menuUtilityTgBeforePcMode 	= 0;// No TG saved, prior to a Private call 
 
 const char *POWER_LEVELS[]={"250mW","500mW","750mW","1W","2W","3W","4W","5W"};
 const char *DMR_FILTER_LEVELS[]={"None","TS","TS,TG"};
+
+volatile uint32_t lastID=0;// This needs to be volatile as lastHeardClearLastID() is called from an ISR
+uint32_t lastTG=0;
 
 /*
  * Remove space at the end of the array, and return pointer to first non space character
@@ -80,7 +83,6 @@ static char *chomp(char *str)
 	return sp;
 }
 
-
 static int32_t getCallsignEndingPos(char *str)
 {
 	char *p = str;
@@ -104,6 +106,8 @@ void lastheardInitList(void)
     {
     	callsList[i].id=0;
         callsList[i].talkGroupOrPcId=0;
+        callsList[i].talkerAlias[0] = 0;
+        callsList[i].locator[0] = 0;
         callsList[i].time = 0;
         if (i==0)
         {
@@ -140,8 +144,168 @@ LinkItem_t * findInList(int id)
     return NULL;
 }
 
-volatile uint32_t lastID=0;// This needs to be volatile as lastHeardClearLastID() is called from an ISR
-uint32_t lastTG=0;
+static uint8_t *coordsToMaidenhead(double longitude, double latitude, bool extended)
+{
+	static uint8_t maidenhead[15];
+	double l, l2;
+	uint8_t c;
+
+	l = longitude;
+
+	for (uint8_t i = 0; i < 2; i++)
+	{
+		l = l / ((i == 0) ? 20.0 : 10.0) + 9.0;
+		c = (uint8_t) l;
+		maidenhead[0 + i] = c + 'A';
+		l2 = c;
+		l -= l2;
+		l *= 10.0;
+		c = (uint8_t) l;
+		maidenhead[2 + i] = c + '0';
+		l2 = c;
+		l -= l2;
+		l *= 24.0;
+		c = (uint8_t) l;
+		maidenhead[4 + i] = c + 'A';
+
+		if (extended)
+		{
+			l2 = c;
+			l -= l2;
+			l *= 10.0;
+			c = (uint8_t) l;
+			maidenhead[6 + i] = c + '0';
+			l2 = c;
+			l -= l2;
+			l *= 24.0;
+			c = (uint8_t) l;
+			maidenhead[8 + i] = c + (extended ? 'A' : 'a');
+			l2 = c;
+			l -= l2;
+			l *= 10.0;
+			c = (uint8_t) l;
+			maidenhead[10 + i] = c + '0';
+			l2 = c;
+			l -= l2;
+			l *= 24.0;
+			c = (uint8_t) l;
+			maidenhead[12 + i] = c + (extended ? 'A' : 'a');
+		}
+
+		l = latitude;
+	}
+
+	maidenhead[extended ? 14 : 6] = '\0';
+
+	return &maidenhead[0];
+}
+
+static uint8_t *decodeGPSPosition(uint8_t *data)
+{
+#if 0
+	uint8_t errorI = (data[2U] & 0x0E) >> 1U;
+	const char* error;
+	switch (errorI) {
+	case 0U:
+		error = "< 2m";
+		break;
+	case 1U:
+		error = "< 20m";
+		break;
+	case 2U:
+		error = "< 200m";
+		break;
+	case 3U:
+		error = "< 2km";
+		break;
+	case 4U:
+		error = "< 20km";
+		break;
+	case 5U:
+		error = "< 200km";
+		break;
+	case 6U:
+		error = "> 200km";
+		break;
+	default:
+		error = "not known";
+		break;
+	}
+#endif
+
+	int32_t longitudeI = ((data[2U] & 0x01U) << 31) | (data[3U] << 23) | (data[4U] << 15) | (data[5U] << 7);
+	longitudeI >>= 7;
+
+	int32_t latitudeI = (data[6U] << 24) | (data[7U] << 16) | (data[8U] << 8);
+	latitudeI >>= 8;
+
+	float longitude = 360.0F / 33554432.0F;	// 360/2^25 steps
+	float latitude  = 180.0F / 16777216.0F;	// 180/2^24 steps
+
+	longitude *= (float)longitudeI;
+	latitude  *= (float)latitudeI;
+
+	return (coordsToMaidenhead(longitude, latitude, false));
+}
+
+static uint8_t *decodeTA(uint8_t *TA)
+{
+	uint8_t *b;
+	uint8_t c;
+	int8_t j;
+    uint8_t i, t1, t2;
+    static uint8_t buffer[32];
+    uint8_t *talkerAlias = TA;
+    uint8_t TAformat = (talkerAlias[0] >> 6U) & 0x03U;
+    uint8_t TAsize   = (talkerAlias[0] >> 1U) & 0x1FU;
+
+    switch (TAformat)
+    {
+		case 0U:		// 7 bit
+			memset(&buffer, 0, sizeof(buffer));
+			b = &talkerAlias[0];
+			t1 = 0U; t2 = 0U; c = 0U;
+
+			for (i = 0U; (i < 32U) && (t2 < TAsize); i++)
+			{
+				for (j = 7; j >= 0; j--)
+				{
+					c = (c << 1U) | (b[i] >> j);
+
+					if (++t1 == 7U)
+					{
+						if (i > 0U)
+							buffer[t2++] = c & 0x7FU;
+
+						t1 = 0U;
+						c = 0U;
+					}
+				}
+			}
+			buffer[TAsize] = 0;
+			break;
+
+		case 1U:		// ISO 8 bit
+		case 2U:		// UTF8
+			memcpy(&buffer, talkerAlias + 1U, sizeof(buffer));
+			break;
+
+		case 3U:		// UTF16 poor man's conversion
+			t2=0;
+			memset(&buffer, 0, sizeof(buffer));
+			for (i = 0U; (i < 15U) && (t2 < TAsize); i++)
+			{
+				if (talkerAlias[2U * i + 1U] == 0)
+					buffer[t2++] = talkerAlias[2U * i + 2U];
+				else
+					buffer[t2++] = '?';
+			}
+			buffer[TAsize] = 0;
+			break;
+    }
+
+	return &buffer[0];
+}
 
 void lastHeardClearLastID(void)
 {
@@ -150,95 +314,25 @@ void lastHeardClearLastID(void)
 
 bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 {
+	static uint8_t bufferTA[32];
+	static uint8_t blocksTA = 0x00;
 	bool retVal = false;
 	uint32_t talkGroupOrPcId = (dmrDataBuffer[0]<<24) + (dmrDataBuffer[3]<<16)+(dmrDataBuffer[4]<<8)+(dmrDataBuffer[5]<<0);
 
-
-	if (dmrDataBuffer[0]==TG_CALL_FLAG || dmrDataBuffer[0]==PC_CALL_FLAG)
+	if (HRC6000GetReveivedTgOrPcId() != 0)
 	{
-		uint32_t id=(dmrDataBuffer[6]<<16)+(dmrDataBuffer[7]<<8)+(dmrDataBuffer[8]<<0);
-
-		if (id!=lastID)
+		if (dmrDataBuffer[0]==TG_CALL_FLAG || dmrDataBuffer[0]==PC_CALL_FLAG)
 		{
-			retVal = true;// something has changed
-			lastID=id;
+			uint32_t id=(dmrDataBuffer[6]<<16)+(dmrDataBuffer[7]<<8)+(dmrDataBuffer[8]<<0);
 
-			LinkItem_t *item = findInList(id);
-
-			if (item!=NULL)
+			if (id!=lastID)
 			{
-				// Already in the list
-				item->talkGroupOrPcId = talkGroupOrPcId;// update the TG in case they changed TG
-				item->time = fw_millis();
-				lastTG = talkGroupOrPcId;
+				memset(bufferTA, 0, 32);// Clear any TA data in TA buffer (used for decode)
+				blocksTA = 0x00;
 
-				if (item == LinkHead)
-				{
-					menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;// flag that the display needs to update
-					return true;// already at top of the list
-				}
-				else
-				{
-					// not at top of the list
-					// Move this item to the top of the list
-					LinkItem_t *next=item->next;
-					LinkItem_t *prev=item->prev;
+				retVal = true;// something has changed
+				lastID=id;
 
-					// set the previous item to skip this item and link to 'items' next item.
-					prev->next = next;
-
-					if (item->next!=NULL)
-					{
-						// not the last in the list
-						next->prev = prev;// backwards link the next item to the item before us in the list.
-					}
-
-					item->next = LinkHead;// link our next item to the item at the head of the list
-
-					LinkHead->prev = item;// backwards link the hold head item to the item moving to the top of the list.
-
-					item->prev=NULL;// change the items prev to NULL now we are at teh top of the list
-					LinkHead = item;// Change the global for the head of the link to the item that is to be at the top of the list.
-					if (item->talkGroupOrPcId!=0)
-					{
-						menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;// flag that the display needs to update
-					}
-				}
-			}
-			else
-			{
-				// Not in the list
-				item = LinkHead;// setup to traverse the list from the top.
-
-				// need to use the last item in the list as the new item at the top of the list.
-				// find last item in the list
-				while(item->next != NULL )
-				{
-					item=item->next;
-				}
-				//item is now the last
-
-				(item->prev)->next = NULL;// make the previous item the last
-
-				LinkHead->prev = item;// set the current head item to back reference this item.
-				item->next = LinkHead;// set this items next to the current head
-				LinkHead = item;// Make this item the new head
-
-				item->id=id;
-				item->talkGroupOrPcId =  talkGroupOrPcId;
-				item->time = fw_millis();
-				lastTG = talkGroupOrPcId;
-				memset(item->talkerAlias,0,32);// Clear any TA data
-				if (item->talkGroupOrPcId!=0)
-				{
-					menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;// flag that the display needs to update
-				}
-			}
-		}
-		else // update TG even if the DMRID did not change
-		{
-			if (lastTG != talkGroupOrPcId)
-			{
 				LinkItem_t *item = findInList(id);
 
 				if (item!=NULL)
@@ -246,54 +340,143 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 					// Already in the list
 					item->talkGroupOrPcId = talkGroupOrPcId;// update the TG in case they changed TG
 					item->time = fw_millis();
+					lastTG = talkGroupOrPcId;
+
+					if (item == LinkHead)
+					{
+						menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;// flag that the display needs to update
+						return true;// already at top of the list
+					}
+					else
+					{
+						// not at top of the list
+						// Move this item to the top of the list
+						LinkItem_t *next=item->next;
+						LinkItem_t *prev=item->prev;
+
+						// set the previous item to skip this item and link to 'items' next item.
+						prev->next = next;
+
+						if (item->next!=NULL)
+						{
+							// not the last in the list
+							next->prev = prev;// backwards link the next item to the item before us in the list.
+						}
+
+						item->next = LinkHead;// link our next item to the item at the head of the list
+
+						LinkHead->prev = item;// backwards link the hold head item to the item moving to the top of the list.
+
+						item->prev=NULL;// change the items prev to NULL now we are at teh top of the list
+						LinkHead = item;// Change the global for the head of the link to the item that is to be at the top of the list.
+						if (item->talkGroupOrPcId!=0)
+						{
+							menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;// flag that the display needs to update
+						}
+					}
 				}
-				lastTG = talkGroupOrPcId;
-				retVal = true;// something has changed
+				else
+				{
+					// Not in the list
+					item = LinkHead;// setup to traverse the list from the top.
+
+					// need to use the last item in the list as the new item at the top of the list.
+					// find last item in the list
+					while(item->next != NULL )
+					{
+						item=item->next;
+					}
+					//item is now the last
+
+					(item->prev)->next = NULL;// make the previous item the last
+
+					LinkHead->prev = item;// set the current head item to back reference this item.
+					item->next = LinkHead;// set this items next to the current head
+					LinkHead = item;// Make this item the new head
+
+					item->id=id;
+					item->talkGroupOrPcId =  talkGroupOrPcId;
+					item->time = fw_millis();
+					lastTG = talkGroupOrPcId;
+					memset(item->talkerAlias, 0, 32);// Clear any TA data
+					memset(item->locator, 0, 7);
+					if (item->talkGroupOrPcId!=0)
+					{
+						menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;// flag that the display needs to update
+					}
+				}
+			}
+			else // update TG even if the DMRID did not change
+			{
+				if (lastTG != talkGroupOrPcId)
+				{
+					LinkItem_t *item = findInList(id);
+
+					if (item!=NULL)
+					{
+						// Already in the list
+						item->talkGroupOrPcId = talkGroupOrPcId;// update the TG in case they changed TG
+						item->time = fw_millis();
+					}
+					lastTG = talkGroupOrPcId;
+					memset(bufferTA, 0, 32);// Clear any TA data in TA buffer (used for decode)
+					blocksTA = 0x00;
+					retVal = true;// something has changed
+				}
+			}
+		}
+		else
+		{
+			// Data contains the Talker Alias Data
+			uint8_t blockID = DMR_frame_buffer[0] - 4;
+
+			// ID 0x04..0x07: TA
+			if (blockID < 4)
+			{
+				// We don't already have this TA block
+				if ((blocksTA & (1 << blockID)) == 0)
+				{
+					static const uint8_t blockLen = 7;
+					uint32_t blockOffset = blockID * blockLen;
+
+					blocksTA |= (1 << blockID);
+
+					if ((blockOffset + blockLen) < sizeof(bufferTA))
+					{
+						memcpy(bufferTA + blockOffset, (void *)&DMR_frame_buffer[2], blockLen);
+
+						// Format and length infos are available, we can decode now
+						if (bufferTA[0] != 0x0)
+						{
+							uint8_t *decodedTA;
+
+							if ((decodedTA = decodeTA(&bufferTA[0])) != NULL)
+							{
+								// TAs doesn't match, update contact and screen.
+								if (strlen((const char *)decodedTA) > strlen((const char *)&LinkHead->talkerAlias))
+								{
+									memcpy(&LinkHead->talkerAlias, decodedTA, 31);// Brandmeister seems to send callsign as 6 chars only
+
+									menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;
+								}
+							}
+						}
+					}
+				}
+			}
+			else if (blockID == 4) // ID 0x08: GPS
+			{
+				uint8_t *locator = decodeGPSPosition((uint8_t *)&DMR_frame_buffer[0]);
+
+				if (strncmp((char *)&LinkHead->locator, (char *)locator, 7) != 0)
+				{
+					memcpy(&LinkHead->locator, locator, 7);
+					menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA_UPDATE;
+				}
 			}
 		}
 	}
-	else
-	{
-		size_t TAStartPos;
-		size_t TABlockLen;
-		size_t TAOffset;
 
-		// Data contains the Talker Alias Data
-		switch(DMR_frame_buffer[0])
-		{
-			case 0x04:
-				TAOffset=0;
-				TAStartPos=3;
-				TABlockLen=6;
-				break;
-			case 0x05:
-				TAOffset=6;
-				TAStartPos=2;
-				TABlockLen=7;
-				break;
-			case 0x06:
-				TAOffset=13;
-				TAStartPos=2;
-				TABlockLen=7;
-				break;
-			case 0x07:
-				TAOffset=20;
-				TAStartPos=2;
-				TABlockLen=7;
-				break;
-			default:
-				TAOffset=0;
-				TAStartPos=0;
-				TABlockLen=0;
-				break;
-		}
-
-		if (LinkHead->talkerAlias[TAOffset] == 0x00 && TABlockLen!=0)
-		{
-			memcpy(&LinkHead->talkerAlias[TAOffset],(uint8_t *)&DMR_frame_buffer[TAStartPos],TABlockLen);// Brandmeister seems to send callsign as 6 chars only
-			menuDisplayQSODataState=QSO_DISPLAY_CALLER_DATA;
-		}
-	}
 	return retVal;
 }
 
@@ -348,6 +531,19 @@ bool dmrIDLookup( int targetId,dmrIdDataStruct_t *foundRecord)
 	return false;
 }
 
+bool contactIDLookup(uint32_t id, int calltype, char *buffer)
+{
+	struct_codeplugContact_t contact;
+
+	int contactIndex = codeplugContactIndexByTGorPC((id & 0x00FFFFFF), calltype, &contact);
+	if (contactIndex != 0)
+	{
+		codeplugUtilConvertBufToString(contact.name, buffer, 16);
+		return true;
+	}
+	return false;
+}
+
 bool menuUtilityHandlePrivateCallActions(uiEvent_t *ev)
 {
 	if ((ev->buttons & BUTTON_SK2 )!=0 &&   menuUtilityTgBeforePcMode != 0 && KEYCHECK_SHORTUP(ev->keys,KEY_RED))
@@ -395,6 +591,68 @@ static void displayChannelNameOrRxFrequency(char *buffer, size_t maxLen)
 	ucPrintCentered(52, buffer, FONT_6x8);
 }
 
+void printSplitOrSpanText(uint8_t y, char *text)
+{
+	uint8_t len = strlen(text);
+
+	if (len == 0)
+		return;
+
+	if (len <= 16)
+	{
+		ucPrintCentered(y, text, FONT_8x16);
+	}
+	else
+	{
+		uint8_t nLines = len / 21 + (((len % 21) != 0) ? 1 : 0);
+
+		if (nLines > 2)
+			nLines = 2;
+
+		if (nLines > 1)
+		{
+			char buffer[43]; // 2 * 21 chars + NULL
+
+			memcpy(buffer, text, len + 1);
+
+			char *p = buffer + 20;
+
+			// Find a space backward
+			while ((*p != ' ') && (p > buffer))
+				p--;
+
+			uint8_t rest = (uint8_t)((buffer + strlen(buffer)) - p) - ((*p == ' ') ? 1 : 0);
+
+			// rest is too long, just split the line in two chunks
+			if (rest > 21)
+			{
+				char c = buffer[21];
+
+				buffer[21] = 0;
+
+				ucPrintCentered(y, buffer, FONT_6x8); // 2 pixels are saved, could center
+
+				buffer[21] = c;
+				buffer[42] = 0;
+
+				ucPrintCentered(y + 8, buffer + 21, FONT_6x8);
+			}
+			else
+			{
+				*p = 0;
+
+				ucPrintCentered(y, buffer, FONT_6x8);
+				ucPrintCentered(y + 8, p + 1, FONT_6x8);
+			}
+		}
+		else // One line of 21 chars max
+		{
+			ucPrintCentered(y + 4, text, FONT_6x8);
+		}
+	}
+}
+
+
 /*
  * Try to extract callsign and extra text from TA or DMR ID data, then display that on
  * two lines, if possible.
@@ -403,9 +661,9 @@ static void displayChannelNameOrRxFrequency(char *buffer, size_t maxLen)
  */
 static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalkerAlias)
 {
-	char buffer[32];
+	char buffer[37]; // Max: TA 27 (in 7bit format) + ' [' + 6 (Maidenhead)  + ']' + NULL
 
-	if (strlen(text) >= 5 && isFromTalkerAlias) // if its Talker Alias and there is more text than just the callsign, split across 2 lines
+	if (strlen(text) >= 5 && isFromTalkerAlias) // if it's Talker Alias and there is more text than just the callsign, split across 2 lines
 	{
 		char    *pbuf;
 		int32_t  cpos;
@@ -423,20 +681,20 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 			pbuf = chomp(buffer);
 
 			if (strlen(pbuf))
-				ucPrintAt(0, 48, pbuf, FONT_8x16);
+				printSplitOrSpanText(48, pbuf);
 			else
 				displayChannelNameOrRxFrequency(buffer, (sizeof(buffer) / sizeof(buffer[0])));
 		}
 		else
 		{
 			// No space found, use a chainsaw
-			memcpy(buffer, text, 6);
-			buffer[6] = 0;
+			memcpy(buffer, text, 16);
+			buffer[16] = 0;
 
 			ucPrintCentered(32, chomp(buffer), FONT_8x16);
 
-			memcpy(buffer, text + 6, (maxLen - 6));
-			buffer[(strlen(text) - 6)] = 0;
+			memcpy(buffer, text + 16, (maxLen - 16));
+			buffer[(strlen(text) - 16)] = 0;
 
 			pbuf = chomp(buffer);
 
@@ -475,63 +733,86 @@ void menuUtilityRenderQSOData(void)
 	 * but I thought it was safer to disregard any PC's from IDs the same as the current TG
 	 * rather than testing if the TG is the user's ID, though that may work as well.
 	 */
-	if ((LinkHead->talkGroupOrPcId>>24) == PC_CALL_FLAG) // &&  (LinkHead->id & 0xFFFFFF) != (trxTalkGroupOrPcId & 0xFFFFFF))
+	if (HRC6000GetReveivedTgOrPcId() != 0)
 	{
-		// Its a Private call
-		dmrIDLookup( (LinkHead->id & 0xFFFFFF),&currentRec);
-		strncpy(buffer, currentRec.text, 16);
-		buffer[16] = 0;
-		ucPrintCentered(16, buffer, FONT_8x16);
+		if ((LinkHead->talkGroupOrPcId>>24) == PC_CALL_FLAG) // &&  (LinkHead->id & 0xFFFFFF) != (trxTalkGroupOrPcId & 0xFFFFFF))
+		{
+			// Its a Private call
 
-		// Are we already in PC mode to this caller ?
-		if (((trxTalkGroupOrPcId & 0xFFFFFF) != (LinkHead->id & 0xFFFFFF)) && ((LinkHead->talkGroupOrPcId & 0xFFFFFF)==trxDMRID))
-		{
-			// No either we are not in PC mode or not on a Private Call to this station
-			ucPrintCentered(32, currentLanguage->accept_call, FONT_8x16);
-			ucDrawChoice(CHOICE_YESNO, false);
-			menuUtilityReceivedPcId = LinkHead->id | (PC_CALL_FLAG<<24);
-		    set_melody(melody_private_call);
-		}
-		else
-		{
-			ucPrintCentered(32, currentLanguage->private_call, FONT_8x16);
-		}
-	}
-	else
-	{
-		// Group call
-		uint32_t tg = (LinkHead->talkGroupOrPcId & 0xFFFFFF);
-		snprintf(buffer, bufferLen, "%s %d", currentLanguage->tg, tg);
-		buffer[16] = 0;
-		if (tg != trxTalkGroupOrPcId || (dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot()))
-		{
-			ucFillRect(0,16,128,16,false);// fill background with black
-			ucPrintCore(0, CONTACT_Y_POS, buffer, FONT_8x16, TEXT_ALIGN_CENTER, true);// draw the text in inverse video
-		}
-		else
-		{
-			ucPrintCentered(CONTACT_Y_POS, buffer, FONT_8x16);
-		}
-
-		// first check if we have this ID in the DMR ID data
-		if (dmrIDLookup((LinkHead->id & 0xFFFFFF), &currentRec))
-		{
-			displayContactTextInfos(currentRec.text, sizeof(currentRec.text),false);
-		}
-		else
-		{
-			// We don't have this ID, so try looking in the Talker alias data
-			if (LinkHead->talkerAlias[0] != 0x00)
+			if (!contactIDLookup(LinkHead->id, CONTACT_CALLTYPE_PC, buffer))
 			{
-				displayContactTextInfos(LinkHead->talkerAlias, sizeof(LinkHead->talkerAlias),true);
+				dmrIDLookup( (LinkHead->id & 0xFFFFFF),&currentRec);
+				strncpy(buffer, currentRec.text, 16);
+				buffer[16] = 0;
+			}
+			ucPrintCentered(16, buffer, FONT_8x16);
+
+			// Are we already in PC mode to this caller ?
+			if (((trxTalkGroupOrPcId & 0xFFFFFF) != (LinkHead->id & 0xFFFFFF)) && ((LinkHead->talkGroupOrPcId & 0xFFFFFF)==trxDMRID))
+			{
+				// No either we are not in PC mode or not on a Private Call to this station
+				ucPrintCentered(32, currentLanguage->accept_call, FONT_8x16);
+				ucDrawChoice(CHOICE_YESNO, false);
+				menuUtilityReceivedPcId = LinkHead->id | (PC_CALL_FLAG<<24);
+				set_melody(melody_private_call);
 			}
 			else
 			{
-				// No talker alias. So we can only show the ID.
-				snprintf(buffer, bufferLen, "ID: %d", LinkHead->id);
-				buffer[bufferLen - 1] = 0;
-				ucPrintCentered(32, buffer, FONT_8x16);
-				displayChannelNameOrRxFrequency(buffer, bufferLen);
+				ucPrintCentered(32, currentLanguage->private_call, FONT_8x16);
+			}
+		}
+		else
+		{
+			// Group call
+			uint32_t tg = (LinkHead->talkGroupOrPcId & 0xFFFFFF);
+			if (!contactIDLookup(LinkHead->talkGroupOrPcId, CONTACT_CALLTYPE_TG, buffer))
+			{
+				snprintf(buffer, bufferLen, "%s %d", currentLanguage->tg, tg);
+				buffer[16] = 0;
+			}
+			if (tg != trxTalkGroupOrPcId || (dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot()))
+			{
+				ucFillRect(0,16,128,16,false);// fill background with black
+				ucPrintCore(0, CONTACT_Y_POS, buffer, FONT_8x16, TEXT_ALIGN_CENTER, true);// draw the text in inverse video
+			}
+			else
+			{
+				ucPrintCentered(CONTACT_Y_POS, buffer, FONT_8x16);
+			}
+
+			// first check if we have this ID in the DMR ID data
+			if (contactIDLookup(LinkHead->id, CONTACT_CALLTYPE_PC, buffer))
+			{
+				displayContactTextInfos(buffer, 16,false);
+			}
+			else if (dmrIDLookup((LinkHead->id & 0xFFFFFF), &currentRec))
+			{
+				displayContactTextInfos(currentRec.text, sizeof(currentRec.text),false);
+			}
+			else
+			{
+				// We don't have this ID, so try looking in the Talker alias data
+				if (LinkHead->talkerAlias[0] != 0x00)
+				{
+					if (LinkHead->locator[0] != 0)
+					{
+						char bufferTA[37]; // TA + ' [' + Maidenhead + ']' + NULL
+
+						memset(bufferTA, 0, sizeof(bufferTA));
+						snprintf(bufferTA, 36, "%s [%s]", LinkHead->talkerAlias, LinkHead->locator);
+						displayContactTextInfos(bufferTA, sizeof(bufferTA), true);
+					}
+					else
+						displayContactTextInfos(LinkHead->talkerAlias, sizeof(LinkHead->talkerAlias),true);
+				}
+				else
+				{
+					// No talker alias. So we can only show the ID.
+					snprintf(buffer, bufferLen, "ID: %d", LinkHead->id);
+					buffer[bufferLen - 1] = 0;
+					ucPrintCentered(32, buffer, FONT_8x16);
+					displayChannelNameOrRxFrequency(buffer, bufferLen);
+				}
 			}
 		}
 	}
@@ -712,4 +993,58 @@ char keypressToNumberChar(keyboardCode_t keys)
 		}
 	}
 	return '\0';
+}
+
+void printToneAndSquelch(void)
+{
+	char buf[24];
+	if (trxGetMode() == RADIO_MODE_ANALOG)
+	{
+		if (currentChannelData->rxTone == TRX_CTCSS_TONE_NONE)
+		{
+			snprintf(buf, 24, "CTCSS:%s|", currentLanguage->none);
+			buf[23] = 0;
+		}
+		else
+		{
+			snprintf(buf, 24, "CTCSS:%d.%dHz|", currentChannelData->rxTone / 10 , currentChannelData->rxTone % 10);
+		}
+
+		if (currentChannelData->txTone == TRX_CTCSS_TONE_NONE)
+		{
+			snprintf(buf, 24, "%s%s", buf, currentLanguage->none);
+			buf[23] = 0;
+		}
+		else
+		{
+			snprintf(buf, 24, "%s%d.%dHz", buf, currentChannelData->txTone / 10 , currentChannelData->txTone % 10);
+		}
+		ucPrintCentered(16, buf, FONT_6x8);
+
+		snprintf(buf, 24, "SQL:%d%%", 5*(((currentChannelData->sql == 0) ? nonVolatileSettings.squelchDefaults[trxCurrentBand[TRX_RX_FREQ_BAND]] : currentChannelData->sql)-1));
+		ucPrintCentered(24 + 1, buf, FONT_6x8);
+	}
+}
+
+void printFrequency(bool isTX, bool hasFocus, uint8_t y, uint32_t frequency, bool displayVFOChannel)
+{
+	static const int bufferLen = 17;
+	char buffer[bufferLen];
+	int val_before_dp = frequency / 100000;
+	int val_after_dp = frequency - val_before_dp * 100000;
+
+	// Focus + direction
+	snprintf(buffer, bufferLen, "%c%c", (hasFocus ? '>' : ' '), (isTX ? 'T' : 'R'));
+	ucPrintAt(0, y, buffer, FONT_8x16);
+	// VFO
+	if (displayVFOChannel)
+	{
+		ucPrintAt(16, y + 8, (nonVolatileSettings.currentVFONumber == 0) ? "A" : "B", FONT_8x8);
+	}
+	// Frequency
+	snprintf(buffer, bufferLen, "%d.%05d", val_before_dp, val_after_dp);
+	buffer[bufferLen - 1] = 0;
+	ucPrintAt(FREQUENCY_X_POS, y, buffer, FONT_8x16);
+	// Unit
+	ucPrintAt(128 - (3 * 8), y, "MHz", FONT_8x16);
 }

@@ -22,16 +22,19 @@
 
 static void updateScreen(void);
 static void handleEvent(uiEvent_t *ev);
+static void updateBacklightMode(uint8_t mode);
 
 static uint8_t originalBrightness;
 static uint8_t contrast;
 static uint8_t inverseVideo;
-static int8_t 	backLightTimeout;// used int_8 to save space
+static int8_t originalBackLightTimeout;// used int_8 to save space
+static uint8_t originalBacklightMode;
 
 const int BACKLIGHT_MAX_TIMEOUT = 30;
 const int CONTRAST_MAX_VALUE = 30;// Maximum value which still seems to be readable
 const int CONTRAST_MIN_VALUE = 12;// Minimum value which still seems to be readable
-enum DISPLAY_MENU_LIST { DISPLAY_MENU_BRIGHTNESS = 0, DISPLAY_MENU_CONTRAST, DISPLAY_MENU_TIMEOUT, DISPLAY_MENU_COLOUR_INVERT, NUM_DISPLAY_MENU_ITEMS};
+enum DISPLAY_MENU_LIST { DISPLAY_MENU_BRIGHTNESS = 0, DISPLAY_MENU_CONTRAST, DISPLAY_MENU_BACKLIGHT_MODE, DISPLAY_MENU_TIMEOUT, DISPLAY_MENU_COLOUR_INVERT, NUM_DISPLAY_MENU_ITEMS};
+
 
 int menuDisplayOptions(uiEvent_t *ev, bool isFirstRun)
 {
@@ -40,7 +43,8 @@ int menuDisplayOptions(uiEvent_t *ev, bool isFirstRun)
 		originalBrightness = nonVolatileSettings.displayBacklightPercentage;
 		contrast = nonVolatileSettings.displayContrast;
 		inverseVideo = nonVolatileSettings.displayInverseVideo;
-		backLightTimeout = 	nonVolatileSettings.backLightTimeout;
+		originalBackLightTimeout = nonVolatileSettings.backLightTimeout;
+		originalBacklightMode = nonVolatileSettings.backlightMode;
 		updateScreen();
 	}
 	else
@@ -56,6 +60,7 @@ static void updateScreen(void)
 	int mNum = 0;
 	static const int bufferLen = 17;
 	char buf[bufferLen];
+	const char *backlightModes[] = { currentLanguage->Auto, currentLanguage->manual, currentLanguage->none };
 
 	ucClearBuf();
 	menuDisplayTitle(currentLanguage->display_options);
@@ -74,11 +79,21 @@ static void updateScreen(void)
 			case DISPLAY_MENU_CONTRAST:
 				snprintf(buf, bufferLen, "%s:%d", currentLanguage->contrast, contrast);
 				break;
+			case DISPLAY_MENU_BACKLIGHT_MODE:
+				snprintf(buf, bufferLen, "%s:%s", currentLanguage->mode, backlightModes[nonVolatileSettings.backlightMode]);
+				break;
 			case DISPLAY_MENU_TIMEOUT:
-				if (backLightTimeout == 0)
-					snprintf(buf, bufferLen, "%s:%s", currentLanguage->backlight_timeout, currentLanguage->no);
+				if (nonVolatileSettings.backlightMode == BACKLIGHT_MODE_AUTO)
+				{
+					if (nonVolatileSettings.backLightTimeout == 0)
+						snprintf(buf, bufferLen, "%s:%s", currentLanguage->backlight_timeout, currentLanguage->no);
+					else
+						snprintf(buf, bufferLen, "%s:%ds", currentLanguage->backlight_timeout, nonVolatileSettings.backLightTimeout);
+				}
 				else
-					snprintf(buf, bufferLen, "%s:%ds", currentLanguage->backlight_timeout, backLightTimeout);
+				{
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->backlight_timeout, currentLanguage->n_a);
+				}
 				break;
 			case DISPLAY_MENU_COLOUR_INVERT:
 				if (inverseVideo)
@@ -130,18 +145,23 @@ static void handleEvent(uiEvent_t *ev)
 				}
 				break;
 			case DISPLAY_MENU_CONTRAST:
-				contrast++;
-				if (contrast > CONTRAST_MAX_VALUE)
+				if (contrast < CONTRAST_MAX_VALUE)
 				{
-					contrast = CONTRAST_MAX_VALUE;
+					contrast++;
 				}
 				ucSetContrast(contrast);
 				break;
-			case DISPLAY_MENU_TIMEOUT:
-				backLightTimeout += 5;
-				if (backLightTimeout > BACKLIGHT_MAX_TIMEOUT)
+			case DISPLAY_MENU_BACKLIGHT_MODE:
+				if (nonVolatileSettings.backlightMode < BACKLIGHT_MODE_NONE)
 				{
-					backLightTimeout = BACKLIGHT_MAX_TIMEOUT;
+					updateBacklightMode((++nonVolatileSettings.backlightMode));
+				}
+				break;
+			case DISPLAY_MENU_TIMEOUT:
+				nonVolatileSettings.backLightTimeout += 5;
+				if (nonVolatileSettings.backLightTimeout > BACKLIGHT_MAX_TIMEOUT)
+				{
+					nonVolatileSettings.backLightTimeout = BACKLIGHT_MAX_TIMEOUT;
 				}
 				break;
 			case DISPLAY_MENU_COLOUR_INVERT:
@@ -170,18 +190,23 @@ static void handleEvent(uiEvent_t *ev)
 				}
 				break;
 			case DISPLAY_MENU_CONTRAST:
-				contrast--;
-				if (contrast < CONTRAST_MIN_VALUE)
+				if (contrast > CONTRAST_MIN_VALUE)
 				{
-					contrast = CONTRAST_MIN_VALUE;
+					contrast--;
 				}
 				ucSetContrast(contrast);
 				break;
-			case DISPLAY_MENU_TIMEOUT:
-				backLightTimeout -= 5;
-				if (backLightTimeout < 0)
+			case DISPLAY_MENU_BACKLIGHT_MODE:
+				if (nonVolatileSettings.backlightMode > BACKLIGHT_MODE_AUTO)
 				{
-					backLightTimeout = 0;
+					updateBacklightMode((--nonVolatileSettings.backlightMode));
+				}
+				break;
+			case DISPLAY_MENU_TIMEOUT:
+				nonVolatileSettings.backLightTimeout -= 5;
+				if (nonVolatileSettings.backLightTimeout < 0)
+				{
+					nonVolatileSettings.backLightTimeout = 0;
 				}
 				break;
 			case DISPLAY_MENU_COLOUR_INVERT:
@@ -195,7 +220,6 @@ static void handleEvent(uiEvent_t *ev)
 		// All parameters has already been applied
 		nonVolatileSettings.displayInverseVideo = inverseVideo;
 		nonVolatileSettings.displayContrast = contrast;
-		nonVolatileSettings.backLightTimeout = backLightTimeout;
 		menuSystemPopAllAndDisplayRootMenu();
 		return;
 	}
@@ -210,10 +234,34 @@ static void handleEvent(uiEvent_t *ev)
 		{
 			fw_init_display(nonVolatileSettings.displayInverseVideo);// Need to perform a full reset on the display to change back to non-inverted
 		}
+
 		nonVolatileSettings.displayBacklightPercentage = originalBrightness;
+		nonVolatileSettings.backLightTimeout = originalBackLightTimeout;
+
+		if (nonVolatileSettings.backlightMode != originalBacklightMode)
+		{
+			updateBacklightMode(originalBacklightMode);
+		}
 
 		menuSystemPopPreviousMenu();
 		return;
 	}
 	updateScreen();
+}
+
+static void updateBacklightMode(uint8_t mode)
+{
+	nonVolatileSettings.backlightMode = mode;
+
+	switch (mode)
+	{
+		case BACKLIGHT_MODE_MANUAL:
+		case BACKLIGHT_MODE_NONE:
+			if (fw_displayIsBacklightLit())
+				fw_displayEnableBacklight(false);
+			break;
+		case BACKLIGHT_MODE_AUTO:
+			displayLightTrigger();
+			break;
+	}
 }

@@ -16,7 +16,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 #include <user_interface/menuSystem.h>
-#include <user_interface/menuUtilityQSOData.h>
+#include <user_interface/uiUtilityQSOData.h>
 #include <user_interface/uiLocalisation.h>
 #include "fw_trx.h"
 #include "fw_codeplug.h"
@@ -54,6 +54,7 @@ static ScanZoneState_t scanState = SCAN_SCANNING;		//state flag for scan routine
 bool uiChannelModeScanActive = false;					//scan active flag
 static const int SCAN_SHORT_PAUSE_TIME = 500;			//time to wait after carrier detected to allow time for full signal detection. (CTCSS or DMR)
 static const int SCAN_TOTAL_INTERVAL = 30;			    //time between each scan step
+static const int SCAN_DMR_SIMPLEX_MIN_INTERVAL=60;		//minimum time between steps when scanning DMR Simplex. (needs extra time to capture TDMA Pulsing)
 static const int SCAN_FREQ_CHANGE_SETTLING_INTERVAL = 1;//Time after frequency is changed before RSSI sampling starts
 static const int SCAN_SKIP_CHANNEL_INTERVAL = 1;		//This is actually just an implicit flag value to indicate the channel should be skipped
 
@@ -63,6 +64,8 @@ static int nuisanceDelete[MAX_ZONE_SCAN_NUISANCE_CHANNELS];
 static int nuisanceDeleteIndex = 0;
 
 static int tmpQuickMenuDmrFilterLevel;
+static bool displayChannelSettings;
+static int prevDisplayQSODataState;
 
 int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 {
@@ -71,6 +74,8 @@ int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 	if (isFirstRun)
 	{
 		nonVolatileSettings.initialMenuNumber = MENU_CHANNEL_MODE;// This menu.
+		displayChannelSettings = false;
+		prevDisplayQSODataState = QSO_DISPLAY_IDLE;
 		currentChannelData = &channelScreenChannelData;// Need to set this as currentChannelData is used by functions called by loadChannelData()
 		lastHeardClearLastID();
 
@@ -238,6 +243,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 	switch(menuDisplayQSODataState)
 	{
 		case QSO_DISPLAY_DEFAULT_SCREEN:
+			prevDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 			isDisplayingQSOData=false;
 			menuUtilityReceivedPcId = 0x00;
 			if (trxIsTransmitting)
@@ -257,39 +263,52 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 			}
 			else
 			{
-				if (strcmp(currentZoneName,currentLanguage->all_channels) == 0)
+				// Display some channel settings
+				if (displayChannelSettings)
 				{
-					channelNumber=nonVolatileSettings.currentChannelIndexInAllZone;
-					if (directChannelNumber>0)
-					{
-						snprintf(nameBuf, nameBufferLen, "%s %d", currentLanguage->gotoChannel, directChannelNumber);
-					}
-					else
-					{
-						snprintf(nameBuf, nameBufferLen, "%s Ch:%d",currentLanguage->all_channels, channelNumber);
-					}
-					nameBuf[nameBufferLen - 1] = 0;
-					ucPrintCentered(50 , nameBuf, FONT_6x8);
+					printToneAndSquelch();
+					printFrequency(false, false, 32, currentChannelData->rxFreq, false);
+					printFrequency(true, false, 48, currentChannelData->txFreq, false);
 				}
 				else
 				{
-					channelNumber=nonVolatileSettings.currentChannelIndexInZone+1;
-					if (directChannelNumber>0)
+					if (strcmp(currentZoneName,currentLanguage->all_channels) == 0)
 					{
-						snprintf(nameBuf, nameBufferLen, "%s %d", currentLanguage->gotoChannel, directChannelNumber);
+						channelNumber=nonVolatileSettings.currentChannelIndexInAllZone;
+						if (directChannelNumber>0)
+						{
+							snprintf(nameBuf, nameBufferLen, "%s %d", currentLanguage->gotoChannel, directChannelNumber);
+						}
+						else
+						{
+							snprintf(nameBuf, nameBufferLen, "%s Ch:%d",currentLanguage->all_channels, channelNumber);
+						}
 						nameBuf[nameBufferLen - 1] = 0;
+						ucPrintCentered(50 , nameBuf, FONT_6x8);
 					}
 					else
 					{
-						snprintf(nameBuf, nameBufferLen, "%s Ch:%d", currentZoneName,channelNumber);
-						nameBuf[nameBufferLen - 1] = 0;
+						channelNumber=nonVolatileSettings.currentChannelIndexInZone+1;
+						if (directChannelNumber>0)
+						{
+							snprintf(nameBuf, nameBufferLen, "%s %d", currentLanguage->gotoChannel, directChannelNumber);
+							nameBuf[nameBufferLen - 1] = 0;
+						}
+						else
+						{
+							snprintf(nameBuf, nameBufferLen, "%s Ch:%d", currentZoneName,channelNumber);
+							nameBuf[nameBufferLen - 1] = 0;
+						}
+						ucPrintCentered(50, (char *)nameBuf, FONT_6x8);
 					}
-					ucPrintCentered(50, (char *)nameBuf, FONT_6x8);
 				}
 			}
 
-			codeplugUtilConvertBufToString(channelScreenChannelData.name, nameBuf, 16);
-			ucPrintCentered(32 + verticalPositionOffset, nameBuf, FONT_8x16);
+			if (!displayChannelSettings)
+			{
+				codeplugUtilConvertBufToString(channelScreenChannelData.name, nameBuf, 16);
+				ucPrintCentered(32 + verticalPositionOffset, nameBuf, FONT_8x16);
+			}
 
 			if (trxGetMode() == RADIO_MODE_DIGITAL)
 			{
@@ -325,7 +344,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				ucPrintCentered(CONTACT_Y_POS + verticalPositionOffset, nameBuf, FONT_8x16);
 			}
 			// Squelch will be cleared later, 2000 ticks after last change
-			else if(displaySquelch && !trxIsTransmitting)
+			else if(displaySquelch && !trxIsTransmitting && !displayChannelSettings)
 			{
 				static const int xbar = 74; // 128 - (51 /* max squelch px */ + 3);
 
@@ -338,18 +357,22 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				ucFillRect(xbar, 19, bargraph, 9, false);
 			}
 
-			if (!((uiChannelModeScanActive) & (scanState==SCAN_SCANNING)))
+			// SK1 is pressed, we don't want to clear the first info row after 2000 ticks
+			if (displayChannelSettings && displaySquelch)
 			{
-				displayLightTrigger();
+				displaySquelch = false;
 			}
 
 			ucRender();
 			break;
 
 		case QSO_DISPLAY_CALLER_DATA:
-			isDisplayingQSOData=true;
-			menuUtilityRenderQSOData();
 			displayLightTrigger();
+		case QSO_DISPLAY_CALLER_DATA_UPDATE:
+			prevDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;
+			isDisplayingQSOData=true;
+			displayChannelSettings = false;
+			menuUtilityRenderQSOData();
 			ucRender();
 			break;
 	}
@@ -359,6 +382,8 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 
 static void handleEvent(uiEvent_t *ev)
 {
+	displayLightTrigger();
+
 	// if we are scanning and down key is pressed then enter current channel into nuisance delete array.
 	if((scanState==SCAN_PAUSED) && ((ev->events & KEY_EVENT) && (ev->keys.key == KEY_DOWN)) && (!(ev->buttons & BUTTON_SK2)))
 	{
@@ -378,8 +403,7 @@ static void handleEvent(uiEvent_t *ev)
 	if (uiChannelModeScanActive &&
 			( (ev->events & KEY_EVENT) && ( ((ev->keys.key == KEY_UP) && ((ev->buttons & BUTTON_SK2) == 0)) == false ) ) )
 	{
-		uiChannelModeScanActive = false;
-		displayLightTrigger();
+		menuChannelModeStopScanning();
 		fw_reset_keyboard();
 		return;
 	}
@@ -413,6 +437,26 @@ static void handleEvent(uiEvent_t *ev)
 			menuChannelModeUpdateScreen(0);
 			return;
 		}
+
+		// Display channel settings (RX/TX/etc) while SK1 is pressed
+		if ((displayChannelSettings == false) && (ev->buttons == BUTTON_SK1))
+		{
+			int prevQSODisp = prevDisplayQSODataState;
+
+			displayChannelSettings = true;
+			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+			menuChannelModeUpdateScreen(0);
+			prevDisplayQSODataState = prevQSODisp;
+			return;
+		}
+		else if (displayChannelSettings && ((ev->buttons & BUTTON_SK1) == 0))
+		{
+			displayChannelSettings = false;
+			menuDisplayQSODataState = prevDisplayQSODataState;
+			menuChannelModeUpdateScreen(0);
+			return;
+		}
+
 
 		if (ev->buttons & BUTTON_ORANGE)
 		{
@@ -884,7 +928,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 {
 	if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{
-		uiChannelModeScanActive=false;
+		menuChannelModeStopScanning();
 		menuSystemPopPreviousMenu();
 		return;
 	}
@@ -958,7 +1002,7 @@ int menuChannelModeQuickMenu(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		uiChannelModeScanActive=false;
+		menuChannelModeStopScanning();
 		tmpQuickMenuDmrFilterLevel = nonVolatileSettings.dmrFilterLevel;
 		updateQuickMenuScreen();
 	}
@@ -1026,7 +1070,15 @@ static void scanning(void)
 		uiEvent_t tmpEvent={ .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = 0, .ticks = 0 };
 
 		handleUpKey(&tmpEvent);
-		scanTimer = SCAN_TOTAL_INTERVAL;
+		if ((trxGetMode() == RADIO_MODE_DIGITAL) && (trxDMRMode == DMR_MODE_ACTIVE) && (SCAN_TOTAL_INTERVAL < SCAN_DMR_SIMPLEX_MIN_INTERVAL) )				//allow extra time if scanning a simplex DMR channel.
+		{
+			scanTimer = SCAN_DMR_SIMPLEX_MIN_INTERVAL;
+		}
+		else
+		{
+			scanTimer = SCAN_TOTAL_INTERVAL;
+		}
+
 		scanState = SCAN_SCANNING;													//state 0 = settling and test for carrier present.
 
 		if (strcmp(currentZoneName,currentLanguage->all_channels)==0)
@@ -1061,6 +1113,17 @@ static void scanning(void)
 		}
 	}
 }
+
+bool menuChannelModeIsScanning(void)
+{
+	return uiChannelModeScanActive;
+}
+
+void menuChannelModeStopScanning(void)
+{
+	uiChannelModeScanActive = false;
+}
+
 
 void menuChannelColdStart(void)
 {

@@ -18,7 +18,7 @@
  */
 
 #include <user_interface/menuSystem.h>
-#include <user_interface/menuUtilityQSOData.h>
+#include <user_interface/uiUtilityQSOData.h>
 #include <user_interface/uiLocalisation.h>
 #include "fw_trx.h"
 #include "fw_codeplug.h"
@@ -56,8 +56,19 @@ int menuChannelDetails(uiEvent_t *ev, bool isFirstRun)
 				CTCSSRxIndex=i;
 			}
 		}
-		codeplugUtilConvertBufToString(tmpChannel.name, channelName, 16);
-		namePos = strlen(channelName);
+
+		if (settingsCurrentChannelNumber == -1) // In VFO
+		{
+			snprintf(channelName, 17, "%s", currentLanguage->n_a);
+			channelName[16] = 0;
+			namePos = 0;
+		}
+		else
+		{
+			codeplugUtilConvertBufToString(tmpChannel.name, channelName, 16);
+			namePos = strlen(channelName);
+		}
+
 		updateScreen();
 		updateCursor(true);
 	}
@@ -203,7 +214,7 @@ static void updateScreen(void)
 			case CH_DETAILS_TOT:// TOT
 				if (tmpChannel.tot != 0)
 				{
-					snprintf(buf, bufferLen, "%s:%d", currentLanguage->tot, tmpChannel.tot * 15);
+					snprintf(buf, bufferLen, "%s:%ds", currentLanguage->tot, tmpChannel.tot * 15);
 				}
 				else
 				{

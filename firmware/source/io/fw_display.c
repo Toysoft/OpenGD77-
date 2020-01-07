@@ -102,6 +102,15 @@ void fw_displayEnableBacklight(bool onof)
 	}
 }
 
+bool fw_displayIsBacklightLit(void)
+{
+#ifdef DISPLAY_LED_PWM
+	return (BOARD_FTM_BASEADDR->CONTROLS[BOARD_FTM_CHANNEL].CnV != 0);
+#else
+	return (GPIO_PinRead(GPIO_Display_Light, Pin_Display_Light) == 1);
+#endif
+}
+
 void fw_displaySetBacklightIntensityPercentage(uint8_t intensityPercentage)
 {
     FTM_UpdateChnlEdgeLevelSelect(BOARD_FTM_BASEADDR, BOARD_FTM_CHANNEL, 0U);    //Disable channel output before updating the dutycycle

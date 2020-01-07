@@ -83,7 +83,7 @@ const stringsTable_t frenchLanguage =
 .all					= "Tous",
 .type					= "Type",
 .timeSlot				= "Timeslot",
-.none					= "aucun",
+.none					= "Aucun",
 .contact_saved			= "Contact sauvé",
 .duplicate				= "Dupliqué",
 .tg						= "TG",
@@ -136,6 +136,9 @@ const stringsTable_t frenchLanguage =
 .tone_scan				= "Scan tonalités",
 .cc_scan				= "Scan CC",
 .low_battery			        = "BATT. FAIBLE !!!",//// MaxLen: 16
+.Auto					= "Auto", // MaxLen 16 (with .mode + ':') 
+.manual					= "Manuel",  // MaxLen 16 (with .mode + ':') }
+.ptt_toggle				= "Bascule PTT", // MaxLen 16 (with ':' + .on or .off)
 };
 /********************************************************************
  *

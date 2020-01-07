@@ -164,15 +164,25 @@ void menuSystemCallCurrentMenuTick(uiEvent_t *ev)
 
 void displayLightTrigger(void)
 {
-	menuDisplayLightTimer = nonVolatileSettings.backLightTimeout * 1000;
-	fw_displayEnableBacklight(true);
+	if ((nonVolatileSettings.backlightMode == BACKLIGHT_MODE_AUTO) ||
+			((nonVolatileSettings.backlightMode == BACKLIGHT_MODE_MANUAL) && fw_displayIsBacklightLit()))
+	{
+		if (nonVolatileSettings.backlightMode == BACKLIGHT_MODE_AUTO)
+		{
+			menuDisplayLightTimer = nonVolatileSettings.backLightTimeout * 1000;
+		}
+		fw_displayEnableBacklight(true);
+	}
 }
 
 // use -1 to force LED on all the time
 void displayLightOverrideTimeout(int timeout)
 {
-	menuDisplayLightTimer = timeout;
-	fw_displayEnableBacklight(true);
+	if (nonVolatileSettings.backlightMode == BACKLIGHT_MODE_AUTO)
+	{
+		menuDisplayLightTimer = timeout;
+		fw_displayEnableBacklight(true);
+	}
 }
 
 const int MENU_EVENT_SAVE_SETTINGS = -1;
@@ -330,9 +340,9 @@ void menuUpdateCursor(int pos, bool moved, bool render)
 	if (moved) {
 		blink = true;
 	}
-	if ((m - lastBlink) > 1000 || moved)
+	if (moved || (m - lastBlink) > 1000)
 	{
-		ucDrawFastHLine(pos*8-1, 46, 8, blink);
+		ucDrawFastHLine(pos*8, 46, 8, blink);
 
 		blink = !blink;
 		lastBlink = m;

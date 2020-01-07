@@ -261,8 +261,8 @@
 								<option id="com.crt.advproject.link.gcc.lto.optmization.level.462098137" name="Link-time optimization level" superClass="com.crt.advproject.link.gcc.lto.optmization.level"/>
 								<option id="com.crt.advproject.link.fpu.1745550976" name="Floating point" superClass="com.crt.advproject.link.fpu" value="com.crt.advproject.link.fpu.fpv4.hard" valueType="enumerated"/>
 								<option id="com.crt.advproject.link.manage.477226748" name="Manage linker script" superClass="com.crt.advproject.link.manage" useByScannerDiscovery="false" value="false" valueType="boolean"/>
-								<option id="com.crt.advproject.link.script.2040275712" name="Linker script" superClass="com.crt.advproject.link.script" useByScannerDiscovery="false" value="&quot;../linkerscripts/firmware.ld&quot;" valueType="string"/>
-								<option id="com.crt.advproject.link.scriptdir.1977291216" name="Script path" superClass="com.crt.advproject.link.scriptdir"/>
+								<option id="com.crt.advproject.link.script.2040275712" name="Linker script" superClass="com.crt.advproject.link.script" useByScannerDiscovery="false" value="../linkerscripts/firmware.ld" valueType="string"/>
+								<option id="com.crt.advproject.link.scriptdir.1977291216" name="Script path" superClass="com.crt.advproject.link.scriptdir" useByScannerDiscovery="false" value="" valueType="string"/>
 								<option id="com.crt.advproject.link.crpenable.827555481" name="Enable automatic placement of Code Read Protection field in image" superClass="com.crt.advproject.link.crpenable"/>
 								<option id="com.crt.advproject.link.flashconfigenable.558366596" name="Enable automatic placement of Flash Configuration field in image" superClass="com.crt.advproject.link.flashconfigenable" value="true" valueType="boolean"/>
 								<option id="com.crt.advproject.link.ecrp.1134718176" name="Enhanced CRP" superClass="com.crt.advproject.link.ecrp"/>
@@ -617,12 +617,6 @@
 							<inputType id="com.crt.advproject.compiler.input.1249022339" superClass="com.crt.advproject.compiler.input"/>
 						</tool>
 					</fileInfo>
-					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.2055907086" name="fw_HR-C6000.c" rcbsApplicability="disable" resourcePath="source/hardware/fw_HR-C6000.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.475830819.1594970954">
-						<tool id="com.crt.advproject.gcc.exe.debug.475830819.1594970954" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.475830819">
-							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1182816199" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.none" valueType="enumerated"/>
-							<inputType id="com.crt.advproject.compiler.input.1368636321" superClass="com.crt.advproject.compiler.input"/>
-						</tool>
-					</fileInfo>
 					<sourceEntries>
 						<entry flags="LOCAL|VALUE_WORKSPACE_PATH" kind="sourcePath" name="CMSIS"/>
 						<entry excluding="FreeRTOS/portable/heap_1.c|FreeRTOS/portable/heap_2.c|FreeRTOS/portable/heap_3.c|FreeRTOS/portable/heap_5.c" flags="LOCAL|VALUE_WORKSPACE_PATH" kind="sourcePath" name="amazon-freertos"/>
@@ -962,27 +956,29 @@
 		<coreId>core0_MK22FN512xxx12</coreId>
 	</storageModule>
 	<storageModule moduleId="com.crt.config">
-		<projectStorage>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&#13;
-&lt;TargetConfig&gt;&#13;
-&lt;Properties property_3="NXP" property_4="MK22FN512xxx12" property_count="5" version="100300"/&gt;&#13;
-&lt;infoList vendor="NXP"&gt;&#13;
-&lt;info chip="MK22FN512xxx12" name="MK22FN512xxx12"&gt;&#13;
-&lt;chip&gt;&#13;
-&lt;name&gt;MK22FN512xxx12&lt;/name&gt;&#13;
-&lt;family&gt;K2x&lt;/family&gt;&#13;
-&lt;vendor&gt;NXP&lt;/vendor&gt;&#13;
-&lt;memory can_program="true" id="Flash" is_ro="true" size="512" type="Flash"/&gt;&#13;
-&lt;memory id="RAM" size="128" type="RAM"/&gt;&#13;
-&lt;memoryInstance derived_from="Flash" driver="FTFA_2K.cfx" id="PROGRAM_FLASH" location="0x00000000" size="0x00080000"/&gt;&#13;
-&lt;memoryInstance derived_from="RAM" id="SRAM_UPPER" location="0x20000000" size="0x00010000"/&gt;&#13;
-&lt;memoryInstance derived_from="RAM" id="SRAM_LOWER" location="0x1fff0000" size="0x00010000"/&gt;&#13;
-&lt;/chip&gt;&#13;
-&lt;processor&gt;&#13;
-&lt;name gcc_name="cortex-m4"&gt;Cortex-M4&lt;/name&gt;&#13;
-&lt;family&gt;Cortex-M&lt;/family&gt;&#13;
-&lt;/processor&gt;&#13;
-&lt;/info&gt;&#13;
-&lt;/infoList&gt;&#13;
+		<projectStorage>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;TargetConfig&gt;
+&lt;Properties property_3="NXP" property_4="MK22FN512xxx12" property_count="5" version="100300"/&gt;
+&lt;infoList vendor="NXP"&gt;
+&lt;info chip="MK22FN512xxx12" name="MK22FN512xxx12"&gt;
+&lt;chip&gt;
+&lt;name&gt;MK22FN512xxx12&lt;/name&gt;
+&lt;family&gt;K2x&lt;/family&gt;
+&lt;vendor&gt;NXP&lt;/vendor&gt;
+&lt;memory can_program="true" id="Flash" is_ro="true" size="512" type="Flash"/&gt;
+&lt;memory id="RAM" size="128" type="RAM"/&gt;
+&lt;memoryInstance derived_from="Flash" driver="FTFA_2K.cfx" edited="true" id="PROGRAM_FLASH" location="0x0" size="0x80000"/&gt;
+&lt;memoryInstance derived_from="RAM" edited="true" id="SRAM_UPPER" location="0x20000000" size="0x10000"/&gt;
+&lt;memoryInstance derived_from="RAM" edited="true" id="SRAM_LOWER_BOTTOM" location="0x1fff0000" size="0x6b60"/&gt;
+&lt;memoryInstance derived_from="RAM" edited="true" id="SRAM_LOWER_AMBE" location="0x1fff6b60" size="0x2228"/&gt;
+&lt;memoryInstance derived_from="RAM" edited="true" id="SRAM_LOWER_TOP" location="0x1fff8d88" size="0x7278"/&gt;
+&lt;/chip&gt;
+&lt;processor&gt;
+&lt;name gcc_name="cortex-m4"&gt;Cortex-M4&lt;/name&gt;
+&lt;family&gt;Cortex-M&lt;/family&gt;
+&lt;/processor&gt;
+&lt;/info&gt;
+&lt;/infoList&gt;
 &lt;/TargetConfig&gt;</projectStorage>
 	</storageModule>
 	<storageModule moduleId="refreshScope" versionNumber="2">
@@ -994,4 +990,5 @@
 		</configuration>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
+	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 </cproject>
