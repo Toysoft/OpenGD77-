@@ -1,8 +1,7 @@
 ![](media/OpenGD77-logo.png)
 
 # OpenGD77 User Guide
-(17 December 2019)
-
+(07 January 2020)
 <!-- MDTOC maxdepth:6 firsth1:1 numbering:0 flatten:0 bullets:1 updateOnSave:1 -->
 
 - [OpenGD77 User Guide](#opengd77-user-guide)   
@@ -11,10 +10,10 @@
       - [Download links and other resources](#download-links-and-other-resources)   
    - [Installation](#installation)   
    - [Main screens (VFO and Channel screens)](#main-screens-vfo-and-channel-screens)   
-         - [Changing between VFO and Channel](#changing-between-vfo-and-channel)   
-         - [Changing Timeslot in DMR mode](#changing-timeslot-in-dmr-mode)   
-         - [Controlling Tx power](#controlling-tx-power)   
-         - [Signal strength bar graph](#signal-strength-bar-graph)   
+      - [Changing between VFO and Channel](#changing-between-vfo-and-channel)   
+      - [Changing Timeslot in DMR mode](#changing-timeslot-in-dmr-mode)   
+      - [Controlling Tx power](#controlling-tx-power)   
+      - [Signal strength bar graph](#signal-strength-bar-graph)   
       - [Channel screen specific functionality](#channel-screen-specific-functionality)   
          - [Changing channels within the current zone](#changing-channels-within-the-current-zone)   
          - [Changing zones](#changing-zones)   
@@ -52,11 +51,11 @@
          - [Numerical frequency entry](#numerical-frequency-entry)   
          - [To adjust the TX frequency, independent of the RX frequency](#to-adjust-the-tx-frequency-independent-of-the-rx-frequency)   
    - [Transmitting](#transmitting)   
-            - [Timeout warning beep](#timeout-warning-beep)   
-            - [TOT](#tot)   
+      - [Timeout warning beep](#timeout-warning-beep)   
+      - [TOT](#tot)   
    - [Other screens](#other-screens)   
-         - [Lock screen](#lock-screen)   
-         - [Text entry](#text-entry)   
+      - [Lock screen](#lock-screen)   
+      - [Text entry](#text-entry)   
    - [The control keys and buttons](#the-control-keys-and-buttons)   
    - [The Menu System](#the-menu-system)   
    - [Main Menu](#main-menu)   
@@ -113,12 +112,12 @@
          - [Writing DMR IDs -- the User Database](#writing-dmr-ids-the-user-database)   
 
 <!-- /MDTOC -->
+
 <div style="page-break-after: always; break-after: page;"></div>
 
 
 ![](media/OpenGD77-logo.png)
 
-(17 December 2019)
 
 ## Introduction
 
@@ -170,7 +169,7 @@ Graphical and other enhancements from Daniel F1RMB
 
 Additions from Colin G4EML, including FM CTCSS and “All Channels” zone functionality
 
-This user guide was written by Roger VK3KYY based on work by Alister G0NEF. Additional edits by Angelo 4I1RAC and graphics by Thierry F1CXG (buttons) and Rafa EA3BIL (menu map).
+This user guide was written by Roger VK3KYY based on work by Alister G0NEF. Additional edits by Angelo 4I1RAC and Bud W0RMT, and graphics by Thierry F1CXG (buttons) and Rafa EA3BIL (menu map).
 
 Thanks to all the Beta Testers that provide detailed bug reports and user feedback, especially VK7ZCR, W1RHS and G4TSN
 
@@ -239,19 +238,19 @@ Press **Function + Green** for quick access to the Channel details screen, which
 *Note:*
 The VFO is actually a special type of channel; hence the Channel Details screen also works for the VFO.
 
-#### Changing between VFO and Channel
+### Changing between VFO and Channel
 
 Press the **Function + Star** key to toggle between FM and DMR mode on either the VFO or Channel screens.
 
-#### Changing Timeslot in DMR mode
+### Changing Timeslot in DMR mode
 In DMR mode, pressing the **Star** key toggles between TimeSlot 1 and TimeSlot 2.
 
-#### Controlling Tx power
+### Controlling Tx power
 
 Press **Function + Right** to increase the power. Press **Function + Left** to decrease the power. Power can be set to 250mW, 500mW, 750mW, 1W, 2W, 3W, 4W and 5W.
 *Note:* The power output will only be correct after the operator has calibrated their own radio, as the GD-77 does not seem to have very accurate power calibration applied in the factory by TYT.
 
-#### Signal strength bar graph
+### Signal strength bar graph
 
 In both FM and DMR mode, the signal strength of the received signal is show as a bar graph across with width of the screen. 100% bar graph is approximately S9 +40 dB.
 
@@ -537,11 +536,11 @@ During DMR TX a VU meter is displayed showing the input microphone level, in the
 
 ![](media/dmr-mic-level.png)
 
-##### Timeout warning beep
+### Timeout warning beep
 
 A timeout warning can be configured in the Utilities menu. The radio will beep every 5 seconds when the remaining call time is less than the Timeout warning time that you have configured in the Options screen.
 
-##### TOT
+### TOT
 
 If TOT is setup for the current channel or VFO, when the timer counts down to zero the transmission will stop, a warning beep will be played and the radio will stop transmitting.
 
@@ -549,7 +548,7 @@ If TOT is setup for the current channel or VFO, when the timer counts down to ze
 
 ## Other screens
 
-#### Lock screen
+### Lock screen
 
 ![](media/lock-screen.png)
 
@@ -559,7 +558,7 @@ On either the VFO or the Channel screen, press the **Green** menu key to display
 
 To unlock the keypad, press and hold the **Function** button and press the **Star** key
 
-#### Text entry
+### Text entry
 
 OpenGD77 now supports alphanumeric text entry while creating a new contact or editing an existing one.
 
@@ -801,7 +800,7 @@ Selects which RX group is assigned to teh current channel (DMR only).
 
 Pressing the **Green** menu key confirms the changes and saves the settings to the codeplug, or in the case of the VFO the changes are saved to the non-volatile settings. Pressing the **Red** menu key closes the menu without making any changes to the channel.
 
-### Credits Screen 
+### Credits Screen
 
 ![](media/credits.png)
 
