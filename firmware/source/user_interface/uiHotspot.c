@@ -592,6 +592,7 @@ static void leaveHotspotMenu(void)
 
 	trxDMRID = codeplugGetUserDMRID();
 	settingsUsbMode = USB_MODE_CPS;
+	mmdvmHostIsConnected = false;
 
 	menuSystemPopAllAndDisplayRootMenu();
 }
@@ -643,8 +644,7 @@ static void processUSBDataQueue(void)
 		if (lastUSBSerialTxStatus == kStatus_USB_Success)
 		{
 			usbComSendBufReadPosition += usbComSendBuf[usbComSendBufReadPosition] + 1;
-			//              Reaching end of buffer                  ||   enqueueUSBData() flagged it as end of buffer
-			if ((usbComSendBufReadPosition > (COM_BUFFER_SIZE - 1)) || (usbComSendBuf[usbComSendBufReadPosition] == 0))
+			if (usbComSendBufReadPosition > (COM_BUFFER_SIZE - 1))
 			{
 				usbComSendBufReadPosition = 0;
 			}
@@ -1170,15 +1170,14 @@ static void hotspotStateMachine(void)
 			}
 			else
 			{
-#if 0
-				if ((fw_millis() - mmdvmHostLastActiveTick) > 10000)
+				if ((nonVolatileSettings.hotspotType == HOTSPOT_TYPE_MMDVM) &&
+						((fw_millis() - mmdvmHostLastActiveTick) > 10000))
 				{
 					wavbuffer_count = 0;
 
-					//leaveHotspotMenu();
+					leaveHotspotMenu();
 					break;
 				}
-#endif
 			}
 			break;
 
@@ -1221,25 +1220,30 @@ static void hotspotStateMachine(void)
 
 			if (mmdvmHostIsConnected)
 			{
-#if 0
 				// No activity from MMDVMHost
-				if ((fw_millis() - mmdvmHostLastActiveTick) > 10000)
+				if ((nonVolatileSettings.hotspotType == HOTSPOT_TYPE_MMDVM) &&
+						((fw_millis() - mmdvmHostLastActiveTick) > 10000))
 				{
-					//mmdvmHostIsConnected = false;
-					//hotspotState = HOTSPOT_STATE_NOT_CONNECTED;
+					mmdvmHostIsConnected = false;
+					hotspotState = HOTSPOT_STATE_NOT_CONNECTED;
 					rfFrameBufCount = 0;
 					wavbuffer_count = 0;
 
-					//leaveHotspotMenu();
+					leaveHotspotMenu();
 					break;
 				}
-#endif
 			}
 			else
 			{
 				hotspotState = HOTSPOT_STATE_NOT_CONNECTED;
 				rfFrameBufCount = 0;
 				wavbuffer_count = 0;
+
+				if (trxIsTransmitting)
+				{
+					trxIsTransmitting = false;
+					disableTransmission();
+				}
 				break;
 			}
 
@@ -1369,6 +1373,8 @@ static void hotspotStateMachine(void)
     			lastRxState = HOTSPOT_RX_IDLE;
 				hotspotState = HOTSPOT_STATE_TX_SHUTDOWN;
 				mmdvmHostIsConnected = false;
+				disableTransmission();
+
 				//SEGGER_RTT_printf(0, "modemState == STATE_IDLE: TX_START_BUFFERING -> HOTSPOT_STATE_TX_SHUTDOWN\n");
 			}
 			else
