@@ -73,7 +73,7 @@ M: 2020-01-07 09:52:15.246 DMR Slot 2, received network end of voice transmissio
 //#define MMDVM_SEND_DEBUG
 
 // Uncomment this to enable debug screen instead of Hotspot one
-//#define DEBUG_HS_SCREEN
+#define DEBUG_HS_SCREEN
 
 
 #define MMDVM_FRAME_START   0xE0U
@@ -726,7 +726,7 @@ static void sendVoiceHeaderLC_Frame(volatile const uint8_t *receivedDMRDataAndAu
 
 	if ((lc.srcId == 0) || (lc.dstId == 0))
 	{
-		dbgPrint6("HEADER_LC_0");
+		dbgPrint6("VOICE_HEADER_LC_0");
 		return;
 	}
 
@@ -758,7 +758,7 @@ static void sendTerminator_LC_Frame(volatile const uint8_t *receivedDMRDataAndAu
 
 	if ((lc.srcId == 0) || (lc.dstId == 0))
 	{
-		dbgPrint6("HEADER_LC_0");
+		dbgPrint6("TERM_HEADER_LC_0");
 		return;
 	}
 
@@ -1170,16 +1170,18 @@ static void hotspotStateMachine(void)
 			}
 			else
 			{
+#if 0
 				if ((fw_millis() - mmdvmHostLastActiveTick) > 10000)
 				{
 					wavbuffer_count = 0;
 
-					leaveHotspotMenu();
+					//leaveHotspotMenu();
 					break;
 				}
-
+#endif
 			}
 			break;
+
 		case HOTSPOT_STATE_INITIALISE:
 			dbgPrint3("INIT", rfFrameBufCount);
 #if defined(DEBUG_HS_SCREEN)
@@ -1194,6 +1196,7 @@ static void hotspotStateMachine(void)
 			hotspotState = HOTSPOT_STATE_RX_START;
 			//SEGGER_RTT_printf(0, "STATE_INITIALISE -> STATE_RX\n");
 			break;
+
 		case HOTSPOT_STATE_RX_START:
 			dbgPrint3("RX_START", rfFrameBufCount);
 			//SEGGER_RTT_printf(0, "STATE_RX_START\n");
@@ -1218,17 +1221,19 @@ static void hotspotStateMachine(void)
 
 			if (mmdvmHostIsConnected)
 			{
+#if 0
 				// No activity from MMDVMHost
 				if ((fw_millis() - mmdvmHostLastActiveTick) > 10000)
 				{
-					mmdvmHostIsConnected = false;
-					hotspotState = HOTSPOT_STATE_NOT_CONNECTED;
+					//mmdvmHostIsConnected = false;
+					//hotspotState = HOTSPOT_STATE_NOT_CONNECTED;
 					rfFrameBufCount = 0;
 					wavbuffer_count = 0;
 
-					leaveHotspotMenu();
+					//leaveHotspotMenu();
 					break;
 				}
+#endif
 			}
 			else
 			{
@@ -1345,10 +1350,12 @@ static void hotspotStateMachine(void)
         		}
         	}
 			break;
+
 		case HOTSPOT_STATE_RX_END:
 			dbgPrint3("RX_END", rfFrameBufCount);
 			hotspotState = HOTSPOT_STATE_RX_START;
 			break;
+
 		case HOTSPOT_STATE_TX_START_BUFFERING:
 			dbgPrint3("TX_START_BUF", rfFrameBufCount);
 			// If MMDVMHost tells us to go back to idle. (receiving)
@@ -1384,6 +1391,7 @@ static void hotspotStateMachine(void)
 				}
 			}
 			break;
+
 		case HOTSPOT_STATE_TRANSMITTING:
 			dbgPrint3("TRANSMITTING", rfFrameBufCount);
 			// Stop transmitting when there is no data in the buffer or if MMDVMHost sends the idle command
@@ -1394,6 +1402,7 @@ static void hotspotStateMachine(void)
 				trxIsTransmitting = false;
 			}
 			break;
+
 		case HOTSPOT_STATE_TX_SHUTDOWN:
 			dbgPrint3("TX_SHUTDOWN", rfFrameBufCount);
 			if (txstopdelay > 0)
