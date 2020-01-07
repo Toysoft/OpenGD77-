@@ -34,6 +34,41 @@
 #include <user_interface/uiUtilityQSOData.h>
 #include <functions/fw_ticks.h>
 
+/*
+                                Problems with MD-390 on the same frequency
+                                ------------------------------------------
+
+ Using a Dual Hat:
+M: 2020-01-07 08:46:23.337 DMR Slot 2, received RF voice header from F1RMB to 5000
+M: 2020-01-07 08:46:24.143 DMR Slot 2, received RF end of voice transmission from F1RMB to 5000, 0.7 seconds, BER: 0.4%
+M: 2020-01-07 08:46:24.644 DMR Slot 2, RF user 12935424 rejected
+
+ Using OpenHD77 HS
+ PC 5000 sent from a GD-77
+M: 2020-01-07 09:51:55.467 DMR Slot 2, received RF voice header from F1RMB to 5000
+M: 2020-01-07 09:51:56.727 DMR Slot 2, received RF end of voice transmission from F1RMB to 5000, 1.1 seconds, BER: 0.3%
+M: 2020-01-07 09:52:00.068 DMR Slot 2, received network voice header from 5000 to TG 9
+M: 2020-01-07 09:52:03.428 DMR Slot 2, received network end of voice transmission from 5000 to TG 9, 3.5 seconds, 0% packet loss, BER: 0.0%
+
+ Its echo (data sent from the MD-390, by itself):
+M: 2020-01-07 09:52:07.300 DMR Slot 2, received RF voice header from F1RMB to 5000
+M: 2020-01-07 09:52:09.312 DMR Slot 2, RF voice transmission lost from F1RMB to 5000, 0.0 seconds, BER: 0.0%
+M: 2020-01-07 09:52:11.856 DMR Slot 2, received network voice header from 5000 to TG 9
+M: 2020-01-07 09:52:15.246 DMR Slot 2, received network end of voice transmission from 5000 to TG 9, 3.5 seconds, 0% packet loss, BER: 0.0%
+
+
+	 There is a problem if you have a MD-390, GPS enabled, listening on the same frequency (even without different DMRId, I checked !).
+	 It send invalid data from time to time (that's not critical, it's simply rejected), but once it heard a PC or TG call (from other
+	 transceiver), it will keep repeating that, instead of invalid data.
+
+	 After investigations, it's turns out if you enable 'GPS System' (even with correct configuration, like
+	 GC xxx999 for BM), it will send such weird or echo data each GPS interval.
+
+ ** Long story short: turn off GPS stuff on your MD-390 if it's listening local transmissions from other transceivers. **
+
+ */
+
+
 // Uncomment this to enable all sendDebug*() functions. You will see the results in the MMDVMHost log file.
 //#define MMDVM_SEND_DEBUG
 
@@ -90,26 +125,26 @@
 #define PROTOCOL_VERSION    1U
 
 #define MMDVM_HEADER_LENGTH  4U
-//#define HOTSPOT_VERSION_STRING "MMDVM_HS_Hat OpenGD77 Hotspot v0.0.72"
-#define HOTSPOT_VERSION_STRING "MMDVM_HS_OpenGD77 v0.0.72"
+
+//#define HOTSPOT_VERSION_STRING "MMDVM_HS_Hat OpenGD77 Hotspot v0.0.72" // This permits to see OpenGD77 hotspot as a MMDVM_HS in dashboards
+#define HOTSPOT_VERSION_STRING "OpenGD77_HS v0.0.73"
 #define concat(a, b) a " GitID #" b ""
 static const char HARDWARE[] = concat(HOTSPOT_VERSION_STRING, GITVERSION);
 
 
-const uint8_t MMDVM_VOICE_SYNC_PATTERN = 0x20U;
+static const uint8_t MMDVM_VOICE_SYNC_PATTERN = 0x20U;
 
+static const int EMBEDDED_DATA_OFFSET = 13U;
+static const int TX_BUFFER_MIN_BEFORE_TRANSMISSION = 4;
 
-const int EMBEDDED_DATA_OFFSET = 13U;
-const int TX_BUFFER_MIN_BEFORE_TRANSMISSION = 4;
-
-const uint8_t START_FRAME_PATTERN[] = {0xFF,0x57,0xD7,0x5D,0xF5,0xD9};
-const uint8_t END_FRAME_PATTERN[] 	= {0x5D,0x7F,0x77,0xFD,0x75,0x79};
-const uint32_t HOTSPOT_BUFFER_LENGTH = 0xA0;
+static const uint8_t START_FRAME_PATTERN[] = {0xFF,0x57,0xD7,0x5D,0xF5,0xD9};
+static const uint8_t END_FRAME_PATTERN[] 	= {0x5D,0x7F,0x77,0xFD,0x75,0x79};
+//static const uint32_t HOTSPOT_BUFFER_LENGTH = 0xA0;
 
 static uint32_t freq_rx;
 static uint32_t freq_tx;
 static uint8_t rf_power;
-uint32_t savedTGorPC;
+static uint32_t savedTGorPC;
 static uint8_t hotspotTxLC[9];
 static bool startedEmbeddedSearch = false;
 
@@ -121,7 +156,7 @@ volatile int  	rfFrameBufReadIdx = 0;
 volatile int  	rfFrameBufWriteIdx = 0;
 volatile int	rfFrameBufCount = 0;
 static uint8_t lastRxState = HOTSPOT_RX_IDLE;
-const int TX_BUFFERING_TIMEOUT = 5000;// 500mS
+static const int TX_BUFFERING_TIMEOUT = 5000;// 500mS
 static int timeoutCounter;
 static int savedPowerLevel = -1;// no power level saved yet
 static int hotspotPowerLevel = 0;// no power level saved yet
@@ -137,22 +172,22 @@ static volatile enum
 
 typedef enum
 {
-  STATE_IDLE      = 0,
-  STATE_DSTAR     = 1,
-  STATE_DMR       = 2,
-  STATE_YSF       = 3,
-  STATE_P25       = 4,
-  STATE_NXDN      = 5,
-  STATE_POCSAG    = 6,
+	STATE_IDLE      = 0,
+	STATE_DSTAR     = 1,
+	STATE_DMR       = 2,
+	STATE_YSF       = 3,
+	STATE_P25       = 4,
+	STATE_NXDN      = 5,
+	STATE_POCSAG    = 6,
 
-  // Dummy states start at 90
-  STATE_DMRDMO1K  = 92,
-  STATE_RSSICAL   = 96,
-  STATE_CWID      = 97,
-  STATE_DMRCAL    = 98,
-  STATE_DSTARCAL  = 99,
-  STATE_INTCAL    = 100,
-  STATE_POCSAGCAL = 101
+	// Dummy states start at 90
+	STATE_DMRDMO1K  = 92,
+	STATE_RSSICAL   = 96,
+	STATE_CWID      = 97,
+	STATE_DMRCAL    = 98,
+	STATE_DSTARCAL  = 99,
+	STATE_INTCAL    = 100,
+	STATE_POCSAGCAL = 101
 } MMDVM_STATE;
 
 static volatile MMDVM_STATE modemState = STATE_IDLE;
@@ -173,21 +208,21 @@ typedef enum
 static volatile HOTSPOT_STATE hotspotState = HOTSPOT_STATE_NOT_CONNECTED;
 
 //const int USB_SERIAL_TX_RETRIES = 2;
-const uint8_t VOICE_LC_SYNC_FULL[] 		= { 0x04U, 0x6DU, 0x5DU, 0x7FU, 0x77U, 0xFDU, 0x75U, 0x7EU, 0x30U};
-const uint8_t TERMINATOR_LC_SYNC_FULL[]	= { 0x04U, 0xADU, 0x5DU, 0x7FU, 0x77U, 0xFDU, 0x75U, 0x79U, 0x60U};
+static const uint8_t VOICE_LC_SYNC_FULL[] 		= { 0x04U, 0x6DU, 0x5DU, 0x7FU, 0x77U, 0xFDU, 0x75U, 0x7EU, 0x30U};
+static const uint8_t TERMINATOR_LC_SYNC_FULL[]	= { 0x04U, 0xADU, 0x5DU, 0x7FU, 0x77U, 0xFDU, 0x75U, 0x79U, 0x60U};
 
-const uint8_t LC_SYNC_MASK_FULL[]  = { 0x0FU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xF0U};
+static const uint8_t LC_SYNC_MASK_FULL[]  		= { 0x0FU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xF0U};
 
 
-const uint8_t DMR_AUDIO_SEQ_SYNC[6][7] = {  {0x07U, 0xF0U, 0x00U, 0x00U, 0x00U, 0x0FU, 0xD0U},// seq 0 NOT USED AS THIS IS THE SYNC
-											{0x01U, 0x30U, 0x00U, 0x00U, 0x00U, 0x09U, 0x10U},// seq 1
-											{0x01U, 0x70U, 0x00U, 0x00U, 0x00U, 0x07U, 0x40U},// seq 2
-											{0x01U, 0x70U, 0x00U, 0x00U, 0x00U, 0x07U, 0x40U},// seq 3
-											{0x01U, 0x50U, 0x00U, 0x00U, 0x00U, 0x00U, 0x70U},// seq 4
-											{0x01U, 0x10U, 0x00U, 0x00U, 0x00U, 0x0EU, 0x20U}};// seq 5
+static const uint8_t DMR_AUDIO_SEQ_SYNC[6][7] 	= {  {0x07U, 0xF0U, 0x00U, 0x00U, 0x00U, 0x0FU, 0xD0U},  // seq 0 NOT USED AS THIS IS THE SYNC
+													 {0x01U, 0x30U, 0x00U, 0x00U, 0x00U, 0x09U, 0x10U},  // seq 1
+													 {0x01U, 0x70U, 0x00U, 0x00U, 0x00U, 0x07U, 0x40U},  // seq 2
+													 {0x01U, 0x70U, 0x00U, 0x00U, 0x00U, 0x07U, 0x40U},  // seq 3
+													 {0x01U, 0x50U, 0x00U, 0x00U, 0x00U, 0x00U, 0x70U},  // seq 4
+													 {0x01U, 0x10U, 0x00U, 0x00U, 0x00U, 0x0EU, 0x20U}}; // seq 5
 
-const uint8_t DMR_AUDIO_SEQ_MASK[]  = 		{0x0FU, 0xF0U, 0x00U, 0x00U, 0x00U, 0x0FU, 0xF0U};
-const uint8_t DMR_EMBED_SEQ_MASK[]  = 		{0x00U, 0x0FU, 0xFFU, 0xFFU, 0xFFU, 0xF0U, 0x00U};
+static const uint8_t DMR_AUDIO_SEQ_MASK[]  		= {0x0FU, 0xF0U, 0x00U, 0x00U, 0x00U, 0x0FU, 0xF0U};
+static const uint8_t DMR_EMBED_SEQ_MASK[]  		= {0x00U, 0x0FU, 0xFFU, 0xFFU, 0xFFU, 0xF0U, 0x00U};
 
 
 static void updateScreen(uint8_t rxState);
@@ -195,8 +230,7 @@ static void handleEvent(uiEvent_t *ev);
 static void leaveHotspotMenu(void);
 static void hotspotStateMachine(void);
 static void processUSBDataQueue(void);
-
-void handleHotspotRequest(void);
+static void handleHotspotRequest(void);
 
 
 #warning GET RID OF ME
@@ -1621,7 +1655,7 @@ static uint8_t handleDMRShortLC(volatile const uint8_t *data, uint8_t length)
 	return 0U;
 }
 
-void handleHotspotRequest(void)
+static void handleHotspotRequest(void)
 {
 //	//SEGGER_RTT_printf(0, "handleHotspotRequest 0x%0x 0x%0x 0x%0x\n",com_requestbuffer[0],com_requestbuffer[1],com_requestbuffer[2]);
 	if (com_requestbuffer[0] == MMDVM_FRAME_START)
