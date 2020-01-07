@@ -76,6 +76,7 @@
 
 #define MMDVM_ACK           0x70U
 #define MMDVM_NAK           0x7FU
+
 #define MMDVM_SERIAL        0x80U
 #define MMDVM_TRANSPARENT   0x90U
 #define MMDVM_QSO_INFO      0x91U
@@ -692,9 +693,15 @@ static void sendVoiceHeaderLC_Frame(volatile const uint8_t *receivedDMRDataAndAu
 		return;
 	}
 
-	DMRFullLC_encode(&lc, frameData + MMDVM_HEADER_LENGTH, DT_VOICE_LC_HEADER);// Encode the src and dst Ids etc
+	// Encode the src and dst Ids etc
+	if (!DMRFullLC_encode(&lc, frameData + MMDVM_HEADER_LENGTH, DT_VOICE_LC_HEADER)) // Encode the src and dst Ids etc
+	{
+		dbgPrint6("LC_ENCODE");
+		return;
+	}
+
 	DMREmbeddedData_setLC(&lc);
-	for (unsigned int i = 0U; i < 8U; i++)
+	for (uint8_t i = 0U; i < 8U; i++)
 	{
 		frameData[i + 12U + MMDVM_HEADER_LENGTH] = (frameData[i + 12U + MMDVM_HEADER_LENGTH] & ~LC_SYNC_MASK_FULL[i]) | VOICE_LC_SYNC_FULL[i];
 	}
@@ -712,9 +719,20 @@ static void sendTerminator_LC_Frame(volatile const uint8_t *receivedDMRDataAndAu
 	lc.srcId = (receivedDMRDataAndAudio[6] << 16) + (receivedDMRDataAndAudio[7] << 8) + (receivedDMRDataAndAudio[8] << 0);
 	lc.dstId = (receivedDMRDataAndAudio[3] << 16) + (receivedDMRDataAndAudio[4] << 8) + (receivedDMRDataAndAudio[5] << 0);
 
-	DMRFullLC_encode(&lc, frameData + MMDVM_HEADER_LENGTH, DT_TERMINATOR_WITH_LC);// Encode the src and dst Ids etc
+	if ((lc.srcId == 0) || (lc.dstId == 0))
+	{
+		dbgPrint6("HEADER_LC_0");
+		return;
+	}
 
-	for (unsigned int i = 0U; i < 8U; i++)
+	// Encode the src and dst Ids etc
+	if (!DMRFullLC_encode(&lc, frameData + MMDVM_HEADER_LENGTH, DT_TERMINATOR_WITH_LC))
+	{
+		dbgPrint6("LC_ENCODE");
+		return;
+	}
+
+	for (uint8_t i = 0U; i < 8U; i++)
 	{
 		frameData[i + 12U + MMDVM_HEADER_LENGTH] = (frameData[i + 12U + MMDVM_HEADER_LENGTH] & ~LC_SYNC_MASK_FULL[i]) | TERMINATOR_LC_SYNC_FULL[i];
 	}
