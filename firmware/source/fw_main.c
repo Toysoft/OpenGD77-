@@ -374,7 +374,7 @@ void fw_main_task(void *data)
         		}
 
     			// Toggle backlight
-        		if ((nonVolatileSettings.backlightMode == BACKLIGHT_MODE_MANUAL) && (buttons == BUTTON_SK1))
+        		if ((nonVolatileSettings.backlightMode == BACKLIGHT_MODE_MANUAL) && (KEYCHECK_DOWN(keys,KEY_SK1)))
         		{
         			fw_displayEnableBacklight(! fw_displayIsBacklightLit());
         		}
@@ -433,6 +433,7 @@ void fw_main_task(void *data)
 					keys.key = 0;
 					keys.event = 0;
 					function_event = FUNCTION_EVENT;
+					fw_reset_keyboard();
 				}
 			}
     		ev.buttons = buttons;

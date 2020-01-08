@@ -496,8 +496,12 @@ static void handleEvent(uiEvent_t *ev)
 			return;
 		}
 
+	}
+
+	if (ev->events & KEY_EVENT)
+	{
 		// Display channel settings (CTCSS, Squelch) while SK1 is pressed
-		if ((displayChannelSettings == false) && (ev->buttons == BUTTON_SK1))
+		if ((displayChannelSettings == false) && (KEYCHECK_LONGDOWN(ev->keys, KEY_SK1)))
 		{
 			int prevQSODisp = prevDisplayQSODataState;
 
@@ -507,7 +511,7 @@ static void handleEvent(uiEvent_t *ev)
 			prevDisplayQSODataState = prevQSODisp;
 			return;
 		}
-		else if (displayChannelSettings && ((ev->buttons & BUTTON_SK1) == 0))
+		else if ((displayChannelSettings==true) && (KEYCHECK_UP(ev->keys, KEY_SK1)))
 		{
 			displayChannelSettings = false;
 			menuDisplayQSODataState = prevDisplayQSODataState;
@@ -515,7 +519,7 @@ static void handleEvent(uiEvent_t *ev)
 			return;
 		}
 
-		if (ev->buttons & BUTTON_ORANGE)
+		if (KEYCHECK_SHORTUP(ev->keys, KEY_ORANGE))
 		{
 			if (ev->buttons & BUTTON_SK2)
 			{
@@ -530,10 +534,7 @@ static void handleEvent(uiEvent_t *ev)
 
 			return;
 		}
-	}
 
-	if (ev->events & KEY_EVENT)
-	{
 		if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 		{
 			if (menuUtilityHandlePrivateCallActions(ev))
@@ -837,10 +838,10 @@ static void handleEvent(uiEvent_t *ev)
 		}
 		if (freq_enter_idx<8)
 		{
-			int keyval = menuGetKeypadKeyValue(ev, true);
-			if (keyval != 99)
+				int keyval = menuGetKeypadKeyValue(ev, true);
+				if (keyval != 99)
 			{
-				freq_enter_digits[freq_enter_idx] = (char) keyval+'0';
+					freq_enter_digits[freq_enter_idx] = (char) keyval+'0';
 				freq_enter_idx++;
 				if (freq_enter_idx==8)
 				{
@@ -1030,7 +1031,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 		menuSystemPopPreviousMenu();
 		return;
 	}
-	else if (((ev->events & BUTTON_EVENT) && (ev->buttons & BUTTON_ORANGE)) && (gMenusCurrentItemIndex==VFO_SCREEN_QUICK_MENU_VFO_A_B))
+	else if ((KEYCHECK_SHORTUP(ev->keys, KEY_ORANGE)) && (gMenusCurrentItemIndex==VFO_SCREEN_QUICK_MENU_VFO_A_B))
 	{
 		nonVolatileSettings.currentVFONumber = 1 - nonVolatileSettings.currentVFONumber;// Switch to other VFO
 		currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];

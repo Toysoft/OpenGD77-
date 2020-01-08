@@ -447,43 +447,42 @@ static void handleEvent(uiEvent_t *ev)
 			return;
 		}
 
-		// Display channel settings (RX/TX/etc) while SK1 is pressed
-		if ((displayChannelSettings == false) && (ev->buttons == BUTTON_SK1))
-		{
-			int prevQSODisp = prevDisplayQSODataState;
+	}
 
-			displayChannelSettings = true;
+	// Display channel settings (RX/TX/etc) while SK1 is pressed
+	if ((displayChannelSettings == false) && (KEYCHECK_LONGDOWN(ev->keys, KEY_SK1)))
+	{
+		int prevQSODisp = prevDisplayQSODataState;
+
+		displayChannelSettings = true;
+		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+		menuChannelModeUpdateScreen(0);
+		prevDisplayQSODataState = prevQSODisp;
+		return;
+	}
+	else if ((displayChannelSettings==true) && (KEYCHECK_UP(ev->keys, KEY_SK1)))
+	{
+		displayChannelSettings = false;
+		menuDisplayQSODataState = prevDisplayQSODataState;
+		menuChannelModeUpdateScreen(0);
+		return;
+	}
+
+	if (KEYCHECK_SHORTUP(ev->keys, KEY_ORANGE))
+	{
+		if (ev->buttons & BUTTON_SK2)
+		{
+			settingsPrivateCallMuteMode = !settingsPrivateCallMuteMode;// Toggle PC mute only mode
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 			menuChannelModeUpdateScreen(0);
-			prevDisplayQSODataState = prevQSODisp;
-			return;
 		}
-		else if (displayChannelSettings && ((ev->buttons & BUTTON_SK1) == 0))
+		else
 		{
-			displayChannelSettings = false;
-			menuDisplayQSODataState = prevDisplayQSODataState;
-			menuChannelModeUpdateScreen(0);
-			return;
+			// ToDo Quick Menu
+			menuSystemPushNewMenu(MENU_CHANNEL_QUICK_MENU);
 		}
 
-
-		if (ev->buttons & BUTTON_ORANGE)
-		{
-			if (ev->buttons & BUTTON_SK2)
-			{
-				settingsPrivateCallMuteMode = !settingsPrivateCallMuteMode;// Toggle PC mute only mode
-				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-				menuChannelModeUpdateScreen(0);
-			}
-			else
-			{
-				// ToDo Quick Menu
-				menuSystemPushNewMenu(MENU_CHANNEL_QUICK_MENU);
-			}
-
-			return;
-		}
-
+		return;
 	}
 
 	if (ev->events & KEY_EVENT)
@@ -1000,7 +999,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 	{
 		MENU_DEC(gMenusCurrentItemIndex, NUM_CH_SCREEN_QUICK_MENU_ITEMS);
 	}
-	else if (((ev->events & BUTTON_EVENT) && (ev->buttons & BUTTON_ORANGE)) && (gMenusCurrentItemIndex==CH_SCREEN_QUICK_MENU_SCAN))
+	else if ((KEYCHECK_SHORTUP(ev->keys, KEY_ORANGE)) && (gMenusCurrentItemIndex==CH_SCREEN_QUICK_MENU_SCAN))
 	{
 		startScan();
 	}

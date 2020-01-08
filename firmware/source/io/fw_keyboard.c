@@ -17,6 +17,7 @@
  */
 
 #include "fw_keyboard.h"
+#include "fw_buttons.h"
 #include "fw_pit.h"
 #include "fw_settings.h"
 #include "fw_usb_com.h"
@@ -46,8 +47,8 @@ volatile bool keypadLocked = false;
 static const uint32_t keyMap[] = {
 		KEY_1, KEY_2, KEY_3, KEY_GREEN, KEY_RIGHT,
 		KEY_4, KEY_5, KEY_6, KEY_UP, KEY_LEFT,
-		KEY_7, KEY_8, KEY_9, KEY_DOWN, 0,
-		KEY_STAR, KEY_0, KEY_HASH, KEY_RED, 0
+		KEY_7, KEY_8, KEY_9, KEY_DOWN, KEY_SK1,
+		KEY_STAR, KEY_0, KEY_HASH, KEY_RED, KEY_ORANGE
 };
 static const char keypadAlphaMap[11][31] = {
 		"0 ",
@@ -140,6 +141,14 @@ uint32_t fw_read_keyboard(void)
 
 		GPIO_PinWrite(GPIOC, col, 1);
 		GPIO_PinInit(GPIOC, col, &pin_config_input);
+	}
+	if (GPIO_PinRead(GPIO_SK1, Pin_SK1)==0)
+	{
+		result |= SCAN_SK1;
+	}
+	if (GPIO_PinRead(GPIO_Orange, Pin_Orange)==0)
+	{
+		result |= SCAN_ORANGE;
 	}
 
     return result;
