@@ -710,14 +710,17 @@ bool codeplugGetOpenGD77CustomData(codeplugCustomDataType_t dataType,uint8_t *da
 	return false;
 }
 
-uint16_t codeplugGetQuickkeyFunctionID(int key)
+int codeplugGetQuickkeyFunctionID(int key, bool longFlag)
 {
 	uint16_t functionId = 0;
 
-	if (key >=0 && key <=9)
+	if (key >='0' && key <='9' && longFlag == true)
 	{
+		key = key-'0';
 		EEPROM_Read(CODEPLUG_ADDR_QUICKKEYS+2*key,(uint8_t *)&functionId,2);
+		functionId = 19;
 	}
 
 	return functionId;
 }
+

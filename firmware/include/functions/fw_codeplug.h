@@ -139,6 +139,6 @@ int codeplugContactGetFreeIndex(void);
 bool codeplugContactGetRXGroup(int index);
 void codeplugInitChannelsPerZone(void);
 bool codeplugGetOpenGD77CustomData(codeplugCustomDataType_t dataType,uint8_t *dataBuf);
-uint16_t codeplugGetQuickkeyFunctionID(int key);
+int codeplugGetQuickkeyFunctionID(int key, bool longFlag);
 
 #endif

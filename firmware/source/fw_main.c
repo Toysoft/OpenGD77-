@@ -64,12 +64,13 @@ void fw_main_task(void *data)
 {
 	keyboardCode_t keys;
 	int key_event;
+	int keyFunction;
 	uint32_t buttons;
 	int button_event;
 	int function_event;
 	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .function = 0, .events = NO_EVENT, .hasEvent = false, .ticks = 0 };
 	bool keyOrButtonChanged = false;
-	
+
     USB_DeviceApplicationInit();
 
     // Init I2C
@@ -169,7 +170,7 @@ void fw_main_task(void *data)
 			tick_com_request();
 
 			fw_check_button_event(&buttons, &button_event); // Read button state and event
-			fw_check_key_event(&keys, &key_event); // Read keyboard state and event
+			fw_check_key_event(&keys, &key_event, &keyFunction); // Read keyboard state and event
 			// EVENT_*_CHANGED can be cleared later, so check this now as hasEvent has to be set anyway.
 			keyOrButtonChanged = ((key_event != NO_EVENT) || (button_event != NO_EVENT));
 
@@ -388,28 +389,23 @@ void fw_main_task(void *data)
 
 			ev.function = 0;
 			function_event = NO_EVENT;
-			if ((key_event == EVENT_KEY_CHANGE) && (buttons & BUTTON_SK2) != 0 && (keys.event & KEY_MOD_PRESS) && (keys.key >= '0' && keys.key <= '9'))
+			if (keyFunction > 0 && keyFunction < NUM_MENU_ENTRIES)
 			{
-				ev.function = codeplugGetQuickkeyFunctionID(keys.key-'0');
-				if (ev.function > 0 && ev.function < NUM_MENU_ENTRIES)
+				int currentMenu = menuSystemGetCurrentMenuNumber();
+				if ((currentMenu == MENU_VFO_MODE || currentMenu == MENU_CHANNEL_MODE) && currentMenu != keyFunction)
 				{
-					int currentMenu = menuSystemGetCurrentMenuNumber();
-					if ((currentMenu == MENU_VFO_MODE || currentMenu == MENU_CHANNEL_MODE) && currentMenu != ev.function)
-					{
-						menuSystemPushNewMenu(ev.function);
-					}
+					menuSystemPushNewMenu(keyFunction);
 				}
-				else if (ev.function > 0) {
-					function_event = FUNCTION_EVENT;
-				}
-				key_event = EVENT_KEY_NONE;
-				button_event = EVENT_BUTTON_NONE;
-				keys.event = 0;
-				keys.key = 0;
 			}
+			else
+			{
+				ev.function = keyFunction;
+				function_event = 0x40;
+			}
+
     		ev.buttons = buttons;
     		ev.keys = keys;
-    		ev.events = function_event | (button_event<<1) | key_event;
+    		ev.events = function_event |  (button_event<<1) | key_event;
     		ev.hasEvent = keyOrButtonChanged || (function_event == FUNCTION_EVENT);
     		ev.ticks = fw_millis();
 
