@@ -55,6 +55,7 @@ typedef struct settingsStruct
 	bool			txFreqLimited;
 	bool			pttToggle;
 	bool			scanModePause;
+	bool			transmitTalkerAlias;
 	uint16_t		txPowerLevel;
 	uint32_t		overrideTG;
 	uint8_t			txTimeoutBeepX5Secs;
