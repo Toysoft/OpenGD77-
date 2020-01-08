@@ -1155,7 +1155,7 @@ static void hotspotStateMachine(void)
 	static uint32_t rxFrameTicks = 0;
 
 	dbgAct1(hotspotState);
-	dbgPrint7("MMDVMHost", mmdvmHostIsConnected);
+	dbgPrint7("Host", mmdvmHostIsConnected);
 
 	switch(hotspotState)
 	{
@@ -1517,11 +1517,12 @@ static uint8_t setFreq(volatile const uint8_t* data, uint8_t length)
 
 static bool hasRXOverflow(void)
 {
-	return false;// TO DO.
+	return ((HOTSPOT_BUFFER_SIZE - rfFrameBufCount) <= 0);
 }
+
 static bool hasTXOverflow(void)
 {
-	return false;// TO DO.
+	return ((HOTSPOT_BUFFER_COUNT - wavbuffer_count) <= 0);
 }
 
 static void getStatus(void)
@@ -1532,7 +1533,6 @@ static void getStatus(void)
 	buf[0U]  = MMDVM_FRAME_START;
 	buf[1U]  = 13U;
 	buf[2U]  = MMDVM_GET_STATUS;
-	//buf[3U]  = 0x00U;
 	buf[3U]  = 0x02U;// DMR ENABLED
 	buf[4U]  = modemState;
 	buf[5U]  = ( ((hotspotState == HOTSPOT_STATE_TX_START_BUFFERING) ||
