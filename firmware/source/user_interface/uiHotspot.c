@@ -144,8 +144,8 @@ static const uint8_t START_FRAME_PATTERN[] = {0xFF,0x57,0xD7,0x5D,0xF5,0xD9};
 static const uint8_t END_FRAME_PATTERN[] 	= {0x5D,0x7F,0x77,0xFD,0x75,0x79};
 //static const uint32_t HOTSPOT_BUFFER_LENGTH = 0xA0;
 
-static uint32_t freq_rx;
-static uint32_t freq_tx;
+static uint32_t freq_rx = 0;
+static uint32_t freq_tx = 0;
 static uint8_t rf_power;
 static uint32_t savedTGorPC;
 static uint8_t hotspotTxLC[9];
@@ -413,7 +413,16 @@ int menuHotspotMode(uiEvent_t *ev, bool isFirstRun)
 
 		trxSetModeAndBandwidth(RADIO_MODE_DIGITAL, false);// hotspot mode is for DMR i.e Digital mode
 
-		freq_tx = freq_rx = 43000000;
+		if (freq_tx == 0)
+		{
+			freq_tx = 43000000;
+		}
+
+		if (freq_rx == 0)
+		{
+			freq_rx = 43000000;
+		}
+
 		settingsUsbMode = USB_MODE_HOTSPOT;
 		MMDVMHostRxState = MMDVMHOST_RX_READY; // We have not sent anything to MMDVMHost, so it can't be busy yet.
 
@@ -427,6 +436,7 @@ int menuHotspotMode(uiEvent_t *ev, bool isFirstRun)
 		ucPrintCentered(48, "PiStar", FONT_8x16);
 #endif
 		ucRender();
+
 		displayLightTrigger();
 //		updateScreen(HOTSPOT_RX_IDLE);
 	}
@@ -580,6 +590,7 @@ static void handleEvent(uiEvent_t *ev)
 		leaveHotspotMenu();
 		return;
 	}
+	displayLightTrigger();
 }
 
 static void leaveHotspotMenu(void)
