@@ -105,6 +105,10 @@ static volatile uint8_t previousLCBuf[12];
 volatile bool updateLastHeard=false;
 volatile int dmrMonitorCapturedTS = -1;
 static volatile int dmrMonitorCapturedTimeout;
+static volatile int TAPhase=0;
+static const int TABlockSizes[] = {6,7,7,7};
+static const int TAOffsets[] = {0,6,13,20};
+char talkAliasText[33];
 
 static bool callAcceptFilter(void);
 static void setupPcOrTGHeader(void);
@@ -346,6 +350,61 @@ bool checkTalkGroupFilter(void)
 	}
 }
 
+void transmitTalkerAlias(void)
+{
+	if (TAPhase%2==0)
+	{
+		setupPcOrTGHeader();
+	}
+	else
+	{
+		uint8_t TA_LCBuf[12]={0,0,0,0,0,0,0,0,0,0,0,0};
+		int taPosition=2;
+		int taOffset,taLength;
+		switch(TAPhase/2)
+		{
+		case 0:
+			taPosition 	= 3;
+			TA_LCBuf[2]= (0x01 << 6) | (strlen(talkAliasText) << 1);
+			taOffset	= 0;
+			taLength	= 6;
+			break;
+		case 1:
+			taOffset	= 6;
+			taLength	= 7;
+			break;
+		case 2:
+			taOffset	= 13;
+			taLength	= 7;
+			break;
+		case 3:
+			taOffset	= 20;
+			taLength	= 7;
+			break;
+		}
+
+		TA_LCBuf[0]= (TAPhase/2) + 0x04;
+		memcpy(&TA_LCBuf[taPosition],&talkAliasText[taOffset],taLength);
+
+		write_SPI_page_reg_bytearray_SPI0(0x02, 0x00, (uint8_t*)TA_LCBuf, taPosition+taLength);// put LC into hardware
+
+		//static void displayDataBytes(uint8_t *buf, int len)
+		{
+			for (int i=0;i<16;i++)
+			{
+				SEGGER_RTT_printf(0, " %02x", TA_LCBuf[i]);
+			}
+			SEGGER_RTT_printf(0, "\n");
+		}
+
+
+	}
+	TAPhase++;
+	if (TAPhase>8)
+	{
+		TAPhase=0;
+	}
+}
 
 void PORTC_IRQHandler(void)
 {
@@ -945,7 +1004,10 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 			write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x10);   //Set Data Type to 0001 (Voice LC Header), Data, LCSS=00
 			tx_sequence=0;
 
+			TAPhase=0;
+
 			slot_state = DMR_STATE_TX_1;
+
 			break;
 
 		case DMR_STATE_TX_1: // Ongoing TX (inactive timeslot)
@@ -974,6 +1036,14 @@ inline static void HRC6000TimeslotInterruptHandler(void)
                 	 * tick_TXsoundbuffer();
                 	 */
     				//tick_codec_encode((uint8_t *)DMR_frame_buffer+0x0C);
+
+                	if (nonVolatileSettings.transmitTalkerAlias==true)
+                	{
+                		if(tx_sequence==0)
+                		{
+                			transmitTalkerAlias();
+                		}
+                	}
 
 					write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, (uint8_t*)deferredUpdateBuffer, 27);// send the audio bytes to the hardware
                 }

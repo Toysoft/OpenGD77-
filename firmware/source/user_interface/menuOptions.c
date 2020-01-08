@@ -28,7 +28,7 @@ enum OPTIONS_MENU_LIST { OPTIONS_MENU_TIMEOUT_BEEP=0,OPTIONS_MENU_FACTORY_RESET,
 							OPTIONS_MENU_KEYPAD_TIMER_LONG, OPTIONS_MENU_KEYPAD_TIMER_REPEAT, OPTIONS_MENU_DMR_MONITOR_CAPTURE_TIMEOUT,
 							OPTIONS_MENU_SCAN_DELAY,OPTIONS_MENU_SCAN_MODE,
 							OPTIONS_MENU_SQUELCH_DEFAULT_VHF,OPTIONS_MENU_SQUELCH_DEFAULT_220MHz,OPTIONS_MENU_SQUELCH_DEFAULT_UHF,
-							OPTIONS_MENU_PTT_TOGGLE, NUM_OPTIONS_MENU_ITEMS};
+							OPTIONS_MENU_PTT_TOGGLE, OPTIONS_MENU_TALKER_ALIAS_TX, NUM_OPTIONS_MENU_ITEMS};
 
 
 int menuOptions(uiEvent_t *ev, bool isFirstRun)
@@ -144,6 +144,10 @@ static void updateScreen(void)
 			case OPTIONS_MENU_PTT_TOGGLE:
 				snprintf(buf, bufferLen, "%s:%s", currentLanguage->ptt_toggle, (nonVolatileSettings.pttToggle ? currentLanguage->on : currentLanguage->off));
 				break;
+			case OPTIONS_MENU_TALKER_ALIAS_TX:
+				snprintf(buf, bufferLen, "TA Tx:%s",(nonVolatileSettings.transmitTalkerAlias ? currentLanguage->on : currentLanguage->off));
+				break;
+
 		}
 
 		buf[bufferLen - 1] = 0;
@@ -244,7 +248,9 @@ static void handleEvent(uiEvent_t *ev)
 			case OPTIONS_MENU_PTT_TOGGLE:
 				nonVolatileSettings.pttToggle = true;
 				break;
-
+			case OPTIONS_MENU_TALKER_ALIAS_TX:
+				nonVolatileSettings.transmitTalkerAlias = true;
+				break;
 		}
 	}
 	else if (KEYCHECK_PRESS(ev->keys,KEY_LEFT))
@@ -327,6 +333,9 @@ static void handleEvent(uiEvent_t *ev)
 				break;
 			case OPTIONS_MENU_PTT_TOGGLE:
 				nonVolatileSettings.pttToggle = false;
+				break;
+			case OPTIONS_MENU_TALKER_ALIAS_TX:
+				nonVolatileSettings.transmitTalkerAlias = false;
 				break;
 		}
 	}
