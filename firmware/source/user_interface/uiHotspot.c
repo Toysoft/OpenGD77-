@@ -73,7 +73,7 @@ M: 2020-01-07 09:52:15.246 DMR Slot 2, received network end of voice transmissio
 //#define MMDVM_SEND_DEBUG
 
 // Uncomment this to enable debug screen instead of Hotspot one
-#define DEBUG_HS_SCREEN
+//#define DEBUG_HS_SCREEN
 
 
 #define MMDVM_FRAME_START   0xE0U

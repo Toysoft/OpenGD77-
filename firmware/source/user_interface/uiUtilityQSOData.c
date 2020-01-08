@@ -870,7 +870,7 @@ void menuUtilityRenderHeader(void)
 			{
 //				(trxGetMode() == RADIO_MODE_DIGITAL && settingsPrivateCallMuteMode == true)?" MUTE":"");// The location that this was displayed is now used for the power level
 
-				ucPrintAt(0, Y_OFFSET, "DMR", enableHotspot ? FONT_6x8_BOLD : FONT_6x8);
+				ucPrintAt(0, Y_OFFSET, "DMR", FONT_6x8);
 				snprintf(buffer, bufferLen, "%s%d", currentLanguage->ts, trxGetDMRTimeSlot() + 1);
 				buffer[bufferLen - 1] = 0;
 				if (nonVolatileSettings.dmrFilterLevel < DMR_FILTER_TS)
