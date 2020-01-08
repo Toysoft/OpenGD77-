@@ -403,6 +403,9 @@ void fw_main_task(void *data)
 				case '3':
 					keyFunction = ( MENU_LAST_HEARD << 8);
 					break;
+				case '4':
+					keyFunction = ( MENU_CHANNEL_DETAILS << 8) | 2;
+					break;
 				case '7':
 					keyFunction = (MENU_DISPLAY <<8) + DEC_BRIGHTNESS;
 					break;
