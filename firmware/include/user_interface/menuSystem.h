@@ -74,6 +74,7 @@ void menuSystemLanguageHasChanged(void);
 void displayLightTrigger(void);
 void displayLightOverrideTimeout(int timeout);
 void menuSystemPushNewMenu(int menuNumber);
+void menuSystemPushNewMenuWithQuickFunction(int menuNumber, int quickFunction);
 
 void menuSystemSetCurrentMenu(int menuNumber);
 int menuSystemGetCurrentMenuNumber(void);
@@ -131,6 +132,11 @@ enum MENU_SCREENS { MENU_SPLASH_SCREEN=0,
 					MENU_CONTACT_NEW,
 					MENU_LANGUAGE,
 					NUM_MENU_ENTRIES
+};
+
+enum QUICK_FUNCTIONS {
+	NO_FUNCTION = 0,
+	START_SCANNING
 };
 
 // This is used to store current position in menus. The system keeps track of its value, e.g entering in
