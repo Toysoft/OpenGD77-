@@ -692,9 +692,15 @@ static void disableTransmission(void)
 
 }
 
+static void addRSSI(uint8_t *frameData)
+{
+	frameData[DMR_FRAME_LENGTH_BYTES + MMDVM_HEADER_LENGTH]      = (trxRxSignal >> 8) & 0xFFU;
+	frameData[DMR_FRAME_LENGTH_BYTES + MMDVM_HEADER_LENGTH + 1U] = (trxRxSignal >> 0) & 0xFFU;
+}
+
 static void hotspotSendVoiceFrame(volatile const uint8_t *receivedDMRDataAndAudio)
 {
-	uint8_t frameData[DMR_FRAME_LENGTH_BYTES + MMDVM_HEADER_LENGTH] = {0xE0, 0x25, MMDVM_DMR_DATA2};
+	uint8_t frameData[DMR_FRAME_LENGTH_BYTES + MMDVM_HEADER_LENGTH + 2U] = {MMDVM_FRAME_START, (DMR_FRAME_LENGTH_BYTES + MMDVM_HEADER_LENGTH + 2U), MMDVM_DMR_DATA2};
 	uint8_t embData[DMR_FRAME_LENGTH_BYTES];
 	int i;
 	int sequenceNumber = receivedDMRDataAndAudio[27 + 0x0c + 1] - 1;
@@ -722,12 +728,15 @@ static void hotspotSendVoiceFrame(volatile const uint8_t *receivedDMRDataAndAudi
 		}
 	}
 
-	enqueueUSBData(frameData, DMR_FRAME_LENGTH_BYTES + MMDVM_HEADER_LENGTH);
+	// Add RSSI into frame
+	addRSSI(frameData);
+
+	enqueueUSBData(frameData, frameData[1U]);
 }
 
 static void sendVoiceHeaderLC_Frame(volatile const uint8_t *receivedDMRDataAndAudio)
 {
-	uint8_t frameData[DMR_FRAME_LENGTH_BYTES + MMDVM_HEADER_LENGTH] = {0xE0, 0x25, 0x1A, DMR_SYNC_DATA | DT_VOICE_LC_HEADER};
+	uint8_t frameData[DMR_FRAME_LENGTH_BYTES + MMDVM_HEADER_LENGTH + 2U] = {MMDVM_FRAME_START, (DMR_FRAME_LENGTH_BYTES + MMDVM_HEADER_LENGTH + 2U), MMDVM_DMR_DATA2, DMR_SYNC_DATA | DT_VOICE_LC_HEADER};
 	DMRLC_T lc;
 
 	memset(&lc, 0, sizeof(DMRLC_T));// clear automatic variable
@@ -754,13 +763,16 @@ static void sendVoiceHeaderLC_Frame(volatile const uint8_t *receivedDMRDataAndAu
 		frameData[i + 12U + MMDVM_HEADER_LENGTH] = (frameData[i + 12U + MMDVM_HEADER_LENGTH] & ~LC_SYNC_MASK_FULL[i]) | VOICE_LC_SYNC_FULL[i];
 	}
 
+	// Add RSSI into frame
+	addRSSI(frameData);
+
 	//SEGGER_RTT_printf(0, "sendVoiceHeaderLC_Frame\n");
-	enqueueUSBData(frameData, DMR_FRAME_LENGTH_BYTES + MMDVM_HEADER_LENGTH);
+	enqueueUSBData(frameData, frameData[1U]);
 }
 
 static void sendTerminator_LC_Frame(volatile const uint8_t *receivedDMRDataAndAudio)
 {
-	uint8_t frameData[DMR_FRAME_LENGTH_BYTES + MMDVM_HEADER_LENGTH] = {0xE0, 0x25, 0x1A, DMR_SYNC_DATA | DT_TERMINATOR_WITH_LC};
+	uint8_t frameData[DMR_FRAME_LENGTH_BYTES + MMDVM_HEADER_LENGTH + 2U] = {MMDVM_FRAME_START, (DMR_FRAME_LENGTH_BYTES + MMDVM_HEADER_LENGTH + 2U), MMDVM_DMR_DATA2, DMR_SYNC_DATA | DT_TERMINATOR_WITH_LC};
 	DMRLC_T lc;
 
 	memset(&lc, 0, sizeof(DMRLC_T));// clear automatic variable
@@ -785,8 +797,11 @@ static void sendTerminator_LC_Frame(volatile const uint8_t *receivedDMRDataAndAu
 		frameData[i + 12U + MMDVM_HEADER_LENGTH] = (frameData[i + 12U + MMDVM_HEADER_LENGTH] & ~LC_SYNC_MASK_FULL[i]) | TERMINATOR_LC_SYNC_FULL[i];
 	}
 
+	// Add RSSI into frame
+	addRSSI(frameData);
+
 	//SEGGER_RTT_printf(0, "sendTerminator_LC_Frame\n");
-	enqueueUSBData(frameData, DMR_FRAME_LENGTH_BYTES + MMDVM_HEADER_LENGTH);
+	enqueueUSBData(frameData, frameData[1U]);
 }
 
 void hotspotRxFrameHandler(uint8_t* frameBuf)
