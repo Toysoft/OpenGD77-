@@ -324,7 +324,7 @@ int menuGetKeypadKeyValue(uiEvent_t *ev, bool digitsOnly)
 
 	for (int i = 0; i < ((sizeof(keypadKeys) / sizeof(keypadKeys[0])) - (digitsOnly ? 6 : 0 )); i++)
 	{
-		if (KEYCHECK_PRESS(ev->keys, keypadKeys[i]))
+		if (KEYCHECK_SHORTUP(ev->keys, keypadKeys[i]))
 				return i;
 	}
 

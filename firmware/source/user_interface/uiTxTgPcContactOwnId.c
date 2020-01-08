@@ -277,12 +277,14 @@ static void handleEvent(uiEvent_t *ev)
 			// Add a digit
 			if (sLen < 7)
 			{
+				int keyval = menuGetKeypadKeyValue(ev, true);
+
 				char c[2] = {0, 0};
-				c[0] = keypressToNumberChar(ev->keys);
-				
-				if (c[0]!=0)
+				c[0] = keyval;
+
+				if (keyval != 99)
 				{
-					strcat(digits,c);
+					strcat(digits, c);
 					refreshScreen = true;
 				}
 			}

@@ -837,10 +837,10 @@ static void handleEvent(uiEvent_t *ev)
 		}
 		if (freq_enter_idx<8)
 		{
-			char c = keypressToNumberChar(ev->keys);
-			if (c!='\0')
+			int keyval = menuGetKeypadKeyValue(ev, true);
+			if (keyval != 99)
 			{
-				freq_enter_digits[freq_enter_idx]=c;
+				freq_enter_digits[freq_enter_idx] = (char) keyval+'0';
 				freq_enter_idx++;
 				if (freq_enter_idx==8)
 				{
