@@ -117,6 +117,45 @@ static void updateScreen(void)
 
 static void handleEvent(uiEvent_t *ev)
 {
+	if (ev->events & FUNCTION_EVENT)
+	{
+		if (ev->function == DEC_BRIGHTNESS)
+		{
+			if (nonVolatileSettings.displayBacklightPercentage <= 10)
+			{
+				nonVolatileSettings.displayBacklightPercentage -= 1;
+			}
+			else
+			{
+				nonVolatileSettings.displayBacklightPercentage -= 10;
+			}
+
+			if (nonVolatileSettings.displayBacklightPercentage<0)
+			{
+				nonVolatileSettings.displayBacklightPercentage=0;
+			}
+			menuSystemPopPreviousMenu();
+			return;
+		}
+		else if (ev->function == INC_BRIGHTNESS)
+		{
+			if (nonVolatileSettings.displayBacklightPercentage<10)
+			{
+				nonVolatileSettings.displayBacklightPercentage += 1;
+			}
+			else
+			{
+				nonVolatileSettings.displayBacklightPercentage += 10;
+			}
+
+			if (nonVolatileSettings.displayBacklightPercentage>100)
+			{
+				nonVolatileSettings.displayBacklightPercentage=100;
+			}
+			menuSystemPopPreviousMenu();
+			return;
+		}
+	}
 	if (KEYCHECK_PRESS(ev->keys,KEY_DOWN) && gMenusEndIndex!=0)
 	{
 		MENU_INC(gMenusCurrentItemIndex, NUM_DISPLAY_MENU_ITEMS);

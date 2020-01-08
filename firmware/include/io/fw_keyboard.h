@@ -131,7 +131,7 @@ void fw_init_keyboard(void);
 void fw_reset_keyboard(void);
 uint8_t fw_read_keyboard_col(void);
 uint32_t fw_read_keyboard(void);
-void fw_check_key_event(keyboardCode_t *keys, int *event, int *keyQuickFunction);
+void fw_check_key_event(keyboardCode_t *keys, int *event);
 bool fw_scan_key(uint32_t scancode, char *keycode);
 
 #endif /* _FW_KEYBOARD_H_ */

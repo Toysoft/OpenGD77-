@@ -279,11 +279,10 @@ static void handleEvent(uiEvent_t *ev)
 			{
 				int keyval = menuGetKeypadKeyValue(ev, true);
 
-				char c[2] = {0, 0};
-				c[0] = keyval;
-
 				if (keyval != 99)
 				{
+					char c[2] = {0, 0};
+					c[0] = keyval+'0';
 					strcat(digits, c);
 					refreshScreen = true;
 				}

@@ -182,7 +182,7 @@ bool fw_scan_key(uint32_t scancode, char *keycode)
 	return (numKeys == 1);
 }
 
-void fw_check_key_event(keyboardCode_t *keys, int *event, int *keyQuickFunction)
+void fw_check_key_event(keyboardCode_t *keys, int *event)
 {
 	uint32_t scancode = fw_read_keyboard();
 	char keycode;
@@ -195,7 +195,6 @@ void fw_check_key_event(keyboardCode_t *keys, int *event, int *keyQuickFunction)
 	*event = EVENT_KEY_NONE;
 	keys->event = 0;
 	keys->key = 0;
-	*keyQuickFunction = 0;
 
 	validKey = fw_scan_key(scancode, &keycode);
 
@@ -305,7 +304,6 @@ void fw_check_key_event(keyboardCode_t *keys, int *event, int *keyQuickFunction)
 			keys->key = oldKeyboardCode;
 			keys->event = KEY_MOD_UP;
 			*event = EVENT_KEY_CHANGE;
-			*keyQuickFunction = codeplugGetQuickkeyFunctionID(oldKeyboardCode, false);
 			keyState = KEY_IDLE;
 		}
 		else
@@ -323,7 +321,6 @@ void fw_check_key_event(keyboardCode_t *keys, int *event, int *keyQuickFunction)
 				keys->key = keycode;
 				keys->event = KEY_MOD_LONG | KEY_MOD_DOWN;
 				*event = EVENT_KEY_CHANGE;
-				*keyQuickFunction = codeplugGetQuickkeyFunctionID(oldKeyboardCode, true);
 				keyState = KEY_REPEAT;
 			}
 		}

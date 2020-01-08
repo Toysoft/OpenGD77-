@@ -408,6 +408,15 @@ static void handleEvent(uiEvent_t *ev)
 		return;
 	}
 
+	if (ev->events & FUNCTION_EVENT)
+	{
+		if (ev->function == START_SCANNING)
+		{
+			directChannelNumber = 0;
+			startScan();
+			return;
+		}
+	}
 	if (ev->events & BUTTON_EVENT)
 	{
 		uint32_t tg = (LinkHead->talkGroupOrPcId & 0xFFFFFF);

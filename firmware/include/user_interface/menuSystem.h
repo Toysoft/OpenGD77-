@@ -134,9 +134,10 @@ enum MENU_SCREENS { MENU_SPLASH_SCREEN=0,
 					NUM_MENU_ENTRIES
 };
 
-enum QUICK_FUNCTIONS {
-	NO_FUNCTION = 0,
-	START_SCANNING
+enum QUICK_FUNCTIONS {  QUICK_FUNCTIONS_MENU_PLACEHOLDER = 20,   // All values lower than this are used as menu entries
+						START_SCANNING,
+						INC_BRIGHTNESS,
+						DEC_BRIGHTNESS
 };
 
 // This is used to store current position in menus. The system keeps track of its value, e.g entering in
