@@ -106,6 +106,8 @@ void lastheardInitList(void)
     {
     	callsList[i].id=0;
         callsList[i].talkGroupOrPcId=0;
+        callsList[i].talkerAlias[0] = 0;
+        callsList[i].locator[0] = 0;
         callsList[i].time = 0;
         if (i==0)
         {
@@ -140,6 +142,110 @@ LinkItem_t * findInList(int id)
         item=item->next;
     }
     return NULL;
+}
+
+static uint8_t *coordsToMaidenhead(double longitude, double latitude, bool extended)
+{
+	static uint8_t maidenhead[15];
+	double l, l2;
+	uint8_t c;
+
+	l = longitude;
+
+	for (uint8_t i = 0; i < 2; i++)
+	{
+		l = l / ((i == 0) ? 20.0 : 10.0) + 9.0;
+		c = (uint8_t) l;
+		maidenhead[0 + i] = c + 'A';
+		l2 = c;
+		l -= l2;
+		l *= 10.0;
+		c = (uint8_t) l;
+		maidenhead[2 + i] = c + '0';
+		l2 = c;
+		l -= l2;
+		l *= 24.0;
+		c = (uint8_t) l;
+		maidenhead[4 + i] = c + 'A';
+
+		if (extended)
+		{
+			l2 = c;
+			l -= l2;
+			l *= 10.0;
+			c = (uint8_t) l;
+			maidenhead[6 + i] = c + '0';
+			l2 = c;
+			l -= l2;
+			l *= 24.0;
+			c = (uint8_t) l;
+			maidenhead[8 + i] = c + (extended ? 'A' : 'a');
+			l2 = c;
+			l -= l2;
+			l *= 10.0;
+			c = (uint8_t) l;
+			maidenhead[10 + i] = c + '0';
+			l2 = c;
+			l -= l2;
+			l *= 24.0;
+			c = (uint8_t) l;
+			maidenhead[12 + i] = c + (extended ? 'A' : 'a');
+		}
+
+		l = latitude;
+	}
+
+	maidenhead[extended ? 14 : 6] = '\0';
+
+	return &maidenhead[0];
+}
+
+static uint8_t *decodeGPSPosition(uint8_t *data)
+{
+#if 0
+	uint8_t errorI = (data[2U] & 0x0E) >> 1U;
+	const char* error;
+	switch (errorI) {
+	case 0U:
+		error = "< 2m";
+		break;
+	case 1U:
+		error = "< 20m";
+		break;
+	case 2U:
+		error = "< 200m";
+		break;
+	case 3U:
+		error = "< 2km";
+		break;
+	case 4U:
+		error = "< 20km";
+		break;
+	case 5U:
+		error = "< 200km";
+		break;
+	case 6U:
+		error = "> 200km";
+		break;
+	default:
+		error = "not known";
+		break;
+	}
+#endif
+
+	int32_t longitudeI = ((data[2U] & 0x01U) << 31) | (data[3U] << 23) | (data[4U] << 15) | (data[5U] << 7);
+	longitudeI >>= 7;
+
+	int32_t latitudeI = (data[6U] << 24) | (data[7U] << 16) | (data[8U] << 8);
+	latitudeI >>= 8;
+
+	float longitude = 360.0F / 33554432.0F;	// 360/2^25 steps
+	float latitude  = 180.0F / 16777216.0F;	// 180/2^24 steps
+
+	longitude *= (float)longitudeI;
+	latitude  *= (float)latitudeI;
+
+	return (coordsToMaidenhead(longitude, latitude, false));
 }
 
 static uint8_t *decodeTA(uint8_t *TA)
@@ -293,6 +399,7 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 					item->time = fw_millis();
 					lastTG = talkGroupOrPcId;
 					memset(item->talkerAlias, 0, 32);// Clear any TA data
+					memset(item->locator, 0, 7);
 					if (item->talkGroupOrPcId!=0)
 					{
 						menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;// flag that the display needs to update
@@ -323,6 +430,7 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 			// Data contains the Talker Alias Data
 			uint8_t blockID = DMR_frame_buffer[0] - 4;
 
+			// ID 0x04..0x07: TA
 			if (blockID < 4)
 			{
 				// We don't already have this TA block
@@ -354,6 +462,16 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 							}
 						}
 					}
+				}
+			}
+			else if (blockID == 4) // ID 0x08: GPS
+			{
+				uint8_t *locator = decodeGPSPosition((uint8_t *)&DMR_frame_buffer[0]);
+
+				if (strncmp((char *)&LinkHead->locator, (char *)locator, 7) != 0)
+				{
+					memcpy(&LinkHead->locator, locator, 7);
+					menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA_UPDATE;
 				}
 			}
 		}
@@ -473,6 +591,68 @@ static void displayChannelNameOrRxFrequency(char *buffer, size_t maxLen)
 	ucPrintCentered(52, buffer, FONT_6x8);
 }
 
+void printSplitOrSpanText(uint8_t y, char *text)
+{
+	uint8_t len = strlen(text);
+
+	if (len == 0)
+		return;
+
+	if (len <= 16)
+	{
+		ucPrintCentered(y, text, FONT_8x16);
+	}
+	else
+	{
+		uint8_t nLines = len / 21 + (((len % 21) != 0) ? 1 : 0);
+
+		if (nLines > 2)
+			nLines = 2;
+
+		if (nLines > 1)
+		{
+			char buffer[43]; // 2 * 21 chars + NULL
+
+			memcpy(buffer, text, len + 1);
+
+			char *p = buffer + 20;
+
+			// Find a space backward
+			while ((*p != ' ') && (p > buffer))
+				p--;
+
+			uint8_t rest = (uint8_t)((buffer + strlen(buffer)) - p) - ((*p == ' ') ? 1 : 0);
+
+			// rest is too long, just split the line in two chunks
+			if (rest > 21)
+			{
+				char c = buffer[21];
+
+				buffer[21] = 0;
+
+				ucPrintCentered(y, buffer, FONT_6x8); // 2 pixels are saved, could center
+
+				buffer[21] = c;
+				buffer[42] = 0;
+
+				ucPrintCentered(y + 8, buffer + 21, FONT_6x8);
+			}
+			else
+			{
+				*p = 0;
+
+				ucPrintCentered(y, buffer, FONT_6x8);
+				ucPrintCentered(y + 8, p + 1, FONT_6x8);
+			}
+		}
+		else // One line of 21 chars max
+		{
+			ucPrintCentered(y + 4, text, FONT_6x8);
+		}
+	}
+}
+
+
 /*
  * Try to extract callsign and extra text from TA or DMR ID data, then display that on
  * two lines, if possible.
@@ -481,9 +661,9 @@ static void displayChannelNameOrRxFrequency(char *buffer, size_t maxLen)
  */
 static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalkerAlias)
 {
-	char buffer[32];
+	char buffer[37]; // Max: TA 27 (in 7bit format) + ' [' + 6 (Maidenhead)  + ']' + NULL
 
-	if (strlen(text) >= 5 && isFromTalkerAlias) // if its Talker Alias and there is more text than just the callsign, split across 2 lines
+	if (strlen(text) >= 5 && isFromTalkerAlias) // if it's Talker Alias and there is more text than just the callsign, split across 2 lines
 	{
 		char    *pbuf;
 		int32_t  cpos;
@@ -501,20 +681,20 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 			pbuf = chomp(buffer);
 
 			if (strlen(pbuf))
-				ucPrintAt(0, 48, pbuf, FONT_8x16);
+				printSplitOrSpanText(48, pbuf);
 			else
 				displayChannelNameOrRxFrequency(buffer, (sizeof(buffer) / sizeof(buffer[0])));
 		}
 		else
 		{
 			// No space found, use a chainsaw
-			memcpy(buffer, text, 6);
-			buffer[6] = 0;
+			memcpy(buffer, text, 16);
+			buffer[16] = 0;
 
 			ucPrintCentered(32, chomp(buffer), FONT_8x16);
 
-			memcpy(buffer, text + 6, (maxLen - 6));
-			buffer[(strlen(text) - 6)] = 0;
+			memcpy(buffer, text + 16, (maxLen - 16));
+			buffer[(strlen(text) - 16)] = 0;
 
 			pbuf = chomp(buffer);
 
@@ -614,7 +794,16 @@ void menuUtilityRenderQSOData(void)
 				// We don't have this ID, so try looking in the Talker alias data
 				if (LinkHead->talkerAlias[0] != 0x00)
 				{
-					displayContactTextInfos(LinkHead->talkerAlias, sizeof(LinkHead->talkerAlias),true);
+					if (LinkHead->locator[0] != 0)
+					{
+						char bufferTA[37]; // TA + ' [' + Maidenhead + ']' + NULL
+
+						memset(bufferTA, 0, sizeof(bufferTA));
+						snprintf(bufferTA, 36, "%s [%s]", LinkHead->talkerAlias, LinkHead->locator);
+						displayContactTextInfos(bufferTA, sizeof(bufferTA), true);
+					}
+					else
+						displayContactTextInfos(LinkHead->talkerAlias, sizeof(LinkHead->talkerAlias),true);
 				}
 				else
 				{

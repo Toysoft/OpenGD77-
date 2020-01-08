@@ -19,6 +19,7 @@
  */
 
 #include <hardware/fw_HR-C6000.h>
+#include <dmr/dmrDefines.h>
 #include "fw_settings.h"
 #include <SeggerRTT/RTT/SEGGER_RTT.h>
 #include <user_interface/menuHotspot.h>
@@ -704,8 +705,7 @@ inline static void HRC6000SysInterruptHandler(void)
 	uint8_t reg0x52;
 	read_SPI_page_reg_byte_SPI0(0x04, 0x82, &tmp_val_0x82);  //Read Interrupt Flag Register1
 	//SEGGER_RTT_printf(0, "SYS\t0x%02x\n",tmp_val_0x82);
-	read_SPI_page_reg_byte_SPI0(0x04, 0x52, &reg0x52);  //Read Received CC and CACH Register to get the timecode (TS number)
-	receivedTimeCode = ((reg0x52 & 0x04) >> 2);// extract the timecode from the CACH register for use in the Timeslot interrupt
+	read_SPI_page_reg_byte_SPI0(0x04, 0x52, &reg0x52);  //Read Received CC and CACH
 	rxColorCode 	= (reg0x52 >> 4) & 0x0f;
 
 	if (!trxIsTransmitting) // ignore the LC data when we are transmitting
@@ -716,7 +716,7 @@ inline static void HRC6000SysInterruptHandler(void)
 		read_SPI_page_reg_byte_SPI0(0x04, 0x51, &tmp_val_0x51);
 		bool rxCRCStatus = (((tmp_val_0x51 >> 2) & 0x01)==0);// CRC is OK if its 0
 
-		if (rxCRCStatus && (LCBuf[0]==TG_CALL_FLAG || LCBuf[0]==PC_CALL_FLAG  || (LCBuf[0]>=0x04 && LCBuf[0]<=0x07)) &&
+		if (rxCRCStatus && (LCBuf[0]==TG_CALL_FLAG || LCBuf[0]==PC_CALL_FLAG  || (LCBuf[0]>=FLCO_TALKER_ALIAS_HEADER && LCBuf[0]<=FLCO_GPS_INFO)) &&
 			memcmp((uint8_t *)previousLCBuf,LCBuf,12)!=0)
 		{
 
@@ -827,6 +827,9 @@ static void HRC6000TransitionToTx(void)
 inline static void HRC6000TimeslotInterruptHandler(void)
 {
 	//SEGGER_RTT_printf(0, "TS\tS:%d\tTC:%d\n",slot_state,timeCode);
+	uint8_t reg0x52;
+	read_SPI_page_reg_byte_SPI0(0x04, 0x52, &reg0x52);  	//Read CACH Register to get the timecode (TS number)
+    receivedTimeCode = ((reg0x52 & 0x04) >> 2);				// extract the timecode from the CACH register
 
 	if (slot_state == DMR_STATE_REPEATER_WAKE_4)			//if we are waking up the repeater
 	{
@@ -837,12 +840,12 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 		timeCode=!timeCode;									//toggle the timecode.
 		if(timeCode==receivedTimeCode)						//if this agrees with the received version
 		{
-			rxcnt=0;
+			if(rxcnt>0) rxcnt--;							//decrement the disagree count
 		}
 		else												//if there is a disagree it might be just a glitch so ignore it a couple of times.
 		{
 			rxcnt++;										//count the number of disagrees.
-			if(rxcnt>2)										//if we have had three disagrees then re-sync.
+			if(rxcnt>3)										//if we have had four disagrees then re-sync.
 			{
 				timeCode=receivedTimeCode;
 				rxcnt=0;
@@ -893,6 +896,7 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 			init_digital_DMR_RX();
 			GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
+			menuDisplayQSODataState= QSO_DISPLAY_DEFAULT_SCREEN;
 			slot_state = DMR_STATE_IDLE;
 			break;
 		case DMR_STATE_TX_START_1: // Start TX (second step)
@@ -1076,9 +1080,9 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 			slot_state = DMR_STATE_REPEATER_WAKE_4;
 			break;
 		case DMR_STATE_REPEATER_WAKE_4:
-			if (rxcnt>2)
+			if (rxcnt>3)
 			{
-				// wait for the signal from the repeater to have toggled timecode at least twice, i.e the signal should be stable and we should be able to go into Tx
+				// wait for the signal from the repeater to have toggled timecode at least three times, i.e the signal should be stable and we should be able to go into Tx
 				slot_state = DMR_STATE_RX_1;
 				isWaking = WAKING_MODE_NONE;
 			}

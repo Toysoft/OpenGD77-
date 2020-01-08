@@ -367,11 +367,12 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 			break;
 
 		case QSO_DISPLAY_CALLER_DATA:
+			displayLightTrigger();
+		case QSO_DISPLAY_CALLER_DATA_UPDATE:
 			prevDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;
 			isDisplayingQSOData=true;
 			displayChannelSettings = false;
 			menuUtilityRenderQSOData();
-			displayLightTrigger();
 			ucRender();
 			break;
 	}
