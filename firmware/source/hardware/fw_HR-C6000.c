@@ -388,16 +388,6 @@ void transmitTalkerAlias(void)
 
 		write_SPI_page_reg_bytearray_SPI0(0x02, 0x00, (uint8_t*)TA_LCBuf, taPosition+taLength);// put LC into hardware
 
-		//static void displayDataBytes(uint8_t *buf, int len)
-		{
-			for (int i=0;i<16;i++)
-			{
-				SEGGER_RTT_printf(0, " %02x", TA_LCBuf[i]);
-			}
-			SEGGER_RTT_printf(0, "\n");
-		}
-
-
 	}
 	TAPhase++;
 	if (TAPhase>8)
