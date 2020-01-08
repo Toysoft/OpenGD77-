@@ -468,26 +468,30 @@ static void handleEvent(uiEvent_t *ev)
 		return;
 	}
 
-	if (KEYCHECK_SHORTUP(ev->keys, KEY_ORANGE))
-	{
-		if (ev->buttons & BUTTON_SK2)
-		{
-			settingsPrivateCallMuteMode = !settingsPrivateCallMuteMode;// Toggle PC mute only mode
-			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-			menuChannelModeUpdateScreen(0);
-		}
-		else
-		{
-			// ToDo Quick Menu
-			menuSystemPushNewMenu(MENU_CHANNEL_QUICK_MENU);
-		}
-
-		return;
-	}
-
 	if (ev->events & KEY_EVENT)
 	{
-		if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
+		if (KEYCHECK_SHORTUP(ev->keys, KEY_ORANGE))
+		{
+			if (ev->buttons & BUTTON_SK2)
+			{
+				settingsPrivateCallMuteMode = !settingsPrivateCallMuteMode;// Toggle PC mute only mode
+				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+				menuChannelModeUpdateScreen(0);
+			}
+			else
+			{
+				// ToDo Quick Menu
+				menuSystemPushNewMenu(MENU_CHANNEL_QUICK_MENU);
+			}
+
+			return;
+		}
+		else if (KEYCHECK_LONGDOWN(ev->keys, KEY_ORANGE))
+		{
+			directChannelNumber = 0;
+			startScan();
+		}
+		else if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 		{
 			if (menuUtilityHandlePrivateCallActions(ev))
 			{
