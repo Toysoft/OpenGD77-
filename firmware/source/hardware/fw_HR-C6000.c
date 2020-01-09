@@ -1067,6 +1067,10 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 			break;
 
 		case DMR_STATE_TX_END_1: // Stop TX (first step)
+			if (nonVolatileSettings.transmitTalkerAlias==true)
+			{
+				setupPcOrTGHeader();
+			}
 			write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, SILENCE_AUDIO, 27);// send silence audio bytes
 			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);  //Transmit during Next Timeslot
 			write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x20);  // Data Type =0010 (Terminator with LC), Data, LCSS=0
