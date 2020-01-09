@@ -25,11 +25,6 @@
 #include "fw_codeplug.h"
 #include "fw_sound.h"
 
-const int BAND_VHF_MIN 	= 14400000;
-const int BAND_VHF_MAX 	= 14800000;
-const int BAND_UHF_MIN 	= 43000000;
-const int BAND_UHF_MAX 	= 45000000;
-
 static const int STORAGE_BASE_ADDRESS 		= 0x6000;
 static const int STORAGE_MAGIC_NUMBER 		= 0x4732;
 

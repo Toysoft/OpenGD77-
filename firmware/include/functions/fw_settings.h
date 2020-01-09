@@ -24,10 +24,6 @@
 #include "fw_codeplug.h"
 #include "fw_trx.h"
 
-extern const int BAND_VHF_MIN;
-extern const int BAND_VHF_MAX;
-extern const int BAND_UHF_MIN;
-extern const int BAND_UHF_MAX;
 #define VFO_COUNT 4
 enum USB_MODE { USB_MODE_CPS, USB_MODE_HOTSPOT, USB_MODE_DEBUG};
 enum SETTINGS_UI_MODE { SETTINGS_CHANNEL_MODE=0, SETTINGS_VFO_A_MODE, SETTINGS_VFO_B_MODE};
