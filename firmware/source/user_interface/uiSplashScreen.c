@@ -56,6 +56,10 @@ static void updateScreen(void)
 
 	codeplugGetBootScreenData(line1,line2,&bootScreenType,&bootScreenPasswordEnabled,&bootScreenPassword);
 
+	strcpy(talkAliasText,line1);
+	strcat(talkAliasText,line2);
+
+
 	if (bootScreenType==0)
 	{
 		customDataHasImage = codeplugGetOpenGD77CustomData(CODEPLUG_CUSTOM_DATA_TYPE_IMAGE,ucGetDisplayBuffer() );

@@ -24,14 +24,12 @@
 #include "fw_codeplug.h"
 #include "fw_trx.h"
 
-extern const int BAND_VHF_MIN;
-extern const int BAND_VHF_MAX;
-extern const int BAND_UHF_MIN;
-extern const int BAND_UHF_MAX;
 #define VFO_COUNT 4
 enum USB_MODE { USB_MODE_CPS, USB_MODE_HOTSPOT, USB_MODE_DEBUG};
 enum SETTINGS_UI_MODE { SETTINGS_CHANNEL_MODE=0, SETTINGS_VFO_A_MODE, SETTINGS_VFO_B_MODE};
 enum BACKLIGHT_MODE { BACKLIGHT_MODE_AUTO = 0, BACKLIGHT_MODE_MANUAL = 1, BACKLIGHT_MODE_NONE = 2};
+enum HOTSPOT_TYPE { HOTSPOT_TYPE_MMDVM = 0, HOTSPOT_TYPE_BLUEDV = 1};
+
 extern int settingsCurrentChannelNumber;
 extern bool settingsPrivateCallMuteMode;
 extern struct_codeplugChannel_t settingsVFOChannel[2];
@@ -53,6 +51,7 @@ typedef struct settingsStruct
 	bool			txFreqLimited;
 	bool			pttToggle;
 	bool			scanModePause;
+	bool			transmitTalkerAlias;
 	uint16_t		txPowerLevel;
 	uint32_t		overrideTG;
 	uint8_t			txTimeoutBeepX5Secs;
@@ -67,6 +66,7 @@ typedef struct settingsStruct
 	uint8_t			languageIndex;
 	uint8_t			scanDelay;
 	uint8_t			squelchDefaults[RADIO_BANDS_TOTAL_NUM];// VHF,200Mhz and UHF
+	uint8_t			hotspotType;
 
 } settingsStruct_t;
 
