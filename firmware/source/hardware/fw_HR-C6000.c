@@ -106,8 +106,8 @@ volatile bool updateLastHeard=false;
 volatile int dmrMonitorCapturedTS = -1;
 static volatile int dmrMonitorCapturedTimeout;
 static volatile int TAPhase=0;
-static const int TABlockSizes[] = {6,7,7,7};
-static const int TAOffsets[] = {0,6,13,20};
+//static const int TABlockSizes[] = {6,7,7,7};
+//static const int TAOffsets[] = {0,6,13,20};
 char talkAliasText[33];
 
 static bool callAcceptFilter(void);
