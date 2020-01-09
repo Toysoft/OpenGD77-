@@ -234,7 +234,7 @@ static void leaveHotspotMenu(void);
 static void hotspotStateMachine(void);
 static void processUSBDataQueue(void);
 static void handleHotspotRequest(void);
-
+static void disableTransmission(void);
 
 #if defined(DEBUG_HS_SCREEN)
 static void dbgAct0(uint8_t cmd)
@@ -576,17 +576,6 @@ static void handleEvent(uiEvent_t *ev)
 {
 	if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{
-		//enableHotspot = false;
-		if (trxIsTransmitting)
-		{
-			trxIsTransmitting = false;
-			trxActivateRx();
-			trx_setRX();
-
-			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
-			GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
-		}
-
 		leaveHotspotMenu();
 		return;
 	}
@@ -595,6 +584,15 @@ static void handleEvent(uiEvent_t *ev)
 
 static void leaveHotspotMenu(void)
 {
+	disableTransmission();
+	if (trxIsTransmitting)
+	{
+		trxIsTransmitting = false;
+		trx_setRX();
+
+		GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
+	}
+
 	trxTalkGroupOrPcId = savedTGorPC;// restore the current TG or PC
 	if (savedPowerLevel != -1)
 	{
@@ -1189,6 +1187,14 @@ static void hotspotStateMachine(void)
 			dbgPrint3("NOT_CONN", rfFrameBufCount);
 			// do nothing
 			lastRxState = HOTSPOT_RX_UNKNOWN;
+
+			// force immediate shutdown of Tx if we get here and the tx is on for some reason.
+			if (trxIsTransmitting)
+			{
+				trxIsTransmitting = false;
+				disableTransmission();
+			}
+
 			rfFrameBufCount = 0;
 			if (mmdvmHostIsConnected)
 			{
@@ -1270,6 +1276,8 @@ static void hotspotStateMachine(void)
 					trxIsTransmitting = false;
 					disableTransmission();
 				}
+
+				updateScreen(HOTSPOT_RX_IDLE);
 				break;
 			}
 
@@ -1400,6 +1408,7 @@ static void hotspotStateMachine(void)
 				hotspotState = HOTSPOT_STATE_TX_SHUTDOWN;
 				mmdvmHostIsConnected = false;
 				disableTransmission();
+				updateScreen(HOTSPOT_RX_IDLE);
 
 				//SEGGER_RTT_printf(0, "modemState == STATE_IDLE: TX_START_BUFFERING -> HOTSPOT_STATE_TX_SHUTDOWN\n");
 			}
