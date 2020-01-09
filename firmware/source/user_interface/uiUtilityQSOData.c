@@ -699,7 +699,7 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 			pbuf = chomp(buffer);
 
 			if (strlen(pbuf))
-				ucPrintAt(0, 48, pbuf, FONT_8x16);
+				printSplitOrSpanText(48, pbuf);
 			else
 				displayChannelNameOrRxFrequency(buffer, (sizeof(buffer) / sizeof(buffer[0])));
 		}

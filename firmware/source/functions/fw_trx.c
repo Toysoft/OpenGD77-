@@ -59,7 +59,12 @@ const unsigned int TRX_CTCSSTones[]={65535,625,670,693,719,744,770,797,825,854,
 										1567,1598,1622,1655,1679,1713,1738,1773,
 										1799,1835,1862,1899,1928,1966,1995,2035,
 										2065,2107,2181,2257,2291,2336,2418,2503,2541};
-
+const int BAND_VHF_MIN 	= 14400000;
+const int BAND_VHF_MAX 	= 14800000;
+const int BAND_222_MIN 	= 22200000;
+const int BAND_222_MAX 	= 22500000;
+const int BAND_UHF_MIN 	= 42000000;
+const int BAND_UHF_MAX 	= 45000000;
 
 static int currentMode = RADIO_MODE_NONE;
 static bool currentBandWidthIs25kHz = BANDWIDTH_12P5KHZ;
@@ -171,7 +176,9 @@ int trxGetBandFromFrequency(int frequency)
 
 bool trxCheckFrequencyInAmateurBand(int tmp_frequency)
 {
-	return ((tmp_frequency>=BAND_VHF_MIN) && (tmp_frequency<=BAND_VHF_MAX)) || ((tmp_frequency>=BAND_UHF_MIN) && (tmp_frequency<=BAND_UHF_MAX));
+	return ((tmp_frequency>=BAND_VHF_MIN) && (tmp_frequency<=BAND_VHF_MAX)) ||
+			((tmp_frequency>=BAND_UHF_MIN) && (tmp_frequency<=BAND_UHF_MAX)) ||
+			((tmp_frequency>=BAND_222_MIN) && (tmp_frequency<=BAND_222_MAX));
 }
 
 void trxReadRSSIAndNoise(void)
