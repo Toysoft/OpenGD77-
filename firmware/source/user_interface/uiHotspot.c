@@ -165,6 +165,8 @@ static int savedPowerLevel = -1;// no power level saved yet
 static int hotspotPowerLevel = 0;// no power level saved yet
 static uint32_t mmdvmHostLastActiveTick = 0;
 static bool mmdvmHostIsConnected = false;
+static bool displayFWVersion;
+static uint8_t currentRxCommandeState;
 
 static volatile enum
 {
@@ -410,6 +412,8 @@ int menuHotspotMode(uiEvent_t *ev, bool isFirstRun)
 		trxTalkGroupOrPcId = 0;
 		mmdvmHostIsConnected = false;
 		rfFrameBufCount = 0;
+		currentRxCommandeState = HOTSPOT_RX_UNKNOWN;
+		displayFWVersion = false;
 
 		trxSetModeAndBandwidth(RADIO_MODE_DIGITAL, false);// hotspot mode is for DMR i.e Digital mode
 
@@ -462,8 +466,10 @@ static void updateScreen(uint8_t rxCommandState)
 	int val_before_dp;
 	int val_after_dp;
 	static const int bufferLen = 17;
-	char buffer[bufferLen];
+	char buffer[22U]; // set to 22 due to FW info
 	dmrIdDataStruct_t currentRec;
+
+	currentRxCommandeState = rxCommandState;
 
 #if !defined(DEBUG_HS_SCREEN)
 	ucClearBuf();
@@ -490,10 +496,19 @@ static void updateScreen(uint8_t rxCommandState)
 	if (trxIsTransmitting)
 	{
 		dmrIDLookup((trxDMRID & 0xFFFFFF), &currentRec);
-		strncpy(buffer, currentRec.text, bufferLen);
-		buffer[bufferLen - 1] = 0;
+
+		if (displayFWVersion)
+		{
+			snprintf(buffer, 22U, "%s", HOTSPOT_VERSION_STRING);
+			buffer[21U] = 0;
+		}
+		else
+		{
+			strncpy(buffer, currentRec.text, bufferLen);
+			buffer[bufferLen - 1] = 0;
+		}
 #if !defined(DEBUG_HS_SCREEN)
-		ucPrintCentered(16, buffer, FONT_8x16);
+		ucPrintCentered(16 + (displayFWVersion ? 4 : 0), buffer, (displayFWVersion ? FONT_6x8 : FONT_8x16));
 #else
 		buffer[0] = 0;
 #endif
@@ -526,10 +541,19 @@ static void updateScreen(uint8_t rxCommandState)
 			uint32_t FLCO  = audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][0];// Private or group call
 
 			dmrIDLookup(srcId, &currentRec);
-			strncpy(buffer, currentRec.text, bufferLen);
-			buffer[bufferLen - 1] = 0;
+
+			if (displayFWVersion)
+			{
+				snprintf(buffer, 22U, "%s", HOTSPOT_VERSION_STRING);
+				buffer[21U] = 0;
+			}
+			else
+			{
+				strncpy(buffer, currentRec.text, bufferLen);
+				buffer[bufferLen - 1] = 0;
+			}
 #if !defined(DEBUG_HS_SCREEN)
-			ucPrintCentered(16, buffer, FONT_8x16);
+			ucPrintCentered(16 + (displayFWVersion ? 4 : 0), buffer, (displayFWVersion ? FONT_6x8 : FONT_8x16));
 #else
 			buffer[0] = 0;
 #endif
@@ -550,6 +574,16 @@ static void updateScreen(uint8_t rxCommandState)
 		}
 		else
 		{
+
+#if !defined(DEBUG_HS_SCREEN)
+			if (displayFWVersion)
+			{
+				snprintf(buffer, 22U, "%s", HOTSPOT_VERSION_STRING);
+				buffer[21U] = 0;
+				ucPrintCentered(16 + 4, buffer, FONT_6x8);
+			}
+#endif
+
 			snprintf(buffer, bufferLen, "CC:%d", trxGetDMRColourCode());//, trxGetDMRTimeSlot()+1) ;
 			buffer[bufferLen - 1] = 0;
 #if !defined(DEBUG_HS_SCREEN)
@@ -574,12 +608,30 @@ static void updateScreen(uint8_t rxCommandState)
 
 static void handleEvent(uiEvent_t *ev)
 {
-	if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
+	displayLightTrigger();
+
+	if (KEYCHECK_SHORTUP(ev->keys, KEY_RED))
 	{
 		leaveHotspotMenu();
 		return;
 	}
-	displayLightTrigger();
+
+	// Display HS FW version
+	if ((displayFWVersion == false) && (ev->buttons == BUTTON_SK1))
+	{
+		uint8_t prevRxCmd = currentRxCommandeState;
+
+		displayFWVersion = true;
+		updateScreen(currentRxCommandeState);
+		currentRxCommandeState = prevRxCmd;
+		return;
+	}
+	else if (displayFWVersion && ((ev->buttons & BUTTON_SK1) == 0))
+	{
+		displayFWVersion = false;
+		updateScreen(currentRxCommandeState);
+		return;
+	}
 }
 
 static void leaveHotspotMenu(void)
