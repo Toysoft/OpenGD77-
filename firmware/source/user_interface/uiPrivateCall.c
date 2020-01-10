@@ -21,8 +21,9 @@
 #include <functions/fw_ticks.h>
 #include "fw_settings.h"
 
-static void updateScreen();
+static void updateScreen(void);
 static void handleEvent(uiEvent_t *ev);
+void menuAcceptCall(void);
 
 int uiPrivateCallState = NOT_IN_CALL;
 int uiPrivateCallLastID;
@@ -31,8 +32,10 @@ int menuPrivateCall(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		updateScreen();
 		uiPrivateCallState = ACCEPT_PRIVATE_CALL;
+		menuUtilityReceivedPcId = LinkHead->id | (PC_CALL_FLAG<<24);
+
+		updateScreen();
 	}
 	else
 	{
@@ -44,7 +47,7 @@ int menuPrivateCall(uiEvent_t *ev, bool isFirstRun)
 	return 0;
 }
 
-static void updateScreen()
+static void updateScreen(void)
 {
 	static const int bufferLen = 33; // displayChannelNameOrRxFrequency() use 6x8 font
 	char buffer[bufferLen];// buffer passed to the DMR ID lookup function, needs to be large enough to hold worst case text length that is returned. Currently 16+1
@@ -59,11 +62,8 @@ static void updateScreen()
 	}
 	ucPrintCentered(16, buffer, FONT_8x16);
 
-	// No either we are not in PC mode or not on a Private Call to this station
-
 	ucPrintCentered(32, currentLanguage->accept_call, FONT_8x16);
 	ucDrawChoice(CHOICE_YESNO, false);
-	menuUtilityReceivedPcId = LinkHead->id | (PC_CALL_FLAG<<24);
 	set_melody(melody_private_call);
 	ucRender();
 
@@ -82,13 +82,7 @@ static void handleEvent(uiEvent_t *ev)
 		}
 		else if (KEYCHECK_SHORTUP(ev->keys, KEY_GREEN))
 		{
-			uiPrivateCallState = IN_PRIVATE_CALL;
-			uiPrivateCallLastID = (LinkHead->id & 0xFFFFFF);
-			// User has accepted the private call
-			menuUtilityTgBeforePcMode = trxTalkGroupOrPcId;// save the current TG
-			nonVolatileSettings.overrideTG =  menuUtilityReceivedPcId;
-			trxTalkGroupOrPcId = menuUtilityReceivedPcId;
-			settingsPrivateCallMuteMode=false;
+			menuAcceptCall();
 			menuSystemPopPreviousMenu();
 			return;
 		}
@@ -101,4 +95,16 @@ void menuClearPrivateCall(void )
 {
 	uiPrivateCallState = NOT_IN_CALL;
 	uiPrivateCallLastID = 0;
+}
+
+void menuAcceptCall(void )
+{
+	uiPrivateCallState = MY_CALL;
+	uiPrivateCallLastID = (LinkHead->id & 0xFFFFFF);
+	// User has accepted the private call
+	menuUtilityTgBeforePcMode = trxTalkGroupOrPcId;// save the current TG
+	nonVolatileSettings.overrideTG =  menuUtilityReceivedPcId;
+	trxTalkGroupOrPcId = menuUtilityReceivedPcId;
+	settingsPrivateCallMuteMode=false;
+
 }
