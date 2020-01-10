@@ -129,7 +129,7 @@ M: 2020-01-07 09:52:15.246 DMR Slot 2, received network end of voice transmissio
 
 #define MMDVM_HEADER_LENGTH  4U
 
-#define HOTSPOT_VERSION_STRING "OpenGD77_HS v0.0.74"
+#define HOTSPOT_VERSION_STRING "OpenGD77 Hotspot v0.0.75"
 #define concat(a, b) a " GitID #" b ""
 static const char HARDWARE[] = concat(HOTSPOT_VERSION_STRING, GITVERSION);
 
@@ -498,7 +498,7 @@ static void updateScreen(uint8_t rxCommandState)
 
 		if (displayFWVersion)
 		{
-			snprintf(buffer, 22U, "%s", HOTSPOT_VERSION_STRING);
+			snprintf(buffer, 22U, "%s", &HOTSPOT_VERSION_STRING[16]);
 			buffer[21U] = 0;
 		}
 		else
@@ -543,7 +543,7 @@ static void updateScreen(uint8_t rxCommandState)
 
 			if (displayFWVersion)
 			{
-				snprintf(buffer, 22U, "%s", HOTSPOT_VERSION_STRING);
+				snprintf(buffer, 22U, "%s", &HOTSPOT_VERSION_STRING[16]);
 				buffer[21U] = 0;
 			}
 			else
@@ -577,7 +577,7 @@ static void updateScreen(uint8_t rxCommandState)
 #if !defined(DEBUG_HS_SCREEN)
 			if (displayFWVersion)
 			{
-				snprintf(buffer, 22U, "%s", HOTSPOT_VERSION_STRING);
+				snprintf(buffer, 22U, "%s", &HOTSPOT_VERSION_STRING[16]);
 				buffer[21U] = 0;
 				ucPrintCentered(16 + 4, buffer, FONT_6x8);
 			}
