@@ -26,6 +26,8 @@ extern const int TX_TIMER_Y_OFFSET;
 extern const int CONTACT_Y_POS;
 extern const int FREQUENCY_X_POS;
 
+enum CALL_STATE { NOT_IN_CALL=0, ACCEPT_PRIVATE_CALL, IN_PRIVATE_CALL, PRIVATE_CALL_DECLINED };
+
 typedef struct dmrIdDataStruct
 {
 	int id;

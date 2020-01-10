@@ -36,6 +36,8 @@ typedef struct
 
 extern bool uiChannelModeScanActive;
 extern int menuDisplayLightTimer;
+extern int uiPrivateCallState;
+extern int uiPrivateCallLastID;
 
 
 typedef int (*menuFunctionPointer_t)(uiEvent_t *,bool); // Typedef for menu function pointers.  Functions are passed the key, the button and the event data. Event can be a Key or a button or both. Last arg is for when the function is only called to initialise and display its screen.
@@ -94,6 +96,7 @@ void menuLockScreenPop(void);
 
 void menuLastHeardupdateScreen(bool showTitleOrHeader);
 
+void menuClearPrivateCall(void);
 /*
  * ---------------------- IMPORTANT ----------------------------
  *
@@ -129,6 +132,7 @@ enum MENU_SCREENS { MENU_SPLASH_SCREEN=0,
 					MENU_CONTACT_DETAILS,
 					MENU_CONTACT_NEW,
 					MENU_LANGUAGE,
+					MENU_PRIVATE_CALL,
 };
 
 // This is used to store current position in menus. The system keeps track of its value, e.g entering in
@@ -173,5 +177,6 @@ int menuContactList(uiEvent_t *event, bool isFirstRun);
 int menuContactListSubMenu(uiEvent_t *event, bool isFirstRun);
 int menuContactDetails(uiEvent_t *event, bool isFirstRun);
 int menuLanguage(uiEvent_t *event, bool isFirstRun);
+int menuPrivateCall(uiEvent_t *event, bool isFirstRun);
 
 #endif

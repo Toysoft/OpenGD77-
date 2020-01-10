@@ -546,13 +546,14 @@ bool contactIDLookup(uint32_t id, int calltype, char *buffer)
 
 bool menuUtilityHandlePrivateCallActions(uiEvent_t *ev)
 {
-	if ((ev->buttons & BUTTON_SK2 )!=0 &&   menuUtilityTgBeforePcMode != 0 && KEYCHECK_SHORTUP(ev->keys,KEY_RED))
+	if ((ev->buttons & BUTTON_SK2 )!=0 && menuUtilityTgBeforePcMode != 0 && KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{
 		trxTalkGroupOrPcId = menuUtilityTgBeforePcMode;
 		nonVolatileSettings.overrideTG = menuUtilityTgBeforePcMode;
 		menuUtilityReceivedPcId = 0;
 		menuUtilityTgBeforePcMode = 0;
 		menuDisplayQSODataState= QSO_DISPLAY_DEFAULT_SCREEN;// Force redraw
+		menuClearPrivateCall();
 		return true;// The event has been handled
 	}
 
@@ -566,7 +567,6 @@ bool menuUtilityHandlePrivateCallActions(uiEvent_t *ev)
 			nonVolatileSettings.overrideTG =  menuUtilityReceivedPcId;
 			trxTalkGroupOrPcId = menuUtilityReceivedPcId;
 			settingsPrivateCallMuteMode=false;
-			menuUtilityRenderQSOData();
 		}
 		menuUtilityReceivedPcId = 0;
 		qsodata_timer=1;// time out the qso timer will force the VFO or Channel mode screen to redraw its normal display
@@ -746,20 +746,7 @@ void menuUtilityRenderQSOData(void)
 				buffer[16] = 0;
 			}
 			ucPrintCentered(16, buffer, FONT_8x16);
-
-			// Are we already in PC mode to this caller ?
-			if (((trxTalkGroupOrPcId & 0xFFFFFF) != (LinkHead->id & 0xFFFFFF)) && ((LinkHead->talkGroupOrPcId & 0xFFFFFF)==trxDMRID))
-			{
-				// No either we are not in PC mode or not on a Private Call to this station
-				ucPrintCentered(32, currentLanguage->accept_call, FONT_8x16);
-				ucDrawChoice(CHOICE_YESNO, false);
-				menuUtilityReceivedPcId = LinkHead->id | (PC_CALL_FLAG<<24);
-				set_melody(melody_private_call);
-			}
-			else
-			{
-				ucPrintCentered(32, currentLanguage->private_call, FONT_8x16);
-			}
+			ucPrintCentered(32, currentLanguage->private_call, FONT_8x16);
 		}
 		else
 		{

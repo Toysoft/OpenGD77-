@@ -439,6 +439,7 @@ static void update_frequency(int frequency)
 			set_melody(melody_ERROR_beep);
 		}
 	}
+	menuClearPrivateCall();
 }
 
 static void checkAndFixIndexInRxGroup(void)
@@ -712,6 +713,7 @@ static void handleEvent(uiEvent_t *ev)
 					nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
 					trxTalkGroupOrPcId = contactData.tgNumber;
 					lastHeardClearLastID();
+					menuClearPrivateCall();
 					menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 					menuVFOModeUpdateScreen(0);
 				}
@@ -780,6 +782,7 @@ static void handleEvent(uiEvent_t *ev)
 					trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
 
 					lastHeardClearLastID();
+					menuClearPrivateCall();
 					menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 					menuVFOModeUpdateScreen(0);
 				}
