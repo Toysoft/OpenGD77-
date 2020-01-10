@@ -24,7 +24,7 @@ const int LAST_HEARD_NUM_LINES_ON_DISPLAY = 3;
 static bool displayLHDetails = false;
 
 static void handleEvent(uiEvent_t *ev);
-static void menuLastHeardDisplayTA(uint8_t y, char *text, uint32_t time, uint32_t now, size_t maxLen, bool displayDetails);
+static void menuLastHeardDisplayTA(uint8_t y, char *text, uint32_t time, uint32_t now, uint32_t TGorPC, size_t maxLen, bool displayDetails);
 
 int menuLastHeard(uiEvent_t *ev, bool isFirstRun)
 {
@@ -58,7 +58,7 @@ int menuLastHeard(uiEvent_t *ev, bool isFirstRun)
 		else
 		{
 			// Just refresh the list while displaying extra infos, it's all about elapsed time
-			if (displayLHDetails && ((fw_millis() - m) > 900))
+			if (displayLHDetails && ((fw_millis() - m) > 500))
 			{
 				menuLastHeardUpdateScreen(true, true);
 			}
@@ -96,21 +96,21 @@ void menuLastHeardUpdateScreen(bool showTitleOrHeader, bool displayDetails)
 	{
 		if (dmrIDLookup(item->id, &foundRecord))
 		{
-			menuLastHeardDisplayTA(16 + (numDisplayed * 16), foundRecord.text, item->time, now, 20, displayDetails);
+			menuLastHeardDisplayTA(16 + (numDisplayed * 16), foundRecord.text, item->time, now, item->talkGroupOrPcId, 20, displayDetails);
 			//ucPrintCentered(16 + (numDisplayed * 16), foundRecord.text, FONT_8x16);
 		}
 		else
 		{
 			if (item->talkerAlias[0] != 0x00)
 			{
-				menuLastHeardDisplayTA(16 + (numDisplayed * 16), item->talkerAlias, item->time, now, 32, displayDetails);
+				menuLastHeardDisplayTA(16 + (numDisplayed * 16), item->talkerAlias, item->time, now, item->talkGroupOrPcId, 32, displayDetails);
 				//memcpy(buffer, item->talkerAlias, bufferLen - 1);// limit to 1 line of the display which is 16 chars at the normal font size
 			}
 			else
 			{
 				snprintf(buffer, bufferLen, "ID:%d", item->id);
 				buffer[bufferLen - 1] = 0;
-				menuLastHeardDisplayTA(16 + (numDisplayed * 16), buffer, item->time, now, bufferLen, displayDetails);
+				menuLastHeardDisplayTA(16 + (numDisplayed * 16), buffer, item->time, now, item->talkGroupOrPcId, bufferLen, displayDetails);
 				//ucPrintCentered(16 + (numDisplayed * 16), buffer, FONT_8x16);
 			}
 		}
@@ -180,24 +180,38 @@ static void handleEvent(uiEvent_t *ev)
 	menuLastHeardUpdateScreen(true, false);
 }
 
-static void menuLastHeardDisplayTA(uint8_t y, char *text, uint32_t time, uint32_t now, size_t maxLen, bool displayDetails)
+static void menuLastHeardDisplayTA(uint8_t y, char *text, uint32_t time, uint32_t now, uint32_t TGorPC, size_t maxLen, bool displayDetails)
 {
+	static bool alt = true;
 	char buffer[37]; // Max: TA 27 (in 7bit format) + ' [' + 6 (Maidenhead)  + ']' + NULL
+	static uint32_t m = 0;
 
-	// Display elapsed time
+	if ((now - m) > 2000)
+	{
+		m = now;
+		alt = !alt;
+	}
+
+	// Display elapsed time or TG/PC
 	if (displayDetails)
 	{
+		char buf[17]; // hhh:mm:ss or TG/PC
 
-		char buf[10]; // hhh:mm:ss
-		uint32_t diffTimeInSecs = ((now - time) / 1000U);
-		uint16_t h = (diffTimeInSecs / 3600);
-		uint16_t m = (diffTimeInSecs - (3600 * h)) / 60;
-		uint16_t s = (diffTimeInSecs - (3600 * h) - (m * 60));
-		snprintf(buf, 10, "%02d:%02d:%02d", h, m, s);
-		buf[9] = 0;
+		if (alt)
+		{
+			sprintf(buf, "%u", TGorPC);
+		}
+		else
+		{
+			uint32_t diffTimeInSecs = ((now - time) / 1000U);
+			uint16_t h = (diffTimeInSecs / 3600);
+			uint16_t m = (diffTimeInSecs - (3600 * h)) / 60;
+			uint16_t s = (diffTimeInSecs - (3600 * h) - (m * 60));
+			snprintf(buf, 10, "%02d:%02d:%02d", h, m, s);
+			buf[9] = 0;
+		}
 
-		ucPrintAt(((128 - (8 * 6)) - 4), y, buf, FONT_6x8_BOLD);
-
+		ucPrintAt((128 - (strlen(buf) * 6) - 4), y, buf, FONT_6x8_BOLD);
 	}
 
 	if (strlen(text) >= 5)
