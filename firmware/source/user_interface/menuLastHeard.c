@@ -247,8 +247,14 @@ static void menuLastHeardDisplayTA(uint8_t y, char *text, uint32_t time, uint32_
 
 				pbuf = chomp(buffer);
 
-				if (strlen(pbuf))
+				size_t len = strlen(pbuf);
+				if (len)
+				{
+					if (len > 21)
+						*(pbuf + 21) = 0;
+
 					printSplitOrSpanText(y + 8, pbuf, true);
+				}
 			}
 		}
 		else
@@ -268,8 +274,8 @@ static void menuLastHeardDisplayTA(uint8_t y, char *text, uint32_t time, uint32_
 
 				ucPrintAt(4, y, chomp(buffer), FONT_6x8_BOLD);
 
-				memcpy(buffer, text + 11, (maxLen - 11));
-				buffer[(strlen(text) - 11)] = 0;
+				memcpy(buffer, text + 11, 21);
+				buffer[21] = 0;
 
 				pbuf = chomp(buffer);
 
