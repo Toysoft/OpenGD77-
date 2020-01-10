@@ -112,6 +112,7 @@ const stringsTable_t frenchLanguage =
 .key_repeat				= "Répét°",
 .dmr_filter_timeout		= "Tps filtre",
 .brightness				= "Rétro écl.",
+.brightnessOff				= "Rétro écl. min",
 .contrast				= "Contraste",
 .colour_invert			= "Couleur:Inverse",
 .colour_normal			= "Couleur:Normale",

@@ -112,6 +112,7 @@ const stringsTable_t portuguesLanguage =
 .key_repeat				= "Key rpt",
 .dmr_filter_timeout		= "Filtro DMR",
 .brightness				= "Brilho",
+.brightnessOff				= "Brilho min",
 .contrast				= "Contraste",
 .colour_invert			= "Color:Invertido",
 .colour_normal			= "Color:Normal",

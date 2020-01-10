@@ -112,6 +112,7 @@ const stringsTable_t germanLanguage =
 .key_repeat				= "Key wied", // MaxLen: 11 (with ':' + x.xs fitted)
 .dmr_filter_timeout		= "DMR Filter", // MaxLen: 16 (with ':' + 1..90 + 's')
 .brightness				= "Helligkeit", // MaxLen: 16 (with ':' + 0..100 + '%')
+.brightnessOff			= "Helligkeit min", // MaxLen: 16 (with ':' + 0..100 + '%')
 .contrast				= "Kontrast", // MaxLen: 16 (with ':' + 12..30)
 .colour_invert			= "Anzeige:Invers", // MaxLen: 16
 .colour_normal			= "Anzeige:Normal", // MaxLen: 16

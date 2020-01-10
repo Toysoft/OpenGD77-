@@ -46,6 +46,7 @@ typedef struct settingsStruct
 	int8_t			displayContrast;
 	uint8_t			initialMenuNumber;
 	int8_t			displayBacklightPercentage;
+	int8_t			displayBacklightPercentageOff; // backlight level when "off"
 	bool			displayInverseVideo;
 	bool			useCalibration;
 	bool			txFreqLimited;

@@ -112,6 +112,7 @@ const stringsTable_t polishLanguage =
 .key_repeat				= "Key rpt", // MaxLen: 11 (with ':' + x.xs fitted)
 .dmr_filter_timeout			= "Czas filtra", // MaxLen: 16 (with ':' + 1..90 + 's')
 .brightness				= "JasnoçÇ", // MaxLen: 16 (with ':' + 0..100 + '%')
+.brightnessOff				= "Jasnoç minÇ", // MaxLen: 16 (with ':' + 0..100 + '%')
 .contrast				= "Kontrast", // MaxLen: 16 (with ':' + 12..30)
 .colour_invert				= "Kolor:Inwersja", // MaxLen: 16
 .colour_normal				= "Kolor:Normalny", // MaxLen: 16

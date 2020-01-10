@@ -95,7 +95,7 @@ void fw_displayEnableBacklight(bool onof)
 	else
 	{
 #ifdef DISPLAY_LED_PWM
-		fw_displaySetBacklightIntensityPercentage(0);
+		fw_displaySetBacklightIntensityPercentage(nonVolatileSettings.displayBacklightPercentageOff);
 #else
 		GPIO_PinWrite(GPIO_Display_Light, Pin_Display_Light, 0);
 #endif
