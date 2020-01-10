@@ -159,7 +159,7 @@ volatile int  	rfFrameBufWriteIdx = 0;
 volatile int	rfFrameBufCount = 0;
 static uint8_t lastRxState = HOTSPOT_RX_IDLE;
 static const int TX_BUFFERING_TIMEOUT = 5000;// 500mS
-static const uint32_t MMDVMHOST_TIMEOUT = 5000; // 1s
+static const uint32_t MMDVMHOST_TIMEOUT = 10000; // 10s
 static int timeoutCounter;
 static int savedPowerLevel = -1;// no power level saved yet
 static int hotspotPowerLevel = 0;// no power level saved yet
