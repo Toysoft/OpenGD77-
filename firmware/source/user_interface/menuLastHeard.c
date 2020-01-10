@@ -24,16 +24,19 @@ const int LAST_HEARD_NUM_LINES_ON_DISPLAY = 3;
 static bool displayLHDetails = false;
 
 static void handleEvent(uiEvent_t *ev);
-static void menuLastHeardDisplayTA(uint8_t y, char *text, uint32_t time, size_t maxLen, bool displayDetails);
+static void menuLastHeardDisplayTA(uint8_t y, char *text, uint32_t time, uint32_t now, size_t maxLen, bool displayDetails);
 
 int menuLastHeard(uiEvent_t *ev, bool isFirstRun)
 {
+	static uint32_t m = 0;
+
 	if (isFirstRun)
 	{
 		gMenusStartIndex = LinkHead->id;// reuse this global to store the ID of the first item in the list
 		gMenusEndIndex=0;
 		displayLHDetails = false;
 		menuLastHeardUpdateScreen(true, displayLHDetails);
+		m = ev->time;
 	}
 	else
 	{
@@ -47,7 +50,19 @@ int menuLastHeard(uiEvent_t *ev, bool isFirstRun)
 		}
 
 		if (ev->hasEvent)
+		{
+			m = ev->time;
+
 			handleEvent(ev);
+		}
+		else
+		{
+			// Just refresh the list while displaying extra infos, it's all about elapsed time
+			if (displayLHDetails && ((fw_millis() - m) > 900))
+			{
+				menuLastHeardUpdateScreen(true, true);
+			}
+		}
 	}
 	return 0;
 }
@@ -59,6 +74,7 @@ void menuLastHeardUpdateScreen(bool showTitleOrHeader, bool displayDetails)
 	dmrIdDataStruct_t foundRecord;
 	int numDisplayed = 0;
 	LinkItem_t *item = LinkHead;
+	uint32_t now = fw_millis();
 
 	ucClearBuf();
 	if (showTitleOrHeader)
@@ -80,21 +96,21 @@ void menuLastHeardUpdateScreen(bool showTitleOrHeader, bool displayDetails)
 	{
 		if (dmrIDLookup(item->id, &foundRecord))
 		{
-			menuLastHeardDisplayTA(16 + (numDisplayed * 16), foundRecord.text, item->time, 20, displayDetails);
+			menuLastHeardDisplayTA(16 + (numDisplayed * 16), foundRecord.text, item->time, now, 20, displayDetails);
 			//ucPrintCentered(16 + (numDisplayed * 16), foundRecord.text, FONT_8x16);
 		}
 		else
 		{
 			if (item->talkerAlias[0] != 0x00)
 			{
-				menuLastHeardDisplayTA(16 + (numDisplayed * 16), item->talkerAlias, item->time, 32, displayDetails);
+				menuLastHeardDisplayTA(16 + (numDisplayed * 16), item->talkerAlias, item->time, now, 32, displayDetails);
 				//memcpy(buffer, item->talkerAlias, bufferLen - 1);// limit to 1 line of the display which is 16 chars at the normal font size
 			}
 			else
 			{
 				snprintf(buffer, bufferLen, "ID:%d", item->id);
 				buffer[bufferLen - 1] = 0;
-				menuLastHeardDisplayTA(16 + (numDisplayed * 16), buffer, item->time, bufferLen, displayDetails);
+				menuLastHeardDisplayTA(16 + (numDisplayed * 16), buffer, item->time, now, bufferLen, displayDetails);
 				//ucPrintCentered(16 + (numDisplayed * 16), buffer, FONT_8x16);
 			}
 		}
@@ -164,7 +180,7 @@ static void handleEvent(uiEvent_t *ev)
 	menuLastHeardUpdateScreen(true, false);
 }
 
-static void menuLastHeardDisplayTA(uint8_t y, char *text, uint32_t time, size_t maxLen, bool displayDetails)
+static void menuLastHeardDisplayTA(uint8_t y, char *text, uint32_t time, uint32_t now, size_t maxLen, bool displayDetails)
 {
 	char buffer[37]; // Max: TA 27 (in 7bit format) + ' [' + 6 (Maidenhead)  + ']' + NULL
 
@@ -173,7 +189,7 @@ static void menuLastHeardDisplayTA(uint8_t y, char *text, uint32_t time, size_t 
 	{
 
 		char buf[10]; // hhh:mm:ss
-		uint32_t diffTimeInSecs = ((fw_millis() - time) / 1000U);
+		uint32_t diffTimeInSecs = ((now - time) / 1000U);
 		uint16_t h = (diffTimeInSecs / 3600);
 		uint16_t m = (diffTimeInSecs - (3600 * h)) / 60;
 		uint16_t s = (diffTimeInSecs - (3600 * h) - (m * 60));
