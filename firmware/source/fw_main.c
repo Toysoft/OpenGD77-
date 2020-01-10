@@ -378,7 +378,7 @@ void fw_main_task(void *data)
         		}
         	}
 
-			if (!trxIsTransmitting && menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA)
+			if (!trxIsTransmitting && menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA && nonVolatileSettings.privateCalls == true)
 			{
 				if ((uiPrivateCallState == PRIVATE_CALL_DECLINED) &&
 					((LinkHead->id & 0xFFFFFF) != uiPrivateCallLastID))

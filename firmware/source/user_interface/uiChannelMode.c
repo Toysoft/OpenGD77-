@@ -224,7 +224,6 @@ static void loadChannelData(bool useChannelDataInMemory)
 			trxSetDMRTimeSlot ((nonVolatileSettings.tsManualOverride & 0x0F) -1);
 		}
 	}
-	menuClearPrivateCall();
 }
 
 void menuChannelModeUpdateScreen(int txTimeSecs)
