@@ -208,15 +208,24 @@ static void menuLastHeardDisplayTA(uint8_t y, char *text, uint32_t time, uint32_
 		if ((cpos = getCallsignEndingPos(text)) != -1)
 		{
 			// Callsign found
-			memcpy(buffer, text, cpos);
-			buffer[cpos] = 0;
 
 			if (displayDetails == false)
 			{
+				if (cpos > 15)
+					cpos = 16;
+
+				memcpy(buffer, text, cpos);
+				buffer[cpos] = 0;
 				ucPrintCentered(y, chomp(buffer), FONT_8x16);
 			}
 			else
 			{
+				if (cpos > 10)
+					cpos = 11;
+
+				memcpy(buffer, text, cpos);
+				buffer[cpos] = 0;
+
 				ucPrintAt(4, y, chomp(buffer), FONT_6x8_BOLD);
 
 				memcpy(buffer, text + (cpos + 1), (maxLen - (cpos + 1)));
@@ -231,19 +240,22 @@ static void menuLastHeardDisplayTA(uint8_t y, char *text, uint32_t time, uint32_
 		else
 		{
 			// No space found, use a chainsaw
-			memcpy(buffer, text, 16);
-			buffer[16] = 0;
 
 			if (displayDetails == false)
 			{
+				memcpy(buffer, text, 16);
+				buffer[16] = 0;
 				ucPrintCentered(y, chomp(buffer), FONT_8x16);
 			}
 			else
 			{
+				memcpy(buffer, text, 11);
+				buffer[11] = 0;
+
 				ucPrintAt(4, y, chomp(buffer), FONT_6x8_BOLD);
 
-				memcpy(buffer, text + 16, (maxLen - 16));
-				buffer[(strlen(text) - 16)] = 0;
+				memcpy(buffer, text + 11, (maxLen - 11));
+				buffer[(strlen(text) - 11)] = 0;
 
 				pbuf = chomp(buffer);
 
