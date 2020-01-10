@@ -79,15 +79,6 @@ static void updateScreen(void)
 
 static void handleEvent(uiEvent_t *ev)
 {
-	static uint32_t m = 0;
-
-	if (m == 0)
-	{
-		m = ev->ticks;
-		return;
-	}
-
-	//if (ev->ticks - m) > 2000)
 	if (melody_play==NULL)
 	{
 		menuSystemSetCurrentMenu(nonVolatileSettings.initialMenuNumber);

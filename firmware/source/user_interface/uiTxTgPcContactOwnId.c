@@ -31,7 +31,7 @@ static void updateCursor(void);
 static void updateScreen(void);
 static void handleEvent(uiEvent_t *ev);
 
-static const uint32_t CURSOR_UPDATE_TIMEOUT = 1000;
+static const uint32_t CURSOR_UPDATE_TIMEOUT = 500;
 
 static const char *menuName[4];
 enum DISPLAY_MENU_LIST { ENTRY_TG = 0, ENTRY_PC, ENTRY_SELECT_CONTACT, ENTRY_USER_DMR_ID, NUM_ENTRY_ITEMS};

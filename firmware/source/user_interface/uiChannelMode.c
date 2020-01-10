@@ -110,7 +110,7 @@ int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 			else
 			{
 				// Clear squelch region
-				if (displaySquelch && ((ev->ticks - sqm) > 2000))
+				if (displaySquelch && ((ev->time - sqm) > 1000))
 				{
 					displaySquelch = false;
 
@@ -118,9 +118,9 @@ int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 					ucRenderRows(2,4);
 				}
 
-				if ((ev->ticks - m) > RSSI_UPDATE_COUNTER_RELOAD)
+				if ((ev->time - m) > RSSI_UPDATE_COUNTER_RELOAD)
 				{
-					m = ev->ticks;
+					m = ev->time;
 					drawRSSIBarGraph();
 					ucRenderRows(1,2);// Only render the second row which contains the bar graph, as there is no need to redraw the rest of the screen
 				}
@@ -138,7 +138,7 @@ int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 				if ((trxGetMode() == RADIO_MODE_ANALOG) &&
 						(ev->events & KEY_EVENT) && ((ev->keys.key == KEY_LEFT) || (ev->keys.key == KEY_RIGHT)))
 				{
-					sqm = ev->ticks;
+					sqm = ev->time;
 				}
 
 				handleEvent(ev);
@@ -343,7 +343,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				}
 				ucPrintCentered(CONTACT_Y_POS + verticalPositionOffset, nameBuf, FONT_8x16);
 			}
-			// Squelch will be cleared later, 2000 ticks after last change
+			// Squelch will be cleared later, 1s after last change
 			else if(displaySquelch && !trxIsTransmitting && !displayChannelSettings)
 			{
 				static const int xbar = 74; // 128 - (51 /* max squelch px */ + 3);
@@ -357,7 +357,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				ucFillRect(xbar, 19, bargraph, 9, false);
 			}
 
-			// SK1 is pressed, we don't want to clear the first info row after 2000 ticks
+			// SK1 is pressed, we don't want to clear the first info row after 1s
 			if (displayChannelSettings && displaySquelch)
 			{
 				displaySquelch = false;
@@ -1067,7 +1067,7 @@ static void scanning(void)
 	{
 
 		trx_measure_count=0;														//needed to allow time for Rx to settle after channel change.
-		uiEvent_t tmpEvent={ .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = 0, .ticks = 0 };
+		uiEvent_t tmpEvent={ .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = 0, .time = 0 };
 
 		handleUpKey(&tmpEvent);
 		if ((trxGetMode() == RADIO_MODE_DIGITAL) && (trxDMRMode == DMR_MODE_ACTIVE) && (SCAN_TOTAL_INTERVAL < SCAN_DMR_SIMPLEX_MIN_INTERVAL) )				//allow extra time if scanning a simplex DMR channel.

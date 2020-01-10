@@ -58,11 +58,11 @@ static void handleEvent(uiEvent_t *ev)
 
 	if (m == 0)
 	{
-		m = ev->ticks;
+		m = ev->time;
 		return;
 	}
 
-	if ((ev->ticks - m) > 500)
+	if ((ev->time - m) > 500)
 	{
 		// This turns the power off to the CPU.
 		GPIO_PinWrite(GPIO_Keep_Power_On, Pin_Keep_Power_On, 0);

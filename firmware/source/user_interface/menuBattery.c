@@ -108,10 +108,10 @@ int menuBattery(uiEvent_t *ev, bool isFirstRun)
 	}
 	else
 	{
-		if ((ev->ticks - m) > 2000)
+		if ((ev->time - m) > 500)
 		{
-			m = ev->ticks;
-			updateScreen(false);// update the screen each two seconds to show any changes to the battery voltage
+			m = ev->time;
+			updateScreen(false);// update the screen each 500ms to show any changes to the battery voltage or low battery
 		}
 
 		if (ev->hasEvent)

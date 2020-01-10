@@ -18,9 +18,13 @@
 
 #include "fw_ticks.h"
 
+#define PIT_COUNTS_PER_SECOND  10000U
+#define PIT_COUNTS_PER_MS      (PIT_COUNTS_PER_SECOND / 1000U)
+
+extern volatile uint32_t PITCounter;
 
 uint32_t fw_millis(void)
 {
-	return xTaskGetTickCount();
+	return (PITCounter / PIT_COUNTS_PER_MS);
 }
 

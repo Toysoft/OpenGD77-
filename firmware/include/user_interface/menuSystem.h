@@ -27,7 +27,7 @@ typedef struct
 	keyboardCode_t  keys;
 	uiEventInput_t	events;
 	bool		    hasEvent;
-	uint32_t 	    ticks;
+	uint32_t 	    time;
 } uiEvent_t;
 
 #define MENU_MAX_DISPLAYED_ENTRIES 3
@@ -92,7 +92,7 @@ void menuBatteryPushBackVoltage(int32_t voltage);
 
 void menuLockScreenPop(void);
 
-void menuLastHeardupdateScreen(bool showTitleOrHeader);
+void menuLastHeardUpdateScreen(bool showTitleOrHeader, bool shortVersion);
 
 /*
  * ---------------------- IMPORTANT ----------------------------

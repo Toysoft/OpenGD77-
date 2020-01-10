@@ -18,9 +18,13 @@
 #include <user_interface/menuSystem.h>
 #include <user_interface/uiUtilityQSOData.h>
 #include <user_interface/uiLocalisation.h>
+#include <functions/fw_ticks.h>
+
 const int LAST_HEARD_NUM_LINES_ON_DISPLAY = 3;
+static bool displayLHDetails = false;
 
 static void handleEvent(uiEvent_t *ev);
+static void menuLastHeardDisplayTA(uint8_t y, char *text, uint32_t time, size_t maxLen, bool displayDetails);
 
 int menuLastHeard(uiEvent_t *ev, bool isFirstRun)
 {
@@ -28,7 +32,8 @@ int menuLastHeard(uiEvent_t *ev, bool isFirstRun)
 	{
 		gMenusStartIndex = LinkHead->id;// reuse this global to store the ID of the first item in the list
 		gMenusEndIndex=0;
-		menuLastHeardupdateScreen(true);
+		displayLHDetails = false;
+		menuLastHeardUpdateScreen(true, displayLHDetails);
 	}
 	else
 	{
@@ -38,7 +43,7 @@ int menuLastHeard(uiEvent_t *ev, bool isFirstRun)
 			gMenusStartIndex = LinkHead->id;
 			gMenusCurrentItemIndex=0;
 			gMenusEndIndex=0;
-			menuLastHeardupdateScreen(true);
+			menuLastHeardUpdateScreen(true, displayLHDetails);
 		}
 
 		if (ev->hasEvent)
@@ -47,14 +52,12 @@ int menuLastHeard(uiEvent_t *ev, bool isFirstRun)
 	return 0;
 }
 
-
-
-void menuLastHeardupdateScreen(bool showTitleOrHeader)
+void menuLastHeardUpdateScreen(bool showTitleOrHeader, bool displayDetails)
 {
 	static const int bufferLen = 17;
 	char buffer[bufferLen];
 	dmrIdDataStruct_t foundRecord;
-	int numDisplayed=0;
+	int numDisplayed = 0;
 	LinkItem_t *item = LinkHead;
 
 	ucClearBuf();
@@ -68,53 +71,58 @@ void menuLastHeardupdateScreen(bool showTitleOrHeader)
 	}
 
 	// skip over the first gMenusCurrentItemIndex in the listing
-	for(int i=0;i<gMenusCurrentItemIndex;i++)
+	for(int i = 0; i < gMenusCurrentItemIndex; i++)
 	{
-		item=item->next;
+		item = item->next;
 	}
+
 	while((item != NULL) && item->id != 0)
 	{
-		if (dmrIDLookup(item->id,&foundRecord))
+		if (dmrIDLookup(item->id, &foundRecord))
 		{
-			ucPrintCentered(16+(numDisplayed*16), foundRecord.text, FONT_8x16);
+			menuLastHeardDisplayTA(16 + (numDisplayed * 16), foundRecord.text, item->time, 20, displayDetails);
+			//ucPrintCentered(16 + (numDisplayed * 16), foundRecord.text, FONT_8x16);
 		}
 		else
 		{
 			if (item->talkerAlias[0] != 0x00)
 			{
-				memcpy(buffer, item->talkerAlias, bufferLen - 1);// limit to 1 line of the display which is 16 chars at the normal font size
+				menuLastHeardDisplayTA(16 + (numDisplayed * 16), item->talkerAlias, item->time, 32, displayDetails);
+				//memcpy(buffer, item->talkerAlias, bufferLen - 1);// limit to 1 line of the display which is 16 chars at the normal font size
 			}
 			else
 			{
 				snprintf(buffer, bufferLen, "ID:%d", item->id);
+				buffer[bufferLen - 1] = 0;
+				menuLastHeardDisplayTA(16 + (numDisplayed * 16), buffer, item->time, bufferLen, displayDetails);
+				//ucPrintCentered(16 + (numDisplayed * 16), buffer, FONT_8x16);
 			}
-			buffer[bufferLen - 1] = 0;
-			ucPrintCentered(16+(numDisplayed*16), buffer, FONT_8x16);
 		}
 
 		numDisplayed++;
 
-		item=item->next;
-		if (numDisplayed > (LAST_HEARD_NUM_LINES_ON_DISPLAY -1))
+		item = item->next;
+		if (numDisplayed > (LAST_HEARD_NUM_LINES_ON_DISPLAY - 1))
 		{
-			if (item!=NULL && item->id != 0)
+			if (item != NULL && item->id != 0)
 			{
-				gMenusEndIndex=0x01;
+				gMenusEndIndex = 0x01;
 			}
 			else
 			{
-				gMenusEndIndex=0;
+				gMenusEndIndex = 0;
 			}
 			break;
 		}
 	}
+
 	ucRender();
-	displayLightTrigger();
 	menuDisplayQSODataState = QSO_DISPLAY_IDLE;
 }
 
 static void handleEvent(uiEvent_t *ev)
 {
+	displayLightTrigger();
 
 	if (KEYCHECK_PRESS(ev->keys,KEY_DOWN) && gMenusEndIndex!=0)
 	{
@@ -138,5 +146,108 @@ static void handleEvent(uiEvent_t *ev)
 		menuSystemPopAllAndDisplayRootMenu();
 		return;
 	}
-	menuLastHeardupdateScreen(true);
+
+	// Display Last Heard details while SK1 is pressed
+	if ((displayLHDetails == false) && (ev->buttons == BUTTON_SK1))
+	{
+		displayLHDetails = true;
+		menuLastHeardUpdateScreen(true, displayLHDetails);
+		return;
+	}
+	else if (displayLHDetails && ((ev->buttons & BUTTON_SK1) == 0))
+	{
+		displayLHDetails = false;
+		menuLastHeardUpdateScreen(true, displayLHDetails);
+		return;
+	}
+
+	menuLastHeardUpdateScreen(true, false);
+}
+
+static void menuLastHeardDisplayTA(uint8_t y, char *text, uint32_t time, size_t maxLen, bool displayDetails)
+{
+	char buffer[37]; // Max: TA 27 (in 7bit format) + ' [' + 6 (Maidenhead)  + ']' + NULL
+
+	// Display elapsed time
+	if (displayDetails)
+	{
+
+		char buf[10]; // hhh:mm:ss
+		uint32_t diffTimeInSecs = ((fw_millis() - time) / 1000U);
+		uint16_t h = (diffTimeInSecs / 3600);
+		uint16_t m = (diffTimeInSecs - (3600 * h)) / 60;
+		uint16_t s = (diffTimeInSecs - (3600 * h) - (m * 60));
+		snprintf(buf, 10, "%02d:%02d:%02d", h, m, s);
+		buf[9] = 0;
+
+		ucPrintAt(((128 - (8 * 6)) - 4), y, buf, FONT_6x8_BOLD);
+
+	}
+
+	if (strlen(text) >= 5)
+	{
+		char    *pbuf;
+		int32_t  cpos;
+
+		if ((cpos = getCallsignEndingPos(text)) != -1)
+		{
+			// Callsign found
+			memcpy(buffer, text, cpos);
+			buffer[cpos] = 0;
+
+			if (displayDetails == false)
+			{
+				ucPrintCentered(y, chomp(buffer), FONT_8x16);
+			}
+			else
+			{
+				ucPrintAt(4, y, chomp(buffer), FONT_6x8_BOLD);
+
+				memcpy(buffer, text + (cpos + 1), (maxLen - (cpos + 1)));
+				buffer[(strlen(text) - (cpos + 1))] = 0;
+
+				pbuf = chomp(buffer);
+
+				if (strlen(pbuf))
+					printSplitOrSpanText(y + 8, pbuf, true);
+			}
+		}
+		else
+		{
+			// No space found, use a chainsaw
+			memcpy(buffer, text, 16);
+			buffer[16] = 0;
+
+			if (displayDetails == false)
+			{
+				ucPrintCentered(y, chomp(buffer), FONT_8x16);
+			}
+			else
+			{
+				ucPrintAt(4, y, chomp(buffer), FONT_6x8_BOLD);
+
+				memcpy(buffer, text + 16, (maxLen - 16));
+				buffer[(strlen(text) - 16)] = 0;
+
+				pbuf = chomp(buffer);
+
+				if (strlen(pbuf))
+					printSplitOrSpanText(y + 8, pbuf, true);
+			}
+		}
+	}
+	else
+	{
+		memcpy(buffer, text, strlen(text));
+		buffer[strlen(text)] = 0;
+
+		if (displayDetails == false)
+		{
+			ucPrintCentered(y, chomp(buffer), FONT_8x16);
+		}
+		else
+		{
+			ucPrintAt(4, y, chomp(buffer), FONT_6x8_BOLD);
+		}
+	}
 }

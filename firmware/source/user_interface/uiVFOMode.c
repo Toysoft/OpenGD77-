@@ -147,7 +147,7 @@ int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
 			else
 			{
 				// Clear squelch region
-				if (displaySquelch && ((ev->ticks - sqm) > 2000))
+				if (displaySquelch && ((ev->time - sqm) > 1000))
 				{
 					displaySquelch = false;
 
@@ -155,9 +155,9 @@ int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
 					ucRenderRows(2,4);
 				}
 
-				if ((ev->ticks - m) > RSSI_UPDATE_COUNTER_RELOAD)
+				if ((ev->time - m) > RSSI_UPDATE_COUNTER_RELOAD)
 				{
-					m = ev->ticks;
+					m = ev->time;
 					drawRSSIBarGraph();
 					ucRenderRows(1,2);// Only render the second row which contains the bar graph, as there is no need to redraw the rest of the screen
 				}
@@ -179,7 +179,7 @@ int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
 				if ((currentChannelData->chMode == RADIO_MODE_ANALOG) &&
 						(ev->events & KEY_EVENT) && ((ev->keys.key == KEY_LEFT) || (ev->keys.key == KEY_RIGHT)))
 				{
-					sqm = ev->ticks;
+					sqm = ev->time;
 				}
 
 				// Scanning barrier
@@ -273,7 +273,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					printToneAndSquelch();
 				}
 
-				// Squelch will be cleared later, 2000 ticks after last change
+				// Squelch will be cleared later, 1s after last change
 				if(displaySquelch && !displayChannelSettings)
 				{
 					static const int xbar = 74; // 128 - (51 /* max squelch px */ + 3);
@@ -287,7 +287,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					ucFillRect(xbar, 19, bargraph, 9, false);
 				}
 
-				// SK1 is pressed, we don't want to clear the first info row after 2000 ticks
+				// SK1 is pressed, we don't want to clear the first info row after 1s
 				if (displayChannelSettings && displaySquelch)
 				{
 					displaySquelch = false;
