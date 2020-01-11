@@ -113,7 +113,7 @@ void menuSystemPushNewMenuWithQuickFunction(int menuNumber, int quickFunction)
 {
 	if (menuControlData.stackPosition < 15)
 	{
-		uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .function = quickFunction, .events = FUNCTION_EVENT, .hasEvent = false, .ticks = fw_millis() };
+		uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .function = quickFunction, .events = FUNCTION_EVENT, .hasEvent = false, .time = fw_millis() };
 
 		fw_reset_keyboard();
 		menuControlData.itemIndex[menuControlData.stackPosition] = gMenusCurrentItemIndex;
