@@ -64,11 +64,13 @@ void fw_main_task(void *data)
 {
 	keyboardCode_t keys;
 	int key_event;
+	int keyFunction;
 	uint32_t buttons;
 	int button_event;
-	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .time = 0 };
+	int function_event;
+	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .function = 0, .events = NO_EVENT, .hasEvent = false, .time = 0 };
 	bool keyOrButtonChanged = false;
-	
+
     USB_DeviceApplicationInit();
 
     // Init I2C
@@ -169,9 +171,9 @@ void fw_main_task(void *data)
 
 			fw_check_button_event(&buttons, &button_event); // Read button state and event
 			fw_check_key_event(&keys, &key_event); // Read keyboard state and event
-
 			// EVENT_*_CHANGED can be cleared later, so check this now as hasEvent has to be set anyway.
 			keyOrButtonChanged = ((key_event != NO_EVENT) || (button_event != NO_EVENT));
+
 
 			if (keypadLocked || PTTLocked)
 			{
@@ -372,7 +374,7 @@ void fw_main_task(void *data)
         		}
 
     			// Toggle backlight
-        		if ((nonVolatileSettings.backlightMode == BACKLIGHT_MODE_MANUAL) && (buttons == BUTTON_SK1))
+        		if ((nonVolatileSettings.backlightMode == BACKLIGHT_MODE_MANUAL) && (KEYCHECK_DOWN(keys,KEY_SK1)))
         		{
         			fw_displayEnableBacklight(! fw_displayIsBacklightLit());
         		}
@@ -385,10 +387,62 @@ void fw_main_task(void *data)
     			updateLastHeard=false;
     		}
 
+			ev.function = 0;
+			function_event = NO_EVENT;
+			if (buttons & BUTTON_SK2)
+			{
+//				keyFunction = codeplugGetQuickkeyFunctionID(keys.key);
+				switch (keys.key)
+				{
+				case '1':
+					keyFunction = START_SCANNING;
+					break;
+				case '2':
+					keyFunction = (MENU_BATTERY << 8);
+					break;
+				case '3':
+					keyFunction = ( MENU_LAST_HEARD << 8);
+					break;
+				case '4':
+					keyFunction = ( MENU_CHANNEL_DETAILS << 8) | 2;
+					break;
+				case '7':
+					keyFunction = (MENU_DISPLAY <<8) + DEC_BRIGHTNESS;
+					break;
+				case '8':
+					keyFunction = (MENU_DISPLAY <<8) + INC_BRIGHTNESS;
+					break;
+				default:
+					keyFunction = 0;
+					break;
+				}
+
+				if (keyFunction > 0)
+				{
+					int menuFunction = (keyFunction >> 8) & 0xff;
+
+					if (menuFunction > 0 && menuFunction < NUM_MENU_ENTRIES)
+					{
+						int currentMenu = menuSystemGetCurrentMenuNumber();
+						if (currentMenu != menuFunction)
+						{
+							menuSystemPushNewMenu(menuFunction);
+						}
+					}
+					ev.function = keyFunction & 0xff;
+					buttons = BUTTON_NONE;
+					key_event = EVENT_KEY_NONE;
+					button_event = EVENT_BUTTON_NONE;
+					keys.key = 0;
+					keys.event = 0;
+					function_event = FUNCTION_EVENT;
+					fw_reset_keyboard();
+				}
+			}
     		ev.buttons = buttons;
     		ev.keys = keys;
-    		ev.events = (button_event<<1) | key_event;
-    		ev.hasEvent = keyOrButtonChanged;
+    		ev.events = function_event | (button_event<<1) | key_event;
+    		ev.hasEvent = keyOrButtonChanged || function_event;
     		ev.time = fw_millis();
 
         	menuSystemCallCurrentMenuTick(&ev);
