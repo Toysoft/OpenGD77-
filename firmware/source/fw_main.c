@@ -380,12 +380,29 @@ void fw_main_task(void *data)
         		}
         	}
 
-
     		if (!trxIsTransmitting && updateLastHeard==true)
     		{
     			lastHeardListUpdate((uint8_t *)DMR_frame_buffer);
     			updateLastHeard=false;
     		}
+
+			if (!trxIsTransmitting && menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA && nonVolatileSettings.privateCalls == true)
+			{
+				if (HRC6000GetReveivedTgOrPcId() == (trxDMRID | (PC_CALL_FLAG<<24)))
+				{
+					if ((uiPrivateCallState == PRIVATE_CALL_DECLINED) &&
+						(HRC6000GetReveivedSrcId() != uiPrivateCallLastID))
+					{
+						menuClearPrivateCall();
+					}
+					if ((uiPrivateCallState == NOT_IN_CALL) &&
+						(trxTalkGroupOrPcId != (HRC6000GetReveivedSrcId() | (PC_CALL_FLAG<<24))) &&
+						(HRC6000GetReveivedSrcId() != uiPrivateCallLastID))
+					{
+						menuSystemPushNewMenu(MENU_PRIVATE_CALL);
+					}
+				}
+			}
 
 			ev.function = 0;
 			function_event = NO_EVENT;
@@ -453,7 +470,7 @@ void fw_main_task(void *data)
         	{
         		// If user was in a private call when they turned the radio off we need to restore the last Tg prior to stating the Private call.
         		// to the nonVolatile Setting overrideTG, otherwise when the radio is turned on again it be in PC mode to that station.
-        		if (menuUtilityTgBeforePcMode!=0)
+        		if ((trxTalkGroupOrPcId>>24) == PC_CALL_FLAG)
         		{
         			nonVolatileSettings.overrideTG = menuUtilityTgBeforePcMode;
         		}

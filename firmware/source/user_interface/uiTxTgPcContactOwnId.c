@@ -165,19 +165,13 @@ static void handleEvent(uiEvent_t *ev)
 		if (tmpID > 0 && tmpID <= 9999999) {
 			if (gMenusCurrentItemIndex != ENTRY_USER_DMR_ID)
 			{
-				uint32_t saveTrxTalkGroupOrPcId = trxTalkGroupOrPcId;
-				trxTalkGroupOrPcId = tmpID;
-				nonVolatileSettings.overrideTG = trxTalkGroupOrPcId;
 				if (gMenusCurrentItemIndex == ENTRY_PC || (pcIdx != 0 && contact.callType == 0x01))
 				{
-					// Private Call
-
-					if ((saveTrxTalkGroupOrPcId >> 24) != PC_CALL_FLAG)
-					{
-						// if the current Tx TG is a TalkGroup then save it so it can be stored after the end of the private call
-						menuUtilityTgBeforePcMode = saveTrxTalkGroupOrPcId;
-					}
-					nonVolatileSettings.overrideTG |= (PC_CALL_FLAG << 24);
+					setOverrideTGorPC(tmpID, true);
+				}
+				else
+				{
+					setOverrideTGorPC(tmpID, false);
 				}
 			}
 			else

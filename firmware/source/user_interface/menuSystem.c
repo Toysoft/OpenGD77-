@@ -92,6 +92,7 @@ const menuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
 												menuContactDetails,
 												menuContactDetails,
 												menuLanguage,
+												menuPrivateCall,
 };
 
 void menuSystemPushNewMenu(int menuNumber)
