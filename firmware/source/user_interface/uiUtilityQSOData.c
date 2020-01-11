@@ -984,17 +984,6 @@ void setOverrideTGorPC(int tgOrPc, bool privateCall) {
 	}
 }
 
-char keypressToNumberChar(keyboardCode_t keys)
-{
-	if (keys.event & KEY_MOD_PRESS) {
-		if (keys.key >= '0' && keys.key <= '9')
-		{
-			return keys.key;
-		}
-	}
-	return '\0';
-}
-
 void printToneAndSquelch(void)
 {
 	char buf[24];

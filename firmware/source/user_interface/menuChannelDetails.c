@@ -248,6 +248,11 @@ static void handleEvent(uiEvent_t *ev)
 	int tmpVal;
 	struct_codeplugRxGroup_t rxGroupBuf;
 
+	if (ev->function > 0 && ev->function < NUM_CH_DETAILS_ITEMS)
+	{
+		gMenusCurrentItemIndex = ev->function;
+	}
+
 	if (KEYCHECK_PRESS(ev->keys,KEY_DOWN))
 	{
 		MENU_INC(gMenusCurrentItemIndex, NUM_CH_DETAILS_ITEMS);

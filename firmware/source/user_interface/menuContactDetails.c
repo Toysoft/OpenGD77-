@@ -330,12 +330,14 @@ static void handleEvent(uiEvent_t *ev)
 				// Add a digit
 				if (sLen < 7)
 				{
-					char c[2] = {0, 0};
-					c[0] = keypressToNumberChar(ev->keys);
+					int keyval = menuGetKeypadKeyValue(ev, true);
 
-					if (c[0]!=0)
+					char c[2] = {0, 0};
+					c[0] = keyval;
+
+					if (keyval != 99)
 					{
-						strcat(digits,c);
+						strcat(digits, c);
 					}
 				}
 			} else if (gMenusCurrentItemIndex == CONTACT_DETAILS_NAME)
