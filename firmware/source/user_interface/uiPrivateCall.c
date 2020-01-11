@@ -23,7 +23,6 @@
 
 static void updateScreen(void);
 static void handleEvent(uiEvent_t *ev);
-void menuAcceptCall(void);
 
 int uiPrivateCallState = NOT_IN_CALL;
 int uiPrivateCallLastID;
@@ -32,8 +31,8 @@ int menuPrivateCall(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		uiPrivateCallState = ACCEPT_PRIVATE_CALL;
-		menuUtilityReceivedPcId = LinkHead->id | (PC_CALL_FLAG<<24);
+		uiPrivateCallState = PRIVATE_CALL_ACCEPT;
+		menuUtilityReceivedPcId = LinkHead->id;
 
 		updateScreen();
 	}
@@ -54,15 +53,15 @@ static void updateScreen(void)
 	dmrIdDataStruct_t currentRec;
 
 	ucClearBuf();
-	if (!contactIDLookup(LinkHead->id, CONTACT_CALLTYPE_PC, buffer))
+	if (!contactIDLookup(menuUtilityReceivedPcId, CONTACT_CALLTYPE_PC, buffer))
 	{
-		dmrIDLookup( (LinkHead->id & 0xFFFFFF),&currentRec);
+		dmrIDLookup(menuUtilityReceivedPcId, &currentRec);
 		strncpy(buffer, currentRec.text, 16);
 		buffer[16] = 0;
 	}
-	ucPrintCentered(16, buffer, FONT_8x16);
+	ucPrintCentered(32, buffer, FONT_8x16);
 
-	ucPrintCentered(32, currentLanguage->accept_call, FONT_8x16);
+	ucPrintCentered(16, currentLanguage->accept_call, FONT_8x16);
 	ucDrawChoice(CHOICE_YESNO, false);
 	set_melody(melody_private_call);
 	ucRender();
@@ -76,13 +75,13 @@ static void handleEvent(uiEvent_t *ev)
 		if (KEYCHECK_SHORTUP(ev->keys, KEY_RED))
 		{
 			uiPrivateCallState = PRIVATE_CALL_DECLINED;
-			uiPrivateCallLastID = LinkHead->id;
+			uiPrivateCallLastID = menuUtilityReceivedPcId;
 			menuSystemPopPreviousMenu();
 			return;
 		}
 		else if (KEYCHECK_SHORTUP(ev->keys, KEY_GREEN))
 		{
-			menuAcceptCall();
+			menuAcceptPrivateCall(menuUtilityReceivedPcId);
 			menuSystemPopPreviousMenu();
 			return;
 		}
@@ -99,14 +98,14 @@ void menuClearPrivateCall(void )
 	menuUtilityReceivedPcId = 0;
 }
 
-void menuAcceptCall(void )
+void menuAcceptPrivateCall(int id )
 {
-	uiPrivateCallState = MY_CALL;
-	uiPrivateCallLastID = LinkHead->id;
-
-	menuUtilityTgBeforePcMode = nonVolatileSettings.overrideTG;// save the current TG
-	nonVolatileSettings.overrideTG =  menuUtilityReceivedPcId;
-	trxTalkGroupOrPcId = menuUtilityReceivedPcId;
+	uiPrivateCallState = PRIVATE_CALL;
+	uiPrivateCallLastID = (id & 0xffffff);
 	settingsPrivateCallMuteMode=false;
+	menuUtilityReceivedPcId = 0;
+
+	setOverrideTGorPC(uiPrivateCallLastID, true);
+
 }
 

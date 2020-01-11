@@ -26,7 +26,7 @@ extern const int TX_TIMER_Y_OFFSET;
 extern const int CONTACT_Y_POS;
 extern const int FREQUENCY_X_POS;
 
-enum CALL_STATE { NOT_IN_CALL=0, ACCEPT_PRIVATE_CALL, MY_CALL, IN_SESSION, PRIVATE_CALL_DECLINED };
+enum UI_CALL_STATE { NOT_IN_CALL=0, PRIVATE_CALL_ACCEPT, PRIVATE_CALL, PRIVATE_CALL_DECLINED };
 
 typedef struct dmrIdDataStruct
 {
@@ -69,7 +69,6 @@ void menuUtilityRenderQSOData(void);
 void menuUtilityRenderHeader(void);
 void lastheardInitList(void);
 bool lastHeardListUpdate(uint8_t *dmrDataBuffer);
-bool menuUtilityHandlePrivateCallActions(uiEvent_t *ev);
 void lastHeardClearLastID(void);
 void drawRSSIBarGraph(void);
 void drawDMRMicLevelBarGraph(void);

@@ -439,8 +439,15 @@ static void handleEvent(uiEvent_t *ev)
 			}
 			if (trxTalkGroupOrPcId != tg)
 			{
-				trxTalkGroupOrPcId = tg;
-				nonVolatileSettings.overrideTG = trxTalkGroupOrPcId;
+				if ((tg>>24) & PC_CALL_FLAG)
+				{
+					menuAcceptPrivateCall(tg & 0xffffff);
+				}
+				else
+				{
+					trxTalkGroupOrPcId = tg;
+					nonVolatileSettings.overrideTG = trxTalkGroupOrPcId;
+				}
 			}
 
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
@@ -550,14 +557,14 @@ static void handleEvent(uiEvent_t *ev)
 		}
 		else if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 		{
-			if ((ev->buttons & BUTTON_SK2 )!=0 && menuUtilityTgBeforePcMode != 0 && KEYCHECK_SHORTUP(ev->keys,KEY_RED))
+			if ((ev->buttons & BUTTON_SK2 )!=0 && menuUtilityTgBeforePcMode != 0)
 			{
 				nonVolatileSettings.overrideTG = menuUtilityTgBeforePcMode;
-				menuUtilityReceivedPcId = 0;
-				menuUtilityTgBeforePcMode = 0;
+				menuClearPrivateCall();
+
 				menuChannelUpdateTrxID();
 				menuDisplayQSODataState= QSO_DISPLAY_DEFAULT_SCREEN;// Force redraw
-				menuClearPrivateCall();
+				menuChannelModeUpdateScreen(0);
 				return;// The event has been handled
 			}
 			if(directChannelNumber>0)
@@ -598,6 +605,7 @@ static void handleEvent(uiEvent_t *ev)
 						}
 					}
 					nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
+					menuClearPrivateCall();
 					menuChannelUpdateTrxID();
 					menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 					menuChannelModeUpdateScreen(0);
@@ -650,6 +658,7 @@ static void handleEvent(uiEvent_t *ev)
 						}
 					}
 					nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
+					menuClearPrivateCall();
 					menuChannelUpdateTrxID();
 					menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 					menuChannelModeUpdateScreen(0);

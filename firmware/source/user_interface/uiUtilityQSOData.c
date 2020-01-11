@@ -544,37 +544,6 @@ bool contactIDLookup(uint32_t id, int calltype, char *buffer)
 	return false;
 }
 
-bool menuUtilityHandlePrivateCallActions(uiEvent_t *ev)
-{
-	if ((ev->buttons & BUTTON_SK2 )!=0 && menuUtilityTgBeforePcMode != 0 && KEYCHECK_SHORTUP(ev->keys,KEY_RED))
-	{
-		trxTalkGroupOrPcId = menuUtilityTgBeforePcMode;
-		nonVolatileSettings.overrideTG = menuUtilityTgBeforePcMode;
-		menuUtilityReceivedPcId = 0;
-		menuUtilityTgBeforePcMode = 0;
-		menuDisplayQSODataState= QSO_DISPLAY_DEFAULT_SCREEN;// Force redraw
-		menuClearPrivateCall();
-		return true;// The event has been handled
-	}
-
-	// Note.  menuUtilityReceivedPcId is used to store the PcId but also used as a flag to indicate that a Pc request has occurred.
-	if (menuUtilityReceivedPcId != 0x00 && (LinkHead->talkGroupOrPcId>>24) == PC_CALL_FLAG && nonVolatileSettings.overrideTG != LinkHead->talkGroupOrPcId)
-	{
-		if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
-		{
-			// User has accepted the private call
-			menuUtilityTgBeforePcMode = trxTalkGroupOrPcId;// save the current TG
-			nonVolatileSettings.overrideTG =  menuUtilityReceivedPcId;
-			trxTalkGroupOrPcId = menuUtilityReceivedPcId;
-			settingsPrivateCallMuteMode=false;
-		}
-		menuUtilityReceivedPcId = 0;
-		qsodata_timer=1;// time out the qso timer will force the VFO or Channel mode screen to redraw its normal display
-		return true;// The event has been handled
-	}
-	return false;// The event has not been handled
-}
-
 static void displayChannelNameOrRxFrequency(char *buffer, size_t maxLen)
 {
 	if (menuSystemGetCurrentMenuNumber() == MENU_CHANNEL_MODE)
@@ -741,12 +710,23 @@ void menuUtilityRenderQSOData(void)
 
 			if (!contactIDLookup(LinkHead->id, CONTACT_CALLTYPE_PC, buffer))
 			{
-				dmrIDLookup( (LinkHead->id & 0xFFFFFF),&currentRec);
+				dmrIDLookup(LinkHead->id, &currentRec);
 				strncpy(buffer, currentRec.text, 16);
 				buffer[16] = 0;
 			}
 			ucPrintCentered(16, buffer, FONT_8x16);
 			ucPrintCentered(32, currentLanguage->private_call, FONT_8x16);
+			if (LinkHead->talkGroupOrPcId != (trxDMRID | (PC_CALL_FLAG<<24)))
+			{
+				if (!contactIDLookup(LinkHead->talkGroupOrPcId & 0xffffff, CONTACT_CALLTYPE_PC, buffer))
+				{
+					dmrIDLookup(LinkHead->talkGroupOrPcId & 0xffffff, &currentRec);
+					strncpy(buffer, currentRec.text, 16);
+					buffer[16] = 0;
+				}
+				ucPrintCentered(52, buffer, FONT_6x8);
+				ucPrintAt(1, 54, "=>", FONT_6x8);
+			}
 		}
 		else
 		{

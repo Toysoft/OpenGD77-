@@ -99,6 +99,9 @@ void menuLockScreenPop(void);
 void menuLastHeardupdateScreen(bool showTitleOrHeader);
 
 void menuClearPrivateCall(void);
+void menuAcceptPrivateCall(int id);
+
+
 /*
  * ---------------------- IMPORTANT ----------------------------
  *
