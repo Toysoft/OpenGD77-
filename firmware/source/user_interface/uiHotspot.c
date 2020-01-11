@@ -129,8 +129,7 @@ M: 2020-01-07 09:52:15.246 DMR Slot 2, received network end of voice transmissio
 
 #define MMDVM_HEADER_LENGTH  4U
 
-//#define HOTSPOT_VERSION_STRING "MMDVM_HS_Hat OpenGD77 Hotspot v0.0.72" // This permits to see OpenGD77 hotspot as a MMDVM_HS in dashboards
-#define HOTSPOT_VERSION_STRING "OpenGD77_HS v0.0.73"
+#define HOTSPOT_VERSION_STRING "OpenGD77 Hotspot v0.0.75"
 #define concat(a, b) a " GitID #" b ""
 static const char HARDWARE[] = concat(HOTSPOT_VERSION_STRING, GITVERSION);
 
@@ -499,7 +498,7 @@ static void updateScreen(uint8_t rxCommandState)
 
 		if (displayFWVersion)
 		{
-			snprintf(buffer, 22U, "%s", HOTSPOT_VERSION_STRING);
+			snprintf(buffer, 22U, "%s", &HOTSPOT_VERSION_STRING[16]);
 			buffer[21U] = 0;
 		}
 		else
@@ -544,7 +543,7 @@ static void updateScreen(uint8_t rxCommandState)
 
 			if (displayFWVersion)
 			{
-				snprintf(buffer, 22U, "%s", HOTSPOT_VERSION_STRING);
+				snprintf(buffer, 22U, "%s", &HOTSPOT_VERSION_STRING[16]);
 				buffer[21U] = 0;
 			}
 			else
@@ -578,7 +577,7 @@ static void updateScreen(uint8_t rxCommandState)
 #if !defined(DEBUG_HS_SCREEN)
 			if (displayFWVersion)
 			{
-				snprintf(buffer, 22U, "%s", HOTSPOT_VERSION_STRING);
+				snprintf(buffer, 22U, "%s", &HOTSPOT_VERSION_STRING[16]);
 				buffer[21U] = 0;
 				ucPrintCentered(16 + 4, buffer, FONT_6x8);
 			}
@@ -1870,6 +1869,16 @@ static void handleHotspotRequest(void)
 			case MMDVM_DMR_DATA2:
 				dbgPrint2("DMR_DATA2");
 				//SEGGER_RTT_printf(0, "MMDVM_DMR_DATA2\n");
+
+				// It seems BlueDV under Windows forget to set correct mode
+				// when it connect a TG with an already running QSO. So we force
+				// the modemState and init the HS.
+				if ((nonVolatileSettings.hotspotType == HOTSPOT_TYPE_BLUEDV) && (modemState == STATE_IDLE))
+				{
+					modemState = STATE_DMR;
+					hotspotState = HOTSPOT_STATE_INITIALISE;
+				}
+
 				err = hotspotModeReceiveNetFrame(com_requestbuffer, 2U);
 				if (err == 0U)
 				{
@@ -1887,7 +1896,7 @@ static void handleHotspotRequest(void)
 				sendACK();
 				break;
 
-			case MMDVM_DMR_SHORTLC: // Only for duplex
+			case MMDVM_DMR_SHORTLC:
 				dbgPrint2("DMR_SHORTLC");
 //				//SEGGER_RTT_printf(0, "MMDVM_DMR_SHORTLC\n");
 				err = handleDMRShortLC((uint8_t *)com_requestbuffer, com_requestbuffer[1U]);
