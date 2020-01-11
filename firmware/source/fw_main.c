@@ -381,14 +381,14 @@ void fw_main_task(void *data)
 			if (!trxIsTransmitting && menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA && nonVolatileSettings.privateCalls == true)
 			{
 				if ((uiPrivateCallState == PRIVATE_CALL_DECLINED) &&
-					((LinkHead->id & 0xFFFFFF) != uiPrivateCallLastID))
+					(LinkHead->id != uiPrivateCallLastID))
 				{
 					menuClearPrivateCall();
 				}
 				if ((uiPrivateCallState == NOT_IN_CALL) &&
-		            ((trxTalkGroupOrPcId & 0xFFFFFF) != (LinkHead->id & 0xFFFFFF)) &&
+		            (trxTalkGroupOrPcId != LinkHead->id) &&
 					((LinkHead->talkGroupOrPcId & 0xFFFFFF) == trxDMRID) &&
-					((LinkHead->id & 0xFFFFFF) != uiPrivateCallLastID))
+					(LinkHead->id != uiPrivateCallLastID))
 				{
 					menuSystemPushNewMenu(MENU_PRIVATE_CALL);
 				}

@@ -71,12 +71,12 @@ static void updateScreen(void)
 
 static void handleEvent(uiEvent_t *ev)
 {
-	if (ev->hasEvent & KEY_EVENT)
+	if (ev->events & KEY_EVENT)
 	{
 		if (KEYCHECK_SHORTUP(ev->keys, KEY_RED))
 		{
 			uiPrivateCallState = PRIVATE_CALL_DECLINED;
-			uiPrivateCallLastID = (LinkHead->id & 0xFFFFFF);
+			uiPrivateCallLastID = LinkHead->id;
 			menuSystemPopPreviousMenu();
 			return;
 		}
@@ -100,7 +100,7 @@ void menuClearPrivateCall(void )
 void menuAcceptCall(void )
 {
 	uiPrivateCallState = MY_CALL;
-	uiPrivateCallLastID = (LinkHead->id & 0xFFFFFF);
+	uiPrivateCallLastID = LinkHead->id;
 	// User has accepted the private call
 	menuUtilityTgBeforePcMode = trxTalkGroupOrPcId;// save the current TG
 	nonVolatileSettings.overrideTG =  menuUtilityReceivedPcId;
