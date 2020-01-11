@@ -70,6 +70,8 @@
 #define SCAN_9     0x00001000
 #define SCAN_STAR  0x00008000
 #define SCAN_HASH  0x00020000
+#define SCAN_SK1   0x00004000
+#define SCAN_ORANGE 0x00080000
 
 #define KEY_GREENSTAR  '+'    // GREEN + STAR
 
@@ -91,6 +93,8 @@
 #define KEY_9     '9'
 #define KEY_STAR  '*'
 #define KEY_HASH  '#'
+#define KEY_SK1    5
+#define KEY_ORANGE 6
 
 
 #define KEY_MOD_DOWN    0x01
@@ -108,7 +112,7 @@
 //#define KEYCHECK_KEYMOD(keys, k, mask, mod) (((((keys) & 0xffffff) == (k)) && ((keys) & (mask)) == (mod)))
 //#define KEYCHECK_MOD(keys, mask, mod) (((keys) & (mask)) == (mod))
 
-#define KEYCHECK_UP(keys, k)       ((keys.key == k) && ((keys.event & KEY_MOD_UP) == KEY_MOD_UP)
+#define KEYCHECK_UP(keys, k)       ((keys.key == k) && ((keys.event & KEY_MOD_UP) == KEY_MOD_UP))
 #define KEYCHECK_SHORTUP(keys, k)  ((keys.key == k) && ((keys.event & (KEY_MOD_UP | KEY_MOD_LONG)) == KEY_MOD_UP))
 #define KEYCHECK_DOWN(keys, k)     ((keys.key == k) && ((keys.event & KEY_MOD_DOWN) == KEY_MOD_DOWN))
 #define KEYCHECK_PRESS(keys, k)    ((keys.key == k) && ((keys.event & KEY_MOD_PRESS) == KEY_MOD_PRESS))
