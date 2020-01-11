@@ -25,6 +25,7 @@
 #include "fw_usb_com.h"
 #include <user_interface/uiLocalisation.h>
 
+
 const int CODEPLUG_ADDR_EX_ZONE_BASIC = 0x8000;
 const int CODEPLUG_ADDR_EX_ZONE_INUSE_PACKED_DATA =  0x8010;
 const int CODEPLUG_ADDR_EX_ZONE_INUSE_PACKED_DATA_SIZE =  32;
@@ -55,6 +56,8 @@ const int CODEPLUG_BOOT_PASSWORD_LEN = 3;
 const int CODEPLUG_ADDR_BOOT_LINE1 = 0x7540;
 const int CODEPLUG_ADDR_BOOT_LINE2 = 0x7550;
 const int CODEPLUG_ADDR_VFO_A_CHANNEL = 0x7590;
+
+const int CODEPLUG_ADDR_QUICKKEYS = 0x7524;   // LSB,HSB
 
 int codeplugChannelsPerZone = 16;
 
@@ -707,3 +710,17 @@ bool codeplugGetOpenGD77CustomData(codeplugCustomDataType_t dataType,uint8_t *da
 	}
 	return false;
 }
+
+int codeplugGetQuickkeyFunctionID(int key)
+{
+	uint16_t functionId = 0;
+
+	if (key >='0' && key <='9')
+	{
+		key = key-'0';
+		EEPROM_Read(CODEPLUG_ADDR_QUICKKEYS+2*key,(uint8_t *)&functionId,2);
+	}
+
+	return functionId;
+}
+

@@ -108,6 +108,22 @@ void menuSystemPushNewMenu(int menuNumber)
 		menuFunctions[menuControlData.stack[menuControlData.stackPosition]](&ev, true);
 	}
 }
+
+void menuSystemPushNewMenuWithQuickFunction(int menuNumber, int quickFunction)
+{
+	if (menuControlData.stackPosition < 15)
+	{
+		uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .function = quickFunction, .events = FUNCTION_EVENT, .hasEvent = false, .ticks = fw_millis() };
+
+		fw_reset_keyboard();
+		menuControlData.itemIndex[menuControlData.stackPosition] = gMenusCurrentItemIndex;
+		menuControlData.stackPosition++;
+		menuControlData.stack[menuControlData.stackPosition] = menuNumber;
+		gMenusCurrentItemIndex = (menuNumber == MENU_MAIN_MENU) ? 1 : 0;
+		menuFunctions[menuControlData.stack[menuControlData.stackPosition]](&ev, true);
+	}
+}
+
 void menuSystemPopPreviousMenu(void)
 {
 	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
@@ -324,7 +340,7 @@ int menuGetKeypadKeyValue(uiEvent_t *ev, bool digitsOnly)
 
 	for (int i = 0; i < ((sizeof(keypadKeys) / sizeof(keypadKeys[0])) - (digitsOnly ? 6 : 0 )); i++)
 	{
-		if (KEYCHECK_PRESS(ev->keys, keypadKeys[i]))
+		if (KEYCHECK_SHORTUP(ev->keys, keypadKeys[i]))
 				return i;
 	}
 
