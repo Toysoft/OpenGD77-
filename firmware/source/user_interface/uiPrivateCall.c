@@ -95,16 +95,18 @@ void menuClearPrivateCall(void )
 {
 	uiPrivateCallState = NOT_IN_CALL;
 	uiPrivateCallLastID = 0;
+	menuUtilityTgBeforePcMode = 0;
+	menuUtilityReceivedPcId = 0;
 }
 
 void menuAcceptCall(void )
 {
 	uiPrivateCallState = MY_CALL;
 	uiPrivateCallLastID = LinkHead->id;
-	// User has accepted the private call
-	menuUtilityTgBeforePcMode = trxTalkGroupOrPcId;// save the current TG
+
+	menuUtilityTgBeforePcMode = nonVolatileSettings.overrideTG;// save the current TG
 	nonVolatileSettings.overrideTG =  menuUtilityReceivedPcId;
 	trxTalkGroupOrPcId = menuUtilityReceivedPcId;
 	settingsPrivateCallMuteMode=false;
-
 }
+

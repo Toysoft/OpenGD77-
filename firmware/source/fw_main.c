@@ -469,7 +469,7 @@ void fw_main_task(void *data)
         	{
         		// If user was in a private call when they turned the radio off we need to restore the last Tg prior to stating the Private call.
         		// to the nonVolatile Setting overrideTG, otherwise when the radio is turned on again it be in PC mode to that station.
-        		if (menuUtilityTgBeforePcMode!=0)
+        		if ((trxTalkGroupOrPcId>>24) == PC_CALL_FLAG)
         		{
         			nonVolatileSettings.overrideTG = menuUtilityTgBeforePcMode;
         		}
