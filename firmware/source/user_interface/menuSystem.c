@@ -92,13 +92,14 @@ const menuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
 												menuContactDetails,
 												menuContactDetails,
 												menuLanguage,
+												menuPrivateCall,
 };
 
 void menuSystemPushNewMenu(int menuNumber)
 {
 	if (menuControlData.stackPosition < 15)
 	{
-		uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
+		uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .time = fw_millis() };
 
 		fw_reset_keyboard();
 		menuControlData.itemIndex[menuControlData.stackPosition] = gMenusCurrentItemIndex;
@@ -108,9 +109,25 @@ void menuSystemPushNewMenu(int menuNumber)
 		menuFunctions[menuControlData.stack[menuControlData.stackPosition]](&ev, true);
 	}
 }
+
+void menuSystemPushNewMenuWithQuickFunction(int menuNumber, int quickFunction)
+{
+	if (menuControlData.stackPosition < 15)
+	{
+		uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .function = quickFunction, .events = FUNCTION_EVENT, .hasEvent = false, .time = fw_millis() };
+
+		fw_reset_keyboard();
+		menuControlData.itemIndex[menuControlData.stackPosition] = gMenusCurrentItemIndex;
+		menuControlData.stackPosition++;
+		menuControlData.stack[menuControlData.stackPosition] = menuNumber;
+		gMenusCurrentItemIndex = (menuNumber == MENU_MAIN_MENU) ? 1 : 0;
+		menuFunctions[menuControlData.stack[menuControlData.stackPosition]](&ev, true);
+	}
+}
+
 void menuSystemPopPreviousMenu(void)
 {
-	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
+	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .time = fw_millis() };
 
 	fw_reset_keyboard();
 	menuControlData.itemIndex[menuControlData.stackPosition] = 0;
@@ -121,7 +138,7 @@ void menuSystemPopPreviousMenu(void)
 
 void menuSystemPopAllAndDisplayRootMenu(void)
 {
-	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
+	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .time = fw_millis() };
 
 	fw_reset_keyboard();
 	memset(menuControlData.itemIndex, 0, sizeof(menuControlData.itemIndex));
@@ -132,7 +149,7 @@ void menuSystemPopAllAndDisplayRootMenu(void)
 
 void menuSystemPopAllAndDisplaySpecificRootMenu(int newRootMenu)
 {
-	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
+	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .time = fw_millis() };
 
 	fw_reset_keyboard();
 	memset(menuControlData.itemIndex, 0, sizeof(menuControlData.itemIndex));
@@ -144,7 +161,7 @@ void menuSystemPopAllAndDisplaySpecificRootMenu(int newRootMenu)
 
 void menuSystemSetCurrentMenu(int menuNumber)
 {
-	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
+	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .time = fw_millis() };
 
 	fw_reset_keyboard();
 	menuControlData.stack[menuControlData.stackPosition] = menuNumber;
@@ -193,7 +210,7 @@ int gMenusEndIndex;// as above
 
 void menuInitMenuSystem(void)
 {
-	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .ticks = fw_millis() };
+	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = false, .time = fw_millis() };
 
 	menuDisplayLightTimer = -1;
 	menuControlData.stack[menuControlData.stackPosition]  = MENU_SPLASH_SCREEN;// set the very first screen as the splash screen
@@ -324,7 +341,7 @@ int menuGetKeypadKeyValue(uiEvent_t *ev, bool digitsOnly)
 
 	for (int i = 0; i < ((sizeof(keypadKeys) / sizeof(keypadKeys[0])) - (digitsOnly ? 6 : 0 )); i++)
 	{
-		if (KEYCHECK_PRESS(ev->keys, keypadKeys[i]))
+		if (KEYCHECK_SHORTUP(ev->keys, keypadKeys[i]))
 				return i;
 	}
 
@@ -340,7 +357,7 @@ void menuUpdateCursor(int pos, bool moved, bool render)
 	if (moved) {
 		blink = true;
 	}
-	if (moved || (m - lastBlink) > 1000)
+	if (moved || (m - lastBlink) > 500)
 	{
 		ucDrawFastHLine(pos*8, 46, 8, blink);
 

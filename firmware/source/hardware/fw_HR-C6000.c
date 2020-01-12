@@ -774,7 +774,7 @@ inline static void HRC6000SysInterruptHandler(void)
 			{
 				if (LCBuf[0]==TG_CALL_FLAG || LCBuf[0]==PC_CALL_FLAG)
 				{
-					receivedTgOrPcId 	= (LCBuf[3]<<16)+(LCBuf[4]<<8)+(LCBuf[5]<<0);// used by the call accept filter
+					receivedTgOrPcId 	= (LCBuf[0]<<24)+(LCBuf[3]<<16)+(LCBuf[4]<<8)+(LCBuf[5]<<0);// used by the call accept filter
 					receivedSrcId 		= (LCBuf[6]<<16)+(LCBuf[7]<<8)+(LCBuf[8]<<0);// used by the call accept filter
 
 					if (receivedTgOrPcId!=0 && receivedSrcId!=0) // only store the data if its actually valid
@@ -1254,7 +1254,7 @@ void triggerQSOdataDisplay(void)
 {
 	// If this is the start of a newly received signal, we always need to trigger the display to show this, even if its the same station calling again.
 	// Of if the display is holding on the PC accept text and the incoming call is not a PC
-	if (qsodata_timer == 0 || (menuUtilityReceivedPcId!=0 && DMR_frame_buffer[0]==TG_CALL_FLAG))
+	if (qsodata_timer == 0 || (uiPrivateCallState == PRIVATE_CALL_ACCEPT && DMR_frame_buffer[0]==TG_CALL_FLAG))
 	{
 		menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;
 	}
@@ -1371,7 +1371,7 @@ bool callAcceptFilter(void)
 	 }
 	 else
 	 {
-		 return ( (DMR_frame_buffer[0]==TG_CALL_FLAG) || (DMR_frame_buffer[0]==PC_CALL_FLAG && receivedTgOrPcId == trxDMRID));
+		 return ( (DMR_frame_buffer[0]==TG_CALL_FLAG) || (receivedTgOrPcId == (trxDMRID | (PC_CALL_FLAG<<24))));
 	 }
 }
 
@@ -1531,7 +1531,7 @@ void tick_HR_C6000(void)
 		{
 			// Only timeout the QSO data display if not displaying the Private Call Accept Yes/No text
 			// if menuUtilityReceivedPcId is non zero the Private Call Accept text is being displayed
-			if (menuUtilityReceivedPcId == 0)
+			if (uiPrivateCallState != PRIVATE_CALL_ACCEPT)
 			{
 				qsodata_timer--;
 
@@ -1587,4 +1587,9 @@ void clearActiveDMRID(void)
 int HRC6000GetReveivedTgOrPcId(void)
 {
 	return receivedTgOrPcId;
+}
+
+int HRC6000GetReveivedSrcId(void)
+{
+	return receivedSrcId;
 }

@@ -26,7 +26,7 @@
 #include "fw_sound.h"
 
 static const int STORAGE_BASE_ADDRESS 		= 0x6000;
-static const int STORAGE_MAGIC_NUMBER 		= 0x4732;
+static const int STORAGE_MAGIC_NUMBER 		= 0x4733;
 
 settingsStruct_t nonVolatileSettings;
 struct_codeplugChannel_t *currentChannelData;
@@ -160,6 +160,7 @@ void settingsRestoreDefaultSettings(void)
 	nonVolatileSettings.pttToggle = false; // PTT act as a toggle button
 	nonVolatileSettings.hotspotType = HOTSPOT_TYPE_MMDVM;
 	nonVolatileSettings.transmitTalkerAlias	= false;
+	nonVolatileSettings.privateCalls = true;
 
 	currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];// Set the current channel data to point to the VFO data since the default screen will be the VFO
 

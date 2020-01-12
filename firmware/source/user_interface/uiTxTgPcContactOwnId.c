@@ -31,7 +31,7 @@ static void updateCursor(void);
 static void updateScreen(void);
 static void handleEvent(uiEvent_t *ev);
 
-static const uint32_t CURSOR_UPDATE_TIMEOUT = 1000;
+static const uint32_t CURSOR_UPDATE_TIMEOUT = 500;
 
 static const char *menuName[4];
 enum DISPLAY_MENU_LIST { ENTRY_TG = 0, ENTRY_PC, ENTRY_SELECT_CONTACT, ENTRY_USER_DMR_ID, NUM_ENTRY_ITEMS};
@@ -165,19 +165,13 @@ static void handleEvent(uiEvent_t *ev)
 		if (tmpID > 0 && tmpID <= 9999999) {
 			if (gMenusCurrentItemIndex != ENTRY_USER_DMR_ID)
 			{
-				uint32_t saveTrxTalkGroupOrPcId = trxTalkGroupOrPcId;
-				trxTalkGroupOrPcId = tmpID;
-				nonVolatileSettings.overrideTG = trxTalkGroupOrPcId;
 				if (gMenusCurrentItemIndex == ENTRY_PC || (pcIdx != 0 && contact.callType == 0x01))
 				{
-					// Private Call
-
-					if ((saveTrxTalkGroupOrPcId >> 24) != PC_CALL_FLAG)
-					{
-						// if the current Tx TG is a TalkGroup then save it so it can be stored after the end of the private call
-						menuUtilityTgBeforePcMode = saveTrxTalkGroupOrPcId;
-					}
-					nonVolatileSettings.overrideTG |= (PC_CALL_FLAG << 24);
+					setOverrideTGorPC(tmpID, true);
+				}
+				else
+				{
+					setOverrideTGorPC(tmpID, false);
 				}
 			}
 			else
@@ -277,12 +271,13 @@ static void handleEvent(uiEvent_t *ev)
 			// Add a digit
 			if (sLen < 7)
 			{
-				char c[2] = {0, 0};
-				c[0] = keypressToNumberChar(ev->keys);
-				
-				if (c[0]!=0)
+				int keyval = menuGetKeypadKeyValue(ev, true);
+
+				if (keyval != 99)
 				{
-					strcat(digits,c);
+					char c[2] = {0, 0};
+					c[0] = keyval+'0';
+					strcat(digits, c);
 					refreshScreen = true;
 				}
 			}

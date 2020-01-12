@@ -26,6 +26,8 @@ extern const int TX_TIMER_Y_OFFSET;
 extern const int CONTACT_Y_POS;
 extern const int FREQUENCY_X_POS;
 
+enum UI_CALL_STATE { NOT_IN_CALL=0, PRIVATE_CALL_ACCEPT, PRIVATE_CALL, PRIVATE_CALL_DECLINED };
+
 typedef struct dmrIdDataStruct
 {
 	int id;
@@ -61,18 +63,18 @@ extern uint32_t menuUtilityReceivedPcId;
 extern uint32_t menuUtilityTgBeforePcMode;
 extern const uint32_t RSSI_UPDATE_COUNTER_RELOAD;
 
+char *chomp(char *str);
+int32_t getCallsignEndingPos(char *str);
 bool dmrIDLookup(int targetId, dmrIdDataStruct_t *foundRecord);
 bool contactIDLookup(uint32_t id, int calltype, char *buffer);
 void menuUtilityRenderQSOData(void);
 void menuUtilityRenderHeader(void);
 void lastheardInitList(void);
 bool lastHeardListUpdate(uint8_t *dmrDataBuffer);
-bool menuUtilityHandlePrivateCallActions(uiEvent_t *ev);
 void lastHeardClearLastID(void);
 void drawRSSIBarGraph(void);
 void drawDMRMicLevelBarGraph(void);
 void setOverrideTGorPC(int tgOrPc, bool privateCall);
-char keypressToNumberChar(keyboardCode_t keys);
 void printFrequency(bool isTX, bool hasFocus, uint8_t y, uint32_t frequency, bool displayVFOChannel);
 void printToneAndSquelch(void);
 
