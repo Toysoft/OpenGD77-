@@ -49,6 +49,7 @@ static void toneScan(void);
 static void CCscan(void);
 static bool isDisplayingQSOData=false;
 static int tmpQuickMenuDmrFilterLevel;
+static void menuVFOUpdateTrxID(void );
 
 static bool toneScanActive = false;					//tone scan active flag  (CTCSS)
 static bool CCScanActive = false;					//colour code scan active
@@ -439,6 +440,7 @@ static void update_frequency(int frequency)
 			set_melody(melody_ERROR_beep);
 		}
 	}
+	menuClearPrivateCall();
 }
 
 static void checkAndFixIndexInRxGroup(void)
@@ -487,10 +489,16 @@ static void handleEvent(uiEvent_t *ev)
 			}
 			if (trxTalkGroupOrPcId != tg)
 			{
-				trxTalkGroupOrPcId = tg;
-				nonVolatileSettings.overrideTG = trxTalkGroupOrPcId;
+				if ((tg>>24) & PC_CALL_FLAG)
+				{
+					menuAcceptPrivateCall(tg & 0xffffff);
+				}
+				else
+				{
+					trxTalkGroupOrPcId = tg;
+					nonVolatileSettings.overrideTG = trxTalkGroupOrPcId;
+				}
 			}
-
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 			menuVFOModeUpdateScreen(0);
 			return;
@@ -537,11 +545,6 @@ static void handleEvent(uiEvent_t *ev)
 
 		if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 		{
-			if (menuUtilityHandlePrivateCallActions(ev))
-			{
-				reset_freq_enter_digits();
-				return;
-			}
 			if (ev->buttons & BUTTON_SK2 )
 			{
 				menuSystemPushNewMenu(MENU_CHANNEL_DETAILS);
@@ -669,10 +672,16 @@ static void handleEvent(uiEvent_t *ev)
 			}
 			else if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 			{
-				if (menuUtilityHandlePrivateCallActions(ev))
+				if ((ev->buttons & BUTTON_SK2 )!=0 && menuUtilityTgBeforePcMode != 0)
 				{
-					return;
+					nonVolatileSettings.overrideTG = menuUtilityTgBeforePcMode;
+					menuVFOUpdateTrxID();
+					menuDisplayQSODataState= QSO_DISPLAY_DEFAULT_SCREEN;// Force redraw
+					menuClearPrivateCall();
+					menuVFOModeUpdateScreen(0);
+					return;// The event has been handled
 				}
+
 				menuSystemSetCurrentMenu(MENU_CHANNEL_MODE);
 				return;
 			}
@@ -698,23 +707,9 @@ static void handleEvent(uiEvent_t *ev)
 							nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber]++;
 							checkAndFixIndexInRxGroup();
 						}
-						nonVolatileSettings.tsManualOverride &= 0x0F; // remove TS override for VFO
-
-						// Check if this channel has an Rx Group
-						if (rxGroupData.name[0]!=0 && nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber] < rxGroupData.NOT_IN_MEMORY_numTGsInGroup)
-						{
-							codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber]],&contactData);
-						}
-						else
-						{
-							codeplugContactGetDataForIndex(currentChannelData->contact,&contactData);
-						}
-
-						trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
-
 						nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
-						trxTalkGroupOrPcId = contactData.tgNumber;
-						lastHeardClearLastID();
+						menuClearPrivateCall();
+						menuVFOUpdateTrxID();
 						menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 						menuVFOModeUpdateScreen(0);
 					}
@@ -765,24 +760,9 @@ static void handleEvent(uiEvent_t *ev)
 										rxGroupData.NOT_IN_MEMORY_numTGsInGroup - 1;
 							}
 						}
-						nonVolatileSettings.tsManualOverride &= 0x0F; // remove TS override for VFO
-
-						// Check if this channel has an Rx Group
-						if (rxGroupData.name[0]!=0 && nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber] < rxGroupData.NOT_IN_MEMORY_numTGsInGroup)
-						{
-							codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber]],&contactData);
-						}
-						else
-						{
-							codeplugContactGetDataForIndex(currentChannelData->contact,&contactData);
-						}
-
 						nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
-						trxTalkGroupOrPcId = contactData.tgNumber;
-
-						trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
-
-						lastHeardClearLastID();
+						menuClearPrivateCall();
+						menuVFOUpdateTrxID();
 						menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 						menuVFOModeUpdateScreen(0);
 					}
@@ -1160,4 +1140,33 @@ static void CCscan(void)
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		menuVFOModeUpdateScreen(0);
 	}
+}
+
+static void menuVFOUpdateTrxID(void )
+{
+	if (nonVolatileSettings.overrideTG != 0)
+	{
+		trxTalkGroupOrPcId = nonVolatileSettings.overrideTG;
+	}
+	else
+	{
+		nonVolatileSettings.tsManualOverride &= 0x0F; // remove TS override for VFO
+
+		// Check if this channel has an Rx Group
+		if (rxGroupData.name[0]!=0 && nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber] < rxGroupData.NOT_IN_MEMORY_numTGsInGroup)
+		{
+			codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber]],&contactData);
+		}
+		else
+		{
+			codeplugContactGetDataForIndex(currentChannelData->contact,&contactData);
+		}
+
+		trxTalkGroupOrPcId = contactData.tgNumber;
+
+		trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
+	}
+	lastHeardClearLastID();
+	menuClearPrivateCall();
+
 }

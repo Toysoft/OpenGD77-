@@ -31,6 +31,7 @@ static void handleUpKey(uiEvent_t *ev);
 
 static void updateQuickMenuScreen(void);
 static void handleQuickMenuEvent(uiEvent_t *ev);
+static void menuChannelUpdateTrxID(void );
 
 static struct_codeplugZone_t currentZone;
 static struct_codeplugRxGroup_t rxGroupData;
@@ -438,8 +439,15 @@ static void handleEvent(uiEvent_t *ev)
 			}
 			if (trxTalkGroupOrPcId != tg)
 			{
-				trxTalkGroupOrPcId = tg;
-				nonVolatileSettings.overrideTG = trxTalkGroupOrPcId;
+				if ((tg>>24) & PC_CALL_FLAG)
+				{
+					menuAcceptPrivateCall(tg & 0xffffff);
+				}
+				else
+				{
+					trxTalkGroupOrPcId = tg;
+					nonVolatileSettings.overrideTG = trxTalkGroupOrPcId;
+				}
 			}
 
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
@@ -493,11 +501,6 @@ static void handleEvent(uiEvent_t *ev)
 		}
 		else if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 		{
-			if (menuUtilityHandlePrivateCallActions(ev))
-			{
-				return;
-			}
-
 			if (directChannelNumber>0)
 			{
 				if(strcmp(currentZoneName,currentLanguage->all_channels)==0)
@@ -554,9 +557,15 @@ static void handleEvent(uiEvent_t *ev)
 		}
 		else if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 		{
-			if (menuUtilityHandlePrivateCallActions(ev))
+			if ((ev->buttons & BUTTON_SK2 )!=0 && menuUtilityTgBeforePcMode != 0)
 			{
-				return;
+				nonVolatileSettings.overrideTG = menuUtilityTgBeforePcMode;
+				menuClearPrivateCall();
+
+				menuChannelUpdateTrxID();
+				menuDisplayQSODataState= QSO_DISPLAY_DEFAULT_SCREEN;// Force redraw
+				menuChannelModeUpdateScreen(0);
+				return;// The event has been handled
 			}
 			if(directChannelNumber>0)
 			{
@@ -595,22 +604,9 @@ static void handleEvent(uiEvent_t *ev)
 							nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE] = 0;
 						}
 					}
-					nonVolatileSettings.tsManualOverride &= 0xF0; // remove TS override for channel
-
-					if (rxGroupData.name[0]!=0 && nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE] < rxGroupData.NOT_IN_MEMORY_numTGsInGroup)
-					{
-						codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE]],&contactData);
-					}
-					else
-					{
-						codeplugContactGetDataForIndex(channelScreenChannelData.contact,&contactData);
-					}
-
-					trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
-
 					nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
-					trxTalkGroupOrPcId = contactData.tgNumber;
-					lastHeardClearLastID();
+					menuClearPrivateCall();
+					menuChannelUpdateTrxID();
 					menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 					menuChannelModeUpdateScreen(0);
 				}
@@ -661,21 +657,9 @@ static void handleEvent(uiEvent_t *ev)
 									rxGroupData.NOT_IN_MEMORY_numTGsInGroup - 1;
 						}
 					}
-					nonVolatileSettings.tsManualOverride &= 0xF0; // remove TS override from channel
-					if (rxGroupData.name[0]!=0 && nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE] < rxGroupData.NOT_IN_MEMORY_numTGsInGroup)
-					{
-						codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE]],&contactData);
-					}
-					else
-					{
-						codeplugContactGetDataForIndex(channelScreenChannelData.contact,&contactData);
-					}
-
-					trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
-
 					nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
-					trxTalkGroupOrPcId = contactData.tgNumber;
-					lastHeardClearLastID();
+					menuClearPrivateCall();
+					menuChannelUpdateTrxID();
 					menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 					menuChannelModeUpdateScreen(0);
 				}
@@ -1143,4 +1127,30 @@ void menuChannelColdStart(void)
 {
 	// Force to re-read codeplug data (needed due to "All Channels" translation)
 	channelScreenChannelData.rxFreq = 0;
+}
+
+static void menuChannelUpdateTrxID(void )
+{
+	if (nonVolatileSettings.overrideTG != 0)
+	{
+		trxTalkGroupOrPcId = nonVolatileSettings.overrideTG;
+	}
+	else
+	{
+		nonVolatileSettings.tsManualOverride &= 0xF0; // remove TS override for channel
+
+		if (rxGroupData.name[0]!=0 && nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE] < rxGroupData.NOT_IN_MEMORY_numTGsInGroup)
+		{
+			codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE]],&contactData);
+		}
+		else
+		{
+			codeplugContactGetDataForIndex(channelScreenChannelData.contact,&contactData);
+		}
+
+		trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
+		trxTalkGroupOrPcId = contactData.tgNumber;
+	}
+	lastHeardClearLastID();
+    menuClearPrivateCall();
 }

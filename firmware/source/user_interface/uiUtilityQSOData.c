@@ -542,37 +542,6 @@ bool contactIDLookup(uint32_t id, int calltype, char *buffer)
 	return false;
 }
 
-bool menuUtilityHandlePrivateCallActions(uiEvent_t *ev)
-{
-	if ((ev->buttons & BUTTON_SK2 )!=0 &&   menuUtilityTgBeforePcMode != 0 && KEYCHECK_SHORTUP(ev->keys,KEY_RED))
-	{
-		trxTalkGroupOrPcId = menuUtilityTgBeforePcMode;
-		nonVolatileSettings.overrideTG = menuUtilityTgBeforePcMode;
-		menuUtilityReceivedPcId = 0;
-		menuUtilityTgBeforePcMode = 0;
-		menuDisplayQSODataState= QSO_DISPLAY_DEFAULT_SCREEN;// Force redraw
-		return true;// The event has been handled
-	}
-
-	// Note.  menuUtilityReceivedPcId is used to store the PcId but also used as a flag to indicate that a Pc request has occurred.
-	if (menuUtilityReceivedPcId != 0x00 && (LinkHead->talkGroupOrPcId>>24) == PC_CALL_FLAG && nonVolatileSettings.overrideTG != LinkHead->talkGroupOrPcId)
-	{
-		if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
-		{
-			// User has accepted the private call
-			menuUtilityTgBeforePcMode = trxTalkGroupOrPcId;// save the current TG
-			nonVolatileSettings.overrideTG =  menuUtilityReceivedPcId;
-			trxTalkGroupOrPcId = menuUtilityReceivedPcId;
-			settingsPrivateCallMuteMode=false;
-			menuUtilityRenderQSOData();
-		}
-		menuUtilityReceivedPcId = 0;
-		qsodata_timer=1;// time out the qso timer will force the VFO or Channel mode screen to redraw its normal display
-		return true;// The event has been handled
-	}
-	return false;// The event has not been handled
-}
-
 static void displayChannelNameOrRxFrequency(char *buffer, size_t maxLen)
 {
 	if (menuSystemGetCurrentMenuNumber() == MENU_CHANNEL_MODE)
@@ -739,24 +708,22 @@ void menuUtilityRenderQSOData(void)
 
 			if (!contactIDLookup(LinkHead->id, CONTACT_CALLTYPE_PC, buffer))
 			{
-				dmrIDLookup( (LinkHead->id & 0xFFFFFF),&currentRec);
+				dmrIDLookup(LinkHead->id, &currentRec);
 				strncpy(buffer, currentRec.text, 16);
 				buffer[16] = 0;
 			}
 			ucPrintCentered(16, buffer, FONT_8x16);
-
-			// Are we already in PC mode to this caller ?
-			if (((trxTalkGroupOrPcId & 0xFFFFFF) != (LinkHead->id & 0xFFFFFF)) && ((LinkHead->talkGroupOrPcId & 0xFFFFFF)==trxDMRID))
+			ucPrintCentered(32, currentLanguage->private_call, FONT_8x16);
+			if (LinkHead->talkGroupOrPcId != (trxDMRID | (PC_CALL_FLAG<<24)))
 			{
-				// No either we are not in PC mode or not on a Private Call to this station
-				ucPrintCentered(32, currentLanguage->accept_call, FONT_8x16);
-				ucDrawChoice(CHOICE_YESNO, false);
-				menuUtilityReceivedPcId = LinkHead->id | (PC_CALL_FLAG<<24);
-				set_melody(melody_private_call);
-			}
-			else
-			{
-				ucPrintCentered(32, currentLanguage->private_call, FONT_8x16);
+				if (!contactIDLookup(LinkHead->talkGroupOrPcId & 0xffffff, CONTACT_CALLTYPE_PC, buffer))
+				{
+					dmrIDLookup(LinkHead->talkGroupOrPcId & 0xffffff, &currentRec);
+					strncpy(buffer, currentRec.text, 16);
+					buffer[16] = 0;
+				}
+				ucPrintCentered(52, buffer, FONT_6x8);
+				ucPrintAt(1, 54, "=>", FONT_6x8);
 			}
 		}
 		else
@@ -968,15 +935,18 @@ void drawDMRMicLevelBarGraph(void)
 }
 
 void setOverrideTGorPC(int tgOrPc, bool privateCall) {
+	int tmpTGorPC = nonVolatileSettings.overrideTG;
+
+	menuUtilityTgBeforePcMode = 0;
 	nonVolatileSettings.overrideTG = tgOrPc;
 	if (privateCall == true)
 	{
 		// Private Call
 
-		if ((trxTalkGroupOrPcId >> 24) != PC_CALL_FLAG)
+		if ((tmpTGorPC >> 24) != PC_CALL_FLAG)
 		{
-			// if the current Tx TG is a TalkGroup then save it so it can be stored after the end of the private call
-			menuUtilityTgBeforePcMode = trxTalkGroupOrPcId;
+			// if the current Tx TG is a TalkGroup then save it so it can be restored after the end of the private call
+			menuUtilityTgBeforePcMode = tmpTGorPC;
 		}
 		nonVolatileSettings.overrideTG |= (PC_CALL_FLAG << 24);
 	}
