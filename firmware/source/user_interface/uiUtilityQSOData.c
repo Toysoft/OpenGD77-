@@ -558,7 +558,7 @@ static void displayChannelNameOrRxFrequency(char *buffer, size_t maxLen)
 	ucPrintCentered(52, buffer, FONT_6x8);
 }
 
-void printSplitOrSpanText(uint8_t y, char *text, bool smallFont)
+static void printSplitOrSpanText(uint8_t y, char *text)
 {
 	uint8_t len = strlen(text);
 
@@ -567,7 +567,7 @@ void printSplitOrSpanText(uint8_t y, char *text, bool smallFont)
 
 	if (len <= 16)
 	{
-		ucPrintCentered(y, text, smallFont ? FONT_6x8 : FONT_8x16);
+		ucPrintCentered(y, text, FONT_8x16);
 	}
 	else
 	{
@@ -648,7 +648,7 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 			pbuf = chomp(buffer);
 
 			if (strlen(pbuf))
-				printSplitOrSpanText(48, pbuf, false);
+				printSplitOrSpanText(48, pbuf);
 			else
 				displayChannelNameOrRxFrequency(buffer, (sizeof(buffer) / sizeof(buffer[0])));
 		}
@@ -666,7 +666,7 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 			pbuf = chomp(buffer);
 
 			if (strlen(pbuf))
-				printSplitOrSpanText(48, pbuf, false);
+				printSplitOrSpanText(48, pbuf);
 			else
 				displayChannelNameOrRxFrequency(buffer, (sizeof(buffer) / sizeof(buffer[0])));
 		}

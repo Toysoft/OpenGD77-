@@ -65,7 +65,6 @@ extern const uint32_t RSSI_UPDATE_COUNTER_RELOAD;
 
 char *chomp(char *str);
 int32_t getCallsignEndingPos(char *str);
-void printSplitOrSpanText(uint8_t y, char *text, bool smallFont);
 bool dmrIDLookup(int targetId, dmrIdDataStruct_t *foundRecord);
 bool contactIDLookup(uint32_t id, int calltype, char *buffer);
 void menuUtilityRenderQSOData(void);

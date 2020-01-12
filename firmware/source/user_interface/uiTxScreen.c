@@ -260,7 +260,7 @@ static void handleEvent(uiEvent_t *ev)
 	if (trxGetMode() == RADIO_MODE_DIGITAL && (KEYCHECK_DOWN(ev->keys, KEY_SK1)) && isShowingLastHeard==false && trxIsTransmitting==true)
 	{
 		isShowingLastHeard=true;
-		menuLastHeardUpdateScreen(false, false);
+		menuLastHeardUpdateScreen(false);
 	}
 	else
 	{

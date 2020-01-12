@@ -16,10 +16,9 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "fw_ticks.h"
+#include <functions/fw_ticks.h>
 
-#define PIT_COUNTS_PER_SECOND  10000U
-#define PIT_COUNTS_PER_MS      (PIT_COUNTS_PER_SECOND / 1000U)
+#define PIT_COUNTS_PER_MS  10U
 
 extern volatile uint32_t PITCounter;
 
