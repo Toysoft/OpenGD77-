@@ -144,7 +144,7 @@ LinkItem_t * findInList(int id)
     return NULL;
 }
 
-static uint8_t *coordsToMaidenhead(double longitude, double latitude, bool extended)
+static uint8_t *coordsToMaidenhead(double longitude, double latitude)
 {
 	static uint8_t maidenhead[15];
 	double l, l2;
@@ -168,6 +168,7 @@ static uint8_t *coordsToMaidenhead(double longitude, double latitude, bool exten
 		c = (uint8_t) l;
 		maidenhead[4 + i] = c + 'A';
 
+#if 0
 		if (extended)
 		{
 			l2 = c;
@@ -191,11 +192,16 @@ static uint8_t *coordsToMaidenhead(double longitude, double latitude, bool exten
 			c = (uint8_t) l;
 			maidenhead[12 + i] = c + (extended ? 'A' : 'a');
 		}
+#endif
 
 		l = latitude;
 	}
 
+#if 0
 	maidenhead[extended ? 14 : 6] = '\0';
+#else
+	maidenhead[6] = '\0';
+#endif
 
 	return &maidenhead[0];
 }
@@ -245,7 +251,7 @@ static uint8_t *decodeGPSPosition(uint8_t *data)
 	longitude *= (float)longitudeI;
 	latitude  *= (float)latitudeI;
 
-	return (coordsToMaidenhead(longitude, latitude, false));
+	return (coordsToMaidenhead(longitude, latitude));
 }
 
 static uint8_t *decodeTA(uint8_t *TA)
