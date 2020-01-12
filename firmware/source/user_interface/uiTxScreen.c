@@ -264,7 +264,7 @@ static void handleEvent(uiEvent_t *ev)
 	}
 	else
 	{
-		if (isShowingLastHeard)
+		if (isShowingLastHeard && KEYCHECK_UP(ev->keys, KEY_SK1))
 		{
 			isShowingLastHeard=false;
 			updateScreen();
