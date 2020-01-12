@@ -20,7 +20,7 @@
  *
  * Translators: SQ7PTE
  *
- * Rev: 4.1
+ * Rev: 4.2
  */
 #ifndef USER_INTERFACE_LANGUAGES_POLISH_H_
 #define USER_INTERFACE_LANGUAGES_POLISH_H_
@@ -69,7 +69,7 @@ const stringsTable_t polishLanguage =
 .user_dmr_id				= "ID u’ytkownika", // MaxLen: 15
 .contact 				= "Kontakt", // MaxLen: 15
 .accept_call				= "Zaakceptowa‚?", // MaxLen: 16
-.private_call				= "Rozmowa prywatna", // MaxLen: 16
+.private_call				= "Rozm. Pryw.", // MaxLen: 16
 .squelch				= "Squelch", // MaxLen: 8
 .quick_menu 				= "Szybkie menu", // MaxLen: 16
 .filter					= "Filtr", // MaxLen: 7 (with ':' + settings: .none, "CC", "CC,TS", "CC,TS,TG")
