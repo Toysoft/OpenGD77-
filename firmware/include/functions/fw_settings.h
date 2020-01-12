@@ -68,6 +68,7 @@ typedef struct settingsStruct
 	uint8_t			scanDelay;
 	uint8_t			squelchDefaults[RADIO_BANDS_TOTAL_NUM];// VHF,200Mhz and UHF
 	uint8_t			hotspotType;
+	bool            privateCalls;
 
 } settingsStruct_t;
 

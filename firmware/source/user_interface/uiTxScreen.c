@@ -81,7 +81,7 @@ int menuTxScreen(uiEvent_t *ev, bool isFirstRun)
 			PTTToggledDown = false;
 		}
 
-		m = micm = ev->ticks;
+		m = micm = ev->time;
 	}
 	else
 	{
@@ -112,7 +112,7 @@ int menuTxScreen(uiEvent_t *ev, bool isFirstRun)
 					ucPrintCentered(20, currentLanguage->timeout, FONT_16x32);
 					ucRender();
 					PTTToggledDown = false;
-					mto = ev->ticks;
+					mto = ev->time;
 				}
 				else
 				{
@@ -128,11 +128,11 @@ int menuTxScreen(uiEvent_t *ev, bool isFirstRun)
 			{
 				if (trxGetMode() == RADIO_MODE_DIGITAL)
 				{
-					if ((ev->ticks - micm) > 100)
+					if ((ev->time - micm) > 100)
 					{
 						drawDMRMicLevelBarGraph();
 						ucRenderRows(1,2);
-						micm = ev->ticks;
+						micm = ev->time;
 					}
 				}
 			}
@@ -142,7 +142,7 @@ int menuTxScreen(uiEvent_t *ev, bool isFirstRun)
 		// screen won't be visible at all.
 		if ((currentChannelData->tot != 0) && (timeInSeconds == 0))
 		{
-			if ((ev->ticks - mto) < 1000)
+			if ((ev->time - mto) < 500)
 				return 0;
 		}
 
@@ -150,11 +150,11 @@ int menuTxScreen(uiEvent_t *ev, bool isFirstRun)
 		// Got an event, or
 		if (ev->hasEvent || // PTT released, Timeout triggered,
 				( (((ev->buttons & BUTTON_PTT) == 0) || ((currentChannelData->tot != 0) && (timeInSeconds == 0))) ||
-						// or waiting for DMR ending (meanwhile, updating every 200 ticks)
-						((trxIsTransmitting == false) && ((ev->ticks - m) > 200))))
+						// or waiting for DMR ending (meanwhile, updating every 100ms)
+						((trxIsTransmitting == false) && ((ev->time - m) > 100))))
 		{
 			handleEvent(ev);
-			m = ev->ticks;
+			m = ev->time;
 		}
 	}
 	return 0;
@@ -257,14 +257,14 @@ static void handleEvent(uiEvent_t *ev)
 		GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
 	}
 
-	if (trxGetMode() == RADIO_MODE_DIGITAL && ev->buttons & BUTTON_SK1 && isShowingLastHeard==false && trxIsTransmitting==true)
+	if (trxGetMode() == RADIO_MODE_DIGITAL && (KEYCHECK_DOWN(ev->keys, KEY_SK1)) && isShowingLastHeard==false && trxIsTransmitting==true)
 	{
 		isShowingLastHeard=true;
-		menuLastHeardupdateScreen(false);
+		menuLastHeardUpdateScreen(false);
 	}
 	else
 	{
-		if (isShowingLastHeard)
+		if (isShowingLastHeard && KEYCHECK_UP(ev->keys, KEY_SK1))
 		{
 			isShowingLastHeard=false;
 			updateScreen();

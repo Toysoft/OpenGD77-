@@ -19,15 +19,16 @@
 #define _FW_MENUSYSTEM_H_
 #include "fw_main.h"
 
-typedef enum { NO_EVENT = 0, KEY_EVENT=0x01, BUTTON_EVENT = 0x02 } uiEventInput_t;
+typedef enum { NO_EVENT = 0, KEY_EVENT=0x01, BUTTON_EVENT = 0x02, FUNCTION_EVENT = 0x04 } uiEventInput_t;
 
 typedef struct
 {
 	uint32_t	    buttons;
 	keyboardCode_t  keys;
+	uint16_t		function;
 	uiEventInput_t	events;
 	bool		    hasEvent;
-	uint32_t 	    ticks;
+	uint32_t 	    time;
 } uiEvent_t;
 
 #define MENU_MAX_DISPLAYED_ENTRIES 3
@@ -36,6 +37,8 @@ typedef struct
 
 extern bool uiChannelModeScanActive;
 extern int menuDisplayLightTimer;
+extern int uiPrivateCallState;
+extern int uiPrivateCallLastID;
 
 
 typedef int (*menuFunctionPointer_t)(uiEvent_t *,bool); // Typedef for menu function pointers.  Functions are passed the key, the button and the event data. Event can be a Key or a button or both. Last arg is for when the function is only called to initialise and display its screen.
@@ -73,6 +76,7 @@ void menuSystemLanguageHasChanged(void);
 void displayLightTrigger(void);
 void displayLightOverrideTimeout(int timeout);
 void menuSystemPushNewMenu(int menuNumber);
+void menuSystemPushNewMenuWithQuickFunction(int menuNumber, int quickFunction);
 
 void menuSystemSetCurrentMenu(int menuNumber);
 int menuSystemGetCurrentMenuNumber(void);
@@ -92,7 +96,11 @@ void menuBatteryPushBackVoltage(int32_t voltage);
 
 void menuLockScreenPop(void);
 
-void menuLastHeardupdateScreen(bool showTitleOrHeader);
+void menuLastHeardUpdateScreen(bool showTitleOrHeader);
+
+void menuClearPrivateCall(void);
+void menuAcceptPrivateCall(int id);
+
 
 /*
  * ---------------------- IMPORTANT ----------------------------
@@ -129,6 +137,14 @@ enum MENU_SCREENS { MENU_SPLASH_SCREEN=0,
 					MENU_CONTACT_DETAILS,
 					MENU_CONTACT_NEW,
 					MENU_LANGUAGE,
+					MENU_PRIVATE_CALL,
+					NUM_MENU_ENTRIES
+};
+
+enum QUICK_FUNCTIONS {  QUICK_FUNCTIONS_MENU_PLACEHOLDER = 20,   // All values lower than this are used as menu entries
+						START_SCANNING,
+						INC_BRIGHTNESS,
+						DEC_BRIGHTNESS
 };
 
 // This is used to store current position in menus. The system keeps track of its value, e.g entering in
@@ -173,5 +189,6 @@ int menuContactList(uiEvent_t *event, bool isFirstRun);
 int menuContactListSubMenu(uiEvent_t *event, bool isFirstRun);
 int menuContactDetails(uiEvent_t *event, bool isFirstRun);
 int menuLanguage(uiEvent_t *event, bool isFirstRun);
+int menuPrivateCall(uiEvent_t *event, bool isFirstRun);
 
 #endif

@@ -25,9 +25,7 @@
 #include "fw_trx.h"
 #include "fw_settings.h"
 #include <math.h>
-#include "fw_ticks.h"
-
-void updateLastHeardList(int id,int talkGroup);
+#include <functions/fw_ticks.h>
 
 const int QSO_TIMER_TIMEOUT = 2400;
 const int TX_TIMER_Y_OFFSET = 8;
@@ -42,7 +40,7 @@ LinkItem_t *LinkHead = callsList;
 int numLastHeard=0;
 int menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 int qsodata_timer;
-const uint32_t RSSI_UPDATE_COUNTER_RELOAD = 500;
+const uint32_t RSSI_UPDATE_COUNTER_RELOAD = 100;
 
 uint32_t menuUtilityReceivedPcId 	= 0;// No current Private call awaiting acceptance
 uint32_t menuUtilityTgBeforePcMode 	= 0;// No TG saved, prior to a Private call being accepted.
@@ -56,7 +54,7 @@ uint32_t lastTG=0;
 /*
  * Remove space at the end of the array, and return pointer to first non space character
  */
-static char *chomp(char *str)
+char *chomp(char *str)
 {
 	char *sp = str, *ep = str;
 
@@ -83,7 +81,7 @@ static char *chomp(char *str)
 	return sp;
 }
 
-static int32_t getCallsignEndingPos(char *str)
+int32_t getCallsignEndingPos(char *str)
 {
 	char *p = str;
 
@@ -144,7 +142,7 @@ LinkItem_t * findInList(int id)
     return NULL;
 }
 
-static uint8_t *coordsToMaidenhead(double longitude, double latitude, bool extended)
+static uint8_t *coordsToMaidenhead(double longitude, double latitude)
 {
 	static uint8_t maidenhead[15];
 	double l, l2;
@@ -168,6 +166,7 @@ static uint8_t *coordsToMaidenhead(double longitude, double latitude, bool exten
 		c = (uint8_t) l;
 		maidenhead[4 + i] = c + 'A';
 
+#if 0
 		if (extended)
 		{
 			l2 = c;
@@ -191,11 +190,16 @@ static uint8_t *coordsToMaidenhead(double longitude, double latitude, bool exten
 			c = (uint8_t) l;
 			maidenhead[12 + i] = c + (extended ? 'A' : 'a');
 		}
+#endif
 
 		l = latitude;
 	}
 
+#if 0
 	maidenhead[extended ? 14 : 6] = '\0';
+#else
+	maidenhead[6] = '\0';
+#endif
 
 	return &maidenhead[0];
 }
@@ -245,7 +249,7 @@ static uint8_t *decodeGPSPosition(uint8_t *data)
 	longitude *= (float)longitudeI;
 	latitude  *= (float)latitudeI;
 
-	return (coordsToMaidenhead(longitude, latitude, false));
+	return (coordsToMaidenhead(longitude, latitude));
 }
 
 static uint8_t *decodeTA(uint8_t *TA)
@@ -544,37 +548,6 @@ bool contactIDLookup(uint32_t id, int calltype, char *buffer)
 	return false;
 }
 
-bool menuUtilityHandlePrivateCallActions(uiEvent_t *ev)
-{
-	if ((ev->buttons & BUTTON_SK2 )!=0 &&   menuUtilityTgBeforePcMode != 0 && KEYCHECK_SHORTUP(ev->keys,KEY_RED))
-	{
-		trxTalkGroupOrPcId = menuUtilityTgBeforePcMode;
-		nonVolatileSettings.overrideTG = menuUtilityTgBeforePcMode;
-		menuUtilityReceivedPcId = 0;
-		menuUtilityTgBeforePcMode = 0;
-		menuDisplayQSODataState= QSO_DISPLAY_DEFAULT_SCREEN;// Force redraw
-		return true;// The event has been handled
-	}
-
-	// Note.  menuUtilityReceivedPcId is used to store the PcId but also used as a flag to indicate that a Pc request has occurred.
-	if (menuUtilityReceivedPcId != 0x00 && (LinkHead->talkGroupOrPcId>>24) == PC_CALL_FLAG && nonVolatileSettings.overrideTG != LinkHead->talkGroupOrPcId)
-	{
-		if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
-		{
-			// User has accepted the private call
-			menuUtilityTgBeforePcMode = trxTalkGroupOrPcId;// save the current TG
-			nonVolatileSettings.overrideTG =  menuUtilityReceivedPcId;
-			trxTalkGroupOrPcId = menuUtilityReceivedPcId;
-			settingsPrivateCallMuteMode=false;
-			menuUtilityRenderQSOData();
-		}
-		menuUtilityReceivedPcId = 0;
-		qsodata_timer=1;// time out the qso timer will force the VFO or Channel mode screen to redraw its normal display
-		return true;// The event has been handled
-	}
-	return false;// The event has not been handled
-}
-
 static void displayChannelNameOrRxFrequency(char *buffer, size_t maxLen)
 {
 	if (menuSystemGetCurrentMenuNumber() == MENU_CHANNEL_MODE)
@@ -591,7 +564,7 @@ static void displayChannelNameOrRxFrequency(char *buffer, size_t maxLen)
 	ucPrintCentered(52, buffer, FONT_6x8);
 }
 
-void printSplitOrSpanText(uint8_t y, char *text)
+static void printSplitOrSpanText(uint8_t y, char *text)
 {
 	uint8_t len = strlen(text);
 
@@ -741,24 +714,22 @@ void menuUtilityRenderQSOData(void)
 
 			if (!contactIDLookup(LinkHead->id, CONTACT_CALLTYPE_PC, buffer))
 			{
-				dmrIDLookup( (LinkHead->id & 0xFFFFFF),&currentRec);
+				dmrIDLookup(LinkHead->id, &currentRec);
 				strncpy(buffer, currentRec.text, 16);
 				buffer[16] = 0;
 			}
 			ucPrintCentered(16, buffer, FONT_8x16);
-
-			// Are we already in PC mode to this caller ?
-			if (((trxTalkGroupOrPcId & 0xFFFFFF) != (LinkHead->id & 0xFFFFFF)) && ((LinkHead->talkGroupOrPcId & 0xFFFFFF)==trxDMRID))
+			ucPrintCentered(32, currentLanguage->private_call, FONT_8x16);
+			if (LinkHead->talkGroupOrPcId != (trxDMRID | (PC_CALL_FLAG<<24)))
 			{
-				// No either we are not in PC mode or not on a Private Call to this station
-				ucPrintCentered(32, currentLanguage->accept_call, FONT_8x16);
-				ucDrawChoice(CHOICE_YESNO, false);
-				menuUtilityReceivedPcId = LinkHead->id | (PC_CALL_FLAG<<24);
-				set_melody(melody_private_call);
-			}
-			else
-			{
-				ucPrintCentered(32, currentLanguage->private_call, FONT_8x16);
+				if (!contactIDLookup(LinkHead->talkGroupOrPcId & 0xffffff, CONTACT_CALLTYPE_PC, buffer))
+				{
+					dmrIDLookup(LinkHead->talkGroupOrPcId & 0xffffff, &currentRec);
+					strncpy(buffer, currentRec.text, 16);
+					buffer[16] = 0;
+				}
+				ucPrintCentered(52, buffer, FONT_6x8);
+				ucPrintAt(1, 54, "=>", FONT_6x8);
 			}
 		}
 		else
@@ -783,11 +754,11 @@ void menuUtilityRenderQSOData(void)
 			// first check if we have this ID in the DMR ID data
 			if (contactIDLookup(LinkHead->id, CONTACT_CALLTYPE_PC, buffer))
 			{
-				displayContactTextInfos(buffer, 16,false);
+				displayContactTextInfos(buffer, 16, false);
 			}
 			else if (dmrIDLookup((LinkHead->id & 0xFFFFFF), &currentRec))
 			{
-				displayContactTextInfos(currentRec.text, sizeof(currentRec.text),false);
+				displayContactTextInfos(currentRec.text, sizeof(currentRec.text), false);
 			}
 			else
 			{
@@ -803,7 +774,7 @@ void menuUtilityRenderQSOData(void)
 						displayContactTextInfos(bufferTA, sizeof(bufferTA), true);
 					}
 					else
-						displayContactTextInfos(LinkHead->talkerAlias, sizeof(LinkHead->talkerAlias),true);
+						displayContactTextInfos(LinkHead->talkerAlias, sizeof(LinkHead->talkerAlias), true);
 				}
 				else
 				{
@@ -970,29 +941,21 @@ void drawDMRMicLevelBarGraph(void)
 }
 
 void setOverrideTGorPC(int tgOrPc, bool privateCall) {
+	int tmpTGorPC = nonVolatileSettings.overrideTG;
+
+	menuUtilityTgBeforePcMode = 0;
 	nonVolatileSettings.overrideTG = tgOrPc;
 	if (privateCall == true)
 	{
 		// Private Call
 
-		if ((trxTalkGroupOrPcId >> 24) != PC_CALL_FLAG)
+		if ((tmpTGorPC >> 24) != PC_CALL_FLAG)
 		{
-			// if the current Tx TG is a TalkGroup then save it so it can be stored after the end of the private call
-			menuUtilityTgBeforePcMode = trxTalkGroupOrPcId;
+			// if the current Tx TG is a TalkGroup then save it so it can be restored after the end of the private call
+			menuUtilityTgBeforePcMode = tmpTGorPC;
 		}
 		nonVolatileSettings.overrideTG |= (PC_CALL_FLAG << 24);
 	}
-}
-
-char keypressToNumberChar(keyboardCode_t keys)
-{
-	if (keys.event & KEY_MOD_PRESS) {
-		if (keys.key >= '0' && keys.key <= '9')
-		{
-			return keys.key;
-		}
-	}
-	return '\0';
 }
 
 void printToneAndSquelch(void)
