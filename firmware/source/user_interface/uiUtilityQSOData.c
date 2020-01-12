@@ -25,9 +25,7 @@
 #include "fw_trx.h"
 #include "fw_settings.h"
 #include <math.h>
-#include "fw_ticks.h"
-
-void updateLastHeardList(int id,int talkGroup);
+#include <functions/fw_ticks.h>
 
 const int QSO_TIMER_TIMEOUT = 2400;
 const int TX_TIMER_Y_OFFSET = 8;
@@ -42,7 +40,7 @@ LinkItem_t *LinkHead = callsList;
 int numLastHeard=0;
 int menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 int qsodata_timer;
-const uint32_t RSSI_UPDATE_COUNTER_RELOAD = 500;
+const uint32_t RSSI_UPDATE_COUNTER_RELOAD = 100;
 
 uint32_t menuUtilityReceivedPcId 	= 0;// No current Private call awaiting acceptance
 uint32_t menuUtilityTgBeforePcMode 	= 0;// No TG saved, prior to a Private call being accepted.
@@ -56,7 +54,7 @@ uint32_t lastTG=0;
 /*
  * Remove space at the end of the array, and return pointer to first non space character
  */
-static char *chomp(char *str)
+char *chomp(char *str)
 {
 	char *sp = str, *ep = str;
 
@@ -83,7 +81,7 @@ static char *chomp(char *str)
 	return sp;
 }
 
-static int32_t getCallsignEndingPos(char *str)
+int32_t getCallsignEndingPos(char *str)
 {
 	char *p = str;
 
@@ -566,7 +564,7 @@ static void displayChannelNameOrRxFrequency(char *buffer, size_t maxLen)
 	ucPrintCentered(52, buffer, FONT_6x8);
 }
 
-void printSplitOrSpanText(uint8_t y, char *text)
+static void printSplitOrSpanText(uint8_t y, char *text)
 {
 	uint8_t len = strlen(text);
 
@@ -756,11 +754,11 @@ void menuUtilityRenderQSOData(void)
 			// first check if we have this ID in the DMR ID data
 			if (contactIDLookup(LinkHead->id, CONTACT_CALLTYPE_PC, buffer))
 			{
-				displayContactTextInfos(buffer, 16,false);
+				displayContactTextInfos(buffer, 16, false);
 			}
 			else if (dmrIDLookup((LinkHead->id & 0xFFFFFF), &currentRec))
 			{
-				displayContactTextInfos(currentRec.text, sizeof(currentRec.text),false);
+				displayContactTextInfos(currentRec.text, sizeof(currentRec.text), false);
 			}
 			else
 			{
@@ -776,7 +774,7 @@ void menuUtilityRenderQSOData(void)
 						displayContactTextInfos(bufferTA, sizeof(bufferTA), true);
 					}
 					else
-						displayContactTextInfos(LinkHead->talkerAlias, sizeof(LinkHead->talkerAlias),true);
+						displayContactTextInfos(LinkHead->talkerAlias, sizeof(LinkHead->talkerAlias), true);
 				}
 				else
 				{

@@ -159,6 +159,7 @@ volatile int  	rfFrameBufWriteIdx = 0;
 volatile int	rfFrameBufCount = 0;
 static uint8_t lastRxState = HOTSPOT_RX_IDLE;
 static const int TX_BUFFERING_TIMEOUT = 5000;// 500mS
+static const uint32_t MMDVMHOST_TIMEOUT = 10000; // 10s
 static int timeoutCounter;
 static int savedPowerLevel = -1;// no power level saved yet
 static int hotspotPowerLevel = 0;// no power level saved yet
@@ -1227,7 +1228,7 @@ static void sendNAK(uint8_t err)
 
 static void hotspotStateMachine(void)
 {
-	static uint32_t rxFrameTicks = 0;
+	static uint32_t rxFrameTime = 0;
 
 	dbgAct1(hotspotState);
 	dbgPrint7("Host", mmdvmHostIsConnected);
@@ -1254,7 +1255,7 @@ static void hotspotStateMachine(void)
 			else
 			{
 				if ((nonVolatileSettings.hotspotType == HOTSPOT_TYPE_MMDVM) &&
-						((fw_millis() - mmdvmHostLastActiveTick) > 10000))
+						((fw_millis() - mmdvmHostLastActiveTick) > MMDVMHOST_TIMEOUT))
 				{
 					wavbuffer_count = 0;
 
@@ -1293,7 +1294,7 @@ static void hotspotStateMachine(void)
 			wavbuffer_read_idx = 0;
 			wavbuffer_write_idx = 0;
 			wavbuffer_count = 0;
-			rxFrameTicks = fw_millis();
+			rxFrameTime = fw_millis();
 
 			hotspotState = HOTSPOT_STATE_RX_PROCESS;
 			break;
@@ -1305,7 +1306,7 @@ static void hotspotStateMachine(void)
 			{
 				// No activity from MMDVMHost
 				if ((nonVolatileSettings.hotspotType == HOTSPOT_TYPE_MMDVM) &&
-						((fw_millis() - mmdvmHostLastActiveTick) > 10000))
+						((fw_millis() - mmdvmHostLastActiveTick) > MMDVMHOST_TIMEOUT))
 				{
 					mmdvmHostIsConnected = false;
 					hotspotState = HOTSPOT_STATE_NOT_CONNECTED;
@@ -1351,7 +1352,7 @@ static void hotspotStateMachine(void)
 							updateScreen(rx_command);
 							sendVoiceHeaderLC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
 							lastRxState = HOTSPOT_RX_START;
-							rxFrameTicks = fw_millis();
+							rxFrameTime = fw_millis();
 							break;
 
 						case HOTSPOT_RX_START_LATE:
@@ -1360,7 +1361,7 @@ static void hotspotStateMachine(void)
 							updateScreen(rx_command);
 							sendVoiceHeaderLC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
 							lastRxState = HOTSPOT_RX_START_LATE;
-							rxFrameTicks = fw_millis();
+							rxFrameTime = fw_millis();
 							break;
 
 						case HOTSPOT_RX_AUDIO_FRAME:
@@ -1368,7 +1369,7 @@ static void hotspotStateMachine(void)
 							//SEGGER_RTT_printf(0, "HOTSPOT_RX_AUDIO_FRAME\n");
 							hotspotSendVoiceFrame(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
 							lastRxState = HOTSPOT_RX_AUDIO_FRAME;
-							rxFrameTicks = fw_millis();
+							rxFrameTime = fw_millis();
 							break;
 
 						case HOTSPOT_RX_STOP:
@@ -1425,7 +1426,7 @@ static void hotspotStateMachine(void)
         	{
         		// Timeout: no RF data for too long
         		if (((lastRxState == HOTSPOT_RX_AUDIO_FRAME) || (lastRxState == HOTSPOT_RX_START)) &&
-        				((fw_millis() - rxFrameTicks) > 3000))
+        				((fw_millis() - rxFrameTime) > 300)) // 300ms
         		{
         			dbgPrint5("DMR_LOST", modemState, hotspotState, lastRxState);
         			sendDMRLost();

@@ -68,7 +68,7 @@ void fw_main_task(void *data)
 	uint32_t buttons;
 	int button_event;
 	int function_event;
-	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .function = 0, .events = NO_EVENT, .hasEvent = false, .ticks = 0 };
+	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .function = 0, .events = NO_EVENT, .hasEvent = false, .time = 0 };
 	bool keyOrButtonChanged = false;
 
     USB_DeviceApplicationInit();
@@ -458,9 +458,9 @@ void fw_main_task(void *data)
 			}
     		ev.buttons = buttons;
     		ev.keys = keys;
-    		ev.events = function_event |  (button_event<<1) | key_event;
+    		ev.events = function_event | (button_event<<1) | key_event;
     		ev.hasEvent = keyOrButtonChanged || function_event;
-    		ev.ticks = fw_millis();
+    		ev.time = fw_millis();
 
         	menuSystemCallCurrentMenuTick(&ev);
 

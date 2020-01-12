@@ -28,7 +28,7 @@ int menuLastHeard(uiEvent_t *ev, bool isFirstRun)
 	{
 		gMenusStartIndex = LinkHead->id;// reuse this global to store the ID of the first item in the list
 		gMenusEndIndex=0;
-		menuLastHeardupdateScreen(true);
+		menuLastHeardUpdateScreen(true);
 	}
 	else
 	{
@@ -38,7 +38,7 @@ int menuLastHeard(uiEvent_t *ev, bool isFirstRun)
 			gMenusStartIndex = LinkHead->id;
 			gMenusCurrentItemIndex=0;
 			gMenusEndIndex=0;
-			menuLastHeardupdateScreen(true);
+			menuLastHeardUpdateScreen(true);
 		}
 
 		if (ev->hasEvent)
@@ -47,9 +47,7 @@ int menuLastHeard(uiEvent_t *ev, bool isFirstRun)
 	return 0;
 }
 
-
-
-void menuLastHeardupdateScreen(bool showTitleOrHeader)
+void menuLastHeardUpdateScreen(bool showTitleOrHeader)
 {
 	static const int bufferLen = 17;
 	char buffer[bufferLen];
@@ -138,5 +136,5 @@ static void handleEvent(uiEvent_t *ev)
 		menuSystemPopAllAndDisplayRootMenu();
 		return;
 	}
-	menuLastHeardupdateScreen(true);
+	menuLastHeardUpdateScreen(true);
 }

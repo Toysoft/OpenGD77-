@@ -28,7 +28,7 @@ typedef struct
 	uint16_t		function;
 	uiEventInput_t	events;
 	bool		    hasEvent;
-	uint32_t 	    ticks;
+	uint32_t 	    time;
 } uiEvent_t;
 
 #define MENU_MAX_DISPLAYED_ENTRIES 3
@@ -96,7 +96,7 @@ void menuBatteryPushBackVoltage(int32_t voltage);
 
 void menuLockScreenPop(void);
 
-void menuLastHeardupdateScreen(bool showTitleOrHeader);
+void menuLastHeardUpdateScreen(bool showTitleOrHeader);
 
 void menuClearPrivateCall(void);
 void menuAcceptPrivateCall(int id);

@@ -39,9 +39,9 @@ int menuRSSIScreen(uiEvent_t *ev, bool isFirstRun)
 		if (ev->hasEvent)
 			handleEvent(ev);
 
-		if((ev->ticks - m) > RSSI_UPDATE_COUNTER_RELOAD)
+		if((ev->time - m) > RSSI_UPDATE_COUNTER_RELOAD)
 		{
-			m = ev->ticks;
+			m = ev->time;
 			updateScreen();
 		}
 	}
