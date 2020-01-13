@@ -504,12 +504,8 @@ static void handleEvent(uiEvent_t *ev)
 			return;
 		}
 
-	}
-
-	if (ev->events & KEY_EVENT)
-	{
 		// Display channel settings (CTCSS, Squelch) while SK1 is pressed
-		if ((displayChannelSettings == false) && (KEYCHECK_LONGDOWN(ev->keys, KEY_SK1)))
+		if ((displayChannelSettings == false) && (ev->buttons & BUTTON_SK1))
 		{
 			int prevQSODisp = prevDisplayQSODataState;
 
@@ -519,14 +515,17 @@ static void handleEvent(uiEvent_t *ev)
 			prevDisplayQSODataState = prevQSODisp;
 			return;
 		}
-		else if ((displayChannelSettings==true) && (KEYCHECK_UP(ev->keys, KEY_SK1)))
+		else if ((displayChannelSettings == true) && (ev->buttons & BUTTON_SK1))
 		{
 			displayChannelSettings = false;
 			menuDisplayQSODataState = prevDisplayQSODataState;
 			menuVFOModeUpdateScreen(0);
 			return;
 		}
+	}
 
+	if (ev->events & KEY_EVENT)
+	{
 		if (KEYCHECK_SHORTUP(ev->keys, KEY_ORANGE))
 		{
 			if (ev->buttons & BUTTON_SK2)

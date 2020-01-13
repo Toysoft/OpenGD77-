@@ -81,7 +81,7 @@ char *chomp(char *str)
 	return sp;
 }
 
-int32_t getCallsignEndingPos(char *str)
+int32_t getFirstSpacePos(char *str)
 {
 	char *p = str;
 
@@ -641,7 +641,7 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 		char    *pbuf;
 		int32_t  cpos;
 
-		if ((cpos = getCallsignEndingPos(text)) != -1)
+		if ((cpos = getFirstSpacePos(text)) != -1)
 		{
 			// Callsign found
 			memcpy(buffer, text, cpos);
