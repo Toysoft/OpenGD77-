@@ -257,14 +257,14 @@ static void handleEvent(uiEvent_t *ev)
 		GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
 	}
 
-	if (trxGetMode() == RADIO_MODE_DIGITAL && (KEYCHECK_DOWN(ev->keys, KEY_SK1)) && isShowingLastHeard==false && trxIsTransmitting==true)
+	if (trxGetMode() == RADIO_MODE_DIGITAL && (ev->buttons & BUTTON_SK1) && isShowingLastHeard==false && trxIsTransmitting==true)
 	{
 		isShowingLastHeard=true;
-		menuLastHeardUpdateScreen(false);
+		menuLastHeardUpdateScreen(false, false);
 	}
 	else
 	{
-		if (isShowingLastHeard && KEYCHECK_UP(ev->keys, KEY_SK1))
+		if (isShowingLastHeard && (ev->buttons & BUTTON_SK1))
 		{
 			isShowingLastHeard=false;
 			updateScreen();

@@ -455,25 +455,25 @@ static void handleEvent(uiEvent_t *ev)
 			return;
 		}
 
-	}
+		// Display channel settings (RX/TX/etc) while SK1 is pressed
+		if ((displayChannelSettings == false) && (ev->buttons & BUTTON_SK1))
+		{
+			int prevQSODisp = prevDisplayQSODataState;
 
-	// Display channel settings (RX/TX/etc) while SK1 is pressed
-	if ((displayChannelSettings == false) && (KEYCHECK_LONGDOWN(ev->keys, KEY_SK1)))
-	{
-		int prevQSODisp = prevDisplayQSODataState;
+			displayChannelSettings = true;
+			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+			menuChannelModeUpdateScreen(0);
+			prevDisplayQSODataState = prevQSODisp;
+			return;
+		}
+		else if ((displayChannelSettings==true) && (ev->buttons & BUTTON_SK1))
+		{
+			displayChannelSettings = false;
+			menuDisplayQSODataState = prevDisplayQSODataState;
+			menuChannelModeUpdateScreen(0);
+			return;
+		}
 
-		displayChannelSettings = true;
-		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-		menuChannelModeUpdateScreen(0);
-		prevDisplayQSODataState = prevQSODisp;
-		return;
-	}
-	else if ((displayChannelSettings==true) && (KEYCHECK_UP(ev->keys, KEY_SK1)))
-	{
-		displayChannelSettings = false;
-		menuDisplayQSODataState = prevDisplayQSODataState;
-		menuChannelModeUpdateScreen(0);
-		return;
 	}
 
 	if (ev->events & KEY_EVENT)
