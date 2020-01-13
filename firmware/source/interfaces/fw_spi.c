@@ -61,8 +61,8 @@ void setup_SPI0(void)
 	masterConfig_SPI0.whichCtar = kDSPI_Ctar0;
 	masterConfig_SPI0.ctarConfig.baudRate = SPI_BAUDRATE;
 	masterConfig_SPI0.ctarConfig.bitsPerFrame = 8;
-	masterConfig_SPI0.ctarConfig.cpol = kDSPI_ClockPolarityActiveLow;
-	masterConfig_SPI0.ctarConfig.cpha = kDSPI_ClockPhaseFirstEdge;
+	masterConfig_SPI0.ctarConfig.cpol = kDSPI_ClockPolarityActiveHigh;
+	masterConfig_SPI0.ctarConfig.cpha = kDSPI_ClockPhaseSecondEdge;
 	masterConfig_SPI0.ctarConfig.direction = kDSPI_MsbFirst;
 	masterConfig_SPI0.ctarConfig.pcsToSckDelayInNanoSec = 2000;
 	masterConfig_SPI0.ctarConfig.lastSckToPcsDelayInNanoSec = 2000;
@@ -87,8 +87,8 @@ void setup_SPI1(void)
     masterConfig_SPI1.whichCtar = kDSPI_Ctar0;
     masterConfig_SPI1.ctarConfig.baudRate = SPI_BAUDRATE;
     masterConfig_SPI1.ctarConfig.bitsPerFrame = 8;
-    masterConfig_SPI1.ctarConfig.cpol = kDSPI_ClockPolarityActiveLow;
-    masterConfig_SPI1.ctarConfig.cpha = kDSPI_ClockPhaseFirstEdge;
+    masterConfig_SPI1.ctarConfig.cpol = kDSPI_ClockPolarityActiveHigh;
+    masterConfig_SPI1.ctarConfig.cpha = kDSPI_ClockPhaseSecondEdge;
     masterConfig_SPI1.ctarConfig.direction = kDSPI_MsbFirst;
     masterConfig_SPI1.ctarConfig.pcsToSckDelayInNanoSec = 2000;
     masterConfig_SPI1.ctarConfig.lastSckToPcsDelayInNanoSec = 2000;
