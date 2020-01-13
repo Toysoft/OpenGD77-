@@ -64,7 +64,7 @@ extern uint32_t menuUtilityTgBeforePcMode;
 extern const uint32_t RSSI_UPDATE_COUNTER_RELOAD;
 
 char *chomp(char *str);
-int32_t getCallsignEndingPos(char *str);
+int32_t getFirstSpacePos(char *str);
 bool dmrIDLookup(int targetId, dmrIdDataStruct_t *foundRecord);
 bool contactIDLookup(uint32_t id, int calltype, char *buffer);
 void menuUtilityRenderQSOData(void);
