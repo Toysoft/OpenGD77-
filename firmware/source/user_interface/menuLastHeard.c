@@ -56,7 +56,7 @@ int menuLastHeard(uiEvent_t *ev, bool isFirstRun)
 		}
 		else
 		{
-			// Just refresh the list while displaying extra infos, it's all about elapsed time
+			// Just refresh the list while displaying details, it's all about elapsed time
 			if (displayLHDetails && ((ev->time - m) > (1000U * 60U)))
 			{
 				m = ev->time;
