@@ -386,23 +386,26 @@ void fw_main_task(void *data)
     			updateLastHeard=false;
     		}
 
-			if (!trxIsTransmitting && menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA && nonVolatileSettings.privateCalls == true)
-			{
-				if (HRC6000GetReveivedTgOrPcId() == (trxDMRID | (PC_CALL_FLAG<<24)))
-				{
-					if ((uiPrivateCallState == PRIVATE_CALL_DECLINED) &&
-						(HRC6000GetReveivedSrcId() != uiPrivateCallLastID))
-					{
-						menuClearPrivateCall();
-					}
-					if ((uiPrivateCallState == NOT_IN_CALL) &&
-						(trxTalkGroupOrPcId != (HRC6000GetReveivedSrcId() | (PC_CALL_FLAG<<24))) &&
-						(HRC6000GetReveivedSrcId() != uiPrivateCallLastID))
-					{
-						menuSystemPushNewMenu(MENU_PRIVATE_CALL);
-					}
-				}
-			}
+    		if ((enableHotspot == false) && (settingsUsbMode != USB_MODE_HOTSPOT)) // Do not filter anything in HS mode.
+    		{
+    			if (!trxIsTransmitting && menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA && nonVolatileSettings.privateCalls == true)
+    			{
+    				if (HRC6000GetReveivedTgOrPcId() == (trxDMRID | (PC_CALL_FLAG<<24)))
+    				{
+    					if ((uiPrivateCallState == PRIVATE_CALL_DECLINED) &&
+    							(HRC6000GetReveivedSrcId() != uiPrivateCallLastID))
+    					{
+    						menuClearPrivateCall();
+    					}
+    					if ((uiPrivateCallState == NOT_IN_CALL) &&
+    							(trxTalkGroupOrPcId != (HRC6000GetReveivedSrcId() | (PC_CALL_FLAG<<24))) &&
+								(HRC6000GetReveivedSrcId() != uiPrivateCallLastID))
+    					{
+    						menuSystemPushNewMenu(MENU_PRIVATE_CALL);
+    					}
+    				}
+    			}
+    		}
 
 			ev.function = 0;
 			function_event = NO_EVENT;
