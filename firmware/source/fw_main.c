@@ -386,7 +386,8 @@ void fw_main_task(void *data)
     			updateLastHeard=false;
     		}
 
-    		if ((enableHotspot == false) && (settingsUsbMode != USB_MODE_HOTSPOT)) // Do not filter anything in HS mode.
+    		if ((enableHotspot == false) ||
+    				(enableHotspot && (settingsUsbMode != USB_MODE_HOTSPOT))) // Do not filter anything in HS mode.
     		{
     			if (!trxIsTransmitting && menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA && nonVolatileSettings.privateCalls == true)
     			{
