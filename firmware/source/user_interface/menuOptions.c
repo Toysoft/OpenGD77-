@@ -17,8 +17,9 @@
  */
 #include <user_interface/menuSystem.h>
 #include <user_interface/uiLocalisation.h>
-#include "fw_settings.h"
-#include "fw_wdog.h"
+#include <functions/fw_settings.h>
+#include <interfaces/fw_wdog.h>
+#include <user_interface/uiUtilities.h>
 
 static void updateScreen(void);
 static void handleEvent(uiEvent_t *ev);
@@ -36,6 +37,8 @@ int menuOptions(uiEvent_t *ev, bool isFirstRun)
 	if (isFirstRun)
 	{
 		doFactoryReset=false;
+		// Store original settings, used on cancel event.
+		memcpy(&originalNonVolatileSettings, &nonVolatileSettings, sizeof(settingsStruct_t));
 		updateScreen();
 	}
 	else
@@ -377,6 +380,9 @@ static void handleEvent(uiEvent_t *ev)
 	}
 	else if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{
+		// Restore original settings.
+		memcpy(&nonVolatileSettings, &originalNonVolatileSettings, sizeof(settingsStruct_t));
+		setMicGainDMR(nonVolatileSettings.micGainDMR);
 		menuSystemPopPreviousMenu();
 		return;
 	}
