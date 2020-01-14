@@ -78,6 +78,7 @@ extern volatile bool g_TX_SAI_in_use;
 
 extern uint8_t *spi_soundBuf;
 extern sai_transfer_t xfer;
+extern int currentPromptPosition;
 
 void init_sound(void);
 void terminate_sound(void);
@@ -93,5 +94,7 @@ void tick_RXsoundbuffer(void);
 
 void tick_melody(void);
 void fw_beep_task(void *data);
+void handlePromptAudio(void);
+void playAMBEPrompt(int promptNumber);
 
 #endif /* _FW_SOUND_H_ */

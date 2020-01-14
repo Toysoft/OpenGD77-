@@ -241,7 +241,9 @@ void fw_main_task(void *data)
 				if (keys.event & KEY_MOD_PRESS)
 				{
 					if ((PTTToggledDown == false) && (((menuSystemGetCurrentMenuNumber() == MENU_VFO_MODE) && menuVFOModeIsScanning()) == false))
-						set_melody(melody_key_beep);
+					{
+						//set_melody(melody_key_beep);
+					}
 				}
 				else if ((keys.event & (KEY_MOD_LONG | KEY_MOD_DOWN)) == (KEY_MOD_LONG | KEY_MOD_DOWN))
 				{
@@ -432,6 +434,9 @@ void fw_main_task(void *data)
 					break;
 				case '8':
 					keyFunction = (MENU_DISPLAY <<8) + INC_BRIGHTNESS;
+					break;
+				case '6':
+					playAMBEPrompt(0);
 					break;
 				default:
 					keyFunction = 0;

@@ -1375,6 +1375,7 @@ bool callAcceptFilter(void)
 	 }
 }
 
+int LastPit=0;
 
 void tick_HR_C6000(void)
 {
@@ -1524,6 +1525,14 @@ void tick_HR_C6000(void)
 				hasEncodedAudio=false;
 				tick_codec_decode((uint8_t *)DMR_frame_buffer+0x0C);
 				tick_RXsoundbuffer();
+			}
+			else
+			{
+				if (currentPromptPosition!=-1 && (PITCounter - LastPit) > 290)
+				{
+					LastPit=PITCounter;
+					handlePromptAudio();
+				}
 			}
 		}
 
