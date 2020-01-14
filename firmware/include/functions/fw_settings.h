@@ -67,7 +67,12 @@ typedef struct settingsStruct
 	uint8_t			scanDelay;
 	uint8_t			squelchDefaults[RADIO_BANDS_TOTAL_NUM];// VHF,200Mhz and UHF
 	uint8_t			hotspotType;
-	bool            privateCalls;
+    bool     		privateCalls;
+	uint32_t		vfoAScanLow;                  //low frequency for VFO A Scanning
+	uint32_t		vfoAScanHigh;                 //High frequency for VFO A Scanning
+	uint32_t		vfoBScanLow;                  //low frequency for VFO B Scanning
+	uint32_t		vfoBScanHigh;                 //High frequency for VFO B Scanning
+
 
 } settingsStruct_t;
 
