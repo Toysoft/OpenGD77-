@@ -145,10 +145,10 @@ static void updateScreen(void)
 				snprintf(buf, bufferLen, "%s:%s", currentLanguage->ptt_toggle, (nonVolatileSettings.pttToggle ? currentLanguage->on : currentLanguage->off));
 				break;
 			case OPTIONS_MENU_HOTSPOT_TYPE:
-			{
-				static const char *hsTypes[] = { "MMDVM", "BlueDV" };
-				snprintf(buf, bufferLen, "Hotspot:%s", hsTypes[nonVolatileSettings.hotspotType]);
-			}
+				{
+					const char *hsTypes[] = { currentLanguage->off, "MMDVM", "BlueDV" };
+					snprintf(buf, bufferLen, "Hotspot:%s", hsTypes[nonVolatileSettings.hotspotType]);
+				}
 				break;
 			case OPTIONS_MENU_TALKER_ALIAS_TX:
 				snprintf(buf, bufferLen, "TA Tx:%s",(nonVolatileSettings.transmitTalkerAlias ? currentLanguage->on : currentLanguage->off));
@@ -352,7 +352,7 @@ static void handleEvent(uiEvent_t *ev)
 				nonVolatileSettings.pttToggle = false;
 				break;
 			case OPTIONS_MENU_HOTSPOT_TYPE:
-				if (nonVolatileSettings.hotspotType > HOTSPOT_TYPE_MMDVM)
+				if (nonVolatileSettings.hotspotType > HOTSPOT_TYPE_OFF)
 				{
 					nonVolatileSettings.hotspotType--;
 				}
