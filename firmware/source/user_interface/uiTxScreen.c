@@ -264,7 +264,7 @@ static void handleEvent(uiEvent_t *ev)
 	}
 	else
 	{
-		if (isShowingLastHeard && (ev->buttons & BUTTON_SK1))
+		if (isShowingLastHeard && (ev->buttons & BUTTON_SK1)==0)
 		{
 			isShowingLastHeard=false;
 			updateScreen();

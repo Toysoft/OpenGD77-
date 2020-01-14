@@ -579,7 +579,7 @@ static void handleEvent(uiEvent_t *ev)
 			prevDisplayQSODataState = prevQSODisp;
 			return;
 		}
-		else if ((displayChannelSettings == true) && (ev->buttons & BUTTON_SK1))
+		else if ((displayChannelSettings == true) && (ev->buttons & BUTTON_SK1)==0)
 		{
 			displayChannelSettings = false;
 			menuDisplayQSODataState = prevDisplayQSODataState;

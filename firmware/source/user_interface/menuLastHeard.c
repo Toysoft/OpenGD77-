@@ -162,7 +162,11 @@ static void handleEvent(uiEvent_t *ev)
 	// Toggles LH simple/details view on SK1 press
 	if (ev->buttons & BUTTON_SK1)
 	{
-		displayLHDetails = !displayLHDetails;
+		displayLHDetails = true;//!displayLHDetails;
+	}
+	else
+	{
+		displayLHDetails = false;
 	}
 
 	menuLastHeardUpdateScreen(true, displayLHDetails);
