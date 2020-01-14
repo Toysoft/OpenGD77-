@@ -833,11 +833,7 @@ void menuUtilityRenderHeader(void)
 		case RADIO_MODE_DIGITAL:
 
 
-			if (settingsUsbMode == USB_MODE_HOTSPOT)
-			{
-				ucPrintAt(0, Y_OFFSET, "DMR", FONT_6x8);
-			}
-			else
+			if (settingsUsbMode != USB_MODE_HOTSPOT)
 			{
 //				(trxGetMode() == RADIO_MODE_DIGITAL && settingsPrivateCallMuteMode == true)?" MUTE":"");// The location that this was displayed is now used for the power level
 
