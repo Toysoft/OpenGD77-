@@ -23,7 +23,7 @@
 #include "fw_settings.h"
 #include <SeggerRTT/RTT/SEGGER_RTT.h>
 #include <user_interface/menuHotspot.h>
-#include <user_interface/uiUtilityQSOData.h>
+#include <user_interface/uiUtilities.h>
 #include "fw_trx.h"
 
 
@@ -360,7 +360,7 @@ void transmitTalkerAlias(void)
 	{
 		uint8_t TA_LCBuf[12]={0,0,0,0,0,0,0,0,0,0,0,0};
 		int taPosition=2;
-		int taOffset,taLength;
+		int taOffset = 0,taLength = 0;
 		switch(TAPhase/2)
 		{
 		case 0:

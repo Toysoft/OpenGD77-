@@ -20,12 +20,14 @@
 #include <hardware/fw_HR-C6000.h>
 #include <hardware/fw_SPI_Flash.h>
 #include <user_interface/menuSystem.h>
-#include <user_interface/uiUtilityQSOData.h>
+#include <user_interface/uiUtilities.h>
 #include <user_interface/uiLocalisation.h>
 #include "fw_trx.h"
 #include "fw_settings.h"
 #include <math.h>
 #include <functions/fw_ticks.h>
+
+settingsStruct_t originalNonVolatileSettings;
 
 const int QSO_TIMER_TIMEOUT = 2400;
 const int TX_TIMER_Y_OFFSET = 8;
@@ -833,15 +835,11 @@ void menuUtilityRenderHeader(void)
 		case RADIO_MODE_DIGITAL:
 
 
-			if (settingsUsbMode == USB_MODE_HOTSPOT)
-			{
-				ucPrintAt(0, Y_OFFSET, "DMR", FONT_6x8);
-			}
-			else
+			if (settingsUsbMode != USB_MODE_HOTSPOT)
 			{
 //				(trxGetMode() == RADIO_MODE_DIGITAL && settingsPrivateCallMuteMode == true)?" MUTE":"");// The location that this was displayed is now used for the power level
 
-				ucPrintAt(0, Y_OFFSET, "DMR", FONT_6x8);
+				ucPrintAt(0, Y_OFFSET, "DMR", ((nonVolatileSettings.hotspotType != HOTSPOT_TYPE_OFF) ? FONT_6x8_BOLD : FONT_6x8));
 				snprintf(buffer, bufferLen, "%s%d", currentLanguage->ts, trxGetDMRTimeSlot() + 1);
 				buffer[bufferLen - 1] = 0;
 				if (nonVolatileSettings.dmrFilterLevel < DMR_FILTER_TS)

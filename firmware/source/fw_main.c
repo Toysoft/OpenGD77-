@@ -18,7 +18,7 @@
 
 #include <functions/fw_ticks.h>
 #include <user_interface/menuSystem.h>
-#include <user_interface/uiUtilityQSOData.h>
+#include <user_interface/uiUtilities.h>
 #include <user_interface/uiLocalisation.h>
 #include "fw_main.h"
 #include "fw_settings.h"
@@ -149,11 +149,6 @@ void fw_main_task(void *data)
 
     lastheardInitList();
     menuInitMenuSystem();
-
-    if (buttons & BUTTON_SK1)
-    {
-    	enableHotspot = true;
-    }
 
     while (1U)
     {
@@ -388,8 +383,8 @@ void fw_main_task(void *data)
     			updateLastHeard=false;
     		}
 
-    		if ((enableHotspot == false) ||
-    				(enableHotspot && (settingsUsbMode != USB_MODE_HOTSPOT))) // Do not filter anything in HS mode.
+    		if ((nonVolatileSettings.hotspotType == HOTSPOT_TYPE_OFF) ||
+    				((nonVolatileSettings.hotspotType != HOTSPOT_TYPE_OFF) && (settingsUsbMode != USB_MODE_HOTSPOT))) // Do not filter anything in HS mode.
     		{
     			if (!trxIsTransmitting && menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA && nonVolatileSettings.privateCalls == true)
     			{

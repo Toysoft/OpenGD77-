@@ -28,7 +28,7 @@
 enum USB_MODE { USB_MODE_CPS, USB_MODE_HOTSPOT, USB_MODE_DEBUG};
 enum SETTINGS_UI_MODE { SETTINGS_CHANNEL_MODE=0, SETTINGS_VFO_A_MODE, SETTINGS_VFO_B_MODE};
 enum BACKLIGHT_MODE { BACKLIGHT_MODE_AUTO = 0, BACKLIGHT_MODE_MANUAL = 1, BACKLIGHT_MODE_NONE = 2};
-enum HOTSPOT_TYPE { HOTSPOT_TYPE_MMDVM = 0, HOTSPOT_TYPE_BLUEDV = 1};
+enum HOTSPOT_TYPE { HOTSPOT_TYPE_OFF = 0, HOTSPOT_TYPE_MMDVM = 1, HOTSPOT_TYPE_BLUEDV = 2};
 
 extern int settingsCurrentChannelNumber;
 extern bool settingsPrivateCallMuteMode;
@@ -84,7 +84,6 @@ extern struct_codeplugChannel_t channelScreenChannelData;
 extern struct_codeplugContact_t contactListContactData;
 extern int contactListContactIndex;
 extern int settingsUsbMode;
-extern bool enableHotspot;
 
 bool settingsSaveSettings(bool includeVFOs);
 bool settingsLoadSettings(void);
