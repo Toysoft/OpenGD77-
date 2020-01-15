@@ -1528,7 +1528,7 @@ void tick_HR_C6000(void)
 			}
 			else
 			{
-				if (currentPromptPosition!=-1 && (PITCounter - LastPit) > 290)
+				if (currentPromptPosition!=-1 && g_TX_SAI_in_use==false)
 				{
 					LastPit=PITCounter;
 					handlePromptAudio();
