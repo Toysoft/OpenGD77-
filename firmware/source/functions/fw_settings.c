@@ -26,7 +26,9 @@
 #include "fw_sound.h"
 
 static const int STORAGE_BASE_ADDRESS 		= 0x6000;
-static const int STORAGE_MAGIC_NUMBER 		= 0x4733;
+
+static const int STORAGE_MAGIC_NUMBER 		= 0x4736;
+
 
 settingsStruct_t nonVolatileSettings;
 struct_codeplugChannel_t *currentChannelData;
@@ -37,7 +39,6 @@ int contactListContactIndex;
 int settingsUsbMode = USB_MODE_CPS;
 int settingsCurrentChannelNumber=0;
 bool settingsPrivateCallMuteMode = false;
-bool enableHotspot = false;
 
 bool settingsSaveSettings(bool includeVFOs)
 {
@@ -158,9 +159,14 @@ void settingsRestoreDefaultSettings(void)
 	nonVolatileSettings.squelchDefaults[RADIO_BAND_220MHz]	= 10;// 1 - 21 = 0 - 100% , same as from the CPS variable squelch
 	nonVolatileSettings.squelchDefaults[RADIO_BAND_UHF]		= 10;// 1 - 21 = 0 - 100% , same as from the CPS variable squelch
 	nonVolatileSettings.pttToggle = false; // PTT act as a toggle button
-	nonVolatileSettings.hotspotType = HOTSPOT_TYPE_MMDVM;
+	nonVolatileSettings.hotspotType = HOTSPOT_TYPE_OFF;
 	nonVolatileSettings.transmitTalkerAlias	= false;
-	nonVolatileSettings.privateCalls = true;
+    nonVolatileSettings.privateCalls = true;
+	nonVolatileSettings.vfoAScanLow=14400000;						//Low frequency limit for VFO A Scanning
+	nonVolatileSettings.vfoAScanHigh=14600000;						//High Frequency limit for VFO A Scanning
+	nonVolatileSettings.vfoBScanLow=43000000;						//Low frequency limit for VFO B Scanning
+	nonVolatileSettings.vfoBScanHigh=44000000;						//High Frequency limit for VFO B Scanning
+
 
 	currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];// Set the current channel data to point to the VFO data since the default screen will be the VFO
 

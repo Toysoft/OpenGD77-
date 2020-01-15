@@ -18,7 +18,7 @@
 
 #include <functions/fw_ticks.h>
 #include <user_interface/menuSystem.h>
-#include <user_interface/uiUtilityQSOData.h>
+#include <user_interface/uiUtilities.h>
 #include <user_interface/uiLocalisation.h>
 #include "fw_main.h"
 #include "fw_settings.h"
@@ -149,11 +149,6 @@ void fw_main_task(void *data)
 
     lastheardInitList();
     menuInitMenuSystem();
-
-    if (buttons & BUTTON_SK1)
-    {
-    	enableHotspot = true;
-    }
 
     while (1U)
     {
@@ -374,7 +369,7 @@ void fw_main_task(void *data)
         		}
 
     			// Toggle backlight
-        		if ((nonVolatileSettings.backlightMode == BACKLIGHT_MODE_MANUAL) && (KEYCHECK_DOWN(keys,KEY_SK1)))
+        		if ((nonVolatileSettings.backlightMode == BACKLIGHT_MODE_MANUAL) && (buttons & BUTTON_SK1))
         		{
         			fw_displayEnableBacklight(! fw_displayIsBacklightLit());
         		}
@@ -386,23 +381,27 @@ void fw_main_task(void *data)
     			updateLastHeard=false;
     		}
 
-			if (!trxIsTransmitting && menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA && nonVolatileSettings.privateCalls == true)
-			{
-				if (HRC6000GetReveivedTgOrPcId() == (trxDMRID | (PC_CALL_FLAG<<24)))
-				{
-					if ((uiPrivateCallState == PRIVATE_CALL_DECLINED) &&
-						(HRC6000GetReveivedSrcId() != uiPrivateCallLastID))
-					{
-						menuClearPrivateCall();
-					}
-					if ((uiPrivateCallState == NOT_IN_CALL) &&
-						(trxTalkGroupOrPcId != (HRC6000GetReveivedSrcId() | (PC_CALL_FLAG<<24))) &&
-						(HRC6000GetReveivedSrcId() != uiPrivateCallLastID))
-					{
-						menuSystemPushNewMenu(MENU_PRIVATE_CALL);
-					}
-				}
-			}
+    		if ((nonVolatileSettings.hotspotType == HOTSPOT_TYPE_OFF) ||
+    				((nonVolatileSettings.hotspotType != HOTSPOT_TYPE_OFF) && (settingsUsbMode != USB_MODE_HOTSPOT))) // Do not filter anything in HS mode.
+    		{
+    			if (!trxIsTransmitting && menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA && nonVolatileSettings.privateCalls == true)
+    			{
+    				if (HRC6000GetReveivedTgOrPcId() == (trxDMRID | (PC_CALL_FLAG<<24)))
+    				{
+    					if ((uiPrivateCallState == PRIVATE_CALL_DECLINED) &&
+    							(HRC6000GetReveivedSrcId() != uiPrivateCallLastID))
+    					{
+    						menuClearPrivateCall();
+    					}
+    					if ((uiPrivateCallState == NOT_IN_CALL) &&
+    							(trxTalkGroupOrPcId != (HRC6000GetReveivedSrcId() | (PC_CALL_FLAG<<24))) &&
+								(HRC6000GetReveivedSrcId() != uiPrivateCallLastID))
+    					{
+    						menuSystemPushNewMenu(MENU_PRIVATE_CALL);
+    					}
+    				}
+    			}
+    		}
 
 			ev.function = 0;
 			function_event = NO_EVENT;

@@ -142,10 +142,12 @@ uint32_t fw_read_keyboard(void)
 		GPIO_PinWrite(GPIOC, col, 1);
 		GPIO_PinInit(GPIOC, col, &pin_config_input);
 	}
+#if 0
 	if (GPIO_PinRead(GPIO_SK1, Pin_SK1)==0)
 	{
 		result |= SCAN_SK1;
 	}
+#endif
 	if (GPIO_PinRead(GPIO_Orange, Pin_Orange)==0)
 	{
 		result |= SCAN_ORANGE;

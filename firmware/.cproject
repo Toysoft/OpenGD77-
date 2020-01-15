@@ -617,6 +617,12 @@
 							<inputType id="com.crt.advproject.compiler.input.1249022339" superClass="com.crt.advproject.compiler.input"/>
 						</tool>
 					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.1457644476" name="fw_HR-C6000.c" rcbsApplicability="disable" resourcePath="source/hardware/fw_HR-C6000.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.475830819.525985334">
+						<tool id="com.crt.advproject.gcc.exe.debug.475830819.525985334" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.475830819">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.785711222" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.583438144" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
 					<sourceEntries>
 						<entry flags="LOCAL|VALUE_WORKSPACE_PATH" kind="sourcePath" name="CMSIS"/>
 						<entry excluding="FreeRTOS/portable/heap_1.c|FreeRTOS/portable/heap_2.c|FreeRTOS/portable/heap_3.c|FreeRTOS/portable/heap_5.c" flags="LOCAL|VALUE_WORKSPACE_PATH" kind="sourcePath" name="amazon-freertos"/>
