@@ -266,6 +266,7 @@ void store_soundbuffer(void)
 		taskENTER_CRITICAL();
 		wavbuffer_count++;
 		taskEXIT_CRITICAL();
+	//	SEGGER_RTT_printf(0, "store_soundbuffer %d\n",wavbuffer_count);
 	}
 }
 
@@ -335,6 +336,7 @@ void send_sound_data(void)
 			wavbuffer_read_idx=0;
 		}
 		wavbuffer_count--;
+		//SEGGER_RTT_printf(0, "send_sound_data %d \n",wavbuffer_count);
 	}
 }
 
@@ -407,7 +409,7 @@ void receive_sound_data(void)
 
 void tick_RXsoundbuffer(void)
 {
-    if (!g_TX_SAI_in_use)
+    if (!g_TX_SAI_in_use && wavbuffer_count>6)
     {
     	send_sound_data();
     }
@@ -524,11 +526,12 @@ void fw_beep_task(void *data)
 
 void handlePromptAudio(void)
 {
-	tick_codec_decode((uint8_t *)&displayoptions_amb[currentPromptPosition]);
-	tick_RXsoundbuffer();
+
+	SEGGER_RTT_printf(0, "handlePromptAudio\n");
 	if (currentPromptPosition < currentPromptLength)
 	{
 		currentPromptPosition+=27;
+		tick_codec_decode((uint8_t *)&displayoptions_amb[currentPromptPosition]);
 	}
 	else
 	{
@@ -550,4 +553,6 @@ void playAMBEPrompt(int promptNumber)
 	{
 	    GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 0);// set the audio mux   HR-C6000 -> audio amp
 	}
+	tick_codec_decode((uint8_t *)&displayoptions_amb[currentPromptPosition]);
+	tick_RXsoundbuffer();
 }

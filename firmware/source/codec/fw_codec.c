@@ -41,6 +41,8 @@ void tick_codec_decode(uint8_t *indata_ptr)
 	int errs1;
 	int errs2;
 
+
+
 	register int r0 asm ("r0") __attribute__((unused));
 	register int r1 asm ("r1") __attribute__((unused));
 	register int r2 asm ("r2") __attribute__((unused));
