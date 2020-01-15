@@ -31,7 +31,7 @@
 #include <SeggerRTT/RTT/SEGGER_RTT.h>
 #include <user_interface/menuHotspot.h>
 #include <user_interface/menuSystem.h>
-#include <user_interface/uiUtilityQSOData.h>
+#include <user_interface/uiUtilities.h>
 #include <functions/fw_ticks.h>
 
 /*

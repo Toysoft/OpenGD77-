@@ -17,7 +17,7 @@
  */
 #include <hardware/fw_HR-C6000.h>
 #include <user_interface/menuSystem.h>
-#include <user_interface/uiUtilityQSOData.h>
+#include <user_interface/uiUtilities.h>
 #include <user_interface/uiLocalisation.h>
 #include "fw_trx.h"
 #include "fw_settings.h"

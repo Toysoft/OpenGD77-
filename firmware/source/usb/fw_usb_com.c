@@ -40,7 +40,7 @@ void tick_com_request(void)
 			case USB_MODE_CPS:
 				if (com_request==1)
 				{
-					if (enableHotspot && (com_requestbuffer[0] == 0xE0U /* MMDVM_FRAME_START */))
+					if ((nonVolatileSettings.hotspotType != HOTSPOT_TYPE_OFF) && (com_requestbuffer[0] == 0xE0U /* MMDVM_FRAME_START */))
 					{
 						settingsUsbMode = USB_MODE_HOTSPOT;
 						menuSystemPushNewMenu(MENU_HOTSPOT_MODE);
