@@ -731,7 +731,7 @@ void menuUtilityRenderQSOData(void)
 					buffer[16] = 0;
 				}
 				ucPrintCentered(52, buffer, FONT_6x8);
-				ucPrintAt(1, 54, "=>", FONT_6x8);
+				ucPrintAt(1, 52, "=>", FONT_6x8);
 			}
 		}
 		else
