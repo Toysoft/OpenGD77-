@@ -31,6 +31,7 @@ int menuPrivateCall(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
+		set_melody(melody_private_call);
 		uiPrivateCallState = PRIVATE_CALL_ACCEPT;
 		menuUtilityReceivedPcId = LinkHead->id;
 
@@ -63,7 +64,6 @@ static void updateScreen(void)
 
 	ucPrintCentered(16, currentLanguage->accept_call, FONT_8x16);
 	ucDrawChoice(CHOICE_YESNO, false);
-	set_melody(melody_private_call);
 	ucRender();
 
 }
