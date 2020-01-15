@@ -473,12 +473,7 @@ static void handleEvent(uiEvent_t *ev)
 			menuChannelModeUpdateScreen(0);
 			return;
 		}
-
-	}
-
-	if (ev->events & KEY_EVENT)
-	{
-		if (KEYCHECK_SHORTUP(ev->keys, KEY_ORANGE))
+		if (ev->buttons & BUTTON_ORANGE)
 		{
 			if (ev->buttons & BUTTON_SK2)
 			{
@@ -494,12 +489,11 @@ static void handleEvent(uiEvent_t *ev)
 
 			return;
 		}
-		else if (KEYCHECK_LONGDOWN(ev->keys, KEY_ORANGE))
-		{
-			directChannelNumber = 0;
-			startScan();
-		}
-		else if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
+	}
+
+	if (ev->events & KEY_EVENT)
+	{
+		if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 		{
 			if (directChannelNumber>0)
 			{
@@ -987,7 +981,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 	{
 		MENU_DEC(gMenusCurrentItemIndex, NUM_CH_SCREEN_QUICK_MENU_ITEMS);
 	}
-	else if ((KEYCHECK_SHORTUP(ev->keys, KEY_ORANGE)) && (gMenusCurrentItemIndex==CH_SCREEN_QUICK_MENU_SCAN))
+	else if (((ev->events & BUTTON_EVENT) && (ev->buttons & BUTTON_ORANGE)) && (gMenusCurrentItemIndex==CH_SCREEN_QUICK_MENU_SCAN))
 	{
 		startScan();
 	}
