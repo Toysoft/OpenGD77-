@@ -96,7 +96,7 @@ const stringsTable_t polishLanguage =
 .stepFreq				= "Krok", // MaxLen: 7 (with ':' + xx.xxkHz fitted)
 .tot					= "TOT", // MaxLen: 16 (with ':' + .off or 15..3825)
 .off					= "Wyˆ.", // MaxLen: 16 (with ':' + .timeout_beep, .calibration or .band_limits)
-.zone_skip				= "Pomi‹ Zone", // MaxLen: 16 (with ':' + .yes or .no) 
+.zone_skip				= "Pomi‹ Zone", // MaxLen: 16 (with ':' + .yes or .no)
 .all_skip				= "Pomi‹ All", // MaxLen: 16 (with ':' + .yes or .no)
 .yes					= "Tak", // MaxLen: 16 (with ':' + .zone_skip, .all_skip or .factory_reset)
 .no					= "Nie", // MaxLen: 16 (with ':' + .zone_skip, .all_skip or .factory_reset)
@@ -139,6 +139,7 @@ const stringsTable_t polishLanguage =
 .Auto					= "Automat", // MaxLen 16 (with .mode + ':')
 .manual					= "Manualny",  // MaxLen 16 (with .mode + ':') 
 .ptt_toggle				= "PTT staˆe", // MaxLen 16 (with ':' + .on or .off)
+.private_call_handling  = "Handle PC", // MaxLen 16 (with ':' + .on ot .off)
 };
 /********************************************************************
  *
