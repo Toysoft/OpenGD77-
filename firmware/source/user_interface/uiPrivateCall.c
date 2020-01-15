@@ -75,7 +75,7 @@ static void handleEvent(uiEvent_t *ev)
 		if (KEYCHECK_SHORTUP(ev->keys, KEY_RED))
 		{
 			uiPrivateCallState = PRIVATE_CALL_DECLINED;
-			uiPrivateCallLastID = 0;// Temporarily allow another private call with the same ID, until the code is possibly updated to have a timeout for this // menuUtilityReceivedPcId;
+			uiPrivateCallLastID = 0;
 			menuSystemPopPreviousMenu();
 			return;
 		}
