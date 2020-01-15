@@ -53,7 +53,7 @@ extern volatile int micAudioSamplesTotal;
 extern int soundBeepVolumeDivider;
 
 #define WAV_BUFFER_SIZE 0xa0
-#define WAV_BUFFER_COUNT 16
+#define WAV_BUFFER_COUNT 18
 #define HOTSPOT_BUFFER_SIZE 50
 #define HOTSPOT_BUFFER_COUNT 48
 

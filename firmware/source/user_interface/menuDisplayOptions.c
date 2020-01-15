@@ -18,18 +18,12 @@
 #include <hardware/UC1701.h>
 #include <user_interface/menuSystem.h>
 #include <user_interface/uiLocalisation.h>
-#include "fw_settings.h"
+#include <functions/fw_settings.h>
+#include <user_interface/uiUtilities.h>
 
 static void updateScreen(void);
 static void handleEvent(uiEvent_t *ev);
 static void updateBacklightMode(uint8_t mode);
-
-static uint8_t originalBrightness;
-static uint8_t originalBrightnessOff;
-static uint8_t contrast;
-static uint8_t inverseVideo;
-static int8_t originalBackLightTimeout;// used int_8 to save space
-static uint8_t originalBacklightMode;
 
 const int BACKLIGHT_MAX_TIMEOUT = 30;
 const int CONTRAST_MAX_VALUE = 30;// Maximum value which still seems to be readable
@@ -41,12 +35,8 @@ int menuDisplayOptions(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		originalBrightness = nonVolatileSettings.displayBacklightPercentage;
-		originalBrightnessOff = nonVolatileSettings.displayBacklightPercentageOff;
-		contrast = nonVolatileSettings.displayContrast;
-		inverseVideo = nonVolatileSettings.displayInverseVideo;
-		originalBackLightTimeout = nonVolatileSettings.backLightTimeout;
-		originalBacklightMode = nonVolatileSettings.backlightMode;
+		// Store original settings, used on cancel event.
+		memcpy(&originalNonVolatileSettings, &nonVolatileSettings, sizeof(settingsStruct_t));
 		updateScreen();
 	}
 	else
@@ -82,7 +72,7 @@ static void updateScreen(void)
 				snprintf(buf, bufferLen, "%s:%d%%", currentLanguage->brightnessOff, nonVolatileSettings.displayBacklightPercentageOff);
 				break;
 			case DISPLAY_MENU_CONTRAST:
-				snprintf(buf, bufferLen, "%s:%d", currentLanguage->contrast, contrast);
+				snprintf(buf, bufferLen, "%s:%d", currentLanguage->contrast, nonVolatileSettings.displayContrast);
 				break;
 			case DISPLAY_MENU_BACKLIGHT_MODE:
 				snprintf(buf, bufferLen, "%s:%s", currentLanguage->mode, backlightModes[nonVolatileSettings.backlightMode]);
@@ -101,7 +91,7 @@ static void updateScreen(void)
 				}
 				break;
 			case DISPLAY_MENU_COLOUR_INVERT:
-				if (inverseVideo)
+				if (nonVolatileSettings.displayInverseVideo)
 				{
 					strncpy(buf, currentLanguage->colour_invert, bufferLen);
 				}
@@ -209,11 +199,11 @@ static void handleEvent(uiEvent_t *ev)
 					}
 					break;
 				case DISPLAY_MENU_CONTRAST:
-					if (contrast < CONTRAST_MAX_VALUE)
+					if (nonVolatileSettings.displayContrast < CONTRAST_MAX_VALUE)
 					{
-						contrast++;
+						nonVolatileSettings.displayContrast++;
 					}
-					ucSetContrast(contrast);
+					ucSetContrast(nonVolatileSettings.displayContrast);
 					break;
 				case DISPLAY_MENU_BACKLIGHT_MODE:
 					if (nonVolatileSettings.backlightMode < BACKLIGHT_MODE_NONE)
@@ -229,8 +219,8 @@ static void handleEvent(uiEvent_t *ev)
 					}
 					break;
 				case DISPLAY_MENU_COLOUR_INVERT:
-					inverseVideo=!inverseVideo;
-					fw_init_display(inverseVideo);// Need to perform a full reset on the display to change back to non-inverted
+					nonVolatileSettings.displayInverseVideo = !nonVolatileSettings.displayInverseVideo;
+					fw_init_display(nonVolatileSettings.displayInverseVideo);// Need to perform a full reset on the display to change back to non-inverted
 					break;
 			}
 		}
@@ -269,11 +259,11 @@ static void handleEvent(uiEvent_t *ev)
 					}
 					break;
 				case DISPLAY_MENU_CONTRAST:
-					if (contrast > CONTRAST_MIN_VALUE)
+					if (nonVolatileSettings.displayContrast > CONTRAST_MIN_VALUE)
 					{
-						contrast--;
+						nonVolatileSettings.displayContrast--;
 					}
-					ucSetContrast(contrast);
+					ucSetContrast(nonVolatileSettings.displayContrast);
 					break;
 				case DISPLAY_MENU_BACKLIGHT_MODE:
 					if (nonVolatileSettings.backlightMode > BACKLIGHT_MODE_AUTO)
@@ -289,38 +279,38 @@ static void handleEvent(uiEvent_t *ev)
 					}
 					break;
 				case DISPLAY_MENU_COLOUR_INVERT:
-					inverseVideo=!inverseVideo;
-					fw_init_display(inverseVideo);// Need to perform a full reset on the display to change back to non-inverted
+					nonVolatileSettings.displayInverseVideo = !nonVolatileSettings.displayInverseVideo;
+					fw_init_display(nonVolatileSettings.displayInverseVideo);// Need to perform a full reset on the display to change back to non-inverted
 					break;
 			}
 		}
 		else if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 		{
 			// All parameters has already been applied
-			nonVolatileSettings.displayInverseVideo = inverseVideo;
-			nonVolatileSettings.displayContrast = contrast;
 			menuSystemPopAllAndDisplayRootMenu();
 			return;
 		}
 		else if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 		{
-			if (nonVolatileSettings.displayContrast != contrast)
+			if (nonVolatileSettings.displayContrast != originalNonVolatileSettings.displayContrast)
 			{
+				nonVolatileSettings.displayContrast = originalNonVolatileSettings.displayContrast;
 				ucSetContrast(nonVolatileSettings.displayContrast);
 			}
 
-			if (nonVolatileSettings.displayInverseVideo != inverseVideo)
+			if (nonVolatileSettings.displayInverseVideo != originalNonVolatileSettings.displayInverseVideo)
 			{
+				nonVolatileSettings.displayInverseVideo = originalNonVolatileSettings.displayInverseVideo;
 				fw_init_display(nonVolatileSettings.displayInverseVideo);// Need to perform a full reset on the display to change back to non-inverted
 			}
 
-			nonVolatileSettings.displayBacklightPercentage = originalBrightness;
-			nonVolatileSettings.displayBacklightPercentageOff = originalBrightnessOff;
-			nonVolatileSettings.backLightTimeout = originalBackLightTimeout;
+			nonVolatileSettings.displayBacklightPercentage = originalNonVolatileSettings.displayBacklightPercentage;
+			nonVolatileSettings.displayBacklightPercentage = originalNonVolatileSettings.displayBacklightPercentageOff;
+			nonVolatileSettings.backLightTimeout = originalNonVolatileSettings.backLightTimeout;
 
-			if (nonVolatileSettings.backlightMode != originalBacklightMode)
+			if (nonVolatileSettings.backlightMode != originalNonVolatileSettings.backlightMode)
 			{
-				updateBacklightMode(originalBacklightMode);
+				updateBacklightMode(originalNonVolatileSettings.backlightMode);
 			}
 
 			menuSystemPopPreviousMenu();

@@ -18,6 +18,7 @@
 #ifndef _MENU_UTILITY_QSO_DATA_H_
 #define _MENU_UTILITY_QSO_DATA_H_                    /**< Symbol preventing repeated inclusion */
 #include <user_interface/menuSystem.h>
+#include <functions/fw_settings.h>
 #include "fw_common.h"
 
 #define NUM_LASTHEARD_STORED 16
@@ -62,9 +63,10 @@ extern int qsodata_timer;
 extern uint32_t menuUtilityReceivedPcId;
 extern uint32_t menuUtilityTgBeforePcMode;
 extern const uint32_t RSSI_UPDATE_COUNTER_RELOAD;
+extern settingsStruct_t originalNonVolatileSettings; // used to store previous settings in options edition related menus.
 
 char *chomp(char *str);
-int32_t getCallsignEndingPos(char *str);
+int32_t getFirstSpacePos(char *str);
 bool dmrIDLookup(int targetId, dmrIdDataStruct_t *foundRecord);
 bool contactIDLookup(uint32_t id, int calltype, char *buffer);
 void menuUtilityRenderQSOData(void);

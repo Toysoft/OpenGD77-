@@ -17,8 +17,9 @@
  */
 #include <user_interface/menuSystem.h>
 #include <user_interface/uiLocalisation.h>
-#include "fw_settings.h"
-#include "fw_wdog.h"
+#include <functions/fw_settings.h>
+#include <interfaces/fw_wdog.h>
+#include <user_interface/uiUtilities.h>
 
 static void updateScreen(void);
 static void handleEvent(uiEvent_t *ev);
@@ -36,6 +37,8 @@ int menuOptions(uiEvent_t *ev, bool isFirstRun)
 	if (isFirstRun)
 	{
 		doFactoryReset=false;
+		// Store original settings, used on cancel event.
+		memcpy(&originalNonVolatileSettings, &nonVolatileSettings, sizeof(settingsStruct_t));
 		updateScreen();
 	}
 	else
@@ -145,10 +148,10 @@ static void updateScreen(void)
 				snprintf(buf, bufferLen, "%s:%s", currentLanguage->ptt_toggle, (nonVolatileSettings.pttToggle ? currentLanguage->on : currentLanguage->off));
 				break;
 			case OPTIONS_MENU_HOTSPOT_TYPE:
-			{
-				static const char *hsTypes[] = { "MMDVM", "BlueDV" };
-				snprintf(buf, bufferLen, "Hotspot:%s", hsTypes[nonVolatileSettings.hotspotType]);
-			}
+				{
+					const char *hsTypes[] = { currentLanguage->off, "MMDVM", "BlueDV" };
+					snprintf(buf, bufferLen, "Hotspot:%s", hsTypes[nonVolatileSettings.hotspotType]);
+				}
 				break;
 			case OPTIONS_MENU_TALKER_ALIAS_TX:
 				snprintf(buf, bufferLen, "TA Tx:%s",(nonVolatileSettings.transmitTalkerAlias ? currentLanguage->on : currentLanguage->off));
@@ -352,7 +355,7 @@ static void handleEvent(uiEvent_t *ev)
 				nonVolatileSettings.pttToggle = false;
 				break;
 			case OPTIONS_MENU_HOTSPOT_TYPE:
-				if (nonVolatileSettings.hotspotType > HOTSPOT_TYPE_MMDVM)
+				if (nonVolatileSettings.hotspotType > HOTSPOT_TYPE_OFF)
 				{
 					nonVolatileSettings.hotspotType--;
 				}
@@ -377,6 +380,9 @@ static void handleEvent(uiEvent_t *ev)
 	}
 	else if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{
+		// Restore original settings.
+		memcpy(&nonVolatileSettings, &originalNonVolatileSettings, sizeof(settingsStruct_t));
+		setMicGainDMR(nonVolatileSettings.micGainDMR);
 		menuSystemPopPreviousMenu();
 		return;
 	}
