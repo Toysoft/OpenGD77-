@@ -27,7 +27,7 @@
 
 static const int STORAGE_BASE_ADDRESS 		= 0x6000;
 
-static const int STORAGE_MAGIC_NUMBER 		= 0x4736;
+static const int STORAGE_MAGIC_NUMBER 		= 0x4737;
 
 
 settingsStruct_t nonVolatileSettings;
@@ -137,6 +137,7 @@ void settingsRestoreDefaultSettings(void)
 	nonVolatileSettings.displayContrast = 0x12;
 	nonVolatileSettings.initialMenuNumber=MENU_VFO_MODE;
 	nonVolatileSettings.displayBacklightPercentage=100U;// 100% brightness
+	nonVolatileSettings.displayBacklightPercentageOff=0U;// 0% brightness
 	nonVolatileSettings.displayInverseVideo=false;// Not inverse video
 	nonVolatileSettings.useCalibration = true;// enable the new calibration system
 	nonVolatileSettings.txFreqLimited = true;// Limit Tx frequency to US Amateur bands

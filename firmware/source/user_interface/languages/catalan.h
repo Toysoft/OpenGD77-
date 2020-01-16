@@ -112,6 +112,7 @@ const stringsTable_t catalanLanguage=
 .key_repeat				= "Key rpt",
 .dmr_filter_timeout		= "Filtre temps",
 .brightness				= "Brillantor",
+.brightnessOff			= "Brillan. min",
 .contrast				= "Contrast",
 .colour_invert			= "Color:Invertit",
 .colour_normal			= "Color:Normal",
