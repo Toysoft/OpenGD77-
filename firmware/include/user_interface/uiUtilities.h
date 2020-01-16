@@ -72,7 +72,7 @@ bool contactIDLookup(uint32_t id, int calltype, char *buffer);
 void menuUtilityRenderQSOData(void);
 void menuUtilityRenderHeader(void);
 void lastheardInitList(void);
-bool lastHeardListUpdate(uint8_t *dmrDataBuffer);
+bool lastHeardListUpdate(uint8_t *dmrDataBuffer, bool forceOnHotspot);
 void lastHeardClearLastID(void);
 void drawRSSIBarGraph(void);
 void drawDMRMicLevelBarGraph(void);
