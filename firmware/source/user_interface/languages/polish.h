@@ -20,7 +20,7 @@
  *
  * Translators: SQ7PTE
  *
- * Rev: 4.2
+ * Rev: 4.3
  */
 #ifndef USER_INTERFACE_LANGUAGES_POLISH_H_
 #define USER_INTERFACE_LANGUAGES_POLISH_H_
@@ -69,7 +69,7 @@ const stringsTable_t polishLanguage =
 .user_dmr_id				= "ID uíytkownika", // MaxLen: 15
 .contact 				= "Kontakt", // MaxLen: 15
 .accept_call				= "ZaakceptowaÇ?", // MaxLen: 16
-.private_call				= "Rozm. Pryw.", // MaxLen: 16
+.private_call				= "Prywatne.", // MaxLen: 16
 .squelch				= "Squelch", // MaxLen: 8
 .quick_menu 				= "Szybkie menu", // MaxLen: 16
 .filter					= "Filtr", // MaxLen: 7 (with ':' + settings: .none, "CC", "CC,TS", "CC,TS,TG")
@@ -106,10 +106,10 @@ const stringsTable_t polishLanguage =
 .factory_reset				= "Reset", // MaxLen: 16 (with ':' + .yes or .no)
 .calibration				= "Kalibracja", // MaxLen: 16 (with ':' + .on or .off)
 .band_limits				= "Limit pasma", // MaxLen: 16 (with ':' + .on or .off)
-.beep_volume				= "Gàoç. bip", // MaxLen: 16 (with ':' + -24..6 + 'dB')
+.beep_volume				= "Gàos bip", // MaxLen: 16 (with ':' + -24..6 + 'dB')
 .dmr_mic_gain				= "Mikrofon", // MaxLen: 16 (with ':' + -33..12 + 'dB')
-.key_long				= "Key long", // MaxLen: 11 (with ':' + x.xs fitted)
-.key_repeat				= "Key rpt", // MaxLen: 11 (with ':' + x.xs fitted)
+.key_long				= "Key dàug.", // MaxLen: 11 (with ':' + x.xs fitted)
+.key_repeat				= "Key krÛt.", // MaxLen: 11 (with ':' + x.xs fitted)
 .dmr_filter_timeout			= "Czas filtra", // MaxLen: 16 (with ':' + 1..90 + 's')
 .brightness				= "JasnoçÇ", // MaxLen: 16 (with ':' + 0..100 + '%')
 .contrast				= "Kontrast", // MaxLen: 16 (with ':' + 12..30)
@@ -133,13 +133,13 @@ const stringsTable_t polishLanguage =
 .delete_contact				= "Usuã kontakt", // MaxLen: 16
 .group_call				= "Lista kontaktÛw", // MaxLen: 16
 .all_call				= "áÑcze wszystkich", // MaxLen: 16
-.tone_scan				= "Skan. tonu.",//// MaxLen: 16
-.cc_scan				= "Skan. CC",//// MaxLen: 16
+.tone_scan				= "Skan tonu.",//// MaxLen: 16
+.cc_scan				= "Skan CC",//// MaxLen: 16
 .low_battery				= "SáABA BATERIA!!!",//// MaxLen: 16
 .Auto					= "Automat", // MaxLen 16 (with .mode + ':')
 .manual					= "Manualny",  // MaxLen 16 (with .mode + ':') 
 .ptt_toggle				= "PTT staàe", // MaxLen 16 (with ':' + .on or .off)
-.private_call_handling  = "Handle PC", // MaxLen 16 (with ':' + .on ot .off)
+.private_call_handling  = "ZezwÛl na PC", // MaxLen 16 (with ':' + .on ot .off)
 };
 /********************************************************************
  *
