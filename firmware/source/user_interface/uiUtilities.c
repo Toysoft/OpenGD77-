@@ -443,16 +443,27 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer, bool forceOnHotspot)
 			if (blockID < 4)
 			{
 
-				// Already stored first byte in block TA Header has changed, lets clear second block too
+				// Already stored first byte in block TA Header has changed, lets clear obher blocks too
 				if ((blockID == 0) && ((blocksTA & (1 << blockID)) != 0) &&
 						(bufferTA[0] != (forceOnHotspot ? dmrDataBuffer[2] : DMR_frame_buffer[2])))
 				{
 					blocksTA &= ~(1 << 0);
-					// Clear second block if it's already stored
+
+					// Clear all other blocks if they're already stored
 					if ((blocksTA & (1 << 1)) != 0)
 					{
 						blocksTA &= ~(1 << 1);
 						memset(bufferTA + 7, 0, 7); // Clear 2nd TA block
+					}
+					if ((blocksTA & (1 << 2)) != 0)
+					{
+						blocksTA &= ~(1 << 2);
+						memset(bufferTA + 14, 0, 7); // Clear 3rd TA block
+					}
+					if ((blocksTA & (1 << 3)) != 0)
+					{
+						blocksTA &= ~(1 << 3);
+						memset(bufferTA + 21, 0, 7); // Clear 4th TA block
 					}
 					overrideTA = true;
 				}
