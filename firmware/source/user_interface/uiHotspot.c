@@ -28,7 +28,7 @@
 #include "dmr/DMRShortLC.h"
 #include "dmr/DMRSlotType.h"
 #include "dmr/QR1676.h"
-#include <SeggerRTT/RTT/SEGGER_RTT.h>
+//#include <SeggerRTT/RTT/SEGGER_RTT.h>
 #include <user_interface/menuHotspot.h>
 #include <user_interface/menuSystem.h>
 #include <user_interface/uiUtilities.h>
@@ -239,8 +239,8 @@ static const uint8_t DMR_EMBED_SEQ_MASK[]  		= {0x00U, 0x0FU, 0xFFU, 0xFFU, 0xFF
 
 
 static void updateScreen(uint8_t rxState);
-static void handleEvent(uiEvent_t *ev);
-static void leaveHotspotMenu(void);
+static bool handleEvent(uiEvent_t *ev);
+static void hotspotExit(void);
 static void hotspotStateMachine(void);
 static void processUSBDataQueue(void);
 static void handleHotspotRequest(void);
@@ -438,7 +438,6 @@ int menuHotspotMode(uiEvent_t *ev, bool isFirstRun)
 			freq_rx = 43000000;
 		}
 
-		settingsUsbMode = USB_MODE_HOTSPOT;
 		MMDVMHostRxState = MMDVMHOST_RX_READY; // We have not sent anything to MMDVMHost, so it can't be busy yet.
 
 		usbComSendBufWritePosition = usbComSendBufReadPosition = 0;
@@ -448,7 +447,7 @@ int menuHotspotMode(uiEvent_t *ev, bool isFirstRun)
 #if !defined(DEBUG_HS_SCREEN)
 		ucPrintCentered(0, "Hotspot", FONT_8x16);
 		ucPrintCentered(32, "Waiting for", FONT_8x16);
-		ucPrintCentered(48, "PiStar", FONT_8x16);
+		ucPrintCentered(48, "Pi-Star", FONT_8x16);
 #endif
 		ucRender();
 
@@ -457,7 +456,12 @@ int menuHotspotMode(uiEvent_t *ev, bool isFirstRun)
 	else
 	{
 		if (ev->hasEvent)
-			handleEvent(ev);
+		{
+			if (handleEvent(ev) == false)
+			{
+				return 0;
+			}
+		}
 	}
 
 	processUSBDataQueue();
@@ -565,25 +569,25 @@ static void updateScreen(uint8_t rxCommandState)
 
 #if !defined(DEBUG_HS_SCREEN)
 	ucClearBuf();
-	ucPrintAt(0, 4, "DMR", FONT_6x8);
+	ucPrintAt(4, 4, "DMR", FONT_6x8);
 	ucPrintCentered(0, "Hotspot", FONT_8x16);
 #else
 	buffer[0] = 0;
 #endif
 	int  batteryPerentage = (int)(((averageBatteryVoltage - CUTOFF_VOLTAGE_UPPER_HYST) * 100) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));
-	if (batteryPerentage>100)
+	if (batteryPerentage > 100)
 	{
-		batteryPerentage=100;
+		batteryPerentage = 100;
 	}
-	if (batteryPerentage<0)
+	if (batteryPerentage < 0)
 	{
-		batteryPerentage=0;
+		batteryPerentage = 0;
 	}
 
 	snprintf(buffer, bufferLen, "%d%%", batteryPerentage);
 	buffer[bufferLen - 1] = 0;
 #if !defined(DEBUG_HS_SCREEN)
-	ucPrintCore(0, 4, buffer, FONT_6x8, TEXT_ALIGN_RIGHT, false);// Display battery percentage at the right
+	ucPrintAt(128 - (strlen(buffer) * 6) - 4, 4, buffer, FONT_6x8);
 #endif
 
 	if (trxIsTransmitting)
@@ -703,7 +707,7 @@ static void updateScreen(uint8_t rxCommandState)
 	displayLightTrigger();
 }
 
-static void handleEvent(uiEvent_t *ev)
+static bool handleEvent(uiEvent_t *ev)
 {
 	displayLightTrigger();
 
@@ -712,32 +716,37 @@ static void handleEvent(uiEvent_t *ev)
 		// Do not permit to leave HS in MMDVMHost mode, otherwise that will mess up the communication
 		// and MMDVMHost won't recover from that, sometimes.
 		// Anyway, in MMDVMHost mode, there is a timeout after MMDVMHost stop responding (or went to shutdown).
-		if (nonVolatileSettings.hotspotType != HOTSPOT_TYPE_MMDVM)
+		if (nonVolatileSettings.hotspotType == HOTSPOT_TYPE_BLUEDV)
 		{
-			leaveHotspotMenu();
-			return;
+			hotspotExit();
+			return false;
 		}
 	}
 
-	// Display HS FW version
-	if ((displayFWVersion == false) && (ev->buttons == BUTTON_SK1))
+	if (ev->events & BUTTON_EVENT)
 	{
-		uint8_t prevRxCmd = currentRxCommandState;
+		// Display HS FW version
+		if ((displayFWVersion == false) && (ev->buttons == BUTTON_SK1))
+		{
+			uint8_t prevRxCmd = currentRxCommandState;
 
-		displayFWVersion = true;
-		updateScreen(currentRxCommandState);
-		currentRxCommandState = prevRxCmd;
-		return;
+			displayFWVersion = true;
+			updateScreen(currentRxCommandState);
+			currentRxCommandState = prevRxCmd;
+			return true;
+		}
+		else if (displayFWVersion && ((ev->buttons & BUTTON_SK1) == 0))
+		{
+			displayFWVersion = false;
+			updateScreen(currentRxCommandState);
+			return true;
+		}
 	}
-	else if (displayFWVersion && ((ev->buttons & BUTTON_SK1) == 0))
-	{
-		displayFWVersion = false;
-		updateScreen(currentRxCommandState);
-		return;
-	}
+
+	return true;
 }
 
-static void leaveHotspotMenu(void)
+static void hotspotExit(void)
 {
 	disableTransmission();
 	if (trxIsTransmitting)
@@ -757,7 +766,6 @@ static void leaveHotspotMenu(void)
 	trxDMRID = codeplugGetUserDMRID();
 	settingsUsbMode = USB_MODE_CPS;
 	mmdvmHostIsConnected = false;
-
 	menuSystemPopAllAndDisplayRootMenu();
 }
 
@@ -807,7 +815,11 @@ static void processUSBDataQueue(void)
 		lastUSBSerialTxStatus = USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, &usbComSendBuf[usbComSendBufReadPosition + 1], usbComSendBuf[usbComSendBufReadPosition]);
 		if (lastUSBSerialTxStatus == kStatus_USB_Success)
 		{
-			usbComSendBufReadPosition += usbComSendBuf[usbComSendBufReadPosition] + 1;
+			uint8_t len = usbComSendBuf[usbComSendBufReadPosition] + 1;
+
+			usbComSendBuf[usbComSendBufReadPosition] = 1; // Do not leave original size, not 0 either, but something really small
+
+			usbComSendBufReadPosition += len;
 			if (usbComSendBufReadPosition > (COM_BUFFER_SIZE - 1))
 			{
 				usbComSendBufReadPosition = 0;
@@ -1477,7 +1489,7 @@ static void hotspotStateMachine(void)
 				{
 					wavbuffer_count = 0;
 
-					leaveHotspotMenu();
+					hotspotExit();
 					break;
 				}
 			}
@@ -1533,7 +1545,7 @@ static void hotspotStateMachine(void)
 					rfFrameBufCount = 0;
 					wavbuffer_count = 0;
 
-					leaveHotspotMenu();
+					hotspotExit();
 					break;
 				}
 			}
