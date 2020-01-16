@@ -338,7 +338,10 @@ void receive_sound_data(void)
 
 void tick_RXsoundbuffer(void)
 {
-    if (!g_TX_SAI_in_use)
+	// The AMBE codec decodes 1 DMR frame into 6 buffers.
+	// Hence waiting for more than 6 buffers delays the sound playback by 1 DMR frame which gives some effective bufffering
+	// Max value for this is 12, as the total number of buffers is 18.
+    if (!g_TX_SAI_in_use && wavbuffer_count > 6)
     {
     	send_sound_data();
     }
