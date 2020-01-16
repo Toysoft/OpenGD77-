@@ -384,15 +384,15 @@ void fw_main_task(void *data)
     		if ((nonVolatileSettings.hotspotType == HOTSPOT_TYPE_OFF) ||
     				((nonVolatileSettings.hotspotType != HOTSPOT_TYPE_OFF) && (settingsUsbMode != USB_MODE_HOTSPOT))) // Do not filter anything in HS mode.
     		{
-    			if (!trxIsTransmitting && menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA && nonVolatileSettings.privateCalls == true)
+				if ((uiPrivateCallState == PRIVATE_CALL_DECLINED) &&
+						(slot_state == DMR_STATE_IDLE))
+				{
+					menuClearPrivateCall();
+				}
+				if (!trxIsTransmitting && menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA && nonVolatileSettings.privateCalls == true)
     			{
     				if (HRC6000GetReceivedTgOrPcId() == (trxDMRID | (PC_CALL_FLAG<<24)))
     				{
-    					if ((uiPrivateCallState == PRIVATE_CALL_DECLINED) &&
-    							(HRC6000GetReceivedSrcId() != uiPrivateCallLastID))
-    					{
-    						menuClearPrivateCall();
-    					}
     					if ((uiPrivateCallState == NOT_IN_CALL) &&
     							(trxTalkGroupOrPcId != (HRC6000GetReceivedSrcId() | (PC_CALL_FLAG<<24))) &&
 								(HRC6000GetReceivedSrcId() != uiPrivateCallLastID))

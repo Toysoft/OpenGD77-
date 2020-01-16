@@ -157,7 +157,7 @@ static void updateScreen(void)
 				snprintf(buf, bufferLen, "TA Tx:%s",(nonVolatileSettings.transmitTalkerAlias ? currentLanguage->on : currentLanguage->off));
 				break;
 			case OPTIONS_MENU_PRIVATE_CALLS:
-				snprintf(buf, bufferLen, "%s:%s", currentLanguage->private_call, (nonVolatileSettings.privateCalls ? currentLanguage->on : currentLanguage->off));
+				snprintf(buf, bufferLen, "%s:%s", currentLanguage->private_call_handling, (nonVolatileSettings.privateCalls ? currentLanguage->on : currentLanguage->off));
 				break;
 		}
 

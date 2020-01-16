@@ -139,6 +139,7 @@ const stringsTable_t spanishLanguage =
 .Auto					= "Auto", // MaxLen 16 (with .mode + ':') 
 .manual					= "Manual",  // MaxLen 16 (with .mode + ':') 
 .ptt_toggle				= "PTT Fijo", // MaxLen 16 (with ':' + .on or .off)
+.private_call_handling  = "Handle PC", // MaxLen 16 (with ':' + .on ot .off)
 };
 /********************************************************************
  *
