@@ -290,7 +290,7 @@ void SPI_C6000_postinit(void)
 	write_SPI_page_reg_byte_SPI0(0x04, 0xE1, 0x0F);  //Undocumented Register (Probably associated with CODEC)
 	write_SPI_page_reg_byte_SPI0(0x04, 0xE2, 0x06);  //CODEC  Anti Pop Enabled, DAC Output Enabled
 	write_SPI_page_reg_byte_SPI0(0x04, 0xE3, 0x52);  //CODEC Default Settings
-	write_SPI_page_reg_byte_SPI0(0x04, 0xE4, 0x4A);  //CODEC   LineOut Gain 2dB, Mic Stage 1 Gain 0dB, Mic Stage 2 Gain 30dB
+
 	write_SPI_page_reg_byte_SPI0(0x04, 0xE5, 0x1A);  //CODEC Default Setting
 	write_SPI_page_reg_byte_SPI0(0x04, 0x26, 0x7D);  //Undocumented Register
 	write_SPI_page_reg_byte_SPI0(0x04, 0x27, 0x40);  //Undocumented Register
@@ -302,7 +302,7 @@ void SPI_C6000_postinit(void)
 	write_SPI_page_reg_byte_SPI0(0x04, 0x01, 0x70);  //Set 2 Point Mod, Swap Rx I and Q, Rx Mode IF
 	write_SPI_page_reg_byte_SPI0(0x04, 0x10, 0x6E);  //Set DMR, Tier2, Timeslot mode, Layer2, Repeater, Aligned, Slot 1
 	write_SPI_page_reg_byte_SPI0(0x04, 0x00, 0x3F);  //Reset DMR Protocol and Physical layer modules.
-	write_SPI_page_reg_byte_SPI0(0x04, 0xE4, 0x40 + nonVolatileSettings.micGainDMR);  //CODEC   LineOut Gain 2dB, Mic Stage 1 Gain 0dB, Mic Stage 2 Gain default is 11 =  33dB
+	write_SPI_page_reg_byte_SPI0(0x04, 0xE4, 0xC0 + nonVolatileSettings.micGainDMR);  //CODEC   LineOut Gain 6dB, Mic Stage 1 Gain 0dB, Mic Stage 2 Gain default is 11 =  33dB
 }
 
 void setMicGainDMR(uint8_t gain)
