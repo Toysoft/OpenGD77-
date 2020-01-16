@@ -47,8 +47,8 @@ volatile bool keypadLocked = false;
 static const uint32_t keyMap[] = {
 		KEY_1, KEY_2, KEY_3, KEY_GREEN, KEY_RIGHT,
 		KEY_4, KEY_5, KEY_6, KEY_UP, KEY_LEFT,
-		KEY_7, KEY_8, KEY_9, KEY_DOWN, NULL,
-		KEY_STAR, KEY_0, KEY_HASH, KEY_RED, NULL
+		KEY_7, KEY_8, KEY_9, KEY_DOWN, (uint32_t)NULL,
+		KEY_STAR, KEY_0, KEY_HASH, KEY_RED, (uint32_t)NULL
 };
 static const char keypadAlphaMap[11][31] = {
 		"0 ",
