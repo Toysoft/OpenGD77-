@@ -685,7 +685,7 @@
 					</fileInfo>
 					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.1445804717" name="fsl_smc.c" rcbsApplicability="disable" resourcePath="drivers/fsl_smc.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.475830819.1409041211">
 						<tool id="com.crt.advproject.gcc.exe.debug.475830819.1409041211" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.475830819">
-							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1108157030" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1108157030" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
 							<inputType id="com.crt.advproject.compiler.input.1096367728" superClass="com.crt.advproject.compiler.input"/>
 						</tool>
 					</fileInfo>
@@ -719,6 +719,39 @@
 							<inputType id="com.crt.advproject.compiler.input.1911587351" superClass="com.crt.advproject.compiler.input"/>
 						</tool>
 					</fileInfo>
+					<folderInfo id="com.crt.advproject.config.exe.debug.1021312312.1067184196" name="/" resourcePath="device">
+						<toolChain id="com.crt.advproject.toolchain.exe.debug.339234726" name="NXP MCU Tools" superClass="com.crt.advproject.toolchain.exe.debug" unusedChildren="">
+							<tool id="com.crt.advproject.cpp.exe.debug.2108878239" name="MCU C++ Compiler" superClass="com.crt.advproject.cpp.exe.debug.1589160145"/>
+							<tool id="com.crt.advproject.gcc.exe.debug.2059182291" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.475830819">
+								<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.836104315" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+								<inputType id="com.crt.advproject.compiler.input.1378116720" superClass="com.crt.advproject.compiler.input"/>
+							</tool>
+							<tool id="com.crt.advproject.gas.exe.debug.1476094982" name="MCU Assembler" superClass="com.crt.advproject.gas.exe.debug.515920313">
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.93590603" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+								<inputType id="com.crt.advproject.assembler.input.1257209359" name="Additional Assembly Source Files" superClass="com.crt.advproject.assembler.input"/>
+							</tool>
+							<tool id="com.crt.advproject.link.cpp.exe.debug.2086381394" name="MCU C++ Linker" superClass="com.crt.advproject.link.cpp.exe.debug.751888783"/>
+							<tool id="com.crt.advproject.link.exe.debug.176730473" name="MCU Linker" superClass="com.crt.advproject.link.exe.debug.856992099"/>
+							<tool id="com.crt.advproject.tool.debug.debug.1649982143" name="MCU Debugger" superClass="com.crt.advproject.tool.debug.debug.1827433604"/>
+						</toolChain>
+					</folderInfo>
+					<folderInfo id="com.crt.advproject.config.exe.debug.1021312312.778099600" name="/" resourcePath="board">
+						<toolChain id="com.crt.advproject.toolchain.exe.debug.873410948" name="NXP MCU Tools" superClass="com.crt.advproject.toolchain.exe.debug" unusedChildren="">
+							<targetPlatform binaryParser="org.eclipse.cdt.core.ELF;org.eclipse.cdt.core.GNU_ELF" id="com.crt.advproject.platform.exe.debug" name="ARM-based MCU (Debug)" superClass="com.crt.advproject.platform.exe.debug"/>
+							<tool id="com.crt.advproject.cpp.exe.debug.63956240" name="MCU C++ Compiler" superClass="com.crt.advproject.cpp.exe.debug.1589160145"/>
+							<tool id="com.crt.advproject.gcc.exe.debug.1814137200" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.475830819">
+								<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.361508427" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+								<inputType id="com.crt.advproject.compiler.input.829580202" superClass="com.crt.advproject.compiler.input"/>
+							</tool>
+							<tool id="com.crt.advproject.gas.exe.debug.1956525382" name="MCU Assembler" superClass="com.crt.advproject.gas.exe.debug.515920313">
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1821156262" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+								<inputType id="com.crt.advproject.assembler.input.961863246" name="Additional Assembly Source Files" superClass="com.crt.advproject.assembler.input"/>
+							</tool>
+							<tool id="com.crt.advproject.link.cpp.exe.debug.1650112688" name="MCU C++ Linker" superClass="com.crt.advproject.link.cpp.exe.debug.751888783"/>
+							<tool id="com.crt.advproject.link.exe.debug.1674504900" name="MCU Linker" superClass="com.crt.advproject.link.exe.debug.856992099"/>
+							<tool id="com.crt.advproject.tool.debug.debug.551847698" name="MCU Debugger" superClass="com.crt.advproject.tool.debug.debug.1827433604"/>
+						</toolChain>
+					</folderInfo>
 					<sourceEntries>
 						<entry flags="LOCAL|VALUE_WORKSPACE_PATH" kind="sourcePath" name="CMSIS"/>
 						<entry excluding="FreeRTOS/portable/heap_1.c|FreeRTOS/portable/heap_2.c|FreeRTOS/portable/heap_3.c|FreeRTOS/portable/heap_5.c" flags="LOCAL|VALUE_WORKSPACE_PATH" kind="sourcePath" name="amazon-freertos"/>
