@@ -946,14 +946,12 @@ static void sendVoiceHeaderLC_Frame(volatile const uint8_t *receivedDMRDataAndAu
 
 	if ((lc.srcId == 0) || (lc.dstId == 0))
 	{
-		dbgPrint6("VOICE_HEADER_LC_0");
 		return;
 	}
 
 	// Encode the src and dst Ids etc
 	if (!DMRFullLC_encode(&lc, frameData + MMDVM_HEADER_LENGTH, DT_VOICE_LC_HEADER)) // Encode the src and dst Ids etc
 	{
-		dbgPrint6("LC_ENCODE");
 		return;
 	}
 
@@ -981,14 +979,12 @@ static void sendTerminator_LC_Frame(volatile const uint8_t *receivedDMRDataAndAu
 
 	if ((lc.srcId == 0) || (lc.dstId == 0))
 	{
-		dbgPrint6("TERM_HEADER_LC_0");
 		return;
 	}
 
 	// Encode the src and dst Ids etc
 	if (!DMRFullLC_encode(&lc, frameData + MMDVM_HEADER_LENGTH, DT_TERMINATOR_WITH_LC))
 	{
-		dbgPrint6("LC_ENCODE");
 		return;
 	}
 
@@ -1174,7 +1170,8 @@ static void storeNetFrame(volatile const uint8_t *com_requestbuffer)
 
 	foundEmbedded = getEmbeddedData(com_requestbuffer);
 
-	if (	foundEmbedded &&
+	if (	(foundEmbedded || (nonVolatileSettings.hotspotType == HOTSPOT_TYPE_BLUEDV))
+			&&
 			(hotspotTxLC[0] == TG_CALL_FLAG || hotspotTxLC[0] == PC_CALL_FLAG) &&
 			(hotspotState != HOTSPOT_STATE_TX_START_BUFFERING && hotspotState != HOTSPOT_STATE_TRANSMITTING))
 	{
@@ -1193,6 +1190,7 @@ static void storeNetFrame(volatile const uint8_t *com_requestbuffer)
 		}
 
 		//displayDataBytes(com_requestbuffer, 16);
+
 		taskENTER_CRITICAL();
 		memcpy((uint8_t *)&audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_write_idx][0x0C], (uint8_t *)com_requestbuffer + 4, 13);//copy the first 13, whole bytes of audio
 		audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_write_idx][0x0C + 13] = (com_requestbuffer[17] & 0xF0) | (com_requestbuffer[23] & 0x0F);
@@ -1209,6 +1207,13 @@ static void storeNetFrame(volatile const uint8_t *com_requestbuffer)
 static uint8_t hotspotModeReceiveNetFrame(volatile const uint8_t *com_requestbuffer, uint8_t timeSlot)
 {
 	DMRLC_T lc;
+
+	if (!mmdvmHostIsConnected)
+	{
+		hotspotState = HOTSPOT_STATE_INITIALISE;
+		mmdvmHostIsConnected = true;
+		updateScreen(HOTSPOT_RX_IDLE);
+	}
 
 	lc.srcId = 0;// zero these values as they are checked later in the function, but only updated if the data type is DT_VOICE_LC_HEADER
 	lc.dstId = 0;
@@ -1276,13 +1281,6 @@ static uint8_t hotspotModeReceiveNetFrame(volatile const uint8_t *com_requestbuf
 		storeNetFrame(com_requestbuffer);
 	}
 	//SEGGER_RTT_printf(0, "hotspotModeReceiveNetFrame\n");
-
-	if (!mmdvmHostIsConnected)
-	{
-		hotspotState = HOTSPOT_STATE_INITIALISE;
-		mmdvmHostIsConnected = true;
-		updateScreen(HOTSPOT_RX_IDLE);
-	}
 
 	return 0U;
 }
@@ -1887,7 +1885,6 @@ static void getStatus(void)
 static uint8_t setConfig(volatile const uint8_t* data, uint8_t length)
 {
 	//SEGGER_RTT_printf(0, "setConfig \n");
-
 	uint8_t txDelay = data[2U];
 	if (txDelay > 50U)
 	{
@@ -2241,7 +2238,6 @@ static void handleHotspotRequest(void)
 				if ((nonVolatileSettings.hotspotType == HOTSPOT_TYPE_BLUEDV) && (modemState == STATE_IDLE))
 				{
 					modemState = STATE_DMR;
-					hotspotState = HOTSPOT_STATE_INITIALISE;
 				}
 
 				err = hotspotModeReceiveNetFrame(com_requestbuffer, 2U);
