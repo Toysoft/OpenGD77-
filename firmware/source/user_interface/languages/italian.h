@@ -112,6 +112,7 @@ const stringsTable_t italianLanguage =
 .key_repeat				= "Key rpt",
 .dmr_filter_timeout		= "Tempo Filtro",
 .brightness				= "Luminosità",
+.brightnessOff			= "Luminosità min",
 .contrast				= "Contrasto",
 .colour_invert			= "Colore:Invert.",
 .colour_normal			= "Colore:Normale",

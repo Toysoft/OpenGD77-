@@ -112,6 +112,7 @@ const stringsTable_t englishLanguage =
 .key_repeat				= "Key rpt", // MaxLen: 11 (with ':' + x.xs fitted)
 .dmr_filter_timeout			= "Filter time", // MaxLen: 16 (with ':' + 1..90 + 's')
 .brightness				= "Brightness", // MaxLen: 16 (with ':' + 0..100 + '%')
+.brightnessOff				= "Min bright", // MaxLen: 16 (with ':' + 0..100 + '%')
 .contrast				= "Contrast", // MaxLen: 16 (with ':' + 12..30)
 .colour_invert				= "Color:Invert", // MaxLen: 16
 .colour_normal				= "Color:Normal", // MaxLen: 16
