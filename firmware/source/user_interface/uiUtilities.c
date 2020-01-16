@@ -318,14 +318,15 @@ void lastHeardClearLastID(void)
 	lastID=0;
 }
 
-bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
+bool lastHeardListUpdate(uint8_t *dmrDataBuffer, bool forceOnHotspot)
 {
 	static uint8_t bufferTA[32];
 	static uint8_t blocksTA = 0x00;
 	bool retVal = false;
 	uint32_t talkGroupOrPcId = (dmrDataBuffer[0]<<24) + (dmrDataBuffer[3]<<16)+(dmrDataBuffer[4]<<8)+(dmrDataBuffer[5]<<0);
+	static bool overrideTA = false;
 
-	if (HRC6000GetReveivedTgOrPcId() != 0)
+	if ((HRC6000GetReceivedTgOrPcId() != 0) || forceOnHotspot)
 	{
 		if (dmrDataBuffer[0]==TG_CALL_FLAG || dmrDataBuffer[0]==PC_CALL_FLAG)
 		{
@@ -335,6 +336,7 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 			{
 				memset(bufferTA, 0, 32);// Clear any TA data in TA buffer (used for decode)
 				blocksTA = 0x00;
+				overrideTA = false;
 
 				retVal = true;// something has changed
 				lastID=id;
@@ -427,6 +429,7 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 					lastTG = talkGroupOrPcId;
 					memset(bufferTA, 0, 32);// Clear any TA data in TA buffer (used for decode)
 					blocksTA = 0x00;
+					overrideTA = false;
 					retVal = true;// something has changed
 				}
 			}
@@ -434,11 +437,26 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 		else
 		{
 			// Data contains the Talker Alias Data
-			uint8_t blockID = DMR_frame_buffer[0] - 4;
+			uint8_t blockID = (forceOnHotspot ? dmrDataBuffer[0] : DMR_frame_buffer[0]) - 4;
 
 			// ID 0x04..0x07: TA
 			if (blockID < 4)
 			{
+
+				// Already stored first byte in block TA Header as changed, lets clear second block too
+				if ((blockID == 0) && ((blocksTA & (1 << blockID)) != 0) &&
+						(bufferTA[0] != (forceOnHotspot ? dmrDataBuffer[2] : DMR_frame_buffer[2])))
+				{
+					blocksTA &= ~(1 << 0);
+					// Clear second block if it's already stored
+					if ((blocksTA & (1 << 1)) != 0)
+					{
+						blocksTA &= ~(1 << 1);
+						memset(bufferTA + 7, 0, 7); // Clear 2nd TA block
+					}
+					overrideTA = true;
+				}
+
 				// We don't already have this TA block
 				if ((blocksTA & (1 << blockID)) == 0)
 				{
@@ -449,7 +467,7 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 
 					if ((blockOffset + blockLen) < sizeof(bufferTA))
 					{
-						memcpy(bufferTA + blockOffset, (void *)&DMR_frame_buffer[2], blockLen);
+						memcpy(bufferTA + blockOffset, (void *)(forceOnHotspot ? &dmrDataBuffer[2] : &DMR_frame_buffer[2]), blockLen);
 
 						// Format and length infos are available, we can decode now
 						if (bufferTA[0] != 0x0)
@@ -459,10 +477,10 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 							if ((decodedTA = decodeTA(&bufferTA[0])) != NULL)
 							{
 								// TAs doesn't match, update contact and screen.
-								if (strlen((const char *)decodedTA) > strlen((const char *)&LinkHead->talkerAlias))
+								if (overrideTA || (strlen((const char *)decodedTA) > strlen((const char *)&LinkHead->talkerAlias)))
 								{
 									memcpy(&LinkHead->talkerAlias, decodedTA, 31);// Brandmeister seems to send callsign as 6 chars only
-
+									overrideTA = false;
 									menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;
 								}
 							}
@@ -472,7 +490,7 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 			}
 			else if (blockID == 4) // ID 0x08: GPS
 			{
-				uint8_t *locator = decodeGPSPosition((uint8_t *)&DMR_frame_buffer[0]);
+				uint8_t *locator = decodeGPSPosition((uint8_t *)(forceOnHotspot ? &dmrDataBuffer[0] : &DMR_frame_buffer[0]));
 
 				if (strncmp((char *)&LinkHead->locator, (char *)locator, 7) != 0)
 				{
@@ -708,7 +726,7 @@ void menuUtilityRenderQSOData(void)
 	 * but I thought it was safer to disregard any PC's from IDs the same as the current TG
 	 * rather than testing if the TG is the user's ID, though that may work as well.
 	 */
-	if (HRC6000GetReveivedTgOrPcId() != 0)
+	if (HRC6000GetReceivedTgOrPcId() != 0)
 	{
 		if ((LinkHead->talkGroupOrPcId>>24) == PC_CALL_FLAG) // &&  (LinkHead->id & 0xFFFFFF) != (trxTalkGroupOrPcId & 0xFFFFFF))
 		{

@@ -377,7 +377,7 @@ void fw_main_task(void *data)
 
     		if (!trxIsTransmitting && updateLastHeard==true)
     		{
-    			lastHeardListUpdate((uint8_t *)DMR_frame_buffer);
+    			lastHeardListUpdate((uint8_t *)DMR_frame_buffer, false);
     			updateLastHeard=false;
     		}
 
@@ -386,16 +386,16 @@ void fw_main_task(void *data)
     		{
     			if (!trxIsTransmitting && menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA && nonVolatileSettings.privateCalls == true)
     			{
-    				if (HRC6000GetReveivedTgOrPcId() == (trxDMRID | (PC_CALL_FLAG<<24)))
+    				if (HRC6000GetReceivedTgOrPcId() == (trxDMRID | (PC_CALL_FLAG<<24)))
     				{
     					if ((uiPrivateCallState == PRIVATE_CALL_DECLINED) &&
-    							(HRC6000GetReveivedSrcId() != uiPrivateCallLastID))
+    							(HRC6000GetReceivedSrcId() != uiPrivateCallLastID))
     					{
     						menuClearPrivateCall();
     					}
     					if ((uiPrivateCallState == NOT_IN_CALL) &&
-    							(trxTalkGroupOrPcId != (HRC6000GetReveivedSrcId() | (PC_CALL_FLAG<<24))) &&
-								(HRC6000GetReveivedSrcId() != uiPrivateCallLastID))
+    							(trxTalkGroupOrPcId != (HRC6000GetReceivedSrcId() | (PC_CALL_FLAG<<24))) &&
+								(HRC6000GetReceivedSrcId() != uiPrivateCallLastID))
     					{
     						menuSystemPushNewMenu(MENU_PRIVATE_CALL);
     					}

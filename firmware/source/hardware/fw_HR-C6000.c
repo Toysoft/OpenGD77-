@@ -1584,12 +1584,12 @@ void clearActiveDMRID(void)
 	receivedSrcId 		= 0x00;
 }
 
-int HRC6000GetReveivedTgOrPcId(void)
+int HRC6000GetReceivedTgOrPcId(void)
 {
 	return receivedTgOrPcId;
 }
 
-int HRC6000GetReveivedSrcId(void)
+int HRC6000GetReceivedSrcId(void)
 {
 	return receivedSrcId;
 }

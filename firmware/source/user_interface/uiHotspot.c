@@ -33,7 +33,7 @@
 #include <user_interface/menuSystem.h>
 #include <user_interface/uiUtilities.h>
 #include <functions/fw_ticks.h>
-
+#include <ctype.h>
 /*
                                 Problems with MD-390 on the same frequency
                                 ------------------------------------------
@@ -129,10 +129,15 @@ M: 2020-01-07 09:52:15.246 DMR Slot 2, received network end of voice transmissio
 
 #define MMDVM_HEADER_LENGTH  4U
 
-#define HOTSPOT_VERSION_STRING "OpenGD77 Hotspot v0.0.76"
+#define HOTSPOT_VERSION_STRING "OpenGD77 Hotspot v0.0.77"
 #define concat(a, b) a " GitID #" b ""
 static const char HARDWARE[] = concat(HOTSPOT_VERSION_STRING, GITVERSION);
 
+// Fake TA and QSO Info (send by MMDVMHost's CAST display driver)
+static char mmdvmQSOInfoIP[22] = {0}; // use 6x8 font; 21 char long
+static char overriddenLCTA[2 * 9] = {0}; // 2 LC frame only (enough to store callsign)
+static bool overriddenLCAvailable = false;
+static uint8_t overriddenBlocksTA = 0x00;
 
 static const uint8_t MMDVM_VOICE_SYNC_PATTERN = 0x20U;
 
@@ -166,7 +171,10 @@ static int hotspotPowerLevel = 0;// no power level saved yet
 static uint32_t mmdvmHostLastActiveTick = 0;
 static bool mmdvmHostIsConnected = false;
 static bool displayFWVersion;
-static uint8_t currentRxCommandeState;
+static uint8_t currentRxCommandState;
+
+extern LinkItem_t *LinkHead;
+
 
 static volatile enum
 {
@@ -412,8 +420,11 @@ int menuHotspotMode(uiEvent_t *ev, bool isFirstRun)
 		trxTalkGroupOrPcId = 0;
 		mmdvmHostIsConnected = false;
 		rfFrameBufCount = 0;
-		currentRxCommandeState = HOTSPOT_RX_UNKNOWN;
+		currentRxCommandState = HOTSPOT_RX_UNKNOWN;
 		displayFWVersion = false;
+		overriddenLCTA[0] = 0;
+		overriddenBlocksTA = 0x0;
+		overriddenLCAvailable = false;
 
 		trxSetModeAndBandwidth(RADIO_MODE_DIGITAL, false);// hotspot mode is for DMR i.e Digital mode
 
@@ -442,7 +453,6 @@ int menuHotspotMode(uiEvent_t *ev, bool isFirstRun)
 		ucRender();
 
 		displayLightTrigger();
-//		updateScreen(HOTSPOT_RX_IDLE);
 	}
 	else
 	{
@@ -461,19 +471,102 @@ int menuHotspotMode(uiEvent_t *ev, bool isFirstRun)
 	return 0;
 }
 
+#if !defined(DEBUG_HS_SCREEN)
+static void displayContactInfo(uint8_t y, char *text, size_t maxLen)
+{
+	char buffer[37]; // Max: TA 27 (in 7bit format) + ' [' + 6 (Maidenhead)  + ']' + NULL
+
+	if (strlen(text) >= 5)
+	{
+		int32_t  cpos;
+
+		if ((cpos = getFirstSpacePos(text)) != -1)
+		{
+			// Callsign found
+			memcpy(buffer, text, cpos);
+			buffer[cpos] = 0;
+			ucPrintCentered(y, chomp(buffer), FONT_8x16);
+		}
+		else
+		{
+			// No space found, use a chainsaw
+			memcpy(buffer, text, 16);
+			buffer[16] = 0;
+
+			ucPrintCentered(y, chomp(buffer), FONT_8x16);
+		}
+	}
+	else
+	{
+		memcpy(buffer, text, strlen(text));
+		buffer[strlen(text)] = 0;
+		ucPrintCentered(y, chomp(buffer), FONT_8x16);
+	}
+}
+
+static void updateContactLine(uint8_t y)
+{
+	static const int bufferLen = 33; // displayChannelNameOrRxFrequency() use 6x8 font
+	char buffer[bufferLen];// buffer passed to the DMR ID lookup function, needs to be large enough to hold worst case text length that is returned. Currently 16+1
+	dmrIdDataStruct_t currentRec;
+
+	if ((LinkHead->talkGroupOrPcId>>24) == PC_CALL_FLAG)
+	{
+		// Its a Private call
+		if (!contactIDLookup(LinkHead->id, CONTACT_CALLTYPE_PC, buffer))
+		{
+			dmrIDLookup(LinkHead->id, &currentRec);
+			strncpy(buffer, currentRec.text, 16);
+			buffer[16] = 0;
+		}
+
+		ucPrintCentered(y, buffer, FONT_8x16);
+	}
+	else
+	{
+		// Group call
+
+		// first check if we have this ID in the DMR ID data
+		if (contactIDLookup(LinkHead->id, CONTACT_CALLTYPE_PC, buffer))
+		{
+			displayContactInfo(y, buffer, 16);
+		}
+		else if (dmrIDLookup((LinkHead->id & 0xFFFFFF), &currentRec))
+		{
+			displayContactInfo(y, currentRec.text, sizeof(currentRec.text));
+		}
+		else
+		{
+			// We don't have this ID, so try looking in the Talker alias data
+			if (LinkHead->talkerAlias[0] != 0x00)
+			{
+				displayContactInfo(y, LinkHead->talkerAlias, sizeof(LinkHead->talkerAlias));
+			}
+			else
+			{
+				// No talker alias. So we can only show the ID.
+				snprintf(buffer, bufferLen, "ID: %d", LinkHead->id);
+				buffer[bufferLen - 1] = 0;
+				ucPrintCentered(y, buffer, FONT_8x16);
+			}
+		}
+	}
+}
+#endif
+
 static void updateScreen(uint8_t rxCommandState)
 {
 	int val_before_dp;
 	int val_after_dp;
 	static const int bufferLen = 17;
 	char buffer[22U]; // set to 22 due to FW info
-	dmrIdDataStruct_t currentRec;
 
-	currentRxCommandeState = rxCommandState;
+	currentRxCommandState = rxCommandState;
 
 #if !defined(DEBUG_HS_SCREEN)
 	ucClearBuf();
-	ucPrintAt(0,0, "DMR Hotspot", FONT_8x16);
+	ucPrintAt(0, 4, "DMR", FONT_6x8);
+	ucPrintCentered(0, "Hotspot", FONT_8x16);
 #else
 	buffer[0] = 0;
 #endif
@@ -495,25 +588,21 @@ static void updateScreen(uint8_t rxCommandState)
 
 	if (trxIsTransmitting)
 	{
-		dmrIDLookup((trxDMRID & 0xFFFFFF), &currentRec);
-
+#if !defined(DEBUG_HS_SCREEN)
 		if (displayFWVersion)
 		{
 			snprintf(buffer, 22U, "%s", &HOTSPOT_VERSION_STRING[16]);
 			buffer[21U] = 0;
+			ucPrintCentered(16 + (displayFWVersion ? 4 : 0), buffer, (displayFWVersion ? FONT_6x8 : FONT_8x16));
 		}
 		else
 		{
-			strncpy(buffer, currentRec.text, bufferLen);
-			buffer[bufferLen - 1] = 0;
+			updateContactLine(16);
 		}
-#if !defined(DEBUG_HS_SCREEN)
-		ucPrintCentered(16 + (displayFWVersion ? 4 : 0), buffer, (displayFWVersion ? FONT_6x8 : FONT_8x16));
 #else
 		buffer[0] = 0;
 #endif
-	//	sprintf(buffer,"ID %d",trxDMRID & 0xFFFFFF);
-	//	UC1701_printCentered(16, buffer,UC1701_FONT_8x16);
+
 		if ((trxTalkGroupOrPcId & 0xFF000000) == 0)
 		{
 			snprintf(buffer, bufferLen, "TG %d", trxTalkGroupOrPcId & 0xFFFFFF);
@@ -536,6 +625,7 @@ static void updateScreen(uint8_t rxCommandState)
 	{
 		if (rxCommandState == HOTSPOT_RX_START  || rxCommandState == HOTSPOT_RX_START_LATE)
 		{
+			dmrIdDataStruct_t currentRec;
 			uint32_t srcId = (audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][6] << 16) + (audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][7] << 8) + (audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][8] << 0);
 			uint32_t dstId = (audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][3] << 16) + (audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][4] << 8) + (audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][5] << 0);
 			uint32_t FLCO  = audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][0];// Private or group call
@@ -582,6 +672,13 @@ static void updateScreen(uint8_t rxCommandState)
 				buffer[21U] = 0;
 				ucPrintCentered(16 + 4, buffer, FONT_6x8);
 			}
+			else
+			{
+				if (strlen(mmdvmQSOInfoIP))
+				{
+					ucPrintCentered(16 + 4, mmdvmQSOInfoIP, FONT_6x8);
+				}
+			}
 #endif
 
 			snprintf(buffer, bufferLen, "CC:%d", trxGetDMRColourCode());//, trxGetDMRTimeSlot()+1) ;
@@ -612,24 +709,30 @@ static void handleEvent(uiEvent_t *ev)
 
 	if (KEYCHECK_SHORTUP(ev->keys, KEY_RED))
 	{
-		leaveHotspotMenu();
-		return;
+		// Do not permit to leave HS in MMDVMHost mode, otherwise that will mess up the communication
+		// and MMDVMHost won't recover from that, sometimes.
+		// Anyway, in MMDVMHost mode, there is a timeout after MMDVMHost stop responding (or went to shutdown).
+		if (nonVolatileSettings.hotspotType != HOTSPOT_TYPE_MMDVM)
+		{
+			leaveHotspotMenu();
+			return;
+		}
 	}
 
 	// Display HS FW version
 	if ((displayFWVersion == false) && (ev->buttons == BUTTON_SK1))
 	{
-		uint8_t prevRxCmd = currentRxCommandeState;
+		uint8_t prevRxCmd = currentRxCommandState;
 
 		displayFWVersion = true;
-		updateScreen(currentRxCommandeState);
-		currentRxCommandeState = prevRxCmd;
+		updateScreen(currentRxCommandState);
+		currentRxCommandState = prevRxCmd;
 		return;
 	}
 	else if (displayFWVersion && ((ev->buttons & BUTTON_SK1) == 0))
 	{
 		displayFWVersion = false;
-		updateScreen(currentRxCommandeState);
+		updateScreen(currentRxCommandState);
 		return;
 	}
 }
@@ -742,7 +845,54 @@ static void disableTransmission(void)
 
 }
 
-static void addRSSI(uint8_t *frameData)
+#if 0 // Used to dump LC data to MMDVMHost logfile
+static int _isascii(int c)
+{
+	if (c >= 32 && c < 127)
+		return 1;
+
+	return 0;
+}
+
+static void dumpLC(char *txt, uint8_t *lc)
+{
+	char buf[64];
+
+	sprintf(buf, "%s %s", txt, "LCData: ");
+
+	for (uint8_t i = 0; i < 9; i++)
+	{
+		sprintf(buf, "%s%02x ", buf, lc[i]);
+	}
+
+	strcat(buf, "  ");
+
+	for (uint8_t i = 0; i < 9; i++)
+	{
+		sprintf(buf, "%s%c", buf, (_isascii(lc[i]) ? lc[i] : '.'));
+	}
+
+	sendDebug1(buf);
+}
+#endif
+
+static void swapWithFakeTA(uint8_t *lc)
+{
+	if ((lc[0] >= FLCO_TALKER_ALIAS_HEADER) && (lc[0] < FLCO_TALKER_ALIAS_BLOCK2))
+	{
+		uint8_t blockID = lc[0] - 4;
+
+		if ((overriddenBlocksTA & (1 << blockID)) != 0U)
+		{
+			// Clear the bit as it was consumed
+			overriddenBlocksTA &= ~(1 << blockID);
+
+			memcpy(lc, overriddenLCTA + (blockID * 9), 9);
+		}
+	}
+}
+
+static void setRSSIToFrame(uint8_t *frameData)
 {
 	frameData[DMR_FRAME_LENGTH_BYTES + MMDVM_HEADER_LENGTH]      = (trxRxSignal >> 8) & 0xFFU;
 	frameData[DMR_FRAME_LENGTH_BYTES + MMDVM_HEADER_LENGTH + 1U] = (trxRxSignal >> 0) & 0xFFU;
@@ -779,7 +929,7 @@ static void hotspotSendVoiceFrame(volatile const uint8_t *receivedDMRDataAndAudi
 	}
 
 	// Add RSSI into frame
-	addRSSI(frameData);
+	setRSSIToFrame(frameData);
 
 	enqueueUSBData(frameData, frameData[1U]);
 }
@@ -814,7 +964,7 @@ static void sendVoiceHeaderLC_Frame(volatile const uint8_t *receivedDMRDataAndAu
 	}
 
 	// Add RSSI into frame
-	addRSSI(frameData);
+	setRSSIToFrame(frameData);
 
 	//SEGGER_RTT_printf(0, "sendVoiceHeaderLC_Frame\n");
 	enqueueUSBData(frameData, frameData[1U]);
@@ -848,7 +998,7 @@ static void sendTerminator_LC_Frame(volatile const uint8_t *receivedDMRDataAndAu
 	}
 
 	// Add RSSI into frame
-	addRSSI(frameData);
+	setRSSIToFrame(frameData);
 
 	//SEGGER_RTT_printf(0, "sendTerminator_LC_Frame\n");
 	enqueueUSBData(frameData, frameData[1U]);
@@ -865,8 +1015,13 @@ void hotspotRxFrameHandler(uint8_t* frameBuf)
 
 static bool getEmbeddedData(volatile const uint8_t *com_requestbuffer)
 {
-	int lcss;
-	unsigned char DMREMB[2U];
+	int             lcss;
+	unsigned char   DMREMB[2U];
+	// the following is used for fake TA
+	static uint32_t oldTrxDMRID = 0;
+	static uint8_t  rawDataCount = 0;
+	static uint8_t  fakeTABlockID = FLCO_TALKER_ALIAS_HEADER;
+	static bool     sendFakeTA = true;
 
 	DMREMB[0U]  = (com_requestbuffer[MMDVM_HEADER_LENGTH + 13U] << 4) & 0xF0U;
 	DMREMB[0U] |= (com_requestbuffer[MMDVM_HEADER_LENGTH + 14U] >> 4) & 0x0FU;
@@ -889,7 +1044,65 @@ static bool getEmbeddedData(volatile const uint8_t *com_requestbuffer)
 	{
 		//DMRLC_T lc;
 
-		DMREmbeddedData_getRawData(hotspotTxLC);
+		bool res = DMREmbeddedData_getRawData(hotspotTxLC);
+
+		if (res)
+		{
+			lastHeardListUpdate(hotspotTxLC, true);
+
+			if (overriddenLCAvailable) // We can send fake talker aliases.
+			{
+				if (trxDMRID != oldTrxDMRID)
+				{
+					// reset counters
+					rawDataCount = 0;
+					sendFakeTA = true;
+					fakeTABlockID = FLCO_TALKER_ALIAS_HEADER;
+					oldTrxDMRID = trxDMRID;
+				}
+
+				if (sendFakeTA)
+				{
+					if ((hotspotTxLC[0] >= FLCO_TALKER_ALIAS_HEADER) && (hotspotTxLC[0] <= FLCO_TALKER_ALIAS_BLOCK3))
+					{
+						sendFakeTA = false;
+						rawDataCount = 0;
+						fakeTABlockID = FLCO_TALKER_ALIAS_HEADER;
+						overriddenLCAvailable = false;
+					}
+					else
+					{
+						rawDataCount++;
+
+						if (rawDataCount > 4)
+						{
+							hotspotTxLC[0] = fakeTABlockID;
+
+							swapWithFakeTA(&hotspotTxLC[0]);
+
+							// Update LH with fake TA
+							lastHeardListUpdate(hotspotTxLC, true);
+
+							fakeTABlockID++;
+
+							// We just send 2 fake blocks, as it only contains callsign
+							if (fakeTABlockID == FLCO_TALKER_ALIAS_BLOCK2)
+							{
+								rawDataCount = 0;
+								sendFakeTA = false;
+								fakeTABlockID = FLCO_TALKER_ALIAS_HEADER;
+								oldTrxDMRID = trxDMRID;
+								overriddenLCAvailable = false;
+							}
+						}
+					}
+				}
+			}
+			else
+			{
+				lastHeardListUpdate(hotspotTxLC, true);
+			}
+		}
 
 		/*
 		int flco = DMREmbeddedData_getFLCO();
@@ -959,11 +1172,10 @@ static void storeNetFrame(volatile const uint8_t *com_requestbuffer)
 		return;
 	}
 
-
 	foundEmbedded = getEmbeddedData(com_requestbuffer);
 
 	if (	foundEmbedded &&
-			(hotspotTxLC[0] == 0 || hotspotTxLC[0] == 3) &&
+			(hotspotTxLC[0] == TG_CALL_FLAG || hotspotTxLC[0] == PC_CALL_FLAG) &&
 			(hotspotState != HOTSPOT_STATE_TX_START_BUFFERING && hotspotState != HOTSPOT_STATE_TRANSMITTING))
 	{
 		//SEGGER_RTT_printf(0, "LATE START -> HOTSPOT_STATE_TX_BUFFERING\n");
@@ -1052,11 +1264,11 @@ static uint8_t hotspotModeReceiveNetFrame(volatile const uint8_t *com_requestbuf
 		{
 			//SEGGER_RTT_printf(0, "Net frame LC_decodOK:%d FID:%d FLCO:%d PF:%d R:%d dstId:%d src:Id:%d options:0x%02x\n",lcDecodeOK,lc.FID,lc.FLCO,lc.PF,lc.R,lc.dstId,lc.srcId,lc.options);
 			memcpy(hotspotTxLC, lc.rawData, 9);//Hotspot uses LC Data bytes rather than the src and dst ID's for the embed data
+
 			// the Src and Dst Id's have been sent, and we are in RX mode then an incoming Net normally arrives next
 			//SEGGER_RTT_printf(0,"hospot state %d -> HOTSPOT_STATE_TX_BUFFERING\n");
 			timeoutCounter = TX_BUFFERING_TIMEOUT;
 			hotspotState = HOTSPOT_STATE_TX_START_BUFFERING;
-
 		}
 	}
 	else
@@ -1064,6 +1276,14 @@ static uint8_t hotspotModeReceiveNetFrame(volatile const uint8_t *com_requestbuf
 		storeNetFrame(com_requestbuffer);
 	}
 	//SEGGER_RTT_printf(0, "hotspotModeReceiveNetFrame\n");
+
+	if (!mmdvmHostIsConnected)
+	{
+		hotspotState = HOTSPOT_STATE_INITIALISE;
+		mmdvmHostIsConnected = true;
+		updateScreen(HOTSPOT_RX_IDLE);
+	}
+
 	return 0U;
 }
 
@@ -1275,6 +1495,8 @@ static void hotspotStateMachine(void)
 			wavbuffer_write_idx = 0;
 			wavbuffer_count = 0;
 			rfFrameBufCount = 0;
+
+			overriddenLCAvailable = false;
 
 			hotspotState = HOTSPOT_STATE_RX_START;
 			//SEGGER_RTT_printf(0, "STATE_INITIALISE -> STATE_RX\n");
@@ -1497,6 +1719,7 @@ static void hotspotStateMachine(void)
 			break;
 
 		case HOTSPOT_STATE_TX_SHUTDOWN:
+			overriddenLCAvailable = false;
 			dbgPrint3("TX_SHUTDOWN", rfFrameBufCount);
 			if (txstopdelay > 0)
 			{
@@ -1544,7 +1767,10 @@ static uint8_t setFreq(volatile const uint8_t* data, uint8_t length)
 	hotspotState = HOTSPOT_STATE_INITIALISE;
 
 	if (!mmdvmHostIsConnected)
+	{
 		mmdvmHostIsConnected = true;
+		updateScreen(HOTSPOT_RX_IDLE);
+	}
 
 //	displayLightOverrideTimeout(-1);// turn the backlight on permanently
 
@@ -1652,6 +1878,7 @@ static void getStatus(void)
 	{
 		hotspotState = HOTSPOT_STATE_INITIALISE;
 		mmdvmHostIsConnected = true;
+		updateScreen(HOTSPOT_RX_IDLE);
 	}
 
 	enqueueUSBData(buf, buf[1U]);
@@ -1694,7 +1921,10 @@ static uint8_t setConfig(volatile const uint8_t* data, uint8_t length)
 		hotspotState = HOTSPOT_STATE_INITIALISE;
 
 		if (!mmdvmHostIsConnected)
+		{
 			mmdvmHostIsConnected = true;
+			updateScreen(HOTSPOT_RX_IDLE);
+		}
 	}
 
 	return 0U;
@@ -1734,6 +1964,13 @@ static uint8_t setMode(volatile const uint8_t* data, uint8_t length)
 			break;
 	}
 
+	if (!mmdvmHostIsConnected)
+	{
+		hotspotState = HOTSPOT_STATE_INITIALISE;
+		mmdvmHostIsConnected = true;
+		updateScreen(HOTSPOT_RX_IDLE);
+	}
+
 	return 0U;
 }
 
@@ -1754,6 +1991,13 @@ static void getVersion(void)
 
 	buf[1U] = count;
 
+	if (!mmdvmHostIsConnected)
+	{
+		hotspotState = HOTSPOT_STATE_INITIALISE;
+		mmdvmHostIsConnected = true;
+		updateScreen(HOTSPOT_RX_IDLE);
+	}
+
 	enqueueUSBData(buf, buf[1U]);
 }
 
@@ -1763,8 +2007,123 @@ static uint8_t handleDMRShortLC(volatile const uint8_t *data, uint8_t length)
 	////	DMRShortLC_decode((uint8_t *) com_requestbuffer + 3U,LCBuf);
 	////	//SEGGER_RTT_printf(0, "MMDVM ShortLC\n %02X %02X %02X %02X %02X\n",LCBuf[0U],LCBuf[1U],LCBuf[2U],LCBuf[3U],LCBuf[4U],LCBuf[5U]);
 
+	if (!mmdvmHostIsConnected)
+	{
+		hotspotState = HOTSPOT_STATE_INITIALISE;
+		mmdvmHostIsConnected = true;
+		updateScreen(HOTSPOT_RX_IDLE);
+	}
+
 	return 0U;
 }
+
+static uint8_t setQSOInfo(volatile const uint8_t *data, uint8_t length)
+{
+	if (data[3U] == 250U) // IP info from MMDVMHost's CAST display driver
+	{
+		char buf[26U]; // MMDVMHost use an array of 25U
+		char *pBuf = buf;
+		char *pIface;
+
+		memcpy(&buf, (char *)(data + MMDVM_HEADER_LENGTH), (length - MMDVM_HEADER_LENGTH));
+		buf[(length - MMDVM_HEADER_LENGTH)] = 0;
+
+		// Get rid of the interface name as it could be too large to fit in the screen.
+		if ((pIface = strchr(pBuf, ':')) != NULL)
+		{
+			pBuf = pIface + 1;
+		}
+
+		snprintf(mmdvmQSOInfoIP, 21, "%s", pBuf);
+		mmdvmQSOInfoIP[21] = 0;
+
+		updateScreen(currentRxCommandState);
+
+		return 0U;
+	}
+	else if (data[3U] != STATE_DMR) // We just want DMR QSO info
+	{
+		return 4U;
+	}
+
+	if (length != 47U) // Check for QSO Info frame length
+	{
+		return 5U;
+	}
+
+	// Source and destination are both fitted in 20U arrays, in MMDVMHost
+	// We just store use and store source info
+	char QSOInfo[21U]; // QSO infos are array[20]
+	char source[21U];
+	char *p;
+	uint8_t len;
+
+	memcpy(&source, (char *)(data + 5U), 20U);
+	source[20U] = 0;
+
+	memset(&QSOInfo, 0, sizeof(QSOInfo));
+	sprintf(QSOInfo, "%s", chomp(source));
+
+    len = strlen(QSOInfo);
+
+	// Keep the callsign only.
+	if ((p = strchr(QSOInfo, ' ')) != NULL)
+	{
+		*p = 0;
+
+		// zeroing
+		p++;
+		for (uint8_t i = 0; i < (len - (p - QSOInfo)); i++)
+		{
+			*(p + i) = 0;
+		}
+
+		len = strlen(QSOInfo);
+	}
+
+	// Non empty string, check if it's not numerical (TG/PC), as it will be ignored
+	if (len > 0)
+	{
+		bool onlyDigits = true;
+
+		for (uint8_t i = 0; i < len; i++)
+		{
+			if (isalpha(QSOInfo[i]))
+			{
+				onlyDigits = false;
+				break;
+			}
+		}
+
+		if (onlyDigits)
+		{
+			overriddenLCAvailable = false;
+			return 0U;
+		}
+
+		// Build fake TA (2 blocks max)
+		memset(&overriddenLCTA, 0, sizeof(overriddenLCTA));
+
+		overriddenLCTA[0]  = 0x04;
+		overriddenLCTA[2]  = (0x01 << 6) | (len << 1);
+		overriddenLCTA[9]  = 0x05;
+
+		char *p = QSOInfo;
+		for (uint8_t i = 0; i < 2; i++) // 2 blocks only, that enough for store a callsign
+		{
+			memcpy(&overriddenLCTA[(i * 9) + ((i == 0) ? 3 : 2)], p, ((i == 0) ? 6 : 7));
+
+			p += ((i == 0) ? 6 : 7);
+		}
+
+		overriddenBlocksTA = 0x03; // 2 blocks are now available
+	}
+
+	overriddenLCAvailable = (len > 0);
+
+	return 0U;
+}
+
 
 static void handleHotspotRequest(void)
 {
@@ -1905,7 +2264,7 @@ static void handleHotspotRequest(void)
 			case MMDVM_DMR_SHORTLC:
 				dbgPrint2("DMR_SHORTLC");
 //				//SEGGER_RTT_printf(0, "MMDVM_DMR_SHORTLC\n");
-				err = handleDMRShortLC((uint8_t *)com_requestbuffer, com_requestbuffer[1U]);
+				err = handleDMRShortLC(com_requestbuffer, com_requestbuffer[1U]);
 				if (err == 0U)
 				{
 					sendACK();
@@ -1952,8 +2311,21 @@ static void handleHotspotRequest(void)
 				break;
 
 			case MMDVM_TRANSPARENT: // Do nothing, stay silent
+				dbgPrint2("TRANS");
+				sendNAK(err);
+				break;
+
 			case MMDVM_QSO_INFO:
 				dbgPrint2("QSO_INFO");
+				err = setQSOInfo(com_requestbuffer, com_requestbuffer[1U]);
+				if ((err == 0U) || (err == 4U) /* non DMR mode, ignored */)
+				{
+					sendACK();
+				}
+				else
+				{
+					sendNAK(err);
+				}
 				break;
 
 			default:
@@ -1973,5 +2345,11 @@ static void handleHotspotRequest(void)
 	else
 	{
 		//SEGGER_RTT_printf(0, "Invalid MMDVM header byte %d\n",com_requestbuffer[0]);
+	}
+
+	if ((menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA) || (menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA_UPDATE))
+	{
+		updateScreen(currentRxCommandState);
+		menuDisplayQSODataState = QSO_DISPLAY_IDLE;
 	}
 }
