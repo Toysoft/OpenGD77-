@@ -169,6 +169,19 @@ void fw_main_task(void *data)
 			// EVENT_*_CHANGED can be cleared later, so check this now as hasEvent has to be set anyway.
 			keyOrButtonChanged = ((key_event != NO_EVENT) || (button_event != NO_EVENT));
 
+			if (batteryVoltageHasChanged == true)
+			{
+				int currentMenu = menuSystemGetCurrentMenuNumber();
+
+				if ((currentMenu == MENU_CHANNEL_MODE) || (currentMenu == MENU_VFO_MODE))
+				{
+					ucFillRect(0, 0, 128, 16, true);
+					menuUtilityRenderHeader();
+					ucRenderRows(0, 2);
+				}
+
+				batteryVoltageHasChanged = false;
+			}
 
 			if (keypadLocked || PTTLocked)
 			{
