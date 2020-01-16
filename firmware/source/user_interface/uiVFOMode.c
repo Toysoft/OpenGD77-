@@ -586,11 +586,7 @@ static void handleEvent(uiEvent_t *ev)
 			menuVFOModeUpdateScreen(0);
 			return;
 		}
-	}
-
-	if (ev->events & KEY_EVENT)
-	{
-		if (KEYCHECK_SHORTUP(ev->keys, KEY_ORANGE))
+		if (ev->buttons & BUTTON_ORANGE)
 		{
 			if (ev->buttons & BUTTON_SK2)
 			{
@@ -605,10 +601,10 @@ static void handleEvent(uiEvent_t *ev)
 
 			return;
 		}
-		else if (KEYCHECK_LONGDOWN(ev->keys, KEY_ORANGE))
-		{
-			startScan();
-		}
+	}
+
+	if (ev->events & KEY_EVENT)
+	{
 		if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 		{
 			if (ev->buttons & BUTTON_SK2 )
@@ -1124,7 +1120,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 		menuSystemPopPreviousMenu();
 		return;
 	}
-	else if ((KEYCHECK_SHORTUP(ev->keys, KEY_ORANGE)) && (gMenusCurrentItemIndex==VFO_SCREEN_QUICK_MENU_VFO_A_B))
+	else if (((ev->events & BUTTON_EVENT) && (ev->buttons & BUTTON_ORANGE)) && (gMenusCurrentItemIndex==VFO_SCREEN_QUICK_MENU_VFO_A_B))
 	{
 		nonVolatileSettings.currentVFONumber = 1 - nonVolatileSettings.currentVFONumber;// Switch to other VFO
 		currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];
