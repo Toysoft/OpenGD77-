@@ -76,7 +76,7 @@ typedef struct settingsStruct
 
 } settingsStruct_t;
 
-typedef enum {DMR_FILTER_NONE = 0, DMR_FILTER_TS = 1, DMR_FILTER_TS_TG = 2} dmrFilter_t;
+typedef enum DMR_FILTER_TYPE {DMR_FILTER_NONE = 0, DMR_FILTER_TS = 1, DMR_FILTER_TS_TG = 2} dmrFilter_t;
 
 extern settingsStruct_t nonVolatileSettings;
 extern struct_codeplugChannel_t *currentChannelData;
