@@ -138,7 +138,8 @@ const stringsTable_t englishLanguage =
 .low_battery				= "LOW BATTERY !!!", // MaxLen: 16
 .Auto					= "Auto", // MaxLen 16 (with .mode + ':') 
 .manual					= "Manual",  // MaxLen 16 (with .mode + ':')
-.ptt_toggle				= "PTT toggle", // MaxLen 16 (with ':' + .on or .off)
+.ptt_toggle				= "PTT latch", // MaxLen 16 (with ':' + .on or .off)
+.private_call_handling  = "Allow PC", // MaxLen 16 (with ':' + .on or .off)
 };
 /********************************************************************
  *
