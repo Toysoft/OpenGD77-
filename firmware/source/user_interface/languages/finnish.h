@@ -20,7 +20,7 @@
  * Translators: OH1E
  *
  *
- * Rev: 8 
+ * Rev: 9 
  */
 #ifndef USER_INTERFACE_LANGUAGES_FINNISH_H_
 #define USER_INTERFACE_LANGUAGES_FINNISH_H_
@@ -139,7 +139,7 @@ const stringsTable_t finnishLanguage =
 .Auto			= "Automaatti",		// MaxLen 16 (with .mode + ':') 
 .manual			= "Manuaali",  		// MaxLen 16 (with .mode + ':') 
 .ptt_toggle		= "PTT Lukko",    	// MaxLen 16 (with ':' + .on or .off)
-.private_call_handling    = "Handle PC", // MaxLen 16 (with ':' + .on ot .off)
+.private_call_handling	= "Käsittele PC", // MaxLen 16 (with ':' + .on ot .off)
 };
 /********************************************************************
  *
