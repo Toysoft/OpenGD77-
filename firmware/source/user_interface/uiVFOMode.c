@@ -502,6 +502,7 @@ static void loadContact(void)
 static void handleEvent(uiEvent_t *ev)
 {
 	displayLightTrigger();
+
 	if((scanState==SCAN_PAUSED) && ((ev->events & KEY_EVENT) && (ev->keys.key == KEY_DOWN)) && (!(ev->buttons & BUTTON_SK2)))
 		{
 			nuisanceDelete[nuisanceDeleteIndex++]=currentChannelData->rxFreq;
@@ -1358,7 +1359,7 @@ static void scanning(void)
 	{
 
 		trx_measure_count=0;														//needed to allow time for Rx to settle after channel change.
-		uiEvent_t tmpEvent={ .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = 0, .time = 0 };
+		uiEvent_t tmpEvent={ .buttons = 0, .keys = NO_KEYCODE, .function = 0, .events = NO_EVENT, .hasEvent = 0, .time = 0 };
 
 		if(currentChannelData->rxFreq + VFO_FREQ_STEP_TABLE[(currentChannelData->VFOflag5 >> 4)]  <= vfoScanHigh)
 		{

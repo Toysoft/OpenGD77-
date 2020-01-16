@@ -1059,7 +1059,7 @@ static void scanning(void)
 	{
 
 		trx_measure_count=0;														//needed to allow time for Rx to settle after channel change.
-		uiEvent_t tmpEvent={ .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = 0, .time = 0 };
+		uiEvent_t tmpEvent={ .buttons = 0, .keys = NO_KEYCODE, .function = 0, .events = NO_EVENT, .hasEvent = 0, .time = 0 };
 
 		handleUpKey(&tmpEvent);
 		if ((trxGetMode() == RADIO_MODE_DIGITAL) && (trxDMRMode == DMR_MODE_ACTIVE) && (SCAN_TOTAL_INTERVAL < SCAN_DMR_SIMPLEX_MIN_INTERVAL) )				//allow extra time if scanning a simplex DMR channel.
