@@ -108,11 +108,11 @@ const stringsTable_t polishLanguage =
 .band_limits				= "Limit pasma", // MaxLen: 16 (with ':' + .on or .off)
 .beep_volume				= "Gàos bip", // MaxLen: 16 (with ':' + -24..6 + 'dB')
 .dmr_mic_gain				= "Mikrofon", // MaxLen: 16 (with ':' + -33..12 + 'dB')
-.key_long				= "Key dàug.", // MaxLen: 11 (with ':' + x.xs fitted)
-.key_repeat				= "Key krÛt.", // MaxLen: 11 (with ':' + x.xs fitted)
+.key_long				= "Key dàugi", // MaxLen: 11 (with ':' + x.xs fitted)
+.key_repeat				= "Key krÛtki", // MaxLen: 11 (with ':' + x.xs fitted)
 .dmr_filter_timeout			= "Czas filtra", // MaxLen: 16 (with ':' + 1..90 + 's')
 .brightness				= "JasnoçÇ", // MaxLen: 16 (with ':' + 0..100 + '%')
-.brightness_off				= "Min bright", // MaxLen: 16 (with ':' + 0..100 + '%')
+.brightness_off				= "Mini jasnoçÇ", // MaxLen: 16 (with ':' + 0..100 + '%')
 .contrast				= "Kontrast", // MaxLen: 16 (with ':' + 12..30)
 .colour_invert				= "Kolor:Inwersja", // MaxLen: 16
 .colour_normal				= "Kolor:Normalny", // MaxLen: 16
@@ -139,7 +139,7 @@ const stringsTable_t polishLanguage =
 .low_battery				= "SáABA BATERIA!!!",//// MaxLen: 16
 .Auto					= "Automat", // MaxLen 16 (with .mode + ':')
 .manual					= "Manualny",  // MaxLen 16 (with .mode + ':') 
-.ptt_toggle				= "PTT staàe", // MaxLen 16 (with ':' + .on or .off)
+.ptt_toggle				= "Staàe PTT", // MaxLen 16 (with ':' + .on or .off)
 .private_call_handling			= "ZezwÛl na PC", // MaxLen 16 (with ':' + .on ot .off)
 };
 /********************************************************************
