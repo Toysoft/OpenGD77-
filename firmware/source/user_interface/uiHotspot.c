@@ -129,7 +129,7 @@ M: 2020-01-07 09:52:15.246 DMR Slot 2, received network end of voice transmissio
 
 #define MMDVM_HEADER_LENGTH  4U
 
-#define HOTSPOT_VERSION_STRING "OpenGD77 Hotspot v0.0.77"
+#define HOTSPOT_VERSION_STRING "OpenGD77 Hotspot v0.0.78"
 #define concat(a, b) a " GitID #" b ""
 static const char HARDWARE[] = concat(HOTSPOT_VERSION_STRING, GITVERSION);
 
@@ -172,6 +172,8 @@ static uint32_t mmdvmHostLastActiveTick = 0;
 static bool mmdvmHostIsConnected = false;
 static bool displayFWVersion;
 static uint8_t currentRxCommandState;
+
+static DMRLC_T rxedDMR_LC; // used to stored LC info from RXed frames
 
 extern LinkItem_t *LinkHead;
 
@@ -426,6 +428,8 @@ int menuHotspotMode(uiEvent_t *ev, bool isFirstRun)
 		overriddenBlocksTA = 0x0;
 		overriddenLCAvailable = false;
 
+		memset(&rxedDMR_LC, 0, sizeof(DMRLC_T));// clear automatic variable
+
 		trxSetModeAndBandwidth(RADIO_MODE_DIGITAL, false);// hotspot mode is for DMR i.e Digital mode
 
 		if (freq_tx == 0)
@@ -630,11 +634,6 @@ static void updateScreen(uint8_t rxCommandState)
 		if (rxCommandState == HOTSPOT_RX_START  || rxCommandState == HOTSPOT_RX_START_LATE)
 		{
 			dmrIdDataStruct_t currentRec;
-			uint32_t srcId = (audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][6] << 16) + (audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][7] << 8) + (audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][8] << 0);
-			uint32_t dstId = (audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][3] << 16) + (audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][4] << 8) + (audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][5] << 0);
-			uint32_t FLCO  = audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][0];// Private or group call
-
-			dmrIDLookup(srcId, &currentRec);
 
 			if (displayFWVersion)
 			{
@@ -643,21 +642,28 @@ static void updateScreen(uint8_t rxCommandState)
 			}
 			else
 			{
-				strncpy(buffer, currentRec.text, bufferLen);
-				buffer[bufferLen - 1] = 0;
+				if (dmrIDLookup(rxedDMR_LC.srcId, &currentRec) == true)
+				{
+					snprintf(buffer, bufferLen, "%s", currentRec.text);
+					buffer[bufferLen - 1] = 0;
+				}
+				else
+				{
+					snprintf(buffer, bufferLen, "ID: %d", rxedDMR_LC.srcId);
+				}
 			}
 #if !defined(DEBUG_HS_SCREEN)
 			ucPrintCentered(16 + (displayFWVersion ? 4 : 0), buffer, (displayFWVersion ? FONT_6x8 : FONT_8x16));
 #else
 			buffer[0] = 0;
 #endif
-			if (FLCO == 0)
+			if (rxedDMR_LC.FLCO == 0)
 			{
-				snprintf(buffer, bufferLen, "TG %d", dstId);
+				snprintf(buffer, bufferLen, "TG %d", rxedDMR_LC.dstId);
 			}
 			else
 			{
-				snprintf(buffer, bufferLen, "PC %d", dstId);
+				snprintf(buffer, bufferLen, "PC %d", rxedDMR_LC.dstId);
 			}
 			buffer[bufferLen - 1] = 0;
 #if !defined(DEBUG_HS_SCREEN)
@@ -949,9 +955,11 @@ static void hotspotSendVoiceFrame(volatile const uint8_t *receivedDMRDataAndAudi
 static void sendVoiceHeaderLC_Frame(volatile const uint8_t *receivedDMRDataAndAudio)
 {
 	uint8_t frameData[DMR_FRAME_LENGTH_BYTES + MMDVM_HEADER_LENGTH + 2U] = {MMDVM_FRAME_START, (DMR_FRAME_LENGTH_BYTES + MMDVM_HEADER_LENGTH + 2U), MMDVM_DMR_DATA2, DMR_SYNC_DATA | DT_VOICE_LC_HEADER};
+
 	DMRLC_T lc;
 
 	memset(&lc, 0, sizeof(DMRLC_T));// clear automatic variable
+
 	lc.srcId = (receivedDMRDataAndAudio[6] << 16) + (receivedDMRDataAndAudio[7] << 8) + (receivedDMRDataAndAudio[8] << 0);
 	lc.dstId = (receivedDMRDataAndAudio[3] << 16) + (receivedDMRDataAndAudio[4] << 8) + (receivedDMRDataAndAudio[5] << 0);
 	lc.FLCO = receivedDMRDataAndAudio[0];// Private or group call
@@ -960,6 +968,8 @@ static void sendVoiceHeaderLC_Frame(volatile const uint8_t *receivedDMRDataAndAu
 	{
 		return;
 	}
+
+	rxedDMR_LC = lc;
 
 	// Encode the src and dst Ids etc
 	if (!DMRFullLC_encode(&lc, frameData + MMDVM_HEADER_LENGTH, DT_VOICE_LC_HEADER)) // Encode the src and dst Ids etc
@@ -1581,8 +1591,8 @@ static void hotspotStateMachine(void)
 						case HOTSPOT_RX_START:
 							dbgPrint4("RX_START", modemState, hotspotState, lastRxState);
 							//SEGGER_RTT_printf(0, "RX_START\n",rx_command,wavbuffer_count);
-							updateScreen(rx_command);
 							sendVoiceHeaderLC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
+							updateScreen(rx_command);
 							lastRxState = HOTSPOT_RX_START;
 							rxFrameTime = fw_millis();
 							break;
@@ -1590,8 +1600,8 @@ static void hotspotStateMachine(void)
 						case HOTSPOT_RX_START_LATE:
 							dbgPrint4("RX_START_L", modemState, hotspotState, lastRxState);
 							//SEGGER_RTT_printf(0, "RX_START_LATE\n");
-							updateScreen(rx_command);
 							sendVoiceHeaderLC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
+							updateScreen(rx_command);
 							lastRxState = HOTSPOT_RX_START_LATE;
 							rxFrameTime = fw_millis();
 							break;
