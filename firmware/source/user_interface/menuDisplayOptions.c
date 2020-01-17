@@ -69,7 +69,7 @@ static void updateScreen(void)
 				snprintf(buf, bufferLen, "%s:%d%%", currentLanguage->brightness, nonVolatileSettings.displayBacklightPercentage);
 				break;
 			case DISPLAY_MENU_BRIGHTNESS_OFF:
-				snprintf(buf, bufferLen, "%s:%d%%", currentLanguage->brightnessOff, nonVolatileSettings.displayBacklightPercentageOff);
+				snprintf(buf, bufferLen, "%s:%d%%", currentLanguage->brightness_off, nonVolatileSettings.displayBacklightPercentageOff);
 				break;
 			case DISPLAY_MENU_CONTRAST:
 				snprintf(buf, bufferLen, "%s:%d", currentLanguage->contrast, nonVolatileSettings.displayContrast);
