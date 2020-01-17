@@ -27,7 +27,7 @@
 
 static const int STORAGE_BASE_ADDRESS 		= 0x6000;
 
-static const int STORAGE_MAGIC_NUMBER 		= 0x4736;
+static const int STORAGE_MAGIC_NUMBER 		= 0x4737;
 
 
 settingsStruct_t nonVolatileSettings;

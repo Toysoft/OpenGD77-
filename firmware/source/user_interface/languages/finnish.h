@@ -20,7 +20,7 @@
  * Translators: OH1E
  *
  *
- * Rev: 8 
+ * Rev: 10 
  */
 #ifndef USER_INTERFACE_LANGUAGES_FINNISH_H_
 #define USER_INTERFACE_LANGUAGES_FINNISH_H_
@@ -112,7 +112,7 @@ const stringsTable_t finnishLanguage =
 .key_repeat		= "N‰p toisto", 	// MaxLen: 11 (with ':' + x.xs fitted)
 .dmr_filter_timeout	= "Suodin aika", 	// MaxLen: 16 (with ':' + 1..90 + 's')
 .brightness		= "Kirkkaus", 		// MaxLen: 16 (with ':' + 0..100 + '%')
-.brightnessOff		= "Kirkkaus min", 		// MaxLen: 16 (with ':' + 0..100 + '%')
+.brightness_off		= "Min kirkkaus", 	// MaxLen: 16 (with ':' + 0..100 + '%')
 .contrast		= "Kontrasti", 		// MaxLen: 16 (with ':' + 12..30)
 .colour_invert		= "V‰ri: K‰‰nteinen",
 .colour_normal		= "V‰ri: Normaali",
@@ -138,8 +138,9 @@ const stringsTable_t finnishLanguage =
 .cc_scan		= "V‰rikoodi scan", 	// MaxLen: 16
 .low_battery		= "Akku V‰hiss‰ !",	// MaxLen: 16
 .Auto			= "Automaatti",		// MaxLen 16 (with .mode + ':') 
-.manual			= "Manuaali",  		// MaxLen 16 (with .mode + ':') 
-.ptt_toggle		= "PTT Lukko",    	// MaxLen 16 (with ':' + .on or .off)
+.manual			= "Manuaali",		// MaxLen 16 (with .mode + ':') 
+.ptt_toggle		= "PTT Lukko",		// MaxLen 16 (with ':' + .on or .off)
+.private_call_handling	= "K‰sittele PC",	// MaxLen 16 (with ':' + .on ot .off)
 };
 /********************************************************************
  *

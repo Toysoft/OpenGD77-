@@ -140,7 +140,6 @@ union sharedDataBuffer audioAndHotspotDataBuffer;
 volatile int  wavbuffer_read_idx;
 volatile int  wavbuffer_write_idx;
 volatile int wavbuffer_count;
-uint8_t tmp_wavbuffer[WAV_BUFFER_SIZE];
 uint8_t *currentWaveBuffer;
 
 uint8_t spi_sound1[WAV_BUFFER_SIZE*2];
@@ -174,30 +173,40 @@ void terminate_sound(void)
     SAI_TransferTerminateSendEDMA(I2S0, &g_SAI_RX_Handle);
 }
 
+void setup_soundBuffer(void)
+{
+	//taskENTER_CRITICAL();
+	currentWaveBuffer = (uint8_t *)audioAndHotspotDataBuffer.wavbuffer[wavbuffer_write_idx];// cast just to prevent compiler warning
+	//taskEXIT_CRITICAL();
+}
+
 void store_soundbuffer(void)
 {
 	taskENTER_CRITICAL();
 	int tmp_wavbuffer_count = wavbuffer_count;
-	taskEXIT_CRITICAL();
+//	taskEXIT_CRITICAL();
 
 	if (tmp_wavbuffer_count<WAV_BUFFER_COUNT)
 	{
+		/*
 		taskENTER_CRITICAL();
 		for (int wav_idx=0;wav_idx<WAV_BUFFER_SIZE;wav_idx++)
 		{
 			audioAndHotspotDataBuffer.wavbuffer[wavbuffer_write_idx][wav_idx]=tmp_wavbuffer[wav_idx];
 		}
 		taskEXIT_CRITICAL();
+		*/
 		wavbuffer_write_idx++;
 		if (wavbuffer_write_idx>=WAV_BUFFER_COUNT)
 		{
 			wavbuffer_write_idx=0;
 		}
 
-		taskENTER_CRITICAL();
+	//	taskENTER_CRITICAL();
 		wavbuffer_count++;
-		taskEXIT_CRITICAL();
+		//taskEXIT_CRITICAL();
 	}
+	taskEXIT_CRITICAL();
 }
 
 void retrieve_soundbuffer(void)
@@ -338,7 +347,10 @@ void receive_sound_data(void)
 
 void tick_RXsoundbuffer(void)
 {
-    if (!g_TX_SAI_in_use)
+	// The AMBE codec decodes 1 DMR frame into 6 buffers.
+	// Hence waiting for more than 6 buffers delays the sound playback by 1 DMR frame which gives some effective bufffering
+	// Max value for this is 12, as the total number of buffers is 18.
+    if (!g_TX_SAI_in_use && wavbuffer_count > 6)
     {
     	send_sound_data();
     }
