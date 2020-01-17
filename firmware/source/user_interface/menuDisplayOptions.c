@@ -169,7 +169,7 @@ static void handleEvent(uiEvent_t *ev)
 			switch(gMenusCurrentItemIndex)
 			{
 				case DISPLAY_MENU_BRIGHTNESS:
-					if (nonVolatileSettings.displayBacklightPercentage<10)
+					if (nonVolatileSettings.displayBacklightPercentage < 10)
 					{
 						nonVolatileSettings.displayBacklightPercentage += 1;
 					}
@@ -178,24 +178,32 @@ static void handleEvent(uiEvent_t *ev)
 						nonVolatileSettings.displayBacklightPercentage += 10;
 					}
 
-					if (nonVolatileSettings.displayBacklightPercentage>100)
+					if (nonVolatileSettings.displayBacklightPercentage > 100)
 					{
-						nonVolatileSettings.displayBacklightPercentage=100;
+						nonVolatileSettings.displayBacklightPercentage = 100;
 					}
 					break;
 				case DISPLAY_MENU_BRIGHTNESS_OFF:
-					if (nonVolatileSettings.displayBacklightPercentageOff<10)
+					if (nonVolatileSettings.displayBacklightPercentageOff < nonVolatileSettings.displayBacklightPercentage)
 					{
-						nonVolatileSettings.displayBacklightPercentageOff += 1;
-					}
-					else
-					{
-						nonVolatileSettings.displayBacklightPercentageOff += 10;
-					}
+						if (nonVolatileSettings.displayBacklightPercentageOff < 10)
+						{
+							nonVolatileSettings.displayBacklightPercentageOff += 1;
+						}
+						else
+						{
+							nonVolatileSettings.displayBacklightPercentageOff += 10;
+						}
 
-					if (nonVolatileSettings.displayBacklightPercentageOff>100)
-					{
-						nonVolatileSettings.displayBacklightPercentageOff=100;
+						if (nonVolatileSettings.displayBacklightPercentageOff > 100)
+						{
+							nonVolatileSettings.displayBacklightPercentageOff = 100;
+						}
+
+						if (nonVolatileSettings.displayBacklightPercentageOff > nonVolatileSettings.displayBacklightPercentage)
+						{
+							nonVolatileSettings.displayBacklightPercentageOff = nonVolatileSettings.displayBacklightPercentage;
+						}
 					}
 					break;
 				case DISPLAY_MENU_CONTRAST:
@@ -238,9 +246,14 @@ static void handleEvent(uiEvent_t *ev)
 						nonVolatileSettings.displayBacklightPercentage -= 10;
 					}
 
-					if (nonVolatileSettings.displayBacklightPercentage<0)
+					if (nonVolatileSettings.displayBacklightPercentage < 0)
 					{
-						nonVolatileSettings.displayBacklightPercentage=0;
+						nonVolatileSettings.displayBacklightPercentage = 0;
+					}
+
+					if (nonVolatileSettings.displayBacklightPercentageOff > nonVolatileSettings.displayBacklightPercentage)
+					{
+						nonVolatileSettings.displayBacklightPercentageOff = nonVolatileSettings.displayBacklightPercentage;
 					}
 					break;
 				case DISPLAY_MENU_BRIGHTNESS_OFF:
@@ -253,9 +266,9 @@ static void handleEvent(uiEvent_t *ev)
 						nonVolatileSettings.displayBacklightPercentageOff -= 10;
 					}
 
-					if (nonVolatileSettings.displayBacklightPercentageOff<0)
+					if (nonVolatileSettings.displayBacklightPercentageOff < 0)
 					{
-						nonVolatileSettings.displayBacklightPercentageOff=0;
+						nonVolatileSettings.displayBacklightPercentageOff = 0;
 					}
 					break;
 				case DISPLAY_MENU_CONTRAST:
