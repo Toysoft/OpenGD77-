@@ -54,9 +54,9 @@ void tick_codec_decode(uint8_t *indata_ptr)
 		{
 			bitbuffer_decode[i]=(short)ambe_d[i];
 		}
-
+		setup_soundBuffer();// this just sets currentWaveBuffer but the compiler seems to optimise out the code if I try to do it in this file
 		r2 = (int)bitbuffer_decode;
-		r0 = (int)tmp_wavbuffer;
+		r0 = (int)currentWaveBuffer;
 		r1 = AMBE_DECODE_BUFFER;
 
 		asm volatile (
@@ -76,8 +76,9 @@ void tick_codec_decode(uint8_t *indata_ptr)
 
 		store_soundbuffer();
 
+		setup_soundBuffer();// this just sets currentWaveBuffer but the compiler seems to optimise out the code if I try to do it in this file
 		r2 = (int)bitbuffer_decode;
-		r0 = (int)tmp_wavbuffer;
+		r0 = (int)currentWaveBuffer;
 		r1 = AMBE_DECODE_BUFFER;
 
 		asm volatile (

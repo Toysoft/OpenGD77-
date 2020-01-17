@@ -68,6 +68,10 @@ static int tmpQuickMenuDmrFilterLevel;
 static bool displayChannelSettings;
 static int prevDisplayQSODataState;
 
+struct_codeplugChannel_t channelNextChannelData={.rxFreq=0};
+bool nextChannelReady = false;
+uint16_t nextChannelIndex = 0;
+
 int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 {
 	static uint32_t m = 0, sqm = 0;
@@ -155,6 +159,81 @@ uint16_t byteSwap16(uint16_t in)
 	return ((in &0xff << 8) | (in >>8));
 }
 #endif
+
+static void searchNextChannel(void) {
+	bool allZones = strcmp(currentZoneName,currentLanguage->all_channels)==0;
+	int channel = 0;
+	if (allZones)
+	{
+		do {
+			nextChannelIndex++;
+			if (nextChannelIndex>1024)
+			{
+				nextChannelIndex = 1;
+			}
+		} while(!codeplugChannelIndexIsValid(nextChannelIndex));
+		channel = nextChannelIndex;
+		codeplugChannelGetDataForIndex(nextChannelIndex,&channelNextChannelData);
+	}
+	else
+	{
+		nextChannelIndex++;
+		if (nextChannelIndex > currentZone.NOT_IN_MEMORY_numChannelsInZone - 1)
+		{
+			nextChannelIndex = 0;
+
+		}
+		codeplugChannelGetDataForIndex(currentZone.channels[nextChannelIndex],&channelNextChannelData);
+		channel = currentZone.channels[nextChannelIndex];
+	}
+
+	if(channelNextChannelData.flag4 & 0x10 || channelNextChannelData.flag4 & 0x20) {
+		nextChannelReady = false;
+		return;
+	}
+	else
+	{
+		for(int i=0;i<MAX_ZONE_SCAN_NUISANCE_CHANNELS;i++)														//check all nuisance delete entries and skip channel if there is a match
+		{
+			if (nuisanceDelete[i]==-1)
+			{
+				break;
+			}
+			else
+			{
+				if(nuisanceDelete[i]==channel)
+				{
+					nextChannelReady = false;
+					return;
+				}
+			}
+		}
+	}
+
+	nextChannelReady = true;
+}
+
+static void setNextChannel(void)
+{
+	if (strcmp(currentZoneName,currentLanguage->all_channels)==0)
+	{
+		nonVolatileSettings.currentChannelIndexInAllZone = nextChannelIndex;
+	}
+	else
+	{
+		nonVolatileSettings.currentChannelIndexInZone = nextChannelIndex;
+	}
+
+	lastHeardClearLastID();
+
+	loadChannelData(false);
+	menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+	menuChannelModeUpdateScreen(0);
+
+	nextChannelReady = false;
+	scanTimer = 500;
+	scanState = SCAN_SCANNING;
+}
 
 static void loadChannelData(bool useChannelDataInMemory)
 {
@@ -303,6 +382,13 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 						ucPrintCentered(50, (char *)nameBuf, FONT_6x8);
 					}
 				}
+
+				if (uiChannelModeScanActive==true)
+				{
+					strcpy(buffer, "Z");
+					ucFillRect(41, 1, 7, 9, false);
+					ucPrintCore(42, 2, buffer, FONT_6x8, TEXT_ALIGN_LEFT, true);// Display scanning indicator
+				}
 			}
 
 			if (!displayChannelSettings)
@@ -406,6 +492,8 @@ static void handleEvent(uiEvent_t *ev)
 	{
 		menuChannelModeStopScanning();
 		fw_reset_keyboard();
+		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+		menuChannelModeUpdateScreen(0);
 		return;
 	}
 
@@ -473,12 +561,7 @@ static void handleEvent(uiEvent_t *ev)
 			menuChannelModeUpdateScreen(0);
 			return;
 		}
-
-	}
-
-	if (ev->events & KEY_EVENT)
-	{
-		if (KEYCHECK_SHORTUP(ev->keys, KEY_ORANGE))
+		if (ev->buttons & BUTTON_ORANGE)
 		{
 			if (ev->buttons & BUTTON_SK2)
 			{
@@ -494,12 +577,11 @@ static void handleEvent(uiEvent_t *ev)
 
 			return;
 		}
-		else if (KEYCHECK_LONGDOWN(ev->keys, KEY_ORANGE))
-		{
-			directChannelNumber = 0;
-			startScan();
-		}
-		else if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
+	}
+
+	if (ev->events & KEY_EVENT)
+	{
+		if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 		{
 			if (directChannelNumber>0)
 			{
@@ -870,6 +952,7 @@ static void handleUpKey(uiEvent_t *ev)
 		scanTimer=500;
 		scanState = SCAN_SCANNING;
 	}
+
 	loadChannelData(false);
 	menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 	menuChannelModeUpdateScreen(0);
@@ -987,7 +1070,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 	{
 		MENU_DEC(gMenusCurrentItemIndex, NUM_CH_SCREEN_QUICK_MENU_ITEMS);
 	}
-	else if ((KEYCHECK_SHORTUP(ev->keys, KEY_ORANGE)) && (gMenusCurrentItemIndex==CH_SCREEN_QUICK_MENU_SCAN))
+	else if (((ev->events & BUTTON_EVENT) && (ev->buttons & BUTTON_ORANGE)) && (gMenusCurrentItemIndex==CH_SCREEN_QUICK_MENU_SCAN))
 	{
 		startScan();
 	}
@@ -1022,9 +1105,21 @@ static void startScan(void)
 		nuisanceDeleteIndex=0;
 	}
 	uiChannelModeScanActive=true;
-	scanTimer=500;
+	scanTimer = SCAN_SHORT_PAUSE_TIME;
 	scanState = SCAN_SCANNING;
 	menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
+
+	//get current channel index
+	if (strcmp(currentZoneName,currentLanguage->all_channels)==0)
+	{
+		nextChannelIndex = nonVolatileSettings.currentChannelIndexInAllZone;
+	}
+	else
+	{
+		nextChannelIndex = currentZone.channels[nonVolatileSettings.currentChannelIndexInZone];
+	}
+	nextChannelReady = false;
+
 }
 
 static void scanning(void)
@@ -1057,6 +1152,11 @@ static void scanning(void)
 	    }
 	}
 
+	if (!nextChannelReady)
+	{
+		searchNextChannel();
+	}
+
 	if(scanTimer>0)
 	{
 		scanTimer--;
@@ -1064,51 +1164,22 @@ static void scanning(void)
 	else
 	{
 
-		trx_measure_count=0;														//needed to allow time for Rx to settle after channel change.
-		uiEvent_t tmpEvent={ .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = 0, .time = 0 };
-
-		handleUpKey(&tmpEvent);
-		if ((trxGetMode() == RADIO_MODE_DIGITAL) && (trxDMRMode == DMR_MODE_ACTIVE) && (SCAN_TOTAL_INTERVAL < SCAN_DMR_SIMPLEX_MIN_INTERVAL) )				//allow extra time if scanning a simplex DMR channel.
+		if (nextChannelReady)
 		{
-			scanTimer = SCAN_DMR_SIMPLEX_MIN_INTERVAL;
-		}
-		else
-		{
-			scanTimer = SCAN_TOTAL_INTERVAL;
-		}
+			setNextChannel();
+			trx_measure_count = 0;
 
-		scanState = SCAN_SCANNING;													//state 0 = settling and test for carrier present.
-
-		if (strcmp(currentZoneName,currentLanguage->all_channels)==0)
-		{
-			if(channelScreenChannelData.flag4 & 0x10)									//if this channel has the All Skip bit set
+			if ((trxGetMode() == RADIO_MODE_DIGITAL) && (trxDMRMode == DMR_MODE_ACTIVE) && (SCAN_TOTAL_INTERVAL < SCAN_DMR_SIMPLEX_MIN_INTERVAL) )				//allow extra time if scanning a simplex DMR channel.
 			{
-				scanTimer=SCAN_SKIP_CHANNEL_INTERVAL;															//skip over it quickly. (immediate selection of another channel seems to cause crashes)
-			}
-		}
-		else
-		{
-			if(channelScreenChannelData.flag4 & 0x20)									//if this channel has the Zone Skip skip bit set
-			{
-				scanTimer=SCAN_SKIP_CHANNEL_INTERVAL;															//skip over it quickly. (immediate selection of another channel seems to cause crashes)
-			}
-		}
-
-		for(int i=0;i<MAX_ZONE_SCAN_NUISANCE_CHANNELS;i++)														//check all nuisance delete entries and skip channel if there is a match
-		{
-			if (nuisanceDelete[i]==-1)
-			{
-				break;
+				scanTimer = SCAN_DMR_SIMPLEX_MIN_INTERVAL;
 			}
 			else
 			{
-				if(nuisanceDelete[i]==settingsCurrentChannelNumber)
-				{
-					scanTimer=SCAN_SKIP_CHANNEL_INTERVAL;
-					break;
-				}
+				scanTimer = SCAN_TOTAL_INTERVAL;
 			}
 		}
+
+		scanState = SCAN_SCANNING;													//state 0 = settling and test for carrier present.
 	}
 }
 

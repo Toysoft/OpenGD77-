@@ -112,7 +112,7 @@ const stringsTable_t frenchLanguage =
 .key_repeat				= "Répét°",
 .dmr_filter_timeout		= "Tps filtre",
 .brightness				= "Rétro écl.",
-.brightnessOff				= "Rétro écl. min",
+.brightness_off				= "Écl. min",
 .contrast				= "Contraste",
 .colour_invert			= "Couleur:Inverse",
 .colour_normal			= "Couleur:Normale",
@@ -140,6 +140,7 @@ const stringsTable_t frenchLanguage =
 .Auto					= "Auto", // MaxLen 16 (with .mode + ':') 
 .manual					= "Manuel",  // MaxLen 16 (with .mode + ':') }
 .ptt_toggle				= "Bascule PTT", // MaxLen 16 (with ':' + .on or .off)
+.private_call_handling			= "Filtre PC", // MaxLen 16 (with ':' + .on ot .off)
 };
 /********************************************************************
  *
