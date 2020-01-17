@@ -305,7 +305,7 @@ static void handleEvent(uiEvent_t *ev)
 			}
 
 			nonVolatileSettings.displayBacklightPercentage = originalNonVolatileSettings.displayBacklightPercentage;
-			nonVolatileSettings.displayBacklightPercentage = originalNonVolatileSettings.displayBacklightPercentageOff;
+			nonVolatileSettings.displayBacklightPercentageOff = originalNonVolatileSettings.displayBacklightPercentageOff;
 			nonVolatileSettings.backLightTimeout = originalNonVolatileSettings.backLightTimeout;
 
 			if (nonVolatileSettings.backlightMode != originalNonVolatileSettings.backlightMode)
