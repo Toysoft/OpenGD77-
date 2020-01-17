@@ -515,7 +515,7 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer, bool forceOnHotspot)
 	return retVal;
 }
 
-bool dmrIDLookup( int targetId,dmrIdDataStruct_t *foundRecord)
+bool dmrIDLookup(int targetId, dmrIdDataStruct_t *foundRecord)
 {
 	uint32_t l = 0;
 	uint32_t numRecords;
@@ -523,9 +523,10 @@ bool dmrIDLookup( int targetId,dmrIdDataStruct_t *foundRecord)
 	uint32_t m;
 	uint32_t recordLenth;//15+4;
 	uint8_t headerBuf[32];
-	memset(foundRecord,0,sizeof(dmrIdDataStruct_t));
 
-	int targetIdBCD=int2bcd(targetId);
+	memset(foundRecord, 0, sizeof(dmrIdDataStruct_t));
+
+	int targetIdBCD = int2bcd(targetId);
 
 	SPI_Flash_read(DMRID_MEMORY_STORAGE_START,headerBuf,DMRID_HEADER_LENGTH);
 
