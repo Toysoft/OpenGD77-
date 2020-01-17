@@ -385,6 +385,18 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 						ucPrintCentered(50, (char *)nameBuf, FONT_6x8);
 					}
 				}
+
+				if (uiChannelModeScanActive==true)
+				{
+					strcpy(buffer, "Z");
+					ucFillRect(41, 1, 7, 9, false);
+					ucPrintCore(42, 2, buffer, FONT_6x8, TEXT_ALIGN_LEFT, true);// Display scanning indicator
+				}
+				else
+				{
+					//ucFillRect(41, 1, 7, 9, true);
+				}
+
 			}
 
 			if (!displayChannelSettings)
@@ -488,6 +500,7 @@ static void handleEvent(uiEvent_t *ev)
 	{
 		menuChannelModeStopScanning();
 		fw_reset_keyboard();
+		menuChannelModeUpdateScreen(0);
 		return;
 	}
 
@@ -952,6 +965,7 @@ static void handleUpKey(uiEvent_t *ev)
 		scanTimer=500;
 		scanState = SCAN_SCANNING;
 	}
+
 	loadChannelData(false);
 	menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 	menuChannelModeUpdateScreen(0);
@@ -1162,11 +1176,6 @@ static void scanning(void)
 	}
 	else
 	{
-		//trx_measure_count=0;														//needed to allow time for Rx to settle after channel change.
-		//uiEvent_t tmpEvent={ .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = 0, .time = 0 };
-
-		//handleUpKey(&tmpEvent);
-
 		if (!nextChannelReady)
 		{
 			searchNextChannel();
@@ -1174,6 +1183,7 @@ static void scanning(void)
 		else
 		{
 			setNextChannel();
+			trx_measure_count = 0;
 
 			if ((trxGetMode() == RADIO_MODE_DIGITAL) && (trxDMRMode == DMR_MODE_ACTIVE) && (SCAN_TOTAL_INTERVAL < SCAN_DMR_SIMPLEX_MIN_INTERVAL) )				//allow extra time if scanning a simplex DMR channel.
 			{
