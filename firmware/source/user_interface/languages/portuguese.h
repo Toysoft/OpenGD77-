@@ -140,7 +140,7 @@ const stringsTable_t portuguesLanguage =
 .Auto					= "Auto", // MaxLen 16 (with .mode + ':') 
 .manual					= "Manual",  // MaxLen 16 (with .mode + ':') 
 .ptt_toggle				= "PTT toggle", // MaxLen 16 (with ':' + .on or .off)
-.private_call_handling  = "Handle PC", // MaxLen 16 (with ':' + .on ot .off)
+.private_call_handling			= "Handle PC", // MaxLen 16 (with ':' + .on ot .off)
 };
 /********************************************************************
  *

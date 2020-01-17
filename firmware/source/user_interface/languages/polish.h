@@ -140,7 +140,7 @@ const stringsTable_t polishLanguage =
 .Auto					= "Automat", // MaxLen 16 (with .mode + ':')
 .manual					= "Manualny",  // MaxLen 16 (with .mode + ':') 
 .ptt_toggle				= "PTT staˆe", // MaxLen 16 (with ':' + .on or .off)
-.private_call_handling  = "Zezwól na PC", // MaxLen 16 (with ':' + .on ot .off)
+.private_call_handling			= "Zezwól na PC", // MaxLen 16 (with ':' + .on ot .off)
 };
 /********************************************************************
  *
