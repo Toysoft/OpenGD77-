@@ -175,7 +175,7 @@ void fw_main_task(void *data)
 
 				if ((currentMenu == MENU_CHANNEL_MODE) || (currentMenu == MENU_VFO_MODE))
 				{
-					ucFillRect(0, 0, 128, 16, true);
+					ucClearRows(0, 2, false);
 					menuUtilityRenderHeader();
 					ucRenderRows(0, 2);
 				}
