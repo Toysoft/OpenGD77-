@@ -141,15 +141,6 @@ void ucRender(void)
 	ucRenderRows(0,8);
 }
 
-/*
-
-     clear(0, 1); 0, 8
-     clear(2, 4); 16, 32
-
-     clear(6, 8); 48, 64
-
- */
-
 //#define DISPLAY_CHECK_BOUNDS
 #ifdef DISPLAY_CHECK_BOUNDS
 static inline bool checkWritePos(uint8_t * writePos)
@@ -385,7 +376,7 @@ void ucClearRows(int16_t startRow, int16_t endRow)
 		swap(startRow, endRow);
 	}
 
-	// memset would be faster then ucFillRect()
+	// memset would be faster then ucFillRect
 	//ucFillRect(0, (startRow * 8), 128, (8 * (endRow - startRow)), true);
     memset(screenBuf + (128 * startRow), 0, (128 * (endRow - startRow)));
 }
