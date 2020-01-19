@@ -238,6 +238,16 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 	struct_codeplugContact_t contact;
 	int contactIndex;
 
+	// Only render the header, then wait for the next run
+	// Otherwise the screen could remain blank if TG and PC are == 0
+	// since menuDisplayQSODataState won't be set to QSO_DISPLAY_IDLE
+	if ((trxGetMode() == RADIO_MODE_DIGITAL) && (HRC6000GetReceivedTgOrPcId() == 0))
+	{
+		ucClearRows(0,  2);
+		menuUtilityRenderHeader();
+		ucRenderRows(0,  2);
+	}
+
 	ucClearBuf();
 	menuUtilityRenderHeader();
 

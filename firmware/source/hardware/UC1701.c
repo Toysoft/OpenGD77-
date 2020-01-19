@@ -141,6 +141,15 @@ void ucRender(void)
 	ucRenderRows(0,8);
 }
 
+/*
+
+     clear(0, 1); 0, 8
+     clear(2, 4); 16, 32
+
+     clear(6, 8); 48, 64
+
+ */
+
 //#define DISPLAY_CHECK_BOUNDS
 #ifdef DISPLAY_CHECK_BOUNDS
 static inline bool checkWritePos(uint8_t * writePos)
@@ -364,6 +373,23 @@ void ucClearBuf(void)
 {
 	memset(screenBuf,0x00,1024);
 }
+
+void ucClearRows(int16_t startRow, int16_t endRow)
+{
+	// Boundaries
+	if (((startRow < 0) || (endRow < 0)) || ((startRow > 8) || (endRow > 8)) || (startRow == endRow))
+		return;
+
+	if (endRow < startRow)
+	{
+		swap(startRow, endRow);
+	}
+
+	// memset would be faster then ucFillRect()
+	//ucFillRect(0, (startRow * 8), 128, (8 * (endRow - startRow)), true);
+    memset(screenBuf + (128 * startRow), 0, (128 * (endRow - startRow)));
+}
+
 
 void ucPrintCentered(uint8_t y,const char *text, ucFont_t fontSize)
 {
