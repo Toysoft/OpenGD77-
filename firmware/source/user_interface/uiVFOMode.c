@@ -251,6 +251,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 		ucClearRows(0,  2, false);
 		menuUtilityRenderHeader();
 		ucRenderRows(0,  2);
+		return;
 	}
 
 	ucClearBuf();
