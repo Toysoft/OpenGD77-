@@ -115,7 +115,7 @@ int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 				{
 					displaySquelch = false;
 
-					ucFillRect(0, 16, 128, 16, true);
+					ucClearRows(2, 4, false);
 					ucRenderRows(2,4);
 				}
 
@@ -238,6 +238,16 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 	struct_codeplugContact_t contact;
 	int contactIndex;
 
+	// Only render the header, then wait for the next run
+	// Otherwise the screen could remain blank if TG and PC are == 0
+	// since menuDisplayQSODataState won't be set to QSO_DISPLAY_IDLE
+	if ((trxGetMode() == RADIO_MODE_DIGITAL) && (HRC6000GetReceivedTgOrPcId() == 0))
+	{
+		ucClearRows(0,  2, false);
+		menuUtilityRenderHeader();
+		ucRenderRows(0,  2);
+	}
+
 	ucClearBuf();
 	menuUtilityRenderHeader();
 
@@ -254,7 +264,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				if (displaySquelch)
 				{
 					displaySquelch = false;
-					ucFillRect(0, 16, 128, 16, true);
+					ucClearRows(2, 4, false);
 				}
 
 				snprintf(buffer, bufferLen, " %d ", txTimeSecs);

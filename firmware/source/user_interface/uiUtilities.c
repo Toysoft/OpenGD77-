@@ -775,7 +775,7 @@ void menuUtilityRenderQSOData(void)
 			}
 			if (tg != trxTalkGroupOrPcId || (dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot()))
 			{
-				ucFillRect(0,16,128,16,false);// fill background with black
+				ucClearRows(2, 4, true);
 				ucPrintCore(0, CONTACT_Y_POS, buffer, FONT_8x16, TEXT_ALIGN_CENTER, true);// draw the text in inverse video
 			}
 			else
