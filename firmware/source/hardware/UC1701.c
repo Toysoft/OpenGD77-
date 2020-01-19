@@ -376,7 +376,7 @@ void ucClearRows(int16_t startRow, int16_t endRow)
 		swap(startRow, endRow);
 	}
 
-	// memset would be faster then ucFillRect
+	// memset would be faster than ucFillRect
 	//ucFillRect(0, (startRow * 8), 128, (8 * (endRow - startRow)), true);
     memset(screenBuf + (128 * startRow), 0, (128 * (endRow - startRow)));
 }
