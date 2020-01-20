@@ -129,7 +129,7 @@ M: 2020-01-07 09:52:15.246 DMR Slot 2, received network end of voice transmissio
 
 #define MMDVM_HEADER_LENGTH  4U
 
-#define HOTSPOT_VERSION_STRING "OpenGD77 Hotspot v0.0.79"
+#define HOTSPOT_VERSION_STRING "OpenGD77 Hotspot v0.0.80"
 #define concat(a, b) a " GitID #" b ""
 static const char HARDWARE[] = concat(HOTSPOT_VERSION_STRING, GITVERSION);
 
@@ -240,6 +240,73 @@ static const uint8_t DMR_AUDIO_SEQ_MASK[]  		= {0x0FU, 0xF0U, 0x00U, 0x00U, 0x00
 static const uint8_t DMR_EMBED_SEQ_MASK[]  		= {0x00U, 0x0FU, 0xFFU, 0xFFU, 0xFFU, 0xF0U, 0x00U};
 
 
+// CWID related
+static const struct {
+  uint8_t  c;
+  uint32_t pattern;
+  uint8_t  length;
+} CW_SYMBOL_LIST[] = {
+  {'A', 0xB8000000U, 8U},
+  {'B', 0xEA800000U, 12U},
+  {'C', 0xEBA00000U, 14U},
+  {'D', 0xEA000000U, 10U},
+  {'E', 0x80000000U, 4U},
+  {'F', 0xAE800000U, 12U},
+  {'G', 0xEE800000U, 12U},
+  {'H', 0xAA000000U, 10U},
+  {'I', 0xA0000000U, 6U},
+  {'J', 0xBBB80000U, 16U},
+  {'K', 0xEB800000U, 12U},
+  {'L', 0xBA800000U, 12U},
+  {'M', 0xEE000000U, 10U},
+  {'N', 0xE8000000U, 8U},
+  {'O', 0xEEE00000U, 14U},
+  {'P', 0xBBA00000U, 14U},
+  {'Q', 0xEEB80000U, 16U},
+  {'R', 0xBA000000U, 10U},
+  {'S', 0xA8000000U, 8U},
+  {'T', 0xE0000000U, 6U},
+  {'U', 0xAE000000U, 10U},
+  {'V', 0xAB800000U, 12U},
+  {'W', 0xBB800000U, 12U},
+  {'X', 0xEAE00000U, 14U},
+  {'Y', 0xEBB80000U, 16U},
+  {'Z', 0xEEA00000U, 14U},
+  {'1', 0xBBBB8000U, 20U},
+  {'2', 0xAEEE0000U, 18U},
+  {'3', 0xABB80000U, 16U},
+  {'4', 0xAAE00000U, 14U},
+  {'5', 0xAA800000U, 12U},
+  {'6', 0xEAA00000U, 14U},
+  {'7', 0xEEA80000U, 16U},
+  {'8', 0xEEEA0000U, 18U},
+  {'9', 0xEEEE8000U, 20U},
+  {'0', 0xEEEEE000U, 22U},
+  {'/', 0xEAE80000U, 16U},
+  {'?', 0xAEEA0000U, 18U},
+  {',', 0xEEAEE000U, 22U},
+  {'-', 0xEAAE0000U, 18U},
+  {'=', 0xEAB80000U, 16U},
+  {' ', 0x00000000U, 4U},
+  {0U,  0x00000000U, 0U}
+};
+
+static const uint8_t BIT_MASK_TABLE[] = {0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U};
+
+#define WRITE_BIT1(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
+#define READ_BIT1(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
+
+static const uint32_t cwDOTDuration = (10U * 60U); // 60ms per DOT
+static uint32_t cwNextPeriod = 0;
+
+static uint8_t cwBuffer[300U];
+static uint16_t cwpoLen;
+static uint16_t cwpoPtr;
+static uint8_t cwn;
+static bool cwKeying = false;
+// End of CWID related
+
+
 static void updateScreen(uint8_t rxState);
 static bool handleEvent(uiEvent_t *ev);
 static void hotspotExit(void);
@@ -247,6 +314,9 @@ static void hotspotStateMachine(void);
 static void processUSBDataQueue(void);
 static void handleHotspotRequest(void);
 static void disableTransmission(void);
+static void cwReset(void);
+static void cwProcess(void);
+
 
 #if defined(DEBUG_HS_SCREEN)
 static void dbgAct0(uint8_t cmd)
@@ -427,6 +497,8 @@ int menuHotspotMode(uiEvent_t *ev, bool isFirstRun)
 		overriddenLCTA[0] = 0;
 		overriddenBlocksTA = 0x0;
 		overriddenLCAvailable = false;
+		cwKeying = false;
+		cwReset();
 
 		memset(&rxedDMR_LC, 0, sizeof(DMRLC_T));// clear automatic variable
 
@@ -475,6 +547,15 @@ int menuHotspotMode(uiEvent_t *ev, bool isFirstRun)
 		com_request = 0;
 	}
 	hotspotStateMachine();
+
+	// CW beaconing
+	if (cwKeying)
+	{
+		if (cwpoLen > 0U)
+		{
+			cwProcess();
+		}
+	}
 
 	return 0;
 }
@@ -761,6 +842,11 @@ static void hotspotExit(void)
 		trx_setRX();
 
 		GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
+
+		if (cwKeying)
+		{
+			cwReset();
+		}
 	}
 
 	trxTalkGroupOrPcId = savedTGorPC;// restore the current TG or PC
@@ -1710,10 +1796,13 @@ static void hotspotStateMachine(void)
 			{
 				if (wavbuffer_count > TX_BUFFER_MIN_BEFORE_TRANSMISSION)
 				{
-					hotspotState = HOTSPOT_STATE_TRANSMITTING;
-					//SEGGER_RTT_printf(0, "TX_START_BUFFERING -> TRANSMITTING %d\n",wavbuffer_count);
-					enableTransmission();
-					updateScreen(HOTSPOT_RX_IDLE);
+					if (cwKeying == false)
+					{
+						hotspotState = HOTSPOT_STATE_TRANSMITTING;
+						//SEGGER_RTT_printf(0, "TX_START_BUFFERING -> TRANSMITTING %d\n",wavbuffer_count);
+						enableTransmission();
+						updateScreen(HOTSPOT_RX_IDLE);
+					}
 				}
 				else
 				{
@@ -1875,7 +1964,8 @@ static void getStatus(void)
 	buf[4U]  = modemState;
 	buf[5U]  = ( ((hotspotState == HOTSPOT_STATE_TX_START_BUFFERING) ||
 					(hotspotState == HOTSPOT_STATE_TRANSMITTING) ||
-					(hotspotState == HOTSPOT_STATE_TX_SHUTDOWN)) ) ? 0x01U : 0x00U;
+					(hotspotState == HOTSPOT_STATE_TX_SHUTDOWN)) ||
+					cwKeying ) ? 0x01U : 0x00U;
 
 	if (hasRXOverflow())
 	{
@@ -2207,6 +2297,103 @@ static uint8_t setQSOInfo(volatile const uint8_t *data, uint8_t length)
 	return 0U;
 }
 
+static void cwProcess(void)
+{
+	if (cwpoLen == 0U)
+		return;
+
+	if (PITCounter > cwNextPeriod)
+	{
+		cwNextPeriod = PITCounter + cwDOTDuration;
+
+		bool b = READ_BIT1(cwBuffer, cwpoPtr);
+		static bool lastValue = true;
+
+		if (lastValue != b)
+		{
+			lastValue = b;
+
+			if (b)
+			{
+				trxSetTone1(880);
+			}
+			else
+			{
+				trxSetTone1(0);
+			}
+		}
+
+		cwn++;
+
+		if (cwn >= 1U)
+		{
+			cwpoPtr++;
+			cwn = 0U;
+		}
+
+		if (cwpoPtr >= cwpoLen)
+		{
+			cwpoPtr = 0U;
+			cwpoLen = 0U;
+			return;
+		}
+	}
+}
+
+static void cwReset(void)
+{
+	cwpoLen = 0U;
+	cwpoPtr = 0U;
+	cwn     = 0U;
+}
+
+static uint8_t handleCWID(volatile const uint8_t *data, uint8_t length)
+{
+	cwReset();
+	memset(cwBuffer, 0x00U, sizeof(cwBuffer));
+
+	cwpoLen = 3U; // Silence at the beginning
+	cwpoPtr = 0U;
+	cwn     = 0U;
+
+	for (uint8_t i = 0U; i < length; i++) {
+		for (uint8_t j = 0U; CW_SYMBOL_LIST[j].c != 0U; j++) {
+			if (CW_SYMBOL_LIST[j].c == data[i]) {
+				uint32_t MASK = 0x80000000U;
+
+				for (uint8_t k = 0U; k < CW_SYMBOL_LIST[j].length; k++, cwpoLen++, MASK >>= 1)
+				{
+					bool b = (CW_SYMBOL_LIST[j].pattern & MASK) == MASK;
+
+					WRITE_BIT1(cwBuffer, cwpoLen, b);
+
+					if (cwpoLen >= (sizeof(cwBuffer) - 3U)) // Will overflow otherwise
+					{
+						cwpoLen = 0U;
+						return 4U;
+					}
+				}
+
+				break;
+			}
+		}
+	}
+
+	// An empty message
+	if (cwpoLen == 3U)
+	{
+		cwpoLen = 0U;
+		return 4U;
+	}
+
+	// Silence at the end
+	cwpoLen += 3U;
+
+	printf("Message created with length %d\n", cwpoLen);
+
+	return 0U;
+}
+
 #if 0
 static uint8_t handlePOCSAG(volatile const uint8_t *data, uint8_t length)
 {
@@ -2267,17 +2454,16 @@ static void handleHotspotRequest(void)
 
 			case MMDVM_SET_FREQ:
 				dbgPrint2("SET_FREQ");
-	            err = setFreq(com_requestbuffer + 3U, com_requestbuffer[1U] - 3U);
-	            if (err == 0U)
-	            {
-	              sendACK();
-	              updateScreen(HOTSPOT_RX_IDLE);
-	            }
-	            else
-	            {
-	              sendNAK(err);
-	            }
-
+				err = setFreq(com_requestbuffer + 3U, com_requestbuffer[1U] - 3U);
+				if (err == 0U)
+				{
+					sendACK();
+					updateScreen(HOTSPOT_RX_IDLE);
+				}
+				else
+				{
+					sendNAK(err);
+				}
 				break;
 
 			case MMDVM_CAL_DATA:
@@ -2291,11 +2477,13 @@ static void handleHotspotRequest(void)
 				err = 5U;
 				if (modemState == STATE_IDLE)
 				{
-					err = 0U;
+					err = handleCWID(com_requestbuffer + 3U, com_requestbuffer[1U] - 3U);
 				}
 
 				if (err == 0U)
 				{
+					cwKeying = true;
+					cwNextPeriod = PITCounter - 1;
 					sendACK();
 				}
 				else
@@ -2452,4 +2640,47 @@ static void handleHotspotRequest(void)
 		updateScreen(currentRxCommandState);
 		menuDisplayQSODataState = QSO_DISPLAY_IDLE;
 	}
+
+	if (cwKeying)
+	{
+		if (!trxIsTransmitting)
+		{
+			// Start TX CWID, prepare for ANALOG
+			if (trxGetMode() != RADIO_MODE_ANALOG)
+			{
+				trxSetModeAndBandwidth(RADIO_MODE_ANALOG, false);
+				trxSetTxCTCSS(65535);
+			}
+
+			enableTransmission();
+
+			trxSelectVoiceChannel(AT1846_VOICE_CHANNEL_TONE1);
+			GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1);
+			GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 1);
+		}
+
+		// CWID has been TXed, restore DIGITAL
+		if (cwpoLen == 0U)
+		{
+			disableTransmission();
+
+			if (trxIsTransmitting)
+			{
+				// Stop TXing;
+				trxIsTransmitting = false;
+				trx_setRX();
+				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
+
+				if (trxGetMode() == RADIO_MODE_ANALOG)
+				{
+					trxSetModeAndBandwidth(RADIO_MODE_DIGITAL, false);
+					trxSelectVoiceChannel(AT1846_VOICE_CHANNEL_MIC);
+					GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
+				}
+			}
+
+			cwKeying = false;
+		}
+	}
+
 }
