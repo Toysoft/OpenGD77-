@@ -2194,7 +2194,7 @@ static uint8_t setQSOInfo(volatile const uint8_t *data, uint8_t length)
 
 		overriddenLCAvailable = (len > 0);
 	}
-	if (data[3U] == STATE_POCSAG)
+	else if (data[3U] == STATE_POCSAG)
 	{
 		// NOOP
 	}
@@ -2404,7 +2404,7 @@ static void handleHotspotRequest(void)
 
 				if (err == 0U)
 				{
-					//sendACK(); // We don't send pages, but POCSAG can be enabled in Pi-Star
+					sendACK(); // We don't send pages, but POCSAG can be enabled in Pi-Star
 				}
 				else
 				{
