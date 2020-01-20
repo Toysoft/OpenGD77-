@@ -246,11 +246,13 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 	// Only render the header, then wait for the next run
 	// Otherwise the screen could remain blank if TG and PC are == 0
 	// since menuDisplayQSODataState won't be set to QSO_DISPLAY_IDLE
-	if ((trxGetMode() == RADIO_MODE_DIGITAL) && (HRC6000GetReceivedTgOrPcId() == 0))
+	if ((trxGetMode() == RADIO_MODE_DIGITAL) && (HRC6000GetReceivedTgOrPcId() == 0) &&
+			((menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA) || (menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA_UPDATE)))
 	{
 		ucClearRows(0,  2, false);
 		menuUtilityRenderHeader();
 		ucRenderRows(0,  2);
+		return;
 	}
 
 	ucClearBuf();
