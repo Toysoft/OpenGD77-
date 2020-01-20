@@ -128,8 +128,9 @@ M: 2020-01-07 09:52:15.246 DMR Slot 2, received network end of voice transmissio
 #define PROTOCOL_VERSION    1U
 
 #define MMDVM_HEADER_LENGTH  4U
+//#define POCSAG_FRAME_LENGTH_BYTES (17U * 4U /*sizeof(uint32_t)*/)
 
-#define HOTSPOT_VERSION_STRING "OpenGD77 Hotspot v0.0.78"
+#define HOTSPOT_VERSION_STRING "OpenGD77 Hotspot v0.0.79"
 #define concat(a, b) a " GitID #" b ""
 static const char HARDWARE[] = concat(HOTSPOT_VERSION_STRING, GITVERSION);
 
@@ -1776,7 +1777,12 @@ static void hotspotStateMachine(void)
 
 static uint8_t setFreq(volatile const uint8_t* data, uint8_t length)
 {
-	// satellite frequencies banned frequency ranges
+	if (length < 9U)
+	{
+		return 4U;
+	}
+
+	  // satellite frequencies banned frequency ranges
 	const int BAN1_MIN  = 14580000;
 	const int BAN1_MAX  = 14600000;
 	const int BAN2_MIN  = 43500000;
@@ -1866,7 +1872,7 @@ static void getStatus(void)
 	buf[0U]  = MMDVM_FRAME_START;
 	buf[1U]  = 13U;
 	buf[2U]  = MMDVM_GET_STATUS;
-	buf[3U]  = 0x02U;// DMR ENABLED
+	buf[3U]  = (0x02U | 0x20U); // DMR and POCSAG enabled
 	buf[4U]  = modemState;
 	buf[5U]  = ( ((hotspotState == HOTSPOT_STATE_TX_START_BUFFERING) ||
 					(hotspotState == HOTSPOT_STATE_TRANSMITTING) ||
@@ -1882,15 +1888,15 @@ static void getStatus(void)
 		buf[5U] |= 0x08U;
 	}
 
-	buf[6U]  = 0U;// No DSTAR
+	buf[6U]  = 0U; // No DSTAR space
 
-	buf[7U]  = 10U;// DMR Simplex
-	buf[8U]  = (HOTSPOT_BUFFER_COUNT - wavbuffer_count);
+	buf[7U]  = 10U; // DMR Simplex
+	buf[8U]  = (HOTSPOT_BUFFER_COUNT - wavbuffer_count); // DMR space
 
-	buf[9U]  = 0U;// No YSF
-	buf[10U] = 0U;// No P25
-	buf[11U] = 0U;// no NXDN
-	buf[12U] = 0U;// no POCSAG
+	buf[9U]  = 0U; // No YSF space
+	buf[10U] = 0U; // No P25 space
+	buf[11U] = 0U; // no NXDN space
+	buf[12U] = 0U; // no space for POCSAG, we will receive QSO_INFO with POCSAG information only
 
 	//SEGGER_RTT_printf(0, "getStatus buffers=%d\n",s_ComBuf[8U]);
 
@@ -1904,8 +1910,13 @@ static void getStatus(void)
 	enqueueUSBData(buf, buf[1U]);
 }
 
-static uint8_t setConfig(volatile const uint8_t* data, uint8_t length)
+static uint8_t setConfig(volatile const uint8_t *data, uint8_t length)
 {
+	if (length < 13U)
+	{
+		return 4U;
+	}
+
 	//SEGGER_RTT_printf(0, "setConfig \n");
 	uint8_t txDelay = data[2U];
 	if (txDelay > 50U)
@@ -1913,18 +1924,38 @@ static uint8_t setConfig(volatile const uint8_t* data, uint8_t length)
 		return 4U;
 	}
 
-	if (data[3U] != STATE_IDLE && data[3U] != STATE_DMR)
+	// Only supported mode are DMR, CWID, POCSAG and IDLE
+	switch (data[3U])
 	{
-		return 4U;// only DMR mode supported
+		case STATE_IDLE:
+		case STATE_DMR:
+		case STATE_CWID:
+		case STATE_POCSAG:
+			break;
+
+		default:
+			return 4U;
+			break;
 	}
 
-	uint8_t colorCode = data[6U];
-	if (colorCode > 15U)
-	{
-		return 4U;
-	}
+	modemState = (MMDVM_STATE)data[3U];
 
-	trxSetDMRColourCode(colorCode);
+	// POCSAG / CWID config, no need to go further, as support is fake
+	if ((modemState == STATE_CWID) || (modemState == STATE_POCSAG))
+	{
+		return 0U;
+	}
+	else if (modemState == STATE_DMR)
+	{
+		uint8_t colorCode = data[6U];
+
+		if (colorCode > 15U)
+		{
+			return 4U;
+		}
+
+		trxSetDMRColourCode(colorCode);
+	}
 
 	/* To Do
 	 m_cwIdTXLevel = data[5U]>>2;
@@ -1932,8 +1963,6 @@ static uint8_t setConfig(volatile const uint8_t* data, uint8_t length)
      io.setDeviations(dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel, nxdnTXLevel, pocsagTXLevel, ysfLoDev);
      dmrDMOTX.setTXDelay(txDelay);
      */
-
-	modemState = (MMDVM_STATE)data[3U];
 
 	if ((modemState == STATE_DMR) && (hotspotState == HOTSPOT_STATE_NOT_CONNECTED))
 	{
@@ -1951,25 +1980,42 @@ static uint8_t setConfig(volatile const uint8_t* data, uint8_t length)
 
 static uint8_t setMode(volatile const uint8_t* data, uint8_t length)
 {
-	//SEGGER_RTT_printf(0, "MMDVM SetMode len:%d %02X %02X %02X %02X %02X %02X %02X %02X\n",length,data[0U],data[1U],data[2U],data[3U],data[4U],data[5U],data[6U],data[7U]);
+	if (length < 1U)
+	{
+		return 4U;
+	}
+
+	  //SEGGER_RTT_printf(0, "MMDVM SetMode len:%d %02X %02X %02X %02X %02X %02X %02X %02X\n",length,data[0U],data[1U],data[2U],data[3U],data[4U],data[5U],data[6U],data[7U]);
 
 	if (modemState == data[0U])
 	{
 		return 0U;
 	}
 
-	// only supported mode is DMR (or idle)
-	if  (data[0U] != STATE_DMR && data[0U] != STATE_IDLE)
+	// Only supported mode are DMR, CWID, POCSAG and IDLE
+	switch (data[0U])
 	{
-		return 4U;
+		case STATE_IDLE:
+		case STATE_DMR:
+		case STATE_CWID:
+		case STATE_POCSAG:
+			break;
+
+		default:
+			return 4U;
+			break;
 	}
 
+	modemState = data[0U];
+#if 0
 	// MMDVMHost seems to send setMode commands longer than 1 byte. This seems wrong according to the spec, so we ignore those.
-	if (data[0U] == STATE_IDLE || (length==1 && data[0U] == STATE_DMR))
+	if (data[0U] == STATE_IDLE || (length==1 && data[0U] == STATE_DMR) || data[0U] != STATE_POCSAG)
 	{
 		modemState = data[0U];
 	}
+#endif
 
+#if 0
 	// MMDVHost on the PC seems to send mode DMR when the transmitter should be turned on and IDLE when it should be turned off.
 	switch(modemState)
 	{
@@ -1982,6 +2028,7 @@ static uint8_t setMode(volatile const uint8_t* data, uint8_t length)
 		default:
 			break;
 	}
+#endif
 
 	if (!mmdvmHostIsConnected)
 	{
@@ -2038,6 +2085,11 @@ static uint8_t handleDMRShortLC(volatile const uint8_t *data, uint8_t length)
 
 static uint8_t setQSOInfo(volatile const uint8_t *data, uint8_t length)
 {
+	if (length < (MMDVM_HEADER_LENGTH + 1U))
+	{
+		return 4U;
+	}
+
 	if (data[3U] == 250U) // IP info from MMDVMHost's CAST display driver
 	{
 		char buf[26U]; // MMDVMHost use an array of 25U
@@ -2060,89 +2112,109 @@ static uint8_t setQSOInfo(volatile const uint8_t *data, uint8_t length)
 
 		return 0U;
 	}
-	else if (data[3U] != STATE_DMR) // We just want DMR QSO info
+	else if (data[3U] != STATE_DMR && data[3U] != STATE_POCSAG) // We just want DMR QSO info
 	{
 		return 4U;
 	}
 
-	if (length != 47U) // Check for QSO Info frame length
+	if (data[3U] == STATE_DMR)
 	{
-		return 5U;
-	}
-
-	// Source and destination are both fitted in 20U arrays, in MMDVMHost
-	// We just store use and store source info
-	char QSOInfo[21U]; // QSO infos are array[20]
-	char source[21U];
-	char *p;
-	uint8_t len;
-
-	memcpy(&source, (char *)(data + 5U), 20U);
-	source[20U] = 0;
-
-	memset(&QSOInfo, 0, sizeof(QSOInfo));
-	sprintf(QSOInfo, "%s", chomp(source));
-
-    len = strlen(QSOInfo);
-
-	// Keep the callsign only.
-	if ((p = strchr(QSOInfo, ' ')) != NULL)
-	{
-		*p = 0;
-
-		// zeroing
-		p++;
-		for (uint8_t i = 0; i < (len - (p - QSOInfo)); i++)
+		if (length != 47U) // Check for QSO Info frame length
 		{
-			*(p + i) = 0;
+			return 5U;
 		}
+
+		// Source and destination are both fitted in 20U arrays, in MMDVMHost
+		// We just store use and store source info
+		char QSOInfo[21U]; // QSO infos are array[20]
+		char source[21U];
+		char *p;
+		uint8_t len;
+
+		memcpy(&source, (char *)(data + 5U), 20U);
+		source[20U] = 0;
+
+		memset(&QSOInfo, 0, sizeof(QSOInfo));
+		sprintf(QSOInfo, "%s", chomp(source));
 
 		len = strlen(QSOInfo);
-	}
 
-	// Non empty string, check if it's not numerical (TG/PC), as it will be ignored
-	if (len > 0)
-	{
-		bool onlyDigits = true;
-
-		for (uint8_t i = 0; i < len; i++)
+		// Keep the callsign only.
+		if ((p = strchr(QSOInfo, ' ')) != NULL)
 		{
-			if (isalpha(QSOInfo[i]))
+			*p = 0;
+
+			// zeroing
+			p++;
+			for (uint8_t i = 0; i < (len - (p - QSOInfo)); i++)
 			{
-				onlyDigits = false;
-				break;
+				*(p + i) = 0;
 			}
+
+			len = strlen(QSOInfo);
 		}
 
-		if (onlyDigits)
+		// Non empty string, check if it's not numerical (TG/PC), as it will be ignored
+		if (len > 0)
 		{
-			overriddenLCAvailable = false;
-			return 0U;
+			bool onlyDigits = true;
+
+			for (uint8_t i = 0; i < len; i++)
+			{
+				if (isalpha(QSOInfo[i]))
+				{
+					onlyDigits = false;
+					break;
+				}
+			}
+
+			if (onlyDigits)
+			{
+				overriddenLCAvailable = false;
+				return 0U;
+			}
+
+			// Build fake TA (2 blocks max)
+			memset(&overriddenLCTA, 0, sizeof(overriddenLCTA));
+
+			overriddenLCTA[0]  = 0x04;
+			overriddenLCTA[2]  = (0x01 << 6) | (len << 1);
+			overriddenLCTA[9]  = 0x05;
+
+			char *p = QSOInfo;
+			for (uint8_t i = 0; i < 2; i++) // 2 blocks only, that enough for store a callsign
+			{
+				memcpy(&overriddenLCTA[(i * 9) + ((i == 0) ? 3 : 2)], p, ((i == 0) ? 6 : 7));
+
+				p += ((i == 0) ? 6 : 7);
+			}
+
+			overriddenBlocksTA = 0x03; // 2 blocks are now available
 		}
 
-		// Build fake TA (2 blocks max)
-		memset(&overriddenLCTA, 0, sizeof(overriddenLCTA));
-
-		overriddenLCTA[0]  = 0x04;
-		overriddenLCTA[2]  = (0x01 << 6) | (len << 1);
-		overriddenLCTA[9]  = 0x05;
-
-		char *p = QSOInfo;
-		for (uint8_t i = 0; i < 2; i++) // 2 blocks only, that enough for store a callsign
-		{
-			memcpy(&overriddenLCTA[(i * 9) + ((i == 0) ? 3 : 2)], p, ((i == 0) ? 6 : 7));
-
-			p += ((i == 0) ? 6 : 7);
-		}
-
-		overriddenBlocksTA = 0x03; // 2 blocks are now available
+		overriddenLCAvailable = (len > 0);
 	}
-
-	overriddenLCAvailable = (len > 0);
+	if (data[3U] == STATE_POCSAG)
+	{
+		// NOOP
+	}
 
 	return 0U;
 }
 
+#if 0
+static uint8_t handlePOCSAG(volatile const uint8_t *data, uint8_t length)
+{
+	char buf[POCSAG_FRAME_LENGTH_BYTES + 1];
+
+	if (length != POCSAG_FRAME_LENGTH_BYTES)
+	{
+		return 4U;
+	}
+
+	return 0U;
+}
+#endif
 
 static void handleHotspotRequest(void)
 {
@@ -2233,7 +2305,6 @@ static void handleHotspotRequest(void)
 					sendNAK(err);
 				}
 				//SEGGER_RTT_printf(0, "MMDVM_SEND_CWID\n");
-				//sendACK();
 				break;
 
 			case MMDVM_DSTAR_HEADER:
@@ -2325,12 +2396,25 @@ static void handleHotspotRequest(void)
 
 			case MMDVM_POCSAG_DATA:
 				dbgPrint2("POCSAG");
-				sendNAK(err);
+				if ((modemState == STATE_IDLE) || (modemState == STATE_POCSAG))
+				{
+					//err = handlePOCSAG(com_requestbuffer + 3U, com_requestbuffer[1U] - 3U);
+					err = 0U;
+				}
+
+				if (err == 0U)
+				{
+					//sendACK(); // We don't send pages, but POCSAG can be enabled in Pi-Star
+				}
+				else
+				{
+					sendNAK(err);
+				}
 				break;
 
 			case MMDVM_TRANSPARENT: // Do nothing, stay silent
 				dbgPrint2("TRANS");
-				sendNAK(err);
+				//sendNAK(err);
 				break;
 
 			case MMDVM_QSO_INFO:
