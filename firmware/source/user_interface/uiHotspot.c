@@ -2389,8 +2389,6 @@ static uint8_t handleCWID(volatile const uint8_t *data, uint8_t length)
 	// Silence at the end
 	cwpoLen += 3U;
 
-	printf("Message created with length %d\n", cwpoLen);
-
 	return 0U;
 }
 
