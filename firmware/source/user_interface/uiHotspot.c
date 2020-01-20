@@ -128,7 +128,6 @@ M: 2020-01-07 09:52:15.246 DMR Slot 2, received network end of voice transmissio
 #define PROTOCOL_VERSION    1U
 
 #define MMDVM_HEADER_LENGTH  4U
-//#define POCSAG_FRAME_LENGTH_BYTES (17U * 4U /*sizeof(uint32_t)*/)
 
 #define HOTSPOT_VERSION_STRING "OpenGD77 Hotspot v0.0.79"
 #define concat(a, b) a " GitID #" b ""
@@ -1896,7 +1895,7 @@ static void getStatus(void)
 	buf[9U]  = 0U; // No YSF space
 	buf[10U] = 0U; // No P25 space
 	buf[11U] = 0U; // no NXDN space
-	buf[12U] = 0U; // no space for POCSAG, we will receive QSO_INFO with POCSAG information only
+	buf[12U] = 1U; // virtual space for POCSAG
 
 	//SEGGER_RTT_printf(0, "getStatus buffers=%d\n",s_ComBuf[8U]);
 
@@ -2112,7 +2111,7 @@ static uint8_t setQSOInfo(volatile const uint8_t *data, uint8_t length)
 
 		return 0U;
 	}
-	else if (data[3U] != STATE_DMR && data[3U] != STATE_POCSAG) // We just want DMR QSO info
+	else if ((data[3U] != STATE_DMR) && (data[3U] != STATE_POCSAG)) // We just want DMR and POCSAG QSO info
 	{
 		return 4U;
 	}
@@ -2196,7 +2195,13 @@ static uint8_t setQSOInfo(volatile const uint8_t *data, uint8_t length)
 	}
 	else if (data[3U] == STATE_POCSAG)
 	{
-		// NOOP
+		if ((length - 11U) > (17U + 4U))
+		{
+			for (int8_t i = 0; i < (((length - 11U) / (17U + 4)) - 1); i++)
+			{
+				sendACK();
+			}
+		}
 	}
 
 	return 0U;
@@ -2205,13 +2210,6 @@ static uint8_t setQSOInfo(volatile const uint8_t *data, uint8_t length)
 #if 0
 static uint8_t handlePOCSAG(volatile const uint8_t *data, uint8_t length)
 {
-	char buf[POCSAG_FRAME_LENGTH_BYTES + 1];
-
-	if (length != POCSAG_FRAME_LENGTH_BYTES)
-	{
-		return 4U;
-	}
-
 	return 0U;
 }
 #endif
