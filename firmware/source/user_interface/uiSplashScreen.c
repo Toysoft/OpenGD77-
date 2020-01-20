@@ -81,6 +81,8 @@ static void handleEvent(uiEvent_t *ev)
 {
 	if (melody_play==NULL)
 	{
+		ucClearBuf();
+		ucRender();
 		menuSystemSetCurrentMenu(nonVolatileSettings.initialMenuNumber);
 	}
 }
