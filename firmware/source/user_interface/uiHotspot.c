@@ -302,7 +302,6 @@ static uint32_t cwNextPeriod = 0;
 static uint8_t cwBuffer[300U];
 static uint16_t cwpoLen;
 static uint16_t cwpoPtr;
-static uint8_t cwn;
 static bool cwKeying = false;
 // End of CWID related
 
@@ -2323,13 +2322,7 @@ static void cwProcess(void)
 			}
 		}
 
-		cwn++;
-
-		if (cwn >= 1U)
-		{
-			cwpoPtr++;
-			cwn = 0U;
-		}
+		cwpoPtr++;
 
 		if (cwpoPtr >= cwpoLen)
 		{
@@ -2344,7 +2337,6 @@ static void cwReset(void)
 {
 	cwpoLen = 0U;
 	cwpoPtr = 0U;
-	cwn     = 0U;
 }
 
 static uint8_t handleCWID(volatile const uint8_t *data, uint8_t length)
@@ -2354,7 +2346,6 @@ static uint8_t handleCWID(volatile const uint8_t *data, uint8_t length)
 
 	cwpoLen = 3U; // Silence at the beginning
 	cwpoPtr = 0U;
-	cwn     = 0U;
 
 	for (uint8_t i = 0U; i < length; i++) {
 		for (uint8_t j = 0U; CW_SYMBOL_LIST[j].c != 0U; j++) {
