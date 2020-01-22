@@ -129,7 +129,7 @@ M: 2020-01-07 09:52:15.246 DMR Slot 2, received network end of voice transmissio
 
 #define MMDVM_HEADER_LENGTH  4U
 
-#define HOTSPOT_VERSION_STRING "OpenGD77 Hotspot v0.0.80"
+#define HOTSPOT_VERSION_STRING "OpenGD77 Hotspot v0.0.81"
 #define concat(a, b) a " GitID #" b ""
 static const char HARDWARE[] = concat(HOTSPOT_VERSION_STRING, GITVERSION);
 
@@ -2027,22 +2027,14 @@ static uint8_t setConfig(volatile const uint8_t *data, uint8_t length)
 
 	modemState = (MMDVM_STATE)data[3U];
 
-	// POCSAG / CWID config, no need to go further, as support is fake
-	if ((modemState == STATE_CWID) || (modemState == STATE_POCSAG))
-	{
-		return 0U;
-	}
-	else if (modemState == STATE_DMR)
-	{
-		uint8_t colorCode = data[6U];
+	uint8_t colorCode = data[6U];
 
-		if (colorCode > 15U)
-		{
-			return 4U;
-		}
-
-		trxSetDMRColourCode(colorCode);
+	if (colorCode > 15U)
+	{
+		return 4U;
 	}
+
+	trxSetDMRColourCode(colorCode);
 
 	/* To Do
 	 m_cwIdTXLevel = data[5U]>>2;
