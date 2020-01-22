@@ -18,33 +18,30 @@
 #include <hardware/UC1701.h>
 #include <user_interface/menuSystem.h>
 #include <user_interface/uiLocalisation.h>
-#include "fw_settings.h"
+#include <functions/fw_settings.h>
+#include <user_interface/uiUtilities.h>
 
 static void updateScreen(void);
 static void handleEvent(uiEvent_t *ev);
 static void updateBacklightMode(uint8_t mode);
 
-static uint8_t originalBrightness;
-static uint8_t contrast;
-static uint8_t inverseVideo;
-static int8_t originalBackLightTimeout;// used int_8 to save space
-static uint8_t originalBacklightMode;
+static const int BACKLIGHT_MAX_TIMEOUT = 30;
+static const int CONTRAST_MAX_VALUE = 30;// Maximum value which still seems to be readable
+static const int CONTRAST_MIN_VALUE = 12;// Minimum value which still seems to be readable
+static const int BACKLIGHT_TIMEOUT_STEP = 5;
+static const int BACKLIGHT_MAX_PERCENTAGE = 100;
+static const int BACKLIGHT_PERCENTAGE_STEP = 10;
+static const int BACKLIGHT_PERCENTAGE_STEP_SMALL = 1;
 
-const int BACKLIGHT_MAX_TIMEOUT = 30;
-const int CONTRAST_MAX_VALUE = 30;// Maximum value which still seems to be readable
-const int CONTRAST_MIN_VALUE = 12;// Minimum value which still seems to be readable
-enum DISPLAY_MENU_LIST { DISPLAY_MENU_BRIGHTNESS = 0, DISPLAY_MENU_CONTRAST, DISPLAY_MENU_BACKLIGHT_MODE, DISPLAY_MENU_TIMEOUT, DISPLAY_MENU_COLOUR_INVERT, NUM_DISPLAY_MENU_ITEMS};
+enum DISPLAY_MENU_LIST { DISPLAY_MENU_BRIGHTNESS = 0, DISPLAY_MENU_BRIGHTNESS_OFF, DISPLAY_MENU_CONTRAST, DISPLAY_MENU_BACKLIGHT_MODE, DISPLAY_MENU_TIMEOUT, DISPLAY_MENU_COLOUR_INVERT, NUM_DISPLAY_MENU_ITEMS};
 
 
 int menuDisplayOptions(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		originalBrightness = nonVolatileSettings.displayBacklightPercentage;
-		contrast = nonVolatileSettings.displayContrast;
-		inverseVideo = nonVolatileSettings.displayInverseVideo;
-		originalBackLightTimeout = nonVolatileSettings.backLightTimeout;
-		originalBacklightMode = nonVolatileSettings.backlightMode;
+		// Store original settings, used on cancel event.
+		memcpy(&originalNonVolatileSettings, &nonVolatileSettings, sizeof(settingsStruct_t));
 		updateScreen();
 	}
 	else
@@ -76,8 +73,11 @@ static void updateScreen(void)
 			case DISPLAY_MENU_BRIGHTNESS:
 				snprintf(buf, bufferLen, "%s:%d%%", currentLanguage->brightness, nonVolatileSettings.displayBacklightPercentage);
 				break;
+			case DISPLAY_MENU_BRIGHTNESS_OFF:
+				snprintf(buf, bufferLen, "%s:%d%%", currentLanguage->brightness_off, nonVolatileSettings.displayBacklightPercentageOff);
+				break;
 			case DISPLAY_MENU_CONTRAST:
-				snprintf(buf, bufferLen, "%s:%d", currentLanguage->contrast, contrast);
+				snprintf(buf, bufferLen, "%s:%d", currentLanguage->contrast, nonVolatileSettings.displayContrast);
 				break;
 			case DISPLAY_MENU_BACKLIGHT_MODE:
 				snprintf(buf, bufferLen, "%s:%s", currentLanguage->mode, backlightModes[nonVolatileSettings.backlightMode]);
@@ -96,7 +96,7 @@ static void updateScreen(void)
 				}
 				break;
 			case DISPLAY_MENU_COLOUR_INVERT:
-				if (inverseVideo)
+				if (nonVolatileSettings.displayInverseVideo)
 				{
 					strncpy(buf, currentLanguage->colour_invert, bufferLen);
 				}
@@ -121,13 +121,13 @@ static void handleEvent(uiEvent_t *ev)
 	{
 		if (ev->function == DEC_BRIGHTNESS)
 		{
-			if (nonVolatileSettings.displayBacklightPercentage <= 10)
+			if (nonVolatileSettings.displayBacklightPercentage <= BACKLIGHT_PERCENTAGE_STEP)
 			{
-				nonVolatileSettings.displayBacklightPercentage -= 1;
+				nonVolatileSettings.displayBacklightPercentage -= BACKLIGHT_PERCENTAGE_STEP_SMALL;
 			}
 			else
 			{
-				nonVolatileSettings.displayBacklightPercentage -= 10;
+				nonVolatileSettings.displayBacklightPercentage -= BACKLIGHT_PERCENTAGE_STEP;
 			}
 
 			if (nonVolatileSettings.displayBacklightPercentage<0)
@@ -141,18 +141,18 @@ static void handleEvent(uiEvent_t *ev)
 		}
 		else if (ev->function == INC_BRIGHTNESS)
 		{
-			if (nonVolatileSettings.displayBacklightPercentage<10)
+			if (nonVolatileSettings.displayBacklightPercentage < BACKLIGHT_PERCENTAGE_STEP)
 			{
-				nonVolatileSettings.displayBacklightPercentage += 1;
+				nonVolatileSettings.displayBacklightPercentage += BACKLIGHT_PERCENTAGE_STEP_SMALL;
 			}
 			else
 			{
-				nonVolatileSettings.displayBacklightPercentage += 10;
+				nonVolatileSettings.displayBacklightPercentage += BACKLIGHT_PERCENTAGE_STEP;
 			}
 
-			if (nonVolatileSettings.displayBacklightPercentage>100)
+			if (nonVolatileSettings.displayBacklightPercentage>BACKLIGHT_MAX_PERCENTAGE)
 			{
-				nonVolatileSettings.displayBacklightPercentage=100;
+				nonVolatileSettings.displayBacklightPercentage=BACKLIGHT_MAX_PERCENTAGE;
 			}
 			displayLightTrigger();
 			menuSystemPopPreviousMenu();
@@ -174,26 +174,49 @@ static void handleEvent(uiEvent_t *ev)
 			switch(gMenusCurrentItemIndex)
 			{
 				case DISPLAY_MENU_BRIGHTNESS:
-					if (nonVolatileSettings.displayBacklightPercentage<10)
+					if (nonVolatileSettings.displayBacklightPercentage < BACKLIGHT_PERCENTAGE_STEP)
 					{
-						nonVolatileSettings.displayBacklightPercentage += 1;
+						nonVolatileSettings.displayBacklightPercentage += BACKLIGHT_PERCENTAGE_STEP_SMALL;
 					}
 					else
 					{
-						nonVolatileSettings.displayBacklightPercentage += 10;
+						nonVolatileSettings.displayBacklightPercentage += BACKLIGHT_PERCENTAGE_STEP;
 					}
 
-					if (nonVolatileSettings.displayBacklightPercentage>100)
+					if (nonVolatileSettings.displayBacklightPercentage > BACKLIGHT_MAX_PERCENTAGE)
 					{
-						nonVolatileSettings.displayBacklightPercentage=100;
+						nonVolatileSettings.displayBacklightPercentage = BACKLIGHT_MAX_PERCENTAGE;
+					}
+					break;
+				case DISPLAY_MENU_BRIGHTNESS_OFF:
+					if (nonVolatileSettings.displayBacklightPercentageOff < nonVolatileSettings.displayBacklightPercentage)
+					{
+						if (nonVolatileSettings.displayBacklightPercentageOff < BACKLIGHT_PERCENTAGE_STEP)
+						{
+							nonVolatileSettings.displayBacklightPercentageOff += BACKLIGHT_PERCENTAGE_STEP_SMALL;
+						}
+						else
+						{
+							nonVolatileSettings.displayBacklightPercentageOff += BACKLIGHT_PERCENTAGE_STEP;
+						}
+
+						if (nonVolatileSettings.displayBacklightPercentageOff > BACKLIGHT_MAX_PERCENTAGE)
+						{
+							nonVolatileSettings.displayBacklightPercentageOff = BACKLIGHT_MAX_PERCENTAGE;
+						}
+
+						if (nonVolatileSettings.displayBacklightPercentageOff > nonVolatileSettings.displayBacklightPercentage)
+						{
+							nonVolatileSettings.displayBacklightPercentageOff = nonVolatileSettings.displayBacklightPercentage;
+						}
 					}
 					break;
 				case DISPLAY_MENU_CONTRAST:
-					if (contrast < CONTRAST_MAX_VALUE)
+					if (nonVolatileSettings.displayContrast < CONTRAST_MAX_VALUE)
 					{
-						contrast++;
+						nonVolatileSettings.displayContrast++;
 					}
-					ucSetContrast(contrast);
+					ucSetContrast(nonVolatileSettings.displayContrast);
 					break;
 				case DISPLAY_MENU_BACKLIGHT_MODE:
 					if (nonVolatileSettings.backlightMode < BACKLIGHT_MODE_NONE)
@@ -202,15 +225,15 @@ static void handleEvent(uiEvent_t *ev)
 					}
 					break;
 				case DISPLAY_MENU_TIMEOUT:
-					nonVolatileSettings.backLightTimeout += 5;
+					nonVolatileSettings.backLightTimeout += BACKLIGHT_TIMEOUT_STEP;
 					if (nonVolatileSettings.backLightTimeout > BACKLIGHT_MAX_TIMEOUT)
 					{
 						nonVolatileSettings.backLightTimeout = BACKLIGHT_MAX_TIMEOUT;
 					}
 					break;
 				case DISPLAY_MENU_COLOUR_INVERT:
-					inverseVideo=!inverseVideo;
-					fw_init_display(inverseVideo);// Need to perform a full reset on the display to change back to non-inverted
+					nonVolatileSettings.displayInverseVideo = !nonVolatileSettings.displayInverseVideo;
+					fw_init_display(nonVolatileSettings.displayInverseVideo);// Need to perform a full reset on the display to change back to non-inverted
 					break;
 			}
 		}
@@ -219,26 +242,46 @@ static void handleEvent(uiEvent_t *ev)
 			switch(gMenusCurrentItemIndex)
 			{
 				case DISPLAY_MENU_BRIGHTNESS:
-					if (nonVolatileSettings.displayBacklightPercentage <= 10)
+					if (nonVolatileSettings.displayBacklightPercentage <= BACKLIGHT_PERCENTAGE_STEP)
 					{
 						nonVolatileSettings.displayBacklightPercentage -= 1;
 					}
 					else
 					{
-						nonVolatileSettings.displayBacklightPercentage -= 10;
+						nonVolatileSettings.displayBacklightPercentage -= BACKLIGHT_PERCENTAGE_STEP;
 					}
 
-					if (nonVolatileSettings.displayBacklightPercentage<0)
+					if (nonVolatileSettings.displayBacklightPercentage < 0)
 					{
-						nonVolatileSettings.displayBacklightPercentage=0;
+						nonVolatileSettings.displayBacklightPercentage = 0;
+					}
+
+					if (nonVolatileSettings.displayBacklightPercentageOff > nonVolatileSettings.displayBacklightPercentage)
+					{
+						nonVolatileSettings.displayBacklightPercentageOff = nonVolatileSettings.displayBacklightPercentage;
+					}
+					break;
+				case DISPLAY_MENU_BRIGHTNESS_OFF:
+					if (nonVolatileSettings.displayBacklightPercentageOff <= BACKLIGHT_PERCENTAGE_STEP)
+					{
+						nonVolatileSettings.displayBacklightPercentageOff -= BACKLIGHT_PERCENTAGE_STEP_SMALL;
+					}
+					else
+					{
+						nonVolatileSettings.displayBacklightPercentageOff -= BACKLIGHT_PERCENTAGE_STEP;
+					}
+
+					if (nonVolatileSettings.displayBacklightPercentageOff < 0)
+					{
+						nonVolatileSettings.displayBacklightPercentageOff = 0;
 					}
 					break;
 				case DISPLAY_MENU_CONTRAST:
-					if (contrast > CONTRAST_MIN_VALUE)
+					if (nonVolatileSettings.displayContrast > CONTRAST_MIN_VALUE)
 					{
-						contrast--;
+						nonVolatileSettings.displayContrast--;
 					}
-					ucSetContrast(contrast);
+					ucSetContrast(nonVolatileSettings.displayContrast);
 					break;
 				case DISPLAY_MENU_BACKLIGHT_MODE:
 					if (nonVolatileSettings.backlightMode > BACKLIGHT_MODE_AUTO)
@@ -247,44 +290,44 @@ static void handleEvent(uiEvent_t *ev)
 					}
 					break;
 				case DISPLAY_MENU_TIMEOUT:
-					nonVolatileSettings.backLightTimeout -= 5;
-					if (nonVolatileSettings.backLightTimeout < 0)
+					if (nonVolatileSettings.backLightTimeout >= BACKLIGHT_TIMEOUT_STEP)
 					{
-						nonVolatileSettings.backLightTimeout = 0;
+						nonVolatileSettings.backLightTimeout -= BACKLIGHT_TIMEOUT_STEP;
 					}
 					break;
 				case DISPLAY_MENU_COLOUR_INVERT:
-					inverseVideo=!inverseVideo;
-					fw_init_display(inverseVideo);// Need to perform a full reset on the display to change back to non-inverted
+					nonVolatileSettings.displayInverseVideo = !nonVolatileSettings.displayInverseVideo;
+					fw_init_display(nonVolatileSettings.displayInverseVideo);// Need to perform a full reset on the display to change back to non-inverted
 					break;
 			}
 		}
 		else if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 		{
 			// All parameters has already been applied
-			nonVolatileSettings.displayInverseVideo = inverseVideo;
-			nonVolatileSettings.displayContrast = contrast;
 			menuSystemPopAllAndDisplayRootMenu();
 			return;
 		}
 		else if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 		{
-			if (nonVolatileSettings.displayContrast != contrast)
+			if (nonVolatileSettings.displayContrast != originalNonVolatileSettings.displayContrast)
 			{
+				nonVolatileSettings.displayContrast = originalNonVolatileSettings.displayContrast;
 				ucSetContrast(nonVolatileSettings.displayContrast);
 			}
 
-			if (nonVolatileSettings.displayInverseVideo != inverseVideo)
+			if (nonVolatileSettings.displayInverseVideo != originalNonVolatileSettings.displayInverseVideo)
 			{
+				nonVolatileSettings.displayInverseVideo = originalNonVolatileSettings.displayInverseVideo;
 				fw_init_display(nonVolatileSettings.displayInverseVideo);// Need to perform a full reset on the display to change back to non-inverted
 			}
 
-			nonVolatileSettings.displayBacklightPercentage = originalBrightness;
-			nonVolatileSettings.backLightTimeout = originalBackLightTimeout;
+			nonVolatileSettings.displayBacklightPercentage = originalNonVolatileSettings.displayBacklightPercentage;
+			nonVolatileSettings.displayBacklightPercentageOff = originalNonVolatileSettings.displayBacklightPercentageOff;
+			nonVolatileSettings.backLightTimeout = originalNonVolatileSettings.backLightTimeout;
 
-			if (nonVolatileSettings.backlightMode != originalBacklightMode)
+			if (nonVolatileSettings.backlightMode != originalNonVolatileSettings.backlightMode)
 			{
-				updateBacklightMode(originalBacklightMode);
+				updateBacklightMode(originalNonVolatileSettings.backlightMode);
 			}
 
 			menuSystemPopPreviousMenu();

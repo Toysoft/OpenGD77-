@@ -112,6 +112,7 @@ const stringsTable_t englishLanguage =
 .key_repeat				= "Key rpt", // MaxLen: 11 (with ':' + x.xs fitted)
 .dmr_filter_timeout			= "Filter time", // MaxLen: 16 (with ':' + 1..90 + 's')
 .brightness				= "Brightness", // MaxLen: 16 (with ':' + 0..100 + '%')
+.brightness_off				= "Min bright", // MaxLen: 16 (with ':' + 0..100 + '%')
 .contrast				= "Contrast", // MaxLen: 16 (with ':' + 12..30)
 .colour_invert				= "Color:Invert", // MaxLen: 16
 .colour_normal				= "Color:Normal", // MaxLen: 16
@@ -138,7 +139,8 @@ const stringsTable_t englishLanguage =
 .low_battery				= "LOW BATTERY !!!", // MaxLen: 16
 .Auto					= "Auto", // MaxLen 16 (with .mode + ':') 
 .manual					= "Manual",  // MaxLen 16 (with .mode + ':')
-.ptt_toggle				= "PTT toggle", // MaxLen 16 (with ':' + .on or .off)
+.ptt_toggle				= "PTT latch", // MaxLen 16 (with ':' + .on or .off)
+.private_call_handling			= "Allow PC", // MaxLen 16 (with ':' + .on or .off)
 };
 /********************************************************************
  *

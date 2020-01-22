@@ -112,6 +112,7 @@ const stringsTable_t danishLanguage =
 .key_repeat				= "Tast rpt",
 .dmr_filter_timeout		= "Filter tid",
 .brightness				= "Lys styrke",
+.brightness_off				= "Min bright",
 .contrast				= "Kontrast",
 .colour_invert			= "Farve:Sort",
 .colour_normal			= "Farve:Normal",
@@ -139,6 +140,7 @@ const stringsTable_t danishLanguage =
 .Auto					= "Auto", // MaxLen 16 (with .mode + ':') 
 .manual					= "Manual",  // MaxLen 16 (with .mode + ':') 
 .ptt_toggle				= "PTT toggle", // MaxLen 16 (with ':' + .on or .off)
+.private_call_handling			= "Handle PC", // MaxLen 16 (with ':' + .on ot .off)
 };
 /********************************************************************
  *

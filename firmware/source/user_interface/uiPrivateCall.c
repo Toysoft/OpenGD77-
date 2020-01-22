@@ -17,7 +17,7 @@
  */
 #include <user_interface/menuSystem.h>
 #include <user_interface/uiLocalisation.h>
-#include <user_interface/uiUtilityQSOData.h>
+#include <user_interface/uiUtilities.h>
 #include <functions/fw_ticks.h>
 #include "fw_settings.h"
 
@@ -31,6 +31,7 @@ int menuPrivateCall(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
+		set_melody(melody_private_call);
 		uiPrivateCallState = PRIVATE_CALL_ACCEPT;
 		menuUtilityReceivedPcId = LinkHead->id;
 
@@ -63,7 +64,6 @@ static void updateScreen(void)
 
 	ucPrintCentered(16, currentLanguage->accept_call, FONT_8x16);
 	ucDrawChoice(CHOICE_YESNO, false);
-	set_melody(melody_private_call);
 	ucRender();
 
 }
@@ -75,7 +75,7 @@ static void handleEvent(uiEvent_t *ev)
 		if (KEYCHECK_SHORTUP(ev->keys, KEY_RED))
 		{
 			uiPrivateCallState = PRIVATE_CALL_DECLINED;
-			uiPrivateCallLastID = 0;// Temporarily allow another private call with the same ID, until the code is possibly updated to have a timeout for this // menuUtilityReceivedPcId;
+			uiPrivateCallLastID = 0;
 			menuSystemPopPreviousMenu();
 			return;
 		}

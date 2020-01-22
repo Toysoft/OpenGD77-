@@ -19,7 +19,7 @@
 #define _FW_MENUSYSTEM_H_
 #include "fw_main.h"
 
-typedef enum { NO_EVENT = 0, KEY_EVENT=0x01, BUTTON_EVENT = 0x02, FUNCTION_EVENT = 0x04 } uiEventInput_t;
+typedef enum { NO_EVENT = 0, KEY_EVENT = 0x01, BUTTON_EVENT = 0x02, FUNCTION_EVENT = 0x04 } uiEventInput_t;
 
 typedef struct
 {
@@ -41,7 +41,7 @@ extern int uiPrivateCallState;
 extern int uiPrivateCallLastID;
 
 
-typedef int (*menuFunctionPointer_t)(uiEvent_t *,bool); // Typedef for menu function pointers.  Functions are passed the key, the button and the event data. Event can be a Key or a button or both. Last arg is for when the function is only called to initialise and display its screen.
+typedef int (*menuFunctionPointer_t)(uiEvent_t *, bool); // Typedef for menu function pointers.  Functions are passed the key, the button and the event data. Event can be a Key or a button or both. Last arg is for when the function is only called to initialise and display its screen.
 typedef struct menuControlDataStruct
 {
 	int currentMenuNumber;
@@ -96,7 +96,7 @@ void menuBatteryPushBackVoltage(int32_t voltage);
 
 void menuLockScreenPop(void);
 
-void menuLastHeardUpdateScreen(bool showTitleOrHeader);
+void menuLastHeardUpdateScreen(bool showTitleOrHeader, bool displayDetails);
 
 void menuClearPrivateCall(void);
 void menuAcceptPrivateCall(int id);

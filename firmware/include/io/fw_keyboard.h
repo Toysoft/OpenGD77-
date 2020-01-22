@@ -52,26 +52,24 @@
 #define GPIO_Key_Row4 	GPIOB
 #define Pin_Key_Row4	23
 
-#define SCAN_UP    0x00000100
-#define SCAN_DOWN  0x00002000
-#define SCAN_LEFT  0x00000200
-#define SCAN_RIGHT 0x00000010
-#define SCAN_GREEN 0x00000008
-#define SCAN_RED   0x00040000
-#define SCAN_0     0x00010000
-#define SCAN_1     0x00000001
-#define SCAN_2     0x00000002
-#define SCAN_3     0x00000004
-#define SCAN_4     0x00000020
-#define SCAN_5     0x00000040
-#define SCAN_6     0x00000080
-#define SCAN_7     0x00000400
-#define SCAN_8     0x00000800
-#define SCAN_9     0x00001000
-#define SCAN_STAR  0x00008000
-#define SCAN_HASH  0x00020000
-#define SCAN_SK1   0x00004000
-#define SCAN_ORANGE 0x00080000
+#define SCAN_UP     0x00000100
+#define SCAN_DOWN   0x00002000
+#define SCAN_LEFT   0x00000200
+#define SCAN_RIGHT  0x00000010
+#define SCAN_GREEN  0x00000008
+#define SCAN_RED    0x00040000
+#define SCAN_0      0x00010000
+#define SCAN_1      0x00000001
+#define SCAN_2      0x00000002
+#define SCAN_3      0x00000004
+#define SCAN_4      0x00000020
+#define SCAN_5      0x00000040
+#define SCAN_6      0x00000080
+#define SCAN_7      0x00000400
+#define SCAN_8      0x00000800
+#define SCAN_9      0x00001000
+#define SCAN_STAR   0x00008000
+#define SCAN_HASH   0x00020000
 
 #define KEY_GREENSTAR  '+'    // GREEN + STAR
 
@@ -93,8 +91,6 @@
 #define KEY_9     '9'
 #define KEY_STAR  '*'
 #define KEY_HASH  '#'
-#define KEY_SK1    5
-#define KEY_ORANGE 6
 
 
 #define KEY_MOD_DOWN    0x01

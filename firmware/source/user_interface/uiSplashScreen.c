@@ -27,7 +27,7 @@ int menuSplashScreen(uiEvent_t *ev, bool isFirstRun)
 	uint8_t melodyBuf[512];
 	if (isFirstRun)
 	{
-		if (codeplugGetOpenGD77CustomData(CODEPLUG_CUSTOM_DATA_TYPE_BEEP,melodyBuf ))
+		if (codeplugGetOpenGD77CustomData(CODEPLUG_CUSTOM_DATA_TYPE_BEEP, melodyBuf))
 		{
 		   create_song(melodyBuf);
 		   set_melody(melody_generic);
@@ -81,6 +81,8 @@ static void handleEvent(uiEvent_t *ev)
 {
 	if (melody_play==NULL)
 	{
+		ucClearBuf();
+		ucRender();
 		menuSystemSetCurrentMenu(nonVolatileSettings.initialMenuNumber);
 	}
 }

@@ -20,12 +20,14 @@
 #include <hardware/fw_HR-C6000.h>
 #include <hardware/fw_SPI_Flash.h>
 #include <user_interface/menuSystem.h>
-#include <user_interface/uiUtilityQSOData.h>
+#include <user_interface/uiUtilities.h>
 #include <user_interface/uiLocalisation.h>
 #include "fw_trx.h"
 #include "fw_settings.h"
 #include <math.h>
 #include <functions/fw_ticks.h>
+
+settingsStruct_t originalNonVolatileSettings;
 
 const int QSO_TIMER_TIMEOUT = 2400;
 const int TX_TIMER_Y_OFFSET = 8;
@@ -81,7 +83,7 @@ char *chomp(char *str)
 	return sp;
 }
 
-int32_t getCallsignEndingPos(char *str)
+int32_t getFirstSpacePos(char *str)
 {
 	char *p = str;
 
@@ -316,14 +318,15 @@ void lastHeardClearLastID(void)
 	lastID=0;
 }
 
-bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
+bool lastHeardListUpdate(uint8_t *dmrDataBuffer, bool forceOnHotspot)
 {
 	static uint8_t bufferTA[32];
 	static uint8_t blocksTA = 0x00;
 	bool retVal = false;
 	uint32_t talkGroupOrPcId = (dmrDataBuffer[0]<<24) + (dmrDataBuffer[3]<<16)+(dmrDataBuffer[4]<<8)+(dmrDataBuffer[5]<<0);
+	static bool overrideTA = false;
 
-	if (HRC6000GetReveivedTgOrPcId() != 0)
+	if ((HRC6000GetReceivedTgOrPcId() != 0) || forceOnHotspot)
 	{
 		if (dmrDataBuffer[0]==TG_CALL_FLAG || dmrDataBuffer[0]==PC_CALL_FLAG)
 		{
@@ -333,6 +336,7 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 			{
 				memset(bufferTA, 0, 32);// Clear any TA data in TA buffer (used for decode)
 				blocksTA = 0x00;
+				overrideTA = false;
 
 				retVal = true;// something has changed
 				lastID=id;
@@ -425,6 +429,7 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 					lastTG = talkGroupOrPcId;
 					memset(bufferTA, 0, 32);// Clear any TA data in TA buffer (used for decode)
 					blocksTA = 0x00;
+					overrideTA = false;
 					retVal = true;// something has changed
 				}
 			}
@@ -432,11 +437,37 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 		else
 		{
 			// Data contains the Talker Alias Data
-			uint8_t blockID = DMR_frame_buffer[0] - 4;
+			uint8_t blockID = (forceOnHotspot ? dmrDataBuffer[0] : DMR_frame_buffer[0]) - 4;
 
 			// ID 0x04..0x07: TA
 			if (blockID < 4)
 			{
+
+				// Already stored first byte in block TA Header has changed, lets clear other blocks too
+				if ((blockID == 0) && ((blocksTA & (1 << blockID)) != 0) &&
+						(bufferTA[0] != (forceOnHotspot ? dmrDataBuffer[2] : DMR_frame_buffer[2])))
+				{
+					blocksTA &= ~(1 << 0);
+
+					// Clear all other blocks if they're already stored
+					if ((blocksTA & (1 << 1)) != 0)
+					{
+						blocksTA &= ~(1 << 1);
+						memset(bufferTA + 7, 0, 7); // Clear 2nd TA block
+					}
+					if ((blocksTA & (1 << 2)) != 0)
+					{
+						blocksTA &= ~(1 << 2);
+						memset(bufferTA + 14, 0, 7); // Clear 3rd TA block
+					}
+					if ((blocksTA & (1 << 3)) != 0)
+					{
+						blocksTA &= ~(1 << 3);
+						memset(bufferTA + 21, 0, 7); // Clear 4th TA block
+					}
+					overrideTA = true;
+				}
+
 				// We don't already have this TA block
 				if ((blocksTA & (1 << blockID)) == 0)
 				{
@@ -447,7 +478,7 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 
 					if ((blockOffset + blockLen) < sizeof(bufferTA))
 					{
-						memcpy(bufferTA + blockOffset, (void *)&DMR_frame_buffer[2], blockLen);
+						memcpy(bufferTA + blockOffset, (void *)(forceOnHotspot ? &dmrDataBuffer[2] : &DMR_frame_buffer[2]), blockLen);
 
 						// Format and length infos are available, we can decode now
 						if (bufferTA[0] != 0x0)
@@ -457,10 +488,10 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 							if ((decodedTA = decodeTA(&bufferTA[0])) != NULL)
 							{
 								// TAs doesn't match, update contact and screen.
-								if (strlen((const char *)decodedTA) > strlen((const char *)&LinkHead->talkerAlias))
+								if (overrideTA || (strlen((const char *)decodedTA) > strlen((const char *)&LinkHead->talkerAlias)))
 								{
 									memcpy(&LinkHead->talkerAlias, decodedTA, 31);// Brandmeister seems to send callsign as 6 chars only
-
+									overrideTA = false;
 									menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;
 								}
 							}
@@ -470,7 +501,7 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 			}
 			else if (blockID == 4) // ID 0x08: GPS
 			{
-				uint8_t *locator = decodeGPSPosition((uint8_t *)&DMR_frame_buffer[0]);
+				uint8_t *locator = decodeGPSPosition((uint8_t *)(forceOnHotspot ? &dmrDataBuffer[0] : &DMR_frame_buffer[0]));
 
 				if (strncmp((char *)&LinkHead->locator, (char *)locator, 7) != 0)
 				{
@@ -484,7 +515,7 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer)
 	return retVal;
 }
 
-bool dmrIDLookup( int targetId,dmrIdDataStruct_t *foundRecord)
+bool dmrIDLookup(int targetId, dmrIdDataStruct_t *foundRecord)
 {
 	uint32_t l = 0;
 	uint32_t numRecords;
@@ -492,9 +523,10 @@ bool dmrIDLookup( int targetId,dmrIdDataStruct_t *foundRecord)
 	uint32_t m;
 	uint32_t recordLenth;//15+4;
 	uint8_t headerBuf[32];
-	memset(foundRecord,0,sizeof(dmrIdDataStruct_t));
 
-	int targetIdBCD=int2bcd(targetId);
+	memset(foundRecord, 0, sizeof(dmrIdDataStruct_t));
+
+	int targetIdBCD = int2bcd(targetId);
 
 	SPI_Flash_read(DMRID_MEMORY_STORAGE_START,headerBuf,DMRID_HEADER_LENGTH);
 
@@ -641,7 +673,7 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 		char    *pbuf;
 		int32_t  cpos;
 
-		if ((cpos = getCallsignEndingPos(text)) != -1)
+		if ((cpos = getFirstSpacePos(text)) != -1)
 		{
 			// Callsign found
 			memcpy(buffer, text, cpos);
@@ -706,7 +738,7 @@ void menuUtilityRenderQSOData(void)
 	 * but I thought it was safer to disregard any PC's from IDs the same as the current TG
 	 * rather than testing if the TG is the user's ID, though that may work as well.
 	 */
-	if (HRC6000GetReveivedTgOrPcId() != 0)
+	if (HRC6000GetReceivedTgOrPcId() != 0)
 	{
 		if ((LinkHead->talkGroupOrPcId>>24) == PC_CALL_FLAG) // &&  (LinkHead->id & 0xFFFFFF) != (trxTalkGroupOrPcId & 0xFFFFFF))
 		{
@@ -729,7 +761,7 @@ void menuUtilityRenderQSOData(void)
 					buffer[16] = 0;
 				}
 				ucPrintCentered(52, buffer, FONT_6x8);
-				ucPrintAt(1, 54, "=>", FONT_6x8);
+				ucPrintAt(1, 52, "=>", FONT_6x8);
 			}
 		}
 		else
@@ -743,7 +775,7 @@ void menuUtilityRenderQSOData(void)
 			}
 			if (tg != trxTalkGroupOrPcId || (dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot()))
 			{
-				ucFillRect(0,16,128,16,false);// fill background with black
+				ucClearRows(2, 4, true);
 				ucPrintCore(0, CONTACT_Y_POS, buffer, FONT_8x16, TEXT_ALIGN_CENTER, true);// draw the text in inverse video
 			}
 			else
@@ -833,15 +865,11 @@ void menuUtilityRenderHeader(void)
 		case RADIO_MODE_DIGITAL:
 
 
-			if (settingsUsbMode == USB_MODE_HOTSPOT)
-			{
-				ucPrintAt(0, Y_OFFSET, "DMR", FONT_6x8);
-			}
-			else
+			if (settingsUsbMode != USB_MODE_HOTSPOT)
 			{
 //				(trxGetMode() == RADIO_MODE_DIGITAL && settingsPrivateCallMuteMode == true)?" MUTE":"");// The location that this was displayed is now used for the power level
 
-				ucPrintAt(0, Y_OFFSET, "DMR", FONT_6x8);
+				ucPrintAt(0, Y_OFFSET, "DMR", ((nonVolatileSettings.hotspotType != HOTSPOT_TYPE_OFF) ? FONT_6x8_BOLD : FONT_6x8));
 				snprintf(buffer, bufferLen, "%s%d", currentLanguage->ts, trxGetDMRTimeSlot() + 1);
 				buffer[bufferLen - 1] = 0;
 				if (nonVolatileSettings.dmrFilterLevel < DMR_FILTER_TS)

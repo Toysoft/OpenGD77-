@@ -31,6 +31,7 @@ volatile bool alive_hrc6000task;
 float averageBatteryVoltage;
 int battery_voltage = 0;
 int battery_voltage_tick = 0;
+bool batteryVoltageHasChanged = false;
 static bool reboot=false;
 static const int BATTERY_VOLTAGE_TICK_RELOAD = 2000;
 static const int AVERAGE_BATTERY_VOLTAGE_SAMPLE_WINDOW = 60.0f;// 120 secs = Sample window * BATTERY_VOLTAGE_TICK_RELOAD in milliseconds
@@ -120,6 +121,7 @@ void tick_watchdog(void)
 		{
 			battery_voltage=tmp_battery_voltage;
 			averageBatteryVoltage = (averageBatteryVoltage * (AVERAGE_BATTERY_VOLTAGE_SAMPLE_WINDOW-1) + battery_voltage) / AVERAGE_BATTERY_VOLTAGE_SAMPLE_WINDOW;
+			batteryVoltageHasChanged = true;
 		}
 		battery_voltage_tick=0;
 

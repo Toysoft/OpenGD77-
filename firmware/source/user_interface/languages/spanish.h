@@ -112,6 +112,7 @@ const stringsTable_t spanishLanguage =
 .key_repeat				= "Tec.repetir", // MaxLen: 11 (with ':' + x.xs fitted)
 .dmr_filter_timeout		= "Fil. tiempo", // MaxLen: 16 (with ':' + 1..90 + 's')
 .brightness				= "Brillo", // MaxLen: 16 (with ':' + 0..100 + '%')
+.brightness_off				= "Brillo min", // MaxLen: 16 (with ':' + 0..100 + '%')
 .contrast				= "Contraste", // MaxLen: 16 (with ':' + 12..30)
 .colour_invert			= "Color:Invertido", // MaxLen: 16
 .colour_normal			= "Color:Normal", // MaxLen: 16
@@ -139,6 +140,7 @@ const stringsTable_t spanishLanguage =
 .Auto					= "Auto", // MaxLen 16 (with .mode + ':') 
 .manual					= "Manual",  // MaxLen 16 (with .mode + ':') 
 .ptt_toggle				= "PTT Fijo", // MaxLen 16 (with ':' + .on or .off)
+.private_call_handling			= "Filtro PC", // MaxLen 16 (with ':' + .on ot .off)
 };
 /********************************************************************
  *
