@@ -373,7 +373,7 @@
 					</fileInfo>
 					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.776969913" name="fw_sound.c" rcbsApplicability="disable" resourcePath="source/functions/fw_sound.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.475830819.1294673778">
 						<tool id="com.crt.advproject.gcc.exe.debug.475830819.1294673778" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.475830819">
-							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1005845558" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1005845558" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.none" valueType="enumerated"/>
 							<inputType id="com.crt.advproject.compiler.input.81270109" superClass="com.crt.advproject.compiler.input"/>
 						</tool>
 					</fileInfo>
@@ -721,9 +721,10 @@
 					</fileInfo>
 					<folderInfo id="com.crt.advproject.config.exe.debug.1021312312.1067184196" name="/" resourcePath="device">
 						<toolChain id="com.crt.advproject.toolchain.exe.debug.339234726" name="NXP MCU Tools" superClass="com.crt.advproject.toolchain.exe.debug" unusedChildren="">
+							<targetPlatform binaryParser="org.eclipse.cdt.core.ELF;org.eclipse.cdt.core.GNU_ELF" id="com.crt.advproject.platform.exe.debug" name="ARM-based MCU (Debug)" superClass="com.crt.advproject.platform.exe.debug"/>
 							<tool id="com.crt.advproject.cpp.exe.debug.2108878239" name="MCU C++ Compiler" superClass="com.crt.advproject.cpp.exe.debug.1589160145"/>
 							<tool id="com.crt.advproject.gcc.exe.debug.2059182291" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.475830819">
-								<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.836104315" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+								<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.836104315" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
 								<inputType id="com.crt.advproject.compiler.input.1378116720" superClass="com.crt.advproject.compiler.input"/>
 							</tool>
 							<tool id="com.crt.advproject.gas.exe.debug.1476094982" name="MCU Assembler" superClass="com.crt.advproject.gas.exe.debug.515920313">

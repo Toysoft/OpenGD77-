@@ -129,7 +129,7 @@ M: 2020-01-07 09:52:15.246 DMR Slot 2, received network end of voice transmissio
 
 #define MMDVM_HEADER_LENGTH  4U
 
-#define HOTSPOT_VERSION_STRING "OpenGD77 Hotspot v0.0.78"
+#define HOTSPOT_VERSION_STRING "OpenGD77 Hotspot v0.0.80"
 #define concat(a, b) a " GitID #" b ""
 static const char HARDWARE[] = concat(HOTSPOT_VERSION_STRING, GITVERSION);
 
@@ -240,6 +240,72 @@ static const uint8_t DMR_AUDIO_SEQ_MASK[]  		= {0x0FU, 0xF0U, 0x00U, 0x00U, 0x00
 static const uint8_t DMR_EMBED_SEQ_MASK[]  		= {0x00U, 0x0FU, 0xFFU, 0xFFU, 0xFFU, 0xF0U, 0x00U};
 
 
+// CWID related
+static const struct {
+  uint8_t  c;
+  uint32_t pattern;
+  uint8_t  length;
+} CW_SYMBOL_LIST[] = {
+  {'A', 0xB8000000U, 8U},
+  {'B', 0xEA800000U, 12U},
+  {'C', 0xEBA00000U, 14U},
+  {'D', 0xEA000000U, 10U},
+  {'E', 0x80000000U, 4U},
+  {'F', 0xAE800000U, 12U},
+  {'G', 0xEE800000U, 12U},
+  {'H', 0xAA000000U, 10U},
+  {'I', 0xA0000000U, 6U},
+  {'J', 0xBBB80000U, 16U},
+  {'K', 0xEB800000U, 12U},
+  {'L', 0xBA800000U, 12U},
+  {'M', 0xEE000000U, 10U},
+  {'N', 0xE8000000U, 8U},
+  {'O', 0xEEE00000U, 14U},
+  {'P', 0xBBA00000U, 14U},
+  {'Q', 0xEEB80000U, 16U},
+  {'R', 0xBA000000U, 10U},
+  {'S', 0xA8000000U, 8U},
+  {'T', 0xE0000000U, 6U},
+  {'U', 0xAE000000U, 10U},
+  {'V', 0xAB800000U, 12U},
+  {'W', 0xBB800000U, 12U},
+  {'X', 0xEAE00000U, 14U},
+  {'Y', 0xEBB80000U, 16U},
+  {'Z', 0xEEA00000U, 14U},
+  {'1', 0xBBBB8000U, 20U},
+  {'2', 0xAEEE0000U, 18U},
+  {'3', 0xABB80000U, 16U},
+  {'4', 0xAAE00000U, 14U},
+  {'5', 0xAA800000U, 12U},
+  {'6', 0xEAA00000U, 14U},
+  {'7', 0xEEA80000U, 16U},
+  {'8', 0xEEEA0000U, 18U},
+  {'9', 0xEEEE8000U, 20U},
+  {'0', 0xEEEEE000U, 22U},
+  {'/', 0xEAE80000U, 16U},
+  {'?', 0xAEEA0000U, 18U},
+  {',', 0xEEAEE000U, 22U},
+  {'-', 0xEAAE0000U, 18U},
+  {'=', 0xEAB80000U, 16U},
+  {' ', 0x00000000U, 4U},
+  {0U,  0x00000000U, 0U}
+};
+
+static const uint8_t BIT_MASK_TABLE[] = {0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U};
+
+#define WRITE_BIT1(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
+#define READ_BIT1(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
+
+static const uint32_t cwDOTDuration = (10U * 60U); // 60ms per DOT
+static uint32_t cwNextPeriod = 0;
+
+static uint8_t cwBuffer[300U];
+static uint16_t cwpoLen;
+static uint16_t cwpoPtr;
+static bool cwKeying = false;
+// End of CWID related
+
+
 static void updateScreen(uint8_t rxState);
 static bool handleEvent(uiEvent_t *ev);
 static void hotspotExit(void);
@@ -247,6 +313,9 @@ static void hotspotStateMachine(void);
 static void processUSBDataQueue(void);
 static void handleHotspotRequest(void);
 static void disableTransmission(void);
+static void cwReset(void);
+static void cwProcess(void);
+
 
 #if defined(DEBUG_HS_SCREEN)
 static void dbgAct0(uint8_t cmd)
@@ -427,6 +496,8 @@ int menuHotspotMode(uiEvent_t *ev, bool isFirstRun)
 		overriddenLCTA[0] = 0;
 		overriddenBlocksTA = 0x0;
 		overriddenLCAvailable = false;
+		cwKeying = false;
+		cwReset();
 
 		memset(&rxedDMR_LC, 0, sizeof(DMRLC_T));// clear automatic variable
 
@@ -475,6 +546,15 @@ int menuHotspotMode(uiEvent_t *ev, bool isFirstRun)
 		com_request = 0;
 	}
 	hotspotStateMachine();
+
+	// CW beaconing
+	if (cwKeying)
+	{
+		if (cwpoLen > 0U)
+		{
+			cwProcess();
+		}
+	}
 
 	return 0;
 }
@@ -761,6 +841,12 @@ static void hotspotExit(void)
 		trx_setRX();
 
 		GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
+
+		if (cwKeying)
+		{
+			cwReset();
+			cwKeying = false;
+		}
 	}
 
 	trxTalkGroupOrPcId = savedTGorPC;// restore the current TG or PC
@@ -1058,7 +1144,7 @@ static bool getEmbeddedData(volatile const uint8_t *com_requestbuffer)
 		startedEmbeddedSearch = true;
 	}
 
-	if (DMREmbeddedData_addData((uint8_t *)com_requestbuffer + 4, lcss))
+	if (DMREmbeddedData_addData((uint8_t *)com_requestbuffer + MMDVM_HEADER_LENGTH, lcss))
 	{
 		//DMRLC_T lc;
 
@@ -1066,8 +1152,6 @@ static bool getEmbeddedData(volatile const uint8_t *com_requestbuffer)
 
 		if (res)
 		{
-			lastHeardListUpdate(hotspotTxLC, true);
-
 			if (overriddenLCAvailable) // We can send fake talker aliases.
 			{
 				if (trxDMRID != oldTrxDMRID)
@@ -1710,10 +1794,13 @@ static void hotspotStateMachine(void)
 			{
 				if (wavbuffer_count > TX_BUFFER_MIN_BEFORE_TRANSMISSION)
 				{
-					hotspotState = HOTSPOT_STATE_TRANSMITTING;
-					//SEGGER_RTT_printf(0, "TX_START_BUFFERING -> TRANSMITTING %d\n",wavbuffer_count);
-					enableTransmission();
-					updateScreen(HOTSPOT_RX_IDLE);
+					if (cwKeying == false)
+					{
+						hotspotState = HOTSPOT_STATE_TRANSMITTING;
+						//SEGGER_RTT_printf(0, "TX_START_BUFFERING -> TRANSMITTING %d\n",wavbuffer_count);
+						enableTransmission();
+						updateScreen(HOTSPOT_RX_IDLE);
+					}
 				}
 				else
 				{
@@ -1776,6 +1863,11 @@ static void hotspotStateMachine(void)
 
 static uint8_t setFreq(volatile const uint8_t* data, uint8_t length)
 {
+	if (length < 9U)
+	{
+		return 4U;
+	}
+
 	// satellite frequencies banned frequency ranges
 	const int BAN1_MIN  = 14580000;
 	const int BAN1_MAX  = 14600000;
@@ -1866,11 +1958,12 @@ static void getStatus(void)
 	buf[0U]  = MMDVM_FRAME_START;
 	buf[1U]  = 13U;
 	buf[2U]  = MMDVM_GET_STATUS;
-	buf[3U]  = 0x02U;// DMR ENABLED
+	buf[3U]  = (0x02U | 0x20U); // DMR and POCSAG enabled
 	buf[4U]  = modemState;
 	buf[5U]  = ( ((hotspotState == HOTSPOT_STATE_TX_START_BUFFERING) ||
 					(hotspotState == HOTSPOT_STATE_TRANSMITTING) ||
-					(hotspotState == HOTSPOT_STATE_TX_SHUTDOWN)) ) ? 0x01U : 0x00U;
+					(hotspotState == HOTSPOT_STATE_TX_SHUTDOWN)) ||
+					cwKeying ) ? 0x01U : 0x00U;
 
 	if (hasRXOverflow())
 	{
@@ -1882,15 +1975,15 @@ static void getStatus(void)
 		buf[5U] |= 0x08U;
 	}
 
-	buf[6U]  = 0U;// No DSTAR
+	buf[6U]  = 0U; // No DSTAR space
 
-	buf[7U]  = 10U;// DMR Simplex
-	buf[8U]  = (HOTSPOT_BUFFER_COUNT - wavbuffer_count);
+	buf[7U]  = 10U; // DMR Simplex
+	buf[8U]  = (HOTSPOT_BUFFER_COUNT - wavbuffer_count); // DMR space
 
-	buf[9U]  = 0U;// No YSF
-	buf[10U] = 0U;// No P25
-	buf[11U] = 0U;// no NXDN
-	buf[12U] = 0U;// no POCSAG
+	buf[9U]  = 0U; // No YSF space
+	buf[10U] = 0U; // No P25 space
+	buf[11U] = 0U; // no NXDN space
+	buf[12U] = 1U; // virtual space for POCSAG
 
 	//SEGGER_RTT_printf(0, "getStatus buffers=%d\n",s_ComBuf[8U]);
 
@@ -1904,8 +1997,13 @@ static void getStatus(void)
 	enqueueUSBData(buf, buf[1U]);
 }
 
-static uint8_t setConfig(volatile const uint8_t* data, uint8_t length)
+static uint8_t setConfig(volatile const uint8_t *data, uint8_t length)
 {
+	if (length < 13U)
+	{
+		return 4U;
+	}
+
 	//SEGGER_RTT_printf(0, "setConfig \n");
 	uint8_t txDelay = data[2U];
 	if (txDelay > 50U)
@@ -1913,18 +2011,38 @@ static uint8_t setConfig(volatile const uint8_t* data, uint8_t length)
 		return 4U;
 	}
 
-	if (data[3U] != STATE_IDLE && data[3U] != STATE_DMR)
+	// Only supported mode are DMR, CWID, POCSAG and IDLE
+	switch (data[3U])
 	{
-		return 4U;// only DMR mode supported
+		case STATE_IDLE:
+		case STATE_DMR:
+		case STATE_CWID:
+		case STATE_POCSAG:
+			break;
+
+		default:
+			return 4U;
+			break;
 	}
 
-	uint8_t colorCode = data[6U];
-	if (colorCode > 15U)
-	{
-		return 4U;
-	}
+	modemState = (MMDVM_STATE)data[3U];
 
-	trxSetDMRColourCode(colorCode);
+	// POCSAG / CWID config, no need to go further, as support is fake
+	if ((modemState == STATE_CWID) || (modemState == STATE_POCSAG))
+	{
+		return 0U;
+	}
+	else if (modemState == STATE_DMR)
+	{
+		uint8_t colorCode = data[6U];
+
+		if (colorCode > 15U)
+		{
+			return 4U;
+		}
+
+		trxSetDMRColourCode(colorCode);
+	}
 
 	/* To Do
 	 m_cwIdTXLevel = data[5U]>>2;
@@ -1932,8 +2050,6 @@ static uint8_t setConfig(volatile const uint8_t* data, uint8_t length)
      io.setDeviations(dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel, nxdnTXLevel, pocsagTXLevel, ysfLoDev);
      dmrDMOTX.setTXDelay(txDelay);
      */
-
-	modemState = (MMDVM_STATE)data[3U];
 
 	if ((modemState == STATE_DMR) && (hotspotState == HOTSPOT_STATE_NOT_CONNECTED))
 	{
@@ -1951,25 +2067,42 @@ static uint8_t setConfig(volatile const uint8_t* data, uint8_t length)
 
 static uint8_t setMode(volatile const uint8_t* data, uint8_t length)
 {
-	//SEGGER_RTT_printf(0, "MMDVM SetMode len:%d %02X %02X %02X %02X %02X %02X %02X %02X\n",length,data[0U],data[1U],data[2U],data[3U],data[4U],data[5U],data[6U],data[7U]);
+	if (length < 1U)
+	{
+		return 4U;
+	}
+
+	  //SEGGER_RTT_printf(0, "MMDVM SetMode len:%d %02X %02X %02X %02X %02X %02X %02X %02X\n",length,data[0U],data[1U],data[2U],data[3U],data[4U],data[5U],data[6U],data[7U]);
 
 	if (modemState == data[0U])
 	{
 		return 0U;
 	}
 
-	// only supported mode is DMR (or idle)
-	if  (data[0U] != STATE_DMR && data[0U] != STATE_IDLE)
+	// Only supported mode are DMR, CWID, POCSAG and IDLE
+	switch (data[0U])
 	{
-		return 4U;
+		case STATE_IDLE:
+		case STATE_DMR:
+		case STATE_CWID:
+		case STATE_POCSAG:
+			break;
+
+		default:
+			return 4U;
+			break;
 	}
 
+	modemState = data[0U];
+#if 0
 	// MMDVMHost seems to send setMode commands longer than 1 byte. This seems wrong according to the spec, so we ignore those.
-	if (data[0U] == STATE_IDLE || (length==1 && data[0U] == STATE_DMR))
+	if (data[0U] == STATE_IDLE || (length==1 && data[0U] == STATE_DMR) || data[0U] != STATE_POCSAG)
 	{
 		modemState = data[0U];
 	}
+#endif
 
+#if 0
 	// MMDVHost on the PC seems to send mode DMR when the transmitter should be turned on and IDLE when it should be turned off.
 	switch(modemState)
 	{
@@ -1982,6 +2115,7 @@ static uint8_t setMode(volatile const uint8_t* data, uint8_t length)
 		default:
 			break;
 	}
+#endif
 
 	if (!mmdvmHostIsConnected)
 	{
@@ -2038,6 +2172,11 @@ static uint8_t handleDMRShortLC(volatile const uint8_t *data, uint8_t length)
 
 static uint8_t setQSOInfo(volatile const uint8_t *data, uint8_t length)
 {
+	if (length < (MMDVM_HEADER_LENGTH + 1U))
+	{
+		return 4U;
+	}
+
 	if (data[3U] == 250U) // IP info from MMDVMHost's CAST display driver
 	{
 		char buf[26U]; // MMDVMHost use an array of 25U
@@ -2060,89 +2199,198 @@ static uint8_t setQSOInfo(volatile const uint8_t *data, uint8_t length)
 
 		return 0U;
 	}
-	else if (data[3U] != STATE_DMR) // We just want DMR QSO info
+	else if ((data[3U] != STATE_DMR) && (data[3U] != STATE_POCSAG)) // We just want DMR and POCSAG QSO info
 	{
 		return 4U;
 	}
 
-	if (length != 47U) // Check for QSO Info frame length
+	if (data[3U] == STATE_DMR)
 	{
-		return 5U;
-	}
-
-	// Source and destination are both fitted in 20U arrays, in MMDVMHost
-	// We just store use and store source info
-	char QSOInfo[21U]; // QSO infos are array[20]
-	char source[21U];
-	char *p;
-	uint8_t len;
-
-	memcpy(&source, (char *)(data + 5U), 20U);
-	source[20U] = 0;
-
-	memset(&QSOInfo, 0, sizeof(QSOInfo));
-	sprintf(QSOInfo, "%s", chomp(source));
-
-    len = strlen(QSOInfo);
-
-	// Keep the callsign only.
-	if ((p = strchr(QSOInfo, ' ')) != NULL)
-	{
-		*p = 0;
-
-		// zeroing
-		p++;
-		for (uint8_t i = 0; i < (len - (p - QSOInfo)); i++)
+		if (length != 47U) // Check for QSO Info frame length
 		{
-			*(p + i) = 0;
+			return 5U;
 		}
+
+		// Source and destination are both fitted in 20U arrays, in MMDVMHost
+		// We just store use and store source info
+		char QSOInfo[21U]; // QSO infos are array[20]
+		char source[21U];
+		char *p;
+		uint8_t len;
+
+		memcpy(&source, (char *)(data + 5U), 20U);
+		source[20U] = 0;
+
+		memset(&QSOInfo, 0, sizeof(QSOInfo));
+		sprintf(QSOInfo, "%s", chomp(source));
 
 		len = strlen(QSOInfo);
-	}
 
-	// Non empty string, check if it's not numerical (TG/PC), as it will be ignored
-	if (len > 0)
-	{
-		bool onlyDigits = true;
-
-		for (uint8_t i = 0; i < len; i++)
+		// Keep the callsign only.
+		if ((p = strchr(QSOInfo, ' ')) != NULL)
 		{
-			if (isalpha(QSOInfo[i]))
+			*p = 0;
+
+			// zeroing
+			p++;
+			for (uint8_t i = 0; i < (len - (p - QSOInfo)); i++)
 			{
-				onlyDigits = false;
-				break;
+				*(p + i) = 0;
+			}
+
+			len = strlen(QSOInfo);
+		}
+
+		// Non empty string, check if it's not numerical (TG/PC), as it will be ignored
+		if (len > 0)
+		{
+			bool onlyDigits = true;
+
+			for (uint8_t i = 0; i < len; i++)
+			{
+				if (isalpha(QSOInfo[i]))
+				{
+					onlyDigits = false;
+					break;
+				}
+			}
+
+			if (onlyDigits)
+			{
+				overriddenLCAvailable = false;
+				return 0U;
+			}
+
+			// Build fake TA (2 blocks max)
+			memset(&overriddenLCTA, 0, sizeof(overriddenLCTA));
+
+			overriddenLCTA[0]  = 0x04;
+			overriddenLCTA[2]  = (0x01 << 6) | (len << 1);
+			overriddenLCTA[9]  = 0x05;
+
+			char *p = QSOInfo;
+			for (uint8_t i = 0; i < 2; i++) // 2 blocks only, that enough for store a callsign
+			{
+				memcpy(&overriddenLCTA[(i * 9) + ((i == 0) ? 3 : 2)], p, ((i == 0) ? 6 : 7));
+
+				p += ((i == 0) ? 6 : 7);
+			}
+
+			overriddenBlocksTA = 0x03; // 2 blocks are now available
+		}
+
+		overriddenLCAvailable = (len > 0);
+	}
+	else if (data[3U] == STATE_POCSAG)
+	{
+		if ((length - 11U) > (17U + 4U))
+		{
+			for (int8_t i = 0; i < (((length - 11U) / (17U + 4)) - 1); i++)
+			{
+				sendACK();
 			}
 		}
-
-		if (onlyDigits)
-		{
-			overriddenLCAvailable = false;
-			return 0U;
-		}
-
-		// Build fake TA (2 blocks max)
-		memset(&overriddenLCTA, 0, sizeof(overriddenLCTA));
-
-		overriddenLCTA[0]  = 0x04;
-		overriddenLCTA[2]  = (0x01 << 6) | (len << 1);
-		overriddenLCTA[9]  = 0x05;
-
-		char *p = QSOInfo;
-		for (uint8_t i = 0; i < 2; i++) // 2 blocks only, that enough for store a callsign
-		{
-			memcpy(&overriddenLCTA[(i * 9) + ((i == 0) ? 3 : 2)], p, ((i == 0) ? 6 : 7));
-
-			p += ((i == 0) ? 6 : 7);
-		}
-
-		overriddenBlocksTA = 0x03; // 2 blocks are now available
 	}
-
-	overriddenLCAvailable = (len > 0);
 
 	return 0U;
 }
 
+static void cwProcess(void)
+{
+	if (cwpoLen == 0U)
+		return;
+
+	if (PITCounter > cwNextPeriod)
+	{
+		cwNextPeriod = PITCounter + cwDOTDuration;
+
+		bool b = READ_BIT1(cwBuffer, cwpoPtr);
+		static bool lastValue = true;
+
+		if (lastValue != b)
+		{
+			lastValue = b;
+
+			if (b)
+			{
+				trxSetTone1(880);
+			}
+			else
+			{
+				trxSetTone1(0);
+			}
+		}
+
+		cwpoPtr++;
+
+		if (cwpoPtr >= cwpoLen)
+		{
+			cwpoPtr = 0U;
+			cwpoLen = 0U;
+			return;
+		}
+	}
+}
+
+static void cwReset(void)
+{
+	cwpoLen = 0U;
+	cwpoPtr = 0U;
+}
+
+static uint8_t handleCWID(volatile const uint8_t *data, uint8_t length)
+{
+	cwReset();
+	memset(cwBuffer, 0x00U, sizeof(cwBuffer));
+
+	cwpoLen = 3U; // Silence at the beginning
+	cwpoPtr = 0U;
+
+	for (uint8_t i = 0U; i < length; i++)
+	{
+		for (uint8_t j = 0U; CW_SYMBOL_LIST[j].c != 0U; j++)
+		{
+			if (CW_SYMBOL_LIST[j].c == data[i])
+			{
+				uint32_t MASK = 0x80000000U;
+
+				for (uint8_t k = 0U; k < CW_SYMBOL_LIST[j].length; k++, cwpoLen++, MASK >>= 1)
+				{
+					bool b = (CW_SYMBOL_LIST[j].pattern & MASK) == MASK;
+
+					WRITE_BIT1(cwBuffer, cwpoLen, b);
+
+					if (cwpoLen >= (sizeof(cwBuffer) - 3U)) // Will overflow otherwise
+					{
+						cwpoLen = 0U;
+						return 4U;
+					}
+				}
+
+				break;
+			}
+		}
+	}
+
+	// An empty message
+	if (cwpoLen == 3U)
+	{
+		cwpoLen = 0U;
+		return 4U;
+	}
+
+	// Silence at the end
+	cwpoLen += 3U;
+
+	return 0U;
+}
+
+#if 0
+static uint8_t handlePOCSAG(volatile const uint8_t *data, uint8_t length)
+{
+	return 0U;
+}
+#endif
 
 static void handleHotspotRequest(void)
 {
@@ -2197,17 +2445,16 @@ static void handleHotspotRequest(void)
 
 			case MMDVM_SET_FREQ:
 				dbgPrint2("SET_FREQ");
-	            err = setFreq(com_requestbuffer + 3U, com_requestbuffer[1U] - 3U);
-	            if (err == 0U)
-	            {
-	              sendACK();
-	              updateScreen(HOTSPOT_RX_IDLE);
-	            }
-	            else
-	            {
-	              sendNAK(err);
-	            }
-
+				err = setFreq(com_requestbuffer + 3U, com_requestbuffer[1U] - 3U);
+				if (err == 0U)
+				{
+					sendACK();
+					updateScreen(HOTSPOT_RX_IDLE);
+				}
+				else
+				{
+					sendNAK(err);
+				}
 				break;
 
 			case MMDVM_CAL_DATA:
@@ -2221,11 +2468,13 @@ static void handleHotspotRequest(void)
 				err = 5U;
 				if (modemState == STATE_IDLE)
 				{
-					err = 0U;
+					err = handleCWID(com_requestbuffer + 3U, com_requestbuffer[1U] - 3U);
 				}
 
 				if (err == 0U)
 				{
+					cwKeying = true;
+					cwNextPeriod = PITCounter - 1;
 					sendACK();
 				}
 				else
@@ -2233,7 +2482,6 @@ static void handleHotspotRequest(void)
 					sendNAK(err);
 				}
 				//SEGGER_RTT_printf(0, "MMDVM_SEND_CWID\n");
-				//sendACK();
 				break;
 
 			case MMDVM_DSTAR_HEADER:
@@ -2325,12 +2573,25 @@ static void handleHotspotRequest(void)
 
 			case MMDVM_POCSAG_DATA:
 				dbgPrint2("POCSAG");
-				sendNAK(err);
+				if ((modemState == STATE_IDLE) || (modemState == STATE_POCSAG))
+				{
+					//err = handlePOCSAG(com_requestbuffer + 3U, com_requestbuffer[1U] - 3U);
+					err = 0U;
+				}
+
+				if (err == 0U)
+				{
+					sendACK(); // We don't send pages, but POCSAG can be enabled in Pi-Star
+				}
+				else
+				{
+					sendNAK(err);
+				}
 				break;
 
 			case MMDVM_TRANSPARENT: // Do nothing, stay silent
 				dbgPrint2("TRANS");
-				sendNAK(err);
+				//sendNAK(err);
 				break;
 
 			case MMDVM_QSO_INFO:
@@ -2370,4 +2631,47 @@ static void handleHotspotRequest(void)
 		updateScreen(currentRxCommandState);
 		menuDisplayQSODataState = QSO_DISPLAY_IDLE;
 	}
+
+	if (cwKeying)
+	{
+		if (!trxIsTransmitting)
+		{
+			// Start TX CWID, prepare for ANALOG
+			if (trxGetMode() != RADIO_MODE_ANALOG)
+			{
+				trxSetModeAndBandwidth(RADIO_MODE_ANALOG, false);
+				trxSetTxCTCSS(65535);
+			}
+
+			enableTransmission();
+
+			trxSelectVoiceChannel(AT1846_VOICE_CHANNEL_TONE1);
+			GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1);
+			GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 1);
+		}
+
+		// CWID has been TXed, restore DIGITAL
+		if (cwpoLen == 0U)
+		{
+			disableTransmission();
+
+			if (trxIsTransmitting)
+			{
+				// Stop TXing;
+				trxIsTransmitting = false;
+				trx_setRX();
+				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
+
+				if (trxGetMode() == RADIO_MODE_ANALOG)
+				{
+					trxSetModeAndBandwidth(RADIO_MODE_DIGITAL, false);
+					trxSelectVoiceChannel(AT1846_VOICE_CHANNEL_MIC);
+					GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
+				}
+			}
+
+			cwKeying = false;
+		}
+	}
+
 }

@@ -20,7 +20,7 @@
  *
  * Translators: SQ7PTE
  *
- * Rev: 4.3
+ * Rev: 4.5
  */
 #ifndef USER_INTERFACE_LANGUAGES_POLISH_H_
 #define USER_INTERFACE_LANGUAGES_POLISH_H_
@@ -39,9 +39,9 @@ const stringsTable_t polishLanguage =
 .menu					= "Spis", // MaxLen: 16
 .credits				= "Wspóˆtwórcy", // MaxLen: 16
 .zone					= "Strefy", // MaxLen: 16
-.rssi					= "Moc sygnaˆu", // MaxLen: 16
+.rssi					= "Sygnaˆ", // MaxLen: 16
 .battery				= "Bateria", // MaxLen: 16
-.contacts				= "Kontakt", // MaxLen: 16
+.contacts				= "Kontakty", // MaxLen: 16
 .firmware_info				= "Wersja programu", // MaxLen: 16
 .last_heard				= "Ostatnio aktywne", // MaxLen: 16
 .options				= "Opcje", // MaxLen: 16
@@ -69,17 +69,17 @@ const stringsTable_t polishLanguage =
 .user_dmr_id				= "ID u’ytkownika", // MaxLen: 15
 .contact 				= "Kontakt", // MaxLen: 15
 .accept_call				= "Zaakceptowa‚?", // MaxLen: 16
-.private_call				= "Prywatne.", // MaxLen: 16
+.private_call				= "Prywatne", // MaxLen: 16
 .squelch				= "Squelch", // MaxLen: 8
 .quick_menu 				= "Szybkie menu", // MaxLen: 16
 .filter					= "Filtr", // MaxLen: 7 (with ':' + settings: .none, "CC", "CC,TS", "CC,TS,TG")
-.all_channels				= "Wszystkie Kanaˆy", // MaxLen: 16
+.all_channels				= "Wszystkie", // MaxLen: 16
 .gotoChannel				= "Id do",  // MaxLen: 11 (" 1024")
 .scan					= "Skanowanie", // MaxLen: 16
 .channelToVfo				= "Kanaˆ --> VFO", // MaxLen: 16
 .vfoToChannel				= "VFO --> Kanaˆ", // MaxLen: 16
 .group					= "Grupa", // MaxLen: 16 (with .type)
-.private				= "Prywatne", // MaxLen: 16 (with .type)
+.private				= "Prywatny", // MaxLen: 16 (with .type)
 .all					= "Wszystko", // MaxLen: 16 (with .type)
 .type					= "Typ", // MaxLen: 16 (with .type)
 .timeSlot				= "Time Slot", // MaxLen: 16 (plus ':' and  .none, '1' or '2')
@@ -90,7 +90,7 @@ const stringsTable_t polishLanguage =
 .pc					= "PC", // MaxLen: 8
 .ts					= "TS", // MaxLen: 8
 .mode					= "Tryb",  // MaxLen: 12
-.colour_code				= "Kolor Kodu", // MaxLen: 16 (with ':' * .n_a)
+.colour_code				= "Kolor kodu", // MaxLen: 16 (with ':' * .n_a)
 .n_a					= "N/A",// MaxLen: 16 (with ':' * .colour_code)
 .bandwidth				= "Pasmo", // MaxLen: 16 (with ':' + .n_a, "25kHz" or "12.5kHz")
 .stepFreq				= "Krok", // MaxLen: 7 (with ':' + xx.xxkHz fitted)
@@ -132,7 +132,7 @@ const stringsTable_t polishLanguage =
 .select_tx				= "Wybierz TX", // MaxLen: 16
 .edit_contact				= "Edytuj kontakt", // MaxLen: 16
 .delete_contact				= "Usu‹ kontakt", // MaxLen: 16
-.group_call				= "Lista kontaktów", // MaxLen: 16
+.group_call				= "Grupy", // MaxLen: 16
 .all_call				= "‡„cze wszystkich", // MaxLen: 16
 .tone_scan				= "Skan tonu.",//// MaxLen: 16
 .cc_scan				= "Skan CC",//// MaxLen: 16
@@ -140,7 +140,7 @@ const stringsTable_t polishLanguage =
 .Auto					= "Automat", // MaxLen 16 (with .mode + ':')
 .manual					= "Manualny",  // MaxLen 16 (with .mode + ':') 
 .ptt_toggle				= "Staˆe PTT", // MaxLen 16 (with ':' + .on or .off)
-.private_call_handling			= "Zezwól na PC", // MaxLen 16 (with ':' + .on ot .off)
+.private_call_handling  = "Zezwól PC", // MaxLen 16 (with ':' + .on ot .off)
 };
 /********************************************************************
  *
