@@ -2466,7 +2466,7 @@ static void handleHotspotRequest(void)
 				if (err == 0U)
 				{
 					cwKeying = true;
-					cwNextPeriod = PITCounter - 1;
+					cwNextPeriod = PITCounter + 5000;
 					sendACK();
 				}
 				else
