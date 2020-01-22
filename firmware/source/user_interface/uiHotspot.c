@@ -845,6 +845,7 @@ static void hotspotExit(void)
 		if (cwKeying)
 		{
 			cwReset();
+			cwKeying = false;
 		}
 	}
 
@@ -1143,7 +1144,7 @@ static bool getEmbeddedData(volatile const uint8_t *com_requestbuffer)
 		startedEmbeddedSearch = true;
 	}
 
-	if (DMREmbeddedData_addData((uint8_t *)com_requestbuffer + 4, lcss))
+	if (DMREmbeddedData_addData((uint8_t *)com_requestbuffer + MMDVM_HEADER_LENGTH, lcss))
 	{
 		//DMRLC_T lc;
 
@@ -1151,8 +1152,6 @@ static bool getEmbeddedData(volatile const uint8_t *com_requestbuffer)
 
 		if (res)
 		{
-			lastHeardListUpdate(hotspotTxLC, true);
-
 			if (overriddenLCAvailable) // We can send fake talker aliases.
 			{
 				if (trxDMRID != oldTrxDMRID)
@@ -1869,7 +1868,7 @@ static uint8_t setFreq(volatile const uint8_t* data, uint8_t length)
 		return 4U;
 	}
 
-	  // satellite frequencies banned frequency ranges
+	// satellite frequencies banned frequency ranges
 	const int BAN1_MIN  = 14580000;
 	const int BAN1_MAX  = 14600000;
 	const int BAN2_MIN  = 43500000;
@@ -2347,9 +2346,12 @@ static uint8_t handleCWID(volatile const uint8_t *data, uint8_t length)
 	cwpoLen = 3U; // Silence at the beginning
 	cwpoPtr = 0U;
 
-	for (uint8_t i = 0U; i < length; i++) {
-		for (uint8_t j = 0U; CW_SYMBOL_LIST[j].c != 0U; j++) {
-			if (CW_SYMBOL_LIST[j].c == data[i]) {
+	for (uint8_t i = 0U; i < length; i++)
+	{
+		for (uint8_t j = 0U; CW_SYMBOL_LIST[j].c != 0U; j++)
+		{
+			if (CW_SYMBOL_LIST[j].c == data[i])
+			{
 				uint32_t MASK = 0x80000000U;
 
 				for (uint8_t k = 0U; k < CW_SYMBOL_LIST[j].length; k++, cwpoLen++, MASK >>= 1)
