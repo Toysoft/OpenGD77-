@@ -843,7 +843,14 @@ void menuUtilityRenderHeader(void)
 
 	if (menuChannelModeIsScanning() || menuVFOModeIsScanning())
 	{
-		if ((fw_millis() - blinkTime) > 250)
+		int blinkPeriod = 1000;
+		if (modeInverted)
+		{
+			blinkPeriod = 500;
+		}
+
+
+		if ((fw_millis() - blinkTime) > blinkPeriod)
 		{
 			blinkTime = fw_millis();
 			modeInverted = !modeInverted;
