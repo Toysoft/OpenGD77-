@@ -1058,13 +1058,13 @@ static void sendVoiceHeaderLC_Frame(volatile const uint8_t *receivedDMRDataAndAu
 		return;
 	}
 
-	rxedDMR_LC = lc;
-
 	// Encode the src and dst Ids etc
 	if (!DMRFullLC_encode(&lc, frameData + MMDVM_HEADER_LENGTH, DT_VOICE_LC_HEADER)) // Encode the src and dst Ids etc
 	{
 		return;
 	}
+
+	rxedDMR_LC = lc;
 
 	DMREmbeddedData_setLC(&lc);
 	for (uint8_t i = 0U; i < 8U; i++)
@@ -1378,6 +1378,8 @@ static uint8_t hotspotModeReceiveNetFrame(volatile const uint8_t *com_requestbuf
 		{
 			//SEGGER_RTT_printf(0, "Net frame LC_decodOK:%d FID:%d FLCO:%d PF:%d R:%d dstId:%d src:Id:%d options:0x%02x\n",lcDecodeOK,lc.FID,lc.FLCO,lc.PF,lc.R,lc.dstId,lc.srcId,lc.options);
 			memcpy(hotspotTxLC, lc.rawData, 9);//Hotspot uses LC Data bytes rather than the src and dst ID's for the embed data
+
+			lastHeardListUpdate(hotspotTxLC, true);
 
 			// the Src and Dst Id's have been sent, and we are in RX mode then an incoming Net normally arrives next
 			//SEGGER_RTT_printf(0,"hospot state %d -> HOTSPOT_STATE_TX_BUFFERING\n");
