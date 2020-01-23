@@ -28,11 +28,7 @@ extern const int CUTOFF_VOLTAGE_UPPER_HYST;
 extern const int CUTOFF_VOLTAGE_LOWER_HYST;
 extern const int BATTERY_MAX_VOLTAGE;
 
-extern volatile uint32_t adc_channel;
 extern volatile uint32_t adc0_dp0;
-extern volatile uint32_t adc0_dp1;
-extern volatile uint32_t adc0_dp2;
-extern volatile uint32_t adc0_dp3;
 
 void trigger_adc(void);
 void adc_init(void);
