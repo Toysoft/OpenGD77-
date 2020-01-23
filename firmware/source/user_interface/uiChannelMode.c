@@ -191,7 +191,9 @@ static void searchNextChannel(void) {
 		channel = currentZone.channels[nextChannelIndex];
 	}
 
-	if( (currentZone.NOT_IN_MEMORY_isAllChannelsZone && (channelNextChannelData.flag4 & 0x10)) || (!currentZone.NOT_IN_MEMORY_isAllChannelsZone && (channelNextChannelData.flag4 & 0x20))) {
+	if ((currentZone.NOT_IN_MEMORY_isAllChannelsZone && (channelNextChannelData.flag4 & 0x10)) ||
+			(!currentZone.NOT_IN_MEMORY_isAllChannelsZone && (channelNextChannelData.flag4 & 0x20)))
+	{
 		return;
 	}
 	else
@@ -217,7 +219,7 @@ static void searchNextChannel(void) {
 
 static void setNextChannel(void)
 {
-	if (strcmp(currentZoneName, currentLanguage->all_channels) == 0)
+	if (currentZone.NOT_IN_MEMORY_isAllChannelsZone)
 	{
 		nonVolatileSettings.currentChannelIndexInAllZone = nextChannelIndex;
 	}
@@ -239,8 +241,7 @@ static void setNextChannel(void)
 
 static void loadChannelData(bool useChannelDataInMemory)
 {
-
-	if (strcmp(currentZoneName, currentLanguage->all_channels) == 0)
+	if (currentZone.NOT_IN_MEMORY_isAllChannelsZone)
 	{
 		settingsCurrentChannelNumber = nonVolatileSettings.currentChannelIndexInAllZone;
 	}
@@ -251,7 +252,7 @@ static void loadChannelData(bool useChannelDataInMemory)
 
 	if (!useChannelDataInMemory)
 	{
-		if (strcmp(currentZoneName,currentLanguage->all_channels) == 0)
+		if (currentZone.NOT_IN_MEMORY_isAllChannelsZone)
 		{
 			codeplugChannelGetDataForIndex(nonVolatileSettings.currentChannelIndexInAllZone, &channelScreenChannelData);
 		}
@@ -366,7 +367,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				}
 				else
 				{
-					if (strcmp(currentZoneName,currentLanguage->all_channels) == 0)
+					if (currentZone.NOT_IN_MEMORY_isAllChannelsZone)
 					{
 						channelNumber=nonVolatileSettings.currentChannelIndexInAllZone;
 						if (directChannelNumber>0)
