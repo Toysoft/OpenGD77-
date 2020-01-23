@@ -130,8 +130,20 @@ int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 				if ((ev->time - m) > RSSI_UPDATE_COUNTER_RELOAD)
 				{
 					m = ev->time;
-					drawRSSIBarGraph();
-					ucRenderRows(1,2);// Only render the second row which contains the bar graph, as there is no need to redraw the rest of the screen
+
+					if (uiChannelModeScanActive && (scanState == SCAN_PAUSED))
+					{
+						ucClearRows(0, 2, false);
+						menuUtilityRenderHeader();
+					}
+					else
+					{
+						drawRSSIBarGraph();
+					}
+
+					// Only render the second row which contains the bar graph, if we're not scanning,
+					// as there is no need to redraw the rest of the screen
+					ucRenderRows(((uiChannelModeScanActive && (scanState == SCAN_PAUSED)) ? 0 : 1), 2);
 				}
 			}
 
