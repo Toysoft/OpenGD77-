@@ -826,6 +826,8 @@ void menuUtilityRenderHeader(void)
 	const int Y_OFFSET = 2;
 	static const int bufferLen = 17;
 	char buffer[bufferLen];
+	static bool modeInverted = true;
+	static uint32_t blinkTime = 0;
 
 	if (!trxIsTransmitting)
 	{
@@ -839,6 +841,18 @@ void menuUtilityRenderHeader(void)
 		}
 	}
 
+	if (menuChannelModeIsScanning() || menuVFOModeIsScanning())
+	{
+		if ((fw_millis() - blinkTime) > 250)
+		{
+			blinkTime = fw_millis();
+			modeInverted = !modeInverted;
+		}
+	}
+	else
+	{
+		modeInverted = false;
+	}
 
 	switch(trxGetMode())
 	{
@@ -860,16 +874,15 @@ void menuUtilityRenderHeader(void)
 			{
 				strcat(buffer,"R");
 			}
-			ucPrintAt(0, Y_OFFSET, buffer, FONT_6x8);
+			ucPrintCore(0, Y_OFFSET, buffer, FONT_6x8, TEXT_ALIGN_LEFT, modeInverted);
 			break;
+
 		case RADIO_MODE_DIGITAL:
-
-
 			if (settingsUsbMode != USB_MODE_HOTSPOT)
 			{
 //				(trxGetMode() == RADIO_MODE_DIGITAL && settingsPrivateCallMuteMode == true)?" MUTE":"");// The location that this was displayed is now used for the power level
+				ucPrintCore(0, Y_OFFSET, "DMR", ((nonVolatileSettings.hotspotType != HOTSPOT_TYPE_OFF) ? FONT_6x8_BOLD : FONT_6x8), TEXT_ALIGN_LEFT, modeInverted);
 
-				ucPrintAt(0, Y_OFFSET, "DMR", ((nonVolatileSettings.hotspotType != HOTSPOT_TYPE_OFF) ? FONT_6x8_BOLD : FONT_6x8));
 				snprintf(buffer, bufferLen, "%s%d", currentLanguage->ts, trxGetDMRTimeSlot() + 1);
 				buffer[bufferLen - 1] = 0;
 				if (nonVolatileSettings.dmrFilterLevel < DMR_FILTER_TS)
