@@ -396,13 +396,6 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 						ucPrintCentered(50, (char *)nameBuf, FONT_6x8);
 					}
 				}
-
-				if (uiChannelModeScanActive)
-				{
-					strcpy(buffer, "Z");
-					ucFillRect(41, 1, 7, 9, false);
-					ucPrintCore(42, 2, buffer, FONT_6x8, TEXT_ALIGN_LEFT, true);// Display scanning indicator
-				}
 			}
 
 			if (!displayChannelSettings)
