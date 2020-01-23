@@ -892,7 +892,7 @@ void menuUtilityRenderHeader(void)
 				}
 				else
 				{
-					ucPrintCore(22, Y_OFFSET, buffer, FONT_6x8, TEXT_ALIGN_LEFT, modeInverted);
+					ucPrintCore(22, Y_OFFSET, buffer, FONT_6x8, TEXT_ALIGN_LEFT, false);
 //					if (nonVolatileSettings.tsManualOverride != 0)
 //					{
 //						ucFillRect(34, Y_OFFSET, 7, 8, false);
