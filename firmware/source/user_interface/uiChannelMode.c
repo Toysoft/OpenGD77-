@@ -165,9 +165,9 @@ uint16_t byteSwap16(uint16_t in)
 #endif
 
 static void searchNextChannel(void) {
-	bool allZones = strcmp(currentZoneName,currentLanguage->all_channels) == 0;
+	//bool allZones = strcmp(currentZoneName,currentLanguage->all_channels) == 0;
 	int channel = 0;
-	if (allZones)
+	if (currentZone.NOT_IN_MEMORY_isAllChannelsZone)
 	{
 		do {
 			nextChannelIndex++;
@@ -191,7 +191,7 @@ static void searchNextChannel(void) {
 		channel = currentZone.channels[nextChannelIndex];
 	}
 
-	if( (allZones && (channelNextChannelData.flag4 & 0x10)) || (!allZones && (channelNextChannelData.flag4 & 0x20))) {
+	if( (currentZone.NOT_IN_MEMORY_isAllChannelsZone && (channelNextChannelData.flag4 & 0x10)) || (!currentZone.NOT_IN_MEMORY_isAllChannelsZone && (channelNextChannelData.flag4 & 0x20))) {
 		return;
 	}
 	else
@@ -592,7 +592,7 @@ static void handleEvent(uiEvent_t *ev)
 		{
 			if (directChannelNumber>0)
 			{
-				if(strcmp(currentZoneName,currentLanguage->all_channels) == 0)
+				if(currentZone.NOT_IN_MEMORY_isAllChannelsZone)
 				{
 					if (codeplugChannelIndexIsValid(directChannelNumber))
 					{
@@ -857,7 +857,7 @@ static void handleEvent(uiEvent_t *ev)
 			else
 			{
 				lastHeardClearLastID();
-				if (strcmp(currentZoneName, currentLanguage->all_channels)==0)
+				if (currentZone.NOT_IN_MEMORY_isAllChannelsZone)
 				{
 					do
 					{
@@ -892,7 +892,7 @@ static void handleEvent(uiEvent_t *ev)
 			if (keyval < 10)
 			{
 				directChannelNumber = (directChannelNumber*10) + keyval;
-				if (strcmp(currentZoneName, currentLanguage->all_channels)==0)
+				if (currentZone.NOT_IN_MEMORY_isAllChannelsZone)
 				{
 					if(directChannelNumber>1024)
 					{
@@ -936,7 +936,7 @@ static void handleUpKey(uiEvent_t *ev)
 	else
 	{
 		lastHeardClearLastID();
-		if (strcmp(currentZoneName,currentLanguage->all_channels) == 0)
+		if (currentZone.NOT_IN_MEMORY_isAllChannelsZone)
 		{
 			do
 			{
@@ -1117,7 +1117,7 @@ static void startScan(void)
 	menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
 
 	//get current channel index
-	if (strcmp(currentZoneName,currentLanguage->all_channels) == 0)
+	if (currentZone.NOT_IN_MEMORY_isAllChannelsZone)
 	{
 		nextChannelIndex = nonVolatileSettings.currentChannelIndexInAllZone;
 	}
