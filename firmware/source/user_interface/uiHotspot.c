@@ -515,7 +515,7 @@ static void updateScreen(uint8_t rxCommandState)
 		{
 			if (cwKeying)
 			{
-				sprintf(buffer, "%s", "TX CW");
+				sprintf(buffer, "%s", "Tx CW ID");
 				ucPrintCentered(16, buffer, FONT_8x16);
 			}
 			else
