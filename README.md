@@ -1,46 +1,32 @@
 # OpenGD77
-New GD-77 open source firmware written from scratch.
+Open source firmware for the Radioddity GD-77 dual band DMR / FM handheld transceiever, for Amateur Radio use.
+
+Note. The AMBE codec used by DMR is not open source. This firmware uses binary sections from the official firmware for the AMBE encoding and decoding functions. However all other parts of the code are open source
 
 # Project status
 
-The project is currently in a stabilizing phase and on feature freeze. Please see the road map below for details.
-This is to make sure that we use our development time in a coordinated way and make the most of it. Please keep in mind that the project is run on our free time.
+The firmware is relatively stable and provides DMR and FM audio transmission and reception, as well as a DMR hotspot mode.
+However it does currently support some core functionality that the official firmware supports, including sending and receiving of text messages, or Dual Capacity Direct operation, or Dual Watch operation etc
 
-Your contribution is welcome in all areas. But please understand that in the current phase our priority is on testing, bug reports and bug fixes. Ideas for changes and/or features will get recorded but have to wait for now.
-If you want to contribute coding please get in touch first, so we can coordinate the work. To keep integration efforts manageable we need to follow a development process.
+Not all functionality provided in the official firmware is likely ever to be part of this firmware, because some features like encryption are explicitly prohibited for Amateur Radio operators.
 
-# Road map
-- Tests / fix bugs.
-- Stabilize / refactor.
-- Implement TX tier 2.
-- Implement hotspot mode.
+Some functionality like Dual Watch may also not ever be implemented, because its equivalent to the Channel / Zone scan function.
 
-# Long term goals
-- Rework the core system and its architecture.
-- Implement internal reference test system.
-- Improve overall UI concept. 
 
-# Details
-firmware:
-  Most current development version.
 
-firmware_binaries:
-  Firmware SGL binaries ready for flashing.
+The project is under active development by several developers. 
+New developers are welcome to participate, but currently the focus is still on getting the core functionality working and existing bugs fixed.
+This does not mean that new non-core functionality changes will be rejected, but bug fixes and core functionality PR's  will take priority
 
-ComTool:
-  Tool to communicate with the firmware using an USB COM port.
-
-ComTool_Binary:
-  Precompiled executable for ComTool.
-
-OpenGD77CommDriver:
-  Windows comm port driver installer
 
 # Credits
-Conceived & developed by Kai DG4KLU with help from Roger VK3KYY and Colin G4EML.
+Originally conceived by Kai DG4KLU.
+Further development by Roger VK3KYY, latterly assisted by Daniel F1RMB, Alex DL4LEX, Colin G4EML and others.
+
+Current lead developer and source code gatekeeper is Roger VK3KYY
 
 # License
-This software is licenced under the GPL v2 and is intended for amateur and educational use only.
+This software is licenced under the GPL v2 and is intended for Amateur Radio and educational use only.
 
 Use of this software for commercial purposes is strictly forbidden.
 

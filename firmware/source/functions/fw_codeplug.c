@@ -154,6 +154,7 @@ void codeplugZoneGetDataForNumber(int zoneNum, struct_codeplugZone_t *returnBuf)
 			returnBuf->channels[i]=0;
 		}
 		returnBuf->NOT_IN_MEMORY_numChannelsInZone=0;
+		returnBuf->NOT_IN_MEMORY_isAllChannelsZone = true;
 	}
 	else
 	{
@@ -189,7 +190,7 @@ void codeplugZoneGetDataForNumber(int zoneNum, struct_codeplugZone_t *returnBuf)
 
 		// IMPORTANT. read size is different from the size of the data, because I added a extra property to the struct to hold the number of channels in the zone.
 		EEPROM_Read(CODEPLUG_ADDR_EX_ZONE_LIST + (foundIndex  * (16 + (2 * codeplugChannelsPerZone))), (uint8_t*)returnBuf, sizeof(struct_codeplugZone_t));
-
+		returnBuf->NOT_IN_MEMORY_isAllChannelsZone = false;
 		for(int i=0;i<codeplugChannelsPerZone;i++)
 		{
 			// Empty channels seem to be filled with zeros
@@ -200,6 +201,7 @@ void codeplugZoneGetDataForNumber(int zoneNum, struct_codeplugZone_t *returnBuf)
 			}
 		}
 		returnBuf->NOT_IN_MEMORY_numChannelsInZone=codeplugChannelsPerZone;
+
 	}
 }
 

@@ -33,7 +33,8 @@ typedef struct struct_codeplugZone
 {
 	char name[16];
 	uint16_t channels[80];// 16 for the original codeplug, but set this to  80 to allow for the new codeplug zones format
-	int	NOT_IN_MEMORY_numChannelsInZone;// NOT IN THE
+	int	NOT_IN_MEMORY_numChannelsInZone;// This property is not part of the codeplug data, its initialised by the code
+	int	NOT_IN_MEMORY_isAllChannelsZone;// This property is not part of the codeplug data, its initialised by the code
 }
 struct_codeplugZone_t;
 

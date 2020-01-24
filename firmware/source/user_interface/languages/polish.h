@@ -20,7 +20,7 @@
  *
  * Translators: SQ7PTE
  *
- * Rev: 4.5
+ * Rev: 4.6
  */
 #ifndef USER_INTERFACE_LANGUAGES_POLISH_H_
 #define USER_INTERFACE_LANGUAGES_POLISH_H_
@@ -49,7 +49,7 @@ const stringsTable_t polishLanguage =
 .channel_details			= "Detale kanaˆu", // MaxLen: 16
 .new_contact				= "Nowy kontakt", // MaxLen: 16
 .contact_list				= "Lista kontaktów", // MaxLen: 16
-.hotspot_mode				= "Tryb Hotspot", // MaxLen: 16
+.hotspot_mode				= "Tryb HotSpot", // MaxLen: 16
 .contact_details			= "Detale kontaktu", // MaxLen: 16
 .built					= "Kompilacja", // MaxLen: 16
 .zones					= "Strefy", // MaxLen: 16
@@ -71,18 +71,18 @@ const stringsTable_t polishLanguage =
 .accept_call				= "Zaakceptowa‚?", // MaxLen: 16
 .private_call				= "Prywatne", // MaxLen: 16
 .squelch				= "Squelch", // MaxLen: 8
-.quick_menu 				= "Szybkie menu", // MaxLen: 16
+.quick_menu 				= "Szybki spis", // MaxLen: 16
 .filter					= "Filtr", // MaxLen: 7 (with ':' + settings: .none, "CC", "CC,TS", "CC,TS,TG")
 .all_channels				= "Wszystkie", // MaxLen: 16
 .gotoChannel				= "Id do",  // MaxLen: 11 (" 1024")
 .scan					= "Skanowanie", // MaxLen: 16
-.channelToVfo				= "Kanaˆ --> VFO", // MaxLen: 16
-.vfoToChannel				= "VFO --> Kanaˆ", // MaxLen: 16
+.channelToVfo				= "Kanaˆ ---> VFO", // MaxLen: 16
+.vfoToChannel				= "VFO ---> Kanaˆ", // MaxLen: 16
 .group					= "Grupa", // MaxLen: 16 (with .type)
 .private				= "Prywatny", // MaxLen: 16 (with .type)
 .all					= "Wszystko", // MaxLen: 16 (with .type)
 .type					= "Typ", // MaxLen: 16 (with .type)
-.timeSlot				= "Time Slot", // MaxLen: 16 (plus ':' and  .none, '1' or '2')
+.timeSlot				= "TimeSlot", // MaxLen: 16 (plus ':' and  .none, '1' or '2')
 .none					= "Brak", // MaxLen: 16 (with .timeSlot, "Rx CTCSS:" and ""Tx CTCSS:", and .filter)
 .contact_saved				= "Zapisz kontakt", // MaxLen: 16
 .duplicate				= "Duplikat", // MaxLen: 16
@@ -102,11 +102,11 @@ const stringsTable_t polishLanguage =
 .no					= "Nie", // MaxLen: 16 (with ':' + .zone_skip, .all_skip or .factory_reset)
 .rx_group				= "Rx Grup", // MaxLen: 16 (with ':' and codeplug group name)
 .on					= "Wˆ.", // MaxLen: 16 (with ':' + .calibration or .band_limits)
-.timeout_beep				= "Czas bip", // MaxLen: 16 (with ':' + .off or 5..20)
+.timeout_beep				= "Czas bipa", // MaxLen: 16 (with ':' + .off or 5..20)
 .factory_reset				= "Reset", // MaxLen: 16 (with ':' + .yes or .no)
 .calibration				= "Kalibracja", // MaxLen: 16 (with ':' + .on or .off)
 .band_limits				= "Limit pasma", // MaxLen: 16 (with ':' + .on or .off)
-.beep_volume				= "Gˆos bip", // MaxLen: 16 (with ':' + -24..6 + 'dB')
+.beep_volume				= "Gˆos bipa", // MaxLen: 16 (with ':' + -24..6 + 'dB')
 .dmr_mic_gain				= "Mikrofon", // MaxLen: 16 (with ':' + -33..12 + 'dB')
 .key_long				= "Key dˆugi", // MaxLen: 11 (with ':' + x.xs fitted)
 .key_repeat				= "Key krótki", // MaxLen: 11 (with ':' + x.xs fitted)
