@@ -129,7 +129,7 @@ M: 2020-01-07 09:52:15.246 DMR Slot 2, received network end of voice transmissio
 
 #define MMDVM_HEADER_LENGTH  4U
 
-#define HOTSPOT_VERSION_STRING "OpenGD77 Hotspot v0.0.83"
+#define HOTSPOT_VERSION_STRING "OpenGD77 Hotspot v0.0.84"
 #define concat(a, b) a " GitID #" b ""
 static const char HARDWARE[] = concat(HOTSPOT_VERSION_STRING, GITVERSION);
 
@@ -300,7 +300,7 @@ static const uint8_t BIT_MASK_TABLE[] = {0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04
 static const uint32_t cwDOTDuration = (10U * 60U); // 60ms per DOT
 static uint32_t cwNextPeriod = 0;
 
-static uint8_t cwBuffer[300U];
+static uint8_t cwBuffer[64U];
 static uint16_t cwpoLen;
 static uint16_t cwpoPtr;
 static bool cwKeying = false;
@@ -684,25 +684,40 @@ static void updateScreen(uint8_t rxCommandState)
 		{
 			snprintf(buffer, 22U, "%s", &HOTSPOT_VERSION_STRING[16]);
 			buffer[21U] = 0;
-			ucPrintCentered(16 + (displayFWVersion ? 4 : 0), buffer, (displayFWVersion ? FONT_6x8 : FONT_8x16));
+			ucPrintCentered(16 + 4, buffer, FONT_6x8);
 		}
 		else
 		{
-			updateContactLine(16);
+			if (cwKeying)
+			{
+				sprintf(buffer, "%s", "TX CW");
+				ucPrintCentered(16, buffer, FONT_8x16);
+			}
+			else
+			{
+				updateContactLine(16);
+			}
 		}
 #else
 		buffer[0] = 0;
 #endif
 
-		if ((trxTalkGroupOrPcId & 0xFF000000) == 0)
+		if (cwKeying)
 		{
-			snprintf(buffer, bufferLen, "TG %d", trxTalkGroupOrPcId & 0xFFFFFF);
+			buffer[0] = 0;
 		}
 		else
 		{
-			snprintf(buffer, bufferLen, "PC %d", trxTalkGroupOrPcId & 0xFFFFFF);
+			if ((trxTalkGroupOrPcId & 0xFF000000) == 0)
+			{
+				snprintf(buffer, bufferLen, "TG %d", trxTalkGroupOrPcId & 0xFFFFFF);
+			}
+			else
+			{
+				snprintf(buffer, bufferLen, "PC %d", trxTalkGroupOrPcId & 0xFFFFFF);
+			}
+			buffer[bufferLen - 1] = 0;
 		}
-		buffer[bufferLen - 1] = 0;
 
 #if !defined(DEBUG_HS_SCREEN)
 		ucPrintCentered(32, buffer, FONT_8x16);
@@ -2360,7 +2375,7 @@ static uint8_t handleCWID(volatile const uint8_t *data, uint8_t length)
 
 					WRITE_BIT1(cwBuffer, cwpoLen, b);
 
-					if (cwpoLen >= (sizeof(cwBuffer) - 3U)) // Will overflow otherwise
+					if (cwpoLen >= ((sizeof(cwBuffer) * 8) - 3U)) // Will overflow otherwise
 					{
 						cwpoLen = 0U;
 						return 4U;
@@ -2649,6 +2664,8 @@ static void handleHotspotRequest(void)
 			trxSelectVoiceChannel(AT1846_VOICE_CHANNEL_TONE1);
 			GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1);
 			GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 1);
+
+			updateScreen(HOTSPOT_RX_IDLE);
 		}
 
 		// CWID has been TXed, restore DIGITAL
@@ -2672,6 +2689,7 @@ static void handleHotspotRequest(void)
 			}
 
 			cwKeying = false;
+			updateScreen(HOTSPOT_RX_IDLE);
 		}
 	}
 
