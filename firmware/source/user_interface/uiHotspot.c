@@ -2375,7 +2375,7 @@ static uint8_t handleCWID(volatile const uint8_t *data, uint8_t length)
 
 					WRITE_BIT1(cwBuffer, cwpoLen, b);
 
-					if (cwpoLen >= (sizeof(cwBuffer) - 3U)) // Will overflow otherwise
+					if (cwpoLen >= ((sizeof(cwBuffer) * 8) - 3U)) // Will overflow otherwise
 					{
 						cwpoLen = 0U;
 						return 4U;
