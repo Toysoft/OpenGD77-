@@ -300,7 +300,7 @@ static const uint8_t BIT_MASK_TABLE[] = {0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04
 static const uint32_t cwDOTDuration = (10U * 60U); // 60ms per DOT
 static uint32_t cwNextPeriod = 0;
 
-static uint8_t cwBuffer[300U];
+static uint8_t cwBuffer[64U];
 static uint16_t cwpoLen;
 static uint16_t cwpoPtr;
 static bool cwKeying = false;
