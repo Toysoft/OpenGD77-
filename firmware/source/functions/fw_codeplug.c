@@ -446,6 +446,24 @@ int codeplugContactGetDataForNumber(int number, int callType, struct_codeplugCon
 	return pos;
 }
 
+int codeplugContactIndexByTGorPCFast(int tgorpc, int callType)
+{
+	struct_codeplugContact_t contact;
+
+	for (int i = 1; i <= 1024; i++)
+	{
+		if (codeplugContactGetDataForIndexFast(i, &contact))
+		{
+			if ((contact.name[0] != 0xff) && (contact.tgNumber == tgorpc) && (contact.callType == callType))
+			{
+				return i;
+			}
+		}
+	}
+
+	return 0;
+}
+
 int codeplugContactIndexByTGorPC(int tgorpc, int callType, struct_codeplugContact_t *contact)
 {
 	for (int i = 1; i <= 1024; i++)
@@ -493,24 +511,46 @@ int codeplugContactGetFreeIndex(void)
 	return (found == true) ? i : 0;
 }
 
-bool codeplugContactGetDataForIndex(int index, struct_codeplugContact_t *contact)
+bool codeplugContactGetDataForIndexFast(int index, struct_codeplugContact_t *contact)
 {
-	if (index>0 && index<=1024)
+	if ((index >= 1) && (index <= 1024))
 	{
 		index--;
-		SPI_Flash_read(CODEPLUG_ADDR_CONTACTS + index* CODEPLUG_CONTACT_DATA_LEN,(uint8_t *)contact, CODEPLUG_CONTACT_DATA_LEN);
-		contact->NOT_IN_CODEPLUGDATA_indexNumber = index+1;
+
+		// first byte of contact name
+		SPI_Flash_read((CODEPLUG_ADDR_CONTACTS + (index * CODEPLUG_CONTACT_DATA_LEN)), (uint8_t *)contact, 1U);
+		// TG number + 1 byte for callType
+		SPI_Flash_read((CODEPLUG_ADDR_CONTACTS + (index * CODEPLUG_CONTACT_DATA_LEN)) + 16U, (uint8_t *)contact + 16U, 5U);
+
+		//contact->NOT_IN_CODEPLUGDATA_indexNumber = index+1;
 		contact->tgNumber = bcd2int(byteSwap32(contact->tgNumber));
+
 		return true;
 	}
-	else
+
+	return false;
+}
+
+bool codeplugContactGetDataForIndex(int index, struct_codeplugContact_t *contact)
+{
+	if ((index >= 1) && (index <= 1024))
 	{
-		// If an invalid contact number has been requested, return a TG 9 contact
-		contact->tgNumber = 9;
-		contact->reserve1=0xff;
-		codeplugUtilConvertStringToBuf("TG 9",contact->name,16);
-		return false;
+		index--;
+
+		SPI_Flash_read((CODEPLUG_ADDR_CONTACTS + (index * CODEPLUG_CONTACT_DATA_LEN)), (uint8_t *)contact, CODEPLUG_CONTACT_DATA_LEN);
+
+		contact->NOT_IN_CODEPLUGDATA_indexNumber = index + 1;
+		contact->tgNumber = bcd2int(byteSwap32(contact->tgNumber));
+
+		return true;
 	}
+
+	// If an invalid contact number has been requested, return a TG 9 contact
+	contact->tgNumber = 9;
+	contact->reserve1 = 0xff;
+	codeplugUtilConvertStringToBuf("TG 9", contact->name, 16);
+
+	return false;
 }
 
 int codeplugContactSaveDataForIndex(int index, struct_codeplugContact_t *contact)

@@ -572,13 +572,19 @@ bool dmrIDLookup(int targetId, dmrIdDataStruct_t *foundRecord)
 bool contactIDLookup(uint32_t id, int calltype, char *buffer)
 {
 	struct_codeplugContact_t contact;
+	int index;
 
-	int contactIndex = codeplugContactIndexByTGorPC((id & 0x00FFFFFF), calltype, &contact);
-	if (contactIndex != 0)
+	if ((index = codeplugContactIndexByTGorPCFast((id & 0x00FFFFFF), calltype)) > 0)
 	{
-		codeplugUtilConvertBufToString(contact.name, buffer, 16);
-		return true;
+		// Get data for contact @ index;
+		if (codeplugContactGetDataForIndex(index, &contact))
+		{
+			codeplugUtilConvertBufToString(contact.name, buffer, 16);
+
+			return true;
+		}
 	}
+
 	return false;
 }
 

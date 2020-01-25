@@ -121,6 +121,7 @@ uint32_t bcd2int(uint32_t in);
 int int2bcd(int i);
 
 void codeplugRxGroupGetDataForIndex(int index, struct_codeplugRxGroup_t *rxGroupBuf);
+bool codeplugContactGetDataForIndexFast(int index, struct_codeplugContact_t *contact);
 bool codeplugContactGetDataForIndex(int index, struct_codeplugContact_t *contact);
 void codeplugDTMFContactGetDataForIndex(struct_codeplugDTMFContactList_t *contactList);
 int codeplugGetUserDMRID(void);
@@ -134,6 +135,7 @@ bool codeplugChannelSaveDataForIndex(int index, struct_codeplugChannel_t *channe
 
 int codeplugContactsGetCount(int callType);
 int codeplugContactGetDataForNumber(int number, int callType, struct_codeplugContact_t *contact);
+int codeplugContactIndexByTGorPCFast(int tgorpc, int callType);
 int codeplugContactIndexByTGorPC(int tgorpc, int callType, struct_codeplugContact_t *contact);
 int codeplugContactSaveDataForIndex(int index, struct_codeplugContact_t *contact);
 int codeplugContactGetFreeIndex(void);
