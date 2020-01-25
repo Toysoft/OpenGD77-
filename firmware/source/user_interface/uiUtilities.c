@@ -866,7 +866,7 @@ void menuUtilityRenderQSOData(void)
 			}
 			else
 			{
-				displayContactTextInfos(LinkHead->contact, sizeof(LinkHead->contact), false);
+				displayContactTextInfos(LinkHead->contact, sizeof(LinkHead->contact), true);
 			}
 		}
 	}
