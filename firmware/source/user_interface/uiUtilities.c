@@ -545,7 +545,7 @@ bool dmrIDLookup(int targetId, dmrIdDataStruct_t *foundRecord)
 	{
 		m = (l + r) >> 1;
 
-		SPI_Flash_read((DMRID_MEMORY_STORAGE_START + DMRID_HEADER_LENGTH) + (recordLenth * m), (uint8_t *)foundRecord->id, sizeof(int));
+		SPI_Flash_read((DMRID_MEMORY_STORAGE_START + DMRID_HEADER_LENGTH) + (recordLenth * m), (uint8_t *)foundRecord, 4U);
 
 		if (foundRecord->id < targetIdBCD)
 		{
@@ -559,7 +559,7 @@ bool dmrIDLookup(int targetId, dmrIdDataStruct_t *foundRecord)
 			}
 			else
 			{
-				SPI_Flash_read((DMRID_MEMORY_STORAGE_START + DMRID_HEADER_LENGTH) + (recordLenth * m), (uint8_t *)foundRecord->text, (recordLenth - sizeof(int)));
+				SPI_Flash_read((DMRID_MEMORY_STORAGE_START + DMRID_HEADER_LENGTH) + (recordLenth * m) + 4U, (uint8_t *)foundRecord + 4U, (recordLenth - 4U));
 				return true;
 			}
 		}
