@@ -66,6 +66,7 @@ const int VFO_FREQ_STEP_TABLE[8] = {250,500,625,1000,1250,2500,3000,5000};
 const int CODEPLUG_MAX_VARIABLE_SQUELCH = 21;
 const int CODEPLUG_MIN_VARIABLE_SQUELCH = 1;
 
+
 uint32_t byteSwap32(uint32_t n)
 {
     return ((((n)&0x000000FFU) << 24U) | (((n)&0x0000FF00U) << 8U) | (((n)&0x00FF0000U) >> 8U) | (((n)&0xFF000000U) >> 24U));// from usb_misc.h
@@ -411,35 +412,42 @@ void codeplugRxGroupGetDataForIndex(int index, struct_codeplugRxGroup_t *rxGroup
 	rxGroupBuf->NOT_IN_MEMORY_numTGsInGroup = i;
 }
 
+typedef struct
+{
+	uint32_t tgOrPCNum;
+	uint16_t index;
+} codeplugContactCache_t;
+int codeplugNumTGContacts;
+int codeplugNumPCContacts;
+__attribute__((section(".data.$RAM2"))) codeplugContactCache_t codeplugContactsLookupCache[1024];
+
 int codeplugContactsGetCount(int callType) // 0:TG 1:PC
 {
-	struct_codeplugContact_t contact;
-	int numContacts=0;
-
-	for (int i = 1; i <= 1024; i++)
+	if (callType == CONTACT_CALLTYPE_PC)
 	{
-		codeplugContactGetDataForIndex(i, &contact);
-		if (contact.name[0] != 0xff && contact.callType == callType) {
-			numContacts++;
-		}
+		return codeplugNumPCContacts;
 	}
-	return numContacts;
+	else
+	{
+		return codeplugNumTGContacts;
+	}
 }
 
 int codeplugContactGetDataForNumber(int number, int callType, struct_codeplugContact_t *contact)
 {
 	int pos = 0;
 
-	for (int i = 1; i <= 1024; i++)
+	for (int i = 0; i < 1024; i++)
 	{
-		codeplugContactGetDataForIndex(i, contact);
-		if (contact->name[0] != 0xff && contact->callType == callType)
+		if ((codeplugContactsLookupCache[i].tgOrPCNum>>24) == callType)
 		{
 			number--;
 		}
+
 		if (number == 0)
 		{
-			pos = i;
+			codeplugContactGetDataForIndex(codeplugContactsLookupCache[i].index, contact);
+			pos = i+1;
 			break;
 		}
 	}
@@ -448,49 +456,118 @@ int codeplugContactGetDataForNumber(int number, int callType, struct_codeplugCon
 
 int codeplugContactIndexByTGorPC(int tgorpc, int callType, struct_codeplugContact_t *contact)
 {
-	for (int i = 1; i <= 1024; i++)
+	int numContacts =  codeplugNumTGContacts + codeplugNumPCContacts;
+	for (int i = 0; i < numContacts; i++)
 	{
-		codeplugContactGetDataForIndex(i, contact);
-		if (contact->name[0] != 0xff && contact->tgNumber == tgorpc && contact->callType == callType)
+		if ((codeplugContactsLookupCache[i].tgOrPCNum&0xFFFFFF) == tgorpc && (codeplugContactsLookupCache[i].tgOrPCNum>>24) == callType)
 		{
+			codeplugContactGetDataForIndex(codeplugContactsLookupCache[i].index, contact);
 			return i;
 		}
 	}
 	return 0;
 }
 
-bool codeplugContactGetRXGroup(int index)
+void codeplugInitContactsCache(void)
 {
-	struct_codeplugRxGroup_t rxGroupBuf;
-	int i;
+	struct_codeplugContact_t contact;
+	int codeplugNumContacts=0;
+	codeplugNumTGContacts=0;
+	codeplugNumPCContacts=0;
 
-	for (i = 1; i <= 76; i++) {
-		codeplugRxGroupGetDataForIndex(i, &rxGroupBuf);
-		for (int j = 0; j<32; j++) {
-			if (rxGroupBuf.contacts[j] == index) {
-				return true;
+	for(int i=0;i<1024;i++)
+	{
+		SPI_Flash_read((CODEPLUG_ADDR_CONTACTS + (i * CODEPLUG_CONTACT_DATA_LEN)), (uint8_t *)&contact, 16+4+1);// Name + TG/ID + Call type
+		if (contact.name[0]!=0xFF)
+		{
+			codeplugContactsLookupCache[codeplugNumContacts].tgOrPCNum = bcd2int(byteSwap32(contact.tgNumber));
+			codeplugContactsLookupCache[codeplugNumContacts].index=i+1;// Contacts are numbered from 1 to 1024
+			codeplugContactsLookupCache[codeplugNumContacts].tgOrPCNum |= (contact.callType<<24);// Store the call type in the upper byte
+			if (contact.callType == CONTACT_CALLTYPE_PC)
+			{
+				codeplugNumPCContacts++;
 			}
+			else
+			{
+				codeplugNumTGContacts++;
+			}
+			codeplugNumContacts++;
 		}
 	}
-	return false;
 }
+
+void codeplugContactsCacheInsertContactAt(int index, struct_codeplugContact_t *contact)
+{
+	if (contact->callType == CONTACT_CALLTYPE_PC)
+	{
+		codeplugNumPCContacts++;
+	}
+	else
+	{
+		codeplugNumTGContacts++;
+	}
+	int numContacts =  codeplugNumTGContacts + codeplugNumPCContacts;
+	for(int i = 0;i < numContacts - 1;i++)
+	{
+		if(codeplugContactsLookupCache[i].index < index && codeplugContactsLookupCache[i+1].index > index)
+		{
+			// Note . Need to use memmove as the source and destination overlap.
+			memmove(&codeplugContactsLookupCache[i+2],&codeplugContactsLookupCache[i+1],(numContacts - 2 - i) *sizeof(codeplugContactCache_t));
+
+			codeplugContactsLookupCache[i+1].tgOrPCNum = bcd2int(byteSwap32(contact->tgNumber));
+			codeplugContactsLookupCache[i+1].index=index;// Contacts are numbered from 1 to 1024
+			codeplugContactsLookupCache[i+1].tgOrPCNum |= (contact->callType<<24);// Store the call type in the upper byte
+			return;
+		}
+	}
+}
+
+void codeplugContactsCacheRemoveContactAt(int index)
+{
+	int numContacts =  codeplugNumTGContacts + codeplugNumPCContacts;
+	for(int i=0;i<numContacts;i++)
+	{
+		if(codeplugContactsLookupCache[i].index == index)
+		{
+			if ((codeplugContactsLookupCache[i].tgOrPCNum>>24) == CONTACT_CALLTYPE_PC)
+			{
+				codeplugNumPCContacts--;
+			}
+			else
+			{
+				codeplugNumTGContacts--;
+			}
+			// Note memcpy should work here, because memcpy normally copys from the lowest memory location upwards
+			memcpy(&codeplugContactsLookupCache[i],&codeplugContactsLookupCache[i+1],(numContacts - 1 - i) *sizeof(codeplugContactCache_t));
+			return;
+		}
+	}
+}
+
+
 
 int codeplugContactGetFreeIndex(void)
 {
 	int i;
-	bool found = false;
-	struct_codeplugContact_t contact;
+	int lastIndex=0;
 
-	for (i = 1; i <= 1024; i++)
+	int numContacts =  codeplugNumTGContacts + codeplugNumPCContacts;
+
+	for (i = 0; i < numContacts; i++)
 	{
-		codeplugContactGetDataForIndex(i, &contact);
-		if (contact.name[0] == 0xff)
+		if (codeplugContactsLookupCache[i].index!=lastIndex+1)
 		{
-			found = true;
-			break;
+			return lastIndex+1;
 		}
+		lastIndex = codeplugContactsLookupCache[i].index;
 	}
-	return (found == true) ? i : 0;
+
+	if (i < 1023)
+	{
+		return codeplugContactsLookupCache[i].index+1;
+	}
+
+	return 0;
 }
 
 bool codeplugContactGetDataForIndex(int index, struct_codeplugContact_t *contact)
@@ -583,7 +660,32 @@ int codeplugContactSaveDataForIndex(int index, struct_codeplugContact_t *contact
 		}
 
 	}
+	if (contact->name[0]==0xff || contact->callType == 0xFF)
+	{
+		codeplugContactsCacheRemoveContactAt(index+1);// index was decremented at the start of the function
+	}
+	else
+	{
+		codeplugContactsCacheInsertContactAt(index+1,contact);
+		//initCodeplugContactsCache();// Update the cache
+	}
 	return retVal;
+}
+
+bool codeplugContactGetRXGroup(int index)
+{
+	struct_codeplugRxGroup_t rxGroupBuf;
+	int i;
+
+	for (i = 1; i <= 76; i++) {
+		codeplugRxGroupGetDataForIndex(i, &rxGroupBuf);
+		for (int j = 0; j<32; j++) {
+			if (rxGroupBuf.contacts[j] == index) {
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 void codeplugDTMFContactGetDataForIndex(struct_codeplugDTMFContactList_t *contactList)
@@ -725,4 +827,3 @@ int codeplugGetQuickkeyFunctionID(int key)
 
 	return functionId;
 }
-

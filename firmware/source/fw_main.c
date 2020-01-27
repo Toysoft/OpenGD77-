@@ -22,6 +22,7 @@
 #include <user_interface/uiLocalisation.h>
 #include "fw_main.h"
 #include "fw_settings.h"
+#include "fw_codeplug.h"
 
 
 #if defined(USE_SEGGER_RTT)
@@ -148,6 +149,7 @@ void fw_main_task(void *data)
 #endif
 
     lastheardInitList();
+    codeplugInitContactsCache();
     menuInitMenuSystem();
 
     while (1U)
