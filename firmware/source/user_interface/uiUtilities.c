@@ -102,7 +102,7 @@ void lastheardInitList(void)
 {
     LinkHead = callsList;
 
-    for(int i=0;i<NUM_LASTHEARD_STORED;i++)
+    for(int i = 0; i < NUM_LASTHEARD_STORED; i++)
     {
     	callsList[i].id = 0;
         callsList[i].talkGroupOrPcId = 0;
@@ -110,37 +110,42 @@ void lastheardInitList(void)
         callsList[i].talkerAlias[0] = 0;
         callsList[i].locator[0] = 0;
         callsList[i].time = 0;
-        if (i==0)
+
+        if (i == 0)
         {
-            callsList[i].prev=NULL;
+            callsList[i].prev = NULL;
+            callsList[i].id = trxDMRID;
+            callsList[i].self = true;
         }
         else
         {
-            callsList[i].prev=&callsList[i-1];
+            callsList[i].prev = &callsList[i - 1];
+            callsList[i].self = false;
         }
-        if (i<(NUM_LASTHEARD_STORED-1))
+
+        if (i < (NUM_LASTHEARD_STORED - 1))
         {
-            callsList[i].next=&callsList[i+1];
+            callsList[i].next = &callsList[i + 1];
         }
         else
         {
-            callsList[i].next=NULL;
+            callsList[i].next = NULL;
         }
     }
 }
 
-LinkItem_t * findInList(int id)
+LinkItem_t *lastheardFindInList(uint32_t id)
 {
     LinkItem_t *item = LinkHead;
 
-    while(item->next!=NULL)
+    while (item->next != NULL)
     {
-        if (item->id==id)
+        if (item->id == id)
         {
             // found it
             return item;
         }
-        item=item->next;
+        item = item->next;
     }
     return NULL;
 }
@@ -384,6 +389,41 @@ static void updateLHItem(LinkItem_t *item)
 	}
 }
 
+void lastHeardUpdateForSelf(void)
+{
+	LinkItem_t *item = lastheardFindInList(trxDMRID);
+
+	if ((item != NULL) && item->self)
+	{
+		item->talkGroupOrPcId = trxTalkGroupOrPcId;
+		updateLHItem(item);
+
+		if (item != LinkHead)
+		{
+			// not at top of the list
+			// Move this item to the top of the list
+			LinkItem_t *next = item->next;
+			LinkItem_t *prev = item->prev;
+
+			// set the previous item to skip this item and link to 'items' next item.
+			prev->next = next;
+
+			if (item->next != NULL)
+			{
+				// not the last in the list
+				next->prev = prev;// backwards link the next item to the item before us in the list.
+			}
+
+			item->next = LinkHead;// link our next item to the item at the head of the list
+
+			LinkHead->prev = item;// backwards link the hold head item to the item moving to the top of the list.
+
+			item->prev = NULL;// change the items prev to NULL now we are at teh top of the list
+			LinkHead = item;// Change the global for the head of the link to the item that is to be at the top of the list.
+		}
+	}
+}
+
 bool lastHeardListUpdate(uint8_t *dmrDataBuffer, bool forceOnHotspot)
 {
 	static uint8_t bufferTA[32];
@@ -407,7 +447,7 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer, bool forceOnHotspot)
 				retVal = true;// something has changed
 				lastID = id;
 
-				LinkItem_t *item = findInList(id);
+				LinkItem_t *item = lastheardFindInList(id);
 
 				if (item != NULL)
 				{
@@ -461,7 +501,7 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer, bool forceOnHotspot)
 
 					// need to use the last item in the list as the new item at the top of the list.
 					// find last item in the list
-					while(item->next != NULL )
+					while(item->next != NULL)
 					{
 						item = item->next;
 					}
@@ -495,7 +535,7 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer, bool forceOnHotspot)
 			{
 				if (lastTG != talkGroupOrPcId)
 				{
-					LinkItem_t *item = findInList(id);
+					LinkItem_t *item = lastheardFindInList(id);
 
 					if (item != NULL)
 					{
@@ -651,17 +691,12 @@ bool dmrIDLookup(int targetId, dmrIdDataStruct_t *foundRecord)
 bool contactIDLookup(uint32_t id, int calltype, char *buffer)
 {
 	struct_codeplugContact_t contact;
-	int index;
 
-	if ((index = codeplugContactIndexByTGorPCFast((id & 0x00FFFFFF), calltype)) > 0)
+	int contactIndex = codeplugContactIndexByTGorPC((id & 0x00FFFFFF), calltype, &contact);
+	if (contactIndex != 0)
 	{
-		// Get data for contact @ index;
-		if (codeplugContactGetDataForIndex(index, &contact))
-		{
-			codeplugUtilConvertBufToString(contact.name, buffer, 16);
-
-			return true;
-		}
+		codeplugUtilConvertBufToString(contact.name, buffer, 16);
+		return true;
 	}
 
 	return false;

@@ -21,7 +21,7 @@
 #include <functions/fw_settings.h>
 #include "fw_common.h"
 
-#define NUM_LASTHEARD_STORED 16
+#define NUM_LASTHEARD_STORED 17 // 16 + one for self
 extern const int QSO_TIMER_TIMEOUT;
 extern const int TX_TIMER_Y_OFFSET;
 extern const int CONTACT_Y_POS;
@@ -46,6 +46,7 @@ typedef struct LinkItem
     char 		talkerAlias[32];// 4 blocks of data. 6 bytes + 7 bytes + 7 bytes + 7 bytes . plus 1 for termination some more for safety.
     char 		locator[7];
     uint32_t	time;// current system time when this station was heard
+    bool        self;
     struct LinkItem *next;
 } LinkItem_t;
 
@@ -73,7 +74,9 @@ bool dmrIDLookup(int targetId, dmrIdDataStruct_t *foundRecord);
 bool contactIDLookup(uint32_t id, int calltype, char *buffer);
 void menuUtilityRenderQSOData(void);
 void menuUtilityRenderHeader(void);
+LinkItem_t *lastheardFindInList(uint32_t id);
 void lastheardInitList(void);
+void lastHeardUpdateForSelf(void);
 bool lastHeardListUpdate(uint8_t *dmrDataBuffer, bool forceOnHotspot);
 void lastHeardClearLastID(void);
 void drawRSSIBarGraph(void);
