@@ -80,9 +80,7 @@ typedef struct
 	codeplugContactCache_t contactsLookupCache[1024];
 } codeplugContactsCache_t;
 
-//__attribute__((section(".data.$RAM2")))
-codeplugContactsCache_t codeplugContactsCache;
-
+__attribute__((section(".data.$RAM2"))) codeplugContactsCache_t codeplugContactsCache;
 
 
 uint32_t byteSwap32(uint32_t n)
