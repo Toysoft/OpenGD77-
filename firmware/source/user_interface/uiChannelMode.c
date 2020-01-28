@@ -1040,7 +1040,6 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 			case CH_SCREEN_QUICK_MENU_SCAN:
 				startScan();
 				menuSystemPopPreviousMenu();
-				return;
 				break;
 			case CH_SCREEN_QUICK_MENU_COPY2VFO:
 				memcpy(&settingsVFOChannel[nonVolatileSettings.currentVFONumber].rxFreq,&channelScreenChannelData.rxFreq,sizeof(struct_codeplugChannel_t) - 16);// Don't copy the name of channel, which are in the first 16 bytes
