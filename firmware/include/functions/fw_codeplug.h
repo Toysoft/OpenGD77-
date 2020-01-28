@@ -29,7 +29,7 @@ extern int codeplugChannelsPerZone;
 
 enum CONTACT_CALLTYPE_SELECT { CONTACT_CALLTYPE_TG=0, CONTACT_CALLTYPE_PC, CONTACT_CALLTYPE_ALL };
 
-typedef struct
+typedef struct struct_codeplugZone
 {
 	char name[16];
 	uint16_t channels[80];// 16 for the original codeplug, but set this to  80 to allow for the new codeplug zones format
@@ -38,7 +38,7 @@ typedef struct
 }
 struct_codeplugZone_t;
 
-typedef struct
+typedef struct struct_codeplugChannel
 {
 	char name[16];
 	uint32_t rxFreq;
@@ -73,14 +73,14 @@ typedef struct
 	uint8_t sql;// Does not seem to be used in the official firmware and seems to be always set to 0
 } struct_codeplugChannel_t;
 
-typedef struct
+typedef struct struct_codeplugRxGroup
 {
 	char name[16];
 	uint16_t contacts[32];
 	int	NOT_IN_MEMORY_numTGsInGroup;// NOT IN THE
 } struct_codeplugRxGroup_t;
 
-typedef struct
+typedef struct struct_codeplugContact
 {
 	char 		name[16];
 	uint32_t 	tgNumber;
@@ -91,13 +91,13 @@ typedef struct
 	int         NOT_IN_CODEPLUGDATA_indexNumber;
 } struct_codeplugContact_t;
 
-typedef struct
+typedef struct struct_codeplugDTMFContact
 {
 	char name[16];
 	uint8_t code[16];
 } struct_codeplugDTMFContact_t;
 
-typedef struct
+typedef struct struct_codeplugDTMFContactList
 {
 	struct_codeplugDTMFContact_t contacts[32];
 	int numContacts;
@@ -121,7 +121,6 @@ uint32_t bcd2int(uint32_t in);
 int int2bcd(int i);
 
 void codeplugRxGroupGetDataForIndex(int index, struct_codeplugRxGroup_t *rxGroupBuf);
-bool codeplugContactGetDataForIndexFast(int index, struct_codeplugContact_t *contact);
 bool codeplugContactGetDataForIndex(int index, struct_codeplugContact_t *contact);
 void codeplugDTMFContactGetDataForIndex(struct_codeplugDTMFContactList_t *contactList);
 int codeplugGetUserDMRID(void);
@@ -135,7 +134,6 @@ bool codeplugChannelSaveDataForIndex(int index, struct_codeplugChannel_t *channe
 
 int codeplugContactsGetCount(int callType);
 int codeplugContactGetDataForNumber(int number, int callType, struct_codeplugContact_t *contact);
-int codeplugContactIndexByTGorPCFast(int tgorpc, int callType);
 int codeplugContactIndexByTGorPC(int tgorpc, int callType, struct_codeplugContact_t *contact);
 int codeplugContactSaveDataForIndex(int index, struct_codeplugContact_t *contact);
 int codeplugContactGetFreeIndex(void);
