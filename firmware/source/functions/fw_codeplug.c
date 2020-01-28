@@ -80,7 +80,8 @@ typedef struct
 	codeplugContactCache_t contactsLookupCache[1024];
 } codeplugContactsCache_t;
 
-__attribute__((section(".data.$RAM2"))) codeplugContactsCache_t codeplugContactsCache;
+//__attribute__((section(".data.$RAM2")))
+codeplugContactsCache_t codeplugContactsCache;
 
 
 
@@ -509,6 +510,8 @@ void codeplugInitContactsCache(void)
 void codeplugContactsCacheUpdateOrInsertContactAt(int index, struct_codeplugContact_t *contact)
 {
 	int numContacts =  codeplugContactsCache.numTGContacts + codeplugContactsCache.numPCContacts;
+	int numContactsMinus1 = numContacts-1;
+
 	for(int i = 0;i < numContacts;i++)
 	{
 		// Check if the contact is already in the cache, and is being modified
@@ -536,7 +539,7 @@ void codeplugContactsCacheUpdateOrInsertContactAt(int index, struct_codeplugCont
 		}
 		else
 		{
-			if(codeplugContactsCache.contactsLookupCache[i].index < index && codeplugContactsCache.contactsLookupCache[i+1].index > index)
+			if(i < numContactsMinus1 && codeplugContactsCache.contactsLookupCache[i].index < index && codeplugContactsCache.contactsLookupCache[i+1].index > index)
 			{
 				if (contact->callType == CONTACT_CALLTYPE_PC)
 				{
@@ -559,6 +562,23 @@ void codeplugContactsCacheUpdateOrInsertContactAt(int index, struct_codeplugCont
 			}
 		}
 	}
+
+	// Did not find the index in the cache or a gap between 2 existing indexes. So the new contact needs to be added to the end of the cache
+
+	if (contact->callType == CONTACT_CALLTYPE_PC)
+	{
+		codeplugContactsCache.numPCContacts++;
+	}
+	else
+	{
+		codeplugContactsCache.numTGContacts++;
+	}
+
+	// Note. We can use numContacts as the the index as the array is zero indexed but the number of contacts is starts from 1
+	// Hence is already in some ways pre incremented in terms of being an array index
+	codeplugContactsCache.contactsLookupCache[numContacts].tgOrPCNum = bcd2int(byteSwap32(contact->tgNumber));
+	codeplugContactsCache.contactsLookupCache[numContacts].index=index;// Contacts are numbered from 1 to 1024
+	codeplugContactsCache.contactsLookupCache[numContacts].tgOrPCNum |= (contact->callType<<24);// Store the call type in the upper byte
 }
 
 void codeplugContactsCacheRemoveContactAt(int index)
@@ -583,8 +603,6 @@ void codeplugContactsCacheRemoveContactAt(int index)
 	}
 }
 
-
-
 int codeplugContactGetFreeIndex(void)
 {
 	int i;
@@ -601,9 +619,9 @@ int codeplugContactGetFreeIndex(void)
 		lastIndex = codeplugContactsCache.contactsLookupCache[i].index;
 	}
 
-	if (i < 1023)
+	if (i < 1024)
 	{
-		return codeplugContactsCache.contactsLookupCache[i].index+1;
+		return codeplugContactsCache.contactsLookupCache[i-1].index+1;
 	}
 
 	return 0;
