@@ -93,37 +93,34 @@ void menuLastHeardUpdateScreen(bool showTitleOrHeader, bool displayDetails)
 
 	while((item != NULL) && (item->id != 0))
 	{
-		if (item->self == false)
+		if (dmrIDLookup(item->id, &foundRecord))
 		{
-			if (dmrIDLookup(item->id, &foundRecord))
+			menuLastHeardDisplayTA(16 + (numDisplayed * 16), foundRecord.text, item->time, now, item->talkGroupOrPcId, 20, displayDetails);
+		}
+		else
+		{
+			if (item->talkerAlias[0] != 0x00)
 			{
-				menuLastHeardDisplayTA(16 + (numDisplayed * 16), foundRecord.text, item->time, now, item->talkGroupOrPcId, 20, displayDetails);
+				menuLastHeardDisplayTA(16 + (numDisplayed * 16), item->talkerAlias, item->time, now, item->talkGroupOrPcId, 32, displayDetails);
 			}
 			else
 			{
-				if (item->talkerAlias[0] != 0x00)
-				{
-					menuLastHeardDisplayTA(16 + (numDisplayed * 16), item->talkerAlias, item->time, now, item->talkGroupOrPcId, 32, displayDetails);
-				}
-				else
-				{
-					char buffer[17];
+				char buffer[17];
 
-					snprintf(buffer, 17, "ID:%d", item->id);
-					buffer[16] = 0;
-					menuLastHeardDisplayTA(16 + (numDisplayed * 16), buffer, item->time, now, item->talkGroupOrPcId, 17, displayDetails);
-				}
+				snprintf(buffer, 17, "ID:%d", item->id);
+				buffer[16] = 0;
+				menuLastHeardDisplayTA(16 + (numDisplayed * 16), buffer, item->time, now, item->talkGroupOrPcId, 17, displayDetails);
 			}
-
-			numDisplayed++;
 		}
+
+		numDisplayed++;
 
 		item = item->next;
 		if (numDisplayed > (LAST_HEARD_NUM_LINES_ON_DISPLAY - 1))
 		{
 			if ((item != NULL) && (item->id != 0))
 			{
-				gMenusEndIndex = (item->self != true) ? 1 : 0;
+				gMenusEndIndex = 1;
 			}
 			else
 			{

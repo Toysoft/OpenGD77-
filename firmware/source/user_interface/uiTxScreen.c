@@ -44,8 +44,6 @@ int menuTxScreen(uiEvent_t *ev, bool isFirstRun)
 
 		if ((currentChannelData->flag4 & 0x04) == 0x00 && (trxCheckFrequencyInAmateurBand(currentChannelData->txFreq) || nonVolatileSettings.txFreqLimited == false))
 		{
-			lastHeardUpdateForSelf();
-
 			nextSecondPIT = PITCounter + PIT_COUNTS_PER_SECOND;
 			timeInSeconds = currentChannelData->tot*15;
 

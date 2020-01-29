@@ -176,14 +176,6 @@ static void handleEvent(uiEvent_t *ev)
 			}
 			else
 			{
-				LinkItem_t *item = lastheardFindInList(trxDMRID);
-
-				// Update DMRId entry for self
-				if ((item != NULL) && item->self)
-				{
-					item->id = tmpID;
-				}
-
 				trxDMRID = tmpID;
 				if (ev->buttons & BUTTON_SK2)
 				{

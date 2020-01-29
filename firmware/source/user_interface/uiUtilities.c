@@ -100,38 +100,35 @@ int32_t getFirstSpacePos(char *str)
 
 void lastheardInitList(void)
 {
-    LinkHead = callsList;
+	LinkHead = callsList;
 
-    for(int i = 0; i < NUM_LASTHEARD_STORED; i++)
-    {
-    	callsList[i].id = 0;
-        callsList[i].talkGroupOrPcId = 0;
-        callsList[i].contact[0] = 0;
-        callsList[i].talkerAlias[0] = 0;
-        callsList[i].locator[0] = 0;
-        callsList[i].time = 0;
+	for(int i = 0; i < NUM_LASTHEARD_STORED; i++)
+	{
+		callsList[i].id = 0;
+		callsList[i].talkGroupOrPcId = 0;
+		callsList[i].contact[0] = 0;
+		callsList[i].talkerAlias[0] = 0;
+		callsList[i].locator[0] = 0;
+		callsList[i].time = 0;
 
-        if (i == 0)
-        {
-            callsList[i].prev = NULL;
-            callsList[i].id = trxDMRID;
-            callsList[i].self = true;
-        }
-        else
-        {
-            callsList[i].prev = &callsList[i - 1];
-            callsList[i].self = false;
-        }
+		if (i == 0)
+		{
+			callsList[i].prev = NULL;
+		}
+		else
+		{
+			callsList[i].prev = &callsList[i - 1];
+		}
 
-        if (i < (NUM_LASTHEARD_STORED - 1))
-        {
-            callsList[i].next = &callsList[i + 1];
-        }
-        else
-        {
-            callsList[i].next = NULL;
-        }
-    }
+		if (i < (NUM_LASTHEARD_STORED - 1))
+		{
+			callsList[i].next = &callsList[i + 1];
+		}
+		else
+		{
+			callsList[i].next = NULL;
+		}
+	}
 }
 
 LinkItem_t *lastheardFindInList(uint32_t id)
@@ -389,41 +386,6 @@ static void updateLHItem(LinkItem_t *item)
 	}
 }
 
-void lastHeardUpdateForSelf(void)
-{
-	LinkItem_t *item = lastheardFindInList(trxDMRID);
-
-	if ((item != NULL) && item->self)
-	{
-		item->talkGroupOrPcId = trxTalkGroupOrPcId;
-		updateLHItem(item);
-
-		if (item != LinkHead)
-		{
-			// not at top of the list
-			// Move this item to the top of the list
-			LinkItem_t *next = item->next;
-			LinkItem_t *prev = item->prev;
-
-			// set the previous item to skip this item and link to 'items' next item.
-			prev->next = next;
-
-			if (item->next != NULL)
-			{
-				// not the last in the list
-				next->prev = prev;// backwards link the next item to the item before us in the list.
-			}
-
-			item->next = LinkHead;// link our next item to the item at the head of the list
-
-			LinkHead->prev = item;// backwards link the hold head item to the item moving to the top of the list.
-
-			item->prev = NULL;// change the items prev to NULL now we are at teh top of the list
-			LinkHead = item;// Change the global for the head of the link to the item that is to be at the top of the list.
-		}
-	}
-}
-
 bool lastHeardListUpdate(uint8_t *dmrDataBuffer, bool forceOnHotspot)
 {
 	static uint8_t bufferTA[32];
@@ -449,17 +411,17 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer, bool forceOnHotspot)
 
 				LinkItem_t *item = lastheardFindInList(id);
 
+				// Already in the list
 				if (item != NULL)
 				{
-					// Already in the list
-					item->talkGroupOrPcId = talkGroupOrPcId;// update the TG in case they changed TG
+					if (item->talkGroupOrPcId != talkGroupOrPcId)
+					{
+						item->talkGroupOrPcId = talkGroupOrPcId; // update the TG in case they changed TG
+						updateLHItem(item);
+					}
+
 					item->time = fw_millis();
 					lastTG = talkGroupOrPcId;
-
-//					if (item->contact[0] == 0 || item->talkgroup[0] == 0)
-//					{
-//						updateLHItem(item);
-//					}
 
 					if (item == LinkHead)
 					{
@@ -847,7 +809,7 @@ void menuUtilityRenderQSOData(void)
 	/*
 	 * Note.
 	 * When using Brandmeister reflectors. TalkGroups can be used to select reflectors e.g. TG 4009, and TG 5000 to check the connnection
-	 * Under these conditions Brandmister seems to respond with a message via a private call even if the command was sent as a TalkGroup,
+	 * Under these conditions Brandmeister seems to respond with a message via a private call even if the command was sent as a TalkGroup,
 	 * and this caused the Private Message acceptance system to operate.
 	 * Brandmeister seems respond on the same ID as the keyed TG, so the code
 	 * (LinkHead->id & 0xFFFFFF) != (trxTalkGroupOrPcId & 0xFFFFFF)  is designed to stop the Private call system tiggering in these instances
@@ -864,7 +826,7 @@ void menuUtilityRenderQSOData(void)
 			ucPrintCentered(16, LinkHead->contact, FONT_8x16);
 			ucPrintCentered(32, currentLanguage->private_call, FONT_8x16);
 
-			if (LinkHead->talkGroupOrPcId != (trxDMRID | (PC_CALL_FLAG<<24)))
+			if (LinkHead->talkGroupOrPcId != (trxDMRID | (PC_CALL_FLAG << 24)))
 			{
 				ucPrintCentered(52, LinkHead->talkgroup, FONT_6x8);
 				ucPrintAt(1, 52, "=>", FONT_6x8);
@@ -884,8 +846,7 @@ void menuUtilityRenderQSOData(void)
 				ucPrintCentered(CONTACT_Y_POS, LinkHead->talkgroup, FONT_8x16);
 			}
 
-			// first check if we have this ID in the DMR ID data
-			// We don't have this ID, so try looking in the Talker alias data
+			// Talker Alias have the priority here
 			if (LinkHead->talkerAlias[0] != 0x00)
 			{
 				if (LinkHead->locator[0] != 0)
@@ -897,9 +858,11 @@ void menuUtilityRenderQSOData(void)
 					displayContactTextInfos(bufferTA, sizeof(bufferTA), true);
 				}
 				else
+				{
 					displayContactTextInfos(LinkHead->talkerAlias, sizeof(LinkHead->talkerAlias), true);
+				}
 			}
-			else
+			else // No TA, then use the one extracted from Codeplug or DMRIdDB
 			{
 				displayContactTextInfos(LinkHead->contact, sizeof(LinkHead->contact), true);
 			}
