@@ -37,7 +37,7 @@ static const int BAR_Y_POS = 10;
 
 static const int DMRID_MEMORY_STORAGE_START = 0x30000;
 static const int DMRID_HEADER_LENGTH = 0x0C;
-LinkItem_t callsList[NUM_LASTHEARD_STORED];
+__attribute__((section(".data.$RAM2"))) LinkItem_t callsList[NUM_LASTHEARD_STORED];
 LinkItem_t *LinkHead = callsList;
 int numLastHeard=0;
 int menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;

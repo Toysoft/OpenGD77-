@@ -33,7 +33,7 @@ typedef struct
 	bool     modified;
 } voltageCircularBuffer_t;
 
-voltageCircularBuffer_t batteryVoltageHistory;
+__attribute__((section(".data.$RAM2"))) voltageCircularBuffer_t batteryVoltageHistory;
 
 enum { BATTERY_LEVEL = 0, BATTERY_GRAPH };
 enum { GRAPH_FILL = 0, GRAPH_LINE };

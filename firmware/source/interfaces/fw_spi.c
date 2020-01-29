@@ -18,10 +18,10 @@
 
 #include "fw_spi.h"
 
-uint8_t spi_masterReceiveBuffer_SPI0[SPI_DATA_LENGTH] = {0};
-uint8_t SPI_masterSendBuffer_SPI0[SPI_DATA_LENGTH] = {0};
-uint8_t spi_masterReceiveBuffer_SPI1[SPI_DATA_LENGTH] = {0};
-uint8_t SPI_masterSendBuffer_SPI1[SPI_DATA_LENGTH] = {0};
+__attribute__((section(".data.$RAM2"))) uint8_t spi_masterReceiveBuffer_SPI0[SPI_DATA_LENGTH] = {0};
+__attribute__((section(".data.$RAM2"))) uint8_t SPI_masterSendBuffer_SPI0[SPI_DATA_LENGTH] = {0};
+__attribute__((section(".data.$RAM2"))) uint8_t spi_masterReceiveBuffer_SPI1[SPI_DATA_LENGTH] = {0};
+__attribute__((section(".data.$RAM2"))) uint8_t SPI_masterSendBuffer_SPI1[SPI_DATA_LENGTH] = {0};
 
 void init_SPI(void)
 {

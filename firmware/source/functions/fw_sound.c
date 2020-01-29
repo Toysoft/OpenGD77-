@@ -36,7 +36,7 @@ static volatile uint32_t runningMaxValue=0;
 static const int MIC_AVERAGE_COUNTER_RELOAD = 10;
 static volatile int micAudioAverageCounter = MIC_AVERAGE_COUNTER_RELOAD;
 
-int melody_generic[512];// Note. As we don't play long melodies, I think this value can be made smaller.
+__attribute__((section(".data.$RAM2"))) int melody_generic[512];// Note. As we don't play long melodies, I think this value can be made smaller.
 #define DIT_LENGTH  60
 #define DAH_LENGTH  3 * DIT_LENGTH
 //const int melody_poweron[] = { 440, 300, 466, 300, 494, 300, -1, -1 };
@@ -135,17 +135,17 @@ void fw_init_beep_task(void)
 				);
 }
 
-union sharedDataBuffer audioAndHotspotDataBuffer;
+__attribute__((section(".data.$RAM2"))) union sharedDataBuffer audioAndHotspotDataBuffer;
 
 volatile int  wavbuffer_read_idx;
 volatile int  wavbuffer_write_idx;
 volatile int wavbuffer_count;
 uint8_t *currentWaveBuffer;
 
-uint8_t spi_sound1[WAV_BUFFER_SIZE*2];
-uint8_t spi_sound2[WAV_BUFFER_SIZE*2];
-uint8_t spi_sound3[WAV_BUFFER_SIZE*2];
-uint8_t spi_sound4[WAV_BUFFER_SIZE*2];
+__attribute__((section(".data.$RAM2"))) uint8_t spi_sound1[WAV_BUFFER_SIZE*2];
+__attribute__((section(".data.$RAM2"))) uint8_t spi_sound2[WAV_BUFFER_SIZE*2];
+__attribute__((section(".data.$RAM2"))) uint8_t spi_sound3[WAV_BUFFER_SIZE*2];
+__attribute__((section(".data.$RAM2"))) uint8_t spi_sound4[WAV_BUFFER_SIZE*2];
 
 volatile bool g_TX_SAI_in_use = false;
 
