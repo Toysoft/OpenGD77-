@@ -481,9 +481,9 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer, bool forceOnHotspot)
 					item->time = fw_millis();
 					lastTG = talkGroupOrPcId;
 
-					memset(item->contact, 0, sizeof(item->contact));// Clear any TA data
-					memset(item->talkgroup, 0, sizeof(item->talkgroup));// Clear any TA data
-					memset(item->talkerAlias, 0, sizeof(item->talkerAlias));// Clear any TA data
+					memset(item->contact, 0, sizeof(item->contact)); // Clear contact's datas
+					memset(item->talkgroup, 0, sizeof(item->talkgroup));
+					memset(item->talkerAlias, 0, sizeof(item->talkerAlias));
 					memset(item->locator, 0, sizeof(item->locator));
 
 					updateLHItem(item);
