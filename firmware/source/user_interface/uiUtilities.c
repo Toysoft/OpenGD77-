@@ -107,6 +107,7 @@ void lastheardInitList(void)
 		callsList[i].id = 0;
 		callsList[i].talkGroupOrPcId = 0;
 		callsList[i].contact[0] = 0;
+		callsList[i].talkgroup[0] = 0;
 		callsList[i].talkerAlias[0] = 0;
 		callsList[i].locator[0] = 0;
 		callsList[i].time = 0;
