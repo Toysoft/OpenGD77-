@@ -1,7 +1,7 @@
 ![](media/OpenGD77-logo.png)
 
 # OpenGD77 User Guide
-(07 January 2020)
+OpenGD77 is a work-in-progress, so is this User Guide. Last major update was on 18th December 2019. For documentation ToDo (including incremental changes), please refer to https://github.com/jangelor/OpenGD77/wiki/Documentation-ToDo . For latest discussions, please refer to the development and community forum at https://opengd77.com .
 <!-- MDTOC maxdepth:6 firsth1:1 numbering:0 flatten:0 bullets:1 updateOnSave:1 -->
 
 - [OpenGD77 User Guide](#opengd77-user-guide)   
