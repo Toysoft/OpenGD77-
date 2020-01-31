@@ -331,16 +331,44 @@ static void updateLHItem(LinkItem_t *item)
 	if ((item->talkGroupOrPcId >> 24) == PC_CALL_FLAG)
 	{
 		// Its a Private call
-		if (contactIDLookup(item->id, CONTACT_CALLTYPE_PC, buffer) == true)
+		switch (nonVolatileSettings.contactDisplayPriority)
 		{
-			snprintf(item->contact, 16, "%s", buffer);
-			item->contact[16] = 0;
-		}
-		else
-		{
-			dmrIDLookup(item->id, &currentRec);
-			snprintf(item->contact, 16, "%s", currentRec.text);
-			item->contact[16] = 0;
+			case CONTACT_DISPLAY_PRIO_CC_DB_TA:
+			case CONTACT_DISPLAY_PRIO_TA_CC_DB:
+				if (contactIDLookup(item->id, CONTACT_CALLTYPE_PC, buffer) == true)
+				{
+					snprintf(item->contact, 16, "%s", buffer);
+					item->contact[16] = 0;
+				}
+				else
+				{
+					dmrIDLookup(item->id, &currentRec);
+					snprintf(item->contact, 16, "%s", currentRec.text);
+					item->contact[16] = 0;
+				}
+				break;
+
+			case CONTACT_DISPLAY_PRIO_DB_CC_TA:
+			case CONTACT_DISPLAY_PRIO_TA_DB_CC:
+				if (dmrIDLookup(item->id, &currentRec) == true)
+				{
+					snprintf(item->contact, 16, "%s", currentRec.text);
+					item->contact[16] = 0;
+				}
+				else
+				{
+					if (contactIDLookup(item->id, CONTACT_CALLTYPE_PC, buffer) == true)
+					{
+						snprintf(item->contact, 16, "%s", buffer);
+						item->contact[16] = 0;
+					}
+					else
+					{
+						snprintf(item->contact, 16, "%s", currentRec.text);
+						item->contact[16] = 0;
+					}
+				}
+				break;
 		}
 
 		if (item->talkGroupOrPcId != (trxDMRID | (PC_CALL_FLAG << 24)))
@@ -372,17 +400,44 @@ static void updateLHItem(LinkItem_t *item)
 			item->talkgroup[16] = 0;
 		}
 
-		// Contact
-		if (contactIDLookup(item->id, CONTACT_CALLTYPE_PC, buffer) == true)
+		switch (nonVolatileSettings.contactDisplayPriority)
 		{
-			snprintf(item->contact, 20, "%s", buffer);
-			item->contact[20] = 0;
-		}
-		else
-		{
-			dmrIDLookup((item->id & 0x00FFFFFF), &currentRec);
-			snprintf(item->contact, 20, "%s", currentRec.text);
-			item->contact[20] = 0;
+			case CONTACT_DISPLAY_PRIO_CC_DB_TA:
+			case CONTACT_DISPLAY_PRIO_TA_CC_DB:
+				if (contactIDLookup(item->id, CONTACT_CALLTYPE_PC, buffer) == true)
+				{
+					snprintf(item->contact, 20, "%s", buffer);
+					item->contact[20] = 0;
+				}
+				else
+				{
+					dmrIDLookup((item->id & 0x00FFFFFF), &currentRec);
+					snprintf(item->contact, 20, "%s", currentRec.text);
+					item->contact[20] = 0;
+				}
+				break;
+
+			case CONTACT_DISPLAY_PRIO_DB_CC_TA:
+			case CONTACT_DISPLAY_PRIO_TA_DB_CC:
+				if (dmrIDLookup((item->id & 0x00FFFFFF), &currentRec) == true)
+				{
+					snprintf(item->contact, 20, "%s", currentRec.text);
+					item->contact[20] = 0;
+				}
+				else
+				{
+					if (contactIDLookup(item->id, CONTACT_CALLTYPE_PC, buffer) == true)
+					{
+						snprintf(item->contact, 20, "%s", buffer);
+						item->contact[20] = 0;
+					}
+					else
+					{
+						snprintf(item->contact, 20, "%s", currentRec.text);
+						item->contact[20] = 0;
+					}
+				}
+				break;
 		}
 	}
 }
@@ -847,25 +902,55 @@ void menuUtilityRenderQSOData(void)
 				ucPrintCentered(CONTACT_Y_POS, LinkHead->talkgroup, FONT_8x16);
 			}
 
-			// Talker Alias have the priority here
-			if (LinkHead->talkerAlias[0] != 0x00)
+			switch (nonVolatileSettings.contactDisplayPriority)
 			{
-				if (LinkHead->locator[0] != 0)
-				{
-					char bufferTA[37]; // TA + ' [' + Maidenhead + ']' + NULL
+				case CONTACT_DISPLAY_PRIO_CC_DB_TA:
+				case CONTACT_DISPLAY_PRIO_DB_CC_TA:
+					// No contact found is codeplug and DMRIDs, use TA as fallback, if any.
+					if ((strncmp(LinkHead->contact, "ID:", 3) == 0) && (LinkHead->talkerAlias[0] != 0x00))
+					{
+						if (LinkHead->locator[0] != 0)
+						{
+							char bufferTA[37]; // TA + ' [' + Maidenhead + ']' + NULL
 
-					memset(bufferTA, 0, sizeof(bufferTA));
-					snprintf(bufferTA, 36, "%s [%s]", LinkHead->talkerAlias, LinkHead->locator);
-					displayContactTextInfos(bufferTA, sizeof(bufferTA), true);
-				}
-				else
-				{
-					displayContactTextInfos(LinkHead->talkerAlias, sizeof(LinkHead->talkerAlias), true);
-				}
-			}
-			else // No TA, then use the one extracted from Codeplug or DMRIdDB
-			{
-				displayContactTextInfos(LinkHead->contact, sizeof(LinkHead->contact), true);
+							memset(bufferTA, 0, sizeof(bufferTA));
+							snprintf(bufferTA, 36, "%s [%s]", LinkHead->talkerAlias, LinkHead->locator);
+							displayContactTextInfos(bufferTA, sizeof(bufferTA), true);
+						}
+						else
+						{
+							displayContactTextInfos(LinkHead->talkerAlias, sizeof(LinkHead->talkerAlias), true);
+						}
+					}
+					else
+					{
+						displayContactTextInfos(LinkHead->contact, sizeof(LinkHead->contact), true);
+					}
+					break;
+
+				case CONTACT_DISPLAY_PRIO_TA_CC_DB:
+				case CONTACT_DISPLAY_PRIO_TA_DB_CC:
+					// Talker Alias have the priority here
+					if (LinkHead->talkerAlias[0] != 0x00)
+					{
+						if (LinkHead->locator[0] != 0)
+						{
+							char bufferTA[37]; // TA + ' [' + Maidenhead + ']' + NULL
+
+							memset(bufferTA, 0, sizeof(bufferTA));
+							snprintf(bufferTA, 36, "%s [%s]", LinkHead->talkerAlias, LinkHead->locator);
+							displayContactTextInfos(bufferTA, sizeof(bufferTA), true);
+						}
+						else
+						{
+							displayContactTextInfos(LinkHead->talkerAlias, sizeof(LinkHead->talkerAlias), true);
+						}
+					}
+					else // No TA, then use the one extracted from Codeplug or DMRIdDB
+					{
+						displayContactTextInfos(LinkHead->contact, sizeof(LinkHead->contact), true);
+					}
+					break;
 			}
 		}
 	}

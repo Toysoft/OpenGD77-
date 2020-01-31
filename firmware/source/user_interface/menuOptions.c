@@ -30,7 +30,7 @@ enum OPTIONS_MENU_LIST { OPTIONS_MENU_TIMEOUT_BEEP=0,OPTIONS_MENU_FACTORY_RESET,
 							OPTIONS_MENU_SCAN_DELAY,OPTIONS_MENU_SCAN_MODE,
 							OPTIONS_MENU_SQUELCH_DEFAULT_VHF,OPTIONS_MENU_SQUELCH_DEFAULT_220MHz,OPTIONS_MENU_SQUELCH_DEFAULT_UHF,
 							OPTIONS_MENU_PTT_TOGGLE, OPTIONS_MENU_HOTSPOT_TYPE, OPTIONS_MENU_TALKER_ALIAS_TX,
-							OPTIONS_MENU_PRIVATE_CALLS, NUM_OPTIONS_MENU_ITEMS};
+							OPTIONS_MENU_PRIVATE_CALLS, OPTIONS_MENU_CONTACT_DISPLAY_ORDER, NUM_OPTIONS_MENU_ITEMS};
 
 int menuOptions(uiEvent_t *ev, bool isFirstRun)
 {
@@ -159,6 +159,12 @@ static void updateScreen(void)
 			case OPTIONS_MENU_PRIVATE_CALLS:
 				snprintf(buf, bufferLen, "%s:%s", currentLanguage->private_call_handling, (nonVolatileSettings.privateCalls ? currentLanguage->on : currentLanguage->off));
 				break;
+			case OPTIONS_MENU_CONTACT_DISPLAY_ORDER:
+				{
+					const char *contactOrders[] = { "Cc/DB/TA", "DB/Cc/TA", "TA/Cc/DB", "TA/DB/Cc" };
+					snprintf(buf, bufferLen, "Order:%s", contactOrders[nonVolatileSettings.contactDisplayPriority]);
+				}
+				break;
 		}
 
 		buf[bufferLen - 1] = 0;
@@ -271,6 +277,12 @@ static void handleEvent(uiEvent_t *ev)
 			case OPTIONS_MENU_PRIVATE_CALLS:
 				nonVolatileSettings.privateCalls = true;
 				break;
+			case OPTIONS_MENU_CONTACT_DISPLAY_ORDER:
+				if (nonVolatileSettings.contactDisplayPriority < CONTACT_DISPLAY_PRIO_TA_DB_CC)
+				{
+					nonVolatileSettings.contactDisplayPriority++;
+				}
+				break;
 		}
 	}
 	else if (KEYCHECK_PRESS(ev->keys,KEY_LEFT))
@@ -365,6 +377,12 @@ static void handleEvent(uiEvent_t *ev)
 				break;
 			case OPTIONS_MENU_PRIVATE_CALLS:
 				nonVolatileSettings.privateCalls = false;
+				break;
+			case OPTIONS_MENU_CONTACT_DISPLAY_ORDER:
+				if (nonVolatileSettings.contactDisplayPriority > CONTACT_DISPLAY_PRIO_CC_DB_TA)
+				{
+					nonVolatileSettings.contactDisplayPriority--;
+				}
 				break;
 		}
 	}
