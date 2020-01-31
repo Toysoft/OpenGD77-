@@ -335,10 +335,18 @@ static void updateLHItem(LinkItem_t *item)
 		{
 			snprintf(item->contact, 16, "%s", buffer);
 			item->contact[16] = 0;
+			item->stationInfoSource = STATION_INFO_CODEPLUG_CONTACTS;
 		}
 		else
 		{
-			dmrIDLookup(item->id, &currentRec);
+			if (dmrIDLookup(item->id, &currentRec))
+			{
+				item->stationInfoSource = STATION_INFO_DMRID_DATABASE;
+			}
+			else
+			{
+				item->stationInfoSource = STATION_INFO_NONE;
+			}
 			snprintf(item->contact, 16, "%s", currentRec.text);
 			item->contact[16] = 0;
 		}
@@ -352,7 +360,14 @@ static void updateLHItem(LinkItem_t *item)
 			}
 			else
 			{
-				dmrIDLookup(item->talkGroupOrPcId & 0x00FFFFFF, &currentRec);
+				if (dmrIDLookup(item->talkGroupOrPcId & 0x00FFFFFF, &currentRec))
+				{
+					item->stationInfoSource = STATION_INFO_DMRID_DATABASE;
+				}
+				else
+				{
+					item->stationInfoSource = STATION_INFO_NONE;
+				}
 				snprintf(item->talkgroup, 16, "%s", currentRec.text);
 				item->talkgroup[16] = 0;
 			}
@@ -380,7 +395,14 @@ static void updateLHItem(LinkItem_t *item)
 		}
 		else
 		{
-			dmrIDLookup((item->id & 0x00FFFFFF), &currentRec);
+			if (dmrIDLookup((item->id & 0x00FFFFFF), &currentRec))
+			{
+				item->stationInfoSource = STATION_INFO_DMRID_DATABASE;
+			}
+			else
+			{
+				item->stationInfoSource = STATION_INFO_NONE;
+			}
 			snprintf(item->contact, 20, "%s", currentRec.text);
 			item->contact[20] = 0;
 		}
@@ -847,25 +869,32 @@ void menuUtilityRenderQSOData(void)
 				ucPrintCentered(CONTACT_Y_POS, LinkHead->talkgroup, FONT_8x16);
 			}
 
-			// Talker Alias have the priority here
-			if (LinkHead->talkerAlias[0] != 0x00)
-			{
-				if (LinkHead->locator[0] != 0)
-				{
-					char bufferTA[37]; // TA + ' [' + Maidenhead + ']' + NULL
-
-					memset(bufferTA, 0, sizeof(bufferTA));
-					snprintf(bufferTA, 36, "%s [%s]", LinkHead->talkerAlias, LinkHead->locator);
-					displayContactTextInfos(bufferTA, sizeof(bufferTA), true);
-				}
-				else
-				{
-					displayContactTextInfos(LinkHead->talkerAlias, sizeof(LinkHead->talkerAlias), true);
-				}
-			}
-			else // No TA, then use the one extracted from Codeplug or DMRIdDB
+			if (nonVolatileSettings.stationInfoSearchOrder == STATION_INFO_USE_LOCAL_FIRST && (LinkHead->stationInfoSource == STATION_INFO_CODEPLUG_CONTACTS ||  LinkHead->stationInfoSource ==STATION_INFO_DMRID_DATABASE))
 			{
 				displayContactTextInfos(LinkHead->contact, sizeof(LinkHead->contact), true);
+			}
+			else
+			{
+				// Talker Alias have the priority here
+				if (LinkHead->talkerAlias[0] != 0x00)
+				{
+					if (LinkHead->locator[0] != 0)
+					{
+						char bufferTA[37]; // TA + ' [' + Maidenhead + ']' + NULL
+
+						memset(bufferTA, 0, sizeof(bufferTA));
+						snprintf(bufferTA, 36, "%s [%s]", LinkHead->talkerAlias, LinkHead->locator);
+						displayContactTextInfos(bufferTA, sizeof(bufferTA), true);
+					}
+					else
+					{
+						displayContactTextInfos(LinkHead->talkerAlias, sizeof(LinkHead->talkerAlias), true);
+					}
+				}
+				else // No TA, then use the one extracted from Codeplug or DMRIdDB
+				{
+					displayContactTextInfos(LinkHead->contact, sizeof(LinkHead->contact), true);
+				}
 			}
 		}
 	}

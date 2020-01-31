@@ -35,6 +35,7 @@ typedef struct dmrIdDataStruct
 	char text[20];
 } dmrIdDataStruct_t;
 
+typedef enum { STATION_INFO_NONE, STATION_INFO_CODEPLUG_CONTACTS, STATION_INFO_DMRID_DATABASE } stationInfoSource_t;
 
 typedef struct LinkItem
 {
@@ -46,6 +47,7 @@ typedef struct LinkItem
     char 		talkerAlias[32];// 4 blocks of data. 6 bytes + 7 bytes + 7 bytes + 7 bytes . plus 1 for termination some more for safety.
     char 		locator[7];
     uint32_t	time;// current system time when this station was heard
+    stationInfoSource_t		stationInfoSource;
     struct LinkItem *next;
 } LinkItem_t;
 
