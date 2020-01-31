@@ -39,7 +39,7 @@ static float _angleOffset = DEFAULT_ANGLE_OFFSET;
 #define swap(x, y) do { typeof(x) t = x; x = y; y = t; } while(0)
 
 
-uint8_t screenBuf[1024];
+__attribute__((section(".data.$RAM2"))) uint8_t screenBuf[1024];
 //#define DISPLAY_CHECK_BOUNDS
 
 #ifdef DISPLAY_CHECK_BOUNDS

@@ -126,7 +126,7 @@ M: 2020-01-07 09:52:15.246 DMR Slot 2, received network end of voice transmissio
 
 #define MMDVM_HEADER_LENGTH  4U
 
-#define HOTSPOT_VERSION_STRING "OpenGD77 Hotspot v0.0.85"
+#define HOTSPOT_VERSION_STRING "OpenGD77 Hotspot v0.0.86"
 #define concat(a, b) a " GitID #" b ""
 static const char HARDWARE[] = concat(HOTSPOT_VERSION_STRING, GITVERSION);
 
@@ -428,49 +428,21 @@ static void displayContactInfo(uint8_t y, char *text, size_t maxLen)
 
 static void updateContactLine(uint8_t y)
 {
-	static const int bufferLen = 33; // displayChannelNameOrRxFrequency() use 6x8 font
-	char buffer[bufferLen];// buffer passed to the DMR ID lookup function, needs to be large enough to hold worst case text length that is returned. Currently 16+1
-	dmrIdDataStruct_t currentRec;
-
-	if ((LinkHead->talkGroupOrPcId>>24) == PC_CALL_FLAG)
+	if ((LinkHead->talkGroupOrPcId >> 24) == PC_CALL_FLAG)
 	{
 		// Its a Private call
-		if (!contactIDLookup(LinkHead->id, CONTACT_CALLTYPE_PC, buffer))
-		{
-			dmrIDLookup(LinkHead->id, &currentRec);
-			strncpy(buffer, currentRec.text, 16);
-			buffer[16] = 0;
-		}
-
-		ucPrintCentered(y, buffer, FONT_8x16);
+		ucPrintCentered(y, LinkHead->contact, FONT_8x16);
 	}
 	else
 	{
 		// Group call
-
-		// first check if we have this ID in the DMR ID data
-		if (contactIDLookup(LinkHead->id, CONTACT_CALLTYPE_PC, buffer))
+		if (LinkHead->talkerAlias[0] != 0x00)
 		{
-			displayContactInfo(y, buffer, 16);
+			displayContactInfo(y, LinkHead->talkerAlias, sizeof(LinkHead->talkerAlias));
 		}
-		else if (dmrIDLookup((LinkHead->id & 0xFFFFFF), &currentRec))
+		else // No TA, then use the one extracted from Codeplug or DMRIdDB
 		{
-			displayContactInfo(y, currentRec.text, sizeof(currentRec.text));
-		}
-		else
-		{
-			// We don't have this ID, so try looking in the Talker alias data
-			if (LinkHead->talkerAlias[0] != 0x00)
-			{
-				displayContactInfo(y, LinkHead->talkerAlias, sizeof(LinkHead->talkerAlias));
-			}
-			else
-			{
-				// No talker alias. So we can only show the ID.
-				snprintf(buffer, bufferLen, "ID: %d", LinkHead->id);
-				buffer[bufferLen - 1] = 0;
-				ucPrintCentered(y, buffer, FONT_8x16);
-			}
+			displayContactInfo(y, LinkHead->contact, sizeof(LinkHead->contact));
 		}
 	}
 }
@@ -532,11 +504,11 @@ static void updateScreen(uint8_t rxCommandState)
 		{
 			if ((trxTalkGroupOrPcId & 0xFF000000) == 0)
 			{
-				snprintf(buffer, bufferLen, "TG %d", trxTalkGroupOrPcId & 0xFFFFFF);
+				snprintf(buffer, bufferLen, "TG %d", trxTalkGroupOrPcId & 0x00FFFFFF);
 			}
 			else
 			{
-				snprintf(buffer, bufferLen, "PC %d", trxTalkGroupOrPcId & 0xFFFFFF);
+				snprintf(buffer, bufferLen, "PC %d", trxTalkGroupOrPcId & 0x00FFFFFF);
 			}
 			buffer[bufferLen - 1] = 0;
 		}
@@ -1696,11 +1668,11 @@ static uint8_t setFreq(volatile const uint8_t* data, uint8_t length)
 
 		if (rf_power < 50)
 		{
-			hotspotPowerLevel = rf_power / 16;
+			hotspotPowerLevel = rf_power / 12;
 		}
 		else
 		{
-			hotspotPowerLevel = (rf_power / 50) + 2;
+			hotspotPowerLevel = (rf_power / 50) + 3;
 		}
 		trxSetPowerFromLevel(hotspotPowerLevel);
 	}

@@ -26,9 +26,7 @@
 #include "fw_sound.h"
 
 static const int STORAGE_BASE_ADDRESS 		= 0x6000;
-
-static const int STORAGE_MAGIC_NUMBER 		= 0x4737;
-
+static const int STORAGE_MAGIC_NUMBER 		= 0x4738;
 
 settingsStruct_t nonVolatileSettings;
 struct_codeplugChannel_t *currentChannelData;
@@ -141,7 +139,7 @@ void settingsRestoreDefaultSettings(void)
 	nonVolatileSettings.displayInverseVideo=false;// Not inverse video
 	nonVolatileSettings.useCalibration = true;// enable the new calibration system
 	nonVolatileSettings.txFreqLimited = true;// Limit Tx frequency to US Amateur bands
-	nonVolatileSettings.txPowerLevel=3;// 1 WW
+	nonVolatileSettings.txPowerLevel=4;// 1 W
 	nonVolatileSettings.overrideTG=0;// 0 = No override
 	nonVolatileSettings.txTimeoutBeepX5Secs = 0;
 	nonVolatileSettings.beepVolumeDivider = 1;// no reduction in volume
@@ -166,7 +164,7 @@ void settingsRestoreDefaultSettings(void)
 	nonVolatileSettings.vfoAScanHigh=14600000;						//High Frequency limit for VFO A Scanning
 	nonVolatileSettings.vfoBScanLow=43000000;						//Low frequency limit for VFO B Scanning
 	nonVolatileSettings.vfoBScanHigh=44000000;						//High Frequency limit for VFO B Scanning
-
+	nonVolatileSettings.stationInfoSearchOrder = STATION_INFO_USE_LOCAL_FIRST;
 
 	currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];// Set the current channel data to point to the VFO data since the default screen will be the VFO
 

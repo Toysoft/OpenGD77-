@@ -35,15 +35,19 @@ typedef struct dmrIdDataStruct
 	char text[20];
 } dmrIdDataStruct_t;
 
+typedef enum { STATION_INFO_NONE, STATION_INFO_CODEPLUG_CONTACTS, STATION_INFO_DMRID_DATABASE } stationInfoSource_t;
 
 typedef struct LinkItem
 {
     struct LinkItem *prev;
     uint32_t 	id;
     uint32_t 	talkGroupOrPcId;
+    char        contact[21];
+    char        talkgroup[17];
     char 		talkerAlias[32];// 4 blocks of data. 6 bytes + 7 bytes + 7 bytes + 7 bytes . plus 1 for termination some more for safety.
     char 		locator[7];
     uint32_t	time;// current system time when this station was heard
+    stationInfoSource_t		stationInfoSource;
     struct LinkItem *next;
 } LinkItem_t;
 
@@ -71,6 +75,7 @@ bool dmrIDLookup(int targetId, dmrIdDataStruct_t *foundRecord);
 bool contactIDLookup(uint32_t id, int calltype, char *buffer);
 void menuUtilityRenderQSOData(void);
 void menuUtilityRenderHeader(void);
+LinkItem_t *lastheardFindInList(uint32_t id);
 void lastheardInitList(void);
 bool lastHeardListUpdate(uint8_t *dmrDataBuffer, bool forceOnHotspot);
 void lastHeardClearLastID(void);

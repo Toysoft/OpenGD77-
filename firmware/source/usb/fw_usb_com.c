@@ -24,13 +24,13 @@
 
 static void handleCPSRequest(void);
 
-volatile uint8_t com_buffer[COM_BUFFER_SIZE];
+__attribute__((section(".data.$RAM2"))) volatile uint8_t com_buffer[COM_BUFFER_SIZE];
 int com_buffer_write_idx = 0;
 int com_buffer_read_idx = 0;
 volatile int com_buffer_cnt = 0;
 volatile int com_request = 0;
-volatile uint8_t com_requestbuffer[COM_REQUESTBUFFER_SIZE];
-USB_DMA_NONINIT_DATA_ALIGN(USB_DATA_ALIGN_SIZE) uint8_t usbComSendBuf[COM_BUFFER_SIZE];//DATA_BUFF_SIZE
+__attribute__((section(".data.$RAM2"))) volatile uint8_t com_requestbuffer[COM_REQUESTBUFFER_SIZE];
+__attribute__((section(".data.$RAM2"))) USB_DMA_NONINIT_DATA_ALIGN(USB_DATA_ALIGN_SIZE) uint8_t usbComSendBuf[COM_BUFFER_SIZE];//DATA_BUFF_SIZE
 int sector = -1;
 
 void tick_com_request(void)

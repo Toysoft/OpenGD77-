@@ -200,7 +200,7 @@ static void handleEvent(uiEvent_t *ev)
 		{
 			memset(contact.name, 0xff, 16);
 			contact.tgNumber = 0;
-			contact.callType = 0;
+			contact.callType = 0xFF;
 			codeplugContactSaveDataForIndex(contactListContactIndex, &contact);
 			contactListContactIndex = 0;
 			menuContactListTimeout = 2000;

@@ -25,7 +25,7 @@ static uint8_t spi_flash_transfer(uint8_t c);
 static void spi_flash_setWriteEnable(bool cmd);
 static inline void spi_flash_enable(void);
 static inline void spi_flash_disable(void);
-uint8_t SPI_Flash_sectorbuffer[4096];
+__attribute__((section(".data.$RAM2"))) uint8_t SPI_Flash_sectorbuffer[4096];
 
 
 //COMMANDS. Not all implemented or used

@@ -120,7 +120,7 @@ void menuLastHeardUpdateScreen(bool showTitleOrHeader, bool displayDetails)
 		{
 			if ((item != NULL) && (item->id != 0))
 			{
-				gMenusEndIndex = 0x01;
+				gMenusEndIndex = 1;
 			}
 			else
 			{

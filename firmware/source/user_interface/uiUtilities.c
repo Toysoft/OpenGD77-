@@ -37,7 +37,7 @@ static const int BAR_Y_POS = 10;
 
 static const int DMRID_MEMORY_STORAGE_START = 0x30000;
 static const int DMRID_HEADER_LENGTH = 0x0C;
-LinkItem_t callsList[NUM_LASTHEARD_STORED];
+__attribute__((section(".data.$RAM2"))) LinkItem_t callsList[NUM_LASTHEARD_STORED];
 LinkItem_t *LinkHead = callsList;
 int numLastHeard=0;
 int menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
@@ -47,7 +47,7 @@ const uint32_t RSSI_UPDATE_COUNTER_RELOAD = 100;
 uint32_t menuUtilityReceivedPcId 	= 0;// No current Private call awaiting acceptance
 uint32_t menuUtilityTgBeforePcMode 	= 0;// No TG saved, prior to a Private call being accepted.
 
-const char *POWER_LEVELS[]={"250mW","500mW","750mW","1W","2W","3W","4W","5W"};
+const char *POWER_LEVELS[]={ "50mW","250mW","500mW","750mW","1W","2W","3W","4W","5W","5W++"};
 const char *DMR_FILTER_LEVELS[]={"None","TS","TS,TG"};
 
 volatile uint32_t lastID=0;// This needs to be volatile as lastHeardClearLastID() is called from an ISR
@@ -100,46 +100,50 @@ int32_t getFirstSpacePos(char *str)
 
 void lastheardInitList(void)
 {
-    LinkHead = callsList;
+	LinkHead = callsList;
 
-    for(int i=0;i<NUM_LASTHEARD_STORED;i++)
-    {
-    	callsList[i].id=0;
-        callsList[i].talkGroupOrPcId=0;
-        callsList[i].talkerAlias[0] = 0;
-        callsList[i].locator[0] = 0;
-        callsList[i].time = 0;
-        if (i==0)
-        {
-            callsList[i].prev=NULL;
-        }
-        else
-        {
-            callsList[i].prev=&callsList[i-1];
-        }
-        if (i<(NUM_LASTHEARD_STORED-1))
-        {
-            callsList[i].next=&callsList[i+1];
-        }
-        else
-        {
-            callsList[i].next=NULL;
-        }
-    }
+	for(int i = 0; i < NUM_LASTHEARD_STORED; i++)
+	{
+		callsList[i].id = 0;
+		callsList[i].talkGroupOrPcId = 0;
+		callsList[i].contact[0] = 0;
+		callsList[i].talkgroup[0] = 0;
+		callsList[i].talkerAlias[0] = 0;
+		callsList[i].locator[0] = 0;
+		callsList[i].time = 0;
+
+		if (i == 0)
+		{
+			callsList[i].prev = NULL;
+		}
+		else
+		{
+			callsList[i].prev = &callsList[i - 1];
+		}
+
+		if (i < (NUM_LASTHEARD_STORED - 1))
+		{
+			callsList[i].next = &callsList[i + 1];
+		}
+		else
+		{
+			callsList[i].next = NULL;
+		}
+	}
 }
 
-LinkItem_t * findInList(int id)
+LinkItem_t *lastheardFindInList(uint32_t id)
 {
     LinkItem_t *item = LinkHead;
 
-    while(item->next!=NULL)
+    while (item->next != NULL)
     {
-        if (item->id==id)
+        if (item->id == id)
         {
             // found it
             return item;
         }
-        item=item->next;
+        item = item->next;
     }
     return NULL;
 }
@@ -318,35 +322,127 @@ void lastHeardClearLastID(void)
 	lastID=0;
 }
 
+static void updateLHItem(LinkItem_t *item)
+{
+	static const int bufferLen = 33; // displayChannelNameOrRxFrequency() use 6x8 font
+	char buffer[bufferLen];// buffer passed to the DMR ID lookup function, needs to be large enough to hold worst case text length that is returned. Currently 16+1
+	dmrIdDataStruct_t currentRec;
+
+	if ((item->talkGroupOrPcId >> 24) == PC_CALL_FLAG)
+	{
+		// Its a Private call
+		if (contactIDLookup(item->id, CONTACT_CALLTYPE_PC, buffer) == true)
+		{
+			snprintf(item->contact, 16, "%s", buffer);
+			item->contact[16] = 0;
+			item->stationInfoSource = STATION_INFO_CODEPLUG_CONTACTS;
+		}
+		else
+		{
+			if (dmrIDLookup(item->id, &currentRec))
+			{
+				item->stationInfoSource = STATION_INFO_DMRID_DATABASE;
+			}
+			else
+			{
+				item->stationInfoSource = STATION_INFO_NONE;
+			}
+			snprintf(item->contact, 16, "%s", currentRec.text);
+			item->contact[16] = 0;
+		}
+
+		if (item->talkGroupOrPcId != (trxDMRID | (PC_CALL_FLAG << 24)))
+		{
+			if (contactIDLookup(item->talkGroupOrPcId & 0x00FFFFFF, CONTACT_CALLTYPE_PC, buffer) == true)
+			{
+				snprintf(item->talkgroup, 16, "%s", buffer);
+				item->talkgroup[16] = 0;
+			}
+			else
+			{
+				if (dmrIDLookup(item->talkGroupOrPcId & 0x00FFFFFF, &currentRec))
+				{
+					item->stationInfoSource = STATION_INFO_DMRID_DATABASE;
+				}
+				else
+				{
+					item->stationInfoSource = STATION_INFO_NONE;
+				}
+				snprintf(item->talkgroup, 16, "%s", currentRec.text);
+				item->talkgroup[16] = 0;
+			}
+		}
+	}
+	else
+	{
+		// TalkGroup
+		if (contactIDLookup(item->talkGroupOrPcId, CONTACT_CALLTYPE_TG, buffer) == true)
+		{
+			snprintf(item->talkgroup, 16, "%s", buffer);
+			item->talkgroup[16] = 0;
+		}
+		else
+		{
+			snprintf(item->talkgroup, 16, "%s %d", currentLanguage->tg, (item->talkGroupOrPcId & 0x00FFFFFF));
+			item->talkgroup[16] = 0;
+		}
+
+		// Contact
+		if (contactIDLookup(item->id, CONTACT_CALLTYPE_PC, buffer) == true)
+		{
+			snprintf(item->contact, 20, "%s", buffer);
+			item->contact[20] = 0;
+		}
+		else
+		{
+			if (dmrIDLookup((item->id & 0x00FFFFFF), &currentRec))
+			{
+				item->stationInfoSource = STATION_INFO_DMRID_DATABASE;
+			}
+			else
+			{
+				item->stationInfoSource = STATION_INFO_NONE;
+			}
+			snprintf(item->contact, 20, "%s", currentRec.text);
+			item->contact[20] = 0;
+		}
+	}
+}
+
 bool lastHeardListUpdate(uint8_t *dmrDataBuffer, bool forceOnHotspot)
 {
 	static uint8_t bufferTA[32];
 	static uint8_t blocksTA = 0x00;
 	bool retVal = false;
-	uint32_t talkGroupOrPcId = (dmrDataBuffer[0]<<24) + (dmrDataBuffer[3]<<16)+(dmrDataBuffer[4]<<8)+(dmrDataBuffer[5]<<0);
+	uint32_t talkGroupOrPcId = (dmrDataBuffer[0] << 24) + (dmrDataBuffer[3] << 16) + (dmrDataBuffer[4] << 8) + (dmrDataBuffer[5] << 0);
 	static bool overrideTA = false;
 
 	if ((HRC6000GetReceivedTgOrPcId() != 0) || forceOnHotspot)
 	{
-		if (dmrDataBuffer[0]==TG_CALL_FLAG || dmrDataBuffer[0]==PC_CALL_FLAG)
+		if (dmrDataBuffer[0] == TG_CALL_FLAG || dmrDataBuffer[0] == PC_CALL_FLAG)
 		{
-			uint32_t id=(dmrDataBuffer[6]<<16)+(dmrDataBuffer[7]<<8)+(dmrDataBuffer[8]<<0);
+			uint32_t id = (dmrDataBuffer[6] << 16) + (dmrDataBuffer[7] << 8) + (dmrDataBuffer[8] << 0);
 
-			if (id!=lastID)
+			if (id != lastID)
 			{
 				memset(bufferTA, 0, 32);// Clear any TA data in TA buffer (used for decode)
 				blocksTA = 0x00;
 				overrideTA = false;
 
 				retVal = true;// something has changed
-				lastID=id;
+				lastID = id;
 
-				LinkItem_t *item = findInList(id);
+				LinkItem_t *item = lastheardFindInList(id);
 
-				if (item!=NULL)
+				// Already in the list
+				if (item != NULL)
 				{
-					// Already in the list
-					item->talkGroupOrPcId = talkGroupOrPcId;// update the TG in case they changed TG
+					if (item->talkGroupOrPcId != talkGroupOrPcId)
+					{
+						item->talkGroupOrPcId = talkGroupOrPcId; // update the TG in case they changed TG
+						updateLHItem(item);
+					}
+
 					item->time = fw_millis();
 					lastTG = talkGroupOrPcId;
 
@@ -359,13 +455,13 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer, bool forceOnHotspot)
 					{
 						// not at top of the list
 						// Move this item to the top of the list
-						LinkItem_t *next=item->next;
-						LinkItem_t *prev=item->prev;
+						LinkItem_t *next = item->next;
+						LinkItem_t *prev = item->prev;
 
 						// set the previous item to skip this item and link to 'items' next item.
 						prev->next = next;
 
-						if (item->next!=NULL)
+						if (item->next != NULL)
 						{
 							// not the last in the list
 							next->prev = prev;// backwards link the next item to the item before us in the list.
@@ -375,9 +471,9 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer, bool forceOnHotspot)
 
 						LinkHead->prev = item;// backwards link the hold head item to the item moving to the top of the list.
 
-						item->prev=NULL;// change the items prev to NULL now we are at teh top of the list
+						item->prev = NULL;// change the items prev to NULL now we are at teh top of the list
 						LinkHead = item;// Change the global for the head of the link to the item that is to be at the top of the list.
-						if (item->talkGroupOrPcId!=0)
+						if (item->talkGroupOrPcId != 0)
 						{
 							menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;// flag that the display needs to update
 						}
@@ -390,9 +486,9 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer, bool forceOnHotspot)
 
 					// need to use the last item in the list as the new item at the top of the list.
 					// find last item in the list
-					while(item->next != NULL )
+					while(item->next != NULL)
 					{
-						item=item->next;
+						item = item->next;
 					}
 					//item is now the last
 
@@ -402,13 +498,19 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer, bool forceOnHotspot)
 					item->next = LinkHead;// set this items next to the current head
 					LinkHead = item;// Make this item the new head
 
-					item->id=id;
-					item->talkGroupOrPcId =  talkGroupOrPcId;
+					item->id = id;
+					item->talkGroupOrPcId = talkGroupOrPcId;
 					item->time = fw_millis();
 					lastTG = talkGroupOrPcId;
-					memset(item->talkerAlias, 0, 32);// Clear any TA data
-					memset(item->locator, 0, 7);
-					if (item->talkGroupOrPcId!=0)
+
+					memset(item->contact, 0, sizeof(item->contact)); // Clear contact's datas
+					memset(item->talkgroup, 0, sizeof(item->talkgroup));
+					memset(item->talkerAlias, 0, sizeof(item->talkerAlias));
+					memset(item->locator, 0, sizeof(item->locator));
+
+					updateLHItem(item);
+
+					if (item->talkGroupOrPcId != 0)
 					{
 						menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;// flag that the display needs to update
 					}
@@ -418,14 +520,16 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer, bool forceOnHotspot)
 			{
 				if (lastTG != talkGroupOrPcId)
 				{
-					LinkItem_t *item = findInList(id);
+					LinkItem_t *item = lastheardFindInList(id);
 
-					if (item!=NULL)
+					if (item != NULL)
 					{
 						// Already in the list
 						item->talkGroupOrPcId = talkGroupOrPcId;// update the TG in case they changed TG
+						updateLHItem(item);
 						item->time = fw_millis();
 					}
+
 					lastTG = talkGroupOrPcId;
 					memset(bufferTA, 0, 32);// Clear any TA data in TA buffer (used for decode)
 					blocksTA = 0x00;
@@ -528,14 +632,14 @@ bool dmrIDLookup(int targetId, dmrIdDataStruct_t *foundRecord)
 
 	int targetIdBCD = int2bcd(targetId);
 
-	SPI_Flash_read(DMRID_MEMORY_STORAGE_START,headerBuf,DMRID_HEADER_LENGTH);
+	SPI_Flash_read(DMRID_MEMORY_STORAGE_START, headerBuf, DMRID_HEADER_LENGTH);
 
 	if (headerBuf[0] != 'I' || headerBuf[1] != 'D' || headerBuf[2] != '-')
 	{
 		return false;
 	}
 
-	numRecords = (uint32_t) headerBuf[8] | (uint32_t) headerBuf[9] << 8 | (uint32_t)headerBuf[10] <<16 | (uint32_t)headerBuf[11] << 24 ;
+	numRecords = (uint32_t) headerBuf[8] | (uint32_t) headerBuf[9] << 8 | (uint32_t)headerBuf[10] << 16 | (uint32_t)headerBuf[11] << 24 ;
 
 	recordLenth = (uint32_t) headerBuf[3] - 0x4a;
 
@@ -545,7 +649,7 @@ bool dmrIDLookup(int targetId, dmrIdDataStruct_t *foundRecord)
 	{
 		m = (l + r) >> 1;
 
-		SPI_Flash_read((DMRID_MEMORY_STORAGE_START+DMRID_HEADER_LENGTH) + recordLenth*m,(uint8_t *)foundRecord,recordLenth);
+		SPI_Flash_read((DMRID_MEMORY_STORAGE_START + DMRID_HEADER_LENGTH) + (recordLenth * m), (uint8_t *)foundRecord, 4U);
 
 		if (foundRecord->id < targetIdBCD)
 		{
@@ -553,16 +657,18 @@ bool dmrIDLookup(int targetId, dmrIdDataStruct_t *foundRecord)
 		}
 		else
 		{
-			if (foundRecord->id >targetIdBCD)
+			if (foundRecord->id > targetIdBCD)
 			{
 				r = m - 1;
 			}
 			else
 			{
+				SPI_Flash_read((DMRID_MEMORY_STORAGE_START + DMRID_HEADER_LENGTH) + (recordLenth * m) + 4U, (uint8_t *)foundRecord + 4U, (recordLenth - 4U));
 				return true;
 			}
 		}
 	}
+
 	snprintf(foundRecord->text, 20, "ID:%d", targetId);
 	return false;
 }
@@ -577,6 +683,7 @@ bool contactIDLookup(uint32_t id, int calltype, char *buffer)
 		codeplugUtilConvertBufToString(contact.name, buffer, 16);
 		return true;
 	}
+
 	return false;
 }
 
@@ -720,16 +827,12 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 
 void menuUtilityRenderQSOData(void)
 {
-	static const int bufferLen = 33; // displayChannelNameOrRxFrequency() use 6x8 font
-	char buffer[bufferLen];// buffer passed to the DMR ID lookup function, needs to be large enough to hold worst case text length that is returned. Currently 16+1
-	dmrIdDataStruct_t currentRec;
-
 	menuUtilityReceivedPcId=0;//reset the received PcId
 
 	/*
 	 * Note.
 	 * When using Brandmeister reflectors. TalkGroups can be used to select reflectors e.g. TG 4009, and TG 5000 to check the connnection
-	 * Under these conditions Brandmister seems to respond with a message via a private call even if the command was sent as a TalkGroup,
+	 * Under these conditions Brandmeister seems to respond with a message via a private call even if the command was sent as a TalkGroup,
 	 * and this caused the Private Message acceptance system to operate.
 	 * Brandmeister seems respond on the same ID as the keyed TG, so the code
 	 * (LinkHead->id & 0xFFFFFF) != (trxTalkGroupOrPcId & 0xFFFFFF)  is designed to stop the Private call system tiggering in these instances
@@ -740,61 +843,39 @@ void menuUtilityRenderQSOData(void)
 	 */
 	if (HRC6000GetReceivedTgOrPcId() != 0)
 	{
-		if ((LinkHead->talkGroupOrPcId>>24) == PC_CALL_FLAG) // &&  (LinkHead->id & 0xFFFFFF) != (trxTalkGroupOrPcId & 0xFFFFFF))
+		if ((LinkHead->talkGroupOrPcId >> 24) == PC_CALL_FLAG) // &&  (LinkHead->id & 0xFFFFFF) != (trxTalkGroupOrPcId & 0xFFFFFF))
 		{
 			// Its a Private call
-
-			if (!contactIDLookup(LinkHead->id, CONTACT_CALLTYPE_PC, buffer))
-			{
-				dmrIDLookup(LinkHead->id, &currentRec);
-				strncpy(buffer, currentRec.text, 16);
-				buffer[16] = 0;
-			}
-			ucPrintCentered(16, buffer, FONT_8x16);
+			ucPrintCentered(16, LinkHead->contact, FONT_8x16);
 			ucPrintCentered(32, currentLanguage->private_call, FONT_8x16);
-			if (LinkHead->talkGroupOrPcId != (trxDMRID | (PC_CALL_FLAG<<24)))
+
+			if (LinkHead->talkGroupOrPcId != (trxDMRID | (PC_CALL_FLAG << 24)))
 			{
-				if (!contactIDLookup(LinkHead->talkGroupOrPcId & 0xffffff, CONTACT_CALLTYPE_PC, buffer))
-				{
-					dmrIDLookup(LinkHead->talkGroupOrPcId & 0xffffff, &currentRec);
-					strncpy(buffer, currentRec.text, 16);
-					buffer[16] = 0;
-				}
-				ucPrintCentered(52, buffer, FONT_6x8);
+				ucPrintCentered(52, LinkHead->talkgroup, FONT_6x8);
 				ucPrintAt(1, 52, "=>", FONT_6x8);
 			}
 		}
 		else
 		{
 			// Group call
-			uint32_t tg = (LinkHead->talkGroupOrPcId & 0xFFFFFF);
-			if (!contactIDLookup(LinkHead->talkGroupOrPcId, CONTACT_CALLTYPE_TG, buffer))
+			if ((LinkHead->talkGroupOrPcId & 0xFFFFFF) != trxTalkGroupOrPcId || (dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot()))
 			{
-				snprintf(buffer, bufferLen, "%s %d", currentLanguage->tg, tg);
-				buffer[16] = 0;
-			}
-			if (tg != trxTalkGroupOrPcId || (dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot()))
-			{
+				// draw the text in inverse video
 				ucClearRows(2, 4, true);
-				ucPrintCore(0, CONTACT_Y_POS, buffer, FONT_8x16, TEXT_ALIGN_CENTER, true);// draw the text in inverse video
+				ucPrintCore(0, CONTACT_Y_POS, LinkHead->talkgroup, FONT_8x16, TEXT_ALIGN_CENTER, true);
 			}
 			else
 			{
-				ucPrintCentered(CONTACT_Y_POS, buffer, FONT_8x16);
+				ucPrintCentered(CONTACT_Y_POS, LinkHead->talkgroup, FONT_8x16);
 			}
 
-			// first check if we have this ID in the DMR ID data
-			if (contactIDLookup(LinkHead->id, CONTACT_CALLTYPE_PC, buffer))
+			if (nonVolatileSettings.stationInfoSearchOrder == STATION_INFO_USE_LOCAL_FIRST && (LinkHead->stationInfoSource == STATION_INFO_CODEPLUG_CONTACTS ||  LinkHead->stationInfoSource ==STATION_INFO_DMRID_DATABASE))
 			{
-				displayContactTextInfos(buffer, 16, false);
-			}
-			else if (dmrIDLookup((LinkHead->id & 0xFFFFFF), &currentRec))
-			{
-				displayContactTextInfos(currentRec.text, sizeof(currentRec.text), false);
+				displayContactTextInfos(LinkHead->contact, sizeof(LinkHead->contact), true);
 			}
 			else
 			{
-				// We don't have this ID, so try looking in the Talker alias data
+				// Talker Alias have the priority here
 				if (LinkHead->talkerAlias[0] != 0x00)
 				{
 					if (LinkHead->locator[0] != 0)
@@ -806,15 +887,13 @@ void menuUtilityRenderQSOData(void)
 						displayContactTextInfos(bufferTA, sizeof(bufferTA), true);
 					}
 					else
+					{
 						displayContactTextInfos(LinkHead->talkerAlias, sizeof(LinkHead->talkerAlias), true);
+					}
 				}
-				else
+				else // No TA, then use the one extracted from Codeplug or DMRIdDB
 				{
-					// No talker alias. So we can only show the ID.
-					snprintf(buffer, bufferLen, "ID: %d", LinkHead->id);
-					buffer[bufferLen - 1] = 0;
-					ucPrintCentered(32, buffer, FONT_8x16);
-					displayChannelNameOrRxFrequency(buffer, bufferLen);
+					displayContactTextInfos(LinkHead->contact, sizeof(LinkHead->contact), true);
 				}
 			}
 		}
