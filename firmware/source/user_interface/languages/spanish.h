@@ -141,7 +141,6 @@ const stringsTable_t spanishLanguage =
 .manual					= "Manual",  // MaxLen 16 (with .mode + ':') 
 .ptt_toggle				= "PTT Fijo", // MaxLen 16 (with ':' + .on or .off)
 .private_call_handling			= "Filtro PC", // MaxLen 16 (with ':' + .on ot .off)
-.station_search_order	= "Use TA first", // MaxLen 16 (with ':' + .yes or .no)
 };
 /********************************************************************
  *
