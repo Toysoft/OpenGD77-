@@ -1668,11 +1668,11 @@ static uint8_t setFreq(volatile const uint8_t* data, uint8_t length)
 
 		if (rf_power < 50)
 		{
-			hotspotPowerLevel = rf_power / 16;
+			hotspotPowerLevel = rf_power / 12;
 		}
 		else
 		{
-			hotspotPowerLevel = (rf_power / 50) + 2;
+			hotspotPowerLevel = (rf_power / 50) + 3;
 		}
 		trxSetPowerFromLevel(hotspotPowerLevel);
 	}
