@@ -200,11 +200,38 @@ bool calibrationGetPowerForFrequency(int freq, calibrationPowerValues_t *powerSe
 
 	if (trxCurrentBand[TRX_TX_FREQ_BAND] == RADIO_BAND_UHF)
 	{
-		address = POWER_CALIBRATION_ADDRESS_UHF_400MHZ + ((freq - RADIO_FREQUENCY_BANDS[RADIO_BAND_UHF].minFreq) / 500000) * 2;
+		address =  (freq - RADIO_FREQUENCY_BANDS[RADIO_BAND_UHF].minFreq) / 500000;
+
+		if (address < 0)
+		{
+			address=0;
+		}
+		else
+		{
+			if (address > 7)
+			{
+				address = 7;
+			}
+		}
+		address = POWER_CALIBRATION_ADDRESS_UHF_400MHZ + ( address * 2);
+
 	}
 	else
 	{
-		address = POWER_CALIBRATION_ADDRESS_VHF_135MHZ + ((freq - RADIO_FREQUENCY_BANDS[RADIO_BAND_VHF].minFreq) / 500000)  * 2;
+		address = (freq - RADIO_FREQUENCY_BANDS[RADIO_BAND_VHF].minFreq) / 500000;
+
+		if (address < 0)
+		{
+			address=0;
+		}
+		else
+		{
+			if (address > 15)
+			{
+				address = 15;
+			}
+		}
+		address = POWER_CALIBRATION_ADDRESS_VHF_135MHZ +   (address * 2);
 	}
 
 	SPI_Flash_read(address,buffer,2);
