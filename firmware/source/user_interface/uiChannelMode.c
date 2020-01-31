@@ -685,7 +685,7 @@ static void handleEvent(uiEvent_t *ev)
 		{
 			if (ev->buttons & BUTTON_SK2)
 			{
-				if (nonVolatileSettings.txPowerLevel < 7)
+				if (nonVolatileSettings.txPowerLevel < 9)
 				{
 					nonVolatileSettings.txPowerLevel++;
 					trxSetPowerFromLevel(nonVolatileSettings.txPowerLevel);
