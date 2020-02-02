@@ -54,6 +54,8 @@ static bool isDisplayingQSOData=false;
 static int tmpQuickMenuDmrFilterLevel;
 static void menuVFOUpdateTrxID(void );
 
+static int16_t newChannelIndex = 0;
+
 typedef enum
 {
 	SCAN_SCANNING = 0,
@@ -978,6 +980,7 @@ static void stepFrequency(int increment)
 // Quick Menu functions
 enum VFO_SCREEN_QUICK_MENU_ITEMS { 	VFO_SCREEN_QUICK_MENU_VFO_A_B=0,VFO_SCREEN_QUICK_MENU_TX_SWAP_RX, VFO_SCREEN_QUICK_MENU_BOTH_TO_RX, VFO_SCREEN_QUICK_MENU_BOTH_TO_TX,
 									VFO_SCREEN_QUICK_MENU_DMR_FILTER,VFO_SCREEN_CODE_SCAN,VFO_SCREEN_SCAN_LOW_FREQ,VFO_SCREEN_SCAN_HIGH_FREQ,VFO_SCREEN_QUICK_MENU_SCAN,
+									VFO_SCREEN_QUICK_MENU_VFO_TO_NEW,
 									NUM_VFO_SCREEN_QUICK_MENU_ITEMS };// The last item in the list is used so that we automatically get a total number of items in the list
 
 
@@ -1012,8 +1015,12 @@ static void updateQuickMenuScreen(void)
 		switch(mNum)
 		{
 		    case VFO_SCREEN_QUICK_MENU_SCAN:
-			strncpy(buf, currentLanguage->scan, bufferLen);
-			break;
+		    	strncpy(buf, currentLanguage->scan, bufferLen);
+				break;
+		    case VFO_SCREEN_QUICK_MENU_VFO_TO_NEW:
+		    	//TODO: new language text entry?
+				strcpy(buf, "VFO --> NEW CHAN");
+		    	break;
 			case VFO_SCREEN_QUICK_MENU_BOTH_TO_RX:
 				strcpy(buf, "Rx --> Tx");
 				break;
@@ -1079,8 +1086,48 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 		switch(gMenusCurrentItemIndex)
 		{
 			case VFO_SCREEN_QUICK_MENU_SCAN:
-			startScan();
-			break;
+				startScan();
+				break;
+			case VFO_SCREEN_QUICK_MENU_VFO_TO_NEW:
+				//look for empty channel
+
+				for (newChannelIndex = 1; newChannelIndex< 1024; newChannelIndex++)
+				{
+					if (!codeplugChannelIndexIsValid(newChannelIndex)) {
+						break;
+					}
+				}
+				if (newChannelIndex <= 1024)
+				{
+					//set zone to all channels and channel index to free channel found
+					nonVolatileSettings.currentZone = codeplugZonesGetCount() - 1;
+
+					//codeplugZoneGetDataForNumber(nonVolatileSettings.currentZone, &currentZone);
+
+					nonVolatileSettings.currentChannelIndexInAllZone = newChannelIndex;
+
+					settingsCurrentChannelNumber = newChannelIndex;
+
+					memcpy(&channelScreenChannelData.rxFreq,&settingsVFOChannel[nonVolatileSettings.currentVFONumber].rxFreq,sizeof(struct_codeplugChannel_t)- 16);// Don't copy the name of the vfo, which are in the first 16 bytes
+					snprintf((char *) &channelScreenChannelData.name, 16, "New chan %d", newChannelIndex);
+
+					codeplugChannelSaveDataForIndex(newChannelIndex, &channelScreenChannelData);
+
+					//Set channel index as valid
+					codeplugChannelIndexSetValid(newChannelIndex);
+					nonVolatileSettings.overrideTG = 0; // remove any TG override
+					nonVolatileSettings.tsManualOverride &= 0xF0; // remove TS override from channel
+					nonVolatileSettings.currentChannelIndexInZone = 0;// Since we are switching zones the channel index should be reset
+					channelScreenChannelData.rxFreq=0x00; // Flag to the Channel screen that the channel data is now invalid and needs to be reloaded
+					menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
+					set_melody(melody_ACK_beep);
+				}
+				else
+				{
+					set_melody(melody_ERROR_beep);
+				}
+
+				break;
 			case VFO_SCREEN_QUICK_MENU_BOTH_TO_RX:
 				currentChannelData->txFreq = currentChannelData->rxFreq;
 				trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq,DMR_MODE_AUTO);
