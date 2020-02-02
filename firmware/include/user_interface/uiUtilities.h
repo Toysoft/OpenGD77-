@@ -35,7 +35,22 @@ typedef struct dmrIdDataStruct
 	char text[20];
 } dmrIdDataStruct_t;
 
+
+#define MIN_ENTRIES_BEFORE_USING_SLICES 40 // Minimal number of available IDs before using slices stuff
+#define ID_SLICES 14 // Number of slices in whole DMRIDs DB
+
+typedef struct
+{
+     uint32_t slices[ID_SLICES]; // [0] is min availabel ID, [REGION - 1] is max available ID
+     uint32_t IDsPerSlice;
+
+     uint32_t entries;
+     uint8_t  contactLength;
+} dmrIDsCache_t;
+
+
 typedef enum { STATION_INFO_NONE, STATION_INFO_CODEPLUG_CONTACTS, STATION_INFO_DMRID_DATABASE } stationInfoSource_t;
+
 
 typedef struct LinkItem
 {
@@ -71,6 +86,7 @@ extern settingsStruct_t originalNonVolatileSettings; // used to store previous s
 
 char *chomp(char *str);
 int32_t getFirstSpacePos(char *str);
+void dmrIDCacheInit(void);
 bool dmrIDLookup(int targetId, dmrIdDataStruct_t *foundRecord);
 bool contactIDLookup(uint32_t id, int calltype, char *buffer);
 void menuUtilityRenderQSOData(void);
