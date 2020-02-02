@@ -1097,18 +1097,17 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 						break;
 					}
 				}
-				if (newChannelIndex <= 1024)
+				if (newChannelIndex < 1024)
 				{
 					//set zone to all channels and channel index to free channel found
 					nonVolatileSettings.currentZone = codeplugZonesGetCount() - 1;
-
-					//codeplugZoneGetDataForNumber(nonVolatileSettings.currentZone, &currentZone);
 
 					nonVolatileSettings.currentChannelIndexInAllZone = newChannelIndex;
 
 					settingsCurrentChannelNumber = newChannelIndex;
 
 					memcpy(&channelScreenChannelData.rxFreq,&settingsVFOChannel[nonVolatileSettings.currentVFONumber].rxFreq,sizeof(struct_codeplugChannel_t)- 16);// Don't copy the name of the vfo, which are in the first 16 bytes
+					//TODO: new text label for "New chan"
 					snprintf((char *) &channelScreenChannelData.name, 16, "New chan %d", newChannelIndex);
 
 					codeplugChannelSaveDataForIndex(newChannelIndex, &channelScreenChannelData);
