@@ -506,16 +506,16 @@ void trxSetPowerFromLevel(int powerLevel)
 	switch(powerLevel)
 	{
 		case 0:// 50mW
-			txPower = trxPowerSettings.lowPower - 700;
+			txPower = trxPowerSettings.lowPower * 0.62;//- 700;
 			break;
 		case 1:// 250mW
-			txPower = trxPowerSettings.lowPower - 470;
+			txPower = trxPowerSettings.lowPower * 0.75;//- 470;
 			break;
 		case 2:// 500mW
-			txPower = trxPowerSettings.lowPower - 290;
+			txPower = trxPowerSettings.lowPower * 0.85;//- 290;
 			break;
 		case 3:// 750mW
-			txPower = trxPowerSettings.lowPower - 150;
+			txPower = trxPowerSettings.lowPower * 0.93;//- 150;
 			break;
 		case 4:// 1W
 			txPower = trxPowerSettings.lowPower;
