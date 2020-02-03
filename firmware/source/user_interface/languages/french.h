@@ -122,7 +122,7 @@ const stringsTable_t frenchLanguage =
 .NO						= "NON",
 .DISMISS				= "CACHER",
 .scan_mode				= "Mode scan",
-.hold					= "Arrêt",
+.hold					= "Bloque",
 .pause					= "Pause",
 .empty_list				= "Liste Vide",
 .delete_contact_qm			= "Efface contact ?",
@@ -141,6 +141,7 @@ const stringsTable_t frenchLanguage =
 .manual					= "Manuel",  // MaxLen 16 (with .mode + ':') }
 .ptt_toggle				= "Bascule PTT", // MaxLen 16 (with ':' + .on or .off)
 .private_call_handling			= "Filtre PC", // MaxLen 16 (with ':' + .on ot .off)
+.stop					= "Arrêt", // Maxlen 16 (with ':' + .scan_mode)
 };
 /********************************************************************
  *

@@ -141,6 +141,7 @@ const stringsTable_t germanLanguage =
 .manual					= "Manuell",  // MaxLen 16 (with .mode + ':') 
 .ptt_toggle				= "PTT bistabil", // MaxLen 16 (with ':' + .on or .off)
 .private_call_handling		= "Anruf Hinw.", // MaxLen 16 (with ':' + .on ot .off)
+.stop					= "Stop", // Maxlen 16 (with ':' + .scan_mode)
 };
 /********************************************************************
  *

@@ -121,7 +121,7 @@ const stringsTable_t englishLanguage =
 .YES					= "YES", // MaxLen: 8 (choice above green/red buttons)
 .NO					= "NO", // MaxLen: 8 (choice above green/red buttons)
 .DISMISS				= "DISMISS", // MaxLen: 8 (choice above green/red buttons)
-.scan_mode				= "Scan mode", // MaxLen: 16 (with ':' + .hold or .pause)
+.scan_mode				= "Scan mode", // MaxLen: 16 (with ':' + .hold, .pause or .stop)
 .hold					= "Hold", // MaxLen: 16 (with ':' + .scan_mode)
 .pause					= "Pause", // MaxLen: 16 (with ':' + .scan_mode)
 .empty_list				= "Empty List", // MaxLen: 16
@@ -141,6 +141,7 @@ const stringsTable_t englishLanguage =
 .manual					= "Manual",  // MaxLen 16 (with .mode + ':')
 .ptt_toggle				= "PTT latch", // MaxLen 16 (with ':' + .on or .off)
 .private_call_handling			= "Allow PC", // MaxLen 16 (with ':' + .on or .off)
+.stop					= "Stop", // Maxlen 16 (with ':' + .scan_mode)
 };
 /********************************************************************
  *

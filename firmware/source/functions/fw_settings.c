@@ -27,7 +27,7 @@
 
 static const int STORAGE_BASE_ADDRESS 		= 0x6000;
 
-static const int STORAGE_MAGIC_NUMBER 		= 0x4739;
+static const int STORAGE_MAGIC_NUMBER 		= 0x4740;
 
 
 settingsStruct_t nonVolatileSettings;
@@ -154,7 +154,7 @@ void settingsRestoreDefaultSettings(void)
 	nonVolatileSettings.dmrCaptureTimeout=10;// Default to holding 10 seconds after a call ends
 	nonVolatileSettings.languageIndex=0;
 	nonVolatileSettings.scanDelay=5;// 5 seconds
-	nonVolatileSettings.scanModePause=false;
+	nonVolatileSettings.scanModePause = SCAN_MODE_HOLD;
 	nonVolatileSettings.squelchDefaults[RADIO_BAND_VHF]		= 10;// 1 - 21 = 0 - 100% , same as from the CPS variable squelch
 	nonVolatileSettings.squelchDefaults[RADIO_BAND_220MHz]	= 10;// 1 - 21 = 0 - 100% , same as from the CPS variable squelch
 	nonVolatileSettings.squelchDefaults[RADIO_BAND_UHF]		= 10;// 1 - 21 = 0 - 100% , same as from the CPS variable squelch

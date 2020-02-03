@@ -141,6 +141,7 @@ const stringsTable_t italianLanguage =
 .manual					= "Manuale",  // MaxLen 16 (with .mode + ':') 
 .ptt_toggle				= "Auto-PTT", // MaxLen 16 (with ':' + .on or .off)
 .private_call_handling			= "Gest. PC", // MaxLen 16 (with ':' + .on ot .off)
+.stop					= "Stop", // Maxlen 16 (with ':' + .scan_mode)
 };
 /********************************************************************
  *

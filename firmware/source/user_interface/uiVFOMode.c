@@ -58,7 +58,7 @@ typedef enum
 {
 	SCAN_SCANNING = 0,
 	SCAN_SHORT_PAUSED,
-	SCAN_PAUSED,
+	SCAN_PAUSED
 } ScanVFOState_t;
 
 static ScanVFOState_t scanState= SCAN_SCANNING;		//state flag for scan routine.
@@ -1350,35 +1350,55 @@ static void startScan(void)
 
 static void scanning(void)
 {
-	if((scanState==SCAN_SCANNING) && (scanTimer > SCAN_SKIP_CHANNEL_INTERVAL) && (scanTimer < ( SCAN_TOTAL_INTERVAL - SCAN_FREQ_CHANGE_SETTLING_INTERVAL)))							    			//after initial settling time
+	if((scanState == SCAN_SCANNING) && (scanTimer > SCAN_SKIP_CHANNEL_INTERVAL) && (scanTimer < ( SCAN_TOTAL_INTERVAL - SCAN_FREQ_CHANGE_SETTLING_INTERVAL)))							    			//after initial settling time
 	{
 		//test for presence of RF Carrier.
 		// In FM mode the dmr slot_state will always be DMR_STATE_IDLE
 		if (slot_state != DMR_STATE_IDLE)
 		{
-			scanState=SCAN_PAUSED;
-			scanTimer=nonVolatileSettings.scanDelay*1000;
+			if (nonVolatileSettings.scanModePause == SCAN_MODE_STOP)
+			{
+				uiVfoModeScanActive = false;
+				return;
+			}
+			else
+			{
+				scanState = SCAN_PAUSED;
+				scanTimer = nonVolatileSettings.scanDelay * 1000;
+			}
 		}
 		else
 		{
-			if(trx_carrier_detected() )
+			if(trx_carrier_detected())
 			{
-				scanTimer=SCAN_SHORT_PAUSE_TIME;												//start short delay to allow full detection of signal
-				scanState=SCAN_SHORT_PAUSED;															//state 1 = pause and test for valid signal that produces audio
+				if (nonVolatileSettings.scanModePause == SCAN_MODE_STOP)
+				{
+					uiVfoModeScanActive = false;
+					// Just update the header (to prevent hidden mode)
+					ucClearRows(0,  2, false);
+					menuUtilityRenderHeader();
+					ucRenderRows(0,  2);
+					return;
+				}
+				else
+				{
+					scanTimer = SCAN_SHORT_PAUSE_TIME;												//start short delay to allow full detection of signal
+					scanState = SCAN_SHORT_PAUSED;															//state 1 = pause and test for valid signal that produces audio
+				}
 			}
 		}
 	}
 
-	if(((scanState==SCAN_PAUSED)&&(nonVolatileSettings.scanModePause==false)) || (scanState==SCAN_SHORT_PAUSED))   // only do this once if scan mode is PAUSE do it every time if scan mode is HOLD
+	if(((scanState == SCAN_PAUSED) && (nonVolatileSettings.scanModePause == SCAN_MODE_HOLD)) || (scanState == SCAN_SHORT_PAUSED))   // only do this once if scan mode is PAUSE do it every time if scan mode is HOLD
 	{
-	    if (GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable)==1)	    	// if speaker on we must be receiving a signal so extend the time before resuming scan.
+	    if (GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable) == 1)	    	// if speaker on we must be receiving a signal so extend the time before resuming scan.
 	    {
-	    	scanTimer=nonVolatileSettings.scanDelay*1000;
-	    	scanState=SCAN_PAUSED;
+	    	scanTimer = nonVolatileSettings.scanDelay * 1000;
+	    	scanState = SCAN_PAUSED;
 	    }
 	}
 
-	if(scanTimer>0)
+	if(scanTimer > 0)
 	{
 		scanTimer--;
 	}
