@@ -53,6 +53,10 @@ const char *DMR_FILTER_LEVELS[]={"None","TS","TS,TG"};
 volatile uint32_t lastID=0;// This needs to be volatile as lastHeardClearLastID() is called from an ISR
 uint32_t lastTG=0;
 
+static dmrIDsCache_t dmrIDsCache;
+
+
+
 /*
  * Remove space at the end of the array, and return pointer to first non space character
  */
@@ -652,52 +656,126 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer, bool forceOnHotspot)
 	return retVal;
 }
 
-bool dmrIDLookup(int targetId, dmrIdDataStruct_t *foundRecord)
+
+static void dmrIDReadContactInFlash(uint32_t contactOffset, uint8_t *data, uint32_t len)
 {
-	uint32_t l = 0;
-	uint32_t numRecords;
-	uint32_t r;
-	uint32_t m;
-	uint32_t recordLenth;//15+4;
+	SPI_Flash_read((DMRID_MEMORY_STORAGE_START + DMRID_HEADER_LENGTH) + contactOffset, data, len);
+}
+
+
+void dmrIDCacheInit(void)
+{
 	uint8_t headerBuf[32];
 
-	memset(foundRecord, 0, sizeof(dmrIdDataStruct_t));
-
-	int targetIdBCD = int2bcd(targetId);
+	memset(&dmrIDsCache, 0, sizeof(dmrIDsCache_t));
+	memset(&headerBuf, 0, sizeof(headerBuf));
 
 	SPI_Flash_read(DMRID_MEMORY_STORAGE_START, headerBuf, DMRID_HEADER_LENGTH);
 
 	if (headerBuf[0] != 'I' || headerBuf[1] != 'D' || headerBuf[2] != '-')
 	{
-		return false;
+		return;
 	}
 
-	numRecords = (uint32_t) headerBuf[8] | (uint32_t) headerBuf[9] << 8 | (uint32_t)headerBuf[10] << 16 | (uint32_t)headerBuf[11] << 24 ;
+	dmrIDsCache.entries = ((uint32_t)headerBuf[8] | (uint32_t)headerBuf[9] << 8 | (uint32_t)headerBuf[10] << 16 | (uint32_t)headerBuf[11] << 24);
+	dmrIDsCache.contactLength = (uint8_t)headerBuf[3] - 0x4a;
 
-	recordLenth = (uint32_t) headerBuf[3] - 0x4a;
-
-	r = numRecords - 1;
-
-	while (l <= r)
+	if (dmrIDsCache.entries > 0)
 	{
-		m = (l + r) >> 1;
+		dmrIdDataStruct_t dmrIDContact;
 
-		SPI_Flash_read((DMRID_MEMORY_STORAGE_START + DMRID_HEADER_LENGTH) + (recordLenth * m), (uint8_t *)foundRecord, 4U);
+		// Set Min and Max IDs boundaries
+		// First available ID
+		dmrIDReadContactInFlash(0, (uint8_t *)&dmrIDContact, 4U);
+		dmrIDsCache.slices[0] = dmrIDContact.id;
 
-		if (foundRecord->id < targetIdBCD)
+		// Last available ID
+		dmrIDReadContactInFlash((dmrIDsCache.contactLength * (dmrIDsCache.entries - 1)), (uint8_t *)&dmrIDContact, 4U);
+		dmrIDsCache.slices[ID_SLICES - 1] = dmrIDContact.id;
+
+		if (dmrIDsCache.entries > MIN_ENTRIES_BEFORE_USING_SLICES)
 		{
-			l = m + 1;
-		}
-		else
-		{
-			if (foundRecord->id > targetIdBCD)
+			dmrIDsCache.IDsPerSlice = dmrIDsCache.entries / (ID_SLICES - 1);
+
+			for (uint8_t i = 0; i < (ID_SLICES - 2); i++)
 			{
-				r = m - 1;
+				dmrIDReadContactInFlash((dmrIDsCache.contactLength * ((dmrIDsCache.IDsPerSlice * i) + dmrIDsCache.IDsPerSlice)), (uint8_t *)&dmrIDContact, 4U);
+				dmrIDsCache.slices[i + 1] = dmrIDContact.id;
+			}
+		}
+	}
+}
+
+bool dmrIDLookup(int targetId, dmrIdDataStruct_t *foundRecord)
+{
+	int targetIdBCD = int2bcd(targetId);
+
+	if ((dmrIDsCache.entries > 0) && (targetIdBCD >= dmrIDsCache.slices[0]) && (targetIdBCD <= dmrIDsCache.slices[ID_SLICES - 1]))
+	{
+		uint32_t startPos = 0;
+		uint32_t endPos = dmrIDsCache.entries - 1;
+		uint32_t curPos;
+
+		if (dmrIDsCache.entries > MIN_ENTRIES_BEFORE_USING_SLICES) // Use slices
+		{
+			for (uint8_t i = 0; i < ID_SLICES - 1; i++)
+			{
+				// Check if ID is in slices boundaries, with a special case for the last slice as [ID_SLICES - 1] is the last ID
+				if ((targetIdBCD >= dmrIDsCache.slices[i]) &&
+						((i == ID_SLICES - 2) ? (targetIdBCD <= dmrIDsCache.slices[i + 1]) : (targetIdBCD < dmrIDsCache.slices[i + 1])))
+				{
+					// targetID is the min slice limit, don't go further
+					if (targetIdBCD == dmrIDsCache.slices[i])
+					{
+						foundRecord->id = dmrIDsCache.slices[i];
+						dmrIDReadContactInFlash((dmrIDsCache.contactLength * (dmrIDsCache.IDsPerSlice * i)) + 4U, (uint8_t *)foundRecord + 4U, (dmrIDsCache.contactLength - 4U));
+
+						return true;
+					}
+
+					startPos = dmrIDsCache.IDsPerSlice * i;
+					endPos = (i == ID_SLICES - 2) ? (dmrIDsCache.entries - 1) : dmrIDsCache.IDsPerSlice * (i + 1);
+
+					break;
+				}
+			}
+		}
+		else // Not enough contact to use slices
+		{
+			bool isMin;
+
+			// Check if targetID is equal to the first or the last in the IDs list
+			if ((isMin = (targetIdBCD == dmrIDsCache.slices[0])) || (targetIdBCD == dmrIDsCache.slices[ID_SLICES - 1]))
+			{
+				foundRecord->id = dmrIDsCache.slices[(isMin ? 0 : (ID_SLICES - 1))];
+				dmrIDReadContactInFlash((dmrIDsCache.contactLength * (dmrIDsCache.IDsPerSlice * (isMin ? 0 : (ID_SLICES - 1)))) + 4U, (uint8_t *)foundRecord + 4U, (dmrIDsCache.contactLength - 4U));
+
+				return true;
+			}
+		}
+
+		// Look for the ID now
+		while (startPos <= endPos)
+		{
+			curPos = (startPos + endPos) >> 1;
+
+			dmrIDReadContactInFlash((dmrIDsCache.contactLength * curPos), (uint8_t *)foundRecord, 4U);
+
+			if (foundRecord->id < targetIdBCD)
+			{
+				startPos = curPos + 1;
 			}
 			else
 			{
-				SPI_Flash_read((DMRID_MEMORY_STORAGE_START + DMRID_HEADER_LENGTH) + (recordLenth * m) + 4U, (uint8_t *)foundRecord + 4U, (recordLenth - 4U));
-				return true;
+				if (foundRecord->id > targetIdBCD)
+				{
+					endPos = curPos - 1;
+				}
+				else
+				{
+					dmrIDReadContactInFlash((dmrIDsCache.contactLength * curPos) + 4U, (uint8_t *)foundRecord + 4U, (dmrIDsCache.contactLength - 4U));
+					return true;
+				}
 			}
 		}
 	}
