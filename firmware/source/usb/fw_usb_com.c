@@ -16,6 +16,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 #include <user_interface/menuHotspot.h>
+#include <user_interface/uiUtilities.h>
 #include <user_interface/menuSystem.h>
 #include "fw_usb_com.h"
 #include "fw_settings.h"
@@ -32,6 +33,8 @@ volatile int com_request = 0;
 __attribute__((section(".data.$RAM2"))) volatile uint8_t com_requestbuffer[COM_REQUESTBUFFER_SIZE];
 __attribute__((section(".data.$RAM2"))) USB_DMA_NONINIT_DATA_ALIGN(USB_DATA_ALIGN_SIZE) uint8_t usbComSendBuf[COM_BUFFER_SIZE];//DATA_BUFF_SIZE
 int sector = -1;
+static bool flashingDMRIDs = false;
+
 
 void tick_com_request(void)
 {
@@ -117,6 +120,12 @@ static void handleCPSRequest(void)
 			if (sector==-1)
 			{
 				sector=(com_requestbuffer[2]<<16)+(com_requestbuffer[3]<<8)+(com_requestbuffer[4]<<0);
+
+				if ((sector * 4096) == 0x30000) // start address of DMRIDs DB
+				{
+					flashingDMRIDs = true;
+				}
+
 				taskEXIT_CRITICAL();
 				ok = SPI_Flash_read(sector*4096,SPI_Flash_sectorbuffer,4096);
 				taskENTER_CRITICAL();
@@ -220,6 +229,11 @@ static void handleCPSRequest(void)
 				break;
 			case 5:
 				// Close
+				if (flashingDMRIDs)
+				{
+					dmrIDCacheInit();
+					flashingDMRIDs = false;
+				}
 				menuCPSUpdate(6,0,0,FONT_6x8,TEXT_ALIGN_LEFT,0,NULL);
 				break;
 			case 6:
