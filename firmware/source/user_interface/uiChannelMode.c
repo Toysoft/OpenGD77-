@@ -1175,6 +1175,10 @@ static void scanning(void)
 				if (nonVolatileSettings.scanModePause == SCAN_MODE_STOP)
 				{
 					uiChannelModeScanActive = false;
+					// Just update the header (to prevent hidden mode)
+					ucClearRows(0,  2, false);
+					menuUtilityRenderHeader();
+					ucRenderRows(0,  2);
 					return;
 				}
 				else
