@@ -26,7 +26,9 @@
 #include "fw_sound.h"
 
 static const int STORAGE_BASE_ADDRESS 		= 0x6000;
-static const int STORAGE_MAGIC_NUMBER 		= 0x4738;
+
+static const int STORAGE_MAGIC_NUMBER 		= 0x4739;
+
 
 settingsStruct_t nonVolatileSettings;
 struct_codeplugChannel_t *currentChannelData;
@@ -164,7 +166,8 @@ void settingsRestoreDefaultSettings(void)
 	nonVolatileSettings.vfoAScanHigh=14600000;						//High Frequency limit for VFO A Scanning
 	nonVolatileSettings.vfoBScanLow=43000000;						//Low frequency limit for VFO B Scanning
 	nonVolatileSettings.vfoBScanHigh=44000000;						//High Frequency limit for VFO B Scanning
-	nonVolatileSettings.stationInfoSearchOrder = STATION_INFO_USE_LOCAL_FIRST;
+	nonVolatileSettings.contactDisplayPriority = CONTACT_DISPLAY_PRIO_CC_DB_TA;
+
 
 	currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];// Set the current channel data to point to the VFO data since the default screen will be the VFO
 

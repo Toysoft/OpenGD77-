@@ -141,7 +141,6 @@ const stringsTable_t polishLanguage =
 .manual					= "Manualny",  // MaxLen 16 (with .mode + ':') 
 .ptt_toggle				= "Staˆe PTT", // MaxLen 16 (with ':' + .on or .off)
 .private_call_handling  = "Zezwól PC", // MaxLen 16 (with ':' + .on ot .off)
-.station_search_order	= "Use TA first", // MaxLen 16 (with ':' + .yes or .no)
 };
 /********************************************************************
  *

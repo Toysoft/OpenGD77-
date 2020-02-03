@@ -141,7 +141,6 @@ const stringsTable_t danishLanguage =
 .manual					= "Manual",  // MaxLen 16 (with .mode + ':') 
 .ptt_toggle				= "PTT toggle", // MaxLen 16 (with ':' + .on or .off)
 .private_call_handling			= "Handle PC", // MaxLen 16 (with ':' + .on ot .off)
-.station_search_order	= "Use TA first", // MaxLen 16 (with ':' + .yes or .no)
 };
 /********************************************************************
  *
