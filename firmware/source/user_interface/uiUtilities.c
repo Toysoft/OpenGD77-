@@ -624,9 +624,9 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer, bool forceOnHotspot)
 }
 
 
-static void dmrIDReadContactInFlash(uint32_t offset, uint8_t *data, uint32_t len)
+static void dmrIDReadContactInFlash(uint32_t contactOffset, uint8_t *data, uint32_t len)
 {
-	SPI_Flash_read((DMRID_MEMORY_STORAGE_START + DMRID_HEADER_LENGTH) + offset, data, len);
+	SPI_Flash_read((DMRID_MEMORY_STORAGE_START + DMRID_HEADER_LENGTH) + contactOffset, data, len);
 }
 
 
@@ -644,119 +644,79 @@ void dmrIDCacheInit(void)
 		return;
 	}
 
-	dmrIDsCache.entries = ((uint32_t) headerBuf[8] | (uint32_t) headerBuf[9] << 8 | (uint32_t)headerBuf[10] << 16 | (uint32_t)headerBuf[11] << 24);
+	dmrIDsCache.entries = ((uint32_t)headerBuf[8] | (uint32_t)headerBuf[9] << 8 | (uint32_t)headerBuf[10] << 16 | (uint32_t)headerBuf[11] << 24);
+	dmrIDsCache.contactLength = (uint8_t)headerBuf[3] - 0x4a;
 
 	if (dmrIDsCache.entries > 0)
 	{
-		dmrIdDataStruct_t record;
+		dmrIdDataStruct_t dmrIDContact;
 
-		dmrIDsCache.contactLength = (uint8_t) headerBuf[3] - 0x4a;
+		// Set Min and Max IDs boundaries
+		// First available ID
+		dmrIDReadContactInFlash(0, (uint8_t *)&dmrIDContact, 4U);
+		dmrIDsCache.slices[0] = dmrIDContact.id;
 
-		// Define Min and Max IDs bounds
-		// Get first available ID
-		dmrIDReadContactInFlash(0, (uint8_t *)&record, 4U);
-		dmrIDsCache.slices[0] = record.id;
-
-		// Get last available ID
-		dmrIDReadContactInFlash((dmrIDsCache.contactLength * (dmrIDsCache.entries - 1)), (uint8_t *)&record, 4U);
-		dmrIDsCache.slices[ID_SLICES - 1] = record.id;
-
-		/* printf("min ID: %u\n", dmrIDsCache.regions[0]); */
-		/* printf("max ID: %u\n", dmrIDsCache.regions[REGIONS - 1]); */
+		// Last available ID
+		dmrIDReadContactInFlash((dmrIDsCache.contactLength * (dmrIDsCache.entries - 1)), (uint8_t *)&dmrIDContact, 4U);
+		dmrIDsCache.slices[ID_SLICES - 1] = dmrIDContact.id;
 
 		if (dmrIDsCache.entries > MIN_ENTRIES_BEFORE_USING_SLICES)
 		{
 			dmrIDsCache.IDsPerSlice = dmrIDsCache.entries / (ID_SLICES - 1);
 
-			//printf("dmrIDsCache.IDsPerRegion: %u\n", dmrIDsCache.IDsPerRegion);
-
 			for (uint8_t i = 0; i < (ID_SLICES - 2); i++)
 			{
-				uint32_t offset = (dmrIDsCache.IDsPerSlice * i) + dmrIDsCache.IDsPerSlice;
-				//printf("step: I [0] arrayOffset:%u  IDsoffset:%u  maxEntries:%u\n", i + 1, off, dmrIDsCache.entries);
-
-				dmrIDReadContactInFlash((dmrIDsCache.contactLength * offset), (uint8_t *)&record, 4U);
-				dmrIDsCache.slices[i + 1] = record.id;
+				dmrIDReadContactInFlash((dmrIDsCache.contactLength * ((dmrIDsCache.IDsPerSlice * i) + dmrIDsCache.IDsPerSlice)), (uint8_t *)&dmrIDContact, 4U);
+				dmrIDsCache.slices[i + 1] = dmrIDContact.id;
 			}
-
-			//printf("\n");
-
-			//for (uint32_t i = 0; i < REGIONS; i++)
-			//{
-			//printf("dmrIDsCache.regions[%u] %u\n", i, dmrIDsCache.regions[i]);
-			//}
-
 		}
 	}
-	//printf("\n\n");
 }
-
 
 bool dmrIDLookup(int targetId, dmrIdDataStruct_t *foundRecord)
 {
-#if 1
-	uint32_t itRead = 0;
-	uint32_t iter = 0;
+	int targetIdBCD = int2bcd(targetId);
 
-
-	if ((dmrIDsCache.entries > 0) && (targetId >= dmrIDsCache.slices[0]) && (targetId <= dmrIDsCache.slices[ID_SLICES - 1]))
+	if ((dmrIDsCache.entries > 0) && (targetIdBCD >= dmrIDsCache.slices[0]) && (targetIdBCD <= dmrIDsCache.slices[ID_SLICES - 1]))
 	{
 		uint32_t startPos = 0;
 		uint32_t endPos = dmrIDsCache.entries - 1;
 		uint32_t curPos;
-		int      targetIdBCD = int2bcd(targetId);
 
-		if (dmrIDsCache.entries > MIN_ENTRIES_BEFORE_USING_SLICES) // Use region
+		if (dmrIDsCache.entries > MIN_ENTRIES_BEFORE_USING_SLICES) // Use slices
 		{
 			for (uint8_t i = 0; i < ID_SLICES - 1; i++)
 			{
-				//printf("== Region %u Min: %u, Max: %u  (%u to %u)\n", i, dmrIDsCache.slices[i], dmrIDsCache.slices[i + 1], i, i + 1);
-
 				// Check if ID is in slices boundaries, with a special case for the last slice as [ID_SLICES - 1] is the last ID
-				if ((targetId >= dmrIDsCache.slices[i]) &&
-						((i == ID_SLICES - 2) ? (targetId <= dmrIDsCache.slices[i + 1]) : (targetId < dmrIDsCache.slices[i + 1])))
+				if ((targetIdBCD >= dmrIDsCache.slices[i]) &&
+						((i == ID_SLICES - 2) ? (targetIdBCD <= dmrIDsCache.slices[i + 1]) : (targetIdBCD < dmrIDsCache.slices[i + 1])))
 				{
-					// targetID is the min region limit, don't go further
-					if (targetId == dmrIDsCache.slices[i])
+					// targetID is the min slice limit, don't go further
+					if (targetIdBCD == dmrIDsCache.slices[i])
 					{
-						itRead++;
-						foundRecord->id = dmrIDsCache.slices[i];//IDS[dmrIDsCache.IDsPerRegion * i];
-
-						//SPI_Flash_read((DMRID_MEMORY_STORAGE_START + DMRID_HEADER_LENGTH) + (recordLenth * m) + 4U, (uint8_t *)foundRecord + 4U, (recordLenth - 4U));
-						//printf("IN REGION %u, ID is 1st entry. Item: %u, FlashRead: %u\n", i, iter, itRead);
-
-						//SPI_Flash_read((DMRID_MEMORY_STORAGE_START + DMRID_HEADER_LENGTH) + (recordLenth * m) + 4U, (uint8_t *)foundRecord + 4U, (recordLenth - 4U));
+						foundRecord->id = dmrIDsCache.slices[i];
 						dmrIDReadContactInFlash((dmrIDsCache.contactLength * (dmrIDsCache.IDsPerSlice * i)) + 4U, (uint8_t *)foundRecord + 4U, (dmrIDsCache.contactLength - 4U));
 
-						//snprintf(foundRecord->text, 20, "FOUND:%d", foundRecord->id);
 						return true;
 					}
 
 					startPos = dmrIDsCache.IDsPerSlice * i;
-					endPos = dmrIDsCache.IDsPerSlice * (i + 1);
-
-					//printf("IN SLICE: %u .. %u   (IDs offsets: startpos:%u endPos:%u) \n", i, i + 1, startPos, endPos);
-					USB_DEBUG_printf("IN SLICE: %u .. %u   (IDs offsets: startpos:%u endPos:%u) \n", i, i + 1, startPos, endPos);
+					endPos = (i == ID_SLICES - 2) ? (dmrIDsCache.entries - 1) : dmrIDsCache.IDsPerSlice * (i + 1);
 
 					break;
 				}
-
 			}
 		}
-		else // Not enough contact to use regions
+		else // Not enough contact to use slices
 		{
 			bool isMin;
 
-			// Check if targetID is equel to the first or the last in the IDs list
-			if ((isMin = (targetId == dmrIDsCache.slices[0])) || (targetId == dmrIDsCache.slices[ID_SLICES - 1]))
+			// Check if targetID is equal to the first or the last in the IDs list
+			if ((isMin = (targetIdBCD == dmrIDsCache.slices[0])) || (targetIdBCD == dmrIDsCache.slices[ID_SLICES - 1]))
 			{
 				foundRecord->id = dmrIDsCache.slices[(isMin ? 0 : (ID_SLICES - 1))];
-
-				itRead++;;
-				//SPI_Flash_read((DMRID_MEMORY_STORAGE_START + DMRID_HEADER_LENGTH) + (recordLenth * m) + 4U, (uint8_t *)foundRecord + 4U, (recordLenth - 4U));
 				dmrIDReadContactInFlash((dmrIDsCache.contactLength * (dmrIDsCache.IDsPerSlice * (isMin ? 0 : (ID_SLICES - 1)))) + 4U, (uint8_t *)foundRecord + 4U, (dmrIDsCache.contactLength - 4U));
-				USB_DEBUG_printf("InMinOrMax: %u, FlashRead: %u\n", iter, itRead);
-				//snprintf(foundRecord->text, 20, "FOUND:%d", foundRecord->id);
+
 				return true;
 			}
 		}
@@ -764,15 +724,9 @@ bool dmrIDLookup(int targetId, dmrIdDataStruct_t *foundRecord)
 		// Look for the ID now
 		while (startPos <= endPos)
 		{
-			iter++;
-
 			curPos = (startPos + endPos) >> 1;
 
-			itRead++;
-			//SPI_Flash_read((DMRID_MEMORY_STORAGE_START + DMRID_HEADER_LENGTH) + (recordLenth * m), (uint8_t *)foundRecord, 4U);
-			//printf("startPos:%u curPos:%u endPos:%u\n", startPos, curPos, endPos);//, INT_MAX);
-			dmrIDReadContactInFlash((dmrIDsCache.contactLength * curPos), (uint8_t *)&foundRecord, 4U);
-			///foundRecord->id = IDS[curPos];
+			dmrIDReadContactInFlash((dmrIDsCache.contactLength * curPos), (uint8_t *)foundRecord, 4U);
 
 			if (foundRecord->id < targetIdBCD)
 			{
@@ -786,12 +740,7 @@ bool dmrIDLookup(int targetId, dmrIdDataStruct_t *foundRecord)
 				}
 				else
 				{
-					itRead++;
-					//SPI_Flash_read((DMRID_MEMORY_STORAGE_START + DMRID_HEADER_LENGTH) + (recordLenth * m) + 4U, (uint8_t *)foundRecord + 4U, (recordLenth - 4U));
 					dmrIDReadContactInFlash((dmrIDsCache.contactLength * curPos) + 4U, (uint8_t *)foundRecord + 4U, (dmrIDsCache.contactLength - 4U));
-					USB_DEBUG_printf("ITER: %u, FlashRead: %u :: '%s'\n", iter, itRead, foundRecord->text);
-					//snprintf(foundRecord->text, 20, "FOUND:%d", foundRecord->id);
-
 					return true;
 				}
 			}
@@ -799,61 +748,7 @@ bool dmrIDLookup(int targetId, dmrIdDataStruct_t *foundRecord)
 	}
 
 	snprintf(foundRecord->text, 20, "ID:%d", targetId);
-
 	return false;
-
-#else
-	uint32_t l = 0;
-	uint32_t numRecords;
-	uint32_t r;
-	uint32_t m;
-	uint32_t recordLenth;//15+4;
-	uint8_t headerBuf[32];
-
-	memset(foundRecord, 0, sizeof(dmrIdDataStruct_t));
-
-	int targetIdBCD = int2bcd(targetId);
-
-	SPI_Flash_read(DMRID_MEMORY_STORAGE_START, headerBuf, DMRID_HEADER_LENGTH);
-
-	if (headerBuf[0] != 'I' || headerBuf[1] != 'D' || headerBuf[2] != '-')
-	{
-		return false;
-	}
-
-	numRecords = (uint32_t) headerBuf[8] | (uint32_t) headerBuf[9] << 8 | (uint32_t)headerBuf[10] << 16 | (uint32_t)headerBuf[11] << 24 ;
-
-	recordLenth = (uint32_t) headerBuf[3] - 0x4a;
-
-	r = numRecords - 1;
-
-	while (l <= r)
-	{
-		m = (l + r) >> 1;
-
-		SPI_Flash_read((DMRID_MEMORY_STORAGE_START + DMRID_HEADER_LENGTH) + (recordLenth * m), (uint8_t *)foundRecord, 4U);
-
-		if (foundRecord->id < targetIdBCD)
-		{
-			l = m + 1;
-		}
-		else
-		{
-			if (foundRecord->id > targetIdBCD)
-			{
-				r = m - 1;
-			}
-			else
-			{
-				SPI_Flash_read((DMRID_MEMORY_STORAGE_START + DMRID_HEADER_LENGTH) + (recordLenth * m) + 4U, (uint8_t *)foundRecord + 4U, (recordLenth - 4U));
-				return true;
-			}
-		}
-	}
-
-	snprintf(foundRecord->text, 20, "ID:%d", targetId);
-	return false;
-#endif
 }
 
 bool contactIDLookup(uint32_t id, int calltype, char *buffer)

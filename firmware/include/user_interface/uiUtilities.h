@@ -41,11 +41,11 @@ typedef struct dmrIdDataStruct
 
 typedef struct
 {
-     uint32_t slices[ID_SLICES]; // [0] is min availabel ID, [REGION - 1] is max available ID
-     uint32_t IDsPerSlice;
+	uint32_t entries;
+	uint8_t  contactLength;
+	int32_t  slices[ID_SLICES]; // [0] is min availabel ID, [REGION - 1] is max available ID
+	uint32_t IDsPerSlice;
 
-     uint32_t entries;
-     uint8_t  contactLength;
 } dmrIDsCache_t;
 
 
