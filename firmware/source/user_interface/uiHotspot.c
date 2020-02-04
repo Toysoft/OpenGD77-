@@ -141,8 +141,8 @@ static const uint8_t MMDVM_VOICE_SYNC_PATTERN = 0x20U;
 static const int EMBEDDED_DATA_OFFSET = 13U;
 static const int TX_BUFFER_MIN_BEFORE_TRANSMISSION = 4;
 
-static const uint8_t START_FRAME_PATTERN[] = {0xFF,0x57,0xD7,0x5D,0xF5,0xD9};
-static const uint8_t END_FRAME_PATTERN[] 	= {0x5D,0x7F,0x77,0xFD,0x75,0x79};
+static const uint8_t START_FRAME_PATTERN[]  = { 0xFF,0x57,0xD7,0x5D,0xF5,0xD9 };
+static const uint8_t END_FRAME_PATTERN[]    = { 0x5D,0x7F,0x77,0xFD,0x75,0x79 };
 //static const uint32_t HOTSPOT_BUFFER_LENGTH = 0xA0;
 
 static uint32_t freq_rx = 0;
@@ -224,75 +224,78 @@ typedef enum
 static volatile HOTSPOT_STATE hotspotState = HOTSPOT_STATE_NOT_CONNECTED;
 
 //const int USB_SERIAL_TX_RETRIES = 2;
-static const uint8_t VOICE_LC_SYNC_FULL[] 		= { 0x04U, 0x6DU, 0x5DU, 0x7FU, 0x77U, 0xFDU, 0x75U, 0x7EU, 0x30U};
-static const uint8_t TERMINATOR_LC_SYNC_FULL[]	= { 0x04U, 0xADU, 0x5DU, 0x7FU, 0x77U, 0xFDU, 0x75U, 0x79U, 0x60U};
+static const uint8_t VOICE_LC_SYNC_FULL[]       = { 0x04U, 0x6DU, 0x5DU, 0x7FU, 0x77U, 0xFDU, 0x75U, 0x7EU, 0x30U };
+static const uint8_t TERMINATOR_LC_SYNC_FULL[]  = { 0x04U, 0xADU, 0x5DU, 0x7FU, 0x77U, 0xFDU, 0x75U, 0x79U, 0x60U };
 
-static const uint8_t LC_SYNC_MASK_FULL[]  		= { 0x0FU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xF0U};
+static const uint8_t LC_SYNC_MASK_FULL[]        = { 0x0FU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xF0U };
 
 
-static const uint8_t DMR_AUDIO_SEQ_SYNC[6][7] 	= {  {0x07U, 0xF0U, 0x00U, 0x00U, 0x00U, 0x0FU, 0xD0U},  // seq 0 NOT USED AS THIS IS THE SYNC
-													 {0x01U, 0x30U, 0x00U, 0x00U, 0x00U, 0x09U, 0x10U},  // seq 1
-													 {0x01U, 0x70U, 0x00U, 0x00U, 0x00U, 0x07U, 0x40U},  // seq 2
-													 {0x01U, 0x70U, 0x00U, 0x00U, 0x00U, 0x07U, 0x40U},  // seq 3
-													 {0x01U, 0x50U, 0x00U, 0x00U, 0x00U, 0x00U, 0x70U},  // seq 4
-													 {0x01U, 0x10U, 0x00U, 0x00U, 0x00U, 0x0EU, 0x20U}}; // seq 5
+static const uint8_t DMR_AUDIO_SEQ_SYNC[6][7]   = {
+		{ 0x07U, 0xF0U, 0x00U, 0x00U, 0x00U, 0x0FU, 0xD0U },  // seq 0 NOT USED AS THIS IS THE SYNC
+		{ 0x01U, 0x30U, 0x00U, 0x00U, 0x00U, 0x09U, 0x10U },  // seq 1
+		{ 0x01U, 0x70U, 0x00U, 0x00U, 0x00U, 0x07U, 0x40U },  // seq 2
+		{ 0x01U, 0x70U, 0x00U, 0x00U, 0x00U, 0x07U, 0x40U },  // seq 3
+		{ 0x01U, 0x50U, 0x00U, 0x00U, 0x00U, 0x00U, 0x70U },  // seq 4
+		{ 0x01U, 0x10U, 0x00U, 0x00U, 0x00U, 0x0EU, 0x20U }   // seq 5
+};
 
-static const uint8_t DMR_AUDIO_SEQ_MASK[]  		= {0x0FU, 0xF0U, 0x00U, 0x00U, 0x00U, 0x0FU, 0xF0U};
-static const uint8_t DMR_EMBED_SEQ_MASK[]  		= {0x00U, 0x0FU, 0xFFU, 0xFFU, 0xFFU, 0xF0U, 0x00U};
+static const uint8_t DMR_AUDIO_SEQ_MASK[]       = { 0x0FU, 0xF0U, 0x00U, 0x00U, 0x00U, 0x0FU, 0xF0U };
+static const uint8_t DMR_EMBED_SEQ_MASK[]       = { 0x00U, 0x0FU, 0xFFU, 0xFFU, 0xFFU, 0xF0U, 0x00U };
 
 
 // CWID related
-static const struct {
-  uint8_t  c;
-  uint32_t pattern;
-  uint8_t  length;
+static const struct
+{
+	uint8_t  c;
+	uint32_t pattern;
+	uint8_t  length;
 } CW_SYMBOL_LIST[] = {
-  {'A', 0xB8000000U, 8U},
-  {'B', 0xEA800000U, 12U},
-  {'C', 0xEBA00000U, 14U},
-  {'D', 0xEA000000U, 10U},
-  {'E', 0x80000000U, 4U},
-  {'F', 0xAE800000U, 12U},
-  {'G', 0xEE800000U, 12U},
-  {'H', 0xAA000000U, 10U},
-  {'I', 0xA0000000U, 6U},
-  {'J', 0xBBB80000U, 16U},
-  {'K', 0xEB800000U, 12U},
-  {'L', 0xBA800000U, 12U},
-  {'M', 0xEE000000U, 10U},
-  {'N', 0xE8000000U, 8U},
-  {'O', 0xEEE00000U, 14U},
-  {'P', 0xBBA00000U, 14U},
-  {'Q', 0xEEB80000U, 16U},
-  {'R', 0xBA000000U, 10U},
-  {'S', 0xA8000000U, 8U},
-  {'T', 0xE0000000U, 6U},
-  {'U', 0xAE000000U, 10U},
-  {'V', 0xAB800000U, 12U},
-  {'W', 0xBB800000U, 12U},
-  {'X', 0xEAE00000U, 14U},
-  {'Y', 0xEBB80000U, 16U},
-  {'Z', 0xEEA00000U, 14U},
-  {'1', 0xBBBB8000U, 20U},
-  {'2', 0xAEEE0000U, 18U},
-  {'3', 0xABB80000U, 16U},
-  {'4', 0xAAE00000U, 14U},
-  {'5', 0xAA800000U, 12U},
-  {'6', 0xEAA00000U, 14U},
-  {'7', 0xEEA80000U, 16U},
-  {'8', 0xEEEA0000U, 18U},
-  {'9', 0xEEEE8000U, 20U},
-  {'0', 0xEEEEE000U, 22U},
-  {'/', 0xEAE80000U, 16U},
-  {'?', 0xAEEA0000U, 18U},
-  {',', 0xEEAEE000U, 22U},
-  {'-', 0xEAAE0000U, 18U},
-  {'=', 0xEAB80000U, 16U},
-  {' ', 0x00000000U, 4U},
-  {0U,  0x00000000U, 0U}
+		{'A', 0xB8000000U, 8U},
+		{'B', 0xEA800000U, 12U},
+		{'C', 0xEBA00000U, 14U},
+		{'D', 0xEA000000U, 10U},
+		{'E', 0x80000000U, 4U},
+		{'F', 0xAE800000U, 12U},
+		{'G', 0xEE800000U, 12U},
+		{'H', 0xAA000000U, 10U},
+		{'I', 0xA0000000U, 6U},
+		{'J', 0xBBB80000U, 16U},
+		{'K', 0xEB800000U, 12U},
+		{'L', 0xBA800000U, 12U},
+		{'M', 0xEE000000U, 10U},
+		{'N', 0xE8000000U, 8U},
+		{'O', 0xEEE00000U, 14U},
+		{'P', 0xBBA00000U, 14U},
+		{'Q', 0xEEB80000U, 16U},
+		{'R', 0xBA000000U, 10U},
+		{'S', 0xA8000000U, 8U},
+		{'T', 0xE0000000U, 6U},
+		{'U', 0xAE000000U, 10U},
+		{'V', 0xAB800000U, 12U},
+		{'W', 0xBB800000U, 12U},
+		{'X', 0xEAE00000U, 14U},
+		{'Y', 0xEBB80000U, 16U},
+		{'Z', 0xEEA00000U, 14U},
+		{'1', 0xBBBB8000U, 20U},
+		{'2', 0xAEEE0000U, 18U},
+		{'3', 0xABB80000U, 16U},
+		{'4', 0xAAE00000U, 14U},
+		{'5', 0xAA800000U, 12U},
+		{'6', 0xEAA00000U, 14U},
+		{'7', 0xEEA80000U, 16U},
+		{'8', 0xEEEA0000U, 18U},
+		{'9', 0xEEEE8000U, 20U},
+		{'0', 0xEEEEE000U, 22U},
+		{'/', 0xEAE80000U, 16U},
+		{'?', 0xAEEA0000U, 18U},
+		{',', 0xEEAEE000U, 22U},
+		{'-', 0xEAAE0000U, 18U},
+		{'=', 0xEAB80000U, 16U},
+		{' ', 0x00000000U, 4U},
+		{0U,  0x00000000U, 0U}
 };
 
-static const uint8_t BIT_MASK_TABLE[] = {0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U};
+static const uint8_t BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U };
 
 #define WRITE_BIT1(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
 #define READ_BIT1(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
@@ -335,7 +338,6 @@ int menuHotspotMode(uiEvent_t *ev, bool isFirstRun)
 		savedTGorPC = trxTalkGroupOrPcId;// Save the current TG or PC
 		trxTalkGroupOrPcId = 0;
 		mmdvmHostIsConnected = false;
-		rfFrameBufCount = 0;
 		currentRxCommandState = HOTSPOT_RX_UNKNOWN;
 		displayFWVersion = false;
 		overriddenLCTA[0] = 0;
@@ -345,6 +347,21 @@ int menuHotspotMode(uiEvent_t *ev, bool isFirstRun)
 		cwReset();
 
 		memset(&rxedDMR_LC, 0, sizeof(DMRLC_T));// clear automatic variable
+
+		// Clear RF buffers
+		rfFrameBufCount = 0;
+		rfFrameBufReadIdx = 0;
+		rfFrameBufWriteIdx = 0;
+		for (uint8_t i = 0; i < HOTSPOT_BUFFER_COUNT; i++)
+		{
+			memset((void *)&audioAndHotspotDataBuffer.hotspotBuffer[i], 0, HOTSPOT_BUFFER_SIZE);
+		}
+
+		// Clear USB TX buffers
+		usbComSendBufWritePosition = 0;
+		usbComSendBufReadPosition = 0;
+		usbComSendBufCount = 0;
+		memset(&usbComSendBuf, 0, sizeof(usbComSendBuf));
 
 		trxSetModeAndBandwidth(RADIO_MODE_DIGITAL, false);// hotspot mode is for DMR i.e Digital mode
 
@@ -361,11 +378,6 @@ int menuHotspotMode(uiEvent_t *ev, bool isFirstRun)
 		tx_delay = 0;
 
 		MMDVMHostRxState = MMDVMHOST_RX_READY; // We have not sent anything to MMDVMHost, so it can't be busy yet.
-
-		usbComSendBufWritePosition = 0;
-		usbComSendBufReadPosition = 0;
-		usbComSendBufCount = 0;
-		memset(&usbComSendBuf, 0, sizeof(usbComSendBuf));
 
 		ucClearBuf();
 		ucPrintCentered(0, "Hotspot", FONT_8x16);
@@ -440,21 +452,39 @@ static void displayContactInfo(uint8_t y, char *text, size_t maxLen)
 
 static void updateContactLine(uint8_t y)
 {
-	if ((LinkHead->talkGroupOrPcId >> 24) == PC_CALL_FLAG)
+	if ((LinkHead->talkGroupOrPcId >> 24) == PC_CALL_FLAG) // Its a Private call
 	{
-		// Its a Private call
 		ucPrintCentered(y, LinkHead->contact, FONT_8x16);
 	}
-	else
+	else // Group call
 	{
-		// Group call
-		if (LinkHead->talkerAlias[0] != 0x00)
+		switch (nonVolatileSettings.contactDisplayPriority)
 		{
-			displayContactInfo(y, LinkHead->talkerAlias, sizeof(LinkHead->talkerAlias));
-		}
-		else // No TA, then use the one extracted from Codeplug or DMRIdDB
-		{
-			displayContactInfo(y, LinkHead->contact, sizeof(LinkHead->contact));
+			case CONTACT_DISPLAY_PRIO_CC_DB_TA:
+			case CONTACT_DISPLAY_PRIO_DB_CC_TA:
+				// No contact found is codeplug and DMRIDs, use TA as fallback, if any.
+				if ((strncmp(LinkHead->contact, "ID:", 3) == 0) && (LinkHead->talkerAlias[0] != 0x00))
+				{
+					displayContactInfo(y, LinkHead->talkerAlias, sizeof(LinkHead->talkerAlias));
+				}
+				else
+				{
+					displayContactInfo(y, LinkHead->contact, sizeof(LinkHead->contact));
+				}
+				break;
+
+			case CONTACT_DISPLAY_PRIO_TA_CC_DB:
+			case CONTACT_DISPLAY_PRIO_TA_DB_CC:
+				// Talker Alias have the priority here
+				if (LinkHead->talkerAlias[0] != 0x00)
+				{
+					displayContactInfo(y, LinkHead->talkerAlias, sizeof(LinkHead->talkerAlias));
+				}
+				else // No TA, then use the one extracted from Codeplug or DMRIdDB
+				{
+					displayContactInfo(y, LinkHead->contact, sizeof(LinkHead->contact));
+				}
+				break;
 		}
 	}
 }
@@ -1355,292 +1385,292 @@ static void hotspotStateMachine(void)
 
 	switch(hotspotState)
 	{
-	case HOTSPOT_STATE_NOT_CONNECTED:
-		// do nothing
-		lastRxState = HOTSPOT_RX_UNKNOWN;
+		case HOTSPOT_STATE_NOT_CONNECTED:
+			// do nothing
+			lastRxState = HOTSPOT_RX_UNKNOWN;
 
-		// force immediate shutdown of Tx if we get here and the tx is on for some reason.
-		if (trxIsTransmitting)
-		{
-			trxIsTransmitting = false;
-			disableTransmission();
-		}
-
-		rfFrameBufCount = 0;
-		if (mmdvmHostIsConnected)
-		{
-			hotspotState = HOTSPOT_STATE_INITIALISE;
-		}
-		else
-		{
-			if ((nonVolatileSettings.hotspotType == HOTSPOT_TYPE_MMDVM) &&
-					((fw_millis() - mmdvmHostLastActiveTick) > MMDVMHOST_TIMEOUT))
-			{
-				wavbuffer_count = 0;
-
-				hotspotExit();
-				break;
-			}
-		}
-		break;
-
-	case HOTSPOT_STATE_INITIALISE:
-		wavbuffer_read_idx = 0;
-		wavbuffer_write_idx = 0;
-		wavbuffer_count = 0;
-		rfFrameBufCount = 0;
-
-		overriddenLCAvailable = false;
-
-		hotspotState = HOTSPOT_STATE_RX_START;
-		//SEGGER_RTT_printf(0, "STATE_INITIALISE -> STATE_RX\n");
-		break;
-
-	case HOTSPOT_STATE_RX_START:
-		//SEGGER_RTT_printf(0, "STATE_RX_START\n");
-
-		// force immediate shutdown of Tx if we get here and the tx is on for some reason.
-		if (trxIsTransmitting)
-		{
-			trxIsTransmitting = false;
-			disableTransmission();
-		}
-
-		wavbuffer_read_idx = 0;
-		wavbuffer_write_idx = 0;
-		wavbuffer_count = 0;
-		rxFrameTime = fw_millis();
-
-		hotspotState = HOTSPOT_STATE_RX_PROCESS;
-		break;
-
-	case HOTSPOT_STATE_RX_PROCESS:
-		if (mmdvmHostIsConnected)
-		{
-			// No activity from MMDVMHost
-			if ((nonVolatileSettings.hotspotType == HOTSPOT_TYPE_MMDVM) &&
-					((fw_millis() - mmdvmHostLastActiveTick) > MMDVMHOST_TIMEOUT))
-			{
-				mmdvmHostIsConnected = false;
-				hotspotState = HOTSPOT_STATE_NOT_CONNECTED;
-				rfFrameBufCount = 0;
-				wavbuffer_count = 0;
-
-				hotspotExit();
-				break;
-			}
-		}
-		else
-		{
-			hotspotState = HOTSPOT_STATE_NOT_CONNECTED;
-			rfFrameBufCount = 0;
-			wavbuffer_count = 0;
-
+			// force immediate shutdown of Tx if we get here and the tx is on for some reason.
 			if (trxIsTransmitting)
 			{
 				trxIsTransmitting = false;
 				disableTransmission();
 			}
 
-			updateScreen(HOTSPOT_RX_IDLE);
-			break;
-		}
-
-		if (rfFrameBufCount > 0)
-		{
-			// We have pending data in RF side, but don't process it when MMDVMHost
-			// set the hotspot in POCSAG mode. Just trash it.
-			if (modemState == STATE_POCSAG)
+			rfFrameBufCount = 0;
+			if (mmdvmHostIsConnected)
 			{
-				memset((void *)&audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx], 0, HOTSPOT_BUFFER_SIZE);
-				rfFrameBufCount--;
+				hotspotState = HOTSPOT_STATE_INITIALISE;
 			}
-
-			if (MMDVMHostRxState == MMDVMHOST_RX_READY)
+			else
 			{
-				uint8_t rx_command = audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][27 + 0x0c];
-				//SEGGER_RTT_printf(0, "RX_PROCESS cmd:%d buf:%d\n",rx_command,wavbuffer_count);
-
-				switch(rx_command)
+				if ((nonVolatileSettings.hotspotType == HOTSPOT_TYPE_MMDVM) &&
+						((fw_millis() - mmdvmHostLastActiveTick) > MMDVMHOST_TIMEOUT))
 				{
-				case HOTSPOT_RX_IDLE:
-					break;
+					wavbuffer_count = 0;
 
-				case HOTSPOT_RX_START:
-					//SEGGER_RTT_printf(0, "RX_START\n",rx_command,wavbuffer_count);
-					sendVoiceHeaderLC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
-					updateScreen(rx_command);
-					lastRxState = HOTSPOT_RX_START;
-					rxFrameTime = fw_millis();
-					break;
-
-				case HOTSPOT_RX_START_LATE:
-					//SEGGER_RTT_printf(0, "RX_START_LATE\n");
-					sendVoiceHeaderLC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
-					updateScreen(rx_command);
-					lastRxState = HOTSPOT_RX_START_LATE;
-					rxFrameTime = fw_millis();
-					break;
-
-				case HOTSPOT_RX_AUDIO_FRAME:
-					//SEGGER_RTT_printf(0, "HOTSPOT_RX_AUDIO_FRAME\n");
-					hotspotSendVoiceFrame(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
-					lastRxState = HOTSPOT_RX_AUDIO_FRAME;
-					rxFrameTime = fw_millis();
-					break;
-
-				case HOTSPOT_RX_STOP:
-					//SEGGER_RTT_printf(0, "RX_STOP\n");
-					updateScreen(rx_command);
-					sendTerminator_LC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
-					lastRxState = HOTSPOT_RX_STOP;
-					hotspotState = HOTSPOT_STATE_RX_END;
-					break;
-
-				case HOTSPOT_RX_IDLE_OR_REPEAT:
-					lastRxState = HOTSPOT_RX_IDLE_OR_REPEAT;
-					//SEGGER_RTT_printf(0, "RX_IDLE_OR_REPEAT\n");
-					/*
-								switch(lastRxState)
-								{
-									case HOTSPOT_RX_START:
-										sendVoiceHeaderLC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_read_idx]);
-										break;
-									case HOTSPOT_RX_STOP:
-										sendTerminator_LC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_read_idx]);
-										break;
-									default:
-										//SEGGER_RTT_printf(0, "ERROR: Unkown HOTSPOT_RX_IDLE_OR_REPEAT\n");
-										break;
-								}
-					 */
-					break;
-
-				default:
-					lastRxState = HOTSPOT_RX_UNKNOWN;
-					//SEGGER_RTT_printf(0, "ERROR: Unkown Hotspot RX state\n");
+					hotspotExit();
 					break;
 				}
+			}
+			break;
 
-				memset((void *)&audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx], 0, HOTSPOT_BUFFER_SIZE);
-				rfFrameBufReadIdx = ((rfFrameBufReadIdx + 1) % HOTSPOT_BUFFER_COUNT);
+		case HOTSPOT_STATE_INITIALISE:
+			wavbuffer_read_idx = 0;
+			wavbuffer_write_idx = 0;
+			wavbuffer_count = 0;
+			rfFrameBufCount = 0;
 
-				if (rfFrameBufCount > 0)
+			overriddenLCAvailable = false;
+
+			hotspotState = HOTSPOT_STATE_RX_START;
+			//SEGGER_RTT_printf(0, "STATE_INITIALISE -> STATE_RX\n");
+			break;
+
+		case HOTSPOT_STATE_RX_START:
+			//SEGGER_RTT_printf(0, "STATE_RX_START\n");
+
+			// force immediate shutdown of Tx if we get here and the tx is on for some reason.
+			if (trxIsTransmitting)
+			{
+				trxIsTransmitting = false;
+				disableTransmission();
+			}
+
+			wavbuffer_read_idx = 0;
+			wavbuffer_write_idx = 0;
+			wavbuffer_count = 0;
+			rxFrameTime = fw_millis();
+
+			hotspotState = HOTSPOT_STATE_RX_PROCESS;
+			break;
+
+		case HOTSPOT_STATE_RX_PROCESS:
+			if (mmdvmHostIsConnected)
+			{
+				// No activity from MMDVMHost
+				if ((nonVolatileSettings.hotspotType == HOTSPOT_TYPE_MMDVM) &&
+						((fw_millis() - mmdvmHostLastActiveTick) > MMDVMHOST_TIMEOUT))
 				{
+					mmdvmHostIsConnected = false;
+					hotspotState = HOTSPOT_STATE_NOT_CONNECTED;
+					rfFrameBufCount = 0;
+					wavbuffer_count = 0;
+
+					hotspotExit();
+					break;
+				}
+			}
+			else
+			{
+				hotspotState = HOTSPOT_STATE_NOT_CONNECTED;
+				rfFrameBufCount = 0;
+				wavbuffer_count = 0;
+
+				if (trxIsTransmitting)
+				{
+					trxIsTransmitting = false;
+					disableTransmission();
+				}
+
+				updateScreen(HOTSPOT_RX_IDLE);
+				break;
+			}
+
+			if (rfFrameBufCount > 0)
+			{
+				// We have pending data in RF side, but don't process it when MMDVMHost
+				// set the hotspot in POCSAG mode. Just trash it.
+				if (modemState == STATE_POCSAG)
+				{
+					memset((void *)&audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx], 0, HOTSPOT_BUFFER_SIZE);
 					rfFrameBufCount--;
 				}
-			}
-			else
-			{
-				// Rx Error NAK
-				hotspotState = HOTSPOT_STATE_RX_END;
-			}
-		}
-		else
-		{
-			// Timeout: no RF data for too long
-			if (((lastRxState == HOTSPOT_RX_AUDIO_FRAME) || (lastRxState == HOTSPOT_RX_START)) &&
-					((fw_millis() - rxFrameTime) > 300)) // 300ms
-			{
-				sendDMRLost();
-				updateScreen(HOTSPOT_RX_IDLE);
-				lastRxState = HOTSPOT_RX_STOP;
-				hotspotState = HOTSPOT_STATE_RX_END;
-				rfFrameBufCount = 0;
-				//rfFrameBufReadIdx = 0;
-				//wavbuffer_count = 0;
-				return;
-			}
-		}
-		break;
 
-	case HOTSPOT_STATE_RX_END:
-		hotspotState = HOTSPOT_STATE_RX_START;
-		break;
-
-	case HOTSPOT_STATE_TX_START_BUFFERING:
-		// If MMDVMHost tells us to go back to idle. (receiving)
-		if (modemState == STATE_IDLE)
-		{
-			//modemState = STATE_DMR;
-			//wavbuffer_read_idx = 0;
-			//wavbuffer_write_idx = 0;
-			//wavbuffer_count = 0;
-			rfFrameBufCount = 0;
-			lastRxState = HOTSPOT_RX_IDLE;
-			hotspotState = HOTSPOT_STATE_TX_SHUTDOWN;
-			mmdvmHostIsConnected = false;
-			disableTransmission();
-			updateScreen(HOTSPOT_RX_IDLE);
-
-			//SEGGER_RTT_printf(0, "modemState == STATE_IDLE: TX_START_BUFFERING -> HOTSPOT_STATE_TX_SHUTDOWN\n");
-		}
-		else
-		{
-			if (wavbuffer_count > TX_BUFFER_MIN_BEFORE_TRANSMISSION)
-			{
-				if (cwKeying == false)
+				if (MMDVMHostRxState == MMDVMHOST_RX_READY)
 				{
-					hotspotState = HOTSPOT_STATE_TRANSMITTING;
-					//SEGGER_RTT_printf(0, "TX_START_BUFFERING -> TRANSMITTING %d\n",wavbuffer_count);
-					enableTransmission();
-					updateScreen(HOTSPOT_RX_IDLE);
+					uint8_t rx_command = audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][27 + 0x0c];
+					//SEGGER_RTT_printf(0, "RX_PROCESS cmd:%d buf:%d\n",rx_command,wavbuffer_count);
+
+					switch(rx_command)
+					{
+						case HOTSPOT_RX_IDLE:
+							break;
+
+						case HOTSPOT_RX_START:
+							//SEGGER_RTT_printf(0, "RX_START\n",rx_command,wavbuffer_count);
+							sendVoiceHeaderLC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
+							updateScreen(rx_command);
+							lastRxState = HOTSPOT_RX_START;
+							rxFrameTime = fw_millis();
+							break;
+
+						case HOTSPOT_RX_START_LATE:
+							//SEGGER_RTT_printf(0, "RX_START_LATE\n");
+							sendVoiceHeaderLC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
+							updateScreen(rx_command);
+							lastRxState = HOTSPOT_RX_START_LATE;
+							rxFrameTime = fw_millis();
+							break;
+
+						case HOTSPOT_RX_AUDIO_FRAME:
+							//SEGGER_RTT_printf(0, "HOTSPOT_RX_AUDIO_FRAME\n");
+							hotspotSendVoiceFrame(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
+							lastRxState = HOTSPOT_RX_AUDIO_FRAME;
+							rxFrameTime = fw_millis();
+							break;
+
+						case HOTSPOT_RX_STOP:
+							//SEGGER_RTT_printf(0, "RX_STOP\n");
+							updateScreen(rx_command);
+							sendTerminator_LC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
+							lastRxState = HOTSPOT_RX_STOP;
+							hotspotState = HOTSPOT_STATE_RX_END;
+							break;
+
+						case HOTSPOT_RX_IDLE_OR_REPEAT:
+							lastRxState = HOTSPOT_RX_IDLE_OR_REPEAT;
+							//SEGGER_RTT_printf(0, "RX_IDLE_OR_REPEAT\n");
+							/*
+										switch(lastRxState)
+										{
+											case HOTSPOT_RX_START:
+												sendVoiceHeaderLC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_read_idx]);
+												break;
+											case HOTSPOT_RX_STOP:
+												sendTerminator_LC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_read_idx]);
+												break;
+											default:
+												//SEGGER_RTT_printf(0, "ERROR: Unkown HOTSPOT_RX_IDLE_OR_REPEAT\n");
+												break;
+										}
+							 */
+							break;
+
+						default:
+							lastRxState = HOTSPOT_RX_UNKNOWN;
+							//SEGGER_RTT_printf(0, "ERROR: Unkown Hotspot RX state\n");
+							break;
+					}
+
+					memset((void *)&audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx], 0, HOTSPOT_BUFFER_SIZE);
+					rfFrameBufReadIdx = ((rfFrameBufReadIdx + 1) % HOTSPOT_BUFFER_COUNT);
+
+					if (rfFrameBufCount > 0)
+					{
+						rfFrameBufCount--;
+					}
+				}
+				else
+				{
+					// Rx Error NAK
+					hotspotState = HOTSPOT_STATE_RX_END;
 				}
 			}
 			else
 			{
-				if (--timeoutCounter == 0)
+				// Timeout: no RF data for too long
+				if (((lastRxState == HOTSPOT_RX_AUDIO_FRAME) || (lastRxState == HOTSPOT_RX_START)) &&
+						((fw_millis() - rxFrameTime) > 300)) // 300ms
 				{
 					sendDMRLost();
-					hotspotState = HOTSPOT_STATE_INITIALISE;
-					//SEGGER_RTT_printf(0, "Timeout while buffering TX_START_BUFFERING -> HOTSPOT_STATE_INITIALISE\n");
+					updateScreen(HOTSPOT_RX_IDLE);
+					lastRxState = HOTSPOT_RX_STOP;
+					hotspotState = HOTSPOT_STATE_RX_END;
+					rfFrameBufCount = 0;
+					//rfFrameBufReadIdx = 0;
+					//wavbuffer_count = 0;
+					return;
 				}
 			}
-		}
-		break;
+			break;
 
-	case HOTSPOT_STATE_TRANSMITTING:
-		// Stop transmitting when there is no data in the buffer or if MMDVMHost sends the idle command
-		if (wavbuffer_count == 0 || modemState == STATE_IDLE)
-		{
-			hotspotState = HOTSPOT_STATE_TX_SHUTDOWN;
-			//SEGGER_RTT_printf(0, "TRANSMITTING -> TX_SHUTDOWN %d %d\n",wavbuffer_count,modemState);
-			trxIsTransmitting = false;
-		}
-		break;
+		case HOTSPOT_STATE_RX_END:
+			hotspotState = HOTSPOT_STATE_RX_START;
+			break;
 
-	case HOTSPOT_STATE_TX_SHUTDOWN:
-		overriddenLCAvailable = false;
-		if (txstopdelay > 0)
-		{
-			txstopdelay--;
-			if (wavbuffer_count > 0)
+		case HOTSPOT_STATE_TX_START_BUFFERING:
+			// If MMDVMHost tells us to go back to idle. (receiving)
+			if (modemState == STATE_IDLE)
 			{
-				// restart
-				//SEGGER_RTT_printf(0, "Restarting transmission %d\n",wavbuffer_count);
-				enableTransmission();
-				timeoutCounter = TX_BUFFERING_TIMEOUT;
-				hotspotState = HOTSPOT_STATE_TX_START_BUFFERING;
-			}
-		}
-		else
-		{
-			if ((slot_state < DMR_STATE_TX_START_1) ||
-					((modemState == STATE_IDLE) && trxIsTransmitting)) // MMDVMHost asked to go back to IDLE (mostly on shutdown)
-			{
+				//modemState = STATE_DMR;
+				//wavbuffer_read_idx = 0;
+				//wavbuffer_write_idx = 0;
+				//wavbuffer_count = 0;
+				rfFrameBufCount = 0;
+				lastRxState = HOTSPOT_RX_IDLE;
+				hotspotState = HOTSPOT_STATE_TX_SHUTDOWN;
+				mmdvmHostIsConnected = false;
 				disableTransmission();
-				hotspotState = HOTSPOT_STATE_RX_START;
-				//SEGGER_RTT_printf(0, "TX_SHUTDOWN -> STATE_RX\n");
 				updateScreen(HOTSPOT_RX_IDLE);
 
-				/*
-					wavbuffer_read_idx=0;
-					wavbuffer_write_idx=0;
-					wavbuffer_count=0;
-				 */
+				//SEGGER_RTT_printf(0, "modemState == STATE_IDLE: TX_START_BUFFERING -> HOTSPOT_STATE_TX_SHUTDOWN\n");
 			}
-		}
-		break;
+			else
+			{
+				if (wavbuffer_count > TX_BUFFER_MIN_BEFORE_TRANSMISSION)
+				{
+					if (cwKeying == false)
+					{
+						hotspotState = HOTSPOT_STATE_TRANSMITTING;
+						//SEGGER_RTT_printf(0, "TX_START_BUFFERING -> TRANSMITTING %d\n",wavbuffer_count);
+						enableTransmission();
+						updateScreen(HOTSPOT_RX_IDLE);
+					}
+				}
+				else
+				{
+					if (--timeoutCounter == 0)
+					{
+						sendDMRLost();
+						hotspotState = HOTSPOT_STATE_INITIALISE;
+						//SEGGER_RTT_printf(0, "Timeout while buffering TX_START_BUFFERING -> HOTSPOT_STATE_INITIALISE\n");
+					}
+				}
+			}
+			break;
+
+		case HOTSPOT_STATE_TRANSMITTING:
+			// Stop transmitting when there is no data in the buffer or if MMDVMHost sends the idle command
+			if (wavbuffer_count == 0 || modemState == STATE_IDLE)
+			{
+				hotspotState = HOTSPOT_STATE_TX_SHUTDOWN;
+				//SEGGER_RTT_printf(0, "TRANSMITTING -> TX_SHUTDOWN %d %d\n",wavbuffer_count,modemState);
+				trxIsTransmitting = false;
+			}
+			break;
+
+		case HOTSPOT_STATE_TX_SHUTDOWN:
+			overriddenLCAvailable = false;
+			if (txstopdelay > 0)
+			{
+				txstopdelay--;
+				if (wavbuffer_count > 0)
+				{
+					// restart
+					//SEGGER_RTT_printf(0, "Restarting transmission %d\n",wavbuffer_count);
+					enableTransmission();
+					timeoutCounter = TX_BUFFERING_TIMEOUT;
+					hotspotState = HOTSPOT_STATE_TX_START_BUFFERING;
+				}
+			}
+			else
+			{
+				if ((slot_state < DMR_STATE_TX_START_1) ||
+						((modemState == STATE_IDLE) && trxIsTransmitting)) // MMDVMHost asked to go back to IDLE (mostly on shutdown)
+				{
+					disableTransmission();
+					hotspotState = HOTSPOT_STATE_RX_START;
+					//SEGGER_RTT_printf(0, "TX_SHUTDOWN -> STATE_RX\n");
+					updateScreen(HOTSPOT_RX_IDLE);
+
+					/*
+						wavbuffer_read_idx=0;
+						wavbuffer_write_idx=0;
+						wavbuffer_count=0;
+					 */
+				}
+			}
+			break;
 	}
 }
 
@@ -2182,39 +2212,112 @@ static void handleHotspotRequest(void)
 		//SEGGER_RTT_printf(0, "MMDVM %02x\n",com_requestbuffer[2]);
 		switch(com_requestbuffer[2U])
 		{
-		case MMDVM_GET_STATUS:
-			getStatus();
-			break;
+			case MMDVM_GET_STATUS:
+				getStatus();
+				break;
 
-		case MMDVM_GET_VERSION:
-			getVersion();
-			break;
+			case MMDVM_GET_VERSION:
+				getVersion();
+				break;
 
-		case MMDVM_SET_CONFIG:
-			err = setConfig(com_requestbuffer + 3U, com_requestbuffer[1U] - 3U);
-			if (err == 0U)
-			{
-				sendACK();
-				updateScreen(HOTSPOT_RX_IDLE);
-			}
-			else
-			{
-				sendNAK(err);
-			}
-			break;
-
-		case MMDVM_SET_MODE:
-			{
-				MMDVM_STATE oldState = modemState;
-
-				err = setMode(com_requestbuffer + 3U, com_requestbuffer[1U] - 3U);
-
-				if (((oldState == STATE_POCSAG) && (modemState != STATE_POCSAG)) ||
-						((oldState != STATE_POCSAG) && (modemState == STATE_POCSAG)))
+			case MMDVM_SET_CONFIG:
+				err = setConfig(com_requestbuffer + 3U, com_requestbuffer[1U] - 3U);
+				if (err == 0U)
 				{
-					updateScreen(currentRxCommandState); // refresh screen
+					sendACK();
+					updateScreen(HOTSPOT_RX_IDLE);
+				}
+				else
+				{
+					sendNAK(err);
+				}
+				break;
+
+			case MMDVM_SET_MODE:
+				{
+					MMDVM_STATE oldState = modemState;
+
+					err = setMode(com_requestbuffer + 3U, com_requestbuffer[1U] - 3U);
+
+					if (((oldState == STATE_POCSAG) && (modemState != STATE_POCSAG)) ||
+							((oldState != STATE_POCSAG) && (modemState == STATE_POCSAG)))
+					{
+						updateScreen(currentRxCommandState); // refresh screen
+					}
+
+					if (err == 0U)
+					{
+						sendACK();
+					}
+					else
+					{
+						sendNAK(err);
+					}
+				}
+				break;
+
+			case MMDVM_SET_FREQ:
+				err = setFreq(com_requestbuffer + 3U, com_requestbuffer[1U] - 3U);
+				if (err == 0U)
+				{
+					sendACK();
+					updateScreen(HOTSPOT_RX_IDLE);
+				}
+				else
+				{
+					sendNAK(err);
+				}
+				break;
+
+			case MMDVM_CAL_DATA:
+				//SEGGER_RTT_printf(0, "MMDVM_CAL_DATA\n");
+				sendNAK(err);
+				break;
+
+			case MMDVM_SEND_CWID:
+				err = 5U;
+				if (modemState == STATE_IDLE)
+				{
+					err = handleCWID(com_requestbuffer + 3U, com_requestbuffer[1U] - 3U);
 				}
 
+				if (err == 0U)
+				{
+					cwKeying = true;
+					cwNextPeriod = PITCounter + tx_delay;
+					sendACK();
+				}
+				else
+				{
+					sendNAK(err);
+				}
+				//SEGGER_RTT_printf(0, "MMDVM_SEND_CWID\n");
+				break;
+
+			case MMDVM_DSTAR_HEADER:
+			case MMDVM_DSTAR_DATA:
+			case MMDVM_DSTAR_EOT:
+				sendNAK(err);
+				break;
+
+			case MMDVM_DMR_DATA1: // We are a simplex hotspot, no TS1 support
+				//SEGGER_RTT_printf(0, "MMDVM_DMR_DATA1\n");
+				//hotspotModeReceiveNetFrame((uint8_t *)com_requestbuffer, 1U);
+				sendNAK(err);
+				break;
+
+			case MMDVM_DMR_DATA2:
+				//SEGGER_RTT_printf(0, "MMDVM_DMR_DATA2\n");
+
+				// It seems BlueDV under Windows forget to set correct mode
+				// when it connect a TG with an already running QSO. So we force
+				// the modemState and init the HS.
+				if ((nonVolatileSettings.hotspotType == HOTSPOT_TYPE_BLUEDV) && (modemState == STATE_IDLE))
+				{
+					modemState = STATE_DMR;
+				}
+
+				err = hotspotModeReceiveNetFrame(com_requestbuffer, 2U);
 				if (err == 0U)
 				{
 					sendACK();
@@ -2223,165 +2326,92 @@ static void handleHotspotRequest(void)
 				{
 					sendNAK(err);
 				}
-			}
-			break;
+				break;
 
-		case MMDVM_SET_FREQ:
-			err = setFreq(com_requestbuffer + 3U, com_requestbuffer[1U] - 3U);
-			if (err == 0U)
-			{
+			case MMDVM_DMR_START: // Only for duplex
+				//SEGGER_RTT_printf(0, "MMDVM_DMR_START\n");
 				sendACK();
-				updateScreen(HOTSPOT_RX_IDLE);
-			}
-			else
-			{
-				sendNAK(err);
-			}
-			break;
+				break;
 
-		case MMDVM_CAL_DATA:
-			//SEGGER_RTT_printf(0, "MMDVM_CAL_DATA\n");
-			sendNAK(err);
-			break;
+			case MMDVM_DMR_SHORTLC:
+				//SEGGER_RTT_printf(0, "MMDVM_DMR_SHORTLC\n");
+				err = handleDMRShortLC(com_requestbuffer, com_requestbuffer[1U]);
+				if (err == 0U)
+				{
+					sendACK();
+				}
+				else
+				{
+					sendNAK(err);
+				}
+				break;
 
-		case MMDVM_SEND_CWID:
-			err = 5U;
-			if (modemState == STATE_IDLE)
-			{
-				err = handleCWID(com_requestbuffer + 3U, com_requestbuffer[1U] - 3U);
-			}
-
-			if (err == 0U)
-			{
-				cwKeying = true;
-				cwNextPeriod = PITCounter + tx_delay;
+			case MMDVM_DMR_ABORT: // Only for duplex
+				//SEGGER_RTT_printf(0, "MMDVM_DMR_ABORT\n");
 				sendACK();
-			}
-			else
-			{
+				break;
+
+	#if 0  // Serial passthrough (a.k.a Nextion serial port), unhandled
+			case MMDVM_SERIAL:
+				//SEGGER_RTT_printf(0, "MMDVM_SERIAL\n");
+				//displayDataBytes(com_requestbuffer, com_requestbuffer[1]);
+				//sendACK();
+				break;
+	#endif
+
+			case MMDVM_YSF_DATA:
 				sendNAK(err);
-			}
-			//SEGGER_RTT_printf(0, "MMDVM_SEND_CWID\n");
-			break;
+				break;
 
-		case MMDVM_DSTAR_HEADER:
-		case MMDVM_DSTAR_DATA:
-		case MMDVM_DSTAR_EOT:
-			sendNAK(err);
-			break;
-
-		case MMDVM_DMR_DATA1: // We are a simplex hotspot, no TS1 support
-			//SEGGER_RTT_printf(0, "MMDVM_DMR_DATA1\n");
-			//hotspotModeReceiveNetFrame((uint8_t *)com_requestbuffer, 1U);
-			sendNAK(err);
-			break;
-
-		case MMDVM_DMR_DATA2:
-			//SEGGER_RTT_printf(0, "MMDVM_DMR_DATA2\n");
-
-			// It seems BlueDV under Windows forget to set correct mode
-			// when it connect a TG with an already running QSO. So we force
-			// the modemState and init the HS.
-			if ((nonVolatileSettings.hotspotType == HOTSPOT_TYPE_BLUEDV) && (modemState == STATE_IDLE))
-			{
-				modemState = STATE_DMR;
-			}
-
-			err = hotspotModeReceiveNetFrame(com_requestbuffer, 2U);
-			if (err == 0U)
-			{
-				sendACK();
-			}
-			else
-			{
+			case MMDVM_P25_HDR:
+			case MMDVM_P25_LDU:
 				sendNAK(err);
-			}
-			break;
+				break;
 
-		case MMDVM_DMR_START: // Only for duplex
-			//SEGGER_RTT_printf(0, "MMDVM_DMR_START\n");
-			sendACK();
-			break;
-
-		case MMDVM_DMR_SHORTLC:
-			//SEGGER_RTT_printf(0, "MMDVM_DMR_SHORTLC\n");
-			err = handleDMRShortLC(com_requestbuffer, com_requestbuffer[1U]);
-			if (err == 0U)
-			{
-				sendACK();
-			}
-			else
-			{
+			case MMDVM_NXDN_DATA:
 				sendNAK(err);
-			}
-			break;
+				break;
 
-		case MMDVM_DMR_ABORT: // Only for duplex
-			//SEGGER_RTT_printf(0, "MMDVM_DMR_ABORT\n");
-			sendACK();
-			break;
+			case MMDVM_POCSAG_DATA:
+				if ((modemState == STATE_IDLE) || (modemState == STATE_POCSAG))
+				{
+					//err = handlePOCSAG(com_requestbuffer + 3U, com_requestbuffer[1U] - 3U);
+					err = 0U;
+				}
 
-#if 0  // Serial passthrough (a.k.a Nextion serial port), unhandled
-		case MMDVM_SERIAL:
-			//SEGGER_RTT_printf(0, "MMDVM_SERIAL\n");
-			//displayDataBytes(com_requestbuffer, com_requestbuffer[1]);
-			//sendACK();
-			break;
-#endif
+				if (err == 0U)
+				{
+					sendACK(); // We don't send pages, but POCSAG can be enabled in Pi-Star
+				}
+				else
+				{
+					sendNAK(err);
+				}
+				break;
 
-		case MMDVM_YSF_DATA:
-			sendNAK(err);
-			break;
+			case MMDVM_TRANSPARENT: // Do nothing, stay silent
+				//sendNAK(err);
+				break;
 
-		case MMDVM_P25_HDR:
-		case MMDVM_P25_LDU:
-			sendNAK(err);
-			break;
+			case MMDVM_QSO_INFO:
+				err = setQSOInfo(com_requestbuffer, com_requestbuffer[1U]);
+				if ((err == 0U) || (err == 4U) /* non DMR mode, ignored */)
+				{
+					sendACK();
+				}
+				else
+				{
+					sendNAK(err);
+				}
+				break;
 
-		case MMDVM_NXDN_DATA:
-			sendNAK(err);
-			break;
-
-		case MMDVM_POCSAG_DATA:
-			if ((modemState == STATE_IDLE) || (modemState == STATE_POCSAG))
-			{
-				//err = handlePOCSAG(com_requestbuffer + 3U, com_requestbuffer[1U] - 3U);
-				err = 0U;
-			}
-
-			if (err == 0U)
-			{
-				sendACK(); // We don't send pages, but POCSAG can be enabled in Pi-Star
-			}
-			else
-			{
-				sendNAK(err);
-			}
-			break;
-
-		case MMDVM_TRANSPARENT: // Do nothing, stay silent
-			//sendNAK(err);
-			break;
-
-		case MMDVM_QSO_INFO:
-			err = setQSOInfo(com_requestbuffer, com_requestbuffer[1U]);
-			if ((err == 0U) || (err == 4U) /* non DMR mode, ignored */)
-			{
-				sendACK();
-			}
-			else
-			{
-				sendNAK(err);
-			}
-			break;
-
-		default:
-		{
-			//SEGGER_RTT_printf(0, "Unhandled command type %d\n",com_requestbuffer[2]);
-			sendNAK(1U);
-			//sendNAK(com_requestbuffer[2]);
-		}
-		break;
+			default:
+				{
+					//SEGGER_RTT_printf(0, "Unhandled command type %d\n",com_requestbuffer[2]);
+					sendNAK(1U);
+					//sendNAK(com_requestbuffer[2]);
+				}
+				break;
 		}
 
 		com_requestbuffer[0U] = 0xFFU; // Invalidate this one
