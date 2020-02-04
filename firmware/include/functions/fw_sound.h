@@ -53,7 +53,7 @@ extern volatile int micAudioSamplesTotal;
 extern int soundBeepVolumeDivider;
 
 #define WAV_BUFFER_SIZE 0xa0
-#define WAV_BUFFER_COUNT 16
+#define WAV_BUFFER_COUNT 18
 #define HOTSPOT_BUFFER_SIZE 50
 #define HOTSPOT_BUFFER_COUNT 48
 
@@ -66,7 +66,6 @@ extern union sharedDataBuffer
 extern volatile int wavbuffer_read_idx;
 extern volatile int wavbuffer_write_idx;
 extern volatile int wavbuffer_count;
-extern uint8_t tmp_wavbuffer[WAV_BUFFER_SIZE];
 extern uint8_t *currentWaveBuffer;
 
 extern uint8_t spi_sound1[WAV_BUFFER_SIZE*2];
@@ -91,7 +90,7 @@ void receive_sound_data(void);
 void store_soundbuffer(void);
 void retrieve_soundbuffer(void);
 void tick_RXsoundbuffer(void);
-
+void setup_soundBuffer(void);
 void tick_melody(void);
 void fw_beep_task(void *data);
 void handlePromptAudio(void);

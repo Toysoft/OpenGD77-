@@ -92,7 +92,7 @@ int getIsWakingState(void);
 void clearActiveDMRID(void);
 void setMicGainDMR(uint8_t gain);
 
-int HRC6000GetReveivedTgOrPcId(void);
-int HRC6000GetReveivedSrcId(void);
+int HRC6000GetReceivedTgOrPcId(void);
+int HRC6000GetReceivedSrcId(void);
 
 #endif /* _FW_HR_C6000_H_ */

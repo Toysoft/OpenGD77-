@@ -58,7 +58,7 @@ typedef enum
 {
 	SCAN_SCANNING = 0,
 	SCAN_SHORT_PAUSED,
-	SCAN_PAUSED,
+	SCAN_PAUSED
 } ScanVFOState_t;
 
 static ScanVFOState_t scanState= SCAN_SCANNING;		//state flag for scan routine.
@@ -181,15 +181,27 @@ int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
 				{
 					displaySquelch = false;
 
-					ucFillRect(0, 16, 128, 16, true);
+					ucClearRows(2, 4, false);
 					ucRenderRows(2,4);
 				}
 
 				if ((ev->time - m) > RSSI_UPDATE_COUNTER_RELOAD)
 				{
 					m = ev->time;
-					drawRSSIBarGraph();
-					ucRenderRows(1,2);// Only render the second row which contains the bar graph, as there is no need to redraw the rest of the screen
+
+					if (uiVfoModeScanActive && (scanState == SCAN_PAUSED))
+					{
+						ucClearRows(0, 2, false);
+						menuUtilityRenderHeader();
+					}
+					else
+					{
+						drawRSSIBarGraph();
+					}
+
+					// Only render the second row which contains the bar graph, if we're not scanning,
+					// as there is no need to redraw the rest of the screen
+					ucRenderRows(((uiVfoModeScanActive && (scanState == SCAN_PAUSED)) ? 0 : 1), 2);
 				}
 			}
 
@@ -243,8 +255,19 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 	struct_codeplugContact_t contact;
 	int contactIndex;
 
-	ucClearBuf();
+	// Only render the header, then wait for the next run
+	// Otherwise the screen could remain blank if TG and PC are == 0
+	// since menuDisplayQSODataState won't be set to QSO_DISPLAY_IDLE
+	if ((trxGetMode() == RADIO_MODE_DIGITAL) && (HRC6000GetReceivedTgOrPcId() == 0) &&
+			((menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA) || (menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA_UPDATE)))
+	{
+		ucClearRows(0,  2, false);
+		menuUtilityRenderHeader();
+		ucRenderRows(0,  2);
+		return;
+	}
 
+	ucClearBuf();
 	menuUtilityRenderHeader();
 
 	switch(menuDisplayQSODataState)
@@ -277,9 +300,13 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 							codeplugUtilConvertBufToString(contact.name, buffer, 16);
 						}
 					}
-					if (trxIsTransmitting) {
+
+					if (trxIsTransmitting)
+					{
 						ucDrawRect(0, 34, 128, 16, true);
-					} else {
+					}
+					else
+					{
 						ucDrawRect(0, (CCScanActive ? 32 : CONTACT_Y_POS), 128, 16, true);
 					}
 				}
@@ -358,7 +385,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					if (displaySquelch)
 					{
 						displaySquelch = false;
-						ucFillRect(0, 16, 128, 16, true);
+						ucClearRows(2, 4, false);
 					}
 
 					snprintf(buffer, bufferLen, " %d ", txTimeSecs);
@@ -502,6 +529,7 @@ static void loadContact(void)
 static void handleEvent(uiEvent_t *ev)
 {
 	displayLightTrigger();
+
 	if((scanState==SCAN_PAUSED) && ((ev->events & KEY_EVENT) && (ev->keys.key == KEY_DOWN)) && (!(ev->buttons & BUTTON_SK2)))
 		{
 			nuisanceDelete[nuisanceDeleteIndex++]=currentChannelData->rxFreq;
@@ -586,11 +614,7 @@ static void handleEvent(uiEvent_t *ev)
 			menuVFOModeUpdateScreen(0);
 			return;
 		}
-	}
-
-	if (ev->events & KEY_EVENT)
-	{
-		if (KEYCHECK_SHORTUP(ev->keys, KEY_ORANGE))
+		if (ev->buttons & BUTTON_ORANGE)
 		{
 			if (ev->buttons & BUTTON_SK2)
 			{
@@ -605,10 +629,10 @@ static void handleEvent(uiEvent_t *ev)
 
 			return;
 		}
-		else if (KEYCHECK_LONGDOWN(ev->keys, KEY_ORANGE))
-		{
-			startScan();
-		}
+	}
+
+	if (ev->events & KEY_EVENT)
+	{
 		if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 		{
 			if (ev->buttons & BUTTON_SK2 )
@@ -747,7 +771,7 @@ static void handleEvent(uiEvent_t *ev)
 			{
 				if (ev->buttons & BUTTON_SK2)
 				{
-					if (nonVolatileSettings.txPowerLevel < 7)
+					if (nonVolatileSettings.txPowerLevel < 9)
 					{
 						nonVolatileSettings.txPowerLevel++;
 						trxSetPowerFromLevel(nonVolatileSettings.txPowerLevel);
@@ -1124,7 +1148,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 		menuSystemPopPreviousMenu();
 		return;
 	}
-	else if ((KEYCHECK_SHORTUP(ev->keys, KEY_ORANGE)) && (gMenusCurrentItemIndex==VFO_SCREEN_QUICK_MENU_VFO_A_B))
+	else if (((ev->events & BUTTON_EVENT) && (ev->buttons & BUTTON_ORANGE)) && (gMenusCurrentItemIndex==VFO_SCREEN_QUICK_MENU_VFO_A_B))
 	{
 		nonVolatileSettings.currentVFONumber = 1 - nonVolatileSettings.currentVFONumber;// Switch to other VFO
 		currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];
@@ -1326,35 +1350,59 @@ static void startScan(void)
 
 static void scanning(void)
 {
-	if((scanState==SCAN_SCANNING) && (scanTimer > SCAN_SKIP_CHANNEL_INTERVAL) && (scanTimer < ( SCAN_TOTAL_INTERVAL - SCAN_FREQ_CHANGE_SETTLING_INTERVAL)))							    			//after initial settling time
+	if((scanState == SCAN_SCANNING) && (scanTimer > SCAN_SKIP_CHANNEL_INTERVAL) && (scanTimer < ( SCAN_TOTAL_INTERVAL - SCAN_FREQ_CHANGE_SETTLING_INTERVAL)))							    			//after initial settling time
 	{
 		//test for presence of RF Carrier.
 		// In FM mode the dmr slot_state will always be DMR_STATE_IDLE
 		if (slot_state != DMR_STATE_IDLE)
 		{
-			scanState=SCAN_PAUSED;
-			scanTimer=nonVolatileSettings.scanDelay*1000;
+			if (nonVolatileSettings.scanModePause == SCAN_MODE_STOP)
+			{
+				uiVfoModeScanActive = false;
+				// Just update the header (to prevent hidden mode)
+				ucClearRows(0,  2, false);
+				menuUtilityRenderHeader();
+				ucRenderRows(0,  2);
+				return;
+			}
+			else
+			{
+				scanState = SCAN_PAUSED;
+				scanTimer = nonVolatileSettings.scanDelay * 1000;
+			}
 		}
 		else
 		{
-			if(trx_carrier_detected() )
+			if(trx_carrier_detected())
 			{
-				scanTimer=SCAN_SHORT_PAUSE_TIME;												//start short delay to allow full detection of signal
-				scanState=SCAN_SHORT_PAUSED;															//state 1 = pause and test for valid signal that produces audio
+				if (nonVolatileSettings.scanModePause == SCAN_MODE_STOP)
+				{
+					uiVfoModeScanActive = false;
+					// Just update the header (to prevent hidden mode)
+					ucClearRows(0,  2, false);
+					menuUtilityRenderHeader();
+					ucRenderRows(0,  2);
+					return;
+				}
+				else
+				{
+					scanTimer = SCAN_SHORT_PAUSE_TIME;												//start short delay to allow full detection of signal
+					scanState = SCAN_SHORT_PAUSED;															//state 1 = pause and test for valid signal that produces audio
+				}
 			}
 		}
 	}
 
-	if(((scanState==SCAN_PAUSED)&&(nonVolatileSettings.scanModePause==false)) || (scanState==SCAN_SHORT_PAUSED))   // only do this once if scan mode is PAUSE do it every time if scan mode is HOLD
+	if(((scanState == SCAN_PAUSED) && (nonVolatileSettings.scanModePause == SCAN_MODE_HOLD)) || (scanState == SCAN_SHORT_PAUSED))   // only do this once if scan mode is PAUSE do it every time if scan mode is HOLD
 	{
-	    if (GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable)==1)	    	// if speaker on we must be receiving a signal so extend the time before resuming scan.
+	    if (GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable) == 1)	    	// if speaker on we must be receiving a signal so extend the time before resuming scan.
 	    {
-	    	scanTimer=nonVolatileSettings.scanDelay*1000;
-	    	scanState=SCAN_PAUSED;
+	    	scanTimer = nonVolatileSettings.scanDelay * 1000;
+	    	scanState = SCAN_PAUSED;
 	    }
 	}
 
-	if(scanTimer>0)
+	if(scanTimer > 0)
 	{
 		scanTimer--;
 	}
@@ -1362,7 +1410,7 @@ static void scanning(void)
 	{
 
 		trx_measure_count=0;														//needed to allow time for Rx to settle after channel change.
-		uiEvent_t tmpEvent={ .buttons = 0, .keys = NO_KEYCODE, .events = NO_EVENT, .hasEvent = 0, .time = 0 };
+		uiEvent_t tmpEvent={ .buttons = 0, .keys = NO_KEYCODE, .function = 0, .events = NO_EVENT, .hasEvent = 0, .time = 0 };
 
 		if(currentChannelData->rxFreq + VFO_FREQ_STEP_TABLE[(currentChannelData->VFOflag5 >> 4)]  <= vfoScanHigh)
 		{

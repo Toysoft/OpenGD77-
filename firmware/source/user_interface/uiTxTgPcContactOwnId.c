@@ -44,8 +44,8 @@ int menuNumericalEntry(uiEvent_t *ev, bool isFirstRun)
 		menuName[1] = currentLanguage->pc_entry;
 		menuName[2] = currentLanguage->contact;
 		menuName[3] = currentLanguage->user_dmr_id;
-		gMenusCurrentItemIndex=ENTRY_TG;
-		digits[0]=0x00;
+		gMenusCurrentItemIndex = ENTRY_TG;
+		digits[0] = 0;
 		pcIdx = 0;
 		updateScreen();
 	}
@@ -76,7 +76,7 @@ static void updateCursor(void)
 	size_t sLen;
 
 	// Display blinking cursor only when digits could be entered.
-	if ((gMenusCurrentItemIndex != ENTRY_SELECT_CONTACT) && ((sLen = strlen(digits)) < 7))
+	if ((gMenusCurrentItemIndex != ENTRY_SELECT_CONTACT) && ((sLen = strlen(digits)) <= 7))
 	{
 		static uint32_t lastBlink = 0;
 		static bool     blink = false;
@@ -189,9 +189,11 @@ static void handleEvent(uiEvent_t *ev)
 	else if (KEYCHECK_SHORTUP(ev->keys,KEY_HASH))
 	{
 		pcIdx = 0;
-		if ((ev->buttons & BUTTON_SK2)!= 0  && gMenusCurrentItemIndex == ENTRY_SELECT_CONTACT)
+
+		if (((ev->buttons & BUTTON_SK2) != 0) && (gMenusCurrentItemIndex == ENTRY_SELECT_CONTACT))
 		{
-			digits[0] = 0x00;
+			snprintf(digits, 8, "%d", trxDMRID);
+			digits[8] = 0;
 			gMenusCurrentItemIndex = ENTRY_USER_DMR_ID;
 		}
 		else
@@ -200,10 +202,13 @@ static void handleEvent(uiEvent_t *ev)
 			if (gMenusCurrentItemIndex > ENTRY_SELECT_CONTACT)
 			{
 				gMenusCurrentItemIndex = ENTRY_TG;
-			} else if (gMenusCurrentItemIndex == ENTRY_SELECT_CONTACT)
+			}
+			else if (gMenusCurrentItemIndex == ENTRY_SELECT_CONTACT)
 			{
 				pcIdx = getNextContact(0, 1, &contact);
-				if (pcIdx != 0 ) {
+
+				if (pcIdx != 0)
+				{
 					itoa(contact.tgNumber, digits, 10);
 				}
 			}
@@ -290,4 +295,5 @@ static void handleEvent(uiEvent_t *ev)
 
 		updateCursor();
 	}
+
 }

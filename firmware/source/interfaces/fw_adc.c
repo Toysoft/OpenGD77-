@@ -18,11 +18,9 @@
 
 #include "fw_adc.h"
 
-volatile uint32_t adc_channel;
-//volatile uint32_t adc0_dp0;
+static volatile uint32_t adc_channel;
 volatile uint32_t adc0_dp1;
-//volatile uint32_t adc0_dp2;
-//volatile uint32_t adc0_dp3;
+
 
 const int CUTOFF_VOLTAGE_UPPER_HYST = 64;
 const int CUTOFF_VOLTAGE_LOWER_HYST = 62;
@@ -44,10 +42,8 @@ void adc_init(void)
 
 	taskENTER_CRITICAL();
 	adc_channel = 1;
-//	adc0_dp0 = 0;
 	adc0_dp1 = 0;
-//	adc0_dp2 = 0;
-//	adc0_dp3 = 0;
+
 	taskEXIT_CRITICAL();
 
     ADC16_GetDefaultConfig(&adc16ConfigStruct);

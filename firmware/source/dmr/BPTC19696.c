@@ -24,8 +24,8 @@
 #include "dmr/dmrUtils.h"
 
 
-static bool BPTC19696_rawData[196];
-static bool BPTC19696_deInterData[196];
+__attribute__((section(".data.$RAM2"))) static bool BPTC19696_rawData[196];
+__attribute__((section(".data.$RAM2"))) static bool BPTC19696_deInterData[196];
 
 static void BPTC19696_decodeExtractBinary(const unsigned char* in);
 static void BPTC19696_decodeErrorCheck(void);

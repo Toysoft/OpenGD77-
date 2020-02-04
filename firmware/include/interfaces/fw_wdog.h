@@ -32,6 +32,7 @@ extern volatile bool alive_hrc6000task;
 extern int battery_voltage;
 extern int battery_voltage_tick;
 extern float averageBatteryVoltage;
+extern bool batteryVoltageHasChanged;
 
 void init_watchdog(batteryHistoryCallback_t cb);
 void fw_watchdog_task(void *data);

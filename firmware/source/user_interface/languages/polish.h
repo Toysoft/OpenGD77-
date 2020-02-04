@@ -20,7 +20,7 @@
  *
  * Translators: SQ7PTE
  *
- * Rev: 4.2
+ * Rev: 4.6
  */
 #ifndef USER_INTERFACE_LANGUAGES_POLISH_H_
 #define USER_INTERFACE_LANGUAGES_POLISH_H_
@@ -39,9 +39,9 @@ const stringsTable_t polishLanguage =
 .menu					= "Spis", // MaxLen: 16
 .credits				= "WspÛàtwÛrcy", // MaxLen: 16
 .zone					= "Strefy", // MaxLen: 16
-.rssi					= "Moc sygnaàu", // MaxLen: 16
+.rssi					= "Sygnaà", // MaxLen: 16
 .battery				= "Bateria", // MaxLen: 16
-.contacts				= "Kontakt", // MaxLen: 16
+.contacts				= "Kontakty", // MaxLen: 16
 .firmware_info				= "Wersja programu", // MaxLen: 16
 .last_heard				= "Ostatnio aktywne", // MaxLen: 16
 .options				= "Opcje", // MaxLen: 16
@@ -49,7 +49,7 @@ const stringsTable_t polishLanguage =
 .channel_details			= "Detale kanaàu", // MaxLen: 16
 .new_contact				= "Nowy kontakt", // MaxLen: 16
 .contact_list				= "Lista kontaktÛw", // MaxLen: 16
-.hotspot_mode				= "Tryb Hotspot", // MaxLen: 16
+.hotspot_mode				= "Tryb HotSpot", // MaxLen: 16
 .contact_details			= "Detale kontaktu", // MaxLen: 16
 .built					= "Kompilacja", // MaxLen: 16
 .zones					= "Strefy", // MaxLen: 16
@@ -69,20 +69,20 @@ const stringsTable_t polishLanguage =
 .user_dmr_id				= "ID uíytkownika", // MaxLen: 15
 .contact 				= "Kontakt", // MaxLen: 15
 .accept_call				= "ZaakceptowaÇ?", // MaxLen: 16
-.private_call				= "Rozm. Pryw.", // MaxLen: 16
+.private_call				= "Prywatne", // MaxLen: 16
 .squelch				= "Squelch", // MaxLen: 8
-.quick_menu 				= "Szybkie menu", // MaxLen: 16
+.quick_menu 				= "Szybki spis", // MaxLen: 16
 .filter					= "Filtr", // MaxLen: 7 (with ':' + settings: .none, "CC", "CC,TS", "CC,TS,TG")
-.all_channels				= "Wszystkie Kanaày", // MaxLen: 16
+.all_channels				= "Wszystkie", // MaxLen: 16
 .gotoChannel				= "Idê do",  // MaxLen: 11 (" 1024")
 .scan					= "Skanowanie", // MaxLen: 16
-.channelToVfo				= "Kanaà --> VFO", // MaxLen: 16
-.vfoToChannel				= "VFO --> Kanaà", // MaxLen: 16
+.channelToVfo				= "Kanaà ---> VFO", // MaxLen: 16
+.vfoToChannel				= "VFO ---> Kanaà", // MaxLen: 16
 .group					= "Grupa", // MaxLen: 16 (with .type)
-.private				= "Prywatne", // MaxLen: 16 (with .type)
+.private				= "Prywatny", // MaxLen: 16 (with .type)
 .all					= "Wszystko", // MaxLen: 16 (with .type)
 .type					= "Typ", // MaxLen: 16 (with .type)
-.timeSlot				= "Time Slot", // MaxLen: 16 (plus ':' and  .none, '1' or '2')
+.timeSlot				= "TimeSlot", // MaxLen: 16 (plus ':' and  .none, '1' or '2')
 .none					= "Brak", // MaxLen: 16 (with .timeSlot, "Rx CTCSS:" and ""Tx CTCSS:", and .filter)
 .contact_saved				= "Zapisz kontakt", // MaxLen: 16
 .duplicate				= "Duplikat", // MaxLen: 16
@@ -90,28 +90,29 @@ const stringsTable_t polishLanguage =
 .pc					= "PC", // MaxLen: 8
 .ts					= "TS", // MaxLen: 8
 .mode					= "Tryb",  // MaxLen: 12
-.colour_code				= "Kolor Kodu", // MaxLen: 16 (with ':' * .n_a)
+.colour_code				= "Kolor kodu", // MaxLen: 16 (with ':' * .n_a)
 .n_a					= "N/A",// MaxLen: 16 (with ':' * .colour_code)
 .bandwidth				= "Pasmo", // MaxLen: 16 (with ':' + .n_a, "25kHz" or "12.5kHz")
 .stepFreq				= "Krok", // MaxLen: 7 (with ':' + xx.xxkHz fitted)
 .tot					= "TOT", // MaxLen: 16 (with ':' + .off or 15..3825)
 .off					= "Wyà.", // MaxLen: 16 (with ':' + .timeout_beep, .calibration or .band_limits)
-.zone_skip				= "Pomiã Zone", // MaxLen: 16 (with ':' + .yes or .no) 
+.zone_skip				= "Pomiã Zone", // MaxLen: 16 (with ':' + .yes or .no)
 .all_skip				= "Pomiã All", // MaxLen: 16 (with ':' + .yes or .no)
 .yes					= "Tak", // MaxLen: 16 (with ':' + .zone_skip, .all_skip or .factory_reset)
 .no					= "Nie", // MaxLen: 16 (with ':' + .zone_skip, .all_skip or .factory_reset)
 .rx_group				= "Rx Grup", // MaxLen: 16 (with ':' and codeplug group name)
 .on					= "Wà.", // MaxLen: 16 (with ':' + .calibration or .band_limits)
-.timeout_beep				= "Czas bip", // MaxLen: 16 (with ':' + .off or 5..20)
+.timeout_beep				= "Czas bipa", // MaxLen: 16 (with ':' + .off or 5..20)
 .factory_reset				= "Reset", // MaxLen: 16 (with ':' + .yes or .no)
 .calibration				= "Kalibracja", // MaxLen: 16 (with ':' + .on or .off)
 .band_limits				= "Limit pasma", // MaxLen: 16 (with ':' + .on or .off)
-.beep_volume				= "Gàoç. bip", // MaxLen: 16 (with ':' + -24..6 + 'dB')
+.beep_volume				= "Gàos bipa", // MaxLen: 16 (with ':' + -24..6 + 'dB')
 .dmr_mic_gain				= "Mikrofon", // MaxLen: 16 (with ':' + -33..12 + 'dB')
-.key_long				= "Key long", // MaxLen: 11 (with ':' + x.xs fitted)
-.key_repeat				= "Key rpt", // MaxLen: 11 (with ':' + x.xs fitted)
+.key_long				= "Key dàugi", // MaxLen: 11 (with ':' + x.xs fitted)
+.key_repeat				= "Key krÛtki", // MaxLen: 11 (with ':' + x.xs fitted)
 .dmr_filter_timeout			= "Czas filtra", // MaxLen: 16 (with ':' + 1..90 + 's')
 .brightness				= "JasnoçÇ", // MaxLen: 16 (with ':' + 0..100 + '%')
+.brightness_off				= "Mini jasnoçÇ", // MaxLen: 16 (with ':' + 0..100 + '%')
 .contrast				= "Kontrast", // MaxLen: 16 (with ':' + 12..30)
 .colour_invert				= "Kolor:Inwersja", // MaxLen: 16
 .colour_normal				= "Kolor:Normalny", // MaxLen: 16
@@ -131,14 +132,16 @@ const stringsTable_t polishLanguage =
 .select_tx				= "Wybierz TX", // MaxLen: 16
 .edit_contact				= "Edytuj kontakt", // MaxLen: 16
 .delete_contact				= "Usuã kontakt", // MaxLen: 16
-.group_call				= "Lista kontaktÛw", // MaxLen: 16
+.group_call				= "Grupy", // MaxLen: 16
 .all_call				= "áÑcze wszystkich", // MaxLen: 16
-.tone_scan				= "Skan. tonu.",//// MaxLen: 16
-.cc_scan				= "Skan. CC",//// MaxLen: 16
+.tone_scan				= "Skan tonu.",//// MaxLen: 16
+.cc_scan				= "Skan CC",//// MaxLen: 16
 .low_battery				= "SáABA BATERIA!!!",//// MaxLen: 16
 .Auto					= "Automat", // MaxLen 16 (with .mode + ':')
 .manual					= "Manualny",  // MaxLen 16 (with .mode + ':') 
-.ptt_toggle				= "PTT staàe", // MaxLen 16 (with ':' + .on or .off)
+.ptt_toggle				= "Staàe PTT", // MaxLen 16 (with ':' + .on or .off)
+.private_call_handling  = "ZezwÛl PC", // MaxLen 16 (with ':' + .on ot .off)
+.stop					= "Stop", // Maxlen 16 (with ':' + .scan_mode)
 };
 /********************************************************************
  *

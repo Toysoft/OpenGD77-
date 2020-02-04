@@ -35,12 +35,25 @@ typedef struct dmrIdDataStruct
 	char text[20];
 } dmrIdDataStruct_t;
 
+#define MIN_ENTRIES_BEFORE_USING_SLICES 40 // Minimal number of available IDs before using slices stuff
+#define ID_SLICES 14 // Number of slices in whole DMRIDs DB
+
+typedef struct
+{
+	uint32_t entries;
+	uint8_t  contactLength;
+	int32_t  slices[ID_SLICES]; // [0] is min availabel ID, [REGION - 1] is max available ID
+	uint32_t IDsPerSlice;
+
+} dmrIDsCache_t;
 
 typedef struct LinkItem
 {
     struct LinkItem *prev;
     uint32_t 	id;
     uint32_t 	talkGroupOrPcId;
+    char        contact[21];
+    char        talkgroup[17];
     char 		talkerAlias[32];// 4 blocks of data. 6 bytes + 7 bytes + 7 bytes + 7 bytes . plus 1 for termination some more for safety.
     char 		locator[7];
     uint32_t	time;// current system time when this station was heard
@@ -67,12 +80,14 @@ extern settingsStruct_t originalNonVolatileSettings; // used to store previous s
 
 char *chomp(char *str);
 int32_t getFirstSpacePos(char *str);
+void dmrIDCacheInit(void);
 bool dmrIDLookup(int targetId, dmrIdDataStruct_t *foundRecord);
 bool contactIDLookup(uint32_t id, int calltype, char *buffer);
 void menuUtilityRenderQSOData(void);
 void menuUtilityRenderHeader(void);
+LinkItem_t *lastheardFindInList(uint32_t id);
 void lastheardInitList(void);
-bool lastHeardListUpdate(uint8_t *dmrDataBuffer);
+bool lastHeardListUpdate(uint8_t *dmrDataBuffer, bool forceOnHotspot);
 void lastHeardClearLastID(void);
 void drawRSSIBarGraph(void);
 void drawDMRMicLevelBarGraph(void);

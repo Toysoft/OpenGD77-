@@ -23,9 +23,9 @@ static bool spi_flash_busy(void);
 static void spi_flash_transfer_buf(uint8_t *inBuf,uint8_t *outBuf,int size);
 static uint8_t spi_flash_transfer(uint8_t c);
 static void spi_flash_setWriteEnable(bool cmd);
-static void spi_flash_enable(void);
-static void spi_flash_disable(void);
-uint8_t SPI_Flash_sectorbuffer[4096];
+static inline void spi_flash_enable(void);
+static inline void spi_flash_disable(void);
+__attribute__((section(".data.$RAM2"))) uint8_t SPI_Flash_sectorbuffer[4096];
 
 
 //COMMANDS. Not all implemented or used
@@ -189,14 +189,16 @@ bool SPI_Flash_eraseSector(uint32_t addr_start)
 	return !isBusy;// If still busy after
 }
 
-static void spi_flash_enable(void)
+static inline void spi_flash_enable(void)
 {
-	GPIO_PinWrite(GPIO_SPI_FLASH_CS_U, Pin_SPI_FLASH_CS_U, 0);
+	//GPIO_PinWrite(GPIO_SPI_FLASH_CS_U, Pin_SPI_FLASH_CS_U, 0);
+	GPIO_SPI_FLASH_CS_U->PCOR = 1U << Pin_SPI_FLASH_CS_U;
 }
 
 static void spi_flash_disable(void)
 {
-	GPIO_PinWrite(GPIO_SPI_FLASH_CS_U, Pin_SPI_FLASH_CS_U, 1);
+	//GPIO_PinWrite(GPIO_SPI_FLASH_CS_U, Pin_SPI_FLASH_CS_U, 1);
+	GPIO_SPI_FLASH_CS_U->PSOR = 1U << Pin_SPI_FLASH_CS_U;
 }
 
 static uint8_t spi_flash_transfer(uint8_t c)
@@ -204,21 +206,21 @@ static uint8_t spi_flash_transfer(uint8_t c)
 	for (uint8_t bit = 0; bit < 8; bit++)
 	{
 		GPIO_SPI_FLASH_CLK_U->PCOR = 1U << Pin_SPI_FLASH_CLK_U;
-		__asm volatile( "nop" );
+//		__asm volatile( "nop" );
 		if ((c&0x80) == 0U)
 		{
-			GPIO_SPI_FLASH_DO_U->PCOR = 1U << Pin_SPI_FLASH_DO_U;// Hopefully the compiler will otimise this to a value rather than using a shift
+			GPIO_SPI_FLASH_DO_U->PCOR = 1U << Pin_SPI_FLASH_DO_U;// Hopefully the compiler will optimise this to a value rather than using a shift
 		}
 		else
 		{
-			GPIO_SPI_FLASH_DO_U->PSOR = 1U << Pin_SPI_FLASH_DO_U;// Hopefully the compiler will otimise this to a value rather than using a shift
+			GPIO_SPI_FLASH_DO_U->PSOR = 1U << Pin_SPI_FLASH_DO_U;// Hopefully the compiler will optimise this to a value rather than using a shift
 		}
-		__asm volatile( "nop" );
+//		__asm volatile( "nop" );
 		c <<= 1;
 		c |= (GPIO_SPI_FLASH_DI_U->PDIR >> Pin_SPI_FLASH_DI_U) & 0x01U;
 		// toggle the clock
 		GPIO_SPI_FLASH_CLK_U->PSOR = 1U << Pin_SPI_FLASH_CLK_U;
-		__asm volatile( "nop" );
+//		__asm volatile( "nop" );
 
 	}
 	return c;

@@ -39,7 +39,7 @@ static float _angleOffset = DEFAULT_ANGLE_OFFSET;
 #define swap(x, y) do { typeof(x) t = x; x = y; y = t; } while(0)
 
 
-uint8_t screenBuf[1024];
+__attribute__((section(".data.$RAM2"))) uint8_t screenBuf[1024];
 //#define DISPLAY_CHECK_BOUNDS
 
 #ifdef DISPLAY_CHECK_BOUNDS
@@ -364,6 +364,23 @@ void ucClearBuf(void)
 {
 	memset(screenBuf,0x00,1024);
 }
+
+void ucClearRows(int16_t startRow, int16_t endRow, bool isInverted)
+{
+	// Boundaries
+	if (((startRow < 0) || (endRow < 0)) || ((startRow > 8) || (endRow > 8)) || (startRow == endRow))
+		return;
+
+	if (endRow < startRow)
+	{
+		swap(startRow, endRow);
+	}
+
+	// memset would be faster than ucFillRect
+	//ucFillRect(0, (startRow * 8), 128, (8 * (endRow - startRow)), true);
+    memset(screenBuf + (128 * startRow), (isInverted ? 0xFF : 0x00), (128 * (endRow - startRow)));
+}
+
 
 void ucPrintCentered(uint8_t y,const char *text, ucFont_t fontSize)
 {

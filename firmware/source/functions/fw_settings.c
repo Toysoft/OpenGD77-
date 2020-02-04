@@ -27,7 +27,7 @@
 
 static const int STORAGE_BASE_ADDRESS 		= 0x6000;
 
-static const int STORAGE_MAGIC_NUMBER 		= 0x4736;
+static const int STORAGE_MAGIC_NUMBER 		= 0x4740;
 
 
 settingsStruct_t nonVolatileSettings;
@@ -137,10 +137,11 @@ void settingsRestoreDefaultSettings(void)
 	nonVolatileSettings.displayContrast = 0x12;
 	nonVolatileSettings.initialMenuNumber=MENU_VFO_MODE;
 	nonVolatileSettings.displayBacklightPercentage=100U;// 100% brightness
+	nonVolatileSettings.displayBacklightPercentageOff=0U;// 0% brightness
 	nonVolatileSettings.displayInverseVideo=false;// Not inverse video
 	nonVolatileSettings.useCalibration = true;// enable the new calibration system
 	nonVolatileSettings.txFreqLimited = true;// Limit Tx frequency to US Amateur bands
-	nonVolatileSettings.txPowerLevel=3;// 1 WW
+	nonVolatileSettings.txPowerLevel=4;// 1 W
 	nonVolatileSettings.overrideTG=0;// 0 = No override
 	nonVolatileSettings.txTimeoutBeepX5Secs = 0;
 	nonVolatileSettings.beepVolumeDivider = 1;// no reduction in volume
@@ -153,7 +154,7 @@ void settingsRestoreDefaultSettings(void)
 	nonVolatileSettings.dmrCaptureTimeout=10;// Default to holding 10 seconds after a call ends
 	nonVolatileSettings.languageIndex=0;
 	nonVolatileSettings.scanDelay=5;// 5 seconds
-	nonVolatileSettings.scanModePause=false;
+	nonVolatileSettings.scanModePause = SCAN_MODE_HOLD;
 	nonVolatileSettings.squelchDefaults[RADIO_BAND_VHF]		= 10;// 1 - 21 = 0 - 100% , same as from the CPS variable squelch
 	nonVolatileSettings.squelchDefaults[RADIO_BAND_220MHz]	= 10;// 1 - 21 = 0 - 100% , same as from the CPS variable squelch
 	nonVolatileSettings.squelchDefaults[RADIO_BAND_UHF]		= 10;// 1 - 21 = 0 - 100% , same as from the CPS variable squelch
@@ -165,6 +166,7 @@ void settingsRestoreDefaultSettings(void)
 	nonVolatileSettings.vfoAScanHigh=14600000;						//High Frequency limit for VFO A Scanning
 	nonVolatileSettings.vfoBScanLow=43000000;						//Low frequency limit for VFO B Scanning
 	nonVolatileSettings.vfoBScanHigh=44000000;						//High Frequency limit for VFO B Scanning
+	nonVolatileSettings.contactDisplayPriority = CONTACT_DISPLAY_PRIO_CC_DB_TA;
 
 
 	currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];// Set the current channel data to point to the VFO data since the default screen will be the VFO

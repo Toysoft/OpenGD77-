@@ -57,6 +57,7 @@ extern uint8_t screenBuf[];
 
 void ucBegin(bool isInverted);
 void ucClearBuf(void);
+void ucClearRows(int16_t startRow, int16_t endRow, bool isInverted);
 void ucRender(void);
 void ucRenderRows(int16_t startRow, int16_t endRow);
 void ucPrintCentered(uint8_t y,const  char *text, ucFont_t fontSize);

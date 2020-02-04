@@ -101,6 +101,7 @@ typedef struct stringsTable
    const char key_repeat[LANGUAGE_TEXTS_LENGTH];
    const char dmr_filter_timeout[LANGUAGE_TEXTS_LENGTH];
    const char brightness[LANGUAGE_TEXTS_LENGTH];
+   const char brightness_off[LANGUAGE_TEXTS_LENGTH];
    const char contrast[LANGUAGE_TEXTS_LENGTH];
    const char colour_invert[LANGUAGE_TEXTS_LENGTH];
    const char colour_normal[LANGUAGE_TEXTS_LENGTH];
@@ -128,6 +129,8 @@ typedef struct stringsTable
    const char Auto[LANGUAGE_TEXTS_LENGTH];
    const char manual[LANGUAGE_TEXTS_LENGTH];
    const char ptt_toggle[LANGUAGE_TEXTS_LENGTH];
+   const char private_call_handling[LANGUAGE_TEXTS_LENGTH];
+   const char stop[LANGUAGE_TEXTS_LENGTH];
 } stringsTable_t;
 
 extern const stringsTable_t languages[];

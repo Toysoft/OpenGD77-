@@ -22,6 +22,7 @@
 #include <user_interface/uiLocalisation.h>
 #include "fw_main.h"
 #include "fw_settings.h"
+#include "fw_codeplug.h"
 
 
 #if defined(USE_SEGGER_RTT)
@@ -148,6 +149,8 @@ void fw_main_task(void *data)
 #endif
 
     lastheardInitList();
+    codeplugInitContactsCache();
+    dmrIDCacheInit();
     menuInitMenuSystem();
 
     while (1U)
@@ -169,6 +172,19 @@ void fw_main_task(void *data)
 			// EVENT_*_CHANGED can be cleared later, so check this now as hasEvent has to be set anyway.
 			keyOrButtonChanged = ((key_event != NO_EVENT) || (button_event != NO_EVENT));
 
+			if (batteryVoltageHasChanged == true)
+			{
+				int currentMenu = menuSystemGetCurrentMenuNumber();
+
+				if ((currentMenu == MENU_CHANNEL_MODE) || (currentMenu == MENU_VFO_MODE))
+				{
+					ucClearRows(0, 2, false);
+					menuUtilityRenderHeader();
+					ucRenderRows(0, 2);
+				}
+
+				batteryVoltageHasChanged = false;
+			}
 
 			if (keypadLocked || PTTLocked)
 			{
@@ -379,25 +395,25 @@ void fw_main_task(void *data)
 
     		if (!trxIsTransmitting && updateLastHeard==true)
     		{
-    			lastHeardListUpdate((uint8_t *)DMR_frame_buffer);
+    			lastHeardListUpdate((uint8_t *)DMR_frame_buffer, false);
     			updateLastHeard=false;
     		}
 
     		if ((nonVolatileSettings.hotspotType == HOTSPOT_TYPE_OFF) ||
     				((nonVolatileSettings.hotspotType != HOTSPOT_TYPE_OFF) && (settingsUsbMode != USB_MODE_HOTSPOT))) // Do not filter anything in HS mode.
     		{
-    			if (!trxIsTransmitting && menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA && nonVolatileSettings.privateCalls == true)
+				if ((uiPrivateCallState == PRIVATE_CALL_DECLINED) &&
+						(slot_state == DMR_STATE_IDLE))
+				{
+					menuClearPrivateCall();
+				}
+				if (!trxIsTransmitting && menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA && nonVolatileSettings.privateCalls == true)
     			{
-    				if (HRC6000GetReveivedTgOrPcId() == (trxDMRID | (PC_CALL_FLAG<<24)))
+    				if (HRC6000GetReceivedTgOrPcId() == (trxDMRID | (PC_CALL_FLAG<<24)))
     				{
-    					if ((uiPrivateCallState == PRIVATE_CALL_DECLINED) &&
-    							(HRC6000GetReveivedSrcId() != uiPrivateCallLastID))
-    					{
-    						menuClearPrivateCall();
-    					}
     					if ((uiPrivateCallState == NOT_IN_CALL) &&
-    							(trxTalkGroupOrPcId != (HRC6000GetReveivedSrcId() | (PC_CALL_FLAG<<24))) &&
-								(HRC6000GetReveivedSrcId() != uiPrivateCallLastID))
+    							(trxTalkGroupOrPcId != (HRC6000GetReceivedSrcId() | (PC_CALL_FLAG<<24))) &&
+								(HRC6000GetReceivedSrcId() != uiPrivateCallLastID))
     					{
     						menuSystemPushNewMenu(MENU_PRIVATE_CALL);
     					}

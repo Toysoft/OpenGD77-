@@ -29,6 +29,9 @@ enum USB_MODE { USB_MODE_CPS, USB_MODE_HOTSPOT, USB_MODE_DEBUG};
 enum SETTINGS_UI_MODE { SETTINGS_CHANNEL_MODE=0, SETTINGS_VFO_A_MODE, SETTINGS_VFO_B_MODE};
 enum BACKLIGHT_MODE { BACKLIGHT_MODE_AUTO = 0, BACKLIGHT_MODE_MANUAL = 1, BACKLIGHT_MODE_NONE = 2};
 enum HOTSPOT_TYPE { HOTSPOT_TYPE_OFF = 0, HOTSPOT_TYPE_MMDVM = 1, HOTSPOT_TYPE_BLUEDV = 2};
+enum CONTACT_DISPLAY_PRIO { CONTACT_DISPLAY_PRIO_CC_DB_TA = 0, CONTACT_DISPLAY_PRIO_DB_CC_TA, CONTACT_DISPLAY_PRIO_TA_CC_DB, CONTACT_DISPLAY_PRIO_TA_DB_CC };
+enum SCAN_MODE { SCAN_MODE_HOLD = 0, SCAN_MODE_PAUSE, SCAN_MODE_STOP };
+
 
 extern int settingsCurrentChannelNumber;
 extern bool settingsPrivateCallMuteMode;
@@ -46,11 +49,12 @@ typedef struct settingsStruct
 	int8_t			displayContrast;
 	uint8_t			initialMenuNumber;
 	int8_t			displayBacklightPercentage;
+	int8_t			displayBacklightPercentageOff; // backlight level when "off"
 	bool			displayInverseVideo;
 	bool			useCalibration;
 	bool			txFreqLimited;
 	bool			pttToggle;
-	bool			scanModePause;
+	uint8_t			scanModePause;
 	bool			transmitTalkerAlias;
 	uint16_t		txPowerLevel;
 	uint32_t		overrideTG;
@@ -72,11 +76,11 @@ typedef struct settingsStruct
 	uint32_t		vfoAScanHigh;                 //High frequency for VFO A Scanning
 	uint32_t		vfoBScanLow;                  //low frequency for VFO B Scanning
 	uint32_t		vfoBScanHigh;                 //High frequency for VFO B Scanning
-
+	uint8_t			contactDisplayPriority;
 
 } settingsStruct_t;
 
-typedef enum {DMR_FILTER_NONE = 0, DMR_FILTER_TS = 1, DMR_FILTER_TS_TG = 2} dmrFilter_t;
+typedef enum DMR_FILTER_TYPE {DMR_FILTER_NONE = 0, DMR_FILTER_TS = 1, DMR_FILTER_TS_TG = 2} dmrFilter_t;
 
 extern settingsStruct_t nonVolatileSettings;
 extern struct_codeplugChannel_t *currentChannelData;
