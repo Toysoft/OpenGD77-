@@ -126,13 +126,9 @@ static void updateScreen(void)
 				snprintf(buf, bufferLen, "%s:%ds", currentLanguage->scan_delay, nonVolatileSettings.scanDelay);
 				break;
 			case OPTIONS_MENU_SCAN_MODE:// scanning mode
-				if (nonVolatileSettings.scanModePause)
 				{
-					snprintf(buf, bufferLen, "%s:%s", currentLanguage->scan_mode, currentLanguage->pause);
-				}
-				else
-				{
-					snprintf(buf, bufferLen, "%s:%s", currentLanguage->scan_mode, currentLanguage->hold);
+					const char *scanModes[] = { currentLanguage->hold, currentLanguage->pause, currentLanguage->stop };
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->scan_mode, scanModes[nonVolatileSettings.scanModePause]);
 				}
 				break;
 			case OPTIONS_MENU_SQUELCH_DEFAULT_VHF:
@@ -242,7 +238,10 @@ static void handleEvent(uiEvent_t *ev)
 				}
 				break;
 			case OPTIONS_MENU_SCAN_MODE:
-				nonVolatileSettings.scanModePause=true;
+				if (nonVolatileSettings.scanModePause < SCAN_MODE_STOP)
+				{
+					nonVolatileSettings.scanModePause++;
+				}
 				break;
 			case OPTIONS_MENU_SQUELCH_DEFAULT_VHF:
 				if (nonVolatileSettings.squelchDefaults[RADIO_BAND_VHF] < CODEPLUG_MAX_VARIABLE_SQUELCH)
@@ -343,7 +342,10 @@ static void handleEvent(uiEvent_t *ev)
 				}
 				break;
 			case OPTIONS_MENU_SCAN_MODE:
-				nonVolatileSettings.scanModePause=false;
+				if (nonVolatileSettings.scanModePause > SCAN_MODE_HOLD)
+				{
+					nonVolatileSettings.scanModePause--;
+				}
 				break;
 			case OPTIONS_MENU_SQUELCH_DEFAULT_VHF:
 				if (nonVolatileSettings.squelchDefaults[RADIO_BAND_VHF] > 1)
