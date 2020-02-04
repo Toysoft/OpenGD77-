@@ -1107,8 +1107,14 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 					settingsCurrentChannelNumber = newChannelIndex;
 
 					memcpy(&channelScreenChannelData.rxFreq,&settingsVFOChannel[nonVolatileSettings.currentVFONumber].rxFreq,sizeof(struct_codeplugChannel_t)- 16);// Don't copy the name of the vfo, which are in the first 16 bytes
+
+					//FIXME: set contact
+					//channelScreenChannelData.contact = codeplugContactIndexByTGorPC((trxTalkGroupOrPcId & 0x00FFFFFF), CONTACT_CALLTYPE_TG, &contact);
+					//channelScreenChannelData.rxGroupList = 0;
+
 					//TODO: new text label for "New chan"
 					snprintf((char *) &channelScreenChannelData.name, 16, "New chan %d", newChannelIndex);
+
 
 					codeplugChannelSaveDataForIndex(newChannelIndex, &channelScreenChannelData);
 
@@ -1118,7 +1124,11 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 					nonVolatileSettings.tsManualOverride &= 0xF0; // remove TS override from channel
 					nonVolatileSettings.currentChannelIndexInZone = 0;// Since we are switching zones the channel index should be reset
 					channelScreenChannelData.rxFreq=0x00; // Flag to the Channel screen that the channel data is now invalid and needs to be reloaded
+
+					//copy current channel from vfo to channel
+					nonVolatileSettings.currentIndexInTRxGroupList[0] = nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber];
 					menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
+
 					set_melody(melody_ACK_beep);
 				}
 				else
