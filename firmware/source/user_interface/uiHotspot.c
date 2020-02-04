@@ -1446,10 +1446,16 @@ static void hotspotStateMachine(void)
 			break;
 		}
 
-		// We have pending data in RF side, but don't process it when MMDVMHost
-		// set the hotspot in POCSAG mode.
-		if ((rfFrameBufCount > 0) && (modemState != STATE_POCSAG))
+		if (rfFrameBufCount > 0)
 		{
+			// We have pending data in RF side, but don't process it when MMDVMHost
+			// set the hotspot in POCSAG mode. Just trash it.
+			if (modemState == STATE_POCSAG)
+			{
+				memset((void *)&audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx], 0, HOTSPOT_BUFFER_SIZE);
+				rfFrameBufCount--;
+			}
+
 			if (MMDVMHostRxState == MMDVMHOST_RX_READY)
 			{
 				uint8_t rx_command = audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][27 + 0x0c];
