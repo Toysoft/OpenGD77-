@@ -1121,15 +1121,20 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 					//Set channel index as valid
 					codeplugChannelIndexSetValid(newChannelIndex);
 					nonVolatileSettings.overrideTG = 0; // remove any TG override
-					nonVolatileSettings.tsManualOverride &= 0xF0; // remove TS override from channel
 					nonVolatileSettings.currentChannelIndexInZone = 0;// Since we are switching zones the channel index should be reset
 					channelScreenChannelData.rxFreq=0x00; // Flag to the Channel screen that the channel data is now invalid and needs to be reloaded
 
 					//copy current channel from vfo to channel
 					nonVolatileSettings.currentIndexInTRxGroupList[0] = nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber];
+
+					//copy current TS
+					nonVolatileSettings.tsManualOverride &= 0xF0;// Clear lower nibble value
+					nonVolatileSettings.tsManualOverride |= (trxGetDMRTimeSlot()+1);// Store manual TS override
+
 					menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
 
 					set_melody(melody_ACK_beep);
+					return;
 				}
 				else
 				{
