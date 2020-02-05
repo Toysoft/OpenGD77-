@@ -27,7 +27,7 @@
 
 static const int STORAGE_BASE_ADDRESS 		= 0x6000;
 
-static const int STORAGE_MAGIC_NUMBER 		= 0x4740;
+static const int STORAGE_MAGIC_NUMBER 		= 0x4741;
 
 
 settingsStruct_t nonVolatileSettings;
@@ -167,6 +167,7 @@ void settingsRestoreDefaultSettings(void)
 	nonVolatileSettings.vfoBScanLow=43000000;						//Low frequency limit for VFO B Scanning
 	nonVolatileSettings.vfoBScanHigh=44000000;						//High Frequency limit for VFO B Scanning
 	nonVolatileSettings.contactDisplayPriority = CONTACT_DISPLAY_PRIO_CC_DB_TA;
+	nonVolatileSettings.splitContact = false;
 
 
 	currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];// Set the current channel data to point to the VFO data since the default screen will be the VFO

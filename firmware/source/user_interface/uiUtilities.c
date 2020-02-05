@@ -1014,7 +1014,7 @@ void menuUtilityRenderQSOData(void)
 					}
 					else
 					{
-						displayContactTextInfos(LinkHead->contact, sizeof(LinkHead->contact), false);
+						displayContactTextInfos(LinkHead->contact, sizeof(LinkHead->contact), nonVolatileSettings.splitContact);
 					}
 					break;
 
@@ -1038,7 +1038,7 @@ void menuUtilityRenderQSOData(void)
 					}
 					else // No TA, then use the one extracted from Codeplug or DMRIdDB
 					{
-						displayContactTextInfos(LinkHead->contact, sizeof(LinkHead->contact), false);
+						displayContactTextInfos(LinkHead->contact, sizeof(LinkHead->contact), nonVolatileSettings.splitContact);
 					}
 					break;
 			}
