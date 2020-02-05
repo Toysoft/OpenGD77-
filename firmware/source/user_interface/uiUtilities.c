@@ -631,15 +631,19 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer, bool forceOnHotspot)
 								// TAs doesn't match, update contact and screen.
 								if (overrideTA || (strlen((const char *)decodedTA) > strlen((const char *)&LinkHead->talkerAlias)))
 								{
-									char *p = NULL;
+									memcpy(&LinkHead->talkerAlias, decodedTA, 31);// Brandmeister seems to send callsign as 6 chars only
 
-									// Get rid of 'DMR ID:xxxxxxx' part of the TA, sent by BM
-									if ((p = strstr((const char *)decodedTA, "DMR ID:")) != NULL)
+									if ((blocksTA & (1 << 1)) != 0) // we already received the 2nd TA block, check for 'DMR ID:'
 									{
-										*p = 0;
+										char *p = NULL;
+
+										// Get rid of 'DMR ID:xxxxxxx' part of the TA, sent by BM
+										if (((p = strstr(&LinkHead->talkerAlias[0], "DMR I")) != NULL) || ((p = strstr(&LinkHead->talkerAlias[0], "DMR ID:")) != NULL))
+										{
+											*p = 0;
+										}
 									}
 
-									memcpy(&LinkHead->talkerAlias, decodedTA, 31);// Brandmeister seems to send callsign as 6 chars only
 									overrideTA = false;
 									menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;
 								}
@@ -1010,7 +1014,7 @@ void menuUtilityRenderQSOData(void)
 					}
 					else
 					{
-						displayContactTextInfos(LinkHead->contact, sizeof(LinkHead->contact), true);
+						displayContactTextInfos(LinkHead->contact, sizeof(LinkHead->contact), false);
 					}
 					break;
 
@@ -1034,7 +1038,7 @@ void menuUtilityRenderQSOData(void)
 					}
 					else // No TA, then use the one extracted from Codeplug or DMRIdDB
 					{
-						displayContactTextInfos(LinkHead->contact, sizeof(LinkHead->contact), true);
+						displayContactTextInfos(LinkHead->contact, sizeof(LinkHead->contact), false);
 					}
 					break;
 			}
