@@ -903,6 +903,16 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 		char    *pbuf;
 		int32_t  cpos;
 
+		// User prefers to not span the TA info over two lines, check it that could fit
+		if ((nonVolatileSettings.splitContact == false) && (strlen(text) <= 16))
+		{
+			memcpy(buffer, text, strlen(text));
+			buffer[strlen(text)] = 0;
+			ucPrintCentered(32, chomp(buffer), FONT_8x16);
+			displayChannelNameOrRxFrequency(buffer, (sizeof(buffer) / sizeof(buffer[0])));
+			return;
+		}
+
 		if ((cpos = getFirstSpacePos(text)) != -1)
 		{
 			// Callsign found
