@@ -30,7 +30,8 @@ enum OPTIONS_MENU_LIST { OPTIONS_MENU_TIMEOUT_BEEP=0,OPTIONS_MENU_FACTORY_RESET,
 							OPTIONS_MENU_SCAN_DELAY,OPTIONS_MENU_SCAN_MODE,
 							OPTIONS_MENU_SQUELCH_DEFAULT_VHF,OPTIONS_MENU_SQUELCH_DEFAULT_220MHz,OPTIONS_MENU_SQUELCH_DEFAULT_UHF,
 							OPTIONS_MENU_PTT_TOGGLE, OPTIONS_MENU_HOTSPOT_TYPE, OPTIONS_MENU_TALKER_ALIAS_TX,
-							OPTIONS_MENU_PRIVATE_CALLS, OPTIONS_MENU_CONTACT_DISPLAY_ORDER, NUM_OPTIONS_MENU_ITEMS};
+							OPTIONS_MENU_PRIVATE_CALLS, OPTIONS_MENU_CONTACT_DISPLAY_ORDER, OPTIONS_MENU_CONTACT_DISPLAY_SPLIT_CONTACT,
+							NUM_OPTIONS_MENU_ITEMS};
 
 int menuOptions(uiEvent_t *ev, bool isFirstRun)
 {
@@ -161,6 +162,9 @@ static void updateScreen(void)
 					snprintf(buf, bufferLen, "Order:%s", contactOrders[nonVolatileSettings.contactDisplayPriority]);
 				}
 				break;
+			case OPTIONS_MENU_CONTACT_DISPLAY_SPLIT_CONTACT:
+				snprintf(buf, bufferLen, "%s:%s", currentLanguage->split_contact, (nonVolatileSettings.splitContact ? currentLanguage->yes : currentLanguage->no));
+				break;
 		}
 
 		buf[bufferLen - 1] = 0;
@@ -282,6 +286,9 @@ static void handleEvent(uiEvent_t *ev)
 					nonVolatileSettings.contactDisplayPriority++;
 				}
 				break;
+			case OPTIONS_MENU_CONTACT_DISPLAY_SPLIT_CONTACT:
+				nonVolatileSettings.splitContact = true;
+				break;
 		}
 	}
 	else if (KEYCHECK_PRESS(ev->keys,KEY_LEFT))
@@ -385,6 +392,9 @@ static void handleEvent(uiEvent_t *ev)
 				{
 					nonVolatileSettings.contactDisplayPriority--;
 				}
+				break;
+			case OPTIONS_MENU_CONTACT_DISPLAY_SPLIT_CONTACT:
+				nonVolatileSettings.splitContact = false;
 				break;
 		}
 	}
