@@ -638,7 +638,7 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer, bool forceOnHotspot)
 										char *p = NULL;
 
 										// Get rid of 'DMR ID:xxxxxxx' part of the TA, sent by BM
-										if (((p = strstr(&LinkHead->talkerAlias[0], "DMR I")) != NULL) || ((p = strstr(&LinkHead->talkerAlias[0], "DMR ID:")) != NULL))
+										if (((p = strstr(&LinkHead->talkerAlias[0], "DMR ID:")) != NULL) || ((p = strstr(&LinkHead->talkerAlias[0], "DMR I")) != NULL))
 										{
 											*p = 0;
 										}
