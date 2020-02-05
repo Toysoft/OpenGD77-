@@ -48,6 +48,7 @@ const stringsTable_t catalanLanguage=
 .display_options		= "Opcions display",
 .channel_details		= "Detalls Canal",
 .new_contact			= "Nou contacte",
+.new_channel			= "Nou canal", // MaxLen: 16, leave room for a space and four channel digits after
 .contact_list			= "Contactes",
 .hotspot_mode			= "Mode Hotspot",
 .contact_details		= "Detall Ctte",

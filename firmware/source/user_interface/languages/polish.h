@@ -48,6 +48,7 @@ const stringsTable_t polishLanguage =
 .display_options			= "Opcje ekranu", // MaxLen: 16
 .channel_details			= "Detale kanaˆu", // MaxLen: 16
 .new_contact				= "Nowy kontakt", // MaxLen: 16
+.new_channel				= "New channel", // MaxLen: 16, leave room for a space and four channel digits after
 .contact_list				= "Lista kontaktów", // MaxLen: 16
 .hotspot_mode				= "Tryb HotSpot", // MaxLen: 16
 .contact_details			= "Detale kontaktu", // MaxLen: 16

@@ -37,8 +37,9 @@ typedef struct stringsTable
    const char channel_details[LANGUAGE_TEXTS_LENGTH];// 11
    const char language[LANGUAGE_TEXTS_LENGTH];// 12
    const char new_contact[LANGUAGE_TEXTS_LENGTH];// 13
-   const char contact_list[LANGUAGE_TEXTS_LENGTH];// 14
-   const char contact_details[LANGUAGE_TEXTS_LENGTH];//15
+   const char new_channel[LANGUAGE_TEXTS_LENGTH];// 14
+   const char contact_list[LANGUAGE_TEXTS_LENGTH];// 15
+   const char contact_details[LANGUAGE_TEXTS_LENGTH];//16
    const char hotspot_mode[LANGUAGE_TEXTS_LENGTH];//
    const char built[LANGUAGE_TEXTS_LENGTH];//
    const char zones[LANGUAGE_TEXTS_LENGTH];//

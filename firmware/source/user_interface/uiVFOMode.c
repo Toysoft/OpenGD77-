@@ -1106,13 +1106,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 
 					memcpy(&channelScreenChannelData.rxFreq,&settingsVFOChannel[nonVolatileSettings.currentVFONumber].rxFreq,sizeof(struct_codeplugChannel_t)- 16);// Don't copy the name of the vfo, which are in the first 16 bytes
 
-					//FIXME: set contact
-					//channelScreenChannelData.contact = codeplugContactIndexByTGorPC((trxTalkGroupOrPcId & 0x00FFFFFF), CONTACT_CALLTYPE_TG, &contact);
-					//channelScreenChannelData.rxGroupList = 0;
-
-					//TODO: new text label for "New chan"
-					snprintf((char *) &channelScreenChannelData.name, 16, "New chan %d", newChannelIndex);
-
+					snprintf((char *) &channelScreenChannelData.name, 16, "%s %d", currentLanguage->new_channel, newChannelIndex);
 
 					codeplugChannelSaveDataForIndex(newChannelIndex, &channelScreenChannelData);
 

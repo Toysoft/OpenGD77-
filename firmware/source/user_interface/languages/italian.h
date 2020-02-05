@@ -48,6 +48,7 @@ const stringsTable_t italianLanguage =
 .display_options		= "Opz Display",
 .channel_details		= "Dettagli canale",
 .new_contact			= "Nuovo Contatto",
+.new_channel			= "Nuovo can.", // MaxLen: 16, leave room for a space and four channel digits after
 .contact_list			= "Lista Contatti",
 .hotspot_mode			= "Modo Hotspot",
 .contact_details		= "Dett Contatti",

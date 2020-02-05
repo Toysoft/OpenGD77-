@@ -48,6 +48,7 @@ const stringsTable_t frenchLanguage =
 .display_options		= "Options aff.",
 .channel_details		= "Détails canal",
 .new_contact			= "Nouv. contact",
+.new_channel			= "New channel", // MaxLen: 16, leave room for a space and four channel digits after
 .contact_list			= "Liste contacts",
 .hotspot_mode			= "Mode hotspot",
 .contact_details		= "Détails contact",

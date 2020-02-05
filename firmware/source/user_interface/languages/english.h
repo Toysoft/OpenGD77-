@@ -48,6 +48,7 @@ const stringsTable_t englishLanguage =
 .display_options			= "Display options", // MaxLen: 16
 .channel_details			= "Channel details", // MaxLen: 16
 .new_contact				= "New contact", // MaxLen: 16
+.new_channel				= "New channel", // MaxLen: 16, leave room for a space and four channel digits after
 .contact_list				= "Contact list", // MaxLen: 16
 .hotspot_mode				= "Hotspot mode", // MaxLen: 16
 .contact_details			= "Contact Details", // MaxLen: 16
