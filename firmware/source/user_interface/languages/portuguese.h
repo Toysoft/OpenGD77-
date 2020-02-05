@@ -78,6 +78,7 @@ const stringsTable_t portuguesLanguage =
 .scan					= "Busca",
 .channelToVfo			= "Canal --> VFO",
 .vfoToChannel			= "VFO --> Canal",
+.vfoToNewChannel		= "VFO --> Novo Can",
 .group					= "Grupo",
 .private				= "Privado",
 .all					= "Todos",

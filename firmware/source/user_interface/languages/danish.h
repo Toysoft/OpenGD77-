@@ -78,6 +78,7 @@ const stringsTable_t danishLanguage =
 .scan					= "Scan",
 .channelToVfo			= "Kanal --> VFO",
 .vfoToChannel			= "VFO --> Kanal",
+.vfoToNewChannel		= "VFO --> New Chan", // MaxLen: 16
 .group					= "Gruppe",
 .private				= "Privat",
 .all					= "Alle",

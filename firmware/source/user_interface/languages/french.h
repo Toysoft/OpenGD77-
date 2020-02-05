@@ -78,6 +78,7 @@ const stringsTable_t frenchLanguage =
 .scan					= "Scan",
 .channelToVfo			= "Canal --> VFO",
 .vfoToChannel			= "VFO --> Canal",
+.vfoToNewChannel		= "VFO --> New Chan", // MaxLen: 16
 .group					= "Groupe",
 .private				= "Privé",
 .all					= "Tous",

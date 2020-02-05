@@ -78,6 +78,7 @@ const stringsTable_t catalanLanguage=
 .scan					= "Scan",
 .channelToVfo			= "Canal --> VFO",
 .vfoToChannel			= "VFO --> Canal",
+.vfoToNewChannel		= "VFO --> Nou Can", // MaxLen: 16
 .group					= "Grup",
 .private				= "Privada",
 .all					= "Tots",

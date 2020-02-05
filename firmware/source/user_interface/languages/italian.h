@@ -78,6 +78,7 @@ const stringsTable_t italianLanguage =
 .scan					= "Scansione",
 .channelToVfo			= "Canale --> VFO",
 .vfoToChannel			= "VFO --> Canale",
+.vfoToNewChannel		= "VFO --> New Chan", // MaxLen: 16
 .group					= "Gruppo",
 .private				= "Privato",
 .all					= "Tutti",

@@ -1017,8 +1017,7 @@ static void updateQuickMenuScreen(void)
 		    	strncpy(buf, currentLanguage->scan, bufferLen);
 				break;
 		    case VFO_SCREEN_QUICK_MENU_VFO_TO_NEW:
-		    	//TODO: new language text entry?
-				strcpy(buf, "VFO --> NEW CHAN");
+		    	strncpy(buf, currentLanguage->vfoToNewChannel, bufferLen);
 		    	break;
 			case VFO_SCREEN_QUICK_MENU_BOTH_TO_RX:
 				strcpy(buf, "Rx --> Tx");

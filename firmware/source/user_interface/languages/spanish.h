@@ -78,6 +78,7 @@ const stringsTable_t spanishLanguage =
 .scan					= "Escanear", // MaxLen: 16
 .channelToVfo			= "Canal --> VFO", // MaxLen: 16
 .vfoToChannel			= "VFO --> Canal", // MaxLen: 16
+.vfoToNewChannel		= "VFO --> Nuevo C.", // MaxLen: 16
 .group					= "Grupo", // MaxLen: 16 (with .type)
 .private				= "Privado", // MaxLen: 16 (with .type)
 .all					= "Todos", // MaxLen: 16 (with .type)

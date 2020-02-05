@@ -78,6 +78,7 @@ const stringsTable_t polishLanguage =
 .scan					= "Skanowanie", // MaxLen: 16
 .channelToVfo				= "Kanaˆ ---> VFO", // MaxLen: 16
 .vfoToChannel				= "VFO ---> Kanaˆ", // MaxLen: 16
+.vfoToNewChannel		= "VFO --> New Chan", // MaxLen: 16
 .group					= "Grupa", // MaxLen: 16 (with .type)
 .private				= "Prywatny", // MaxLen: 16 (with .type)
 .all					= "Wszystko", // MaxLen: 16 (with .type)

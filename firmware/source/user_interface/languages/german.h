@@ -78,6 +78,7 @@ const stringsTable_t germanLanguage =
 .scan					= "Suchlauf", // MaxLen: 16
 .channelToVfo			= "Kanal --> VFO", // MaxLen: 16
 .vfoToChannel			= "VFO --> Kanal", // MaxLen: 16
+.vfoToNewChannel		= "VFO --> New Chan", // MaxLen: 16
 .group					= "Gruppe", // MaxLen: 16 (with .type)
 .private				= "Privat", // MaxLen: 16 (with .type)
 .all					= "Alle", // MaxLen: 16 (with .type)

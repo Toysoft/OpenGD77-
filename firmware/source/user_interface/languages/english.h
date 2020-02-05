@@ -78,6 +78,7 @@ const stringsTable_t englishLanguage =
 .scan					= "Scan", // MaxLen: 16
 .channelToVfo				= "Channel --> VFO", // MaxLen: 16
 .vfoToChannel				= "VFO --> Channel", // MaxLen: 16
+.vfoToNewChannel		= "VFO --> New Chan", // MaxLen: 16
 .group					= "Group", // MaxLen: 16 (with .type)
 .private				= "Private", // MaxLen: 16 (with .type)
 .all					= "All", // MaxLen: 16 (with .type)

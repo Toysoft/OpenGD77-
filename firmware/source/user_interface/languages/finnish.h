@@ -78,6 +78,7 @@ const stringsTable_t finnishLanguage =
 .scan			= "Skannaus",
 .channelToVfo		= "Kanava --> VFO",
 .vfoToChannel		= "VFO --> Kanava",
+.vfoToNewChannel	= "VFO --> New Chan", // MaxLen: 16
 .group			= "Ryhmä", 		// MaxLen: 16 (with .type)
 .private		= "Privaatti", 		// MaxLen: 16 (with .type)
 .all			= "Kaikki", 		// MaxLen: 16 (with .type)

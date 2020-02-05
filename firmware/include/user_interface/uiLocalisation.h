@@ -67,6 +67,7 @@ typedef struct stringsTable
    const char scan[LANGUAGE_TEXTS_LENGTH];// "Scan"
    const char channelToVfo[LANGUAGE_TEXTS_LENGTH];// "Channel --> VFO",
    const char vfoToChannel[LANGUAGE_TEXTS_LENGTH];// "VFO --> Channel",
+   const char vfoToNewChannel[LANGUAGE_TEXTS_LENGTH];// "VFO --> New Chan",
    const char group[LANGUAGE_TEXTS_LENGTH];//"Group",
    const char private[LANGUAGE_TEXTS_LENGTH];//"Private",
    const char all[LANGUAGE_TEXTS_LENGTH];//"All",
