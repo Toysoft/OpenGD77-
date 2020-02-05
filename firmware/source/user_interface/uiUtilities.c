@@ -631,6 +631,14 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer, bool forceOnHotspot)
 								// TAs doesn't match, update contact and screen.
 								if (overrideTA || (strlen((const char *)decodedTA) > strlen((const char *)&LinkHead->talkerAlias)))
 								{
+									char *p = NULL;
+
+									// Get rid of 'DMR ID:xxxxxxx' part of the TA, sent by BM
+									if ((p = strstr((const char *)decodedTA, "DMR ID:")) != NULL)
+									{
+										*p = 0;
+									}
+
 									memcpy(&LinkHead->talkerAlias, decodedTA, 31);// Brandmeister seems to send callsign as 6 chars only
 									overrideTA = false;
 									menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;
