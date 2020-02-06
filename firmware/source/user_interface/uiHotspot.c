@@ -125,7 +125,7 @@ M: 2020-01-07 09:52:15.246 DMR Slot 2, received network end of voice transmissio
 
 #define MMDVM_HEADER_LENGTH  4U
 
-#define HOTSPOT_VERSION_STRING "OpenGD77 Hotspot v0.0.87"
+#define HOTSPOT_VERSION_STRING "OpenGD77 Hotspot v0.1.0"
 #define concat(a, b) a " GitID #" b ""
 static const char HARDWARE[] = concat(HOTSPOT_VERSION_STRING, GITVERSION);
 
@@ -152,24 +152,27 @@ static uint32_t savedTGorPC;
 static uint8_t hotspotTxLC[9];
 static bool startedEmbeddedSearch = false;
 
+// USB TX read/write positions and count
 volatile uint16_t usbComSendBufWritePosition = 0;
 volatile uint16_t usbComSendBufReadPosition = 0;
 volatile uint16_t usbComSendBufCount = 0;
-//#define HS_COM_BUFFER_SIZE (COM_BUFFER_SIZE * 4)
-//static uint8_t usbHSComSendBuf[HS_COM_BUFFER_SIZE];
 
-volatile usb_status_t lastUSBSerialTxStatus = kStatus_USB_Success;
+// RF data read/write positions and count
 volatile uint32_t rfFrameBufReadIdx = 0;
 volatile uint32_t rfFrameBufWriteIdx = 0;
 volatile uint32_t rfFrameBufCount = 0;
+
 static uint8_t lastRxState = HOTSPOT_RX_IDLE;
 static const int TX_BUFFERING_TIMEOUT = 5000;// 500mS
-static const uint32_t MMDVMHOST_TIMEOUT = 10000; // 10s
+
 static int timeoutCounter;
 static int savedPowerLevel = -1;// no power level saved yet
 static int hotspotPowerLevel = 0;// no power level saved yet
-static uint32_t mmdvmHostLastActiveTick = 0;
+
+static uint32_t mmdvmHostLastActiveTime = 0; // store last activity time (ms)
+static const uint32_t MMDVMHOST_TIMEOUT = 10000; // 10s timeout (MMDVMHost mode only, there is no timeout for BlueDV)
 static bool mmdvmHostIsConnected = false;
+
 static bool displayFWVersion;
 static uint8_t currentRxCommandState;
 
@@ -1371,7 +1374,7 @@ static void hotspotStateMachine(void)
 			else
 			{
 				if ((nonVolatileSettings.hotspotType == HOTSPOT_TYPE_MMDVM) &&
-						((fw_millis() - mmdvmHostLastActiveTick) > MMDVMHOST_TIMEOUT))
+						((fw_millis() - mmdvmHostLastActiveTime) > MMDVMHOST_TIMEOUT))
 				{
 					wavbuffer_count = 0;
 
@@ -1413,7 +1416,7 @@ static void hotspotStateMachine(void)
 			{
 				// No activity from MMDVMHost
 				if ((nonVolatileSettings.hotspotType == HOTSPOT_TYPE_MMDVM) &&
-						((fw_millis() - mmdvmHostLastActiveTick) > MMDVMHOST_TIMEOUT))
+						((fw_millis() - mmdvmHostLastActiveTime) > MMDVMHOST_TIMEOUT))
 				{
 					mmdvmHostIsConnected = false;
 					hotspotState = HOTSPOT_STATE_NOT_CONNECTED;
@@ -2144,7 +2147,7 @@ static void handleHotspotRequest(void)
 	{
 		uint8_t err = 2U;
 
-		mmdvmHostLastActiveTick = fw_millis();
+		mmdvmHostLastActiveTime = fw_millis();
 
 		switch(com_requestbuffer[2U])
 		{
