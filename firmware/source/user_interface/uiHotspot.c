@@ -126,7 +126,7 @@ M: 2020-01-07 09:52:15.246 DMR Slot 2, received network end of voice transmissio
 
 #define MMDVM_HEADER_LENGTH  4U
 
-#define HOTSPOT_VERSION_STRING "OpenGD77 Hotspot v0.0.87.3"
+#define HOTSPOT_VERSION_STRING "OpenGD77 Hotspot v0.0.87"
 #define concat(a, b) a " GitID #" b ""
 static const char HARDWARE[] = concat(HOTSPOT_VERSION_STRING, GITVERSION);
 
@@ -1483,7 +1483,6 @@ static void hotspotStateMachine(void)
 				if (modemState == STATE_POCSAG)
 				{
 					memset((void *)&audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx], 0, HOTSPOT_BUFFER_SIZE);
-					rfFrameBufCount--;
 				}
 
 				if (MMDVMHostRxState == MMDVMHOST_RX_READY)
@@ -2235,14 +2234,14 @@ static void handleHotspotRequest(void)
 
 			case MMDVM_SET_MODE:
 				{
-					MMDVM_STATE oldState = modemState;
+					MMDVM_STATE prevState = modemState;
 
 					err = setMode(com_requestbuffer + 3U, com_requestbuffer[1U] - 3U);
 
-					if (((oldState == STATE_POCSAG) && (modemState != STATE_POCSAG)) ||
-							((oldState != STATE_POCSAG) && (modemState == STATE_POCSAG)))
+					if (((prevState == STATE_POCSAG) && (modemState != STATE_POCSAG)) ||
+							((prevState != STATE_POCSAG) && (modemState == STATE_POCSAG)))
 					{
-						updateScreen(currentRxCommandState); // refresh screen
+						updateScreen(HOTSPOT_RX_IDLE); // refresh screen
 					}
 
 					if (err == 0U)
