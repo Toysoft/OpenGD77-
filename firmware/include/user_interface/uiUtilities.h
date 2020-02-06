@@ -21,7 +21,7 @@
 #include <functions/fw_settings.h>
 #include "fw_common.h"
 
-#define NUM_LASTHEARD_STORED 16
+#define NUM_LASTHEARD_STORED 32
 extern const int QSO_TIMER_TIMEOUT;
 extern const int TX_TIMER_Y_OFFSET;
 extern const int CONTACT_Y_POS;
