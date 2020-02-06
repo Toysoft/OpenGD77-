@@ -1112,7 +1112,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 
 					//Set channel index as valid
 					codeplugChannelIndexSetValid(newChannelIndex);
-					nonVolatileSettings.overrideTG = 0; // remove any TG override
+					//nonVolatileSettings.overrideTG = 0; // remove any TG override
 					nonVolatileSettings.currentChannelIndexInZone = 0;// Since we are switching zones the channel index should be reset
 					channelScreenChannelData.rxFreq=0x00; // Flag to the Channel screen that the channel data is now invalid and needs to be reloaded
 
