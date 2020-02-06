@@ -142,6 +142,7 @@ const stringsTable_t frenchLanguage =
 .ptt_toggle				= "Bascule PTT", // MaxLen 16 (with ':' + .on or .off)
 .private_call_handling			= "Filtre PC", // MaxLen 16 (with ':' + .on ot .off)
 .stop					= "Arrêt", // Maxlen 16 (with ':' + .scan_mode)
+.split_contact				= "Split Cc", // MaxLen 16 (with ':' + .yes or .no)
 };
 /********************************************************************
  *

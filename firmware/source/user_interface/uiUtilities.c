@@ -34,6 +34,7 @@ const int TX_TIMER_Y_OFFSET = 8;
 const int CONTACT_Y_POS = 16;
 const int FREQUENCY_X_POS = /* '>Ta'*/ (3 * 8) + 4;
 static const int BAR_Y_POS = 10;
+const int MAX_POWER_SETTING_NUM = 8;// Limit max power setting to 8 (5W)
 
 static const int DMRID_MEMORY_STORAGE_START = 0x30000;
 static const int DMRID_HEADER_LENGTH = 0x0C;
@@ -632,6 +633,18 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer, bool forceOnHotspot)
 								if (overrideTA || (strlen((const char *)decodedTA) > strlen((const char *)&LinkHead->talkerAlias)))
 								{
 									memcpy(&LinkHead->talkerAlias, decodedTA, 31);// Brandmeister seems to send callsign as 6 chars only
+
+									if ((blocksTA & (1 << 1)) != 0) // we already received the 2nd TA block, check for 'DMR ID:'
+									{
+										char *p = NULL;
+
+										// Get rid of 'DMR ID:xxxxxxx' part of the TA, sent by BM
+										if (((p = strstr(&LinkHead->talkerAlias[0], "DMR ID:")) != NULL) || ((p = strstr(&LinkHead->talkerAlias[0], "DMR I")) != NULL))
+										{
+											*p = 0;
+										}
+									}
+
 									overrideTA = false;
 									menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;
 								}
@@ -891,6 +904,16 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 		char    *pbuf;
 		int32_t  cpos;
 
+		// User prefers to not span the TA info over two lines, check it that could fit
+		if ((nonVolatileSettings.splitContact == false) && (strlen(text) <= 16))
+		{
+			memcpy(buffer, text, strlen(text));
+			buffer[strlen(text)] = 0;
+			ucPrintCentered(32, chomp(buffer), FONT_8x16);
+			displayChannelNameOrRxFrequency(buffer, (sizeof(buffer) / sizeof(buffer[0])));
+			return;
+		}
+
 		if ((cpos = getFirstSpacePos(text)) != -1)
 		{
 			// Callsign found
@@ -1002,7 +1025,7 @@ void menuUtilityRenderQSOData(void)
 					}
 					else
 					{
-						displayContactTextInfos(LinkHead->contact, sizeof(LinkHead->contact), true);
+						displayContactTextInfos(LinkHead->contact, sizeof(LinkHead->contact), nonVolatileSettings.splitContact);
 					}
 					break;
 
@@ -1026,7 +1049,7 @@ void menuUtilityRenderQSOData(void)
 					}
 					else // No TA, then use the one extracted from Codeplug or DMRIdDB
 					{
-						displayContactTextInfos(LinkHead->contact, sizeof(LinkHead->contact), true);
+						displayContactTextInfos(LinkHead->contact, sizeof(LinkHead->contact), nonVolatileSettings.splitContact);
 					}
 					break;
 			}

@@ -68,6 +68,7 @@ enum QSO_DISPLAY_STATE
 	QSO_DISPLAY_CALLER_DATA_UPDATE
 };
 
+extern const int MAX_POWER_SETTING_NUM;
 extern const char *POWER_LEVELS[];
 extern const char *DMR_FILTER_LEVELS[];
 extern LinkItem_t *LinkHead;
