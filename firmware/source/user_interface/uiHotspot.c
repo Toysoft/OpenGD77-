@@ -28,7 +28,6 @@
 #include "dmr/DMRShortLC.h"
 #include "dmr/DMRSlotType.h"
 #include "dmr/QR1676.h"
-//#include <SeggerRTT/RTT/SEGGER_RTT.h>
 #include <user_interface/menuHotspot.h>
 #include <user_interface/menuSystem.h>
 #include <user_interface/uiUtilities.h>
@@ -710,30 +709,13 @@ static void hotspotExit(void)
 	menuSystemPopAllAndDisplayRootMenu();
 }
 
-
-/*
- *
- //Enable when debugging
-static void displayDataBytes(uint8_t *buf, int len)
-{
-	for (int i=0;i<len;i++)
-	{
-    	//SEGGER_RTT_printf(0, " %02x", buf[i]);
-	}
-	//SEGGER_RTT_printf(0, "\n");
-}
-*/
-
 // Queue system is a single byte header containing the length of the item, followed by the data
 // if the block won't fit in the space between the current write location and the end of the buffer,
 // a zero is written to the length for that block and the data and its length byte is put at the beginning of the buffer
 static void enqueueUSBData(uint8_t *data, uint8_t length)
 {
-	//SEGGER_RTT_printf(0, "Enqueue: ");
-	//displayDataBytes(buff,length);
 	if ((usbComSendBufWritePosition + (length + 1)) > (COM_BUFFER_SIZE - 1))
 	{
-		//SEGGER_RTT_printf(0, "Looping write buffer back to start pos:%d len:%d\n");
 		usbComSendBuf[usbComSendBufWritePosition] = 0xFF; // flag that the data block won't fit and will be put at the start of the buffer
 		usbComSendBufWritePosition = 0;
 	}
@@ -783,7 +765,7 @@ static void processUSBDataQueue(void)
 			}
 			else
 			{
-				//SEGGER_RTT_printf(0, "USB Send Fail\n");
+				// USB Send Fail
 			}
 		}
 	}
@@ -791,8 +773,6 @@ static void processUSBDataQueue(void)
 
 static void enableTransmission(void)
 {
-	//SEGGER_RTT_printf(0, "Enable Transmission\n");
-
 	GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 	GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 1);
 
@@ -802,8 +782,6 @@ static void enableTransmission(void)
 
 static void disableTransmission(void)
 {
-	//SEGGER_RTT_printf(0, "Disable Transmission\n");
-
 	GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
 	// Need to wrap this in Task Critical to avoid bus contention on the I2C bus.
 	taskENTER_CRITICAL();
@@ -905,7 +883,6 @@ static void sendVoiceHeaderLC_Frame(volatile const uint8_t *receivedDMRDataAndAu
 	// Add RSSI into frame
 	setRSSIToFrame(frameData);
 
-	//SEGGER_RTT_printf(0, "sendVoiceHeaderLC_Frame\n");
 	enqueueUSBData(frameData, frameData[1U]);
 }
 
@@ -937,7 +914,6 @@ static void sendTerminator_LC_Frame(volatile const uint8_t *receivedDMRDataAndAu
 	// Add RSSI into frame
 	setRSSIToFrame(frameData);
 
-	//SEGGER_RTT_printf(0, "sendTerminator_LC_Frame\n");
 	enqueueUSBData(frameData, frameData[1U]);
 }
 
@@ -1094,16 +1070,13 @@ static void storeNetFrame(volatile const uint8_t *com_requestbuffer)
 {
 	bool foundEmbedded;
 
-	//SEGGER_RTT_printf(0, "storeNetFrame\n");
 	if (memcmp((uint8_t *)&com_requestbuffer[18], END_FRAME_PATTERN, 6) == 0)
 	{
-		//SEGGER_RTT_printf(0, "END_FRAME_PATTERN %d\n",wavbuffer_count);
 		return;
 	}
 
 	if (memcmp((uint8_t *)&com_requestbuffer[18], START_FRAME_PATTERN, 6) == 0)
 	{
-		//SEGGER_RTT_printf(0, "START_FRAME_PATTERN %d\n",wavbuffer_count);
 		return;
 	}
 
@@ -1114,7 +1087,6 @@ static void storeNetFrame(volatile const uint8_t *com_requestbuffer)
 			(hotspotTxLC[0] == TG_CALL_FLAG || hotspotTxLC[0] == PC_CALL_FLAG) &&
 			(hotspotState != HOTSPOT_STATE_TX_START_BUFFERING && hotspotState != HOTSPOT_STATE_TRANSMITTING))
 	{
-		//SEGGER_RTT_printf(0, "LATE START -> HOTSPOT_STATE_TX_BUFFERING\n");
 		timeoutCounter = TX_BUFFERING_TIMEOUT;// set buffering timeout
 		hotspotState = HOTSPOT_STATE_TX_START_BUFFERING;
 	}
@@ -1125,10 +1097,8 @@ static void storeNetFrame(volatile const uint8_t *com_requestbuffer)
 	{
 		if (wavbuffer_count >= HOTSPOT_BUFFER_COUNT)
 		{
-			//SEGGER_RTT_printf(0, "------------------------------ Buffer overflow ---------------------------\n");
+			// Buffer overflow
 		}
-
-		//displayDataBytes(com_requestbuffer, 16);
 
 		taskENTER_CRITICAL();
 		memcpy((uint8_t *)&audioAndHotspotDataBuffer.hotspotBuffer[wavbuffer_write_idx][0x0C], (uint8_t *)com_requestbuffer + 4, 13);//copy the first 13, whole bytes of audio
@@ -1206,13 +1176,11 @@ static uint8_t hotspotModeReceiveNetFrame(volatile const uint8_t *com_requestbuf
 
 		if (hotspotState != HOTSPOT_STATE_TX_START_BUFFERING)
 		{
-			//SEGGER_RTT_printf(0, "Net frame LC_decodOK:%d FID:%d FLCO:%d PF:%d R:%d dstId:%d src:Id:%d options:0x%02x\n",lcDecodeOK,lc.FID,lc.FLCO,lc.PF,lc.R,lc.dstId,lc.srcId,lc.options);
 			memcpy(hotspotTxLC, lc.rawData, 9);//Hotspot uses LC Data bytes rather than the src and dst ID's for the embed data
 
 			lastHeardListUpdate(hotspotTxLC, true);
 
 			// the Src and Dst Id's have been sent, and we are in RX mode then an incoming Net normally arrives next
-			//SEGGER_RTT_printf(0,"hospot state %d -> HOTSPOT_STATE_TX_BUFFERING\n");
 			timeoutCounter = TX_BUFFERING_TIMEOUT;
 			hotspotState = HOTSPOT_STATE_TX_START_BUFFERING;
 		}
@@ -1221,7 +1189,6 @@ static uint8_t hotspotModeReceiveNetFrame(volatile const uint8_t *com_requestbuf
 	{
 		storeNetFrame(com_requestbuffer);
 	}
-	//SEGGER_RTT_printf(0, "hotspotModeReceiveNetFrame\n");
 
 	return 0U;
 }
@@ -1423,12 +1390,9 @@ static void hotspotStateMachine(void)
 			overriddenLCAvailable = false;
 
 			hotspotState = HOTSPOT_STATE_RX_START;
-			//SEGGER_RTT_printf(0, "STATE_INITIALISE -> STATE_RX\n");
 			break;
 
 		case HOTSPOT_STATE_RX_START:
-			//SEGGER_RTT_printf(0, "STATE_RX_START\n");
-
 			// force immediate shutdown of Tx if we get here and the tx is on for some reason.
 			if (trxIsTransmitting)
 			{
@@ -1488,7 +1452,6 @@ static void hotspotStateMachine(void)
 				if (MMDVMHostRxState == MMDVMHOST_RX_READY)
 				{
 					uint8_t rx_command = audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx][27 + 0x0c];
-					//SEGGER_RTT_printf(0, "RX_PROCESS cmd:%d buf:%d\n",rx_command,wavbuffer_count);
 
 					switch(rx_command)
 					{
@@ -1496,7 +1459,6 @@ static void hotspotStateMachine(void)
 							break;
 
 						case HOTSPOT_RX_START:
-							//SEGGER_RTT_printf(0, "RX_START\n",rx_command,wavbuffer_count);
 							sendVoiceHeaderLC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
 							updateScreen(rx_command);
 							lastRxState = HOTSPOT_RX_START;
@@ -1504,7 +1466,6 @@ static void hotspotStateMachine(void)
 							break;
 
 						case HOTSPOT_RX_START_LATE:
-							//SEGGER_RTT_printf(0, "RX_START_LATE\n");
 							sendVoiceHeaderLC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
 							updateScreen(rx_command);
 							lastRxState = HOTSPOT_RX_START_LATE;
@@ -1512,14 +1473,12 @@ static void hotspotStateMachine(void)
 							break;
 
 						case HOTSPOT_RX_AUDIO_FRAME:
-							//SEGGER_RTT_printf(0, "HOTSPOT_RX_AUDIO_FRAME\n");
 							hotspotSendVoiceFrame(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
 							lastRxState = HOTSPOT_RX_AUDIO_FRAME;
 							rxFrameTime = fw_millis();
 							break;
 
 						case HOTSPOT_RX_STOP:
-							//SEGGER_RTT_printf(0, "RX_STOP\n");
 							updateScreen(rx_command);
 							sendTerminator_LC_Frame(audioAndHotspotDataBuffer.hotspotBuffer[rfFrameBufReadIdx]);
 							lastRxState = HOTSPOT_RX_STOP;
@@ -1528,7 +1487,6 @@ static void hotspotStateMachine(void)
 
 						case HOTSPOT_RX_IDLE_OR_REPEAT:
 							lastRxState = HOTSPOT_RX_IDLE_OR_REPEAT;
-							//SEGGER_RTT_printf(0, "RX_IDLE_OR_REPEAT\n");
 							/*
 										switch(lastRxState)
 										{
@@ -1547,7 +1505,6 @@ static void hotspotStateMachine(void)
 
 						default:
 							lastRxState = HOTSPOT_RX_UNKNOWN;
-							//SEGGER_RTT_printf(0, "ERROR: Unkown Hotspot RX state\n");
 							break;
 					}
 
@@ -1602,7 +1559,6 @@ static void hotspotStateMachine(void)
 				disableTransmission();
 				updateScreen(HOTSPOT_RX_IDLE);
 
-				//SEGGER_RTT_printf(0, "modemState == STATE_IDLE: TX_START_BUFFERING -> HOTSPOT_STATE_TX_SHUTDOWN\n");
 			}
 			else
 			{
@@ -1611,7 +1567,6 @@ static void hotspotStateMachine(void)
 					if (cwKeying == false)
 					{
 						hotspotState = HOTSPOT_STATE_TRANSMITTING;
-						//SEGGER_RTT_printf(0, "TX_START_BUFFERING -> TRANSMITTING %d\n",wavbuffer_count);
 						enableTransmission();
 						updateScreen(HOTSPOT_RX_IDLE);
 					}
@@ -1622,7 +1577,6 @@ static void hotspotStateMachine(void)
 					{
 						sendDMRLost();
 						hotspotState = HOTSPOT_STATE_INITIALISE;
-						//SEGGER_RTT_printf(0, "Timeout while buffering TX_START_BUFFERING -> HOTSPOT_STATE_INITIALISE\n");
 					}
 				}
 			}
@@ -1633,7 +1587,6 @@ static void hotspotStateMachine(void)
 			if (wavbuffer_count == 0 || modemState == STATE_IDLE)
 			{
 				hotspotState = HOTSPOT_STATE_TX_SHUTDOWN;
-				//SEGGER_RTT_printf(0, "TRANSMITTING -> TX_SHUTDOWN %d %d\n",wavbuffer_count,modemState);
 				trxIsTransmitting = false;
 			}
 			break;
@@ -1646,7 +1599,6 @@ static void hotspotStateMachine(void)
 				if (wavbuffer_count > 0)
 				{
 					// restart
-					//SEGGER_RTT_printf(0, "Restarting transmission %d\n",wavbuffer_count);
 					enableTransmission();
 					timeoutCounter = TX_BUFFERING_TIMEOUT;
 					hotspotState = HOTSPOT_STATE_TX_START_BUFFERING;
@@ -1659,7 +1611,6 @@ static void hotspotStateMachine(void)
 				{
 					disableTransmission();
 					hotspotState = HOTSPOT_STATE_RX_START;
-					//SEGGER_RTT_printf(0, "TX_SHUTDOWN -> STATE_RX\n");
 					updateScreen(HOTSPOT_RX_IDLE);
 
 					/*
@@ -1687,7 +1638,6 @@ static uint8_t setFreq(volatile const uint8_t* data, uint8_t length)
 	const int BAN2_MAX  = 43800000;
 	uint32_t fRx, fTx;
 
-	//SEGGER_RTT_printf(0, "setFreq\n");
 	hotspotState = HOTSPOT_STATE_INITIALISE;
 
 	if (!mmdvmHostIsConnected)
@@ -1695,8 +1645,6 @@ static uint8_t setFreq(volatile const uint8_t* data, uint8_t length)
 		mmdvmHostIsConnected = true;
 		updateScreen(HOTSPOT_RX_IDLE);
 	}
-
-//	displayLightOverrideTimeout(-1);// turn the backlight on permanently
 
 	// Very old MMDVMHost, set full power
 	if (length == 9U)
@@ -1711,9 +1659,6 @@ static uint8_t setFreq(volatile const uint8_t* data, uint8_t length)
 
 	fRx = (data[1U] << 0 | data[2U] << 8  | data[3U] << 16 | data[4U] << 24) / 10;
 	fTx = (data[5U] << 0 | data[6U] << 8  | data[7U] << 16 | data[8U] << 24) / 10;
-
-//	//SEGGER_RTT_printf(0, "Tx freq = %d, Rx freq = %d, Power = %d\n",fRx,fRx,rf_power);
-
 
 	if ((fTx >= BAN1_MIN && fTx <= BAN1_MAX) || (fTx >= BAN2_MIN && fTx <= BAN2_MAX))
 	{
@@ -1765,7 +1710,7 @@ static bool hasTXOverflow(void)
 static void getStatus(void)
 {
 	uint8_t buf[16];
-//	//SEGGER_RTT_printf(0, "getStatus\n");
+
 	// Send all sorts of interesting internal values
 	buf[0U]  = MMDVM_FRAME_START;
 	buf[1U]  = 13U;
@@ -1797,8 +1742,6 @@ static void getStatus(void)
 	buf[11U] = 0U; // no NXDN space
 	buf[12U] = 1U; // virtual space for POCSAG
 
-	//SEGGER_RTT_printf(0, "getStatus buffers=%d\n",s_ComBuf[8U]);
-
 	if (!mmdvmHostIsConnected)
 	{
 		hotspotState = HOTSPOT_STATE_INITIALISE;
@@ -1816,7 +1759,6 @@ static uint8_t setConfig(volatile const uint8_t *data, uint8_t length)
 		return 4U;
 	}
 
-	//SEGGER_RTT_printf(0, "setConfig \n");
 	uint32_t tempTXDelay = (data[2U] * 100); // MMDVMHost send in 10ms units, we use 0.1ms PIT counter unit
 
 	if (tempTXDelay > 10000) // 1s limit
@@ -1878,8 +1820,6 @@ static uint8_t setMode(volatile const uint8_t* data, uint8_t length)
 	{
 		return 4U;
 	}
-
-	  //SEGGER_RTT_printf(0, "MMDVM SetMode len:%d %02X %02X %02X %02X %02X %02X %02X %02X\n",length,data[0U],data[1U],data[2U],data[3U],data[4U],data[5U],data[6U],data[7U]);
 
 	if (modemState == data[0U])
 	{
@@ -1965,7 +1905,6 @@ static uint8_t handleDMRShortLC(volatile const uint8_t *data, uint8_t length)
 {
 	////	uint8_t LCBuf[5];
 	////	DMRShortLC_decode((uint8_t *) com_requestbuffer + 3U,LCBuf);
-	////	//SEGGER_RTT_printf(0, "MMDVM ShortLC\n %02X %02X %02X %02X %02X\n",LCBuf[0U],LCBuf[1U],LCBuf[2U],LCBuf[3U],LCBuf[4U],LCBuf[5U]);
 
 	if (!mmdvmHostIsConnected)
 	{
@@ -2201,14 +2140,12 @@ static uint8_t handlePOCSAG(volatile const uint8_t *data, uint8_t length)
 
 static void handleHotspotRequest(void)
 {
-	//SEGGER_RTT_printf(0, "handleHotspotRequest 0x%0x 0x%0x 0x%0x\n",com_requestbuffer[0],com_requestbuffer[1],com_requestbuffer[2]);
 	if (com_requestbuffer[0] == MMDVM_FRAME_START)
 	{
 		uint8_t err = 2U;
 
 		mmdvmHostLastActiveTick = fw_millis();
 
-		//SEGGER_RTT_printf(0, "MMDVM %02x\n",com_requestbuffer[2]);
 		switch(com_requestbuffer[2U])
 		{
 			case MMDVM_GET_STATUS:
@@ -2269,7 +2206,6 @@ static void handleHotspotRequest(void)
 				break;
 
 			case MMDVM_CAL_DATA:
-				//SEGGER_RTT_printf(0, "MMDVM_CAL_DATA\n");
 				sendNAK(err);
 				break;
 
@@ -2290,7 +2226,6 @@ static void handleHotspotRequest(void)
 				{
 					sendNAK(err);
 				}
-				//SEGGER_RTT_printf(0, "MMDVM_SEND_CWID\n");
 				break;
 
 			case MMDVM_DSTAR_HEADER:
@@ -2300,14 +2235,11 @@ static void handleHotspotRequest(void)
 				break;
 
 			case MMDVM_DMR_DATA1: // We are a simplex hotspot, no TS1 support
-				//SEGGER_RTT_printf(0, "MMDVM_DMR_DATA1\n");
 				//hotspotModeReceiveNetFrame((uint8_t *)com_requestbuffer, 1U);
 				sendNAK(err);
 				break;
 
 			case MMDVM_DMR_DATA2:
-				//SEGGER_RTT_printf(0, "MMDVM_DMR_DATA2\n");
-
 				// It seems BlueDV under Windows forget to set correct mode
 				// when it connect a TG with an already running QSO. So we force
 				// the modemState and init the HS.
@@ -2328,12 +2260,10 @@ static void handleHotspotRequest(void)
 				break;
 
 			case MMDVM_DMR_START: // Only for duplex
-				//SEGGER_RTT_printf(0, "MMDVM_DMR_START\n");
 				sendACK();
 				break;
 
 			case MMDVM_DMR_SHORTLC:
-				//SEGGER_RTT_printf(0, "MMDVM_DMR_SHORTLC\n");
 				err = handleDMRShortLC(com_requestbuffer, com_requestbuffer[1U]);
 				if (err == 0U)
 				{
@@ -2346,17 +2276,14 @@ static void handleHotspotRequest(void)
 				break;
 
 			case MMDVM_DMR_ABORT: // Only for duplex
-				//SEGGER_RTT_printf(0, "MMDVM_DMR_ABORT\n");
 				sendACK();
 				break;
 
-	#if 0  // Serial passthrough (a.k.a Nextion serial port), unhandled
+#if 0  // Serial passthrough (a.k.a Nextion serial port), unhandled
 			case MMDVM_SERIAL:
-				//SEGGER_RTT_printf(0, "MMDVM_SERIAL\n");
-				//displayDataBytes(com_requestbuffer, com_requestbuffer[1]);
 				//sendACK();
 				break;
-	#endif
+#endif
 
 			case MMDVM_YSF_DATA:
 				sendNAK(err);
@@ -2405,11 +2332,7 @@ static void handleHotspotRequest(void)
 				break;
 
 			default:
-				{
-					//SEGGER_RTT_printf(0, "Unhandled command type %d\n",com_requestbuffer[2]);
-					sendNAK(1U);
-					//sendNAK(com_requestbuffer[2]);
-				}
+				sendNAK(1U);
 				break;
 		}
 
@@ -2417,7 +2340,7 @@ static void handleHotspotRequest(void)
 	}
 	else
 	{
-		//SEGGER_RTT_printf(0, "Invalid MMDVM header byte %d\n",com_requestbuffer[0]);
+		// Invalid MMDVM header byte
 	}
 
 	if ((menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA) || (menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA_UPDATE))
