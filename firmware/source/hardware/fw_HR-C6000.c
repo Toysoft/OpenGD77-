@@ -93,7 +93,7 @@ static volatile int readDMRRSSI = 0;
 
 static volatile int tx_sequence=0;
 
-static volatile int timeCode;
+static volatile int timeCode=-1;
 static volatile int receivedTimeCode;
 static volatile int rxColorCode;
 static volatile int repeaterWakeupResponseTimeout=0;
@@ -880,7 +880,7 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 	read_SPI_page_reg_byte_SPI0(0x04, 0x52, &reg0x52);  	//Read CACH Register to get the timecode (TS number)
     receivedTimeCode = ((reg0x52 & 0x04) >> 2);				// extract the timecode from the CACH register
 
-	if (slot_state == DMR_STATE_REPEATER_WAKE_4)			//if we are waking up the repeater
+	if (slot_state == DMR_STATE_REPEATER_WAKE_4 || timeCode == -1)			//if we are waking up the repeater, or we don't currently have a valid value for the timecode
 	{
 		timeCode=receivedTimeCode;							//use the received TC directly from the CACH
 	}
@@ -1238,6 +1238,7 @@ void init_digital(void)
 {
 	GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
     GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
+    timeCode = -1;// Clear current timecode synchronisation
 	init_digital_DMR_RX();
 	init_digital_state();
     NVIC_EnableIRQ(PORTC_IRQn);
@@ -1594,4 +1595,9 @@ int HRC6000GetReceivedTgOrPcId(void)
 int HRC6000GetReceivedSrcId(void)
 {
 	return receivedSrcId;
+}
+
+void HRC6000ClearTimecodeSynchronisation(void)
+{
+	timeCode = -1;
 }
