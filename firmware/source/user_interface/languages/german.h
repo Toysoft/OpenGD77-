@@ -142,9 +142,8 @@ const stringsTable_t germanLanguage =
 .ptt_toggle				= "PTT bistabil", // MaxLen 16 (with ':' + .on or .off)
 .private_call_handling		= "Anruf Hinw.", // MaxLen 16 (with ':' + .on ot .off)
 .stop					= "Stop", // Maxlen 16 (with ':' + .scan_mode)
-.crop					= "Crop", // MaxLen 16 (with ':' + .contact)
-.narrow					= "Narrow", // MaxLen 16 (with ':' + .contact)
-.span					= "Span", // MaxLen 16 (with ':' + .contact)
+.one_line				= "1 line", // MaxLen 16 (with ':' + .contact)
+.two_lines				= "2 lines", // MaxLen 16 (with ':' + .contact)
 };
 /********************************************************************
  *

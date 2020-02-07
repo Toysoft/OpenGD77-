@@ -142,9 +142,8 @@ const stringsTable_t englishLanguage =
 .ptt_toggle				= "PTT latch", // MaxLen 16 (with ':' + .on or .off)
 .private_call_handling			= "Allow PC", // MaxLen 16 (with ':' + .on or .off)
 .stop					= "Stop", // Maxlen 16 (with ':' + .scan_mode)
-.crop					= "Crop", // MaxLen 16 (with ':' + .contact)
-.narrow					= "Narrow", // MaxLen 16 (with ':' + .contact)
-.span					= "Span", // MaxLen 16 (with ':' + .contact)
+.one_line				= "1 line", // MaxLen 16 (with ':' + .contact)
+.two_lines				= "2 lines", // MaxLen 16 (with ':' + .contact)
 };
 /********************************************************************
  *

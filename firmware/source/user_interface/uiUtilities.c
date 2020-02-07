@@ -906,7 +906,7 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 
 		// User prefers to not span the TA info over two lines, check it that could fit
 		if ((nonVolatileSettings.splitContact == SPLIT_CONTACT_SINGLE_LINE_ONLY) ||
-				((nonVolatileSettings.splitContact == SPLIT_CONTACT_CONSTRAIN_TO_ONE_LINE) && (strlen(text) <= 16)))
+				((nonVolatileSettings.splitContact == SPLIT_CONTACT_AUTO) && (strlen(text) <= 16)))
 		{
 			memcpy(buffer, text, 17);
 			buffer[16] = 0;
