@@ -131,7 +131,9 @@ typedef struct stringsTable
    const char ptt_toggle[LANGUAGE_TEXTS_LENGTH];
    const char private_call_handling[LANGUAGE_TEXTS_LENGTH];
    const char stop[LANGUAGE_TEXTS_LENGTH];
-   const char split_contact[LANGUAGE_TEXTS_LENGTH];
+   const char crop[LANGUAGE_TEXTS_LENGTH];
+   const char narrow[LANGUAGE_TEXTS_LENGTH];
+   const char span[LANGUAGE_TEXTS_LENGTH];
 } stringsTable_t;
 
 extern const stringsTable_t languages[];

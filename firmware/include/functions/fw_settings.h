@@ -31,6 +31,7 @@ enum BACKLIGHT_MODE { BACKLIGHT_MODE_AUTO = 0, BACKLIGHT_MODE_MANUAL = 1, BACKLI
 enum HOTSPOT_TYPE { HOTSPOT_TYPE_OFF = 0, HOTSPOT_TYPE_MMDVM = 1, HOTSPOT_TYPE_BLUEDV = 2};
 enum CONTACT_DISPLAY_PRIO { CONTACT_DISPLAY_PRIO_CC_DB_TA = 0, CONTACT_DISPLAY_PRIO_DB_CC_TA, CONTACT_DISPLAY_PRIO_TA_CC_DB, CONTACT_DISPLAY_PRIO_TA_DB_CC };
 enum SCAN_MODE { SCAN_MODE_HOLD = 0, SCAN_MODE_PAUSE, SCAN_MODE_STOP };
+enum SPLIT_CONTACT { SPLIT_CONTACT_SINGLE_LINE_ONLY = 0, SPLIT_CONTACT_CONSTRAIN_TO_ONE_LINE, SPLIT_CONTACT_SPAN_ON_TWO_LINES };
 
 
 extern int settingsCurrentChannelNumber;
@@ -77,7 +78,7 @@ typedef struct settingsStruct
 	uint32_t		vfoBScanLow;                  //low frequency for VFO B Scanning
 	uint32_t		vfoBScanHigh;                 //High frequency for VFO B Scanning
 	uint8_t			contactDisplayPriority;
-	bool			splitContact;
+	uint8_t			splitContact;
 
 } settingsStruct_t;
 

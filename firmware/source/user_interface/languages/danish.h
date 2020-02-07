@@ -142,7 +142,9 @@ const stringsTable_t danishLanguage =
 .ptt_toggle				= "PTT toggle", // MaxLen 16 (with ':' + .on or .off)
 .private_call_handling			= "Handle PC", // MaxLen 16 (with ':' + .on ot .off)
 .stop					= "Stop", // Maxlen 16 (with ':' + .scan_mode)
-.split_contact				= "Split Cc", // MaxLen 16 (with ':' + .yes or .no)
+.crop					= "Crop", // MaxLen 16 (with ':' + .contact)
+.narrow					= "Narrow", // MaxLen 16 (with ':' + .contact)
+.span					= "Span", // MaxLen 16 (with ':' + .contact)
 };
 /********************************************************************
  *

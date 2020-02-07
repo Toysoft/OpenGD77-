@@ -115,7 +115,10 @@ static void updateScreen(void)
 				}
 				break;
 			case DISPLAY_MENU_CONTACT_DISPLAY_SPLIT_CONTACT:
-					snprintf(buf, bufferLen, "%s:%s", currentLanguage->split_contact, (nonVolatileSettings.splitContact ? currentLanguage->yes : currentLanguage->no));
+				{
+					const char *splitContact[] = { currentLanguage->crop, currentLanguage->narrow, currentLanguage->span };
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->contact, splitContact[nonVolatileSettings.splitContact]);
+				}
 				break;
 		}
 
@@ -254,7 +257,10 @@ static void handleEvent(uiEvent_t *ev)
 					}
 					break;
 				case DISPLAY_MENU_CONTACT_DISPLAY_SPLIT_CONTACT:
-					nonVolatileSettings.splitContact = true;
+					if (nonVolatileSettings.splitContact < SPLIT_CONTACT_SPAN_ON_TWO_LINES)
+					{
+						nonVolatileSettings.splitContact++;
+					}
 					break;
 			}
 		}
@@ -327,7 +333,10 @@ static void handleEvent(uiEvent_t *ev)
 					}
 					break;
 				case DISPLAY_MENU_CONTACT_DISPLAY_SPLIT_CONTACT:
-					nonVolatileSettings.splitContact = false;
+					if (nonVolatileSettings.splitContact > SPLIT_CONTACT_SINGLE_LINE_ONLY)
+					{
+						nonVolatileSettings.splitContact--;
+					}
 					break;
 			}
 		}
