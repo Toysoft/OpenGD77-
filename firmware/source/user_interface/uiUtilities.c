@@ -905,10 +905,11 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 		int32_t  cpos;
 
 		// User prefers to not span the TA info over two lines, check it that could fit
-		if ((nonVolatileSettings.splitContact == false) && (strlen(text) <= 16))
+		if ((nonVolatileSettings.splitContact == SPLIT_CONTACT_SINGLE_LINE_ONLY) ||
+				((nonVolatileSettings.splitContact == SPLIT_CONTACT_AUTO) && (strlen(text) <= 16)))
 		{
-			memcpy(buffer, text, strlen(text));
-			buffer[strlen(text)] = 0;
+			memcpy(buffer, text, 17);
+			buffer[16] = 0;
 			ucPrintCentered(32, chomp(buffer), FONT_8x16);
 			displayChannelNameOrRxFrequency(buffer, (sizeof(buffer) / sizeof(buffer[0])));
 			return;
@@ -952,8 +953,8 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 	}
 	else
 	{
-		memcpy(buffer, text, strlen(text));
-		buffer[strlen(text)] = 0;
+		memcpy(buffer, text, 17);
+		buffer[16] = 0;
 		ucPrintCentered(32, chomp(buffer), FONT_8x16);
 		displayChannelNameOrRxFrequency(buffer, (sizeof(buffer) / sizeof(buffer[0])));
 	}
@@ -1020,12 +1021,12 @@ void menuUtilityRenderQSOData(void)
 						}
 						else
 						{
-							displayContactTextInfos(LinkHead->talkerAlias, sizeof(LinkHead->talkerAlias), true);
+							displayContactTextInfos(LinkHead->talkerAlias, sizeof(LinkHead->talkerAlias), !(nonVolatileSettings.splitContact == SPLIT_CONTACT_SINGLE_LINE_ONLY));
 						}
 					}
 					else
 					{
-						displayContactTextInfos(LinkHead->contact, sizeof(LinkHead->contact), nonVolatileSettings.splitContact);
+						displayContactTextInfos(LinkHead->contact, sizeof(LinkHead->contact), !(nonVolatileSettings.splitContact == SPLIT_CONTACT_SINGLE_LINE_ONLY));
 					}
 					break;
 
@@ -1044,12 +1045,12 @@ void menuUtilityRenderQSOData(void)
 						}
 						else
 						{
-							displayContactTextInfos(LinkHead->talkerAlias, sizeof(LinkHead->talkerAlias), true);
+							displayContactTextInfos(LinkHead->talkerAlias, sizeof(LinkHead->talkerAlias), !(nonVolatileSettings.splitContact == SPLIT_CONTACT_SINGLE_LINE_ONLY));
 						}
 					}
 					else // No TA, then use the one extracted from Codeplug or DMRIdDB
 					{
-						displayContactTextInfos(LinkHead->contact, sizeof(LinkHead->contact), nonVolatileSettings.splitContact);
+						displayContactTextInfos(LinkHead->contact, sizeof(LinkHead->contact), !(nonVolatileSettings.splitContact == SPLIT_CONTACT_SINGLE_LINE_ONLY));
 					}
 					break;
 			}

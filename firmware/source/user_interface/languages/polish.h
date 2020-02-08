@@ -142,7 +142,8 @@ const stringsTable_t polishLanguage =
 .ptt_toggle				= "Staˆe PTT", // MaxLen 16 (with ':' + .on or .off)
 .private_call_handling  = "Zezwól PC", // MaxLen 16 (with ':' + .on ot .off)
 .stop					= "Stop", // Maxlen 16 (with ':' + .scan_mode)
-.split_contact				= "Split Cc", // MaxLen 16 (with ':' + .yes or .no)
+.one_line				= "1 line", // MaxLen 16 (with ':' + .contact)
+.two_lines				= "2 lines", // MaxLen 16 (with ':' + .contact)
 };
 /********************************************************************
  *
