@@ -116,9 +116,6 @@ static void updateScreen(void)
 				break;
 			case DISPLAY_MENU_CONTACT_DISPLAY_SPLIT_CONTACT:
 				{
-					// "1 line" = Crop
-					// "2 lines" = Span
-					// "auto" = Narrow
 					const char *splitContact[] = { currentLanguage->one_line, currentLanguage->two_lines, currentLanguage->Auto };
 					snprintf(buf, bufferLen, "%s:%s", currentLanguage->contact, splitContact[nonVolatileSettings.splitContact]);
 				}
