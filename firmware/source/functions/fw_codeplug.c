@@ -251,6 +251,38 @@ bool codeplugChannelIndexIsValid(int index)
 	}
 }
 
+void codeplugChannelIndexSetValid(int index)
+{
+	uint8_t bitarray[16];
+
+	index--;
+	int channelbank=index/128;
+	int channeloffset=index%128;
+
+	if(channelbank==0)
+	{
+		EEPROM_Read(CODEPLUG_ADDR_CHANNEL_EEPROM-16,(uint8_t *)bitarray,16);
+	}
+	else
+	{
+		SPI_Flash_read(CODEPLUG_ADDR_CHANNEL_FLASH-16+(channelbank-1)*(128*CODEPLUG_CHANNEL_DATA_SIZE+16),(uint8_t *)bitarray,16);
+	}
+
+	int byteno=channeloffset/8;
+	int bitno=channeloffset%8;
+
+	bitarray[byteno] |= 1 << bitno;
+
+	if(channelbank==0)
+	{
+		EEPROM_Write(CODEPLUG_ADDR_CHANNEL_EEPROM-16,(uint8_t *)bitarray,16);
+	}
+	else
+	{
+		SPI_Flash_write(CODEPLUG_ADDR_CHANNEL_FLASH-16+(channelbank-1)*(128*CODEPLUG_CHANNEL_DATA_SIZE+16),(uint8_t *)bitarray,16);
+	}
+}
+
 void codeplugChannelGetDataForIndex(int index, struct_codeplugChannel_t *channelBuf)
 {
 	// lower 128 channels are in EEPROM. Remaining channels are in Flash ! (What a mess...)

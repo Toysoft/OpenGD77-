@@ -37,8 +37,9 @@ typedef struct stringsTable
    const char channel_details[LANGUAGE_TEXTS_LENGTH];// 11
    const char language[LANGUAGE_TEXTS_LENGTH];// 12
    const char new_contact[LANGUAGE_TEXTS_LENGTH];// 13
-   const char contact_list[LANGUAGE_TEXTS_LENGTH];// 14
-   const char contact_details[LANGUAGE_TEXTS_LENGTH];//15
+   const char new_channel[LANGUAGE_TEXTS_LENGTH];// 14
+   const char contact_list[LANGUAGE_TEXTS_LENGTH];// 15
+   const char contact_details[LANGUAGE_TEXTS_LENGTH];//16
    const char hotspot_mode[LANGUAGE_TEXTS_LENGTH];//
    const char built[LANGUAGE_TEXTS_LENGTH];//
    const char zones[LANGUAGE_TEXTS_LENGTH];//
@@ -67,6 +68,7 @@ typedef struct stringsTable
    const char scan[LANGUAGE_TEXTS_LENGTH];// "Scan"
    const char channelToVfo[LANGUAGE_TEXTS_LENGTH];// "Channel --> VFO",
    const char vfoToChannel[LANGUAGE_TEXTS_LENGTH];// "VFO --> Channel",
+   const char vfoToNewChannel[LANGUAGE_TEXTS_LENGTH];// "VFO --> New Chan",
    const char group[LANGUAGE_TEXTS_LENGTH];//"Group",
    const char private[LANGUAGE_TEXTS_LENGTH];//"Private",
    const char all[LANGUAGE_TEXTS_LENGTH];//"All",

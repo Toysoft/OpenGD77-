@@ -45,6 +45,7 @@ extern uint8_t SPI_Flash_sectorbuffer[4096];
 // Public functions
 bool SPI_Flash_init(void);
 bool SPI_Flash_read(uint32_t addrress,uint8_t *buf,int size);
+bool SPI_Flash_write(uint32_t addr, uint8_t *dataBuf, int size);
 bool SPI_Flash_writePage(uint32_t address,uint8_t *dataBuf);// page is 256 bytes
 bool SPI_Flash_eraseSector(uint32_t address);// sector is 16 pages  = 4k bytes
 int SPI_Flash_readManufacturer(void);// Not necessarily Winbond !
