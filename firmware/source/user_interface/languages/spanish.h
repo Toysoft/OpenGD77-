@@ -141,9 +141,9 @@ const stringsTable_t spanishLanguage =
 .manual					= "Manual",  // MaxLen 16 (with .mode + ':') 
 .ptt_toggle				= "PTT Fijo", // MaxLen 16 (with ':' + .on or .off)
 .private_call_handling			= "Filtro PC", // MaxLen 16 (with ':' + .on ot .off)
-.stop					= "Stop", // Maxlen 16 (with ':' + .scan_mode)
-.one_line				= "1 line", // MaxLen 16 (with ':' + .contact)
-.two_lines				= "2 lines", // MaxLen 16 (with ':' + .contact)
+.stop					= "Parar", // Maxlen 16 (with ':' + .scan_mode)
+.one_line				= "1 linea", // MaxLen 16 (with ':' + .contact)
+.two_lines				= "2 linea", // MaxLen 16 (with ':' + .contact)
 };
 /********************************************************************
  *
