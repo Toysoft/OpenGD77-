@@ -106,7 +106,7 @@ const stringsTable_t italianLanguage =
 .factory_reset			= "Reset Fabb.",
 .calibration			= "Calibrazione",
 .band_limits			= "Limiti Banda",
-.beep_volume			= "Volume Beep",
+.beep_volume			= "Volume Bip",
 .dmr_mic_gain			= "DMR mic",
 .key_long				= "Key long",
 .key_repeat				= "Key rpt",
@@ -137,13 +137,13 @@ const stringsTable_t italianLanguage =
 .tone_scan				= "Scansione Toni",//// MaxLen: 16
 .cc_scan				= "Scansione CC",//// MaxLen: 16
 .low_battery			= "Batteria scarica",//// MaxLen: 16
-.Auto					= "Automatico", // MaxLen 16 (with .mode + ':') 
+.Auto					= "Auto", // MaxLen 16 (with .mode + ':') 
 .manual					= "Manuale",  // MaxLen 16 (with .mode + ':') 
 .ptt_toggle				= "Auto-PTT", // MaxLen 16 (with ':' + .on or .off)
 .private_call_handling			= "Gest. PC", // MaxLen 16 (with ':' + .on ot .off)
 .stop					= "Stop", // Maxlen 16 (with ':' + .scan_mode)
-.one_line				= "1 line", // MaxLen 16 (with ':' + .contact)
-.two_lines				= "2 lines", // MaxLen 16 (with ':' + .contact)
+.one_line				= "1 linea", // MaxLen 16 (with ':' + .contact)
+.two_lines				= "2 linee", // MaxLen 16 (with ':' + .contact)
 };
 /********************************************************************
  *
