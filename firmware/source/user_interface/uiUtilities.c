@@ -34,7 +34,7 @@ const int TX_TIMER_Y_OFFSET = 8;
 const int CONTACT_Y_POS = 16;
 const int FREQUENCY_X_POS = /* '>Ta'*/ (3 * 8) + 4;
 static const int BAR_Y_POS = 10;
-const int MAX_POWER_SETTING_NUM = 8;// Limit max power setting to 8 (5W)
+const int MAX_POWER_SETTING_NUM = 9;
 
 static const int DMRID_MEMORY_STORAGE_START = 0x30000;
 static const int DMRID_HEADER_LENGTH = 0x0C;

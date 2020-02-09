@@ -766,12 +766,25 @@ static void handleEvent(uiEvent_t *ev)
 				menuSystemSetCurrentMenu(MENU_CHANNEL_MODE);
 				return;
 			}
-			else
-			if (KEYCHECK_PRESS(ev->keys,KEY_RIGHT))
+			else if (KEYCHECK_LONGDOWN(ev->keys, KEY_RIGHT))
+			{
+				// Long press allows the 5W+ power setting to be selected immediately
+				if (ev->buttons & BUTTON_SK2)
+				{
+					if (nonVolatileSettings.txPowerLevel == (MAX_POWER_SETTING_NUM - 1))
+					{
+						nonVolatileSettings.txPowerLevel++;
+						trxSetPowerFromLevel(nonVolatileSettings.txPowerLevel);
+						menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+						menuVFOModeUpdateScreen(0);
+					}
+				}
+			}
+			else if (KEYCHECK_SHORTUP(ev->keys, KEY_RIGHT))
 			{
 				if (ev->buttons & BUTTON_SK2)
 				{
-					if (nonVolatileSettings.txPowerLevel < MAX_POWER_SETTING_NUM)
+					if (nonVolatileSettings.txPowerLevel < (MAX_POWER_SETTING_NUM - 1))
 					{
 						nonVolatileSettings.txPowerLevel++;
 						trxSetPowerFromLevel(nonVolatileSettings.txPowerLevel);
