@@ -141,7 +141,9 @@ const stringsTable_t finnishLanguage =
 .manual			= "Manuaali",		// MaxLen 16 (with .mode + ':') 
 .ptt_toggle		= "PTT Lukko",		// MaxLen 16 (with ':' + .on or .off)
 .private_call_handling	= "Käsittele PC",	// MaxLen 16 (with ':' + .on ot .off)
-.station_search_order	= "Use TA first", // MaxLen 16 (with ':' + .yes or .no)
+.stop					= "Stop", // Maxlen 16 (with ':' + .scan_mode)
+.one_line				= "1 line", // MaxLen 16 (with ':' + .contact)
+.two_lines				= "2 lines", // MaxLen 16 (with ':' + .contact)
 };
 /********************************************************************
  *

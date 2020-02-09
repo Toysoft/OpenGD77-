@@ -84,6 +84,8 @@ OpenGD77 is a work-in-progress, so is this User Guide. Last major update was on 
          - [Brightness](#brightness)   
          - [Contrast](#contrast)   
          - [Timeout](#timeout)   
+         - [Order](#order)
+         - [Contact](#contact)
       - [Channel Details](#channel-details)   
          - [Mode](#mode)   
          - [Color Code](#color-code)   
@@ -757,6 +759,30 @@ The OpenGD77 firmware allows the display contrast to be controlled. The values a
 
 #### Timeout
 Sets the time before the display backlight is extinguished (default 5 seconds). Setting this value to zero prevents the backlight from turning off at all.
+
+#### Order
+Controls where the DMR Contact display data is sourced from
+Cc = Digital Contacts (in the codeplug)
+Db = DMR ID database
+TA = Talker Alias
+
+The default is Cc/Db/TA, which means the receiced DMR ID is first checked in the Digital Contacts, and if not found the internal DMR ID database is searched, and if not found and the DMR transmission includes Talker Alias, then Talker Alias will be used.
+
+#### Contact
+Controls the position on the screen where the DMR Callsign and Name etc, is displayed on the screen
+Options are
+1 Line, 2 Lines or Auto
+
+1 Line - This only uses the middle line of the display to show the callsign and name. When using Talker Alias, which contains more than the 16 characters wide of the screen, the text will be cropped, so you will not see the end of the TA text.
+
+2 Lines - The Callsign is displayed on the middle line of the display, and the name and other information will be displayed on the bottom line of the display. i.e the firmware automatically breaks up the "CALLSIGN NAME" format text at the space separating callsign from the name.
+
+Auto - When the Callsign and name will fit on the middle line of the display, only the middle line will be used (this is equivalent to the "1 Line" option.)
+If the caller information e.g. from TA is longer than 16 characters and won't fit on the middle line, the display will be split onto both lines and is equivalent to the "2 Lines" option.
+
+The default is 1 Line.
+
+
 
 ### Channel Details
 

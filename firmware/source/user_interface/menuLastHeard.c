@@ -159,8 +159,8 @@ static void handleEvent(uiEvent_t *ev)
 		return;
 	}
 
-	// Toggles LH simple/details view on SK1 press
-	if (ev->buttons & BUTTON_SK1)
+	// Toggles LH simple/details view on SK2 press
+	if (ev->buttons & BUTTON_SK2)
 	{
 		displayLHDetails = true;//!displayLHDetails;
 	}

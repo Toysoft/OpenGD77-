@@ -34,6 +34,7 @@ const int TX_TIMER_Y_OFFSET = 8;
 const int CONTACT_Y_POS = 16;
 const int FREQUENCY_X_POS = /* '>Ta'*/ (3 * 8) + 4;
 static const int BAR_Y_POS = 10;
+const int MAX_POWER_SETTING_NUM = 9;
 
 static const int DMRID_MEMORY_STORAGE_START = 0x30000;
 static const int DMRID_HEADER_LENGTH = 0x0C;
@@ -52,6 +53,10 @@ const char *DMR_FILTER_LEVELS[]={"None","TS","TS,TG"};
 
 volatile uint32_t lastID=0;// This needs to be volatile as lastHeardClearLastID() is called from an ISR
 uint32_t lastTG=0;
+
+static dmrIDsCache_t dmrIDsCache;
+
+
 
 /*
  * Remove space at the end of the array, and return pointer to first non space character
@@ -331,24 +336,44 @@ static void updateLHItem(LinkItem_t *item)
 	if ((item->talkGroupOrPcId >> 24) == PC_CALL_FLAG)
 	{
 		// Its a Private call
-		if (contactIDLookup(item->id, CONTACT_CALLTYPE_PC, buffer) == true)
+		switch (nonVolatileSettings.contactDisplayPriority)
 		{
-			snprintf(item->contact, 16, "%s", buffer);
-			item->contact[16] = 0;
-			item->stationInfoSource = STATION_INFO_CODEPLUG_CONTACTS;
-		}
-		else
-		{
-			if (dmrIDLookup(item->id, &currentRec))
-			{
-				item->stationInfoSource = STATION_INFO_DMRID_DATABASE;
-			}
-			else
-			{
-				item->stationInfoSource = STATION_INFO_NONE;
-			}
-			snprintf(item->contact, 16, "%s", currentRec.text);
-			item->contact[16] = 0;
+			case CONTACT_DISPLAY_PRIO_CC_DB_TA:
+			case CONTACT_DISPLAY_PRIO_TA_CC_DB:
+				if (contactIDLookup(item->id, CONTACT_CALLTYPE_PC, buffer) == true)
+				{
+					snprintf(item->contact, 16, "%s", buffer);
+					item->contact[16] = 0;
+				}
+				else
+				{
+					dmrIDLookup(item->id, &currentRec);
+					snprintf(item->contact, 16, "%s", currentRec.text);
+					item->contact[16] = 0;
+				}
+				break;
+
+			case CONTACT_DISPLAY_PRIO_DB_CC_TA:
+			case CONTACT_DISPLAY_PRIO_TA_DB_CC:
+				if (dmrIDLookup(item->id, &currentRec) == true)
+				{
+					snprintf(item->contact, 16, "%s", currentRec.text);
+					item->contact[16] = 0;
+				}
+				else
+				{
+					if (contactIDLookup(item->id, CONTACT_CALLTYPE_PC, buffer) == true)
+					{
+						snprintf(item->contact, 16, "%s", buffer);
+						item->contact[16] = 0;
+					}
+					else
+					{
+						snprintf(item->contact, 16, "%s", currentRec.text);
+						item->contact[16] = 0;
+					}
+				}
+				break;
 		}
 
 		if (item->talkGroupOrPcId != (trxDMRID | (PC_CALL_FLAG << 24)))
@@ -360,14 +385,7 @@ static void updateLHItem(LinkItem_t *item)
 			}
 			else
 			{
-				if (dmrIDLookup(item->talkGroupOrPcId & 0x00FFFFFF, &currentRec))
-				{
-					item->stationInfoSource = STATION_INFO_DMRID_DATABASE;
-				}
-				else
-				{
-					item->stationInfoSource = STATION_INFO_NONE;
-				}
+				dmrIDLookup(item->talkGroupOrPcId & 0x00FFFFFF, &currentRec);
 				snprintf(item->talkgroup, 16, "%s", currentRec.text);
 				item->talkgroup[16] = 0;
 			}
@@ -387,24 +405,44 @@ static void updateLHItem(LinkItem_t *item)
 			item->talkgroup[16] = 0;
 		}
 
-		// Contact
-		if (contactIDLookup(item->id, CONTACT_CALLTYPE_PC, buffer) == true)
+		switch (nonVolatileSettings.contactDisplayPriority)
 		{
-			snprintf(item->contact, 20, "%s", buffer);
-			item->contact[20] = 0;
-		}
-		else
-		{
-			if (dmrIDLookup((item->id & 0x00FFFFFF), &currentRec))
-			{
-				item->stationInfoSource = STATION_INFO_DMRID_DATABASE;
-			}
-			else
-			{
-				item->stationInfoSource = STATION_INFO_NONE;
-			}
-			snprintf(item->contact, 20, "%s", currentRec.text);
-			item->contact[20] = 0;
+			case CONTACT_DISPLAY_PRIO_CC_DB_TA:
+			case CONTACT_DISPLAY_PRIO_TA_CC_DB:
+				if (contactIDLookup(item->id, CONTACT_CALLTYPE_PC, buffer) == true)
+				{
+					snprintf(item->contact, 20, "%s", buffer);
+					item->contact[20] = 0;
+				}
+				else
+				{
+					dmrIDLookup((item->id & 0x00FFFFFF), &currentRec);
+					snprintf(item->contact, 20, "%s", currentRec.text);
+					item->contact[20] = 0;
+				}
+				break;
+
+			case CONTACT_DISPLAY_PRIO_DB_CC_TA:
+			case CONTACT_DISPLAY_PRIO_TA_DB_CC:
+				if (dmrIDLookup((item->id & 0x00FFFFFF), &currentRec) == true)
+				{
+					snprintf(item->contact, 20, "%s", currentRec.text);
+					item->contact[20] = 0;
+				}
+				else
+				{
+					if (contactIDLookup(item->id, CONTACT_CALLTYPE_PC, buffer) == true)
+					{
+						snprintf(item->contact, 20, "%s", buffer);
+						item->contact[20] = 0;
+					}
+					else
+					{
+						snprintf(item->contact, 20, "%s", currentRec.text);
+						item->contact[20] = 0;
+					}
+				}
+				break;
 		}
 	}
 }
@@ -595,6 +633,18 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer, bool forceOnHotspot)
 								if (overrideTA || (strlen((const char *)decodedTA) > strlen((const char *)&LinkHead->talkerAlias)))
 								{
 									memcpy(&LinkHead->talkerAlias, decodedTA, 31);// Brandmeister seems to send callsign as 6 chars only
+
+									if ((blocksTA & (1 << 1)) != 0) // we already received the 2nd TA block, check for 'DMR ID:'
+									{
+										char *p = NULL;
+
+										// Get rid of 'DMR ID:xxxxxxx' part of the TA, sent by BM
+										if (((p = strstr(&LinkHead->talkerAlias[0], "DMR ID:")) != NULL) || ((p = strstr(&LinkHead->talkerAlias[0], "DMR I")) != NULL))
+										{
+											*p = 0;
+										}
+									}
+
 									overrideTA = false;
 									menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;
 								}
@@ -619,52 +669,126 @@ bool lastHeardListUpdate(uint8_t *dmrDataBuffer, bool forceOnHotspot)
 	return retVal;
 }
 
-bool dmrIDLookup(int targetId, dmrIdDataStruct_t *foundRecord)
+
+static void dmrIDReadContactInFlash(uint32_t contactOffset, uint8_t *data, uint32_t len)
 {
-	uint32_t l = 0;
-	uint32_t numRecords;
-	uint32_t r;
-	uint32_t m;
-	uint32_t recordLenth;//15+4;
+	SPI_Flash_read((DMRID_MEMORY_STORAGE_START + DMRID_HEADER_LENGTH) + contactOffset, data, len);
+}
+
+
+void dmrIDCacheInit(void)
+{
 	uint8_t headerBuf[32];
 
-	memset(foundRecord, 0, sizeof(dmrIdDataStruct_t));
-
-	int targetIdBCD = int2bcd(targetId);
+	memset(&dmrIDsCache, 0, sizeof(dmrIDsCache_t));
+	memset(&headerBuf, 0, sizeof(headerBuf));
 
 	SPI_Flash_read(DMRID_MEMORY_STORAGE_START, headerBuf, DMRID_HEADER_LENGTH);
 
 	if (headerBuf[0] != 'I' || headerBuf[1] != 'D' || headerBuf[2] != '-')
 	{
-		return false;
+		return;
 	}
 
-	numRecords = (uint32_t) headerBuf[8] | (uint32_t) headerBuf[9] << 8 | (uint32_t)headerBuf[10] << 16 | (uint32_t)headerBuf[11] << 24 ;
+	dmrIDsCache.entries = ((uint32_t)headerBuf[8] | (uint32_t)headerBuf[9] << 8 | (uint32_t)headerBuf[10] << 16 | (uint32_t)headerBuf[11] << 24);
+	dmrIDsCache.contactLength = (uint8_t)headerBuf[3] - 0x4a;
 
-	recordLenth = (uint32_t) headerBuf[3] - 0x4a;
-
-	r = numRecords - 1;
-
-	while (l <= r)
+	if (dmrIDsCache.entries > 0)
 	{
-		m = (l + r) >> 1;
+		dmrIdDataStruct_t dmrIDContact;
 
-		SPI_Flash_read((DMRID_MEMORY_STORAGE_START + DMRID_HEADER_LENGTH) + (recordLenth * m), (uint8_t *)foundRecord, 4U);
+		// Set Min and Max IDs boundaries
+		// First available ID
+		dmrIDReadContactInFlash(0, (uint8_t *)&dmrIDContact, 4U);
+		dmrIDsCache.slices[0] = dmrIDContact.id;
 
-		if (foundRecord->id < targetIdBCD)
+		// Last available ID
+		dmrIDReadContactInFlash((dmrIDsCache.contactLength * (dmrIDsCache.entries - 1)), (uint8_t *)&dmrIDContact, 4U);
+		dmrIDsCache.slices[ID_SLICES - 1] = dmrIDContact.id;
+
+		if (dmrIDsCache.entries > MIN_ENTRIES_BEFORE_USING_SLICES)
 		{
-			l = m + 1;
-		}
-		else
-		{
-			if (foundRecord->id > targetIdBCD)
+			dmrIDsCache.IDsPerSlice = dmrIDsCache.entries / (ID_SLICES - 1);
+
+			for (uint8_t i = 0; i < (ID_SLICES - 2); i++)
 			{
-				r = m - 1;
+				dmrIDReadContactInFlash((dmrIDsCache.contactLength * ((dmrIDsCache.IDsPerSlice * i) + dmrIDsCache.IDsPerSlice)), (uint8_t *)&dmrIDContact, 4U);
+				dmrIDsCache.slices[i + 1] = dmrIDContact.id;
+			}
+		}
+	}
+}
+
+bool dmrIDLookup(int targetId, dmrIdDataStruct_t *foundRecord)
+{
+	int targetIdBCD = int2bcd(targetId);
+
+	if ((dmrIDsCache.entries > 0) && (targetIdBCD >= dmrIDsCache.slices[0]) && (targetIdBCD <= dmrIDsCache.slices[ID_SLICES - 1]))
+	{
+		uint32_t startPos = 0;
+		uint32_t endPos = dmrIDsCache.entries - 1;
+		uint32_t curPos;
+
+		if (dmrIDsCache.entries > MIN_ENTRIES_BEFORE_USING_SLICES) // Use slices
+		{
+			for (uint8_t i = 0; i < ID_SLICES - 1; i++)
+			{
+				// Check if ID is in slices boundaries, with a special case for the last slice as [ID_SLICES - 1] is the last ID
+				if ((targetIdBCD >= dmrIDsCache.slices[i]) &&
+						((i == ID_SLICES - 2) ? (targetIdBCD <= dmrIDsCache.slices[i + 1]) : (targetIdBCD < dmrIDsCache.slices[i + 1])))
+				{
+					// targetID is the min slice limit, don't go further
+					if (targetIdBCD == dmrIDsCache.slices[i])
+					{
+						foundRecord->id = dmrIDsCache.slices[i];
+						dmrIDReadContactInFlash((dmrIDsCache.contactLength * (dmrIDsCache.IDsPerSlice * i)) + 4U, (uint8_t *)foundRecord + 4U, (dmrIDsCache.contactLength - 4U));
+
+						return true;
+					}
+
+					startPos = dmrIDsCache.IDsPerSlice * i;
+					endPos = (i == ID_SLICES - 2) ? (dmrIDsCache.entries - 1) : dmrIDsCache.IDsPerSlice * (i + 1);
+
+					break;
+				}
+			}
+		}
+		else // Not enough contact to use slices
+		{
+			bool isMin;
+
+			// Check if targetID is equal to the first or the last in the IDs list
+			if ((isMin = (targetIdBCD == dmrIDsCache.slices[0])) || (targetIdBCD == dmrIDsCache.slices[ID_SLICES - 1]))
+			{
+				foundRecord->id = dmrIDsCache.slices[(isMin ? 0 : (ID_SLICES - 1))];
+				dmrIDReadContactInFlash((dmrIDsCache.contactLength * (dmrIDsCache.IDsPerSlice * (isMin ? 0 : (ID_SLICES - 1)))) + 4U, (uint8_t *)foundRecord + 4U, (dmrIDsCache.contactLength - 4U));
+
+				return true;
+			}
+		}
+
+		// Look for the ID now
+		while (startPos <= endPos)
+		{
+			curPos = (startPos + endPos) >> 1;
+
+			dmrIDReadContactInFlash((dmrIDsCache.contactLength * curPos), (uint8_t *)foundRecord, 4U);
+
+			if (foundRecord->id < targetIdBCD)
+			{
+				startPos = curPos + 1;
 			}
 			else
 			{
-				SPI_Flash_read((DMRID_MEMORY_STORAGE_START + DMRID_HEADER_LENGTH) + (recordLenth * m) + 4U, (uint8_t *)foundRecord + 4U, (recordLenth - 4U));
-				return true;
+				if (foundRecord->id > targetIdBCD)
+				{
+					endPos = curPos - 1;
+				}
+				else
+				{
+					dmrIDReadContactInFlash((dmrIDsCache.contactLength * curPos) + 4U, (uint8_t *)foundRecord + 4U, (dmrIDsCache.contactLength - 4U));
+					return true;
+				}
 			}
 		}
 	}
@@ -780,6 +904,17 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 		char    *pbuf;
 		int32_t  cpos;
 
+		// User prefers to not span the TA info over two lines, check it that could fit
+		if ((nonVolatileSettings.splitContact == SPLIT_CONTACT_SINGLE_LINE_ONLY) ||
+				((nonVolatileSettings.splitContact == SPLIT_CONTACT_AUTO) && (strlen(text) <= 16)))
+		{
+			memcpy(buffer, text, 17);
+			buffer[16] = 0;
+			ucPrintCentered(32, chomp(buffer), FONT_8x16);
+			displayChannelNameOrRxFrequency(buffer, (sizeof(buffer) / sizeof(buffer[0])));
+			return;
+		}
+
 		if ((cpos = getFirstSpacePos(text)) != -1)
 		{
 			// Callsign found
@@ -818,8 +953,8 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 	}
 	else
 	{
-		memcpy(buffer, text, strlen(text));
-		buffer[strlen(text)] = 0;
+		memcpy(buffer, text, 17);
+		buffer[16] = 0;
 		ucPrintCentered(32, chomp(buffer), FONT_8x16);
 		displayChannelNameOrRxFrequency(buffer, (sizeof(buffer) / sizeof(buffer[0])));
 	}
@@ -869,32 +1004,55 @@ void menuUtilityRenderQSOData(void)
 				ucPrintCentered(CONTACT_Y_POS, LinkHead->talkgroup, FONT_8x16);
 			}
 
-			if (nonVolatileSettings.stationInfoSearchOrder == STATION_INFO_USE_LOCAL_FIRST && (LinkHead->stationInfoSource == STATION_INFO_CODEPLUG_CONTACTS ||  LinkHead->stationInfoSource ==STATION_INFO_DMRID_DATABASE))
+			switch (nonVolatileSettings.contactDisplayPriority)
 			{
-				displayContactTextInfos(LinkHead->contact, sizeof(LinkHead->contact), true);
-			}
-			else
-			{
-				// Talker Alias have the priority here
-				if (LinkHead->talkerAlias[0] != 0x00)
-				{
-					if (LinkHead->locator[0] != 0)
+				case CONTACT_DISPLAY_PRIO_CC_DB_TA:
+				case CONTACT_DISPLAY_PRIO_DB_CC_TA:
+					// No contact found is codeplug and DMRIDs, use TA as fallback, if any.
+					if ((strncmp(LinkHead->contact, "ID:", 3) == 0) && (LinkHead->talkerAlias[0] != 0x00))
 					{
-						char bufferTA[37]; // TA + ' [' + Maidenhead + ']' + NULL
+						if (LinkHead->locator[0] != 0)
+						{
+							char bufferTA[37]; // TA + ' [' + Maidenhead + ']' + NULL
 
-						memset(bufferTA, 0, sizeof(bufferTA));
-						snprintf(bufferTA, 36, "%s [%s]", LinkHead->talkerAlias, LinkHead->locator);
-						displayContactTextInfos(bufferTA, sizeof(bufferTA), true);
+							memset(bufferTA, 0, sizeof(bufferTA));
+							snprintf(bufferTA, 36, "%s [%s]", LinkHead->talkerAlias, LinkHead->locator);
+							displayContactTextInfos(bufferTA, sizeof(bufferTA), true);
+						}
+						else
+						{
+							displayContactTextInfos(LinkHead->talkerAlias, sizeof(LinkHead->talkerAlias), !(nonVolatileSettings.splitContact == SPLIT_CONTACT_SINGLE_LINE_ONLY));
+						}
 					}
 					else
 					{
-						displayContactTextInfos(LinkHead->talkerAlias, sizeof(LinkHead->talkerAlias), true);
+						displayContactTextInfos(LinkHead->contact, sizeof(LinkHead->contact), !(nonVolatileSettings.splitContact == SPLIT_CONTACT_SINGLE_LINE_ONLY));
 					}
-				}
-				else // No TA, then use the one extracted from Codeplug or DMRIdDB
-				{
-					displayContactTextInfos(LinkHead->contact, sizeof(LinkHead->contact), true);
-				}
+					break;
+
+				case CONTACT_DISPLAY_PRIO_TA_CC_DB:
+				case CONTACT_DISPLAY_PRIO_TA_DB_CC:
+					// Talker Alias have the priority here
+					if (LinkHead->talkerAlias[0] != 0x00)
+					{
+						if (LinkHead->locator[0] != 0)
+						{
+							char bufferTA[37]; // TA + ' [' + Maidenhead + ']' + NULL
+
+							memset(bufferTA, 0, sizeof(bufferTA));
+							snprintf(bufferTA, 36, "%s [%s]", LinkHead->talkerAlias, LinkHead->locator);
+							displayContactTextInfos(bufferTA, sizeof(bufferTA), true);
+						}
+						else
+						{
+							displayContactTextInfos(LinkHead->talkerAlias, sizeof(LinkHead->talkerAlias), !(nonVolatileSettings.splitContact == SPLIT_CONTACT_SINGLE_LINE_ONLY));
+						}
+					}
+					else // No TA, then use the one extracted from Codeplug or DMRIdDB
+					{
+						displayContactTextInfos(LinkHead->contact, sizeof(LinkHead->contact), !(nonVolatileSettings.splitContact == SPLIT_CONTACT_SINGLE_LINE_ONLY));
+					}
+					break;
 			}
 		}
 	}

@@ -208,9 +208,9 @@ bool calibrationGetPowerForFrequency(int freq, calibrationPowerValues_t *powerSe
 		}
 		else
 		{
-			if (address > 7)
+			if (address > 15)
 			{
-				address = 7;
+				address = 15;
 			}
 		}
 		address = POWER_CALIBRATION_ADDRESS_UHF_400MHZ + ( address * 2);
@@ -226,9 +226,9 @@ bool calibrationGetPowerForFrequency(int freq, calibrationPowerValues_t *powerSe
 		}
 		else
 		{
-			if (address > 15)
+			if (address > 7)
 			{
-				address = 15;
+				address = 7;
 			}
 		}
 		address = POWER_CALIBRATION_ADDRESS_VHF_135MHZ +   (address * 2);

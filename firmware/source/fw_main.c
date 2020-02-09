@@ -150,6 +150,7 @@ void fw_main_task(void *data)
 
     lastheardInitList();
     codeplugInitContactsCache();
+    dmrIDCacheInit();
     menuInitMenuSystem();
 
     while (1U)

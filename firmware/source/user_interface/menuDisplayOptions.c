@@ -33,7 +33,11 @@ static const int BACKLIGHT_MAX_PERCENTAGE = 100;
 static const int BACKLIGHT_PERCENTAGE_STEP = 10;
 static const int BACKLIGHT_PERCENTAGE_STEP_SMALL = 1;
 
-enum DISPLAY_MENU_LIST { DISPLAY_MENU_BRIGHTNESS = 0, DISPLAY_MENU_BRIGHTNESS_OFF, DISPLAY_MENU_CONTRAST, DISPLAY_MENU_BACKLIGHT_MODE, DISPLAY_MENU_TIMEOUT, DISPLAY_MENU_COLOUR_INVERT, NUM_DISPLAY_MENU_ITEMS};
+static const char *contactOrders[] = { "Cc/DB/TA", "DB/Cc/TA", "TA/Cc/DB", "TA/DB/Cc" };
+
+enum DISPLAY_MENU_LIST { 	DISPLAY_MENU_BRIGHTNESS = 0, DISPLAY_MENU_BRIGHTNESS_OFF, DISPLAY_MENU_CONTRAST, DISPLAY_MENU_BACKLIGHT_MODE, DISPLAY_MENU_TIMEOUT, DISPLAY_MENU_COLOUR_INVERT,
+							DISPLAY_MENU_CONTACT_DISPLAY_ORDER, DISPLAY_MENU_CONTACT_DISPLAY_SPLIT_CONTACT,
+							NUM_DISPLAY_MENU_ITEMS};
 
 
 int menuDisplayOptions(uiEvent_t *ev, bool isFirstRun)
@@ -103,6 +107,17 @@ static void updateScreen(void)
 				else
 				{
 					strncpy(buf, currentLanguage->colour_normal, bufferLen);
+				}
+				break;
+			case DISPLAY_MENU_CONTACT_DISPLAY_ORDER:
+				{
+					snprintf(buf, bufferLen, "Order:%s", contactOrders[nonVolatileSettings.contactDisplayPriority]);
+				}
+				break;
+			case DISPLAY_MENU_CONTACT_DISPLAY_SPLIT_CONTACT:
+				{
+					const char *splitContact[] = { currentLanguage->one_line, currentLanguage->two_lines, currentLanguage->Auto };
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->contact, splitContact[nonVolatileSettings.splitContact]);
 				}
 				break;
 		}
@@ -235,6 +250,18 @@ static void handleEvent(uiEvent_t *ev)
 					nonVolatileSettings.displayInverseVideo = !nonVolatileSettings.displayInverseVideo;
 					fw_init_display(nonVolatileSettings.displayInverseVideo);// Need to perform a full reset on the display to change back to non-inverted
 					break;
+				case DISPLAY_MENU_CONTACT_DISPLAY_ORDER:
+					if (nonVolatileSettings.contactDisplayPriority < CONTACT_DISPLAY_PRIO_TA_DB_CC)
+					{
+						nonVolatileSettings.contactDisplayPriority++;
+					}
+					break;
+				case DISPLAY_MENU_CONTACT_DISPLAY_SPLIT_CONTACT:
+					if (nonVolatileSettings.splitContact < SPLIT_CONTACT_AUTO)
+					{
+						nonVolatileSettings.splitContact++;
+					}
+					break;
 			}
 		}
 		else if (KEYCHECK_PRESS(ev->keys,KEY_LEFT))
@@ -298,6 +325,18 @@ static void handleEvent(uiEvent_t *ev)
 				case DISPLAY_MENU_COLOUR_INVERT:
 					nonVolatileSettings.displayInverseVideo = !nonVolatileSettings.displayInverseVideo;
 					fw_init_display(nonVolatileSettings.displayInverseVideo);// Need to perform a full reset on the display to change back to non-inverted
+					break;
+				case DISPLAY_MENU_CONTACT_DISPLAY_ORDER:
+					if (nonVolatileSettings.contactDisplayPriority > CONTACT_DISPLAY_PRIO_CC_DB_TA)
+					{
+						nonVolatileSettings.contactDisplayPriority--;
+					}
+					break;
+				case DISPLAY_MENU_CONTACT_DISPLAY_SPLIT_CONTACT:
+					if (nonVolatileSettings.splitContact > SPLIT_CONTACT_SINGLE_LINE_ONLY)
+					{
+						nonVolatileSettings.splitContact--;
+					}
 					break;
 			}
 		}

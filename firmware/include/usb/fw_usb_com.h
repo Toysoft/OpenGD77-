@@ -26,7 +26,7 @@
 #include "fw_main.h"
 
 
-#define COM_BUFFER_SIZE 512
+#define COM_BUFFER_SIZE (512 * 2)
 #define COM_REQUESTBUFFER_SIZE 64
 
 extern volatile uint8_t com_buffer[COM_BUFFER_SIZE];

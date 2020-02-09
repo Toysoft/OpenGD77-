@@ -21,7 +21,7 @@
 #include <functions/fw_settings.h>
 #include "fw_common.h"
 
-#define NUM_LASTHEARD_STORED 16
+#define NUM_LASTHEARD_STORED 32
 extern const int QSO_TIMER_TIMEOUT;
 extern const int TX_TIMER_Y_OFFSET;
 extern const int CONTACT_Y_POS;
@@ -35,7 +35,17 @@ typedef struct dmrIdDataStruct
 	char text[20];
 } dmrIdDataStruct_t;
 
-typedef enum { STATION_INFO_NONE, STATION_INFO_CODEPLUG_CONTACTS, STATION_INFO_DMRID_DATABASE } stationInfoSource_t;
+#define MIN_ENTRIES_BEFORE_USING_SLICES 40 // Minimal number of available IDs before using slices stuff
+#define ID_SLICES 14 // Number of slices in whole DMRIDs DB
+
+typedef struct
+{
+	uint32_t entries;
+	uint8_t  contactLength;
+	int32_t  slices[ID_SLICES]; // [0] is min availabel ID, [REGION - 1] is max available ID
+	uint32_t IDsPerSlice;
+
+} dmrIDsCache_t;
 
 typedef struct LinkItem
 {
@@ -47,7 +57,6 @@ typedef struct LinkItem
     char 		talkerAlias[32];// 4 blocks of data. 6 bytes + 7 bytes + 7 bytes + 7 bytes . plus 1 for termination some more for safety.
     char 		locator[7];
     uint32_t	time;// current system time when this station was heard
-    stationInfoSource_t		stationInfoSource;
     struct LinkItem *next;
 } LinkItem_t;
 
@@ -59,6 +68,7 @@ enum QSO_DISPLAY_STATE
 	QSO_DISPLAY_CALLER_DATA_UPDATE
 };
 
+extern const int MAX_POWER_SETTING_NUM;
 extern const char *POWER_LEVELS[];
 extern const char *DMR_FILTER_LEVELS[];
 extern LinkItem_t *LinkHead;
@@ -71,6 +81,7 @@ extern settingsStruct_t originalNonVolatileSettings; // used to store previous s
 
 char *chomp(char *str);
 int32_t getFirstSpacePos(char *str);
+void dmrIDCacheInit(void);
 bool dmrIDLookup(int targetId, dmrIdDataStruct_t *foundRecord);
 bool contactIDLookup(uint32_t id, int calltype, char *buffer);
 void menuUtilityRenderQSOData(void);
