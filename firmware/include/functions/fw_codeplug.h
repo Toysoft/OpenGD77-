@@ -130,6 +130,7 @@ void codeplugGetBootScreenData(char *line1, char *line2,uint8_t *displayType, ui
 void codeplugGetVFO_ChannelData(struct_codeplugChannel_t *vfoBuf,int VFONumber);
 void codeplugSetVFO_ChannelData(struct_codeplugChannel_t *vfoBuf,int VFONumber);
 bool codeplugChannelIndexIsValid(int index);
+void codeplugChannelIndexSetValid(int index);
 bool codeplugChannelSaveDataForIndex(int index, struct_codeplugChannel_t *channelBuf);
 
 int codeplugContactsGetCount(int callType);

@@ -106,6 +106,73 @@ bool SPI_Flash_read(uint32_t addr,uint8_t *dataBuf,int size)
   return true;
 }
 
+bool SPI_Flash_write(uint32_t addr, uint8_t *dataBuf, int size)
+{
+	bool retVal=true;
+	int flashWritePos = addr;
+	int flashSector;
+	int flashEndSector;
+	int bytesToWriteInCurrentSector = size;
+
+	flashSector	= flashWritePos/4096;
+	flashEndSector = (flashWritePos+size)/4096;
+
+	if (flashSector != flashEndSector)
+	{
+		bytesToWriteInCurrentSector = (flashEndSector*4096) - flashWritePos;
+	}
+
+	SPI_Flash_read(flashSector*4096, SPI_Flash_sectorbuffer, 4096);
+	uint8_t *writePos = SPI_Flash_sectorbuffer + flashWritePos - (flashSector *4096);
+	memcpy( writePos,
+			dataBuf,
+			bytesToWriteInCurrentSector);
+
+	retVal = SPI_Flash_eraseSector(flashSector*4096);
+	if (!retVal)
+	{
+		return false;
+	}
+
+	for (int i=0; i<16; i++)
+	{
+		retVal = SPI_Flash_writePage(flashSector*4096+i*256, SPI_Flash_sectorbuffer+i*256);
+		if (!retVal)
+		{
+			return false;
+		}
+	}
+
+	if (flashSector != flashEndSector)
+	{
+		uint8_t *bufPusOffset = (uint8_t *) dataBuf + bytesToWriteInCurrentSector;
+		bytesToWriteInCurrentSector = size - bytesToWriteInCurrentSector;
+
+		SPI_Flash_read(flashEndSector*4096, SPI_Flash_sectorbuffer, 4096);
+		memcpy(SPI_Flash_sectorbuffer,
+				(uint8_t *) bufPusOffset,
+				bytesToWriteInCurrentSector);
+
+		retVal = SPI_Flash_eraseSector(flashEndSector*4096);
+
+		if (!retVal)
+		{
+			return false;
+		}
+		for (int i=0;i<16;i++)
+		{
+			retVal = SPI_Flash_writePage(flashEndSector*4096+i*256, SPI_Flash_sectorbuffer+i*256);
+
+			if (!retVal)
+			{
+				return false;
+			}
+		}
+
+	}
+	return true;
+}
+
 int SPI_Flash_readStatusRegister(void)
 {
   int r1,r2;
