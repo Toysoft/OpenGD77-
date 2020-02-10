@@ -780,7 +780,7 @@ static void handleEvent(uiEvent_t *ev)
 					}
 				}
 			}
-			else if (KEYCHECK_SHORTUP(ev->keys, KEY_RIGHT))
+			else if (KEYCHECK_PRESS(ev->keys, KEY_RIGHT))
 			{
 				if (ev->buttons & BUTTON_SK2)
 				{
