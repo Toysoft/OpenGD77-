@@ -1228,7 +1228,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 			case VFO_SCREEN_QUICK_MENU_DMR_FILTER:
 				if (trxGetMode() == RADIO_MODE_DIGITAL)
 				{
-					if (tmpQuickMenuDmrFilterLevel < DMR_FILTER_TS)
+					if (tmpQuickMenuDmrFilterLevel < DMR_FILTER_TS_TG)
 					{
 						tmpQuickMenuDmrFilterLevel++;
 					}

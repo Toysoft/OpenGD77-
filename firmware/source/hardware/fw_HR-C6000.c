@@ -342,13 +342,22 @@ bool checkTalkGroupFilter(void)
 {
 	if (nonVolatileSettings.dmrFilterLevel >= DMR_FILTER_TS_TG)
 	{
-		return true;// To Do. Actually filter on TG
+		if (((trxTalkGroupOrPcId>>24) == PC_CALL_FLAG) ||  ((trxTalkGroupOrPcId & 0x00FFFFFF) == receivedTgOrPcId))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 	else
 	{
 		return true;
 	}
 }
+
+
 
 void transmitTalkerAlias(void)
 {
@@ -690,7 +699,7 @@ inline static void HRC6000SysReceivedDataInt(void)
 					(rxSyncClass!=SYNC_CLASS_DATA) && ( sequenceNumber>= 0x01) && (sequenceNumber <= 0x06) &&
 					(((trxDMRMode == DMR_MODE_PASSIVE) && (checkTimeSlotFilter() && lastTimeCode != timeCode) &&
 					 (rxColorCode == trxGetDMRColourCode())) || (trxDMRMode == DMR_MODE_ACTIVE &&
-					 (slot_state == DMR_STATE_RX_1))))
+					 (slot_state == DMR_STATE_RX_1))) && checkTalkGroupFilter())
 			{
 				//SEGGER_RTT_printf(0, "Audio frame %d\t%d\n",sequenceNumber,timeCode);
 				GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1);// Note it may be more effecient to store variable to indicate whether this call needs to be made
@@ -777,7 +786,7 @@ inline static void HRC6000SysInterruptHandler(void)
 					receivedTgOrPcId 	= (LCBuf[0]<<24)+(LCBuf[3]<<16)+(LCBuf[4]<<8)+(LCBuf[5]<<0);// used by the call accept filter
 					receivedSrcId 		= (LCBuf[6]<<16)+(LCBuf[7]<<8)+(LCBuf[8]<<0);// used by the call accept filter
 
-					if (receivedTgOrPcId!=0 && receivedSrcId!=0) // only store the data if its actually valid
+					if (receivedTgOrPcId!=0 && receivedSrcId!=0 && checkTalkGroupFilter()) // only store the data if its actually valid
 					{
 						if (updateLastHeard == false)
 						{
@@ -789,7 +798,7 @@ inline static void HRC6000SysInterruptHandler(void)
 				}
 				else
 				{
-					if (updateLastHeard == false && receivedTgOrPcId != 0)
+					if (updateLastHeard == false && receivedTgOrPcId != 0 && checkTalkGroupFilter())
 					{
 						memcpy((uint8_t *)DMR_frame_buffer,LCBuf,12);
 						updateLastHeard=true;//lastHeardListUpdate((uint8_t *)DMR_frame_buffer);
