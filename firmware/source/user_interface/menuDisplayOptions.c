@@ -111,7 +111,7 @@ static void updateScreen(void)
 				break;
 			case DISPLAY_MENU_CONTACT_DISPLAY_ORDER:
 				{
-					snprintf(buf, bufferLen, "Order:%s", contactOrders[nonVolatileSettings.contactDisplayPriority]);
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->priority_order, contactOrders[nonVolatileSettings.contactDisplayPriority]);
 				}
 				break;
 			case DISPLAY_MENU_CONTACT_DISPLAY_SPLIT_CONTACT:
