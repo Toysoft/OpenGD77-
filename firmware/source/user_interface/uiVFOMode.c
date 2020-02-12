@@ -87,6 +87,7 @@ static int scanIndex=0;
 static bool displayChannelSettings;
 static int prevDisplayQSODataState;
 
+
 // public interface
 int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
 {
@@ -94,8 +95,12 @@ int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
 
 	if (isFirstRun)
 	{
+		LinkItem_t *item = NULL;
+		uint32_t rxID = HRC6000GetReceivedSrcId();
+
 		isDisplayingQSOData=false;
 		nonVolatileSettings.initialMenuNumber=MENU_VFO_MODE;
+		prevDisplayQSODataState = QSO_DISPLAY_IDLE;
 		currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];
 		settingsCurrentChannelNumber = -1;// This is not a regular channel. Its the special VFO channel!
 		displayChannelSettings = false;
@@ -116,7 +121,8 @@ int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
 			{
 				trxSetRxCTCSS(currentChannelData->rxTone);
 			}
-		if (uiVfoModeScanActive==false)
+
+			if (uiVfoModeScanActive==false)
 			{
 				scanState = SCAN_SCANNING;
 			}
@@ -161,11 +167,24 @@ int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
 				trxSetDMRTimeSlot(((nonVolatileSettings.tsManualOverride & 0xF0)>>4) - 1);
 			}
 		}
+
+		// We're in digital mode, RXing, and current talker is already at the top of last heard list,
+		// hence immediately display complete contact/TG info on screen
+		// This mostly happens when getting out of a menu.
+		if ((trxIsTransmitting == false) && ((trxGetMode() == RADIO_MODE_DIGITAL) && (rxID != 0)) &&
+				(GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable) == 1) &&
+				(((item = lastheardFindInList(rxID)) != NULL) && (item == LinkHead)))
+		{
+			menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;
+		}
+		else
+		{
+			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+		}
+
 		lastHeardClearLastID();
 		reset_freq_enter_digits();
-		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		menuVFOModeUpdateScreen(0);
-
 	}
 	else
 	{
