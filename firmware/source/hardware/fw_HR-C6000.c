@@ -340,24 +340,22 @@ static inline bool checkTimeSlotFilter(void)
 
 bool checkTalkGroupFilter(void)
 {
-	if (nonVolatileSettings.dmrFilterLevel >= DMR_FILTER_TS_TG)
-	{
-		if (((trxTalkGroupOrPcId>>24) == PC_CALL_FLAG) ||  ((trxTalkGroupOrPcId & 0x00FFFFFF) == receivedTgOrPcId))
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-	else
+	if (((trxTalkGroupOrPcId>>24) == PC_CALL_FLAG))
 	{
 		return true;
 	}
+	switch(nonVolatileSettings.dmrFilterLevel)
+	{
+		case DMR_FILTER_TS_TG:
+			return ((trxTalkGroupOrPcId & 0x00FFFFFF) == receivedTgOrPcId);
+			break;
+		case DMR_FILTER_TS_DC:
+			return codeplugContactsContainsPC(receivedSrcId);
+			break;
+		default:
+			return true;
+	}
 }
-
-
 
 void transmitTalkerAlias(void)
 {

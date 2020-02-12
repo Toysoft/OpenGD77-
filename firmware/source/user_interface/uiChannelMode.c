@@ -1078,7 +1078,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 		switch(gMenusCurrentItemIndex)
 		{
 			case CH_SCREEN_QUICK_MENU_DMR_FILTER:
-				if (tmpQuickMenuDmrFilterLevel < DMR_FILTER_TS_TG)
+				if (tmpQuickMenuDmrFilterLevel < DMR_FILTER_TS_DC)
 				{
 					tmpQuickMenuDmrFilterLevel++;
 				}

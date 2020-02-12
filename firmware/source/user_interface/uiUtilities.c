@@ -49,7 +49,7 @@ uint32_t menuUtilityReceivedPcId 	= 0;// No current Private call awaiting accept
 uint32_t menuUtilityTgBeforePcMode 	= 0;// No TG saved, prior to a Private call being accepted.
 
 const char *POWER_LEVELS[]={ "50mW","250mW","500mW","750mW","1W","2W","3W","4W","5W","5W++"};
-const char *DMR_FILTER_LEVELS[]={"None","TS","TS,TG"};
+const char *DMR_FILTER_LEVELS[]={"None","TS","TS,TG","TS,Ct"};
 
 volatile uint32_t lastID=0;// This needs to be volatile as lastHeardClearLastID() is called from an ISR
 uint32_t lastTG=0;
