@@ -146,6 +146,7 @@ const stringsTable_t polishLanguage =
 .stop					= "Stop", // Maxlen 16 (with ':' + .scan_mode)
 .one_line				= "1 linia", // MaxLen 16 (with ':' + .contact)
 .two_lines				= "2 linie", // MaxLen 16 (with ':' + .contact)
+.priority_order				= "Order", // MaxLen 16 (with ':' + 'Cc/DB/TA')
 };
 /********************************************************************
  *

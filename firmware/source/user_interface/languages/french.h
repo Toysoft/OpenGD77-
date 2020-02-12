@@ -144,8 +144,9 @@ const stringsTable_t frenchLanguage =
 .ptt_toggle				= "Bascule PTT", // MaxLen 16 (with ':' + .on or .off)
 .private_call_handling			= "Filtre PC", // MaxLen 16 (with ':' + .on ot .off)
 .stop					= "Arrêt", // Maxlen 16 (with ':' + .scan_mode)
-.one_line				= "1 line", // MaxLen 16 (with ':' + .contact)
-.two_lines				= "2 lines", // MaxLen 16 (with ':' + .contact)
+.one_line				= "1 ligne", // MaxLen 16 (with ':' + .contact)
+.two_lines				= "2 lignes", // MaxLen 16 (with ':' + .contact)
+.priority_order				= "Ordre", // MaxLen 16 (with ':' + 'Cc/DB/TA')
 };
 /********************************************************************
  *
