@@ -91,6 +91,7 @@ void clearIsWakingState(void);
 int getIsWakingState(void);
 void clearActiveDMRID(void);
 void setMicGainDMR(uint8_t gain);
+bool checkTalkGroupFilter(void);
 
 int HRC6000GetReceivedTgOrPcId(void);
 int HRC6000GetReceivedSrcId(void);
