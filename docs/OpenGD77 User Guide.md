@@ -300,7 +300,7 @@ Press the **Orange** button or **Green** key to confirm and save the updated cha
 Use the **Right** or **Left** arrows to select **TS** (to filtering by the selected timeslot), **TS, TG** (to filter by the selected timeslot and also the selected Talkgroup) or **None** (for no filtering, i.e. "promiscuous" mode).
 
 When timeslot filtering is disabled, the TS1 / TS2 indication at the top of the screen is displayed in inverse video.
-When Talkgroup filtering is disabled the DMR  mode indication at the top of the screen is displayed in inverse video.
+When Talkgroup filtering is enabled the DMR  mode indication at the top of the screen is displayed in inverse video.
 
 ![](media/channel-quick-menu.png)
 
@@ -336,7 +336,7 @@ Copies the TX frequency to the RX frequency. Press **Green** key or **Orange** b
 Use the **Right** or **Left** arrows to select **TS** (to filtering by the selected timeslot), **TS, TG** (to filter by the selected timeslot and also the selected Talkgroup) or **None** (for no filtering, i.e. "promiscuous" mode).
 
 When timeslot filtering is disabled, the TS1 / TS2 indication at the top of the screen is displayed in inverse video.
-When Talkgroup filtering is disabled the DMR  mode indication at the top of the screen is displayed in inverse video.
+When Talkgroup filtering is enabled the DMR  mode indication at the top of the screen is displayed in inverse video.
 
 ##### Tone Scan for CTCSS tone in FM, or CC Scan for DMR Colour Code in DMR mode
 
