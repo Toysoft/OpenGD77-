@@ -92,7 +92,7 @@ int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 		// We're in digital mode, RXing, and current talker is already at the top of last heard list,
 		// hence immediately display complete contact/TG info on screen
 		// This mostly happens when getting out of a menu.
-		if ((trxIsTransmitting == false) && ((trxGetMode() == RADIO_MODE_DIGITAL) && (rxID != 0)) &&
+		if ((trxIsTransmitting == false) && ((trxGetMode() == RADIO_MODE_DIGITAL) && (rxID != 0) && (HRC6000GetReceivedTgOrPcId() != 0)) &&
 				(GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable) == 1) && checkTalkGroupFilter() &&
 				(((item = lastheardFindInList(rxID)) != NULL) && (item == LinkHead)))
 		{
