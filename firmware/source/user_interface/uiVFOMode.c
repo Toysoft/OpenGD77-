@@ -172,7 +172,7 @@ int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
 		// hence immediately display complete contact/TG info on screen
 		// This mostly happens when getting out of a menu.
 		if ((trxIsTransmitting == false) && ((trxGetMode() == RADIO_MODE_DIGITAL) && (rxID != 0)) &&
-				(GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable) == 1) &&
+				(GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable) == 1) && checkTalkGroupFilter() &&
 				(((item = lastheardFindInList(rxID)) != NULL) && (item == LinkHead)))
 		{
 			menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;
