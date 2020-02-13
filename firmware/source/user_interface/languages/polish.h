@@ -20,7 +20,7 @@
  *
  * Translators: SQ7PTE
  *
- * Rev: 4.6
+ * Rev: 4.7
  */
 #ifndef USER_INTERFACE_LANGUAGES_POLISH_H_
 #define USER_INTERFACE_LANGUAGES_POLISH_H_
@@ -48,7 +48,7 @@ const stringsTable_t polishLanguage =
 .display_options			= "Opcje ekranu", // MaxLen: 16
 .channel_details			= "Detale kanaˆu", // MaxLen: 16
 .new_contact				= "Nowy kontakt", // MaxLen: 16
-.new_channel				= "New channel", // MaxLen: 16, leave room for a space and four channel digits after
+.new_channel				= "Nowy kanaˆ", // MaxLen: 16, leave room for a space and four channel digits after
 .contact_list				= "Lista kontaktów", // MaxLen: 16
 .hotspot_mode				= "Tryb HotSpot", // MaxLen: 16
 .contact_details			= "Detale kontaktu", // MaxLen: 16
@@ -56,10 +56,10 @@ const stringsTable_t polishLanguage =
 .zones					= "Strefy", // MaxLen: 16
 .keypad					= "Klawiatura", // MaxLen: 12 (with .ptt)
 .ptt					= "PTT", // MaxLen: 12 (with .keypad)
-.locked					= "Zablokowany", // MaxLen: 15
+.locked					= "Zablokowana", // MaxLen: 15
 .press_blue_plus_star			= "Niebieski + *", // MaxLen: 19
-.to_unlock				= "Odblokowa‚", // MaxLen: 19
-.unlocked				= "Odblokowany", // MaxLen: 15
+.to_unlock				= "aby odblokowa‚", // MaxLen: 19
+.unlocked				= "Odblokowane", // MaxLen: 15
 .power_off				= "Wyˆ„czanie...", // MaxLen: 16
 .error					= "B‡ƒD", // MaxLen: 8
 .rx_only				= "Tylko odbiór", // MaxLen: 14
@@ -77,9 +77,9 @@ const stringsTable_t polishLanguage =
 .all_channels				= "Wszystkie", // MaxLen: 16
 .gotoChannel				= "Id do",  // MaxLen: 11 (" 1024")
 .scan					= "Skanowanie", // MaxLen: 16
-.channelToVfo				= "Kanaˆ ---> VFO", // MaxLen: 16
-.vfoToChannel				= "VFO ---> Kanaˆ", // MaxLen: 16
-.vfoToNewChannel		= "VFO --> New Chan", // MaxLen: 16
+.channelToVfo				= "Kanaˆ > VFO", // MaxLen: 16
+.vfoToChannel				= "VFO > Kanaˆ", // MaxLen: 16
+.vfoToNewChannel		= "VFO > Nowy kanaˆ", // MaxLen: 16
 .group					= "Grupa", // MaxLen: 16 (with .type)
 .private				= "Prywatny", // MaxLen: 16 (with .type)
 .all					= "Wszystko", // MaxLen: 16 (with .type)
@@ -146,7 +146,7 @@ const stringsTable_t polishLanguage =
 .stop					= "Stop", // Maxlen 16 (with ':' + .scan_mode)
 .one_line				= "1 linia", // MaxLen 16 (with ':' + .contact)
 .two_lines				= "2 linie", // MaxLen 16 (with ':' + .contact)
-.priority_order				= "Order", // MaxLen 16 (with ':' + 'Cc/DB/TA')
+.priority_order				= "Wybór", // MaxLen 16 (with ':' + 'Cc/DB/TA')
 };
 /********************************************************************
  *
