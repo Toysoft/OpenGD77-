@@ -146,7 +146,7 @@ const stringsTable_t spanishLanguage =
 .stop					= "Parar", // Maxlen 16 (with ':' + .scan_mode)
 .one_line				= "1 linea", // MaxLen 16 (with ':' + .contact)
 .two_lines				= "2 linea", // MaxLen 16 (with ':' + .contact)
-.priority_order				= "Order", // MaxLen 16 (with ':' + 'Cc/DB/TA')
+.priority_order				= "Orden", // MaxLen 16 (with ':' + 'Cc/DB/TA')
 };
 /********************************************************************
  *
