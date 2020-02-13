@@ -538,14 +538,8 @@ inline static void HRC6000SysPostAccessInt(void)
 	*/
 
 	// Late entry into ongoing RX
-	if (slot_state == DMR_STATE_IDLE)// && callAcceptFilter())
-	{
-		//SEGGER_RTT_printf(0,"HRC6000SysPostAccessInt\n");
-
-		if (skip_count == 0 ||  (receivedSrcId != trxDMRID && receivedSrcId!=0x00))
-		{
-//			triggerQSOdataDisplay();
-		}
+	if (slot_state == DMR_STATE_IDLE)
+{
 		init_codec();
 		GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
 
@@ -692,12 +686,26 @@ inline static void HRC6000SysReceivedDataInt(void)
 		{
 			int sequenceNumber = (rxDataType & 0x07);
 			// Detect/decode voice packet and transfer it into the output soundbuffer
-			if (
-					(skip_count == 0 ||  (receivedSrcId != trxDMRID && receivedSrcId!=0x00)) &&
-					(rxSyncClass!=SYNC_CLASS_DATA) && ( sequenceNumber>= 0x01) && (sequenceNumber <= 0x06) &&
-					(((trxDMRMode == DMR_MODE_PASSIVE) && (checkTimeSlotFilter() && lastTimeCode != timeCode) &&
-					 (rxColorCode == trxGetDMRColourCode())) || (trxDMRMode == DMR_MODE_ACTIVE &&
-					 (slot_state == DMR_STATE_RX_1))) && checkTalkGroupFilter())
+			if 	(
+					(
+							skip_count == 0 &&
+							receivedSrcId != trxDMRID &&
+							receivedSrcId!=0x00 &&
+							rxSyncClass != SYNC_CLASS_DATA	&&
+							sequenceNumber >= 0x01 &&
+							sequenceNumber <= 0x06 &&
+							trxDMRMode == DMR_MODE_PASSIVE &&
+							checkTimeSlotFilter() &&
+							lastTimeCode != timeCode &&
+							rxColorCode == trxGetDMRColourCode()
+					)
+					||
+					(
+						trxDMRMode == DMR_MODE_ACTIVE &&
+						slot_state == DMR_STATE_RX_1 &&
+						checkTalkGroupFilter()
+					)
+				)
 			{
 				//SEGGER_RTT_printf(0, "Audio frame %d\t%d\n",sequenceNumber,timeCode);
 				GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1);// Note it may be more effecient to store variable to indicate whether this call needs to be made
