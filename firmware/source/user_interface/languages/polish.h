@@ -20,7 +20,7 @@
  *
  * Translators: SQ7PTE
  *
- * Rev: 4.7
+ * Rev: 4.6
  */
 #ifndef USER_INTERFACE_LANGUAGES_POLISH_H_
 #define USER_INTERFACE_LANGUAGES_POLISH_H_
@@ -56,7 +56,7 @@ const stringsTable_t polishLanguage =
 .zones					= "Strefy", // MaxLen: 16
 .keypad					= "Klawiatura", // MaxLen: 12 (with .ptt)
 .ptt					= "PTT", // MaxLen: 12 (with .keypad)
-.locked					= "Zablokowana", // MaxLen: 15
+.locked					= "zablokowana", // MaxLen: 15
 .press_blue_plus_star			= "Niebieski + *", // MaxLen: 19
 .to_unlock				= "aby odblokowaÇ", // MaxLen: 19
 .unlocked				= "Odblokowane", // MaxLen: 15
@@ -72,7 +72,7 @@ const stringsTable_t polishLanguage =
 .accept_call				= "ZaakceptowaÇ?", // MaxLen: 16
 .private_call				= "Prywatne", // MaxLen: 16
 .squelch				= "Squelch", // MaxLen: 8
-.quick_menu 				= "Szybki spis", // MaxLen: 16
+.quick_menu 				= "Szybkie opcje", // MaxLen: 16
 .filter					= "Filtr", // MaxLen: 7 (with ':' + settings: .none, "CC", "CC,TS", "CC,TS,TG")
 .all_channels				= "Wszystkie", // MaxLen: 16
 .gotoChannel				= "Idê do",  // MaxLen: 11 (" 1024")
@@ -124,7 +124,7 @@ const stringsTable_t polishLanguage =
 .NO					= "NIE", // MaxLen: 8 (choice above green/red buttons)
 .DISMISS				= "ODWOáAÅ", // MaxLen: 8 (choice above green/red buttons)
 .scan_mode				= "Tryb skan.", // MaxLen: 16 (with ':' + .hold or .pause)
-.hold					= "Stop", // MaxLen: 16 (with ':' + .scan_mode)
+.hold					= "StÛj", // MaxLen: 16 (with ':' + .scan_mode)
 .pause					= "Pauza", // MaxLen: 16 (with ':' + .scan_mode)
 .empty_list				= "Lista pusta", // MaxLen: 16
 .delete_contact_qm			= "Usuã kontakt?", // MaxLen: 16
@@ -136,7 +136,7 @@ const stringsTable_t polishLanguage =
 .delete_contact				= "Usuã kontakt", // MaxLen: 16
 .group_call				= "Grupy", // MaxLen: 16
 .all_call				= "áÑcze wszystkich", // MaxLen: 16
-.tone_scan				= "Skan tonu.",//// MaxLen: 16
+.tone_scan				= "Skan tonu CTCSS",//// MaxLen: 16
 .cc_scan				= "Skan CC",//// MaxLen: 16
 .low_battery				= "SáABA BATERIA!!!",//// MaxLen: 16
 .Auto					= "Automat", // MaxLen 16 (with .mode + ':')
