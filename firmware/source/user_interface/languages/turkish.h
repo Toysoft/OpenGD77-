@@ -20,7 +20,7 @@
  * Translators: TA5AYX
  *
  *
- * Rev: 1.0
+ * Rev: 1.1
  */
 #ifndef USER_INTERFACE_LANGUAGES_TURKISH_H_
 #define USER_INTERFACE_LANGUAGES_TURKISH_H_
@@ -60,7 +60,7 @@ const stringsTable_t turkishLanguage =
 .press_blue_plus_star			= "Bas Mavi + *", // MaxLen: 19
 .to_unlock				= "Açmak için", // MaxLen: 19
 .unlocked				= "Kilit Aç“k", // MaxLen: 15
-.power_off				= "Güç Kapal“...", // MaxLen: 16
+.power_off				= "HO•ÇAKALIN", // MaxLen: 16
 .error					= "HATA", // MaxLen: 8
 .rx_only				= "Sadece Rx", // MaxLen: 14
 .out_of_band				= "BAND D“–“", // MaxLen: 14
@@ -94,17 +94,17 @@ const stringsTable_t turkishLanguage =
 .mode					= "Mod",  // MaxLen: 12
 .colour_code				= "Renk Kodu", // MaxLen: 16 (with ':' * .n_a)
 .n_a					= "N/A",// MaxLen: 16 (with ':' * .colour_code)
-.bandwidth				= "Bandgeni–li˜i", // MaxLen: 16 (with ':' + .n_a, "25kHz" or "12.5kHz")
+.bandwidth				= "Band geni–", // MaxLen: 16 (with ':' + .n_a, "25kHz" or "12.5kHz")
 .stepFreq				= "Ad“m", // MaxLen: 7 (with ':' + xx.xxkHz fitted)
 .tot					= "TX Süre", // MaxLen: 16 (with ':' + .off or 15..3825)
 .off					= "Kapal“", // MaxLen: 16 (with ':' + .timeout_beep, .calibration or .band_limits)
 .zone_skip				= "Bölge Atla", // MaxLen: 16 (with ':' + .yes or .no) 
-.all_skip				= "Tümünü Atla", // MaxLen: 16 (with ':' + .yes or .no)
+.all_skip				= "Tüm Atla", // MaxLen: 16 (with ':' + .yes or .no)
 .yes					= "Evet", // MaxLen: 16 (with ':' + .zone_skip, .all_skip or .factory_reset)
 .no					= "Hay“r", // MaxLen: 16 (with ':' + .zone_skip, .all_skip or .factory_reset)
 .rx_group				= "Rx Grp", // MaxLen: 16 (with ':' and codeplug group name)
 .on					= "Aç", // MaxLen: 16 (with ':' + .calibration or .band_limits)
-.timeout_beep				= "Zamanlama bip", // MaxLen: 16 (with ':' + .off or 5..20)
+.timeout_beep				= "Zaman bip", // MaxLen: 16 (with ':' + .off or 5..20)
 .factory_reset				= "Fabrika Ayarlar“", // MaxLen: 16 (with ':' + .yes or .no)
 .calibration				= "Kalibrasyon", // MaxLen: 16 (with ':' + .on or .off)
 .band_limits				= "Band S“n“r“", // MaxLen: 16 (with ':' + .on or .off)
@@ -112,20 +112,20 @@ const stringsTable_t turkishLanguage =
 .dmr_mic_gain				= "DMR mic", // MaxLen: 16 (with ':' + -33..12 + 'dB')
 .key_long				= "Tu– Uzun", // MaxLen: 11 (with ':' + x.xs fitted)
 .key_repeat				= "Tu– rpt", // MaxLen: 11 (with ':' + x.xs fitted)
-.dmr_filter_timeout			= "Filtre zaman“", // MaxLen: 16 (with ':' + 1..90 + 's')
+.dmr_filter_timeout			= "FiltreSüre", // MaxLen: 16 (with ':' + 1..90 + 's')
 .brightness				= "Parlakl“k", // MaxLen: 16 (with ':' + 0..100 + '%')
-.brightness_off				= "Az parlakl“k", // MaxLen: 16 (with ':' + 0..100 + '%')
+.brightness_off				= "Az parlak", // MaxLen: 16 (with ':' + 0..100 + '%')
 .contrast				= "Kontrast", // MaxLen: 16 (with ':' + 12..30)
 .colour_invert				= "Renk:Ters", // MaxLen: 16
 .colour_normal				= "Renk:Normal", // MaxLen: 16
-.backlight_timeout			= "Zaman a–“m“", // MaxLen: 16 (with ':' + .no to 30s)
+.backlight_timeout			= "Zamana–“m“", // MaxLen: 16 (with ':' + .no to 30s)
 .scan_delay				= "Tarama H“z“", // MaxLen: 16 (with ':' + 1..30 + 's')
 .YES					= "EVET", // MaxLen: 8 (choice above green/red buttons)
 .NO					= "HAYIR", // MaxLen: 8 (choice above green/red buttons)
 .DISMISS				= "REDDET", // MaxLen: 8 (choice above green/red buttons)
 .scan_mode				= "Tarama modu", // MaxLen: 16 (with ':' + .hold, .pause or .stop)
-.hold					= "Bas“l“ tut", // MaxLen: 16 (with ':' + .scan_mode)
-.pause					= "Duraklat", // MaxLen: 16 (with ':' + .scan_mode)
+.hold					= "Dur", // MaxLen: 16 (with ':' + .scan_mode)
+.pause					= "Bekle", // MaxLen: 16 (with ':' + .scan_mode)
 .empty_list				= "Bo– Liste", // MaxLen: 16
 .delete_contact_qm			= "Ki–iyi silmek?", // MaxLen: 16
 .contact_deleted			= "Ki–i silindi", // MaxLen: 16
@@ -141,12 +141,12 @@ const stringsTable_t turkishLanguage =
 .low_battery				= "DÜ•ÜK BATARYA !", // MaxLen: 16
 .Auto					= "Otomatik", // MaxLen 16 (with .mode + ':') 
 .manual					= "Manüel",  // MaxLen 16 (with .mode + ':')
-.ptt_toggle				= "PTT mandal“", // MaxLen 16 (with ':' + .on or .off)
+.ptt_toggle				= "PTT Tu–u", // MaxLen 16 (with ':' + .on or .off)
 .private_call_handling			= "PC izin ver", // MaxLen 16 (with ':' + .on or .off)
 .stop					= "Stop", // Maxlen 16 (with ':' + .scan_mode)
 .one_line				= "1 sat“r", // MaxLen 16 (with ':' + .contact)
 .two_lines				= "2 sat“r", // MaxLen 16 (with ':' + .contact)
-.priority_order				= "Öncelikli", // MaxLen 16 (with ':' + 'Cc/DB/TA')
+.priority_order				= "Öncelik", // MaxLen 16 (with ':' + 'Cc/DB/TA')
 };
 /********************************************************************
  *
