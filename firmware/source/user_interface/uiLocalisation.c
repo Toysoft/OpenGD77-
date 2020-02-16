@@ -29,6 +29,7 @@
 #include <user_interface/languages/danish.h>
 #include <user_interface/languages/finnish.h>
 #include <user_interface/languages/polish.h>
+#include <user_interface/languages/turkish.h>
 
 /*
  * Note.
@@ -47,5 +48,6 @@ const stringsTable_t languages[NUM_LANGUAGES]= { 	englishLanguage,
 													portuguesLanguage,
 													spanishLanguage,
 													finnishLanguage,
-													polishLanguage};
+													polishLanguage,
+													turkishLanguage};
 const stringsTable_t *currentLanguage;
