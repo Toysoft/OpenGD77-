@@ -27,7 +27,7 @@ OpenGD77 is a work-in-progress, so is this User Guide. Last major update was on 
             - [Exchange the TX and RX frequencies](#exchange-the-tx-and-rx-frequencies)   
             - [Copy the RX frequency to the TX frequency](#copy-the-rx-frequency-to-the-tx-frequency)   
             - [Copy TX frequency to the RX frequency](#copy-tx-frequency-to-the-rx-frequency)   
-            - [Filter by timeslot (DMR mode only)](#filter-by-timeslot-dmr-mode-only)   
+            - [Filter (DMR mode only)](#filter-dmr-only)   
             - [Tone Scan for CTCSS tone in FM, or CC Scan for DMR Colour Code in DMR mode](#tone-scan-for-ctcss-tone-in-fm-or-cc-scan-for-dmr-colour-code-in-dmr-mode)   
       - [DMR specific functionality (VFO and Channel screens)](#dmr-specific-functionality-vfo-and-channel-screens)   
          - [Timeslot selection](#timeslot-selection)   
@@ -285,6 +285,8 @@ Pressing the **Orange** button on the top of the radio in Channel mode displays 
 
 After pressing the **Orange** button, press it again, or press the **Green** key to start scanning all channels in the currently selected zone.
 
+Whilst scanning the mode indicator DMR or FM will flash.
+
 ##### Copying a channel to VFO
 
 Press the **Orange** button or **Green** key to copy the content of the current channel to the VFO.
@@ -295,13 +297,23 @@ Press the **Orange** button or **Green** key to confirm and save the updated cha
 
 ##### Filter (DMR only)
 
-Use the **Right** or **Left** arrows to select **TS** (for filtering by the selected timeslot) or **None** (for no filtering, i.e. "promiscuous" mode).
+Use the **Right** or **Left** arrows to select **TS** (to filtering by the selected timeslot), **TS, TG** (to filter by the selected timeslot and also the selected Talkgroup) or **None** (for no filtering, i.e. "promiscuous" mode).
+
+When timeslot filtering is disabled, the TS1 / TS2 indication at the top of the screen is displayed in inverse video.
+When Talkgroup filtering is enabled the DMR  mode indication at the top of the screen is displayed in inverse video.
 
 ![](media/channel-quick-menu.png)
 
 #### VFO Quick Menu
 
 Pressing the **Orange** button on the top of the radio in VFO mode displays the Quick menu for the VFO screen. Currently this has five options.
+
+##### Scan
+
+After pressing the **Orange** button, press it again, or press the **Green** key to start scanning.
+Note. Before scanning can commence the start and end frequencies need to be defined using the other Quick menu options.
+
+Whilst scanning the mode indicator DMR or FM will flash.
 
 ##### VFO selection A or B
 
@@ -319,9 +331,12 @@ Copies the RX frequency to the TX frequency. Press **Green** key or **Orange** b
 
 Copies the TX frequency to the RX frequency. Press **Green** key or **Orange** button to confirm.
 
-##### Filter by timeslot (DMR mode only)
+##### Filter (DMR mode only)
 
-**TS** Filters by TimeSlot. **None** results in radio listening to both timeslots (equivalent to Promiscuous Mode).
+Use the **Right** or **Left** arrows to select **TS** (to filtering by the selected timeslot), **TS, TG** (to filter by the selected timeslot and also the selected Talkgroup) or **None** (for no filtering, i.e. "promiscuous" mode).
+
+When timeslot filtering is disabled, the TS1 / TS2 indication at the top of the screen is displayed in inverse video.
+When Talkgroup filtering is enabled the DMR  mode indication at the top of the screen is displayed in inverse video.
 
 ##### Tone Scan for CTCSS tone in FM, or CC Scan for DMR Colour Code in DMR mode
 

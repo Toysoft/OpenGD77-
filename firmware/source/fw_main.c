@@ -413,7 +413,10 @@ void fw_main_task(void *data)
     							(trxTalkGroupOrPcId != (HRC6000GetReceivedSrcId() | (PC_CALL_FLAG<<24))) &&
 								(HRC6000GetReceivedSrcId() != uiPrivateCallLastID))
     					{
-    						menuSystemPushNewMenu(MENU_PRIVATE_CALL);
+    						if ((HRC6000GetReceivedSrcId() & 0xFFFFFF) >= 1000000)
+    						{
+    							menuSystemPushNewMenu(MENU_PRIVATE_CALL);
+    						}
     					}
     				}
     			}

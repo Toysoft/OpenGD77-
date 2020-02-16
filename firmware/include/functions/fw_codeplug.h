@@ -143,5 +143,6 @@ void codeplugInitChannelsPerZone(void);
 bool codeplugGetOpenGD77CustomData(codeplugCustomDataType_t dataType,uint8_t *dataBuf);
 int codeplugGetQuickkeyFunctionID(int key);
 void codeplugInitContactsCache(void);
+bool codeplugContactsContainsPC(uint32_t pc);
 
 #endif

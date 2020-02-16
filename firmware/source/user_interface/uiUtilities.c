@@ -49,7 +49,7 @@ uint32_t menuUtilityReceivedPcId 	= 0;// No current Private call awaiting accept
 uint32_t menuUtilityTgBeforePcMode 	= 0;// No TG saved, prior to a Private call being accepted.
 
 const char *POWER_LEVELS[]={ "50mW","250mW","500mW","750mW","1W","2W","3W","4W","5W","5W++"};
-const char *DMR_FILTER_LEVELS[]={"None","TS","TS,TG"};
+const char *DMR_FILTER_LEVELS[]={"None","TS","TS,TG","TS,Ct"};
 
 volatile uint32_t lastID=0;// This needs to be volatile as lastHeardClearLastID() is called from an ISR
 uint32_t lastTG=0;
@@ -1063,7 +1063,7 @@ void menuUtilityRenderHeader(void)
 	const int Y_OFFSET = 2;
 	static const int bufferLen = 17;
 	char buffer[bufferLen];
-	static bool modeInverted = true;
+	static bool scanBlinkPhase = true;
 	static uint32_t blinkTime = 0;
 
 	if (!trxIsTransmitting)
@@ -1081,7 +1081,7 @@ void menuUtilityRenderHeader(void)
 	if (menuChannelModeIsScanning() || menuVFOModeIsScanning())
 	{
 		int blinkPeriod = 1000;
-		if (modeInverted)
+		if (scanBlinkPhase)
 		{
 			blinkPeriod = 500;
 		}
@@ -1090,12 +1090,12 @@ void menuUtilityRenderHeader(void)
 		if ((fw_millis() - blinkTime) > blinkPeriod)
 		{
 			blinkTime = fw_millis();
-			modeInverted = !modeInverted;
+			scanBlinkPhase = !scanBlinkPhase;
 		}
 	}
 	else
 	{
-		modeInverted = false;
+		scanBlinkPhase = false;
 	}
 
 	switch(trxGetMode())
@@ -1118,14 +1118,23 @@ void menuUtilityRenderHeader(void)
 			{
 				strcat(buffer,"R");
 			}
-			ucPrintCore(0, Y_OFFSET, buffer, FONT_6x8, TEXT_ALIGN_LEFT, modeInverted);
+			ucPrintCore(0, Y_OFFSET, buffer, FONT_6x8, TEXT_ALIGN_LEFT, scanBlinkPhase);
 			break;
 
 		case RADIO_MODE_DIGITAL:
 			if (settingsUsbMode != USB_MODE_HOTSPOT)
 			{
+				const int DMR_TEXT_X_OFFSET = 1;
 //				(trxGetMode() == RADIO_MODE_DIGITAL && settingsPrivateCallMuteMode == true)?" MUTE":"");// The location that this was displayed is now used for the power level
-				ucPrintCore(0, Y_OFFSET, "DMR", ((nonVolatileSettings.hotspotType != HOTSPOT_TYPE_OFF) ? FONT_6x8_BOLD : FONT_6x8), TEXT_ALIGN_LEFT, modeInverted);
+				if (!scanBlinkPhase && (nonVolatileSettings.dmrFilterLevel > DMR_FILTER_TS))
+				{
+					ucFillRect(0, Y_OFFSET - 1, 20, 9, false);
+				}
+				if (!scanBlinkPhase)
+				{
+					bool isInverted = scanBlinkPhase ^ (nonVolatileSettings.dmrFilterLevel > DMR_FILTER_TS);
+					ucPrintCore(DMR_TEXT_X_OFFSET, Y_OFFSET, "DMR", ((nonVolatileSettings.hotspotType != HOTSPOT_TYPE_OFF) ? FONT_6x8_BOLD : FONT_6x8), TEXT_ALIGN_LEFT, isInverted);
+				}
 
 				snprintf(buffer, bufferLen, "%s%d", currentLanguage->ts, trxGetDMRTimeSlot() + 1);
 				buffer[bufferLen - 1] = 0;

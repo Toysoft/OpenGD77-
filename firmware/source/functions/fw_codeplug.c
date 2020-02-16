@@ -509,6 +509,22 @@ int codeplugContactIndexByTGorPC(int tgorpc, int callType, struct_codeplugContac
 	return 0;
 }
 
+bool codeplugContactsContainsPC(uint32_t pc)
+{
+	int numContacts =  codeplugContactsCache.numTGContacts + codeplugContactsCache.numPCContacts;
+	pc = pc & 0x00FFFFFF;
+	pc = pc | (CONTACT_CALLTYPE_PC << 24);
+
+	for (int i = 0; i < numContacts; i++)
+	{
+		if (codeplugContactsCache.contactsLookupCache[i].tgOrPCNum == pc)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 void codeplugInitContactsCache(void)
 {
 	struct_codeplugContact_t contact;

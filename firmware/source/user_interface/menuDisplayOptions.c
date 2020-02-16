@@ -33,7 +33,7 @@ static const int BACKLIGHT_MAX_PERCENTAGE = 100;
 static const int BACKLIGHT_PERCENTAGE_STEP = 10;
 static const int BACKLIGHT_PERCENTAGE_STEP_SMALL = 1;
 
-static const char *contactOrders[] = { "Cc/DB/TA", "DB/Cc/TA", "TA/Cc/DB", "TA/DB/Cc" };
+static const char *contactOrders[] = { "Ct/DB/TA", "DB/Ct/TA", "TA/Ct/DB", "TA/DB/Ct" };
 
 enum DISPLAY_MENU_LIST { 	DISPLAY_MENU_BRIGHTNESS = 0, DISPLAY_MENU_BRIGHTNESS_OFF, DISPLAY_MENU_CONTRAST, DISPLAY_MENU_BACKLIGHT_MODE, DISPLAY_MENU_TIMEOUT, DISPLAY_MENU_COLOUR_INVERT,
 							DISPLAY_MENU_CONTACT_DISPLAY_ORDER, DISPLAY_MENU_CONTACT_DISPLAY_SPLIT_CONTACT,
@@ -111,7 +111,7 @@ static void updateScreen(void)
 				break;
 			case DISPLAY_MENU_CONTACT_DISPLAY_ORDER:
 				{
-					snprintf(buf, bufferLen, "Order:%s", contactOrders[nonVolatileSettings.contactDisplayPriority]);
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->priority_order, contactOrders[nonVolatileSettings.contactDisplayPriority]);
 				}
 				break;
 			case DISPLAY_MENU_CONTACT_DISPLAY_SPLIT_CONTACT:

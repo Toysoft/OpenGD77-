@@ -20,7 +20,7 @@
  * Translators: DG3GSP, DL4LEX
  *
  *
- * Rev: 3.4
+ * Rev: 3.5
  */
 #ifndef USER_INTERFACE_LANGUAGES_GERMAN_H_
 #define USER_INTERFACE_LANGUAGES_GERMAN_H_
@@ -144,8 +144,9 @@ const stringsTable_t germanLanguage =
 .ptt_toggle				= "PTT bistabil", // MaxLen 16 (with ':' + .on or .off)
 .private_call_handling		= "Anruf Hinw.", // MaxLen 16 (with ':' + .on ot .off)
 .stop					= "Stop", // Maxlen 16 (with ':' + .scan_mode)
-.one_line				= "1 line", // MaxLen 16 (with ':' + .contact)
-.two_lines				= "2 lines", // MaxLen 16 (with ':' + .contact)
+.one_line				= "1 Zeile", // MaxLen 16 (with ':' + .contact)
+.two_lines				= "2 Zeilen", // MaxLen 16 (with ':' + .contact)
+.priority_order				= "Order", // MaxLen 16 (with ':' + 'Cc/DB/TA')
 };
 /********************************************************************
  *
@@ -155,4 +156,4 @@ const stringsTable_t germanLanguage =
  * or emacs on Linux with windows-1252-unix encoding
  *
  ********************************************************************/
-#endif /* USER_INTERFACE_LANGUAGES_GERMAN_H_ */
+#endif /* USER_INTERFACE_LANGUAGES_GERMAN_H  */

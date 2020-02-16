@@ -75,18 +75,37 @@ static struct_codeplugChannel_t channelNextChannelData={.rxFreq=0};
 static bool nextChannelReady = false;
 static uint16_t nextChannelIndex = 0;
 
+
 int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 {
 	static uint32_t m = 0, sqm = 0;
 
 	if (isFirstRun)
 	{
+		LinkItem_t *item = NULL;
+		uint32_t rxID = HRC6000GetReceivedSrcId();
+
 		nonVolatileSettings.initialMenuNumber = MENU_CHANNEL_MODE;// This menu.
 		displayChannelSettings = false;
 		nextChannelReady = false;
+
+		// We're in digital mode, RXing, and current talker is already at the top of last heard list,
+		// hence immediately display complete contact/TG info on screen
+		// This mostly happens when getting out of a menu.
+		if ((trxIsTransmitting == false) && ((trxGetMode() == RADIO_MODE_DIGITAL) && (rxID != 0) && (HRC6000GetReceivedTgOrPcId() != 0)) &&
+				(GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable) == 1) && checkTalkGroupFilter() &&
+				(((item = lastheardFindInList(rxID)) != NULL) && (item == LinkHead)))
+		{
+			menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;
+		}
+		else
+		{
+			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+		}
+
+		lastHeardClearLastID();
 		prevDisplayQSODataState = QSO_DISPLAY_IDLE;
 		currentChannelData = &channelScreenChannelData;// Need to set this as currentChannelData is used by functions called by loadChannelData()
-		lastHeardClearLastID();
 
 		if (channelScreenChannelData.rxFreq != 0)
 		{
@@ -100,8 +119,8 @@ int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 			loadChannelData(false);
 		}
 
-		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		menuChannelModeUpdateScreen(0);
+
 		if (uiChannelModeScanActive==false)
 		{
 			scanState = SCAN_SCANNING;
@@ -695,7 +714,7 @@ static void handleEvent(uiEvent_t *ev)
 				}
 			}
 		}
-		else if (KEYCHECK_SHORTUP(ev->keys, KEY_RIGHT))
+		else if (KEYCHECK_PRESS(ev->keys, KEY_RIGHT))
 		{
 			if (ev->buttons & BUTTON_SK2)
 			{
@@ -1078,7 +1097,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 		switch(gMenusCurrentItemIndex)
 		{
 			case CH_SCREEN_QUICK_MENU_DMR_FILTER:
-				if (tmpQuickMenuDmrFilterLevel < DMR_FILTER_TS)
+				if (tmpQuickMenuDmrFilterLevel < DMR_FILTER_TS_DC)
 				{
 					tmpQuickMenuDmrFilterLevel++;
 				}
