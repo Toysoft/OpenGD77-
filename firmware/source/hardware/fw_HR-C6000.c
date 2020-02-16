@@ -686,12 +686,11 @@ inline static void HRC6000SysReceivedDataInt(void)
 		{
 			int sequenceNumber = (rxDataType & 0x07);
 			// Detect/decode voice packet and transfer it into the output soundbuffer
+#if 0
 			if 	(
 					(
 						(
-							skip_count == 0 &&
-							receivedSrcId != trxDMRID &&
-							receivedSrcId!=0x00 &&
+							(skip_count == 0 || (receivedSrcId != trxDMRID && receivedSrcId!=0x00))  &&
 							rxSyncClass != SYNC_CLASS_DATA	&&
 							sequenceNumber >= 0x01 &&
 							sequenceNumber <= 0x06 &&
@@ -709,6 +708,13 @@ inline static void HRC6000SysReceivedDataInt(void)
 					&&
 					checkTalkGroupFilter()
 				)
+#else
+				if ((skip_count == 0 ||  (receivedSrcId != trxDMRID && receivedSrcId!=0x00)) &&
+				(rxSyncClass!=SYNC_CLASS_DATA) && ( sequenceNumber>= 0x01) && (sequenceNumber <= 0x06) &&
+				(((trxDMRMode == DMR_MODE_PASSIVE) && (checkTimeSlotFilter() && lastTimeCode != timeCode) &&
+				 (rxColorCode == trxGetDMRColourCode())) || (trxDMRMode == DMR_MODE_ACTIVE &&
+				 (slot_state == DMR_STATE_RX_1))) && checkTalkGroupFilter())
+#endif
 			{
 				//SEGGER_RTT_printf(0, "Audio frame %d\t%d\n",sequenceNumber,timeCode);
 				GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1);// Note it may be more effecient to store variable to indicate whether this call needs to be made
