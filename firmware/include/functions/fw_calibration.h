@@ -22,11 +22,6 @@
 #include "fw_common.h"
 #include "fw_SPI_Flash.h"
 
-typedef struct calibrationStruct
-{
-	int masterOscillator;
-	uint8_t powerLevels[16];
-} calibrationStruct_t;
 
 typedef struct calibrationPowerValues
 {
@@ -50,48 +45,6 @@ typedef struct deviationToneStruct
 	uint8_t dcs_narrow;
 } deviationToneStruct_t;
 
-/*
-extern calibrationStruct_t calibrationVHF;
-extern calibrationStruct_t calibrationUHF;
-*/
-
-extern const int PA_DRIVE_LOOKUP[];
-extern const int NUM_PA_DRIVE_INDEXES;
-
-#define EXT_DACDATA_shift 0x0008F05D
-#define EXT_twopoint_mod  0x0008F008
-#define EXT_Q_MOD2_offset 0x0008F00A
-#define EXT_phase_reduce  0x0008F055
-
-#define EXT_pga_gain      0x0008F065
-#define EXT_voice_gain_tx 0x0008F066
-#define EXT_gain_tx       0x0008F067
-#define EXT_padrv_ibit    0x0008F064
-
-#define EXT_xmitter_dev_wideband   0x0008F068
-#define EXT_xmitter_dev_narrowband 0x0008F06A
-
-#define EXT_dac_vgain_analog 0x0008F06C
-#define EXT_volume_analog    0x0008F06D
-
-#define EXT_noise1_th_wideband   0x0008F047
-#define EXT_noise2_th_wideband   0x0008F049
-#define EXT_rssi3_th_wideband    0x0008F04b
-#define EXT_noise1_th_narrowband 0x0008F04d
-#define EXT_noise2_th_narrowband 0x0008F04f
-#define EXT_rssi3_th_narrowband  0x0008F051
-
-#define EXT_squelch_th 0x0008F03f
-
-#define EXT_uhf_dev_tone          0x0008F05E
-#define EXT_vhf_dev_tone          0x0008F0CE
-
-#define CAL_DEV_DTMF			0
-#define CAL_DEV_TONE			1
-#define CAL_DEV_CTCSS_WIDE		2
-#define CAL_DEV_CTCSS_NARROW	3
-#define CAL_DEV_DCS_WIDE		4
-#define CAL_DEV_DCS_NARROW		5
 
 void read_val_DACDATA_shift(int offset, uint8_t* val_shift);
 void read_val_twopoint_mod(int offset, uint8_t* val_0x47, uint8_t* val_0x48);

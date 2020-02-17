@@ -49,8 +49,8 @@ const frequencyBand_t RADIO_FREQUENCY_BANDS[RADIO_BANDS_TOTAL_NUM] =  {
 														.maxFreq=52000000
 													}// UHF
 };
-static const int TRX_SQUELCH_MAX = 70;
 
+static const int TRX_SQUELCH_MAX = 70;
 const int TRX_CTCSS_TONE_NONE = 65535;
 const int TRX_NUM_CTCSS=52;
 const unsigned int TRX_CTCSSTones[]={65535,625,670,693,719,744,770,797,825,854,
@@ -59,12 +59,14 @@ const unsigned int TRX_CTCSSTones[]={65535,625,670,693,719,744,770,797,825,854,
 										1567,1598,1622,1655,1679,1713,1738,1773,
 										1799,1835,1862,1899,1928,1966,1995,2035,
 										2065,2107,2181,2257,2291,2336,2418,2503,2541};
-const int BAND_VHF_MIN 	= 14400000;
-const int BAND_VHF_MAX 	= 14800000;
-const int BAND_222_MIN 	= 22200000;
-const int BAND_222_MAX 	= 22500000;
-const int BAND_UHF_MIN 	= 42000000;
-const int BAND_UHF_MAX 	= 45000000;
+static const int BAND_VHF_MIN 	= 14400000;
+static const int BAND_VHF_MAX 	= 14800000;
+static const int BAND_222_MIN 	= 22200000;
+static const int BAND_222_MAX 	= 22500000;
+static const int BAND_UHF_MIN 	= 42000000;
+static const int BAND_UHF_MAX 	= 45000000;
+
+enum CAL_DEV_TONE_INDEXES { CAL_DEV_DTMF = 0, CAL_DEV_TONE = 1, CAL_DEV_CTCSS_WIDE	= 2,CAL_DEV_CTCSS_NARROW = 3,CAL_DEV_DCS_WIDE = 4, CAL_DEV_DCS_NARROW	= 5};
 
 static int currentMode = RADIO_MODE_NONE;
 static bool currentBandWidthIs25kHz = BANDWIDTH_12P5KHZ;

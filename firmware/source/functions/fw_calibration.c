@@ -20,9 +20,36 @@
 #include "fw_calibration.h"
 #include "fw_trx.h"
 
-// This lookup gives an approximate proportion of power needed for power settings from 0 to 5w in 0.25 W steps, where 32768 is 100% of whatever PA drive is required for 5W
-const int PA_DRIVE_LOOKUP[] = {0,3315,5482,7395,8925,10455,11730,13005,14152,15300,16702,17977,19380,20655,22440,23715,25117,27030,28624,30855,32768};
-const int NUM_PA_DRIVE_INDEXES = 20;// not including zero
+static const uint32_t EXT_DACDATA_shift 			= 0x0008F05D;
+static const uint32_t EXT_twopoint_mod  			= 0x0008F008;
+static const uint32_t EXT_Q_MOD2_offset 			= 0x0008F00A;
+static const uint32_t EXT_phase_reduce  			= 0x0008F055;
+
+static const uint32_t EXT_pga_gain      			= 0x0008F065;
+static const uint32_t EXT_voice_gain_tx 			= 0x0008F066;
+static const uint32_t EXT_gain_tx       			= 0x0008F067;
+static const uint32_t EXT_padrv_ibit    			= 0x0008F064;
+
+static const uint32_t EXT_xmitter_dev_wideband		= 0x0008F068;
+static const uint32_t EXT_xmitter_dev_narrowband	= 0x0008F06A;
+
+static const uint32_t EXT_dac_vgain_analog 			= 0x0008F06C;
+static const uint32_t EXT_volume_analog    			= 0x0008F06D;
+
+static const uint32_t EXT_noise1_th_wideband   		= 0x0008F047;
+static const uint32_t EXT_noise2_th_wideband   		= 0x0008F049;
+static const uint32_t EXT_rssi3_th_wideband    		= 0x0008F04b;
+static const uint32_t EXT_noise1_th_narrowband 		= 0x0008F04d;
+static const uint32_t EXT_noise2_th_narrowband 		= 0x0008F04f;
+static const uint32_t EXT_rssi3_th_narrowband  		= 0x0008F051;
+
+static const uint32_t EXT_squelch_th 				= 0x0008F03f;
+
+static const uint32_t EXT_uhf_dev_tone				= 0x0008F05E;
+static const uint32_t EXT_vhf_dev_tone				= 0x0008F0CE;
+
+static const uint32_t POWER_ADDRESS_UHF_400MHZ 		= 0x8F00B;//UHF is in 5Mhz bands starting at 400Mhz.
+static const uint32_t POWER_ADDRESS_VHF_135MHZ 		= 0x8F07B;//VHF is in 5Mhz bands from 135Mhz (Only first 8 entries are used)
 
 /*
 calibrationStruct_t calibrationVHF;
@@ -192,8 +219,6 @@ void read_val_squelch_th(int offset, int mod, uint16_t* value)				//Sent to At18
 
 bool calibrationGetPowerForFrequency(int freq, calibrationPowerValues_t *powerSettings)				//Power Settings for Transmit
 {																							        //16 Entries of two bytes each.
-	const uint32_t POWER_CALIBRATION_ADDRESS_UHF_400MHZ = 0x8F00B;									//UHF is in 5Mhz bands starting at 400Mhz.
-	const uint32_t POWER_CALIBRATION_ADDRESS_VHF_135MHZ = 0x8F07B;									//VHF is in 5Mhz bands from 135Mhz (Only first 8 entries are used)
 	int address;																					//first byte of each entry  is the low power and the second byte is the high power value
 	uint8_t buffer[2];
 
@@ -213,7 +238,7 @@ bool calibrationGetPowerForFrequency(int freq, calibrationPowerValues_t *powerSe
 				address = 15;
 			}
 		}
-		address = POWER_CALIBRATION_ADDRESS_UHF_400MHZ + ( address * 2);
+		address = POWER_ADDRESS_UHF_400MHZ + ( address * 2);
 
 	}
 	else
@@ -231,7 +256,7 @@ bool calibrationGetPowerForFrequency(int freq, calibrationPowerValues_t *powerSe
 				address = 7;
 			}
 		}
-		address = POWER_CALIBRATION_ADDRESS_VHF_135MHZ +   (address * 2);
+		address = POWER_ADDRESS_VHF_135MHZ +   (address * 2);
 	}
 
 	SPI_Flash_read(address,buffer,2);
