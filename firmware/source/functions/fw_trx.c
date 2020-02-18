@@ -249,7 +249,8 @@ void trx_check_analog_squelch(void)
 			}
 			if(!rxCTCSSactive || (rxCTCSSactive & trxCheckCTCSSFlag()))
 			{
-				GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1); // speaker on
+				//GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1); // speaker on
+				enableDisableAmp (AMP_MODE_RF, 1);
 			}
 		}
 		else
@@ -257,7 +258,8 @@ void trx_check_analog_squelch(void)
 			analogSignalReceived = false;
 			if (trxIsTransmittingTone == false)
 			{
-				GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0); // speaker off
+				//GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0); // speaker off
+				enableDisableAmp (AMP_MODE_RF, 0);
 				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 			}
 		}

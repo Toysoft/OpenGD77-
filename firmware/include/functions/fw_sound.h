@@ -93,4 +93,14 @@ void setup_soundBuffer(void);
 void tick_melody(void);
 void fw_beep_task(void *data);
 
+typedef enum
+{
+	AMP_MODE_NONE = 0,
+	AMP_MODE_BEEP,
+	AMP_MODE_RF
+} AmpMode_t;
+
+uint8_t getAmpStatus(void);
+void enableDisableAmp (uint8_t mode, int enable);
+
 #endif /* _FW_SOUND_H_ */
