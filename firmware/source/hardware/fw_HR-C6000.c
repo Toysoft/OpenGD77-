@@ -121,6 +121,9 @@ static void triggerQSOdataDisplay(void);
 
 enum RXSyncClass { SYNC_CLASS_HEADER = 0, SYNC_CLASS_VOICE = 1, SYNC_CLASS_DATA = 2, SYNC_CLASS_RC = 3};
 
+static const int START_TICK_TIMEOUT = 20;
+static const int END_TICK_TIMEOUT 	= 13;
+
 void SPI_HR_C6000_init(void)
 {
     // C6000 interrupts
@@ -1180,9 +1183,6 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 		default:
 			break;
 	}
-
-#define START_TICK_TIMEOUT 20
-#define END_TICK_TIMEOUT 2
 
 	// Timeout interrupted RX
 	if (slot_state < DMR_STATE_TX_START_1)
