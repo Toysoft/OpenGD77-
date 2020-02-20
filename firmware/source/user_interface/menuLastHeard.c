@@ -43,6 +43,7 @@ int menuLastHeard(uiEvent_t *ev, bool isFirstRun)
 		// do live update by checking if the item at the top of the list has changed
 		if ((gMenusStartIndex != LinkHead->id) || (menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA))
 		{
+			displayLightTrigger();
 			gMenusStartIndex = LinkHead->id;
 			gMenusCurrentItemIndex = 0;
 			gMenusEndIndex = 0;
