@@ -2367,8 +2367,7 @@ static void handleHotspotRequest(void)
 			enableTransmission();
 
 			trxSelectVoiceChannel(AT1846_VOICE_CHANNEL_TONE1);
-			//GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1);
-			enableDisableAmp (AMP_MODE_RF, 1);
+			enableDisableAmp (AMP_MODE_RF, true);
 			GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 1);
 
 			updateScreen(HOTSPOT_RX_IDLE);
@@ -2390,8 +2389,7 @@ static void handleHotspotRequest(void)
 				{
 					trxSetModeAndBandwidth(RADIO_MODE_DIGITAL, false);
 					trxSelectVoiceChannel(AT1846_VOICE_CHANNEL_MIC);
-					//GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
-					enableDisableAmp (AMP_MODE_RF, 0);
+					enableDisableAmp (AMP_MODE_RF, false);
 				}
 			}
 

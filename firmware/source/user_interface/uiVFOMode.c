@@ -721,8 +721,7 @@ static void handleEvent(uiEvent_t *ev)
 						nonVolatileSettings.tsManualOverride &= 0x0F;// Clear upper nibble value
 						nonVolatileSettings.tsManualOverride |= (trxGetDMRTimeSlot()+1)<<4;// Store manual TS override for VFO in upper nibble
 
-						//init_digital();
-						enableDisableAmp (AMP_MODE_RF, 0);
+						enableDisableAmp (AMP_MODE_RF, false);
 						clearActiveDMRID();
 						lastHeardClearLastID();
 						menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
@@ -1200,8 +1199,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 					scanTimer=TONESCANINTERVAL;
 					scanIndex=1;
 					trxSetRxCTCSS(TRX_CTCSSTones[scanIndex]);
-					//GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable,0);// turn off the audio amp
-					enableDisableAmp (AMP_MODE_RF, 0);
+					enableDisableAmp (AMP_MODE_RF, false);
 				}
 				else
 				{

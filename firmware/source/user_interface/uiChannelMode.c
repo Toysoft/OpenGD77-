@@ -850,7 +850,7 @@ static void handleEvent(uiEvent_t *ev)
 					nonVolatileSettings.tsManualOverride |= (trxGetDMRTimeSlot()+1);// Store manual TS override
 
 					//	init_digital();
-					enableDisableAmp (AMP_MODE_RF, 0);
+					enableDisableAmp (AMP_MODE_RF, false);
 					clearActiveDMRID();
 					lastHeardClearLastID();
 					menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;

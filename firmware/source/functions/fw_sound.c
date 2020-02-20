@@ -90,13 +90,20 @@ uint8_t getAmpStatus(void) {
 	return ampStatusMask;
 }
 
-void enableDisableAmp (uint8_t mode, int enable)
+void enableDisableAmp (uint8_t mode, bool enable)
 {
-	if (enable) {
-		ampStatusMask |= mode;
-		GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1);
+	bool wasEnabled = ampStatusMask;
 
-	} else {
+	if (enable)
+	{
+		ampStatusMask |= mode;
+
+		if (wasEnabled == 0)
+		{
+			GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1);
+		}
+	} else
+	{
 		ampStatusMask &= ~mode;
 
 		if (ampStatusMask == 0)
@@ -393,8 +400,6 @@ void tick_melody(void)
 			{
 				if (trxGetMode() == RADIO_MODE_ANALOG)
 				{
-					//GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);// Mute the speaker, otherwise there will be a burst of squelch noise until the next tick in HR-C6000
-					enableDisableAmp (AMP_MODE_BEEP, 0);
 					GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 1);// Set the audio path to AT1846 -> audio amp.
 				}
 				else
@@ -406,15 +411,14 @@ void tick_melody(void)
 
 					}*/
 				}
-				enableDisableAmp (AMP_MODE_BEEP, 0);
+				enableDisableAmp (AMP_MODE_BEEP, false);
 			    set_melody(NULL);
 			}
 			else
 			{
 				if (melody_idx==0)
 				{
-				    //GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1);// enable the speaker (audio amplifier)
-				    enableDisableAmp (AMP_MODE_BEEP, 1);
+				    enableDisableAmp (AMP_MODE_BEEP, true);
 				    if (trxGetMode() == RADIO_MODE_ANALOG)
 					{
 					    GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 0);// set the audio mux   HR-C6000 -> audio amp
