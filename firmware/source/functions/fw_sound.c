@@ -92,13 +92,13 @@ uint8_t getAmpStatus(void) {
 
 void enableDisableAmp (uint8_t mode, bool enable)
 {
-	bool wasEnabled = ampStatusMask;
+	bool wasEnabled = (ampStatusMask != 0x0);
 
 	if (enable)
 	{
 		ampStatusMask |= mode;
 
-		if (wasEnabled == 0)
+		if (!wasEnabled)
 		{
 			GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1);
 		}
