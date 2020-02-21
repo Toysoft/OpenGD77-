@@ -231,7 +231,7 @@ static void handleEvent(uiEvent_t *ev)
 				trxIsTransmittingTone = true;
 				trxSetTone1(1750);
 				trxSelectVoiceChannel(AT1846_VOICE_CHANNEL_TONE1);
-				enableDisableAmp (AMP_MODE_RF, true);
+				enableAudioAmp(AUDIO_AMP_MODE_RF);
 				GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 1);
 			}
 			else
@@ -243,7 +243,7 @@ static void handleEvent(uiEvent_t *ev)
 					trxSetDTMF(keyval);
 					trxIsTransmittingTone = true;
 					trxSelectVoiceChannel(AT1846_VOICE_CHANNEL_DTMF);
-					enableDisableAmp (AMP_MODE_RF, true);
+					enableAudioAmp(AUDIO_AMP_MODE_RF);
 					GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 1);
 				}
 			}
@@ -255,7 +255,7 @@ static void handleEvent(uiEvent_t *ev)
 	{
 		trxIsTransmittingTone = false;
 		trxSelectVoiceChannel(AT1846_VOICE_CHANNEL_MIC);
-		enableDisableAmp (AMP_MODE_RF, false);
+		disableAudioAmp(AUDIO_AMP_MODE_RF);
 	}
 
 	if (trxGetMode() == RADIO_MODE_DIGITAL && (ev->buttons & BUTTON_SK1) && isShowingLastHeard==false && trxIsTransmitting==true)

@@ -249,7 +249,7 @@ void trx_check_analog_squelch(void)
 			}
 			if(!rxCTCSSactive || (rxCTCSSactive & trxCheckCTCSSFlag()))
 			{
-				enableDisableAmp (AMP_MODE_RF, true);
+				enableAudioAmp(AUDIO_AMP_MODE_RF);
 			}
 		}
 		else
@@ -257,7 +257,7 @@ void trx_check_analog_squelch(void)
 			analogSignalReceived = false;
 			if (trxIsTransmittingTone == false)
 			{
-				enableDisableAmp (AMP_MODE_RF, false);
+				disableAudioAmp(AUDIO_AMP_MODE_RF);
 				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 			}
 		}

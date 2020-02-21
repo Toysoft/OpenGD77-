@@ -641,7 +641,7 @@ inline static void HRC6000SysReceivedDataInt(void)
 		{
 			if (checkTimeSlotFilter() && (lastTimeCode != timeCode))
 			{
-				enableDisableAmp (AMP_MODE_RF, false);
+				disableAudioAmp(AUDIO_AMP_MODE_RF);
 			}
 		}
 	}
@@ -717,7 +717,7 @@ inline static void HRC6000SysReceivedDataInt(void)
 #endif
 			{
 				//SEGGER_RTT_printf(0, "Audio frame %d\t%d\n",sequenceNumber,timeCode);
-				enableDisableAmp (AMP_MODE_RF, true);
+				enableAudioAmp(AUDIO_AMP_MODE_RF);
 				if (sequenceNumber == 1)
 				{
 					triggerQSOdataDisplay();
@@ -888,7 +888,7 @@ inline static void HRC6000SysInterruptHandler(void)
 
 static void HRC6000TransitionToTx(void)
 {
-	enableDisableAmp (AMP_MODE_RF, false);
+	disableAudioAmp(AUDIO_AMP_MODE_RF);
 	GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 	init_codec();
 
@@ -967,7 +967,7 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 		case DMR_STATE_RX_END: // Stop RX
 			clearActiveDMRID();
 			init_digital_DMR_RX();
-			enableDisableAmp (AMP_MODE_RF, false);
+			disableAudioAmp(AUDIO_AMP_MODE_RF);
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 			menuDisplayQSODataState= QSO_DISPLAY_DEFAULT_SCREEN;
 			slot_state = DMR_STATE_IDLE;
@@ -1190,7 +1190,7 @@ inline static void HRC6000TimeslotInterruptHandler(void)
         {
 			init_digital_DMR_RX();
 			clearActiveDMRID();
-			enableDisableAmp (AMP_MODE_RF, false);
+			disableAudioAmp(AUDIO_AMP_MODE_RF);
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 			tick_cnt=0;
 			menuDisplayQSODataState= QSO_DISPLAY_DEFAULT_SCREEN;
@@ -1202,7 +1202,7 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 			{
 				init_digital_DMR_RX();
 				clearActiveDMRID();
-				enableDisableAmp (AMP_MODE_RF, false);
+				disableAudioAmp(AUDIO_AMP_MODE_RF);
 				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 				tick_cnt=0;
 				menuDisplayQSODataState= QSO_DISPLAY_DEFAULT_SCREEN;
@@ -1258,7 +1258,7 @@ void init_digital_DMR_RX(void)
 
 void init_digital(void)
 {
-	enableDisableAmp (AMP_MODE_RF, 0);
+	disableAudioAmp(AUDIO_AMP_MODE_RF);
     GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, false);
     timeCode = -1;// Clear current timecode synchronisation
 	init_digital_DMR_RX();
@@ -1269,7 +1269,7 @@ void init_digital(void)
 
 void terminate_digital(void)
 {
-	enableDisableAmp (AMP_MODE_RF, false);
+	disableAudioAmp(AUDIO_AMP_MODE_RF);
     GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 	init_digital_state();
     NVIC_DisableIRQ(PORTC_IRQn);

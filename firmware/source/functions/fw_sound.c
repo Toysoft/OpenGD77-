@@ -84,32 +84,33 @@ int soundBeepVolumeDivider;
 
 
 
-static uint8_t ampStatusMask = 0;
+static uint8_t audioAmpStatusMask = 0;
 
-uint8_t getAmpStatus(void) {
-	return ampStatusMask;
+uint8_t getAudioAmpStatus(void) {
+	return audioAmpStatusMask;
 }
 
-void enableDisableAmp (uint8_t mode, bool enable)
+
+
+void enableAudioAmp (uint8_t mode)
 {
-	bool wasEnabled = (ampStatusMask != 0x0);
+	bool wasEnabled = (audioAmpStatusMask != 0x0);
 
-	if (enable)
+	audioAmpStatusMask |= mode;
+
+	if (!wasEnabled)
 	{
-		ampStatusMask |= mode;
+		GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1);
+	}
+}
 
-		if (!wasEnabled)
-		{
-			GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1);
-		}
-	} else
+void disableAudioAmp (uint8_t mode)
+{
+	audioAmpStatusMask &= ~mode;
+
+	if (audioAmpStatusMask == 0)
 	{
-		ampStatusMask &= ~mode;
-
-		if (ampStatusMask == 0)
-		{
-			GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
-		}
+		GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
 	}
 }
 
@@ -411,14 +412,14 @@ void tick_melody(void)
 
 					}*/
 				}
-				enableDisableAmp (AMP_MODE_BEEP, false);
+				disableAudioAmp(AUDIO_AMP_MODE_BEEP);
 			    set_melody(NULL);
 			}
 			else
 			{
 				if (melody_idx==0)
 				{
-				    enableDisableAmp (AMP_MODE_BEEP, true);
+					enableAudioAmp(AUDIO_AMP_MODE_BEEP);
 				    if (trxGetMode() == RADIO_MODE_ANALOG)
 					{
 					    GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 0);// set the audio mux   HR-C6000 -> audio amp
