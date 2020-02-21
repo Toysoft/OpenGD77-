@@ -49,7 +49,7 @@ uint32_t menuUtilityReceivedPcId 	= 0;// No current Private call awaiting accept
 uint32_t menuUtilityTgBeforePcMode 	= 0;// No TG saved, prior to a Private call being accepted.
 
 const char *POWER_LEVELS[]={ "50mW","250mW","500mW","750mW","1W","2W","3W","4W","5W","5W++"};
-const char *DMR_FILTER_LEVELS[]={"None","TS","TS,TG","TS,Ct"};
+const char *DMR_FILTER_LEVELS[]={"None","CC","CC,TS","CC,TS,TG","CC,TS,Ct"};
 
 volatile uint32_t lastID=0;// This needs to be volatile as lastHeardClearLastID() is called from an ISR
 uint32_t lastTG=0;
@@ -1126,19 +1126,19 @@ void menuUtilityRenderHeader(void)
 			{
 				const int DMR_TEXT_X_OFFSET = 1;
 //				(trxGetMode() == RADIO_MODE_DIGITAL && settingsPrivateCallMuteMode == true)?" MUTE":"");// The location that this was displayed is now used for the power level
-				if (!scanBlinkPhase && (nonVolatileSettings.dmrFilterLevel > DMR_FILTER_TS))
+				if (!scanBlinkPhase && (nonVolatileSettings.dmrFilterLevel > DMR_FILTER_CC_TS))
 				{
 					ucFillRect(0, Y_OFFSET - 1, 20, 9, false);
 				}
 				if (!scanBlinkPhase)
 				{
-					bool isInverted = scanBlinkPhase ^ (nonVolatileSettings.dmrFilterLevel > DMR_FILTER_TS);
+					bool isInverted = scanBlinkPhase ^ (nonVolatileSettings.dmrFilterLevel > DMR_FILTER_CC_TS);
 					ucPrintCore(DMR_TEXT_X_OFFSET, Y_OFFSET, "DMR", ((nonVolatileSettings.hotspotType != HOTSPOT_TYPE_OFF) ? FONT_6x8_BOLD : FONT_6x8), TEXT_ALIGN_LEFT, isInverted);
 				}
 
 				snprintf(buffer, bufferLen, "%s%d", currentLanguage->ts, trxGetDMRTimeSlot() + 1);
 				buffer[bufferLen - 1] = 0;
-				if (nonVolatileSettings.dmrFilterLevel < DMR_FILTER_TS)
+				if (nonVolatileSettings.dmrFilterLevel < DMR_FILTER_CC_TS)
 				{
 					ucFillRect(20, Y_OFFSET - 1, 21, 9, false);
 					ucPrintCore(22, Y_OFFSET, buffer, FONT_6x8, TEXT_ALIGN_LEFT, true);
@@ -1179,13 +1179,26 @@ void menuUtilityRenderHeader(void)
 	{
 		// In hotspot mode the CC is show as part of the rest of the display and in Analogue mode the CC is meaningless
 		snprintf(buffer, bufferLen, "%d%%", batteryPerentage);
+		buffer[bufferLen - 1] = 0;
+		ucPrintCore(0, Y_OFFSET, buffer, FONT_6x8, TEXT_ALIGN_RIGHT, false);// Display battery percentage at the right
 	}
 	else
 	{
-		snprintf(buffer, bufferLen, "C%d %d%%", trxGetDMRColourCode(), batteryPerentage);
+		const int COLOR_CODE_X_POSITION = 84;
+		int ccode = trxGetDMRColourCode();
+		snprintf(buffer, bufferLen, "C%d", ccode);
+		if (nonVolatileSettings.dmrFilterLevel == DMR_FILTER_NONE )
+		{
+			ucFillRect(COLOR_CODE_X_POSITION - 1, Y_OFFSET - 1,18 + (ccode > 9) ,9,false);
+		}
+
+		ucPrintCore(COLOR_CODE_X_POSITION, Y_OFFSET, buffer, FONT_6x8, TEXT_ALIGN_LEFT, nonVolatileSettings.dmrFilterLevel == DMR_FILTER_NONE);
+
+		snprintf(buffer, bufferLen, "%d%%", batteryPerentage);
+		buffer[bufferLen - 1] = 0;
+		ucPrintCore(0, Y_OFFSET, buffer, FONT_6x8, TEXT_ALIGN_RIGHT, false);// Display battery percentage at the right
 	}
-	buffer[bufferLen - 1] = 0;
-	ucPrintCore(0, Y_OFFSET, buffer, FONT_6x8, TEXT_ALIGN_RIGHT, false);// Display battery percentage at the right
+
 }
 
 void drawRSSIBarGraph(void)

@@ -27,7 +27,7 @@
 
 static const int STORAGE_BASE_ADDRESS 		= 0x6000;
 
-static const int STORAGE_MAGIC_NUMBER 		= 0x4742;
+static const int STORAGE_MAGIC_NUMBER 		= 0x4743;
 
 
 settingsStruct_t nonVolatileSettings;
@@ -64,6 +64,8 @@ bool settingsLoadSettings(void)
 	settingsInitVFOChannel(1);
 
 	trxDMRID = codeplugGetUserDMRID();
+
+	HRC6000SetCCFilterMode(nonVolatileSettings.dmrFilterLevel==DMR_FILTER_NONE);
 
 	currentLanguage = &languages[nonVolatileSettings.languageIndex];
 
@@ -150,7 +152,7 @@ void settingsRestoreDefaultSettings(void)
 	nonVolatileSettings.keypadTimerLong = 5;
 	nonVolatileSettings.keypadTimerRepeat = 3;
 	nonVolatileSettings.currentVFONumber = 0;
-	nonVolatileSettings.dmrFilterLevel = DMR_FILTER_TS;
+	nonVolatileSettings.dmrFilterLevel = DMR_FILTER_CC_TS;
 	nonVolatileSettings.dmrCaptureTimeout=10;// Default to holding 10 seconds after a call ends
 	nonVolatileSettings.languageIndex=0;
 	nonVolatileSettings.scanDelay=5;// 5 seconds

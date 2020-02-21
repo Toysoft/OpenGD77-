@@ -1080,13 +1080,13 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 				break;
 			case CH_SCREEN_QUICK_MENU_COPY_FROM_VFO:
 				memcpy(&channelScreenChannelData.rxFreq,&settingsVFOChannel[nonVolatileSettings.currentVFONumber].rxFreq,sizeof(struct_codeplugChannel_t)- 16);// Don't copy the name of the vfo, which are in the first 16 bytes
-
 				codeplugChannelSaveDataForIndex(settingsCurrentChannelNumber,&channelScreenChannelData);
-
 				menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
 				break;
 			case CH_SCREEN_QUICK_MENU_DMR_FILTER:
 				nonVolatileSettings.dmrFilterLevel = tmpQuickMenuDmrFilterLevel;
+				HRC6000SetCCFilterMode(nonVolatileSettings.dmrFilterLevel==DMR_FILTER_NONE);
+				init_digital_DMR_RX();
 				menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
 				break;
 		}
@@ -1097,7 +1097,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 		switch(gMenusCurrentItemIndex)
 		{
 			case CH_SCREEN_QUICK_MENU_DMR_FILTER:
-				if (tmpQuickMenuDmrFilterLevel < DMR_FILTER_TS_DC)
+				if (tmpQuickMenuDmrFilterLevel < DMR_FILTER_CC_TS_DC)
 				{
 					tmpQuickMenuDmrFilterLevel++;
 				}

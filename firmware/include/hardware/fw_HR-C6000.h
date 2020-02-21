@@ -96,5 +96,6 @@ bool checkTalkGroupFilter(void);
 int HRC6000GetReceivedTgOrPcId(void);
 int HRC6000GetReceivedSrcId(void);
 void HRC6000ClearTimecodeSynchronisation(void);
+void HRC6000SetCCFilterMode(bool enable);
 
 #endif /* _FW_HR_C6000_H_ */
