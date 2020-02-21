@@ -17,10 +17,10 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 /*
- * Translators: EA3IGM, EA5SW
+ * Translators: EA3IGM, EA5SW, EB3AM, EA3BIL
  *
  *
- * Rev: 3
+ * Rev: 4
  */
 #ifndef USER_INTERFACE_LANGUAGES_CATALAN_H_
 #define USER_INTERFACE_LANGUAGES_CATALAN_H_
@@ -39,13 +39,13 @@ const stringsTable_t catalanLanguage=
 .menu					= "Menú",
 .credits				= "Crèdits",
 .zone					= "Zona",
-.rssi					= "RSSI",
-.battery				= "Bateria",
+.rssi					= "Senyal",
+.battery				= "Batería",
 .contacts				= "Contactes",
 .firmware_info			= "Info firmware",
 .last_heard				= "Escoltats",
 .options				= "Opcions",
-.display_options		= "Opcions display",
+.display_options		= "Opcions pantalla",
 .channel_details		= "Detalls Canal",
 .new_contact			= "Nou contacte",
 .new_channel			= "Nou canal", // MaxLen: 16, leave room for a space and four channel digits after
@@ -66,57 +66,57 @@ const stringsTable_t catalanLanguage=
 .out_of_band			= "FORA DE BANDA",
 .timeout				= "TIMEOUT",
 .tg_entry				= "Entreu TG",
-.pc_entry				= "Entreu PC",
+.pc_entry				= "Entreu ID",
 .user_dmr_id			= "ID DMR d'Usuari",
 .contact				= "Contacte",
-.accept_call			= "Acceptar PC?",
+.accept_call			= "Acceptar trucada?",
 .private_call			= "Trucada privada",
 .squelch				= "Squelch",
 .quick_menu				= "Menú Ràpid",
 .filter					= "Filtre",
-.all_channels			= "Tots Canals",
-.gotoChannel			= "Anar canal",
+.all_channels			= "Tots els Canals",
+.gotoChannel			= "Anar al canal",
 .scan					= "Scan",
-.channelToVfo			= "Canal --> VFO",
-.vfoToChannel			= "VFO --> Canal",
-.vfoToNewChannel		= "VFO --> Nou Can", // MaxLen: 16
+.channelToVfo			= "Canal -> VFO",
+.vfoToChannel			= "VFO -> Canal",
+.vfoToNewChannel		= "VFO -> Nou Canal", // MaxLen: 16
 .group					= "Grup",
 .private				= "Privada",
 .all					= "Tots",
 .type					= "Tipus",
-.timeSlot				= "Timeslot",
+.timeSlot				= "TimeSlot",
 .none					= "Cap",
 .contact_saved			= "Contacte Desat",
 .duplicate				= "Duplicat",
 .tg						= "TG",
-.pc						= "PC",
-.ts						= "TS",
+.pc						= "ID",
+.ts						= "TimeSlot",
 .mode					= "Mode",
 .colour_code			= "Codi Color",
-.n_a					= "N/A",
+.n_a					= "N/D",
 .bandwidth				= "Ample banda",
-.stepFreq				= "Pases",
+.stepFreq				= "Salt",
 .tot					= "TOT",
-.off					= "Off",
-.zone_skip				= "Zone Skip",
-.all_skip				= "All Skip",
+.off					= "NO",
+.zone_skip				= "Saltar zona",
+.all_skip				= "Saltar tot",
 .yes					= "Sí",
 .no						= "No",
-.rx_group				= "Grup RX",
-.on						= "On",
-.timeout_beep			= "So timeout",
+.rx_group				= "Llista TG/ID",
+.on						= "Sí",
+.timeout_beep			= "Avís de temps",
 .factory_reset			= "Reinici fabr.",
-.calibration			= "Calibratge",
-.band_limits			= "Limit bandes",
-.beep_volume			= "Volum so",
-.dmr_mic_gain			= "Guany DMR",
-.key_long				= "Key long",
-.key_repeat				= "Key rpt",
+.calibration			= "Calibració",
+.band_limits			= "Límit bandes",
+.beep_volume			= "Volum tons",
+.dmr_mic_gain			= "Mic DMR",
+.key_long				= "Prem llarg",
+.key_repeat				= "Prem rpt",
 .dmr_filter_timeout		= "Filtre temps",
 .brightness				= "Brillantor",
 .brightness_off			= "Brillan. min",
 .contrast				= "Contrast",
-.colour_invert			= "Color:Invertit",
+.colour_invert			= "Color:Invers",
 .colour_normal			= "Color:Normal",
 .backlight_timeout		= "Temps llum",
 .scan_delay				= "Temps Scan",
@@ -124,29 +124,29 @@ const stringsTable_t catalanLanguage=
 .NO						= "No",
 .DISMISS				= "PASSAR",
 .scan_mode				= "Mode Scan",
-.hold					= "Deten",
+.hold					= "Parar",
 .pause					= "Pausa",
 .empty_list				= "Llista buida",
 .delete_contact_qm		= "Esborrar ctte?",
 .contact_deleted		= "Ctte esborrat",
-.contact_used			= "Ctte en ús",
-.in_rx_group			= "en RX grup",
+.contact_used			= "Ctte en ús a",
+.in_rx_group			= "la Llista TG/ID",
 .select_tx				= "Selec. TX",
 .edit_contact			= "Editar Ctte",
 .delete_contact			= "Esborrar Ctte",
 .group_call				= "Cridar a Grup",
 .all_call				= "Cridar a Tots",
-.tone_scan				= "Scan To",//// MaxLen: 16
-.cc_scan				= "Scan CC",//// MaxLen: 16
+.tone_scan				= "Scan CCTCS",//// MaxLen: 16
+.cc_scan				= "Scan CColor",//// MaxLen: 16
 .low_battery			= "BATERIA BAIXA !!",//// MaxLen: 16
 .Auto					= "Auto", // MaxLen 16 (with .mode + ':') 
 .manual					= "Manual",  // MaxLen 16 (with .mode + ':') 
-.ptt_toggle				= "PTT Fixat", // MaxLen 16 (with ':' + .on or .off)
-.private_call_handling			= "Handle PC", // MaxLen 16 (with ':' + .on ot .off)
+.ptt_toggle				= "Enclavar PTT", // MaxLen 16 (with ':' + .on or .off)
+.private_call_handling	= "Gestió PC", // MaxLen 16 (with ':' + .on ot .off)
 .stop					= "Stop", // Maxlen 16 (with ':' + .scan_mode)
-.one_line				= "1 line", // MaxLen 16 (with ':' + .contact)
-.two_lines				= "2 lines", // MaxLen 16 (with ':' + .contact)
-.priority_order				= "Order", // MaxLen 16 (with ':' + 'Cc/DB/TA')
+.one_line				= "1 línia", // MaxLen 16 (with ':' + .contact)
+.two_lines				= "2 linies", // MaxLen 16 (with ':' + .contact)
+.priority_order			= "Prio.", // MaxLen 16 (with ':' + 'Cc/DB/TA')
 };
 /********************************************************************
  *
