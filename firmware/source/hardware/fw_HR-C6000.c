@@ -969,7 +969,7 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 			slot_state = DMR_STATE_TX_START_2;
 			break;
 		case DMR_STATE_TX_START_2: // Start TX (third step)
-			//write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50); 	//Receive during next Timeslot (no Layer 2 Access)
+			//write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50 | colourCodeFilterControlMask); 	//Receive during next Timeslot (no Layer 2 Access)
 			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00 | colourCodeFilterControlMask); 	//Do nothing on the next TS
 			slot_state = DMR_STATE_TX_START_3;
 			break;
