@@ -82,7 +82,7 @@ typedef struct settingsStruct
 
 } settingsStruct_t;
 
-typedef enum DMR_FILTER_TYPE {DMR_FILTER_NONE = 0, DMR_FILTER_TS, DMR_FILTER_TS_TG, DMR_FILTER_TS_DC ,
+typedef enum DMR_FILTER_TYPE {DMR_FILTER_NONE = 0, DMR_FILTER_CC, DMR_FILTER_CC_TS, DMR_FILTER_CC_TS_TG, DMR_FILTER_CC_TS_DC ,
 								NUM_DMR_FILTER_LEVELS} dmrFilter_t;
 
 extern settingsStruct_t nonVolatileSettings;
