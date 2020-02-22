@@ -1189,7 +1189,7 @@ void menuUtilityRenderHeader(void)
 		snprintf(buffer, bufferLen, "C%d", ccode);
 		if (nonVolatileSettings.dmrFilterLevel == DMR_FILTER_NONE )
 		{
-			ucFillRect(COLOR_CODE_X_POSITION - 1, Y_OFFSET - 1,18 + (ccode > 9) ,9,false);
+			ucFillRect(COLOR_CODE_X_POSITION - 1, Y_OFFSET - 1,13 + ((ccode > 9)*6) ,9,false);
 		}
 
 		ucPrintCore(COLOR_CODE_X_POSITION, Y_OFFSET, buffer, FONT_6x8, TEXT_ALIGN_LEFT, nonVolatileSettings.dmrFilterLevel == DMR_FILTER_NONE);

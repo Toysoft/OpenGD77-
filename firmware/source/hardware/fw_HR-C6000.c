@@ -124,9 +124,8 @@ enum RXSyncClass { SYNC_CLASS_HEADER = 0, SYNC_CLASS_VOICE = 1, SYNC_CLASS_DATA 
 static const int START_TICK_TIMEOUT = 20;
 static const int END_TICK_TIMEOUT 	= 13;
 
-static const uint8_t COLOUR_CODE_FILTER_DISABLE_MASK = 0x08;
-
-static uint8_t colourCodeFilterControlMask = 0x00;
+const uint8_t COLOUR_CODE_FILTER_DISABLE_MASK = 0x08;
+uint8_t colourCodeFilterControlMask = 0x00;// Enable CC filter by default. Note this gets set when the settings load, before any of the init functions are called
 
 void SPI_HR_C6000_init(void)
 {
@@ -616,9 +615,8 @@ inline static void HRC6000SysReceivedDataInt(void)
 */
 	//SEGGER_RTT_printf(0, "\t\tRXDT\taf:%d\tsc:%02x\tcrc:%02x\trpi:%02x\tcc:%d\ttc:%d\t\n",(rxDataType&0x07),rxSyncClass,rxCRCStatus,rpi,rxColorCode,timeCode);
 
-	if ((slot_state == DMR_STATE_RX_1 || slot_state == DMR_STATE_RX_2) && (!checkColourCodeFilter() || rpi!=0 || rxCRCStatus != true))
+	if ((slot_state == DMR_STATE_RX_1 || slot_state == DMR_STATE_RX_2) && ( rpi!=0 || rxCRCStatus != true || !checkColourCodeFilter()))
 	{
-		//SEGGER_RTT_printf(0, "INVALID DATA");
 		// Something is not correct
 		return;
 	}
@@ -629,13 +627,11 @@ inline static void HRC6000SysReceivedDataInt(void)
 	{
 		if (lastTimeCode!=timeCode)
 		{
-			// timecode has toggled correctly
-			rxcnt++;
+			rxcnt++;// timecode has toggled correctly
 		}
 		else
 		{
-			// timecode has not toggled correctly so reset the counter used in the TS state machine
-			rxcnt=0;
+			rxcnt=0;// timecode has not toggled correctly so reset the counter used in the TS state machine
 		}
 	}
 
@@ -646,7 +642,6 @@ inline static void HRC6000SysReceivedDataInt(void)
 		//SEGGER_RTT_printf(0, "RX_STOP\tTC:%d\n",timeCode);
 		if (trxDMRMode == DMR_MODE_ACTIVE && callAcceptFilter())
 		{
-
 			slot_state = DMR_STATE_RX_END;
 
 			if (settingsUsbMode == USB_MODE_HOTSPOT)
@@ -672,15 +667,13 @@ inline static void HRC6000SysReceivedDataInt(void)
 	}
 
 	// Check for correct received packet
-	if ((rxCRCStatus==true) && (rpi==0) &&  (slot_state < DMR_STATE_TX_START_1))//(checkColourCodeFilter()) &&
+	if ((rxCRCStatus==true) && (rpi==0) &&  (slot_state < DMR_STATE_TX_START_1))
 	{
 		// Start RX
 		if (slot_state == DMR_STATE_IDLE)
 		{
-			if (checkColourCodeFilter())// && (rxSyncClass==SYNC_CLASS_DATA) && (rxDataType==1) )// && (timeCode == trxGetDMRTimeSlot()))       //Voice LC Header
+			if (checkColourCodeFilter())// Voice LC Header
 			{
-				//SEGGER_RTT_printf(0,"RX START\n");
-				//triggerQSOdataDisplay();
 				init_codec();
 				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
 
@@ -705,35 +698,11 @@ inline static void HRC6000SysReceivedDataInt(void)
 		{
 			int sequenceNumber = (rxDataType & 0x07);
 			// Detect/decode voice packet and transfer it into the output soundbuffer
-#if 0
-			if 	(
-					(
-						(
-							(skip_count == 0 || (receivedSrcId != trxDMRID && receivedSrcId!=0x00))  &&
-							rxSyncClass != SYNC_CLASS_DATA	&&
-							sequenceNumber >= 0x01 &&
-							sequenceNumber <= 0x06 &&
-							trxDMRMode == DMR_MODE_PASSIVE &&
-							checkTimeSlotFilter() &&
-							lastTimeCode != timeCode &&
-							checkColourCodeFilter()
-						)
-						||
-						(
-							trxDMRMode == DMR_MODE_ACTIVE &&
-							slot_state == DMR_STATE_RX_1
-						)
-					)
-					&&
-					checkTalkGroupFilter()
-				)
-#else
+
 				if ((skip_count == 0 ||  (receivedSrcId != trxDMRID && receivedSrcId!=0x00)) &&
 				(rxSyncClass!=SYNC_CLASS_DATA) && ( sequenceNumber>= 0x01) && (sequenceNumber <= 0x06) &&
-				(((trxDMRMode == DMR_MODE_PASSIVE) && (checkTimeSlotFilter() && lastTimeCode != timeCode) &&
-				 (checkColourCodeFilter())) || (trxDMRMode == DMR_MODE_ACTIVE &&
-				 (slot_state == DMR_STATE_RX_1))) && checkTalkGroupFilter())
-#endif
+				(((trxDMRMode == DMR_MODE_PASSIVE) && (checkTimeSlotFilter() && lastTimeCode != timeCode)) || (trxDMRMode == DMR_MODE_ACTIVE &&
+				 (slot_state == DMR_STATE_RX_1))) && checkTalkGroupFilter() && checkColourCodeFilter())
 			{
 				//SEGGER_RTT_printf(0, "Audio frame %d\t%d\n",sequenceNumber,timeCode);
 				GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1);// Note it may be more effecient to store variable to indicate whether this call needs to be made
@@ -764,7 +733,6 @@ inline static void HRC6000SysReceivedDataInt(void)
 inline static void HRC6000SysReceivedInformationInt(void)
 {
 	//SEGGER_RTT_printf(0, "%d SYS_INT_RECEIVED_INFORMATION\n",PITCounter);
-
 }
 
 inline static void HRC6000SysAbnormalExitInt(void)
@@ -813,7 +781,7 @@ inline static void HRC6000SysInterruptHandler(void)
 		{
 
 
-			if ((checkTimeSlotFilter() || trxDMRMode == DMR_MODE_ACTIVE) && (checkColourCodeFilter())) // only do this for the selected timeslot, or when in Active mode
+			if (((checkTimeSlotFilter() || trxDMRMode == DMR_MODE_ACTIVE)) && checkColourCodeFilter()) // only do this for the selected timeslot, or when in Active mode
 			{
 				if (LCBuf[0]==TG_CALL_FLAG || LCBuf[0]==PC_CALL_FLAG)
 				{
@@ -1001,7 +969,7 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 			slot_state = DMR_STATE_TX_START_2;
 			break;
 		case DMR_STATE_TX_START_2: // Start TX (third step)
-			//write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50 | colourCodeFilterControlMask); 	//Receive during next Timeslot (no Layer 2 Access)
+			//write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50); 	//Receive during next Timeslot (no Layer 2 Access)
 			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00 | colourCodeFilterControlMask); 	//Do nothing on the next TS
 			slot_state = DMR_STATE_TX_START_3;
 			break;
