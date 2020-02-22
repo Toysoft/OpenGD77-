@@ -386,6 +386,7 @@ static void handleEvent(uiEvent_t *ev)
 		// Restore original settings.
 		memcpy(&nonVolatileSettings, &originalNonVolatileSettings, sizeof(settingsStruct_t));
 		setMicGainDMR(nonVolatileSettings.micGainDMR);
+		soundBeepVolumeDivider = nonVolatileSettings.beepVolumeDivider;
 		menuSystemPopPreviousMenu();
 		return;
 	}
