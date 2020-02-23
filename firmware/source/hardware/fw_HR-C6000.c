@@ -126,6 +126,7 @@ static const int END_TICK_TIMEOUT 	= 13;
 
 const uint8_t COLOUR_CODE_FILTER_DISABLE_MASK = 0x08;
 uint8_t colourCodeFilterControlMask = 0x00;// Enable CC filter by default. Note this gets set when the settings load, before any of the init functions are called
+static volatile int lastRxColorCode=0;
 
 void SPI_HR_C6000_init(void)
 {
@@ -371,7 +372,17 @@ bool checkColourCodeFilter(void)
 	}
 	else
 	{
-		return true;
+		if(rxColorCode == lastRxColorCode)
+		{
+			lastRxColorCode=rxColorCode;
+			return true;
+		}
+		else
+		{
+			lastRxColorCode=rxColorCode;
+			return false;
+		}
+
 	}
 }
 
