@@ -24,6 +24,9 @@
 
 #include "fw_common.h"
 
+
+#if(PLATFORM == GD-77)
+
 #define Port_SPI_FLASH_CS_U  	PORTA
 #define GPIO_SPI_FLASH_CS_U  	GPIOA
 #define Pin_SPI_FLASH_CS_U   	19
@@ -39,6 +42,29 @@
 #define Port_SPI_FLASH_DO_U  	PORTE
 #define GPIO_SPI_FLASH_DO_U  	GPIOE
 #define Pin_SPI_FLASH_DO_U   	4
+
+#elif (PLATFORM == DM-1801)
+
+#define Port_SPI_FLASH_CS_U  	PORTA
+#define GPIO_SPI_FLASH_CS_U  	GPIOA
+#define Pin_SPI_FLASH_CS_U   	19
+
+#define Port_SPI_FLASH_CLK_U 	PORTE
+#define GPIO_SPI_FLASH_CLK_U 	GPIOE
+#define Pin_SPI_FLASH_CLK_U  	5
+
+#define Port_SPI_FLASH_DI_U  	PORTE
+#define GPIO_SPI_FLASH_DI_U  	GPIOE
+#define Pin_SPI_FLASH_DI_U   	6
+
+#define Port_SPI_FLASH_DO_U  	PORTE
+#define GPIO_SPI_FLASH_DO_U  	GPIOE
+#define Pin_SPI_FLASH_DO_U   	4
+
+#endif
+
+
+
 
 extern uint8_t SPI_Flash_sectorbuffer[4096];
 
