@@ -44,9 +44,12 @@ extern gpio_pin_config_t pin_config_output;
 // OUT/OFF C15 - UHF_RX_amp_power
 // OUT/OFF E2  - UHF_TX_amp_power
 // OUT/OFF E3  - VHF_TX_amp_power
+/*
 #define Port_RF_ant_switch    PORTA
 #define GPIO_RF_ant_switch    GPIOA
 #define Pin_RF_ant_switch     17
+*/
+
 #define Port_audio_amp_enable     PORTB
 #define GPIO_audio_amp_enable     GPIOB
 #define Pin_audio_amp_enable      0
