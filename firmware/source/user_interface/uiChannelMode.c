@@ -1085,7 +1085,6 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 				break;
 			case CH_SCREEN_QUICK_MENU_DMR_FILTER:
 				nonVolatileSettings.dmrFilterLevel = tmpQuickMenuDmrFilterLevel;
-				HRC6000SetCCFilterMode(nonVolatileSettings.dmrFilterLevel==DMR_FILTER_NONE);
 				init_digital_DMR_RX();
 				menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
 				break;

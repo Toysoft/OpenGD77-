@@ -65,7 +65,6 @@ bool settingsLoadSettings(void)
 
 	trxDMRID = codeplugGetUserDMRID();
 
-	HRC6000SetCCFilterMode(nonVolatileSettings.dmrFilterLevel==DMR_FILTER_NONE);
 
 	currentLanguage = &languages[nonVolatileSettings.languageIndex];
 
