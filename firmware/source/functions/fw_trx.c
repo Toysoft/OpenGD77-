@@ -192,10 +192,7 @@ int trx_carrier_detected(void)
 {
 	uint8_t squelch;
 
-	// The task Critical wrapper may not be necessary and is only added as a precaution
-	taskENTER_CRITICAL();
 	trxReadRSSIAndNoise();
-	taskEXIT_CRITICAL();
 
 	// check for variable squelch control
 	if (currentChannelData->sql!=0)

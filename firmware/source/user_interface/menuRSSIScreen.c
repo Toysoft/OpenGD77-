@@ -55,6 +55,11 @@ static void updateScreen(void)
 	int barGraphLength;
 	char buffer[17];
 
+		if (trxGetMode() == RADIO_MODE_DIGITAL)
+		{
+			trxReadRSSIAndNoise();
+		}
+
 		if (trxCurrentBand[TRX_RX_FREQ_BAND] == RADIO_BAND_UHF)
 		{
 			// Use fixed point maths to scale the RSSI value to dBm, based on data from VK4JWT and VK7ZJA
