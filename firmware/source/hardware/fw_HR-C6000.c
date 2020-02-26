@@ -110,6 +110,8 @@ static volatile int TAPhase=0;
 //static const int TAOffsets[] = {0,6,13,20};
 char talkAliasText[33];
 
+
+
 static bool callAcceptFilter(void);
 static void setupPcOrTGHeader(void);
 static inline void HRC6000SysInterruptHandler(void);
@@ -118,6 +120,12 @@ static inline void HRC6000RxInterruptHandler(void);
 static inline void HRC6000TxInterruptHandler(void);
 static void HRC6000TransitionToTx(void);
 static void triggerQSOdataDisplay(void);
+
+#ifdef USE_COLOUR_CODE_COUNTING
+	void initReceivedColourCodes(void);
+	volatile uint32_t receivedColourCodes[16];
+	volatile int	bestColourCodeIndex = -1;
+#endif
 
 enum RXSyncClass { SYNC_CLASS_HEADER = 0, SYNC_CLASS_VOICE = 1, SYNC_CLASS_DATA = 2, SYNC_CLASS_RC = 3};
 
@@ -768,7 +776,37 @@ inline static void HRC6000SysInterruptHandler(void)
 
 		if (nonVolatileSettings.dmrFilterLevel < DMR_FILTER_CC )
 		{
-		if(rxColorCode==lastRxColorCode)
+
+#ifdef USE_COLOUR_CODE_COUNTING
+			// This code implements a more complex strategy to lock onto the CC that is received the most often,
+			// This strategy
+			// but is not necessarily better than the other
+			receivedColourCodes[rxColorCode]++;
+
+			if (bestColourCodeIndex==-1)
+			{
+				bestColourCodeIndex = rxColorCode;
+				//SEGGER_RTT_printf(0, "%d\tFirst best index %d\n",PITCounter,bestColourCodeIndex);
+				trxSetDMRColourCode(bestColourCodeIndex);
+				currentChannelData->rxColor=bestColourCodeIndex;
+
+			}
+			else
+			{
+				if (receivedColourCodes[rxColorCode] > receivedColourCodes[bestColourCodeIndex])
+				{
+					bestColourCodeIndex = rxColorCode;
+					//SEGGER_RTT_printf(0, "%d\tNew best index %d\n",PITCounter,bestColourCodeIndex);
+					trxSetDMRColourCode(bestColourCodeIndex);
+					currentChannelData->rxColor = bestColourCodeIndex;
+				}
+				else
+				{
+					//SEGGER_RTT_printf(0, "receivedColourCodes[rxColorCode] %d %d %d\n",receivedColourCodes[rxColorCode], bestColourCodeIndex,rxColorCode);
+				}
+			}
+#else
+			if(rxColorCode==lastRxColorCode)
 			{
 				trxSetDMRColourCode(rxColorCode);
 				currentChannelData->rxColor=rxColorCode;
@@ -779,7 +817,7 @@ inline static void HRC6000SysInterruptHandler(void)
 			{
 				lastRxColorCode=rxColorCode;
 			}
-
+#endif
 		}
 
 		uint8_t LCBuf[12];
@@ -1262,6 +1300,9 @@ void init_digital(void)
 	init_digital_state();
     NVIC_EnableIRQ(PORTC_IRQn);
 	init_codec();
+#ifdef USE_COLOUR_CODE_COUNTING
+	initReceivedColourCodes();
+#endif
 }
 
 void terminate_digital(void)
@@ -1271,6 +1312,14 @@ void terminate_digital(void)
 	init_digital_state();
     NVIC_DisableIRQ(PORTC_IRQn);
 }
+
+#ifdef USE_COLOUR_CODE_COUNTING
+void initReceivedColourCodes(void)
+{
+	memset((void*)&receivedColourCodes[0],0,sizeof(uint32_t)*16);
+	bestColourCodeIndex = -1;
+}
+#endif
 
 void triggerQSOdataDisplay(void)
 {
