@@ -50,6 +50,7 @@ uint32_t menuUtilityTgBeforePcMode 	= 0;// No TG saved, prior to a Private call 
 
 const char *POWER_LEVELS[]={ "50mW","250mW","500mW","750mW","1W","2W","3W","4W","5W","5W++"};
 const char *DMR_FILTER_LEVELS[]={"None","CC","CC,TS","CC,TS,TG","CC,TS,Ct"};
+const char *ANALOG_FILTER_LEVELS[]={"None","CTCSS"};
 
 volatile uint32_t lastID=0;// This needs to be volatile as lastHeardClearLastID() is called from an ISR
 uint32_t lastTG=0;
@@ -1106,19 +1107,29 @@ void menuUtilityRenderHeader(void)
 			{
 				strcat(buffer,"N");
 			}
+			ucPrintCore(0, Y_OFFSET, buffer, FONT_6x8, TEXT_ALIGN_LEFT, scanBlinkPhase);
+
 			if ((currentChannelData->txTone!=65535)||(currentChannelData->rxTone!=65535))
 			{
-				strcat(buffer," C");
+				int rectWidth = 7;
+				strcpy(buffer, "C");
+				if (currentChannelData->txTone!=65535)
+				{
+					rectWidth += 6;
+					strcat(buffer, "T");
+				}
+				if (currentChannelData->rxTone!=65535)
+				{
+					rectWidth += 6;
+					strcat(buffer, "R");
+				}
+				bool isInverted = (nonVolatileSettings.analogFilterLevel == ANALOG_FILTER_NONE);
+				if (isInverted)
+				{
+					ucFillRect(23, Y_OFFSET - 1, rectWidth, 9, false);
+				}
+				ucPrintCore(24, Y_OFFSET, buffer, FONT_6x8, TEXT_ALIGN_LEFT, isInverted);
 			}
-			if (currentChannelData->txTone!=65535)
-			{
-				strcat(buffer,"T");
-			}
-			if (currentChannelData->rxTone!=65535)
-			{
-				strcat(buffer,"R");
-			}
-			ucPrintCore(0, Y_OFFSET, buffer, FONT_6x8, TEXT_ALIGN_LEFT, scanBlinkPhase);
 			break;
 
 		case RADIO_MODE_DIGITAL:

@@ -52,6 +52,7 @@ static void startScan(void);
 static void handleUpKey(uiEvent_t *ev);
 static bool isDisplayingQSOData=false;
 static int tmpQuickMenuDmrFilterLevel;
+static int tmpQuickMenuAnalogFilterLevel;
 static void menuVFOUpdateTrxID(void );
 
 static int16_t newChannelIndex = 0;
@@ -119,7 +120,14 @@ int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
 			trxSetTxCTCSS(currentChannelData->txTone);
 			if (!toneScanActive)
 			{
-				trxSetRxCTCSS(currentChannelData->rxTone);
+				if (nonVolatileSettings.analogFilterLevel == ANALOG_FILTER_NONE)
+				{
+					trxSetRxCTCSS(TRX_CTCSS_TONE_NONE);
+				}
+				else
+				{
+					trxSetRxCTCSS(currentChannelData->rxTone);
+				}
 			}
 
 			if (uiVfoModeScanActive==false)
@@ -1011,7 +1019,7 @@ static void stepFrequency(int increment)
 
 // Quick Menu functions
 enum VFO_SCREEN_QUICK_MENU_ITEMS { 	VFO_SCREEN_QUICK_MENU_VFO_A_B=0,VFO_SCREEN_QUICK_MENU_VFO_TO_NEW,VFO_SCREEN_QUICK_MENU_TX_SWAP_RX, VFO_SCREEN_QUICK_MENU_BOTH_TO_RX, VFO_SCREEN_QUICK_MENU_BOTH_TO_TX,
-									VFO_SCREEN_QUICK_MENU_DMR_FILTER,VFO_SCREEN_CODE_SCAN,VFO_SCREEN_SCAN_LOW_FREQ,VFO_SCREEN_SCAN_HIGH_FREQ,VFO_SCREEN_QUICK_MENU_SCAN,
+									VFO_SCREEN_QUICK_MENU_FILTER,VFO_SCREEN_CODE_SCAN,VFO_SCREEN_SCAN_LOW_FREQ,VFO_SCREEN_SCAN_HIGH_FREQ,VFO_SCREEN_QUICK_MENU_SCAN,
 									NUM_VFO_SCREEN_QUICK_MENU_ITEMS };// The last item in the list is used so that we automatically get a total number of items in the list
 
 
@@ -1020,6 +1028,7 @@ int menuVFOModeQuickMenu(uiEvent_t *ev, bool isFirstRun)
 	if (isFirstRun)
 	{
 		tmpQuickMenuDmrFilterLevel = nonVolatileSettings.dmrFilterLevel;
+		tmpQuickMenuAnalogFilterLevel = nonVolatileSettings.analogFilterLevel;
 		updateQuickMenuScreen();
 	}
 	else
@@ -1060,9 +1069,15 @@ static void updateQuickMenuScreen(void)
 			case VFO_SCREEN_QUICK_MENU_BOTH_TO_TX:
 				strcpy(buf, "Tx --> Rx");
 				break;
-			case VFO_SCREEN_QUICK_MENU_DMR_FILTER:
-				snprintf(buf, bufferLen, "%s:%s", currentLanguage->filter, ((trxGetMode() == RADIO_MODE_ANALOG) ?
-						currentLanguage->n_a : ((tmpQuickMenuDmrFilterLevel == 0) ? currentLanguage->none : DMR_FILTER_LEVELS[tmpQuickMenuDmrFilterLevel])));
+			case VFO_SCREEN_QUICK_MENU_FILTER:
+				if(trxGetMode() == RADIO_MODE_ANALOG)
+				{
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->filter, ((tmpQuickMenuAnalogFilterLevel == 0) ? currentLanguage->none : ANALOG_FILTER_LEVELS[tmpQuickMenuAnalogFilterLevel]));
+				}
+				else
+				{
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->filter, ((tmpQuickMenuDmrFilterLevel == 0) ? currentLanguage->none : DMR_FILTER_LEVELS[tmpQuickMenuDmrFilterLevel]));
+				}
 				break;
 			case VFO_SCREEN_QUICK_MENU_VFO_A_B:
 				sprintf(buf, "VFO:%c", ((nonVolatileSettings.currentVFONumber==0) ? 'A' : 'B'));
@@ -1183,13 +1198,17 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 				trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq,DMR_MODE_AUTO);
 
 				break;
-			case VFO_SCREEN_QUICK_MENU_DMR_FILTER:
+			case VFO_SCREEN_QUICK_MENU_FILTER:
 				if (trxGetMode() == RADIO_MODE_DIGITAL)
-					{
-						nonVolatileSettings.dmrFilterLevel = tmpQuickMenuDmrFilterLevel;
-						HRC6000SetCCFilterMode(nonVolatileSettings.dmrFilterLevel==DMR_FILTER_NONE);
-						init_digital_DMR_RX();
-					}
+				{
+					nonVolatileSettings.dmrFilterLevel = tmpQuickMenuDmrFilterLevel;
+					HRC6000SetCCFilterMode(nonVolatileSettings.dmrFilterLevel==DMR_FILTER_NONE);
+					init_digital_DMR_RX();
+				}
+				else
+				{
+					nonVolatileSettings.analogFilterLevel = tmpQuickMenuAnalogFilterLevel;
+				}
 				break;
 
 			case VFO_SCREEN_CODE_SCAN:
@@ -1246,12 +1265,19 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 	{
 		switch(gMenusCurrentItemIndex)
 		{
-			case VFO_SCREEN_QUICK_MENU_DMR_FILTER:
+			case VFO_SCREEN_QUICK_MENU_FILTER:
 				if (trxGetMode() == RADIO_MODE_DIGITAL)
 				{
-					if (tmpQuickMenuDmrFilterLevel < DMR_FILTER_CC_TS_DC)
+					if (tmpQuickMenuDmrFilterLevel < NUM_DMR_FILTER_LEVELS - 1)
 					{
 						tmpQuickMenuDmrFilterLevel++;
+					}
+				}
+				else
+				{
+					if (tmpQuickMenuAnalogFilterLevel < NUM_ANALOG_FILTER_LEVELS - 1)
+					{
+						tmpQuickMenuAnalogFilterLevel++;
 					}
 				}
 				break;
@@ -1268,12 +1294,19 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 	{
 		switch(gMenusCurrentItemIndex)
 		{
-			case VFO_SCREEN_QUICK_MENU_DMR_FILTER:
+			case VFO_SCREEN_QUICK_MENU_FILTER:
 				if (trxGetMode() == RADIO_MODE_DIGITAL)
 				{
 					if (tmpQuickMenuDmrFilterLevel > DMR_FILTER_NONE)
 					{
 						tmpQuickMenuDmrFilterLevel--;
+					}
+				}
+				else
+				{
+					if (tmpQuickMenuAnalogFilterLevel > ANALOG_FILTER_NONE)
+					{
+						tmpQuickMenuAnalogFilterLevel--;
 					}
 				}
 				break;
