@@ -27,6 +27,8 @@
 
 #include "fw_sound.h"
 
+#if(PLATFORM == GD-77)
+
 // I2S to C6000 (I2S)
 // OUT/ON  A16 - I2S FS to C6000
 // OUT/OFF A14 - I2S CK to C6000
@@ -44,6 +46,31 @@
 #define Port_I2S_TX_C6000    PORTA
 #define GPIO_I2S_TX_C6000    GPIOA
 #define Pin_I2S_TX_C6000     15
+
+#elif (PLATFORM == DM-1801)
+
+// I2S to C6000 (I2S)
+// OUT/ON  A16 - I2S FS to C6000
+// OUT/OFF A14 - I2S CK to C6000
+// OUT/ON  A12 - I2S RX to C6000
+// IN      A15 - I2S TX to C6000
+#define Port_I2S_FS_C6000    PORTA
+#define GPIO_I2S_FS_C6000    GPIOA
+#define Pin_I2S_FS_C6000     16
+#define Port_I2S_CK_C6000    PORTA
+#define GPIO_I2S_CK_C6000    GPIOA
+#define Pin_I2S_CK_C6000     14
+#define Port_I2S_RX_C6000    PORTA
+#define GPIO_I2S_RX_C6000    GPIOA
+#define Pin_I2S_RX_C6000     12
+#define Port_I2S_TX_C6000    PORTA
+#define GPIO_I2S_TX_C6000    GPIOA
+#define Pin_I2S_TX_C6000     15
+
+#endif
+
+
+
 
 extern edma_handle_t g_EDMA_TX_Handle;
 extern edma_handle_t g_EDMA_RX_Handle;

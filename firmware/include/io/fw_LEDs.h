@@ -21,12 +21,29 @@
 
 #include "fw_common.h"
 
+#if(PLATFORM == GD-77)
+
 #define Port_LEDgreen	PORTB
 #define GPIO_LEDgreen	GPIOB
 #define Pin_LEDgreen	18
+
 #define Port_LEDred		PORTC
 #define GPIO_LEDred		GPIOC
 #define Pin_LEDred		14
+
+#elif (PLATFORM == DM-1801)
+
+#define Port_LEDgreen	PORTA
+#define GPIO_LEDgreen	GPIOA
+#define Pin_LEDgreen	17
+
+#define Port_LEDred		PORTC
+#define GPIO_LEDred		GPIOC
+#define Pin_LEDred		14
+
+#endif
+
+
 
 void fw_init_LEDs(void);
 

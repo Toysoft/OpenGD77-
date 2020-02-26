@@ -2,7 +2,7 @@
 <?fileVersion 4.0.0?><cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
 	<storageModule moduleId="org.eclipse.cdt.core.settings">
 		<cconfiguration id="com.crt.advproject.config.exe.debug.1021312312">
-			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="com.crt.advproject.config.exe.debug.1021312312" moduleId="org.eclipse.cdt.core.settings" name="Debug">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="com.crt.advproject.config.exe.debug.1021312312" moduleId="org.eclipse.cdt.core.settings" name="Debug_GD-77">
 				<externalSettings/>
 				<extensions>
 					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
@@ -15,7 +15,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactExtension="axf" artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe" cleanCommand="rm -rf" description="Debug build" errorParsers="org.eclipse.cdt.core.CWDLocator;org.eclipse.cdt.core.GmakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.GASErrorParser" id="com.crt.advproject.config.exe.debug.1021312312" name="Debug" parent="com.crt.advproject.config.exe.debug" postannouncebuildStep="Performing post-build steps" postbuildStep="arm-none-eabi-size &quot;${BuildArtifactFileName}&quot; ; arm-none-eabi-objcopy -v -O binary &quot;${BuildArtifactFileName}&quot; &quot;${BuildArtifactFileBaseName}.bin&quot; ; ../tools/bin2sgl &quot;${BuildArtifactFileBaseName}.bin&quot; ; #../tools/GD77_FirmwareLoader &quot;${BuildArtifactFileBaseName}.bin&quot; GUI ; # checksum -p ${TargetChip} -d &quot;${BuildArtifactFileBaseName}.bin&quot;">
+				<configuration artifactExtension="axf" artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe" cleanCommand="rm -rf" description="Debug GD-77 build" errorParsers="org.eclipse.cdt.core.CWDLocator;org.eclipse.cdt.core.GmakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.GASErrorParser" id="com.crt.advproject.config.exe.debug.1021312312" name="Debug_GD-77" parent="com.crt.advproject.config.exe.debug" postannouncebuildStep="Performing post-build steps" postbuildStep="arm-none-eabi-size &quot;${BuildArtifactFileName}&quot; ; arm-none-eabi-objcopy -v -O binary &quot;${BuildArtifactFileName}&quot; &quot;${BuildArtifactFileBaseName}.bin&quot; ; ../tools/bin2sgl &quot;${BuildArtifactFileBaseName}.bin&quot; ; #../tools/GD77_FirmwareLoader &quot;${BuildArtifactFileBaseName}.bin&quot; GUI ; # checksum -p ${TargetChip} -d &quot;${BuildArtifactFileBaseName}.bin&quot;">
 					<folderInfo id="com.crt.advproject.config.exe.debug.1021312312." name="/" resourcePath="">
 						<toolChain id="com.crt.advproject.toolchain.exe.debug.591166512" name="NXP MCU Tools" superClass="com.crt.advproject.toolchain.exe.debug">
 							<targetPlatform binaryParser="org.eclipse.cdt.core.ELF;org.eclipse.cdt.core.GNU_ELF" id="com.crt.advproject.platform.exe.debug.1946786741" name="ARM-based MCU (Debug)" superClass="com.crt.advproject.platform.exe.debug"/>
@@ -80,6 +80,7 @@
 									<listOptionValue builtIn="false" value="__USE_CMSIS"/>
 									<listOptionValue builtIn="false" value="DEBUG"/>
 									<listOptionValue builtIn="false" value="__REDLIB__"/>
+									<listOptionValue builtIn="false" value="PLATFORM=GD-77"/>
 								</option>
 								<option id="gnu.c.compiler.option.preprocessor.undef.symbol.1187618416" name="Undefined symbols (-U)" superClass="gnu.c.compiler.option.preprocessor.undef.symbol" useByScannerDiscovery="false"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.include.paths.1286635929" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
@@ -487,9 +488,10 @@
 					</fileInfo>
 					<folderInfo id="com.crt.advproject.config.exe.debug.1021312312.121979421" name="/" resourcePath="source/user_interface">
 						<toolChain id="com.crt.advproject.toolchain.exe.debug.1223915190" name="NXP MCU Tools" superClass="com.crt.advproject.toolchain.exe.debug" unusedChildren="">
+							<targetPlatform binaryParser="org.eclipse.cdt.core.ELF;org.eclipse.cdt.core.GNU_ELF" id="com.crt.advproject.platform.exe.debug" name="ARM-based MCU (Debug)" superClass="com.crt.advproject.platform.exe.debug"/>
 							<tool id="com.crt.advproject.cpp.exe.debug.1842639686" name="MCU C++ Compiler" superClass="com.crt.advproject.cpp.exe.debug.1589160145"/>
 							<tool id="com.crt.advproject.gcc.exe.debug.1491589228" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.475830819">
-								<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1568220134" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="true" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+								<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1568220134" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="true" value="gnu.c.optimization.level.size" valueType="enumerated"/>
 								<inputType id="com.crt.advproject.compiler.input.1237494997" superClass="com.crt.advproject.compiler.input"/>
 							</tool>
 							<tool id="com.crt.advproject.gas.exe.debug.2140725057" name="MCU Assembler" superClass="com.crt.advproject.gas.exe.debug.515920313">
@@ -1115,6 +1117,827 @@
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
 		</cconfiguration>
+		<cconfiguration id="com.crt.advproject.config.exe.debug.1021312312.630033272">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="com.crt.advproject.config.exe.debug.1021312312.630033272" moduleId="org.eclipse.cdt.core.settings" name="Debug_DM-1801">
+				<externalSettings/>
+				<extensions>
+					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GNU_ELF" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+				</extensions>
+			</storageModule>
+			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+				<configuration artifactExtension="axf" artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe" cleanCommand="rm -rf" description="Debug DM-1801 build" errorParsers="org.eclipse.cdt.core.CWDLocator;org.eclipse.cdt.core.GmakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.GASErrorParser" id="com.crt.advproject.config.exe.debug.1021312312.630033272" name="Debug_DM-1801" parent="com.crt.advproject.config.exe.debug" postannouncebuildStep="Performing post-build steps" postbuildStep="arm-none-eabi-size &quot;${BuildArtifactFileName}&quot; ; arm-none-eabi-objcopy -v -O binary &quot;${BuildArtifactFileName}&quot; &quot;${BuildArtifactFileBaseName}.bin&quot; ; ../tools/bin2sgl-1801 &quot;${BuildArtifactFileBaseName}.bin&quot; ; #../tools/GD77_FirmwareLoader &quot;${BuildArtifactFileBaseName}.bin&quot; GUI ; # checksum -p ${TargetChip} -d &quot;${BuildArtifactFileBaseName}.bin&quot;">
+					<folderInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272." name="/" resourcePath="">
+						<toolChain id="com.crt.advproject.toolchain.exe.debug.1517244493" name="NXP MCU Tools" superClass="com.crt.advproject.toolchain.exe.debug">
+							<targetPlatform binaryParser="org.eclipse.cdt.core.ELF;org.eclipse.cdt.core.GNU_ELF" id="com.crt.advproject.platform.exe.debug.1983049242" name="ARM-based MCU (Debug)" superClass="com.crt.advproject.platform.exe.debug"/>
+							<builder buildPath="${workspace_loc:/firmware}/Debug" id="com.crt.advproject.builder.exe.debug.1076843488" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" superClass="com.crt.advproject.builder.exe.debug"/>
+							<tool id="com.crt.advproject.cpp.exe.debug.2063431280" name="MCU C++ Compiler" superClass="com.crt.advproject.cpp.exe.debug">
+								<option id="com.crt.advproject.cpp.arch.2078254200" name="Architecture" superClass="com.crt.advproject.cpp.arch" useByScannerDiscovery="false" value="com.crt.advproject.cpp.target.cm4" valueType="enumerated"/>
+								<option id="com.crt.advproject.cpp.misc.dialect.184780012" name="Language standard" superClass="com.crt.advproject.cpp.misc.dialect" useByScannerDiscovery="true"/>
+								<option id="gnu.cpp.compiler.option.dialect.flags.1671457032" name="Other dialect flags" superClass="gnu.cpp.compiler.option.dialect.flags" useByScannerDiscovery="true"/>
+								<option id="gnu.cpp.compiler.option.preprocessor.nostdinc.437490950" name="Do not search system directories (-nostdinc)" superClass="gnu.cpp.compiler.option.preprocessor.nostdinc" useByScannerDiscovery="false"/>
+								<option id="gnu.cpp.compiler.option.preprocessor.preprocess.1327468993" name="Preprocess only (-E)" superClass="gnu.cpp.compiler.option.preprocessor.preprocess" useByScannerDiscovery="false"/>
+								<option id="gnu.cpp.compiler.option.preprocessor.def.1232568028" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false"/>
+								<option id="gnu.cpp.compiler.option.preprocessor.undef.1760995628" name="Undefined symbols (-U)" superClass="gnu.cpp.compiler.option.preprocessor.undef" useByScannerDiscovery="false"/>
+								<option id="gnu.cpp.compiler.option.include.paths.1142198492" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false"/>
+								<option id="gnu.cpp.compiler.option.include.files.1178532419" name="Include files (-include)" superClass="gnu.cpp.compiler.option.include.files" useByScannerDiscovery="false"/>
+								<option id="com.crt.advproject.cpp.exe.debug.option.optimization.level.955807437" name="Optimization Level" superClass="com.crt.advproject.cpp.exe.debug.option.optimization.level" useByScannerDiscovery="false"/>
+								<option id="gnu.cpp.compiler.option.optimization.flags.1638694691" name="Other optimization flags" superClass="gnu.cpp.compiler.option.optimization.flags" useByScannerDiscovery="false" value="-fno-common" valueType="string"/>
+								<option id="com.crt.advproject.cpp.exe.debug.option.debugging.level.1871794579" name="Debug Level" superClass="com.crt.advproject.cpp.exe.debug.option.debugging.level" useByScannerDiscovery="false"/>
+								<option id="gnu.cpp.compiler.option.debugging.other.725970583" name="Other debugging flags" superClass="gnu.cpp.compiler.option.debugging.other" useByScannerDiscovery="false"/>
+								<option id="gnu.cpp.compiler.option.debugging.prof.619224078" name="Generate prof information (-p)" superClass="gnu.cpp.compiler.option.debugging.prof" useByScannerDiscovery="false"/>
+								<option id="gnu.cpp.compiler.option.debugging.gprof.634890113" name="Generate gprof information (-pg)" superClass="gnu.cpp.compiler.option.debugging.gprof" useByScannerDiscovery="false"/>
+								<option id="gnu.cpp.compiler.option.debugging.codecov.177695696" name="Generate gcov information (-ftest-coverage -fprofile-arcs)" superClass="gnu.cpp.compiler.option.debugging.codecov" useByScannerDiscovery="false"/>
+								<option id="gnu.cpp.compiler.option.warnings.syntax.1662040302" name="Check syntax only (-fsyntax-only)" superClass="gnu.cpp.compiler.option.warnings.syntax" useByScannerDiscovery="false"/>
+								<option id="gnu.cpp.compiler.option.warnings.pedantic.958386781" name="Pedantic (-pedantic)" superClass="gnu.cpp.compiler.option.warnings.pedantic" useByScannerDiscovery="false"/>
+								<option id="gnu.cpp.compiler.option.warnings.pedantic.error.627453395" name="Pedantic warnings as errors (-pedantic-errors)" superClass="gnu.cpp.compiler.option.warnings.pedantic.error" useByScannerDiscovery="false"/>
+								<option id="gnu.cpp.compiler.option.warnings.nowarn.2132754713" name="Inhibit all warnings (-w)" superClass="gnu.cpp.compiler.option.warnings.nowarn" useByScannerDiscovery="false"/>
+								<option id="gnu.cpp.compiler.option.warnings.allwarn.1960426559" name="All warnings (-Wall)" superClass="gnu.cpp.compiler.option.warnings.allwarn" useByScannerDiscovery="false"/>
+								<option id="gnu.cpp.compiler.option.warnings.extrawarn.552823637" name="Extra warnings (-Wextra)" superClass="gnu.cpp.compiler.option.warnings.extrawarn" useByScannerDiscovery="false"/>
+								<option id="gnu.cpp.compiler.option.warnings.toerrors.480478239" name="Warnings as errors (-Werror)" superClass="gnu.cpp.compiler.option.warnings.toerrors" useByScannerDiscovery="false"/>
+								<option id="gnu.cpp.compiler.option.warnings.wconversion.1434155285" name="Implicit conversion warnings (-Wconversion)" superClass="gnu.cpp.compiler.option.warnings.wconversion" useByScannerDiscovery="false"/>
+								<option id="gnu.cpp.compiler.option.other.other.641394062" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false"/>
+								<option id="gnu.cpp.compiler.option.other.verbose.1215554478" name="Verbose (-v)" superClass="gnu.cpp.compiler.option.other.verbose" useByScannerDiscovery="false"/>
+								<option id="gnu.cpp.compiler.option.other.pic.1749981491" name="Position Independent Code (-fPIC)" superClass="gnu.cpp.compiler.option.other.pic" useByScannerDiscovery="false"/>
+								<option id="com.crt.advproject.cpp.lto.22433395" name="Enable Link-time optimization (-flto)" superClass="com.crt.advproject.cpp.lto" useByScannerDiscovery="false"/>
+								<option id="com.crt.advproject.cpp.lto.fat.634369867" name="Fat lto objects (-ffat-lto-objects)" superClass="com.crt.advproject.cpp.lto.fat" useByScannerDiscovery="false"/>
+								<option id="com.crt.advproject.cpp.fpu.412653382" name="Floating point" superClass="com.crt.advproject.cpp.fpu" useByScannerDiscovery="false" value="com.crt.advproject.cpp.fpu.fpv4.hard" valueType="enumerated"/>
+								<option id="com.crt.advproject.cpp.thumb.565141206" name="Thumb mode" superClass="com.crt.advproject.cpp.thumb" useByScannerDiscovery="false"/>
+								<option id="com.crt.advproject.cpp.thumbinterwork.1259721096" name="Enable Thumb interworking" superClass="com.crt.advproject.cpp.thumbinterwork" useByScannerDiscovery="false"/>
+								<option id="com.crt.advproject.cpp.securestate.1368055761" name="TrustZone Project Type" superClass="com.crt.advproject.cpp.securestate" useByScannerDiscovery="false"/>
+								<option id="com.crt.advproject.cpp.hdrlib.687237682" name="Library headers" superClass="com.crt.advproject.cpp.hdrlib" useByScannerDiscovery="false"/>
+								<option id="com.crt.advproject.cpp.specs.469279583" name="Specs" superClass="com.crt.advproject.cpp.specs" useByScannerDiscovery="false"/>
+								<option id="com.crt.advproject.cpp.config.406581599" name="Obsolete (Config)" superClass="com.crt.advproject.cpp.config" useByScannerDiscovery="false"/>
+								<option id="com.crt.advproject.cpp.store.314681957" name="Obsolete (Store)" superClass="com.crt.advproject.cpp.store" useByScannerDiscovery="false"/>
+							</tool>
+							<tool id="com.crt.advproject.gcc.exe.debug.1505907422" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug">
+								<option id="com.crt.advproject.gcc.thumb.878420784" name="Thumb mode" superClass="com.crt.advproject.gcc.thumb" useByScannerDiscovery="false" value="true" valueType="boolean"/>
+								<option id="com.crt.advproject.gcc.arch.698447482" name="Architecture" superClass="com.crt.advproject.gcc.arch" useByScannerDiscovery="false" value="com.crt.advproject.gcc.target.cm4" valueType="enumerated"/>
+								<option id="com.crt.advproject.c.misc.dialect.2138282373" name="Language standard" superClass="com.crt.advproject.c.misc.dialect" useByScannerDiscovery="true"/>
+								<option id="gnu.c.compiler.option.dialect.flags.1275535903" name="Other dialect flags" superClass="gnu.c.compiler.option.dialect.flags" useByScannerDiscovery="true"/>
+								<option id="gnu.c.compiler.option.preprocessor.nostdinc.1675176185" name="Do not search system directories (-nostdinc)" superClass="gnu.c.compiler.option.preprocessor.nostdinc" useByScannerDiscovery="false"/>
+								<option id="gnu.c.compiler.option.preprocessor.preprocess.1697260794" name="Preprocess only (-E)" superClass="gnu.c.compiler.option.preprocessor.preprocess" useByScannerDiscovery="false"/>
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.preprocessor.def.symbols.1953818216" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="SDK_DEBUGCONSOLE=0"/>
+									<listOptionValue builtIn="false" value="GITVERSION=\&quot;`git rev-parse --short HEAD`\&quot;"/>
+									<listOptionValue builtIn="false" value="USE_SEGGER_RTT"/>
+									<listOptionValue builtIn="false" value="CR_INTEGER_PRINTF"/>
+									<listOptionValue builtIn="false" value="PRINTF_FLOAT_ENABLE=0"/>
+									<listOptionValue builtIn="false" value="FSL_RTOS_FREE_RTOS"/>
+									<listOptionValue builtIn="false" value="SDK_OS_FREE_RTOS"/>
+									<listOptionValue builtIn="false" value="CPU_MK22FN512VLL12"/>
+									<listOptionValue builtIn="false" value="CPU_MK22FN512VLL12_cm4"/>
+									<listOptionValue builtIn="false" value="__MCUXPRESSO"/>
+									<listOptionValue builtIn="false" value="__USE_CMSIS"/>
+									<listOptionValue builtIn="false" value="DEBUG"/>
+									<listOptionValue builtIn="false" value="__REDLIB__"/>
+									<listOptionValue builtIn="false" value="PLATFORM=DM-1801"/>
+								</option>
+								<option id="gnu.c.compiler.option.preprocessor.undef.symbol.31930503" name="Undefined symbols (-U)" superClass="gnu.c.compiler.option.preprocessor.undef.symbol" useByScannerDiscovery="false"/>
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.include.paths.93665921" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
+									<listOptionValue builtIn="false" value="../board"/>
+									<listOptionValue builtIn="false" value="../include"/>
+									<listOptionValue builtIn="false" value="../include/hardware"/>
+									<listOptionValue builtIn="false" value="../include/codec"/>
+									<listOptionValue builtIn="false" value="../include/functions"/>
+									<listOptionValue builtIn="false" value="../include/interfaces"/>
+									<listOptionValue builtIn="false" value="../include/io"/>
+									<listOptionValue builtIn="false" value="../include/usb"/>
+									<listOptionValue builtIn="false" value="../source"/>
+									<listOptionValue builtIn="false" value="../"/>
+									<listOptionValue builtIn="false" value="../amazon-freertos/include"/>
+									<listOptionValue builtIn="false" value="../amazon-freertos/FreeRTOS/portable"/>
+									<listOptionValue builtIn="false" value="../drivers"/>
+									<listOptionValue builtIn="false" value="../device"/>
+									<listOptionValue builtIn="false" value="../CMSIS"/>
+									<listOptionValue builtIn="false" value="../usb/device/class"/>
+									<listOptionValue builtIn="false" value="../usb/device/source"/>
+									<listOptionValue builtIn="false" value="../usb/device/include"/>
+									<listOptionValue builtIn="false" value="../usb/device/source/ehci"/>
+									<listOptionValue builtIn="false" value="../usb/device/source/khci"/>
+									<listOptionValue builtIn="false" value="../usb/device/source/lpcip3511"/>
+									<listOptionValue builtIn="false" value="../usb/include"/>
+									<listOptionValue builtIn="false" value="../usb/phy"/>
+									<listOptionValue builtIn="false" value="../osa"/>
+								</option>
+								<option id="gnu.c.compiler.option.include.files.1034416719" name="Include files (-include)" superClass="gnu.c.compiler.option.include.files" useByScannerDiscovery="false"/>
+								<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1886700016" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.none" valueType="enumerated"/>
+								<option id="gnu.c.compiler.option.optimization.flags.464764155" name="Other optimization flags" superClass="gnu.c.compiler.option.optimization.flags" useByScannerDiscovery="false" value="-fno-common" valueType="string"/>
+								<option id="com.crt.advproject.gcc.exe.debug.option.debugging.level.1563577766" name="Debug Level" superClass="com.crt.advproject.gcc.exe.debug.option.debugging.level" useByScannerDiscovery="false"/>
+								<option id="gnu.c.compiler.option.debugging.other.407704437" name="Other debugging flags" superClass="gnu.c.compiler.option.debugging.other" useByScannerDiscovery="false"/>
+								<option id="gnu.c.compiler.option.debugging.prof.1490713932" name="Generate prof information (-p)" superClass="gnu.c.compiler.option.debugging.prof" useByScannerDiscovery="false"/>
+								<option id="gnu.c.compiler.option.debugging.gprof.1322768253" name="Generate gprof information (-pg)" superClass="gnu.c.compiler.option.debugging.gprof" useByScannerDiscovery="false"/>
+								<option id="gnu.c.compiler.option.debugging.codecov.1413237154" name="Generate gcov information (-ftest-coverage -fprofile-arcs)" superClass="gnu.c.compiler.option.debugging.codecov" useByScannerDiscovery="false"/>
+								<option id="gnu.c.compiler.option.warnings.syntax.1371781984" name="Check syntax only (-fsyntax-only)" superClass="gnu.c.compiler.option.warnings.syntax" useByScannerDiscovery="false"/>
+								<option id="gnu.c.compiler.option.warnings.pedantic.1665550839" name="Pedantic (-pedantic)" superClass="gnu.c.compiler.option.warnings.pedantic" useByScannerDiscovery="false"/>
+								<option id="gnu.c.compiler.option.warnings.pedantic.error.1806842721" name="Pedantic warnings as errors (-pedantic-errors)" superClass="gnu.c.compiler.option.warnings.pedantic.error" useByScannerDiscovery="false"/>
+								<option id="gnu.c.compiler.option.warnings.nowarn.1754539889" name="Inhibit all warnings (-w)" superClass="gnu.c.compiler.option.warnings.nowarn" useByScannerDiscovery="false"/>
+								<option id="gnu.c.compiler.option.warnings.allwarn.1066804752" name="All warnings (-Wall)" superClass="gnu.c.compiler.option.warnings.allwarn" useByScannerDiscovery="false"/>
+								<option id="gnu.c.compiler.option.warnings.extrawarn.959887920" name="Extra warnings (-Wextra)" superClass="gnu.c.compiler.option.warnings.extrawarn" useByScannerDiscovery="false"/>
+								<option id="gnu.c.compiler.option.warnings.toerrors.1687924580" name="Warnings as errors (-Werror)" superClass="gnu.c.compiler.option.warnings.toerrors" useByScannerDiscovery="false" value="false" valueType="boolean"/>
+								<option id="gnu.c.compiler.option.warnings.wconversion.502346452" name="Implicit conversion warnings (-Wconversion)" superClass="gnu.c.compiler.option.warnings.wconversion" useByScannerDiscovery="false"/>
+								<option id="gnu.c.compiler.option.misc.other.1718731143" name="Other flags" superClass="gnu.c.compiler.option.misc.other" useByScannerDiscovery="false" value="-c -ffunction-sections -fdata-sections -ffreestanding -fno-builtin" valueType="string"/>
+								<option id="gnu.c.compiler.option.misc.verbose.1261310554" name="Verbose (-v)" superClass="gnu.c.compiler.option.misc.verbose" useByScannerDiscovery="false"/>
+								<option id="gnu.c.compiler.option.misc.ansi.292305789" name="Support ANSI programs (-ansi)" superClass="gnu.c.compiler.option.misc.ansi" useByScannerDiscovery="false"/>
+								<option id="gnu.c.compiler.option.misc.pic.1466605793" name="Position Independent Code (-fPIC)" superClass="gnu.c.compiler.option.misc.pic" useByScannerDiscovery="false"/>
+								<option id="com.crt.advproject.gcc.lto.1589127314" name="Enable Link-time optimization (-flto)" superClass="com.crt.advproject.gcc.lto" useByScannerDiscovery="false"/>
+								<option id="com.crt.advproject.gcc.lto.fat.1288068651" name="Fat lto objects (-ffat-lto-objects)" superClass="com.crt.advproject.gcc.lto.fat" useByScannerDiscovery="false"/>
+								<option id="com.crt.advproject.gcc.fpu.1087390574" name="Floating point" superClass="com.crt.advproject.gcc.fpu" useByScannerDiscovery="false" value="com.crt.advproject.gcc.fpu.fpv4.hard" valueType="enumerated"/>
+								<option id="com.crt.advproject.gcc.thumbinterwork.2084942336" name="Enable Thumb interworking" superClass="com.crt.advproject.gcc.thumbinterwork" useByScannerDiscovery="false"/>
+								<option id="com.crt.advproject.gcc.securestate.682313381" name="TrustZone Project Type" superClass="com.crt.advproject.gcc.securestate" useByScannerDiscovery="false"/>
+								<option id="com.crt.advproject.gcc.hdrlib.244366452" name="Library headers" superClass="com.crt.advproject.gcc.hdrlib" useByScannerDiscovery="false"/>
+								<option id="com.crt.advproject.gcc.specs.1538627474" name="Specs" superClass="com.crt.advproject.gcc.specs" useByScannerDiscovery="false"/>
+								<option id="com.crt.advproject.gcc.config.1061615027" name="Obsolete (Config)" superClass="com.crt.advproject.gcc.config" useByScannerDiscovery="false"/>
+								<option id="com.crt.advproject.gcc.store.1399726360" name="Obsolete (Store)" superClass="com.crt.advproject.gcc.store" useByScannerDiscovery="false"/>
+								<inputType id="com.crt.advproject.compiler.input.1351154909" superClass="com.crt.advproject.compiler.input"/>
+							</tool>
+							<tool id="com.crt.advproject.gas.exe.debug.2140907721" name="MCU Assembler" superClass="com.crt.advproject.gas.exe.debug">
+								<option id="com.crt.advproject.gas.thumb.926964288" name="Thumb mode" superClass="com.crt.advproject.gas.thumb" value="true" valueType="boolean"/>
+								<option id="com.crt.advproject.gas.arch.1600264901" name="Architecture" superClass="com.crt.advproject.gas.arch" value="com.crt.advproject.gas.target.cm4" valueType="enumerated"/>
+								<option id="gnu.both.asm.option.flags.crt.2036901149" name="Assembler flags" superClass="gnu.both.asm.option.flags.crt" value="-c -x assembler-with-cpp -D__REDLIB__" valueType="string"/>
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.both.asm.option.include.paths.1447580788" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
+									<listOptionValue builtIn="false" value="../board"/>
+									<listOptionValue builtIn="false" value="../include"/>
+									<listOptionValue builtIn="false" value="../include/hardware"/>
+									<listOptionValue builtIn="false" value="../include/codec"/>
+									<listOptionValue builtIn="false" value="../include/functions"/>
+									<listOptionValue builtIn="false" value="../include/interfaces"/>
+									<listOptionValue builtIn="false" value="../include/io"/>
+									<listOptionValue builtIn="false" value="../include/usb"/>
+									<listOptionValue builtIn="false" value="../source"/>
+									<listOptionValue builtIn="false" value="../"/>
+									<listOptionValue builtIn="false" value="../amazon-freertos/include"/>
+									<listOptionValue builtIn="false" value="../amazon-freertos/FreeRTOS/portable"/>
+									<listOptionValue builtIn="false" value="../drivers"/>
+									<listOptionValue builtIn="false" value="../device"/>
+									<listOptionValue builtIn="false" value="../CMSIS"/>
+									<listOptionValue builtIn="false" value="../usb/device/class"/>
+									<listOptionValue builtIn="false" value="../usb/device/source"/>
+									<listOptionValue builtIn="false" value="../usb/device/include"/>
+									<listOptionValue builtIn="false" value="../usb/device/source/ehci"/>
+									<listOptionValue builtIn="false" value="../usb/device/source/khci"/>
+									<listOptionValue builtIn="false" value="../usb/device/source/lpcip3511"/>
+									<listOptionValue builtIn="false" value="../usb/include"/>
+									<listOptionValue builtIn="false" value="../usb/phy"/>
+									<listOptionValue builtIn="false" value="../osa"/>
+								</option>
+								<option id="gnu.both.asm.option.warnings.nowarn.946695800" name="Suppress warnings (-W)" superClass="gnu.both.asm.option.warnings.nowarn"/>
+								<option id="gnu.both.asm.option.version.285930802" name="Announce version (-v)" superClass="gnu.both.asm.option.version"/>
+								<option id="com.crt.advproject.gas.exe.debug.option.debugging.level.878700636" name="Debug level" superClass="com.crt.advproject.gas.exe.debug.option.debugging.level"/>
+								<option id="com.crt.advproject.gas.fpu.1998359704" name="Floating point" superClass="com.crt.advproject.gas.fpu" value="com.crt.advproject.gas.fpu.fpv4.hard" valueType="enumerated"/>
+								<option id="com.crt.advproject.gas.thumbinterwork.44379309" name="Enable Thumb interworking" superClass="com.crt.advproject.gas.thumbinterwork"/>
+								<option id="com.crt.advproject.gas.hdrlib.1556771137" name="Library headers" superClass="com.crt.advproject.gas.hdrlib"/>
+								<option id="com.crt.advproject.gas.specs.705087414" name="Specs" superClass="com.crt.advproject.gas.specs"/>
+								<option id="com.crt.advproject.gas.config.1851777038" name="Obsolete (Config)" superClass="com.crt.advproject.gas.config"/>
+								<option id="com.crt.advproject.gas.store.1596221644" name="Obsolete (Store)" superClass="com.crt.advproject.gas.store"/>
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.262392226" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+								<inputType id="com.crt.advproject.assembler.input.1994345468" name="Additional Assembly Source Files" superClass="com.crt.advproject.assembler.input"/>
+							</tool>
+							<tool id="com.crt.advproject.link.cpp.exe.debug.1375069922" name="MCU C++ Linker" superClass="com.crt.advproject.link.cpp.exe.debug">
+								<option id="com.crt.advproject.link.cpp.arch.1662984347" name="Architecture" superClass="com.crt.advproject.link.cpp.arch" value="com.crt.advproject.link.cpp.target.cm4" valueType="enumerated"/>
+								<option id="gnu.cpp.link.option.nostart.128299766" name="Do not use standard start files (-nostartfiles)" superClass="gnu.cpp.link.option.nostart"/>
+								<option id="gnu.cpp.link.option.nodeflibs.1453377398" name="Do not use default libraries (-nodefaultlibs)" superClass="gnu.cpp.link.option.nodeflibs"/>
+								<option id="gnu.cpp.link.option.nostdlibs.1626497058" name="No startup or default libs (-nostdlib)" superClass="gnu.cpp.link.option.nostdlibs" value="true" valueType="boolean"/>
+								<option id="gnu.cpp.link.option.strip.1349180330" name="Omit all symbol information (-s)" superClass="gnu.cpp.link.option.strip"/>
+								<option id="gnu.cpp.link.option.libs.1053825446" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs"/>
+								<option id="gnu.cpp.link.option.paths.1929513111" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths"/>
+								<option id="gnu.cpp.link.option.flags.403664031" name="Linker flags" superClass="gnu.cpp.link.option.flags"/>
+								<option id="gnu.cpp.link.option.other.414854940" name="Other options (-Xlinker [option])" superClass="gnu.cpp.link.option.other"/>
+								<option id="gnu.cpp.link.option.userobjs.1319158567" name="Other objects" superClass="gnu.cpp.link.option.userobjs"/>
+								<option id="gnu.cpp.link.option.shared.1947367048" name="Shared (-shared)" superClass="gnu.cpp.link.option.shared"/>
+								<option id="gnu.cpp.link.option.soname.987705484" name="Shared object name (-Wl,-soname=)" superClass="gnu.cpp.link.option.soname"/>
+								<option id="gnu.cpp.link.option.implname.1067808486" name="Import Library name (-Wl,--out-implib=)" superClass="gnu.cpp.link.option.implname"/>
+								<option id="gnu.cpp.link.option.defname.1745387506" name="DEF file name (-Wl,--output-def=)" superClass="gnu.cpp.link.option.defname"/>
+								<option id="gnu.cpp.link.option.debugging.prof.674558419" name="Generate prof information (-p)" superClass="gnu.cpp.link.option.debugging.prof"/>
+								<option id="gnu.cpp.link.option.debugging.gprof.1739452130" name="Generate gprof information (-pg)" superClass="gnu.cpp.link.option.debugging.gprof"/>
+								<option id="gnu.cpp.link.option.debugging.codecov.817672580" name="Generate gcov information (-ftest-coverage -fprofile-arcs)" superClass="gnu.cpp.link.option.debugging.codecov"/>
+								<option id="com.crt.advproject.link.cpp.lto.84843620" name="Enable Link-time optimization (-flto)" superClass="com.crt.advproject.link.cpp.lto"/>
+								<option id="com.crt.advproject.link.cpp.lto.optmization.level.420935822" name="Link-time optimization level" superClass="com.crt.advproject.link.cpp.lto.optmization.level"/>
+								<option id="com.crt.advproject.link.cpp.fpu.465284855" name="Floating point" superClass="com.crt.advproject.link.cpp.fpu" value="com.crt.advproject.link.cpp.fpu.fpv4.hard" valueType="enumerated"/>
+								<option id="com.crt.advproject.link.cpp.thumb.436470206" name="Thumb mode" superClass="com.crt.advproject.link.cpp.thumb"/>
+								<option id="com.crt.advproject.link.cpp.manage.509042200" name="Manage linker script" superClass="com.crt.advproject.link.cpp.manage"/>
+								<option id="com.crt.advproject.link.cpp.script.106571567" name="Linker script" superClass="com.crt.advproject.link.cpp.script"/>
+								<option id="com.crt.advproject.link.cpp.scriptdir.1778784506" name="Script path" superClass="com.crt.advproject.link.cpp.scriptdir"/>
+								<option id="com.crt.advproject.link.cpp.crpenable.1365007812" name="Enable automatic placement of Code Read Protection field in image" superClass="com.crt.advproject.link.cpp.crpenable"/>
+								<option id="com.crt.advproject.link.cpp.flashconfigenable.1718632862" name="Enable automatic placement of Flash Configuration field in image" superClass="com.crt.advproject.link.cpp.flashconfigenable" value="true" valueType="boolean"/>
+								<option id="com.crt.advproject.link.cpp.ecrp.396652034" name="Enhanced CRP" superClass="com.crt.advproject.link.cpp.ecrp"/>
+								<option id="com.crt.advproject.link.cpp.hdrlib.737149343" name="Library" superClass="com.crt.advproject.link.cpp.hdrlib"/>
+								<option id="com.crt.advproject.link.cpp.nanofloat.107880371" name="Enable printf float " superClass="com.crt.advproject.link.cpp.nanofloat"/>
+								<option id="com.crt.advproject.link.cpp.nanofloat.scanf.2011049041" name="Enable scanf float " superClass="com.crt.advproject.link.cpp.nanofloat.scanf"/>
+								<option id="com.crt.advproject.link.cpp.toram.1782832176" name="Link application to RAM" superClass="com.crt.advproject.link.cpp.toram"/>
+								<option id="com.crt.advproject.link.memory.load.image.cpp.1173652521" name="Plain load image" superClass="com.crt.advproject.link.memory.load.image.cpp"/>
+								<option id="com.crt.advproject.link.memory.heapAndStack.style.cpp.114425913" name="Heap and Stack placement" superClass="com.crt.advproject.link.memory.heapAndStack.style.cpp"/>
+								<option id="com.crt.advproject.link.cpp.stackOffset.2146168293" name="Stack offset" superClass="com.crt.advproject.link.cpp.stackOffset"/>
+								<option id="com.crt.advproject.link.memory.heapAndStack.cpp.444852953" name="Heap and Stack options" superClass="com.crt.advproject.link.memory.heapAndStack.cpp"/>
+								<option id="com.crt.advproject.link.memory.data.cpp.1426269124" name="Global data placement" superClass="com.crt.advproject.link.memory.data.cpp"/>
+								<option id="com.crt.advproject.link.memory.sections.cpp.400028806" name="Extra linker script input sections" superClass="com.crt.advproject.link.memory.sections.cpp"/>
+								<option id="com.crt.advproject.link.cpp.multicore.slave.726437556" name="Multicore configuration" superClass="com.crt.advproject.link.cpp.multicore.slave"/>
+								<option id="com.crt.advproject.link.cpp.multicore.master.220673715" name="Multicore master" superClass="com.crt.advproject.link.cpp.multicore.master"/>
+								<option id="com.crt.advproject.link.cpp.multicore.empty.1497529678" name="No Multicore options for this project" superClass="com.crt.advproject.link.cpp.multicore.empty"/>
+								<option id="com.crt.advproject.link.cpp.multicore.master.userobjs.897488676" name="Slave Objects (not visible)" superClass="com.crt.advproject.link.cpp.multicore.master.userobjs"/>
+								<option id="com.crt.advproject.link.cpp.config.1695157882" name="Obsolete (Config)" superClass="com.crt.advproject.link.cpp.config"/>
+								<option id="com.crt.advproject.link.cpp.store.702810310" name="Obsolete (Store)" superClass="com.crt.advproject.link.cpp.store"/>
+								<option id="com.crt.advproject.link.cpp.securestate.603470930" name="TrustZone Project Type" superClass="com.crt.advproject.link.cpp.securestate"/>
+							</tool>
+							<tool id="com.crt.advproject.link.exe.debug.1353365876" name="MCU Linker" superClass="com.crt.advproject.link.exe.debug">
+								<option id="com.crt.advproject.link.thumb.2126284732" name="Thumb mode" superClass="com.crt.advproject.link.thumb" value="true" valueType="boolean"/>
+								<option id="com.crt.advproject.link.memory.load.image.1461388158" name="Plain load image" superClass="com.crt.advproject.link.memory.load.image" useByScannerDiscovery="false" value="false;" valueType="string"/>
+								<option id="com.crt.advproject.link.memory.heapAndStack.2041175568" name="Heap and Stack options" superClass="com.crt.advproject.link.memory.heapAndStack" value="&amp;Heap:Default;Post Data;Default&amp;Stack:Default;End;Default" valueType="string"/>
+								<option id="com.crt.advproject.link.memory.data.534517225" name="Global data placement" superClass="com.crt.advproject.link.memory.data" useByScannerDiscovery="false" value="Default" valueType="string"/>
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="true" id="com.crt.advproject.link.memory.sections.1905383450" name="Extra linker script input sections" superClass="com.crt.advproject.link.memory.sections" useByScannerDiscovery="false" valueType="stringList"/>
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="true" id="com.crt.advproject.link.gcc.multicore.master.userobjs.1745690918" name="Slave Objects (not visible)" superClass="com.crt.advproject.link.gcc.multicore.master.userobjs" useByScannerDiscovery="false" valueType="userObjs"/>
+								<option id="com.crt.advproject.link.arch.191568746" name="Architecture" superClass="com.crt.advproject.link.arch" value="com.crt.advproject.link.target.cm4" valueType="enumerated"/>
+								<option id="gnu.c.link.option.nostart.1441635482" name="Do not use standard start files (-nostartfiles)" superClass="gnu.c.link.option.nostart"/>
+								<option id="gnu.c.link.option.nodeflibs.1607367292" name="Do not use default libraries (-nodefaultlibs)" superClass="gnu.c.link.option.nodeflibs"/>
+								<option id="gnu.c.link.option.nostdlibs.1566452444" name="No startup or default libs (-nostdlib)" superClass="gnu.c.link.option.nostdlibs" value="true" valueType="boolean"/>
+								<option id="gnu.c.link.option.strip.658449172" name="Omit all symbol information (-s)" superClass="gnu.c.link.option.strip"/>
+								<option id="gnu.c.link.option.noshared.2083029926" name="No shared libraries (-static)" superClass="gnu.c.link.option.noshared"/>
+								<option id="gnu.c.link.option.libs.1081522793" name="Libraries (-l)" superClass="gnu.c.link.option.libs"/>
+								<option id="gnu.c.link.option.paths.303781004" name="Library search path (-L)" superClass="gnu.c.link.option.paths"/>
+								<option id="gnu.c.link.option.ldflags.1561074692" name="Linker flags" superClass="gnu.c.link.option.ldflags"/>
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.link.option.other.1040537354" name="Other options (-Xlinker [option])" superClass="gnu.c.link.option.other" valueType="stringList">
+									<listOptionValue builtIn="false" value="-Map=&quot;${BuildArtifactFileBaseName}.map&quot;"/>
+									<listOptionValue builtIn="false" value="--gc-sections"/>
+									<listOptionValue builtIn="false" value="-print-memory-usage"/>
+									<listOptionValue builtIn="false" value="--sort-section=alignment"/>
+								</option>
+								<option id="gnu.c.link.option.userobjs.685776321" name="Other objects" superClass="gnu.c.link.option.userobjs"/>
+								<option id="gnu.c.link.option.shared.2100581220" name="Shared (-shared)" superClass="gnu.c.link.option.shared"/>
+								<option id="gnu.c.link.option.soname.1806687840" name="Shared object name (-Wl,-soname=)" superClass="gnu.c.link.option.soname"/>
+								<option id="gnu.c.link.option.implname.14066532" name="Import Library name (-Wl,--out-implib=)" superClass="gnu.c.link.option.implname"/>
+								<option id="gnu.c.link.option.defname.1006467664" name="DEF file name (-Wl,--output-def=)" superClass="gnu.c.link.option.defname"/>
+								<option id="gnu.c.link.option.debugging.prof.1187995072" name="Generate prof information (-p)" superClass="gnu.c.link.option.debugging.prof"/>
+								<option id="gnu.c.link.option.debugging.gprof.665373055" name="Generate gprof information (-pg)" superClass="gnu.c.link.option.debugging.gprof"/>
+								<option id="gnu.c.link.option.debugging.codecov.2044339144" name="Generate gcov information (-ftest-coverage -fprofile-arcs)" superClass="gnu.c.link.option.debugging.codecov"/>
+								<option id="com.crt.advproject.link.gcc.lto.381845356" name="Enable Link-time optimization (-flto)" superClass="com.crt.advproject.link.gcc.lto"/>
+								<option id="com.crt.advproject.link.gcc.lto.optmization.level.1993725905" name="Link-time optimization level" superClass="com.crt.advproject.link.gcc.lto.optmization.level"/>
+								<option id="com.crt.advproject.link.fpu.1464928749" name="Floating point" superClass="com.crt.advproject.link.fpu" value="com.crt.advproject.link.fpu.fpv4.hard" valueType="enumerated"/>
+								<option id="com.crt.advproject.link.manage.1356574711" name="Manage linker script" superClass="com.crt.advproject.link.manage" useByScannerDiscovery="false" value="false" valueType="boolean"/>
+								<option id="com.crt.advproject.link.script.1949526497" name="Linker script" superClass="com.crt.advproject.link.script" useByScannerDiscovery="false" value="../linkerscripts/firmware.ld" valueType="string"/>
+								<option id="com.crt.advproject.link.scriptdir.835352062" name="Script path" superClass="com.crt.advproject.link.scriptdir" useByScannerDiscovery="false" value="" valueType="string"/>
+								<option id="com.crt.advproject.link.crpenable.720667175" name="Enable automatic placement of Code Read Protection field in image" superClass="com.crt.advproject.link.crpenable"/>
+								<option id="com.crt.advproject.link.flashconfigenable.384750855" name="Enable automatic placement of Flash Configuration field in image" superClass="com.crt.advproject.link.flashconfigenable" value="true" valueType="boolean"/>
+								<option id="com.crt.advproject.link.ecrp.632618142" name="Enhanced CRP" superClass="com.crt.advproject.link.ecrp"/>
+								<option id="com.crt.advproject.link.gcc.hdrlib.1250251476" name="Library" superClass="com.crt.advproject.link.gcc.hdrlib" value="com.crt.advproject.gcc.link.hdrlib.codered.semihost_nf" valueType="enumerated"/>
+								<option id="com.crt.advproject.link.gcc.nanofloat.203694170" name="Enable printf float " superClass="com.crt.advproject.link.gcc.nanofloat"/>
+								<option id="com.crt.advproject.link.gcc.nanofloat.scanf.1257283519" name="Enable scanf float " superClass="com.crt.advproject.link.gcc.nanofloat.scanf"/>
+								<option id="com.crt.advproject.link.toram.1560207012" name="Link application to RAM" superClass="com.crt.advproject.link.toram"/>
+								<option defaultValue="com.crt.advproject.heapAndStack.mcuXpressoStyle" id="com.crt.advproject.link.memory.heapAndStack.style.674915719" name="Heap and Stack placement" superClass="com.crt.advproject.link.memory.heapAndStack.style" useByScannerDiscovery="false" valueType="enumerated"/>
+								<option id="com.crt.advproject.link.stackOffset.632456009" name="Stack offset" superClass="com.crt.advproject.link.stackOffset"/>
+								<option id="com.crt.advproject.link.gcc.multicore.slave.1380088154" name="Multicore configuration" superClass="com.crt.advproject.link.gcc.multicore.slave"/>
+								<option id="com.crt.advproject.link.gcc.multicore.master.931495646" name="Multicore master" superClass="com.crt.advproject.link.gcc.multicore.master"/>
+								<option id="com.crt.advproject.link.gcc.multicore.empty.337714125" name="No Multicore options for this project" superClass="com.crt.advproject.link.gcc.multicore.empty"/>
+								<option id="com.crt.advproject.link.config.692114507" name="Obsolete (Config)" superClass="com.crt.advproject.link.config"/>
+								<option id="com.crt.advproject.link.store.1030518569" name="Obsolete (Store)" superClass="com.crt.advproject.link.store"/>
+								<option id="com.crt.advproject.link.securestate.271617793" name="TrustZone Project Type" superClass="com.crt.advproject.link.securestate"/>
+								<inputType id="cdt.managedbuild.tool.gnu.c.linker.input.1848993429" superClass="cdt.managedbuild.tool.gnu.c.linker.input">
+									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
+									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
+								</inputType>
+							</tool>
+							<tool id="com.crt.advproject.tool.debug.debug.1639243531" name="MCU Debugger" superClass="com.crt.advproject.tool.debug.debug">
+								<option id="com.crt.advproject.linkserver.debug.prevent.debug.1174475622" name="Prevent Debugging" superClass="com.crt.advproject.linkserver.debug.prevent.debug"/>
+							</tool>
+						</toolChain>
+					</folderInfo>
+					<folderInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.amazon-freertos/FreeRTOS" name="/" resourcePath="amazon-freertos/FreeRTOS">
+						<toolChain id="com.crt.advproject.toolchain.exe.debug.1294078844" name="NXP MCU Tools" superClass="com.crt.advproject.toolchain.exe.debug" unusedChildren="">
+							<targetPlatform binaryParser="org.eclipse.cdt.core.ELF;org.eclipse.cdt.core.GNU_ELF" id="com.crt.advproject.platform.exe.debug.930605713" name="ARM-based MCU (Debug)" superClass="com.crt.advproject.platform.exe.debug"/>
+							<tool id="com.crt.advproject.cpp.exe.debug.614027857" name="MCU C++ Compiler" superClass="com.crt.advproject.cpp.exe.debug.2063431280"/>
+							<tool id="com.crt.advproject.gcc.exe.debug.2028136491" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+								<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.344658668" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+								<inputType id="com.crt.advproject.compiler.input.859857334" superClass="com.crt.advproject.compiler.input"/>
+							</tool>
+							<tool id="com.crt.advproject.gas.exe.debug.962145136" name="MCU Assembler" superClass="com.crt.advproject.gas.exe.debug.2140907721">
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1826007606" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+								<inputType id="com.crt.advproject.assembler.input.719834082" name="Additional Assembly Source Files" superClass="com.crt.advproject.assembler.input"/>
+							</tool>
+							<tool id="com.crt.advproject.link.cpp.exe.debug.1713536278" name="MCU C++ Linker" superClass="com.crt.advproject.link.cpp.exe.debug.1375069922"/>
+							<tool id="com.crt.advproject.link.exe.debug.941523845" name="MCU Linker" superClass="com.crt.advproject.link.exe.debug.1353365876"/>
+							<tool id="com.crt.advproject.tool.debug.debug.69725913" name="MCU Debugger" superClass="com.crt.advproject.tool.debug.debug.1639243531"/>
+						</toolChain>
+					</folderInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/codec/fw_mbelib.c" name="fw_mbelib.c" rcbsApplicability="disable" resourcePath="source/codec/fw_mbelib.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1001322140">
+						<tool id="com.crt.advproject.gcc.exe.debug.1001322140" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.301296042" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.978726087" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/interfaces/fw_spi.c" name="fw_spi.c" rcbsApplicability="disable" resourcePath="source/interfaces/fw_spi.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.669384161">
+						<tool id="com.crt.advproject.gcc.exe.debug.669384161" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.2133207361" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.1793886182" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/interfaces/fw_dac.c" name="fw_dac.c" rcbsApplicability="disable" resourcePath="source/interfaces/fw_dac.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.642145623">
+						<tool id="com.crt.advproject.gcc.exe.debug.642145623" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1481382202" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.1167954443" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/interfaces/fw_pit.c" name="fw_pit.c" rcbsApplicability="disable" resourcePath="source/interfaces/fw_pit.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1857877532">
+						<tool id="com.crt.advproject.gcc.exe.debug.1857877532" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.592267718" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.1166255432" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/interfaces/fw_adc.c" name="fw_adc.c" rcbsApplicability="disable" resourcePath="source/interfaces/fw_adc.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1037351118">
+						<tool id="com.crt.advproject.gcc.exe.debug.1037351118" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.365845931" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.60631561" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/interfaces/fw_i2c.c" name="fw_i2c.c" rcbsApplicability="disable" resourcePath="source/interfaces/fw_i2c.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1285097240">
+						<tool id="com.crt.advproject.gcc.exe.debug.1285097240" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.157344203" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.1659005421" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/interfaces/fw_wdog.c" name="fw_wdog.c" rcbsApplicability="disable" resourcePath="source/interfaces/fw_wdog.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1204706998">
+						<tool id="com.crt.advproject.gcc.exe.debug.1204706998" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.61193684" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.1243527564" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/functions/fw_calibration.c" name="fw_calibration.c" rcbsApplicability="disable" resourcePath="source/functions/fw_calibration.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.41793198">
+						<tool id="com.crt.advproject.gcc.exe.debug.41793198" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.91581119" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.1812375365" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/functions/fw_trx.c" name="fw_trx.c" rcbsApplicability="disable" resourcePath="source/functions/fw_trx.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1962635448">
+						<tool id="com.crt.advproject.gcc.exe.debug.1962635448" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.73440460" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.1819476394" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/functions/fw_codeplug.c" name="fw_codeplug.c" rcbsApplicability="disable" resourcePath="source/functions/fw_codeplug.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.2055655097">
+						<tool id="com.crt.advproject.gcc.exe.debug.2055655097" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.615695830" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.18843282" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/functions/fw_ticks.c" name="fw_ticks.c" rcbsApplicability="disable" resourcePath="source/functions/fw_ticks.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1738211779">
+						<tool id="com.crt.advproject.gcc.exe.debug.1738211779" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1180849442" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.465351517" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/functions/fw_settings.c" name="fw_settings.c" rcbsApplicability="disable" resourcePath="source/functions/fw_settings.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.2066194353">
+						<tool id="com.crt.advproject.gcc.exe.debug.2066194353" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.325387914" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.1108488604" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/io/fw_display.c" name="fw_display.c" rcbsApplicability="disable" resourcePath="source/io/fw_display.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.343556681">
+						<tool id="com.crt.advproject.gcc.exe.debug.343556681" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1404194996" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.1126307679" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/io/fw_buttons.c" name="fw_buttons.c" rcbsApplicability="disable" resourcePath="source/io/fw_buttons.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1640404851">
+						<tool id="com.crt.advproject.gcc.exe.debug.1640404851" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1293160241" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.1987598445" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/io/fw_keyboard.c" name="fw_keyboard.c" rcbsApplicability="disable" resourcePath="source/io/fw_keyboard.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1822592381">
+						<tool id="com.crt.advproject.gcc.exe.debug.1822592381" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.314952402" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.1052092973" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/io/fw_LEDs.c" name="fw_LEDs.c" rcbsApplicability="disable" resourcePath="source/io/fw_LEDs.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.445692289">
+						<tool id="com.crt.advproject.gcc.exe.debug.445692289" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.603518389" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.426350514" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/io/fw_common.c" name="fw_common.c" rcbsApplicability="disable" resourcePath="source/io/fw_common.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1661796233">
+						<tool id="com.crt.advproject.gcc.exe.debug.1661796233" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.2010604547" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.482861796" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/dmr/DMRSlotType.c" name="DMRSlotType.c" rcbsApplicability="disable" resourcePath="source/dmr/DMRSlotType.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.795656825">
+						<tool id="com.crt.advproject.gcc.exe.debug.795656825" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.111696537" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.965039949" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/dmr/DMRShortLC.c" name="DMRShortLC.c" rcbsApplicability="disable" resourcePath="source/dmr/DMRShortLC.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1859317559">
+						<tool id="com.crt.advproject.gcc.exe.debug.1859317559" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1145841814" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.687460678" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/dmr/QR1676.c" name="QR1676.c" rcbsApplicability="disable" resourcePath="source/dmr/QR1676.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1669098161">
+						<tool command="arm-none-eabi-gcc" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG} ${OUTPUT_PREFIX}${OUTPUT} ${INPUTS}" id="com.crt.advproject.gcc.exe.debug.1669098161" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.63691705" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.1822771252" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+						<tool announcement="Invoking: Resource Custom Build Step" command="" customBuildStep="true" id="org.eclipse.cdt.managedbuilder.ui.rcbs.1355873979.1943957393" name="Resource Custom Build Step">
+							<inputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.inputtype.791464153.1492187841" name="Resource Custom Build Step Input Type">
+								<additionalInput kind="additionalinputdependency" paths=""/>
+							</inputType>
+							<outputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.outputtype.2045588836.974755117" name="Resource Custom Build Step Output Type" outputNames=""/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/dmr/BPTC19696.c" name="BPTC19696.c" rcbsApplicability="disable" resourcePath="source/dmr/BPTC19696.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1890516830">
+						<tool id="com.crt.advproject.gcc.exe.debug.1890516830" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.2136327645" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.more" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.508017272" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/dmr/DMRLC.c" name="DMRLC.c" rcbsApplicability="disable" resourcePath="source/dmr/DMRLC.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.280350179">
+						<tool id="com.crt.advproject.gcc.exe.debug.280350179" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.364399430" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.754360162" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/dmr/dmrDefines.c" name="dmrDefines.c" rcbsApplicability="disable" resourcePath="source/dmr/dmrDefines.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.535238499">
+						<tool id="com.crt.advproject.gcc.exe.debug.535238499" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1985887794" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.1938076146" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/dmr/RS129.c" name="RS129.c" rcbsApplicability="disable" resourcePath="source/dmr/RS129.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.538871728">
+						<tool id="com.crt.advproject.gcc.exe.debug.538871728" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1586924028" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.500373818" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/dmr/DMREmbeddedData.c" name="DMREmbeddedData.c" rcbsApplicability="disable" resourcePath="source/dmr/DMREmbeddedData.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1908325934">
+						<tool id="com.crt.advproject.gcc.exe.debug.1908325934" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.935651887" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.987287632" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/dmr/DMRFullLC.c" name="DMRFullLC.c" rcbsApplicability="disable" resourcePath="source/dmr/DMRFullLC.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1744446281">
+						<tool id="com.crt.advproject.gcc.exe.debug.1744446281" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1143216108" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.1608037545" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/dmr/dmrUtils.c" name="dmrUtils.c" rcbsApplicability="disable" resourcePath="source/dmr/dmrUtils.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1671305377">
+						<tool id="com.crt.advproject.gcc.exe.debug.1671305377" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.2075066238" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.130791310" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/dmr/Hamming.c" name="Hamming.c" rcbsApplicability="disable" resourcePath="source/dmr/Hamming.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.974631113">
+						<tool id="com.crt.advproject.gcc.exe.debug.974631113" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1854377369" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.1322703489" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/dmr/CRC.c" name="CRC.c" rcbsApplicability="disable" resourcePath="source/dmr/CRC.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.408054269">
+						<tool id="com.crt.advproject.gcc.exe.debug.408054269" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1203158172" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.1104339803" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<folderInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/user_interface" name="/" resourcePath="source/user_interface">
+						<toolChain id="com.crt.advproject.toolchain.exe.debug.74934878" name="NXP MCU Tools" superClass="com.crt.advproject.toolchain.exe.debug" unusedChildren="">
+							<targetPlatform binaryParser="org.eclipse.cdt.core.ELF;org.eclipse.cdt.core.GNU_ELF" id="com.crt.advproject.platform.exe.debug.1899116093" name="ARM-based MCU (Debug)" superClass="com.crt.advproject.platform.exe.debug"/>
+							<tool id="com.crt.advproject.cpp.exe.debug.552926505" name="MCU C++ Compiler" superClass="com.crt.advproject.cpp.exe.debug.2063431280"/>
+							<tool id="com.crt.advproject.gcc.exe.debug.22391954" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+								<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.266536481" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="true" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+								<inputType id="com.crt.advproject.compiler.input.1903383645" superClass="com.crt.advproject.compiler.input"/>
+							</tool>
+							<tool id="com.crt.advproject.gas.exe.debug.1260223502" name="MCU Assembler" superClass="com.crt.advproject.gas.exe.debug.2140907721">
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1581597526" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+								<inputType id="com.crt.advproject.assembler.input.1054985053" name="Additional Assembly Source Files" superClass="com.crt.advproject.assembler.input"/>
+							</tool>
+							<tool id="com.crt.advproject.link.cpp.exe.debug.2057616101" name="MCU C++ Linker" superClass="com.crt.advproject.link.cpp.exe.debug.1375069922"/>
+							<tool id="com.crt.advproject.link.exe.debug.1667924531" name="MCU Linker" superClass="com.crt.advproject.link.exe.debug.1353365876"/>
+							<tool id="com.crt.advproject.tool.debug.debug.1289376938" name="MCU Debugger" superClass="com.crt.advproject.tool.debug.debug.1639243531"/>
+						</toolChain>
+					</folderInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/user_interface/menuDisplayMenuList.c" name="menuDisplayMenuList.c" rcbsApplicability="disable" resourcePath="source/user_interface/menuDisplayMenuList.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.42429322">
+						<tool id="com.crt.advproject.gcc.exe.debug.42429322" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.682595617" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.1110300470" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/user_interface/menuLanguage.c" name="menuLanguage.c" rcbsApplicability="disable" resourcePath="source/user_interface/menuLanguage.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1792500634">
+						<tool id="com.crt.advproject.gcc.exe.debug.1792500634" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1154320521" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="true" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.1172838402" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/user_interface/uiTxScreen.c" name="menuTxScreen.c" rcbsApplicability="disable" resourcePath="source/user_interface/uiTxScreen.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1156969836">
+						<tool id="com.crt.advproject.gcc.exe.debug.1156969836" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.625842471" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.1484544120" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/user_interface/uiSplashScreen.c" name="menuSplashScreen.c" rcbsApplicability="disable" resourcePath="source/user_interface/uiSplashScreen.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1941460723">
+						<tool id="com.crt.advproject.gcc.exe.debug.1941460723" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.830069259" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.1844669066" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/user_interface/menuChannelDetails.c" name="menuChannelDetails.c" rcbsApplicability="disable" resourcePath="source/user_interface/menuChannelDetails.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1817093013">
+						<tool id="com.crt.advproject.gcc.exe.debug.1817093013" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.2006429513" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.498444869" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/user_interface/menuContactList.c" name="menuContactList.c" rcbsApplicability="disable" resourcePath="source/user_interface/menuContactList.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.742453672">
+						<tool id="com.crt.advproject.gcc.exe.debug.742453672" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1817228288" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="true" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.1433099446" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/user_interface/menuFirmwareInfoScreen.c" name="menuFirmwareInfoScreen.c" rcbsApplicability="disable" resourcePath="source/user_interface/menuFirmwareInfoScreen.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.2013106245">
+						<tool id="com.crt.advproject.gcc.exe.debug.2013106245" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1379223159" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.1198975224" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/user_interface/menuOptions.c" name="menuUtilities.c" rcbsApplicability="disable" resourcePath="source/user_interface/menuOptions.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.434989891">
+						<tool id="com.crt.advproject.gcc.exe.debug.434989891" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.260614196" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.242917231" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/user_interface/menuDisplayOptions.c" name="menuDisplayOptions.c" rcbsApplicability="disable" resourcePath="source/user_interface/menuDisplayOptions.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.2082408440">
+						<tool id="com.crt.advproject.gcc.exe.debug.2082408440" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.983518476" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.1776313207" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/user_interface/menuBattery.c" name="menuBattery.c" rcbsApplicability="disable" resourcePath="source/user_interface/menuBattery.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1584558224">
+						<tool id="com.crt.advproject.gcc.exe.debug.1584558224" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.853642511" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.449220543" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/user_interface/uiUtilities.c" name="uiUtilities.c" rcbsApplicability="disable" resourcePath="source/user_interface/uiUtilities.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1084837149">
+						<tool id="com.crt.advproject.gcc.exe.debug.1084837149" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1266696734" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="true" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.843139022" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/user_interface/menuMessageScreen.c" name="menuMessageScreen.c" rcbsApplicability="disable" resourcePath="source/user_interface/menuMessageScreen.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.2094919122">
+						<tool id="com.crt.advproject.gcc.exe.debug.2094919122" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.579153961" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.1066697442" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/user_interface/menuLastHeard.c" name="menuLastHeard.c" rcbsApplicability="disable" resourcePath="source/user_interface/menuLastHeard.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1899939412">
+						<tool id="com.crt.advproject.gcc.exe.debug.1899939412" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.624117881" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.1567613773" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/user_interface/uiCPS.c" name="menuCPS.c" rcbsApplicability="disable" resourcePath="source/user_interface/uiCPS.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.656401164">
+						<tool id="com.crt.advproject.gcc.exe.debug.656401164" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1726630305" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.14307233" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/user_interface/uiPrivateCall.c" name="uiPrivateCall.c" rcbsApplicability="disable" resourcePath="source/user_interface/uiPrivateCall.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1394786237">
+						<tool id="com.crt.advproject.gcc.exe.debug.1394786237" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.736315404" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="true" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.1035384211" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/user_interface/uiTxTgPcContactOwnId.c" name="menuNumericalEntry.c" rcbsApplicability="disable" resourcePath="source/user_interface/uiTxTgPcContactOwnId.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.2022492189">
+						<tool id="com.crt.advproject.gcc.exe.debug.2022492189" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1290103092" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.1889816601" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/user_interface/menuZoneList.c" name="menuZoneList.c" rcbsApplicability="disable" resourcePath="source/user_interface/menuZoneList.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1604061919">
+						<tool id="com.crt.advproject.gcc.exe.debug.1604061919" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.768546483" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.709325555" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/user_interface/uiPowerOff.c" name="menuPowerOff.c" rcbsApplicability="disable" resourcePath="source/user_interface/uiPowerOff.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.959454677">
+						<tool id="com.crt.advproject.gcc.exe.debug.959454677" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.196290211" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.152210410" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/user_interface/uiLocalisation.c" name="uiLocalisation.c" rcbsApplicability="disable" resourcePath="source/user_interface/uiLocalisation.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.2137046958">
+						<tool id="com.crt.advproject.gcc.exe.debug.2137046958" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1971630557" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="true" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.1037754954" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/user_interface/uiHotspot.c" name="menuHotspot.c" rcbsApplicability="disable" resourcePath="source/user_interface/uiHotspot.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.29336424">
+						<tool id="com.crt.advproject.gcc.exe.debug.29336424" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1517872820" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.415023280" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/user_interface/menuCredits.c" name="menuCredits.c" rcbsApplicability="disable" resourcePath="source/user_interface/menuCredits.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.448361198">
+						<tool id="com.crt.advproject.gcc.exe.debug.448361198" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1840504610" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.179622500" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/user_interface/uiVFOMode.c" name="menuVFOMode.c" rcbsApplicability="disable" resourcePath="source/user_interface/uiVFOMode.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.2042851662">
+						<tool id="com.crt.advproject.gcc.exe.debug.2042851662" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1668534118" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.665047997" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/user_interface/uiLockScreen.c" name="uiLockScreen.c" rcbsApplicability="disable" resourcePath="source/user_interface/uiLockScreen.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.605414960">
+						<tool id="com.crt.advproject.gcc.exe.debug.605414960" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.913887822" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="true" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.856009447" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/user_interface/menuSystem.c" name="menuSystem.c" rcbsApplicability="disable" resourcePath="source/user_interface/menuSystem.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.240158730">
+						<tool id="com.crt.advproject.gcc.exe.debug.240158730" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1317517612" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.900492282" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/user_interface/menuRSSIScreen.c" name="menuRSSIScreen.c" rcbsApplicability="disable" resourcePath="source/user_interface/menuRSSIScreen.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1652156459">
+						<tool id="com.crt.advproject.gcc.exe.debug.1652156459" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1112790825" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.1194502905" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/user_interface/menuContactDetails.c" name="menuContactDetails.c" rcbsApplicability="disable" resourcePath="source/user_interface/menuContactDetails.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1271873940">
+						<tool id="com.crt.advproject.gcc.exe.debug.1271873940" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.419767586" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="true" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.507272085" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/user_interface/uiChannelMode.c" name="menuChannelMode.c" rcbsApplicability="disable" resourcePath="source/user_interface/uiChannelMode.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.38683584">
+						<tool id="com.crt.advproject.gcc.exe.debug.38683584" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.869651262" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.565770422" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/hardware/fw_EEPROM.c" name="fw_EEPROM.c" rcbsApplicability="disable" resourcePath="source/hardware/fw_EEPROM.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.315393402">
+						<tool id="com.crt.advproject.gcc.exe.debug.315393402" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.68017588" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.1191722497" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/hardware/UC1701.c" name="UC1701.c" rcbsApplicability="disable" resourcePath="source/hardware/UC1701.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1482935413">
+						<tool id="com.crt.advproject.gcc.exe.debug.1482935413" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.180196883" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.126862225" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/hardware/fw_AT1846S.c" name="fw_AT1846S.c" rcbsApplicability="disable" resourcePath="source/hardware/fw_AT1846S.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.2065867803">
+						<tool id="com.crt.advproject.gcc.exe.debug.2065867803" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.101707699" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.605959129" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.source/hardware/fw_HR-C6000.c" name="fw_HR-C6000.c" rcbsApplicability="disable" resourcePath="source/hardware/fw_HR-C6000.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1411319839">
+						<tool id="com.crt.advproject.gcc.exe.debug.1411319839" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.617069778" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.316591746" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.drivers/fsl_common.c" name="fsl_common.c" rcbsApplicability="disable" resourcePath="drivers/fsl_common.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.406781777">
+						<tool id="com.crt.advproject.gcc.exe.debug.406781777" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1116807812" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.1963794442" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.drivers/fsl_sai_edma.c" name="fsl_sai_edma.c" rcbsApplicability="disable" resourcePath="drivers/fsl_sai_edma.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1006284102">
+						<tool id="com.crt.advproject.gcc.exe.debug.1006284102" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1641257626" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.2013815084" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.drivers/fsl_i2c.c" name="fsl_i2c.c" rcbsApplicability="disable" resourcePath="drivers/fsl_i2c.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1710368682">
+						<tool id="com.crt.advproject.gcc.exe.debug.1710368682" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1384461897" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.1228484741" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.drivers/fsl_ftm.c" name="fsl_ftm.c" rcbsApplicability="disable" resourcePath="drivers/fsl_ftm.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1912395774">
+						<tool id="com.crt.advproject.gcc.exe.debug.1912395774" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.775960093" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.1820954048" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.drivers/fsl_clock.c" name="fsl_clock.c" rcbsApplicability="disable" resourcePath="drivers/fsl_clock.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.14808398">
+						<tool id="com.crt.advproject.gcc.exe.debug.14808398" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.2069680599" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.155512883" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.drivers/fsl_gpio.c" name="fsl_gpio.c" rcbsApplicability="disable" resourcePath="drivers/fsl_gpio.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.794316747">
+						<tool id="com.crt.advproject.gcc.exe.debug.794316747" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1871011691" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.839238671" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.drivers/fsl_adc16.c" name="fsl_adc16.c" rcbsApplicability="disable" resourcePath="drivers/fsl_adc16.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1828828502">
+						<tool id="com.crt.advproject.gcc.exe.debug.1828828502" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.814988515" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.413983477" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.drivers/fsl_dac.c" name="fsl_dac.c" rcbsApplicability="disable" resourcePath="drivers/fsl_dac.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1612139354">
+						<tool id="com.crt.advproject.gcc.exe.debug.1612139354" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.460962434" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.1901229927" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.drivers/fsl_smc.c" name="fsl_smc.c" rcbsApplicability="disable" resourcePath="drivers/fsl_smc.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1423532546">
+						<tool id="com.crt.advproject.gcc.exe.debug.1423532546" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.571786654" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.1819457935" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.drivers/fsl_wdog.c" name="fsl_wdog.c" rcbsApplicability="disable" resourcePath="drivers/fsl_wdog.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.720264837">
+						<tool id="com.crt.advproject.gcc.exe.debug.720264837" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1337722878" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.632477199" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.drivers/fsl_dmamux.c" name="fsl_dmamux.c" rcbsApplicability="disable" resourcePath="drivers/fsl_dmamux.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1857150080">
+						<tool id="com.crt.advproject.gcc.exe.debug.1857150080" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.635882603" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.1912255340" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.drivers/fsl_pit.c" name="fsl_pit.c" rcbsApplicability="disable" resourcePath="drivers/fsl_pit.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1708455365">
+						<tool id="com.crt.advproject.gcc.exe.debug.1708455365" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.28270879" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.208374221" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.drivers/fsl_edma.c" name="fsl_edma.c" rcbsApplicability="disable" resourcePath="drivers/fsl_edma.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.313798111">
+						<tool id="com.crt.advproject.gcc.exe.debug.313798111" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1741996579" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.449202319" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.drivers/fsl_sai.c" name="fsl_sai.c" rcbsApplicability="disable" resourcePath="drivers/fsl_sai.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1118706287">
+						<tool id="com.crt.advproject.gcc.exe.debug.1118706287" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1809402771" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.86325843" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<folderInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.device" name="/" resourcePath="device">
+						<toolChain id="com.crt.advproject.toolchain.exe.debug.238221146" name="NXP MCU Tools" superClass="com.crt.advproject.toolchain.exe.debug" unusedChildren="">
+							<targetPlatform binaryParser="org.eclipse.cdt.core.ELF;org.eclipse.cdt.core.GNU_ELF" id="com.crt.advproject.platform.exe.debug.243364086" name="ARM-based MCU (Debug)" superClass="com.crt.advproject.platform.exe.debug"/>
+							<tool id="com.crt.advproject.cpp.exe.debug.285705148" name="MCU C++ Compiler" superClass="com.crt.advproject.cpp.exe.debug.2063431280"/>
+							<tool id="com.crt.advproject.gcc.exe.debug.2105843580" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+								<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.525016087" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+								<inputType id="com.crt.advproject.compiler.input.611265919" superClass="com.crt.advproject.compiler.input"/>
+							</tool>
+							<tool id="com.crt.advproject.gas.exe.debug.2127366428" name="MCU Assembler" superClass="com.crt.advproject.gas.exe.debug.2140907721">
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.12167242" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+								<inputType id="com.crt.advproject.assembler.input.2027065562" name="Additional Assembly Source Files" superClass="com.crt.advproject.assembler.input"/>
+							</tool>
+							<tool id="com.crt.advproject.link.cpp.exe.debug.621108139" name="MCU C++ Linker" superClass="com.crt.advproject.link.cpp.exe.debug.1375069922"/>
+							<tool id="com.crt.advproject.link.exe.debug.103551114" name="MCU Linker" superClass="com.crt.advproject.link.exe.debug.1353365876"/>
+							<tool id="com.crt.advproject.tool.debug.debug.768766064" name="MCU Debugger" superClass="com.crt.advproject.tool.debug.debug.1639243531"/>
+						</toolChain>
+					</folderInfo>
+					<folderInfo id="com.crt.advproject.config.exe.debug.1021312312.630033272.board" name="/" resourcePath="board">
+						<toolChain id="com.crt.advproject.toolchain.exe.debug.3557421" name="NXP MCU Tools" superClass="com.crt.advproject.toolchain.exe.debug" unusedChildren="">
+							<targetPlatform binaryParser="org.eclipse.cdt.core.ELF;org.eclipse.cdt.core.GNU_ELF" id="com.crt.advproject.platform.exe.debug.1772539212" name="ARM-based MCU (Debug)" superClass="com.crt.advproject.platform.exe.debug"/>
+							<tool id="com.crt.advproject.cpp.exe.debug.1498780276" name="MCU C++ Compiler" superClass="com.crt.advproject.cpp.exe.debug.2063431280"/>
+							<tool id="com.crt.advproject.gcc.exe.debug.208226718" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1505907422">
+								<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.819563234" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+								<inputType id="com.crt.advproject.compiler.input.1585219899" superClass="com.crt.advproject.compiler.input"/>
+							</tool>
+							<tool id="com.crt.advproject.gas.exe.debug.727913393" name="MCU Assembler" superClass="com.crt.advproject.gas.exe.debug.2140907721">
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1186097884" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+								<inputType id="com.crt.advproject.assembler.input.8038689" name="Additional Assembly Source Files" superClass="com.crt.advproject.assembler.input"/>
+							</tool>
+							<tool id="com.crt.advproject.link.cpp.exe.debug.1079483376" name="MCU C++ Linker" superClass="com.crt.advproject.link.cpp.exe.debug.1375069922"/>
+							<tool id="com.crt.advproject.link.exe.debug.951925067" name="MCU Linker" superClass="com.crt.advproject.link.exe.debug.1353365876"/>
+							<tool id="com.crt.advproject.tool.debug.debug.886062981" name="MCU Debugger" superClass="com.crt.advproject.tool.debug.debug.1639243531"/>
+						</toolChain>
+					</folderInfo>
+					<sourceEntries>
+						<entry flags="LOCAL|VALUE_WORKSPACE_PATH" kind="sourcePath" name="CMSIS"/>
+						<entry excluding="FreeRTOS/portable/heap_1.c|FreeRTOS/portable/heap_2.c|FreeRTOS/portable/heap_3.c|FreeRTOS/portable/heap_5.c" flags="LOCAL|VALUE_WORKSPACE_PATH" kind="sourcePath" name="amazon-freertos"/>
+						<entry flags="LOCAL|VALUE_WORKSPACE_PATH" kind="sourcePath" name="board"/>
+						<entry flags="LOCAL|VALUE_WORKSPACE_PATH" kind="sourcePath" name="device"/>
+						<entry flags="LOCAL|VALUE_WORKSPACE_PATH" kind="sourcePath" name="drivers"/>
+						<entry flags="LOCAL|VALUE_WORKSPACE_PATH" kind="sourcePath" name="osa"/>
+						<entry flags="LOCAL|VALUE_WORKSPACE_PATH" kind="sourcePath" name="source"/>
+						<entry flags="LOCAL|VALUE_WORKSPACE_PATH" kind="sourcePath" name="startup"/>
+						<entry flags="LOCAL|VALUE_WORKSPACE_PATH" kind="sourcePath" name="usb"/>
+					</sourceEntries>
+				</configuration>
+			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+		</cconfiguration>
 	</storageModule>
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
 		<project id="firmware.null.864438354" name="firmware" projectType="com.crt.advproject.projecttype.exe"/>
@@ -1168,12 +1991,17 @@
 &lt;/TargetConfig&gt;</projectStorage>
 	</storageModule>
 	<storageModule moduleId="refreshScope" versionNumber="2">
-		<configuration configurationName="Debug">
+		<configuration configurationName="Debug_DM-1801"/>
+		<configuration configurationName="Debug GD-77">
 			<resource resourceType="PROJECT" workspacePath="/firmware"/>
 		</configuration>
 		<configuration configurationName="Release">
 			<resource resourceType="PROJECT" workspacePath="/firmware"/>
 		</configuration>
+		<configuration configurationName="Debug">
+			<resource resourceType="PROJECT" workspacePath="/firmware"/>
+		</configuration>
+		<configuration configurationName="Debug_GD-77"/>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>

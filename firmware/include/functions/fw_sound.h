@@ -93,4 +93,15 @@ void setup_soundBuffer(void);
 void tick_melody(void);
 void fw_beep_task(void *data);
 
+//bit masks to track amp ussage
+
+#define AUDIO_AMP_MODE_NONE 0B00000000
+#define AUDIO_AMP_MODE_BEEP 0B00000001
+#define AUDIO_AMP_MODE_RF 0B00000010
+
+
+uint8_t getAudioAmpStatus(void);
+void enableAudioAmp (uint8_t mode);
+void disableAudioAmp (uint8_t mode);
+
 #endif /* _FW_SOUND_H_ */

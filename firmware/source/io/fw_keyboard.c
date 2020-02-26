@@ -44,12 +44,28 @@ enum KEY_STATE
 
 volatile bool keypadLocked = false;
 
+#if(PLATFORM == GD-77)
+
 static const uint32_t keyMap[] = {
 		KEY_1, KEY_2, KEY_3, KEY_GREEN, KEY_RIGHT,
 		KEY_4, KEY_5, KEY_6, KEY_UP, KEY_LEFT,
 		KEY_7, KEY_8, KEY_9, KEY_DOWN, (uint32_t)NULL,
 		KEY_STAR, KEY_0, KEY_HASH, KEY_RED, (uint32_t)NULL
 };
+
+#elif (PLATFORM == DM-1801)
+
+static const uint32_t keyMap[] = {
+		KEY_1, KEY_2, KEY_3, KEY_GREEN, KEY_A_B,
+		KEY_4, KEY_5, KEY_6, KEY_UP, KEY_VFO_MR,
+		KEY_7, KEY_8, KEY_9, KEY_DOWN, KEY_RIGHT,
+		KEY_STAR, KEY_0, KEY_HASH, KEY_RED, KEY_LEFT
+};
+
+#endif
+
+
+
 static const char keypadAlphaMap[11][31] = {
 		"0 ",
 		"1.!,@-:?()~/[]#<>=*+$%'`&|_^{}",

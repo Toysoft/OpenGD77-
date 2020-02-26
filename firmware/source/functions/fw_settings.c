@@ -27,8 +27,7 @@
 
 static const int STORAGE_BASE_ADDRESS 		= 0x6000;
 
-static const int STORAGE_MAGIC_NUMBER 		= 0x4743;
-
+static const int STORAGE_MAGIC_NUMBER 		= 0x4744;
 
 settingsStruct_t nonVolatileSettings;
 struct_codeplugChannel_t *currentChannelData;
@@ -65,6 +64,10 @@ bool settingsLoadSettings(void)
 
 	trxDMRID = codeplugGetUserDMRID();
 
+	if (nonVolatileSettings.analogFilterLevel == ANALOG_FILTER_NONE)
+	{
+		trxSetRxCTCSS(TRX_CTCSS_TONE_NONE);
+	}
 
 	currentLanguage = &languages[nonVolatileSettings.languageIndex];
 
@@ -153,6 +156,7 @@ void settingsRestoreDefaultSettings(void)
 	nonVolatileSettings.currentVFONumber = 0;
 	nonVolatileSettings.dmrFilterLevel = DMR_FILTER_CC_TS;
 	nonVolatileSettings.dmrCaptureTimeout=10;// Default to holding 10 seconds after a call ends
+	nonVolatileSettings.analogFilterLevel = ANALOG_FILTER_CTCSS;
 	nonVolatileSettings.languageIndex=0;
 	nonVolatileSettings.scanDelay=5;// 5 seconds
 	nonVolatileSettings.scanModePause = SCAN_MODE_HOLD;

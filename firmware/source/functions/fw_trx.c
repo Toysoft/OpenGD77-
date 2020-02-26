@@ -75,8 +75,6 @@ static int currentTxFrequency = 14400000;
 static int currentCC = 1;
 static uint8_t squelch = 0x00;
 static bool rxCTCSSactive = false;
-static uint8_t ANTENNA_SWITCH_RX = 0;
-static uint8_t ANTENNA_SWITCH_TX = 1;
 
 // AT-1846 native values for Rx
 static uint8_t rx_fl_l;
@@ -249,7 +247,7 @@ void trx_check_analog_squelch(void)
 			}
 			if(!rxCTCSSactive || (rxCTCSSactive & trxCheckCTCSSFlag()))
 			{
-				GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1); // speaker on
+				enableAudioAmp(AUDIO_AMP_MODE_RF);
 			}
 		}
 		else
@@ -257,7 +255,7 @@ void trx_check_analog_squelch(void)
 			analogSignalReceived = false;
 			if (trxIsTransmittingTone == false)
 			{
-				GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0); // speaker off
+				disableAudioAmp(AUDIO_AMP_MODE_RF);
 				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 			}
 		}
@@ -431,7 +429,6 @@ void trxActivateRx(void)
 	GPIO_PinWrite(GPIO_VHF_TX_amp_power, Pin_VHF_TX_amp_power, 0);// VHF PA off
 	GPIO_PinWrite(GPIO_UHF_TX_amp_power, Pin_UHF_TX_amp_power, 0);// UHF PA off
 
-    GPIO_PinWrite(GPIO_RF_ant_switch, Pin_RF_ant_switch, ANTENNA_SWITCH_RX);
 	txPAEnabled=false;
 
 
@@ -484,8 +481,6 @@ void trxActivateTx(void)
 	{
 		set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0xC0); // digital TX
 	}
-
-    GPIO_PinWrite(GPIO_RF_ant_switch, Pin_RF_ant_switch, ANTENNA_SWITCH_TX);
 
 	// TX PA on
 	if (trxCurrentBand[TRX_TX_FREQ_BAND] == RADIO_BAND_UHF)

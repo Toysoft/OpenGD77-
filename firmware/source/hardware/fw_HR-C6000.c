@@ -110,6 +110,8 @@ static volatile int TAPhase=0;
 //static const int TAOffsets[] = {0,6,13,20};
 char talkAliasText[33];
 
+
+
 static bool callAcceptFilter(void);
 static void setupPcOrTGHeader(void);
 static inline void HRC6000SysInterruptHandler(void);
@@ -118,6 +120,14 @@ static inline void HRC6000RxInterruptHandler(void);
 static inline void HRC6000TxInterruptHandler(void);
 static void HRC6000TransitionToTx(void);
 static void triggerQSOdataDisplay(void);
+
+#define USE_COLOUR_CODE_COUNTING
+
+#ifdef USE_COLOUR_CODE_COUNTING
+	void initReceivedColourCodes(void);
+	volatile uint32_t receivedColourCodes[16];
+	volatile int	bestColourCodeIndex = -1;
+#endif
 
 enum RXSyncClass { SYNC_CLASS_HEADER = 0, SYNC_CLASS_VOICE = 1, SYNC_CLASS_DATA = 2, SYNC_CLASS_RC = 3};
 
@@ -649,7 +659,7 @@ inline static void HRC6000SysReceivedDataInt(void)
 		{
 			if (checkTimeSlotFilter() && (lastTimeCode != timeCode))
 			{
-				GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);// Disable the audio
+				disableAudioAmp(AUDIO_AMP_MODE_RF);
 			}
 		}
 	}
@@ -699,7 +709,7 @@ inline static void HRC6000SysReceivedDataInt(void)
 				 (slot_state == DMR_STATE_RX_1))) && checkTalkGroupFilter() && checkColourCodeFilter())
 			{
 				//SEGGER_RTT_printf(0, "Audio frame %d\t%d\n",sequenceNumber,timeCode);
-				GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1);// Note it may be more effecient to store variable to indicate whether this call needs to be made
+				enableAudioAmp(AUDIO_AMP_MODE_RF);
 				if (sequenceNumber == 1)
 				{
 					triggerQSOdataDisplay();
@@ -768,7 +778,37 @@ inline static void HRC6000SysInterruptHandler(void)
 
 		if (nonVolatileSettings.dmrFilterLevel < DMR_FILTER_CC )
 		{
-		if(rxColorCode==lastRxColorCode)
+
+#ifdef USE_COLOUR_CODE_COUNTING
+			// This code implements a more complex strategy to lock onto the CC that is received the most often,
+			// This strategy
+			// but is not necessarily better than the other
+			receivedColourCodes[rxColorCode]++;
+
+			if (bestColourCodeIndex==-1)
+			{
+				bestColourCodeIndex = rxColorCode;
+				//SEGGER_RTT_printf(0, "%d\tFirst best index %d\n",PITCounter,bestColourCodeIndex);
+				trxSetDMRColourCode(bestColourCodeIndex);
+				currentChannelData->rxColor=bestColourCodeIndex;
+
+			}
+			else
+			{
+				if (receivedColourCodes[rxColorCode] > receivedColourCodes[bestColourCodeIndex])
+				{
+					bestColourCodeIndex = rxColorCode;
+					//SEGGER_RTT_printf(0, "%d\tNew best index %d\n",PITCounter,bestColourCodeIndex);
+					trxSetDMRColourCode(bestColourCodeIndex);
+					currentChannelData->rxColor = bestColourCodeIndex;
+				}
+				else
+				{
+					//SEGGER_RTT_printf(0, "receivedColourCodes[rxColorCode] %d %d %d\n",receivedColourCodes[rxColorCode], bestColourCodeIndex,rxColorCode);
+				}
+			}
+#else
+			if(rxColorCode==lastRxColorCode)
 			{
 				trxSetDMRColourCode(rxColorCode);
 				currentChannelData->rxColor=rxColorCode;
@@ -779,7 +819,7 @@ inline static void HRC6000SysInterruptHandler(void)
 			{
 				lastRxColorCode=rxColorCode;
 			}
-
+#endif
 		}
 
 		uint8_t LCBuf[12];
@@ -886,7 +926,7 @@ inline static void HRC6000SysInterruptHandler(void)
 
 static void HRC6000TransitionToTx(void)
 {
-	GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
+	disableAudioAmp(AUDIO_AMP_MODE_RF);
 	GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 	init_codec();
 
@@ -965,9 +1005,7 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 		case DMR_STATE_RX_END: // Stop RX
 			clearActiveDMRID();
 			init_digital_DMR_RX();
-			if (melody_play == NULL) {
-				GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
-			}
+			disableAudioAmp(AUDIO_AMP_MODE_RF);
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 			menuDisplayQSODataState= QSO_DISPLAY_DEFAULT_SCREEN;
 			slot_state = DMR_STATE_IDLE;
@@ -1187,7 +1225,7 @@ inline static void HRC6000TimeslotInterruptHandler(void)
         {
 			init_digital_DMR_RX();
 			clearActiveDMRID();
-			GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
+			disableAudioAmp(AUDIO_AMP_MODE_RF);
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 			tick_cnt=0;
 			menuDisplayQSODataState= QSO_DISPLAY_DEFAULT_SCREEN;
@@ -1199,7 +1237,7 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 			{
 				init_digital_DMR_RX();
 				clearActiveDMRID();
-				GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
+				disableAudioAmp(AUDIO_AMP_MODE_RF);
 				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 				tick_cnt=0;
 				menuDisplayQSODataState= QSO_DISPLAY_DEFAULT_SCREEN;
@@ -1255,22 +1293,33 @@ void init_digital_DMR_RX(void)
 
 void init_digital(void)
 {
-	GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
-    GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
+	disableAudioAmp(AUDIO_AMP_MODE_RF);
+    GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, false);
     timeCode = -1;// Clear current timecode synchronisation
 	init_digital_DMR_RX();
 	init_digital_state();
     NVIC_EnableIRQ(PORTC_IRQn);
 	init_codec();
+#ifdef USE_COLOUR_CODE_COUNTING
+	initReceivedColourCodes();
+#endif
 }
 
 void terminate_digital(void)
 {
-	GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
+	disableAudioAmp(AUDIO_AMP_MODE_RF);
     GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 	init_digital_state();
     NVIC_DisableIRQ(PORTC_IRQn);
 }
+
+#ifdef USE_COLOUR_CODE_COUNTING
+void initReceivedColourCodes(void)
+{
+	memset((void*)&receivedColourCodes[0],0,sizeof(uint32_t)*16);
+	bestColourCodeIndex = -1;
+}
+#endif
 
 void triggerQSOdataDisplay(void)
 {
