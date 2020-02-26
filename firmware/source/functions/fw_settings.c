@@ -29,7 +29,6 @@ static const int STORAGE_BASE_ADDRESS 		= 0x6000;
 
 static const int STORAGE_MAGIC_NUMBER 		= 0x4744;
 
-
 settingsStruct_t nonVolatileSettings;
 struct_codeplugChannel_t *currentChannelData;
 struct_codeplugChannel_t channelScreenChannelData={.rxFreq=0};
@@ -65,7 +64,6 @@ bool settingsLoadSettings(void)
 
 	trxDMRID = codeplugGetUserDMRID();
 
-	HRC6000SetCCFilterMode(nonVolatileSettings.dmrFilterLevel==DMR_FILTER_NONE);
 	if (nonVolatileSettings.analogFilterLevel == ANALOG_FILTER_NONE)
 	{
 		trxSetRxCTCSS(TRX_CTCSS_TONE_NONE);
