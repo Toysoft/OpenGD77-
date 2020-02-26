@@ -1579,6 +1579,10 @@ void tick_HR_C6000(void)
 	}
 	else
 	{
+		if (slot_state == DMR_STATE_IDLE)
+		{
+			trxCheckDigitalSquelch();
+		}
 		// receiving RF DMR
 		if (settingsUsbMode == USB_MODE_HOTSPOT)
 		{
@@ -1619,9 +1623,7 @@ void tick_HR_C6000(void)
 		readDMRRSSI--;
 		if (readDMRRSSI==0)
 		{
-			taskENTER_CRITICAL();
 			trxReadRSSIAndNoise();
-			taskEXIT_CRITICAL();
 		}
 	}
 
