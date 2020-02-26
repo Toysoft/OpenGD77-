@@ -68,6 +68,7 @@ typedef struct settingsStruct
 	uint8_t			currentVFONumber;
 	uint8_t			dmrFilterLevel;
 	uint8_t			dmrCaptureTimeout;
+	uint8_t			analogFilterLevel;
 	uint8_t			languageIndex;
 	uint8_t			scanDelay;
 	uint8_t			squelchDefaults[RADIO_BANDS_TOTAL_NUM];// VHF,200Mhz and UHF
@@ -84,6 +85,7 @@ typedef struct settingsStruct
 
 typedef enum DMR_FILTER_TYPE {DMR_FILTER_NONE = 0, DMR_FILTER_CC, DMR_FILTER_CC_TS, DMR_FILTER_CC_TS_TG, DMR_FILTER_CC_TS_DC ,
 								NUM_DMR_FILTER_LEVELS} dmrFilter_t;
+typedef enum ANALOG_FILTER_TYPE {ANALOG_FILTER_NONE = 0, ANALOG_FILTER_CTCSS, NUM_ANALOG_FILTER_LEVELS} analogFilter_t;
 
 extern settingsStruct_t nonVolatileSettings;
 extern struct_codeplugChannel_t *currentChannelData;
