@@ -82,6 +82,39 @@ volatile int *melody_play = NULL;
 volatile int melody_idx = 0;
 int soundBeepVolumeDivider;
 
+
+
+static uint8_t audioAmpStatusMask = 0;
+
+uint8_t getAudioAmpStatus(void) {
+	return audioAmpStatusMask;
+}
+
+
+
+void enableAudioAmp (uint8_t mode)
+{
+	bool wasEnabled = (audioAmpStatusMask != 0x0);
+
+	audioAmpStatusMask |= mode;
+
+	if (!wasEnabled)
+	{
+		GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1);
+	}
+}
+
+void disableAudioAmp (uint8_t mode)
+{
+	audioAmpStatusMask &= ~mode;
+
+	if (audioAmpStatusMask == 0)
+	{
+		GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
+	}
+}
+
+
 void set_melody(const int *melody)
 {
 	taskENTER_CRITICAL();
@@ -368,25 +401,26 @@ void tick_melody(void)
 			{
 				if (trxGetMode() == RADIO_MODE_ANALOG)
 				{
-					GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);// Mute the speaker, otherwise there will be a burst of squelch noise until the next tick in HR-C6000
-				    GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 1);// Set the audio path to AT1846 -> audio amp.
+					GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 1);// Set the audio path to AT1846 -> audio amp.
 				}
 				else
 				{
 					// only mute the speaker if in DMR and not receiving
-					if (slot_state !=DMR_STATE_RX_1 && slot_state !=DMR_STATE_RX_2)
+					/*if (slot_state !=DMR_STATE_RX_1 && slot_state !=DMR_STATE_RX_2)
 					{
 						GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
-					}
+
+					}*/
 				}
+				disableAudioAmp(AUDIO_AMP_MODE_BEEP);
 			    set_melody(NULL);
 			}
 			else
 			{
 				if (melody_idx==0)
 				{
-				    GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 1);// enable the speaker (audio amplifier)
-					if (trxGetMode() == RADIO_MODE_ANALOG)
+					enableAudioAmp(AUDIO_AMP_MODE_BEEP);
+				    if (trxGetMode() == RADIO_MODE_ANALOG)
 					{
 					    GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 0);// set the audio mux   HR-C6000 -> audio amp
 					}

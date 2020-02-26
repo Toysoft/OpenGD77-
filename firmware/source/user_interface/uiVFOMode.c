@@ -180,7 +180,9 @@ int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
 		// hence immediately display complete contact/TG info on screen
 		// This mostly happens when getting out of a menu.
 		if ((trxIsTransmitting == false) && ((trxGetMode() == RADIO_MODE_DIGITAL) && (rxID != 0) && (HRC6000GetReceivedTgOrPcId() != 0)) &&
-				(GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable) == 1) && checkTalkGroupFilter() &&
+				//(GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable) == 1)
+				(getAudioAmpStatus() & AUDIO_AMP_MODE_RF)
+				&& checkTalkGroupFilter() &&
 				(((item = lastheardFindInList(rxID)) != NULL) && (item == LinkHead)))
 		{
 			menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;
@@ -727,7 +729,7 @@ static void handleEvent(uiEvent_t *ev)
 						nonVolatileSettings.tsManualOverride &= 0x0F;// Clear upper nibble value
 						nonVolatileSettings.tsManualOverride |= (trxGetDMRTimeSlot()+1)<<4;// Store manual TS override for VFO in upper nibble
 
-						//init_digital();
+						disableAudioAmp(AUDIO_AMP_MODE_RF);
 						clearActiveDMRID();
 						lastHeardClearLastID();
 						menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
@@ -1216,7 +1218,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 					scanTimer=TONESCANINTERVAL;
 					scanIndex=1;
 					trxSetRxCTCSS(TRX_CTCSSTones[scanIndex]);
-					GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable,0);// turn off the audio amp
+					disableAudioAmp(AUDIO_AMP_MODE_RF);
 				}
 				else
 				{
@@ -1335,7 +1337,7 @@ bool menuVFOModeIsScanning(void)
 
 static void toneScan(void)
 {
-	if (GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable)==1)
+	if (getAudioAmpStatus() & AUDIO_AMP_MODE_RF)
 	{
 		currentChannelData->txTone=TRX_CTCSSTones[scanIndex];
 		currentChannelData->rxTone=TRX_CTCSSTones[scanIndex];
@@ -1369,7 +1371,8 @@ static void toneScan(void)
 
 static void CCscan(void)
 {
-	if (GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable)==1)
+	//if (GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable)==1)
+	if (getAudioAmpStatus() & AUDIO_AMP_MODE_RF)
 	{
 		currentChannelData->rxColor=scanIndex;
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
@@ -1512,7 +1515,8 @@ static void scanning(void)
 
 	if(((scanState == SCAN_PAUSED) && (nonVolatileSettings.scanModePause == SCAN_MODE_HOLD)) || (scanState == SCAN_SHORT_PAUSED))   // only do this once if scan mode is PAUSE do it every time if scan mode is HOLD
 	{
-	    if (GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable) == 1)	    	// if speaker on we must be receiving a signal so extend the time before resuming scan.
+	    //if (GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable) == 1)	    	// if speaker on we must be receiving a signal so extend the time before resuming scan.
+	    if (getAudioAmpStatus() & AUDIO_AMP_MODE_RF)
 	    {
 	    	scanTimer = nonVolatileSettings.scanDelay * 1000;
 	    	scanState = SCAN_PAUSED;
