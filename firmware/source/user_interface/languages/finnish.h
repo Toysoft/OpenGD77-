@@ -20,7 +20,7 @@
  * Translators: OH1E
  *
  *
- * Rev: 10 
+ * Rev: 11 
  */
 #ifndef USER_INTERFACE_LANGUAGES_FINNISH_H_
 #define USER_INTERFACE_LANGUAGES_FINNISH_H_
@@ -125,7 +125,7 @@ const stringsTable_t finnishLanguage =
 .DISMISS		= "POISTU", 		// MaxLen: 8 (choice above green/red buttons)
 .scan_mode		= "Skannaus", 		// MaxLen: 16 (with ':' + .hold or .pause)
 .hold			= "Pysäyty", 		// MaxLen: 16 (with ':' + .scan_mode)
-.pause			= "Pause", 		// MaxLen: 16 (with ':' + .scan_mode)
+.pause			= "Pauseta", 		// MaxLen: 16 (with ':' + .scan_mode)
 .empty_list		= "Tyhjä lista", 	// MaxLen: 16
 .delete_contact_qm	= "Poista kontakti?", 	// MaxLen: 16
 .contact_deleted	= "Kontakti Poistet", 	// MaxLen: 16
@@ -143,10 +143,10 @@ const stringsTable_t finnishLanguage =
 .manual			= "Manuaali",		// MaxLen 16 (with .mode + ':') 
 .ptt_toggle		= "PTT Lukko",		// MaxLen 16 (with ':' + .on or .off)
 .private_call_handling	= "Käsittele PC",	// MaxLen 16 (with ':' + .on ot .off)
-.stop					= "Stop", // Maxlen 16 (with ':' + .scan_mode)
-.one_line				= "1 line", // MaxLen 16 (with ':' + .contact)
-.two_lines				= "2 lines", // MaxLen 16 (with ':' + .contact)
-.priority_order				= "Order", // MaxLen 16 (with ':' + 'Cc/DB/TA')
+.stop			= "Stoppaa", 		// Maxlen 16 (with ':' + .scan_mode)
+.one_line		= "1 rivi", 		// MaxLen 16 (with ':' + .contact)
+.two_lines		= "2 riviä", 		// MaxLen 16 (with ':' + .contact)
+.priority_order		= "Järjest", 		// MaxLen 16 (with ':' + 'Cc/DB/TA')
 };
 /********************************************************************
  *
