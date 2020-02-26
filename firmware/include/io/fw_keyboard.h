@@ -132,6 +132,9 @@
 #define KEY_STAR  '*'
 #define KEY_HASH  '#'
 
+#define KEY_VFO_MR	5
+#define KEY_A_B		6
+
 
 #define KEY_MOD_DOWN    0x01
 #define KEY_MOD_UP      0x02
