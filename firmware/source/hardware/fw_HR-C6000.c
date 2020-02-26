@@ -121,6 +121,8 @@ static inline void HRC6000TxInterruptHandler(void);
 static void HRC6000TransitionToTx(void);
 static void triggerQSOdataDisplay(void);
 
+#define USE_COLOUR_CODE_COUNTING
+
 #ifdef USE_COLOUR_CODE_COUNTING
 	void initReceivedColourCodes(void);
 	volatile uint32_t receivedColourCodes[16];
