@@ -110,6 +110,8 @@ static volatile int TAPhase=0;
 //static const int TAOffsets[] = {0,6,13,20};
 char talkAliasText[33];
 
+
+
 static bool callAcceptFilter(void);
 static void setupPcOrTGHeader(void);
 static inline void HRC6000SysInterruptHandler(void);
@@ -119,13 +121,17 @@ static inline void HRC6000TxInterruptHandler(void);
 static void HRC6000TransitionToTx(void);
 static void triggerQSOdataDisplay(void);
 
+#ifdef USE_COLOUR_CODE_COUNTING
+	void initReceivedColourCodes(void);
+	volatile uint32_t receivedColourCodes[16];
+	volatile int	bestColourCodeIndex = -1;
+#endif
+
 enum RXSyncClass { SYNC_CLASS_HEADER = 0, SYNC_CLASS_VOICE = 1, SYNC_CLASS_DATA = 2, SYNC_CLASS_RC = 3};
 
 static const int START_TICK_TIMEOUT = 20;
 static const int END_TICK_TIMEOUT 	= 13;
 
-const uint8_t COLOUR_CODE_FILTER_DISABLE_MASK = 0x08;
-uint8_t colourCodeFilterControlMask = 0x00;// Enable CC filter by default. Note this gets set when the settings load, before any of the init functions are called
 static volatile int lastRxColorCode=0;
 
 void SPI_HR_C6000_init(void)
@@ -225,7 +231,7 @@ void SPI_HR_C6000_init(void)
 	// --- end subroutine spi_init_daten_senden_sub()
 
 	write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xC3);  	//Enable DMR Tx, DMR Rx, Passive Timing, Normal mode
-	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40 | colourCodeFilterControlMask);   //Receive during next timeslot
+	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40);   //Receive during next timeslot
 	// --- end spi_init_daten_senden()
 
 	// ------ start spi_more_init
@@ -261,9 +267,9 @@ void SPI_C6000_postinit(void)
 	write_SPI_page_reg_byte_SPI0(0x04, 0x48, 0x03);  //Set 2 Point Mod Bias
 	write_SPI_page_reg_byte_SPI0(0x04, 0x47, 0xE8);  //Set 2 Point Mod Bias
 
-	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x20 | colourCodeFilterControlMask);  //set sync fail bit (reset?)
+	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x20);  //set sync fail bit (reset?)
 	write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0x03);  //Disable DMR Tx and Rx
-	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00 | colourCodeFilterControlMask);  //Reset all bits.
+	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00);  //Reset all bits.
 	write_SPI_page_reg_byte_SPI0(0x04, 0x00, 0x3F);  //Reset DMR Protocol and Physical layer modules.
 	write_SPI_page_reg_bytearray_SPI0(0x01, 0x04, spi_init_values_1, 0x06);
 	write_SPI_page_reg_byte_SPI0(0x04, 0x10, 0x6E);  //Set DMR, Tier2, Timeslot mode, Layer2, Repeater, Aligned, Slot 1
@@ -303,9 +309,9 @@ void SPI_C6000_postinit(void)
 	write_SPI_page_reg_byte_SPI0(0x04, 0x27, 0x40);  //Undocumented Register
 	write_SPI_page_reg_byte_SPI0(0x04, 0x28, 0x7D);  //Undocumented Register
 	write_SPI_page_reg_byte_SPI0(0x04, 0x29, 0x40);  //Undocumented Register
-	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x20 | colourCodeFilterControlMask);  //Set Sync Fail Bit  (Reset?)
+	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x20);  //Set Sync Fail Bit  (Reset?)
 	write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xC3);  //Enable DMR Tx and Rx, Passive Timing
-	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40 | colourCodeFilterControlMask);  //Set Receive During Next Slot Bit
+	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x40);  //Set Receive During Next Slot Bit
 	write_SPI_page_reg_byte_SPI0(0x04, 0x01, 0x70);  //Set 2 Point Mod, Swap Rx I and Q, Rx Mode IF
 	write_SPI_page_reg_byte_SPI0(0x04, 0x10, 0x6E);  //Set DMR, Tier2, Timeslot mode, Layer2, Repeater, Aligned, Slot 1
 	write_SPI_page_reg_byte_SPI0(0x04, 0x00, 0x3F);  //Reset DMR Protocol and Physical layer modules.
@@ -366,24 +372,9 @@ bool checkTalkGroupFilter(void)
 
 bool checkColourCodeFilter(void)
 {
-	if (nonVolatileSettings.dmrFilterLevel >= DMR_FILTER_CC )
-	{
-		return (rxColorCode == trxGetDMRColourCode());
-	}
-	else
-	{
-		if(rxColorCode == lastRxColorCode)
-		{
-			lastRxColorCode=rxColorCode;
-			return true;
-		}
-		else
-		{
-			lastRxColorCode=rxColorCode;
-			return false;
-		}
 
-	}
+	return (rxColorCode == trxGetDMRColourCode());
+
 }
 
 void transmitTalkerAlias(void)
@@ -572,7 +563,7 @@ inline static void HRC6000SysPostAccessInt(void)
 		init_codec();
 		GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
 
-		write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50 | colourCodeFilterControlMask);     //Receive only in next timeslot
+		write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);     //Receive only in next timeslot
 		slot_state = DMR_STATE_RX_1;
 		lastHeardClearLastID();// Tell the LastHeard system that this is a new start
 
@@ -688,7 +679,7 @@ inline static void HRC6000SysReceivedDataInt(void)
 				init_codec();
 				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
 
-				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50 | colourCodeFilterControlMask);     //Receive only in next timeslot
+				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);     //Receive only in next timeslot
 				slot_state = DMR_STATE_RX_1;
 
 				skip_count = 0;
@@ -779,8 +770,55 @@ inline static void HRC6000SysInterruptHandler(void)
 	read_SPI_page_reg_byte_SPI0(0x04, 0x52, &reg0x52);  //Read Received CC and CACH
 	rxColorCode 	= (reg0x52 >> 4) & 0x0f;
 
+
 	if (!trxIsTransmitting) // ignore the LC data when we are transmitting
 	{
+
+		if (nonVolatileSettings.dmrFilterLevel < DMR_FILTER_CC )
+		{
+
+#ifdef USE_COLOUR_CODE_COUNTING
+			// This code implements a more complex strategy to lock onto the CC that is received the most often,
+			// This strategy
+			// but is not necessarily better than the other
+			receivedColourCodes[rxColorCode]++;
+
+			if (bestColourCodeIndex==-1)
+			{
+				bestColourCodeIndex = rxColorCode;
+				//SEGGER_RTT_printf(0, "%d\tFirst best index %d\n",PITCounter,bestColourCodeIndex);
+				trxSetDMRColourCode(bestColourCodeIndex);
+				currentChannelData->rxColor=bestColourCodeIndex;
+
+			}
+			else
+			{
+				if (receivedColourCodes[rxColorCode] > receivedColourCodes[bestColourCodeIndex])
+				{
+					bestColourCodeIndex = rxColorCode;
+					//SEGGER_RTT_printf(0, "%d\tNew best index %d\n",PITCounter,bestColourCodeIndex);
+					trxSetDMRColourCode(bestColourCodeIndex);
+					currentChannelData->rxColor = bestColourCodeIndex;
+				}
+				else
+				{
+					//SEGGER_RTT_printf(0, "receivedColourCodes[rxColorCode] %d %d %d\n",receivedColourCodes[rxColorCode], bestColourCodeIndex,rxColorCode);
+				}
+			}
+#else
+			if(rxColorCode==lastRxColorCode)
+			{
+				trxSetDMRColourCode(rxColorCode);
+				currentChannelData->rxColor=rxColorCode;
+				lastRxColorCode=rxColorCode;
+
+			}
+			else
+			{
+				lastRxColorCode=rxColorCode;
+			}
+#endif
+		}
 
 		uint8_t LCBuf[12];
 		read_SPI_page_reg_bytearray_SPI0(0x02, 0x00, LCBuf, 12);// read the LC from the C6000
@@ -944,7 +982,7 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 					// Note. The C6000 needs to be told what to do for the next timeslot each time.
 					// It no longer seems to receive if this line is removed.
 					// Though in the future this needs to be double checked. In case there is a way to get it to constantly receive.
-					//write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50 | colourCodeFilterControlMask);     //Receive only in next timeslot
+					//write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);     //Receive only in next timeslot
 					//slot_state = DMR_STATE_RX_1;// stay in state 1
 				}
 			}
@@ -952,14 +990,14 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 			{
 				// When in Active (simplex) mode. We need to only receive on one of the 2 timeslots, otherwise we get random data for the other slot
 				// and this can sometimes be interpreted as valid data, which then screws things up.
-				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00 | colourCodeFilterControlMask);     //No Transmit or receive in next timeslot
+				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00);     //No Transmit or receive in next timeslot
 				readDMRRSSI = 15;// wait 15 ticks (of approximately 1mS) before reading the RSSI
 				slot_state = DMR_STATE_RX_2;
 			}
 
 			break;
 		case DMR_STATE_RX_2: // Start RX (second step)
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50 | colourCodeFilterControlMask);     //Receive only in next timeslot
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);     //Receive only in next timeslot
 			slot_state = DMR_STATE_RX_1;
 			break;
 		case DMR_STATE_RX_END: // Stop RX
@@ -975,23 +1013,23 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 		case DMR_STATE_TX_START_1: // Start TX (second step)
 			GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 1);// for repeater wakeup
 			setupPcOrTGHeader();
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80 | colourCodeFilterControlMask);    //Transmit during next Timeslot
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);    //Transmit during next Timeslot
 			write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x10);    //Set Data Type to 0001 (Voice LC Header), Data, LCSS=00
 			slot_state = DMR_STATE_TX_START_2;
 			break;
 		case DMR_STATE_TX_START_2: // Start TX (third step)
-			//write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50 | colourCodeFilterControlMask); 	//Receive during next Timeslot (no Layer 2 Access)
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00 | colourCodeFilterControlMask); 	//Do nothing on the next TS
+			//write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50); 	//Receive during next Timeslot (no Layer 2 Access)
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00); 	//Do nothing on the next TS
 			slot_state = DMR_STATE_TX_START_3;
 			break;
 		case DMR_STATE_TX_START_3: // Start TX (fourth step)
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80 | colourCodeFilterControlMask);     //Transmit during Next Timeslot
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);     //Transmit during Next Timeslot
 			write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x10);     //Set Data Type to 0001 (Voice LC Header), Data, LCSS=00
 			slot_state = DMR_STATE_TX_START_4;
 			break;
 		case DMR_STATE_TX_START_4: // Start TX (fifth step)
-			//write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50 | colourCodeFilterControlMask); 	//Receive during Next Timeslot (no Layer 2 Access)
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00 | colourCodeFilterControlMask); 	//Do nothing on the next TS
+			//write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50); 	//Receive during Next Timeslot (no Layer 2 Access)
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00); 	//Do nothing on the next TS
             if (settingsUsbMode != USB_MODE_HOTSPOT)
             {
             	/*
@@ -1014,7 +1052,7 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 			slot_state = DMR_STATE_TX_START_5;
 			break;
 		case DMR_STATE_TX_START_5: // Start TX (sixth step)
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80 | colourCodeFilterControlMask);   //Transmit during next Timeslot
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);   //Transmit during next Timeslot
 			write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x10);   //Set Data Type to 0001 (Voice LC Header), Data, LCSS=00
 			tx_sequence=0;
 
@@ -1027,14 +1065,14 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 		case DMR_STATE_TX_1: // Ongoing TX (inactive timeslot)
 			if ((trxIsTransmitting==false) && (tx_sequence==0))
 			{
-				//write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50 | colourCodeFilterControlMask); // Receive during next Timeslot (no Layer 2 Access)
-				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00 | colourCodeFilterControlMask); 	//Do nothing on the next TS
+				//write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50); // Receive during next Timeslot (no Layer 2 Access)
+				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00); 	//Do nothing on the next TS
 				slot_state = DMR_STATE_TX_END_1; // only exit here to ensure staying in the correct timeslot
 			}
 			else
 			{
-				//write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50 | colourCodeFilterControlMask); // Receive during next Timeslot (no Layer 2 Access)
-				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00 | colourCodeFilterControlMask); 	//Do nothing on the next TS
+				//write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50); // Receive during next Timeslot (no Layer 2 Access)
+				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00); 	//Do nothing on the next TS
 				slot_state = DMR_STATE_TX_2;
 			}
 			break;
@@ -1079,7 +1117,7 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 			}
 
 			//write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, (uint8_t*)(DMR_frame_buffer+0x0C), 27);// send the audio bytes to the hardware
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80 | colourCodeFilterControlMask); // Transmit during next Timeslot
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80); // Transmit during next Timeslot
 			write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x08 + (tx_sequence<<4)); // Data Type= sequence number 0 - 5 (Voice Frame A) , Voice, LCSS = 0
 
 			tx_sequence++;
@@ -1096,7 +1134,7 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 				setupPcOrTGHeader();
 			}
 			write_SPI_page_reg_bytearray_SPI1(0x03, 0x00, SILENCE_AUDIO, 27);// send silence audio bytes
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80 | colourCodeFilterControlMask);  //Transmit during Next Timeslot
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);  //Transmit during Next Timeslot
 			write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x20);  // Data Type =0010 (Terminator with LC), Data, LCSS=0
 			slot_state = DMR_STATE_TX_END_2;
 			break;
@@ -1112,7 +1150,7 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 			if (trxDMRMode == DMR_MODE_PASSIVE)
 			{
 				write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xC3);  //Enable DMR Tx and Rx, Passive Timing
-				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50 | colourCodeFilterControlMask);   //  Receive during Next Timeslot And Layer2 Access success Bit
+				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);   //  Receive during Next Timeslot And Layer2 Access success Bit
 				slot_state = DMR_STATE_TX_END_3;
 			}
 			else
@@ -1128,7 +1166,7 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 			if (trxDMRMode == DMR_MODE_PASSIVE)
 			{
 				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
-				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50 | colourCodeFilterControlMask);   //  Receive during Next Timeslot And Layer2 Access success Bit
+				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);   //  Receive during Next Timeslot And Layer2 Access success Bit
 				slot_state = DMR_STATE_RX_1;
 			}
 			else
@@ -1146,7 +1184,7 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 				spi_tx1[9] = (trxDMRID >> 0) & 0xFF;
 				write_SPI_page_reg_bytearray_SPI0(0x02, 0x00, spi_tx1, 0x0c);
 				write_SPI_page_reg_byte_SPI0(0x04, 0x50, 0x30);
-				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80 | colourCodeFilterControlMask);
+				write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x80);
 			}
 			repeaterWakeupResponseTimeout=WAKEUP_RETRY_PERIOD;
 			slot_state = DMR_STATE_REPEATER_WAKE_3;
@@ -1156,7 +1194,7 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 			 *
 			// Note. I'm not sure if this state is really necessary, as it may be better simply to goto wakeup 3 and reset the C6000 TS system straight away.
 			 *
-			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50 | colourCodeFilterControlMask); // RX next slotenable
+			write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50); // RX next slotenable
 			slot_state = DMR_STATE_REPEATER_WAKE_3;
 			GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);// Turn off the Green LED while we are waiting for the repeater to wakeup
 			break;
@@ -1247,10 +1285,10 @@ void init_digital_state(void)
 void init_digital_DMR_RX(void)
 {
 	write_SPI_page_reg_byte_SPI0(0x04, 0x40, 0xC3);  //Enable DMR Tx, DMR Rx, Passive Timing, Normal mode
-	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x20 | colourCodeFilterControlMask);  //Set Sync Fail Bit (Reset?))
-	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00 | colourCodeFilterControlMask);  //Reset
-	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x20 | colourCodeFilterControlMask);  //Set Sync Fail Bit (Reset?)
-	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50 | colourCodeFilterControlMask);  //Receive during next Timeslot
+	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x20);  //Set Sync Fail Bit (Reset?))
+	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x00);  //Reset
+	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x20);  //Set Sync Fail Bit (Reset?)
+	write_SPI_page_reg_byte_SPI0(0x04, 0x41, 0x50);  //Receive during next Timeslot
 }
 
 void init_digital(void)
@@ -1262,6 +1300,9 @@ void init_digital(void)
 	init_digital_state();
     NVIC_EnableIRQ(PORTC_IRQn);
 	init_codec();
+#ifdef USE_COLOUR_CODE_COUNTING
+	initReceivedColourCodes();
+#endif
 }
 
 void terminate_digital(void)
@@ -1271,6 +1312,14 @@ void terminate_digital(void)
 	init_digital_state();
     NVIC_DisableIRQ(PORTC_IRQn);
 }
+
+#ifdef USE_COLOUR_CODE_COUNTING
+void initReceivedColourCodes(void)
+{
+	memset((void*)&receivedColourCodes[0],0,sizeof(uint32_t)*16);
+	bestColourCodeIndex = -1;
+}
+#endif
 
 void triggerQSOdataDisplay(void)
 {
@@ -1621,14 +1670,3 @@ void HRC6000ClearTimecodeSynchronisation(void)
 	timeCode = -1;
 }
 
-void HRC6000SetCCFilterMode(bool enable)
-{
-	if (enable)
-	{
-		colourCodeFilterControlMask = COLOUR_CODE_FILTER_DISABLE_MASK;
-	}
-	else
-	{
-		colourCodeFilterControlMask = 0x00;
-	}
-}

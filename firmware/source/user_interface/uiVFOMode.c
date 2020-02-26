@@ -1202,7 +1202,6 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 				if (trxGetMode() == RADIO_MODE_DIGITAL)
 				{
 					nonVolatileSettings.dmrFilterLevel = tmpQuickMenuDmrFilterLevel;
-					HRC6000SetCCFilterMode(nonVolatileSettings.dmrFilterLevel==DMR_FILTER_NONE);
 					init_digital_DMR_RX();
 				}
 				else
@@ -1210,7 +1209,6 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 					nonVolatileSettings.analogFilterLevel = tmpQuickMenuAnalogFilterLevel;
 				}
 				break;
-
 			case VFO_SCREEN_CODE_SCAN:
 				if(trxGetMode() == RADIO_MODE_ANALOG)
 				{
@@ -1249,7 +1247,6 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 					nonVolatileSettings.vfoAScanHigh=currentChannelData->rxFreq;
 				}
 				break;
-
 		}
 		menuSystemPopPreviousMenu();
 		return;

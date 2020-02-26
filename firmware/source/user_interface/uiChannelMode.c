@@ -1102,7 +1102,6 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 				if (trxGetMode() == RADIO_MODE_DIGITAL)
 				{
 					nonVolatileSettings.dmrFilterLevel = tmpQuickMenuDmrFilterLevel;
-					HRC6000SetCCFilterMode(nonVolatileSettings.dmrFilterLevel==DMR_FILTER_NONE);
 					init_digital_DMR_RX();
 				}
 				else
