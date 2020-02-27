@@ -715,7 +715,7 @@ static void handleEvent(uiEvent_t *ev)
 					else
 					{
 						currentChannelData->chMode = RADIO_MODE_ANALOG;
-						trxSetModeAndBandwidth(currentChannelData->chMode, ((channelScreenChannelData.flag4 & 0x02) == 0x02));
+						trxSetModeAndBandwidth(currentChannelData->chMode, ((currentChannelData->flag4 & 0x02) == 0x02));
 						trxSetTxCTCSS(currentChannelData->rxTone);
 					}
 					menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
