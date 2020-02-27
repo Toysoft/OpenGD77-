@@ -225,12 +225,14 @@ void trxCheckDigitalSquelch(void)
 
 		trxReadRSSIAndNoise();
 
-		// check for variable squelch control
+
+		// Don't check for variable squelch, as some people seem to have this set to fully open on their DMR channels.
+		/*
 		if (currentChannelData->sql!=0)
 		{
 			squelch =  TRX_SQUELCH_MAX - (((currentChannelData->sql-1)*11)>>2);
 		}
-		else
+		else*/
 		{
 			squelch =  TRX_SQUELCH_MAX - (((nonVolatileSettings.squelchDefaults[trxCurrentBand[TRX_RX_FREQ_BAND]])*11)>>2);
 		}
