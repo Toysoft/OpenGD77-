@@ -500,7 +500,7 @@ static void handleEvent(uiEvent_t *ev)
 	displayLightTrigger();
 
 	// if we are scanning and down key is pressed then enter current channel into nuisance delete array.
-	if((scanState==SCAN_PAUSED) && ((ev->events & KEY_EVENT) && (ev->keys.key == KEY_DOWN)) && (!(ev->buttons & BUTTON_SK2)))
+	if((scanState==SCAN_PAUSED) && ((ev->events & KEY_EVENT) && (ev->keys.key == KEY_RIGHT)) && (!(ev->buttons & BUTTON_SK2)))
 	{
 		nuisanceDelete[nuisanceDeleteIndex++] = settingsCurrentChannelNumber;
 		if(nuisanceDeleteIndex > (MAX_ZONE_SCAN_NUISANCE_CHANNELS - 1))

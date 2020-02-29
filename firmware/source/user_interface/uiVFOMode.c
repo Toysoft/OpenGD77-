@@ -520,7 +520,7 @@ static void handleEvent(uiEvent_t *ev)
 {
 	displayLightTrigger();
 
-	if((scanState==SCAN_PAUSED) && ((ev->events & KEY_EVENT) && (ev->keys.key == KEY_DOWN)) && (!(ev->buttons & BUTTON_SK2)))
+	if((scanState==SCAN_PAUSED) && ((ev->events & KEY_EVENT) && (ev->keys.key == KEY_RIGHT)) && (!(ev->buttons & BUTTON_SK2)))
 		{
 			nuisanceDelete[nuisanceDeleteIndex++]=currentChannelData->rxFreq;
 			if(nuisanceDeleteIndex > (MAX_ZONE_SCAN_NUISANCE_CHANNELS - 1))
