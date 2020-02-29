@@ -45,27 +45,6 @@ static bool displaySquelch=false;
 int currentChannelNumber=0;
 static bool isDisplayingQSOData=false;
 static bool isTxRxFreqSwap=false;
-typedef enum
-{
-	SCAN_SCANNING = 0,
-	SCAN_SHORT_PAUSED,
-	SCAN_PAUSED
-} ScanZoneState_t;
-
-
-static int scanTimer=0;
-static ScanZoneState_t scanState = SCAN_SCANNING;		//state flag for scan routine
-bool uiChannelModeScanActive = false;					//scan active flag
-static const int SCAN_SHORT_PAUSE_TIME = 500;			//time to wait after carrier detected to allow time for full signal detection. (CTCSS or DMR)
-static const int SCAN_TOTAL_INTERVAL = 30;			    //time between each scan step
-static const int SCAN_DMR_SIMPLEX_MIN_INTERVAL=60;		//minimum time between steps when scanning DMR Simplex. (needs extra time to capture TDMA Pulsing)
-static const int SCAN_FREQ_CHANGE_SETTLING_INTERVAL = 1;//Time after frequency is changed before RSSI sampling starts
-static const int SCAN_SKIP_CHANNEL_INTERVAL = 1;		//This is actually just an implicit flag value to indicate the channel should be skipped
-
-
-#define MAX_ZONE_SCAN_NUISANCE_CHANNELS 16
-static int nuisanceDelete[MAX_ZONE_SCAN_NUISANCE_CHANNELS];
-static int nuisanceDeleteIndex = 0;
 
 static int tmpQuickMenuDmrFilterLevel;
 static int tmpQuickMenuAnalogFilterLevel;
@@ -124,7 +103,7 @@ int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 
 		menuChannelModeUpdateScreen(0);
 
-		if (uiChannelModeScanActive==false)
+		if (scanActive==false)
 		{
 			scanState = SCAN_SCANNING;
 		}
@@ -153,7 +132,7 @@ int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 				{
 					m = ev->time;
 
-					if (uiChannelModeScanActive && (scanState == SCAN_PAUSED))
+					if (scanActive && (scanState == SCAN_PAUSED))
 					{
 						ucClearRows(0, 2, false);
 						menuUtilityRenderHeader();
@@ -165,11 +144,11 @@ int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 
 					// Only render the second row which contains the bar graph, if we're not scanning,
 					// as there is no need to redraw the rest of the screen
-					ucRenderRows(((uiChannelModeScanActive && (scanState == SCAN_PAUSED)) ? 0 : 1), 2);
+					ucRenderRows(((scanActive && (scanState == SCAN_PAUSED)) ? 0 : 1), 2);
 				}
 			}
 
-			if(uiChannelModeScanActive==true)
+			if(scanActive==true)
 			{
 				scanning();
 			}
@@ -536,7 +515,7 @@ static void handleEvent(uiEvent_t *ev)
 
 	// stop the scan on any button except UP without Shift (allows scan to be manually continued)
 	// or SK2 on its own (allows Backlight to be triggered)
-	if (uiChannelModeScanActive &&
+	if (scanActive &&
 			( (ev->events & KEY_EVENT) && ( ((ev->keys.key == KEY_UP) && ((ev->buttons & BUTTON_SK2) == 0)) == false ) ) )
 	{
 		menuChannelModeStopScanning();
@@ -1205,7 +1184,7 @@ static void startScan(void)
 	}
 	nuisanceDeleteIndex=0;
 
-	uiChannelModeScanActive = true;
+	scanActive = true;
 	scanTimer = SCAN_SHORT_PAUSE_TIME;
 	scanState = SCAN_SCANNING;
 	menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
@@ -1233,7 +1212,7 @@ static void scanning(void)
 		{
 			if (nonVolatileSettings.scanModePause == SCAN_MODE_STOP)
 			{
-				uiChannelModeScanActive = false;
+				scanActive = false;
 				// Just update the header (to prevent hidden mode)
 				ucClearRows(0,  2, false);
 				menuUtilityRenderHeader();
@@ -1252,7 +1231,7 @@ static void scanning(void)
 			{
 				if (nonVolatileSettings.scanModePause == SCAN_MODE_STOP)
 				{
-					uiChannelModeScanActive = false;
+					scanActive = false;
 					// Just update the header (to prevent hidden mode)
 					ucClearRows(0,  2, false);
 					menuUtilityRenderHeader();
@@ -1311,12 +1290,12 @@ static void scanning(void)
 
 bool menuChannelModeIsScanning(void)
 {
-	return uiChannelModeScanActive;
+	return scanActive;
 }
 
 void menuChannelModeStopScanning(void)
 {
-	uiChannelModeScanActive = false;
+	scanActive = false;
 }
 
 

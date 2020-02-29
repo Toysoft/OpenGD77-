@@ -21,6 +21,7 @@
 #include <functions/fw_settings.h>
 #include "fw_common.h"
 
+#define MAX_ZONE_SCAN_NUISANCE_CHANNELS 16
 #define NUM_LASTHEARD_STORED 32
 extern const int QSO_TIMER_TIMEOUT;
 extern const int TX_TIMER_Y_OFFSET;
@@ -68,10 +69,26 @@ enum QSO_DISPLAY_STATE
 	QSO_DISPLAY_CALLER_DATA_UPDATE
 };
 
+typedef enum
+{
+	SCAN_SCANNING = 0,
+	SCAN_SHORT_PAUSED,
+	SCAN_PAUSED
+} ScanState_t;
+
 extern const int MAX_POWER_SETTING_NUM;
 extern const char *POWER_LEVELS[];
 extern const char *DMR_FILTER_LEVELS[];
 extern const char *ANALOG_FILTER_LEVELS[];
+extern const int SCAN_SHORT_PAUSE_TIME;			//time to wait after carrier detected to allow time for full signal detection. (CTCSS or DMR)
+extern const int SCAN_TOTAL_INTERVAL;			    //time between each scan step
+extern const int SCAN_DMR_SIMPLEX_MIN_INTERVAL;		//minimum time between steps when scanning DMR Simplex. (needs extra time to capture TDMA Pulsing)
+extern const int SCAN_FREQ_CHANGE_SETTLING_INTERVAL;//Time after frequency is changed before RSSI sampling starts
+extern const int SCAN_SKIP_CHANNEL_INTERVAL;		//This is actually just an implicit flag value to indicate the channel should be skipped
+extern ScanState_t scanState;
+extern int scanTimer;
+extern bool scanActive;
+
 extern LinkItem_t *LinkHead;
 extern int menuDisplayQSODataState;
 extern int qsodata_timer;
@@ -79,6 +96,8 @@ extern uint32_t menuUtilityReceivedPcId;
 extern uint32_t menuUtilityTgBeforePcMode;
 extern const uint32_t RSSI_UPDATE_COUNTER_RELOAD;
 extern settingsStruct_t originalNonVolatileSettings; // used to store previous settings in options edition related menus.
+extern int nuisanceDelete[MAX_ZONE_SCAN_NUISANCE_CHANNELS];
+extern int nuisanceDeleteIndex;
 
 char *chomp(char *str);
 int32_t getFirstSpacePos(char *str);

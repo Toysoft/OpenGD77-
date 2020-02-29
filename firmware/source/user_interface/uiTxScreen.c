@@ -38,7 +38,7 @@ int menuTxScreen(uiEvent_t *ev, bool isFirstRun)
 
 	if (isFirstRun)
 	{
-		uiChannelModeScanActive = false;
+		scanActive = false;
 		trxIsTransmittingTone = false;
 		settingsPrivateCallMuteMode = false;
 		isShowingLastHeard = false;
