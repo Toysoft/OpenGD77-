@@ -1202,8 +1202,9 @@ static void startScan(void)
 	for(int i= 0;i<MAX_ZONE_SCAN_NUISANCE_CHANNELS;i++)						//clear all nuisance delete channels at start of scanning
 	{
 		nuisanceDelete[i]=-1;
-		nuisanceDeleteIndex=0;
 	}
+	nuisanceDeleteIndex=0;
+
 	uiChannelModeScanActive = true;
 	scanTimer = SCAN_SHORT_PAUSE_TIME;
 	scanState = SCAN_SCANNING;

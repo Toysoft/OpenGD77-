@@ -1369,8 +1369,9 @@ static void startScan(void)
 		for(int i= 0;i<MAX_ZONE_SCAN_NUISANCE_CHANNELS;i++)						//clear all nuisance delete channels at start of scanning
 		{
 			nuisanceDelete[i]=-1;
-			nuisanceDeleteIndex=0;
 		}
+		nuisanceDeleteIndex=0;
+
 		selectedFreq = VFO_SELECTED_FREQUENCY_INPUT_RX;
 
 		if((currentChannelData->rxFreq < vfoScanLow) || (currentChannelData->rxFreq > vfoScanHigh))    //if we are not already inside the Low and High Limit freqs then move to the low limit.
