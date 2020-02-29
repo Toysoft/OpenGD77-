@@ -33,6 +33,7 @@ static struct_codeplugRxGroup_t rxGroupData;
 static struct_codeplugContact_t contactData;
 
 static bool displaySquelch=false;
+static int scanDirection = 1;
 
 // internal prototypes
 static void handleEvent(uiEvent_t *ev);
@@ -520,37 +521,55 @@ static void handleEvent(uiEvent_t *ev)
 {
 	displayLightTrigger();
 
-	if((scanState==SCAN_PAUSED) && ((ev->events & KEY_EVENT) && (ev->keys.key == KEY_RIGHT)) && (!(ev->buttons & BUTTON_SK2)))
+	if (scanActive && (ev->events & KEY_EVENT))
+	{
+		// Key pressed during scanning
+
+		if (!(ev->buttons & BUTTON_SK2))
 		{
-			nuisanceDelete[nuisanceDeleteIndex++]=currentChannelData->rxFreq;
-			if(nuisanceDeleteIndex > (MAX_ZONE_SCAN_NUISANCE_CHANNELS - 1))
+			// Right key sets the current frequency as a 'niusance' frequency.
+			if(scanState==SCAN_PAUSED &&  ev->keys.key == KEY_RIGHT)
 			{
-				nuisanceDeleteIndex = 0; //rolling list of last MAX_NUISANCE_CHANNELS deletes.
+				nuisanceDelete[nuisanceDeleteIndex++]=currentChannelData->rxFreq;
+				if(nuisanceDeleteIndex > (MAX_ZONE_SCAN_NUISANCE_CHANNELS - 1))
+				{
+					nuisanceDeleteIndex = 0; //rolling list of last MAX_NUISANCE_CHANNELS deletes.
+				}
+				scanTimer = SCAN_SKIP_CHANNEL_INTERVAL;	//force scan to continue;
+				scanState=SCAN_SCANNING;
+				fw_reset_keyboard();
+				return;
 			}
-			scanTimer = SCAN_SKIP_CHANNEL_INTERVAL;	//force scan to continue;
-			scanState=SCAN_SCANNING;
-			fw_reset_keyboard();
-			return;
+
+			// Left key reverses the scan direction
+			if (scanState == SCAN_SCANNING && ev->keys.key == KEY_LEFT)
+			{
+				scanDirection *= -1;
+				fw_reset_keyboard();
+				return;
+			}
 		}
+
 
 		// stop the scan on any button except UP without Shift (allows scan to be manually continued)
 		// or SK2 on its own (allows Backlight to be triggered)
-		if (scanActive &&
-				( (ev->events & KEY_EVENT) && ( ((ev->keys.key == KEY_UP) && ((ev->buttons & BUTTON_SK2) == 0)) == false ) ) )
+		if (( (ev->events & KEY_EVENT) && ( ((ev->keys.key == KEY_UP) && ((ev->buttons & BUTTON_SK2) == 0)) == false ) ) )
 		{
 			menuVFOModeStopScanning();
 			fw_reset_keyboard();
 			return;
 		}
+	}
 
-		if (ev->events & FUNCTION_EVENT)
+	if (ev->events & FUNCTION_EVENT)
+	{
+		if (ev->function == START_SCANNING)
 		{
-			if (ev->function == START_SCANNING)
-			{
-				startScan();
-				return;
-			}
+			startScan();
+			return;
 		}
+	}
+
 	if (ev->events & BUTTON_EVENT)
 	{
 		uint32_t tg = (LinkHead->talkGroupOrPcId & 0xFFFFFF);
@@ -735,7 +754,6 @@ static void handleEvent(uiEvent_t *ev)
 					stepFrequency(VFO_FREQ_STEP_TABLE[(currentChannelData->VFOflag5 >> 4)] * -1);
 					menuVFOModeUpdateScreen(0);
 				}
-
 			}
 			else if (KEYCHECK_PRESS(ev->keys,KEY_UP))
 			{
@@ -938,7 +956,14 @@ static void handleUpKey(uiEvent_t *ev)
 	}
 	else
 	{
-		stepFrequency(VFO_FREQ_STEP_TABLE[(currentChannelData->VFOflag5 >> 4)]);
+		if (scanState == SCAN_SCANNING)
+		{
+			stepFrequency(VFO_FREQ_STEP_TABLE[(currentChannelData->VFOflag5 >> 4)] * scanDirection);
+		}
+		else
+		{
+			stepFrequency(VFO_FREQ_STEP_TABLE[(currentChannelData->VFOflag5 >> 4)]);
+		}
 		menuVFOModeUpdateScreen(0);
 	}
 	scanTimer=500;
@@ -1329,6 +1354,8 @@ static void menuVFOUpdateTrxID(void )
 
 static void startScan(void)
 {
+
+	scanDirection = 1;
 	if(nonVolatileSettings.currentVFONumber == 1)
 	{
 		vfoScanHigh=nonVolatileSettings.vfoBScanHigh;
@@ -1434,16 +1461,33 @@ static void scanning(void)
 		trx_measure_count=0;														//needed to allow time for Rx to settle after channel change.
 		uiEvent_t tmpEvent={ .buttons = 0, .keys = NO_KEYCODE, .function = 0, .events = NO_EVENT, .hasEvent = 0, .time = 0 };
 
-		if(currentChannelData->rxFreq + VFO_FREQ_STEP_TABLE[(currentChannelData->VFOflag5 >> 4)]  <= vfoScanHigh)
+		if (scanDirection==1)
 		{
-			handleUpKey(&tmpEvent);
+			if(currentChannelData->rxFreq + VFO_FREQ_STEP_TABLE[(currentChannelData->VFOflag5 >> 4)]  <= vfoScanHigh)
+			{
+				handleUpKey(&tmpEvent);
+			}
+			else
+			{
+				uint32_t offset=currentChannelData->txFreq - currentChannelData->rxFreq;
+				currentChannelData->rxFreq=vfoScanLow;
+				currentChannelData->txFreq=currentChannelData->rxFreq+offset;
+				trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq,DMR_MODE_AUTO);
+			}
 		}
 		else
 		{
-			uint32_t offset=currentChannelData->txFreq - currentChannelData->rxFreq;
-			currentChannelData->rxFreq=vfoScanLow;
-			currentChannelData->txFreq=currentChannelData->rxFreq+offset;
-			trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq,DMR_MODE_AUTO);
+			if(currentChannelData->rxFreq + VFO_FREQ_STEP_TABLE[(currentChannelData->VFOflag5 >> 4)]  >= vfoScanLow)
+			{
+				handleUpKey(&tmpEvent);
+			}
+			else
+			{
+				uint32_t offset=currentChannelData->txFreq - currentChannelData->rxFreq;
+				currentChannelData->rxFreq=vfoScanHigh;
+				currentChannelData->txFreq=currentChannelData->rxFreq+offset;
+				trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq,DMR_MODE_AUTO);
+			}
 		}
 
 		if ((trxGetMode() == RADIO_MODE_DIGITAL) && (trxDMRMode == DMR_MODE_ACTIVE) && (SCAN_TOTAL_INTERVAL < SCAN_DMR_SIMPLEX_MIN_INTERVAL) )				//allow extra time if scanning a simplex DMR channel.
