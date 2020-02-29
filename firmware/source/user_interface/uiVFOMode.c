@@ -46,7 +46,6 @@ static void update_frequency(int tmp_frequency);
 static void stepFrequency(int increment);
 static void loadContact(void);
 static void toneScan(void);
-static void CCscan(void);
 static void scanning(void);
 static void startScan(void);
 static void handleUpKey(uiEvent_t *ev);
@@ -80,10 +79,9 @@ static int nuisanceDeleteIndex = 0;
 static uint32_t vfoScanHigh;
 static uint32_t vfoScanLow;
 static bool toneScanActive = false;					//tone scan active flag  (CTCSS)
-static bool CCScanActive = false;					//colour code scan active
+const bool CCScanActive = false;					//colour code scan active
 static int scanTimer=0;
 static const int TONESCANINTERVAL=200;			//time between each tone for lowest tone. (higher tones take less time.)
-static const int CCSCANINTERVAL=500;
 static int scanIndex=0;
 static bool displayChannelSettings;
 static int prevDisplayQSODataState;
@@ -240,10 +238,7 @@ int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
 			{
 				toneScan();
 			}
-			else if(CCScanActive==true)
-			{
-				CCscan();
-			}
+
 			if (uiVfoModeScanActive==true)
 			{
 				scanning();
@@ -260,7 +255,7 @@ int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
 				}
 
 				// Scanning barrier
-				if (toneScanActive || CCScanActive)
+				if (toneScanActive)
 				{
 					if (((ev->events & BUTTON_EVENT) && (ev->buttons == BUTTON_NONE)) ||
 							((ev->keys.key != 0) && (ev->keys.event & KEY_MOD_UP)))
@@ -354,7 +349,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 				}
 				else
 				{
-					ucPrintCentered((CCScanActive ? 32 : CONTACT_Y_POS), buffer, FONT_8x16);
+					ucPrintCentered(CONTACT_Y_POS, buffer, FONT_8x16);
 				}
 			}
 			else
@@ -400,14 +395,8 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					// if CC scan is active, Rx freq is moved down to the Tx location,
 					// as Contact Info will be displayed here
 
-					printFrequency(false, (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_RX), (CCScanActive ? 48 : 32), currentChannelData->rxFreq, true);
+					printFrequency(false, (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_RX), 32, currentChannelData->rxFreq, true);
 
-					if (CCScanActive)
-					{
-						snprintf(buffer, bufferLen, "%s %d", currentLanguage->colour_code, trxGetDMRColourCode());
-						buffer[bufferLen - 1 ] = 0;
-						ucPrintCentered(16, buffer, FONT_8x16);
-					}
 				}
 				else
 				{
@@ -423,10 +412,8 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					ucPrintCentered(TX_TIMER_Y_OFFSET, buffer, FONT_16x32);
 				}
 
-				if (CCScanActive == false)
-				{
-					printFrequency(true, (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX || trxIsTransmitting), 48, currentChannelData->txFreq, true);
-				}
+
+				printFrequency(true, (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX || trxIsTransmitting), 48, currentChannelData->txFreq, true);
 			}
 			else
 			{
@@ -461,12 +448,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 
 void menuVFOModeStopScanning(void)
 {
-	if (CCScanActive)
-	{
-		trxSetDMRColourCode(currentChannelData->rxColor);
-	}
 	toneScanActive = false;
-	CCScanActive = false;
 	uiVfoModeScanActive=false;
 	menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 	menuVFOModeUpdateScreen(0); // Needs to redraw the screen now
@@ -1021,7 +1003,7 @@ static void stepFrequency(int increment)
 
 // Quick Menu functions
 enum VFO_SCREEN_QUICK_MENU_ITEMS { 	VFO_SCREEN_QUICK_MENU_VFO_A_B=0,VFO_SCREEN_QUICK_MENU_VFO_TO_NEW,VFO_SCREEN_QUICK_MENU_TX_SWAP_RX, VFO_SCREEN_QUICK_MENU_BOTH_TO_RX, VFO_SCREEN_QUICK_MENU_BOTH_TO_TX,
-									VFO_SCREEN_QUICK_MENU_FILTER,VFO_SCREEN_CODE_SCAN,VFO_SCREEN_SCAN_LOW_FREQ,VFO_SCREEN_SCAN_HIGH_FREQ,VFO_SCREEN_QUICK_MENU_SCAN,
+									VFO_SCREEN_QUICK_MENU_FILTER,VFO_SCREEN_SCAN_LOW_FREQ,VFO_SCREEN_SCAN_HIGH_FREQ,VFO_SCREEN_QUICK_MENU_SCAN,
 									NUM_VFO_SCREEN_QUICK_MENU_ITEMS };// The last item in the list is used so that we automatically get a total number of items in the list
 
 
@@ -1084,16 +1066,6 @@ static void updateQuickMenuScreen(void)
 			case VFO_SCREEN_QUICK_MENU_VFO_A_B:
 				sprintf(buf, "VFO:%c", ((nonVolatileSettings.currentVFONumber==0) ? 'A' : 'B'));
 				break;
-			case VFO_SCREEN_CODE_SCAN:
-				if(trxGetMode() == RADIO_MODE_ANALOG)
-				{
-					strncpy(buf, currentLanguage->tone_scan, bufferLen);
-				}
-				else
-				{
-					strncpy(buf, currentLanguage->cc_scan, bufferLen);
-				}
-				break;
 			case VFO_SCREEN_SCAN_LOW_FREQ:
 				strcpy(buf, "Rx --> Scan Low");
 				break;
@@ -1119,11 +1091,6 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 	if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{
 		toneScanActive=false;
-		if(CCScanActive==true)
-		{
-			CCScanActive=false;
-			trxSetDMRColourCode(currentChannelData->rxColor);
-		}
 
 		menuSystemPopPreviousMenu();
 		return;
@@ -1209,23 +1176,6 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 				else
 				{
 					nonVolatileSettings.analogFilterLevel = tmpQuickMenuAnalogFilterLevel;
-				}
-				break;
-			case VFO_SCREEN_CODE_SCAN:
-				if(trxGetMode() == RADIO_MODE_ANALOG)
-				{
-					toneScanActive=true;
-					scanTimer=TONESCANINTERVAL;
-					scanIndex=1;
-					trxSetRxCTCSS(TRX_CTCSSTones[scanIndex]);
-					disableAudioAmp(AUDIO_AMP_MODE_RF);
-				}
-				else
-				{
-					CCScanActive=true;
-					scanTimer=CCSCANINTERVAL;
-					scanIndex=0;
-					trxSetDMRColourCode(scanIndex);
 				}
 				break;
 			case VFO_SCREEN_SCAN_LOW_FREQ:
@@ -1332,7 +1282,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 
 bool menuVFOModeIsScanning(void)
 {
-	return (toneScanActive || CCScanActive || uiVfoModeScanActive );
+	return (toneScanActive || uiVfoModeScanActive );
 }
 
 static void toneScan(void)
@@ -1364,33 +1314,6 @@ static void toneScan(void)
 		scanTimer=TONESCANINTERVAL-(scanIndex*2);
 		trx_measure_count=0;							//synchronise the measurement with the scan.
 		trxAT1846RxOn();
-		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-		menuVFOModeUpdateScreen(0);
-	}
-}
-
-static void CCscan(void)
-{
-	//if (GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable)==1)
-	if (getAudioAmpStatus() & AUDIO_AMP_MODE_RF)
-	{
-		currentChannelData->rxColor=scanIndex;
-		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-		CCScanActive=false;
-		menuVFOModeUpdateScreen(0);
-		return;
-	}
-
-	if(scanTimer>0)
-	{
-		scanTimer--;
-	}
-	else
-	{
-		scanIndex++;
-		if(scanIndex>15) scanIndex=0;
-		trxSetDMRColourCode(scanIndex);
-		scanTimer=CCSCANINTERVAL;
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		menuVFOModeUpdateScreen(0);
 	}
