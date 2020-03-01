@@ -46,14 +46,34 @@ namespace GD77_FirmwareLoader
 		private static SpecifiedDevice _specifiedDevice = null;
 		private static FrmProgress _progessForm;
 
-		public static int UploadFirmare(string fileName,FrmProgress progessForm=null)
+		public enum OutputType
 		{
-			byte[] encodeKey = new Byte[4] {(0x61 + 0x00), (0x61 + 0x0C), (0x61 + 0x0D), (0x61 + 0x01)};
+			OutputType_GD77,
+			OutputType_DM1801
+		}
+
+		public static OutputType outputType = OutputType.OutputType_GD77;
+
+		public static int UploadFirmware(string fileName,FrmProgress progessForm=null)
+		{
+			byte[] encodeKey;
 			_progessForm = progessForm;
+
+			if (outputType == OutputType.OutputType_GD77)
+			{
+				encodeKey = new Byte[4] { (0x61 + 0x00), (0x61 + 0x0C), (0x61 + 0x0D), (0x61 + 0x01) };
+				Console.WriteLine("GD-77 Support");
+			}
+			else // DM-1801
+			{
+				encodeKey = new Byte[4] { (0x74), (0x21), (0x44), (0x39) };
+				Console.WriteLine("DM-1801 Support");
+			}
+
 			_specifiedDevice = SpecifiedDevice.FindSpecifiedDevice(0x15A2, 0x0073);
 			if (_specifiedDevice == null)
 			{
-				Console.WriteLine("Error. Can't connect to the GD-77");
+				Console.WriteLine("Error. Can't connect to the {0}", ((outputType == OutputType.OutputType_GD77) ? "GD-77" : "DM-1801")); 
 				return -1;
 			}
 
@@ -87,7 +107,11 @@ namespace GD77_FirmwareLoader
 				int respCode = sendFileData(fileBuf);
 				if (respCode == 0)
 				{
-					Console.WriteLine("\nFirmware update complete. Please reboot the GD-77");
+					Console.WriteLine("\n *** Firmware update complete. Please reboot the {0} ***", ((outputType == OutputType.OutputType_GD77) ? "GD-77" : "DM-1801"));
+					if (_progessForm != null)
+					{
+						MessageBox.Show(String.Format("Firmware update complete.Please reboot the {0}.", ((outputType == OutputType.OutputType_GD77) ? "GD-77" : "DM-1801")), "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+					}
 				}
 				else
 				{
@@ -264,11 +288,25 @@ namespace GD77_FirmwareLoader
 			byte[] commandLetterA = new byte[] { 0x41 }; //A
 			byte[][] command0 = new byte[][] { new byte[] { 0x44, 0x4f, 0x57, 0x4e, 0x4c, 0x4f, 0x41, 0x44 }, new byte[] { 0x23, 0x55, 0x50, 0x44, 0x41, 0x54, 0x45, 0x3f } }; // DOWNLOAD
 			byte[][] command1 = new byte[][] { commandLetterA, responseOK };
-			byte[][] command2 = new byte[][] { new byte[] { 0x44, 0x56, 0x30, 0x31, (0x61 + 0x00), (0x61 + 0x0C), (0x61 + 0x0D), (0x61 + 0x01) }, new byte[] { 0x44, 0x56, 0x30, 0x31 } }; //.... last 4 bytes of the command are the offset encoded as letters a - p (hard coded fr
+			byte[][] command2;
 			byte[][] command3 = new byte[][] { new byte[] { 0x46, 0x2d, 0x50, 0x52, 0x4f, 0x47, 0xff, 0xff }, responseOK }; //... F-PROG..
-			byte[][] command4 = new byte[][] { new byte[] { 0x53, 0x47, 0x2d, 0x4d, 0x44, 0x2d, 0x37, 0x36, 0x30, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff }, responseOK }; //SG-MD-760
-			byte[][] command5 = new byte[][] { new byte[] { 0x4d, 0x44, 0x2d, 0x37, 0x36, 0x30, 0xff, 0xff }, responseOK }; //MD-760..
+			byte[][] command4;
+			byte[][] command5;
 			byte[][] command6 = new byte[][] { new byte[] { 0x56, 0x31, 0x2e, 0x30, 0x30, 0x2e, 0x30, 0x31 }, responseOK }; //V1.00.01
+
+			if (outputType == OutputType.OutputType_GD77)
+			{
+				command2 = new byte[][] { new byte[] { 0x44, 0x56, 0x30, 0x31, (0x61 + 0x00), (0x61 + 0x0C), (0x61 + 0x0D), (0x61 + 0x01) }, new byte[] { 0x44, 0x56, 0x30, 0x31 } }; //.... last 4 bytes of the command are the offset encoded as letters a - p (hard coded fr
+				command4 = new byte[][] { new byte[] { 0x53, 0x47, 0x2d, 0x4d, 0x44, 0x2d, 0x37, 0x36, 0x30, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff }, responseOK }; //SG-MD-760
+				command5 = new byte[][] { new byte[] { 0x4d, 0x44, 0x2d, 0x37, 0x36, 0x30, 0xff, 0xff }, responseOK }; //MD-760..
+			}
+			else
+			{
+				command2 = new byte[][] { new byte[] { 0x44, 0x56, 0x30, 0x33, 0x74, 0x21, 0x44, 0x39 }, new byte[] { 0x44, 0x56, 0x30, 0x33 } }; //.... last 4 bytes of the command are the offset encoded as letters a - p (hard coded fr
+				command4 = new byte[][] { new byte[] { 0x42, 0x46, 0x2d, 0x44, 0x4d, 0x52, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff }, responseOK }; //BF-DMR
+				command5 = new byte[][] { new byte[] { 0x31, 0x38, 0x30, 0x31, 0xff, 0xff, 0xff, 0xff }, responseOK }; //1801..
+			}
+
 			byte[][] commandErase = new byte[][] { new byte[] { 0x46, 0x2d, 0x45, 0x52, 0x41, 0x53, 0x45, 0xff }, responseOK }; //F-ERASE
 			byte[][] commandPostErase = new byte[][] { commandLetterA, responseOK };
 			byte[][] commandProgram = { new byte[] { 0x50, 0x52, 0x4f, 0x47, 0x52, 0x41, 0x4d, 0xf }, responseOK };//PROGRAM
@@ -302,9 +340,18 @@ namespace GD77_FirmwareLoader
 
 		static byte[] encrypt(byte [] unencrypted)
         {
-            int shift = 0x0807;
+			int shift;
 			byte [] encrypted = new byte[unencrypted.Length];
 			int data;
+
+			if (outputType == OutputType.OutputType_GD77)
+			{
+				shift = 0x0807;
+			}
+			else
+			{
+				shift = 0x2C7C;
+			}
 
 				byte[] encryptionTable  = new byte[32768];
 				int len = unencrypted.Length;
