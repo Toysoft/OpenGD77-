@@ -55,12 +55,10 @@ static int16_t newChannelIndex = 0;
 static uint32_t vfoScanHigh;
 static uint32_t vfoScanLow;
 static bool toneScanActive = false;					//tone scan active flag  (CTCSS)
-const bool CCScanActive = false;					//colour code scan active
 static const int TONESCANINTERVAL=200;			//time between each tone for lowest tone. (higher tones take less time.)
 static int scanIndex=0;
 static bool displayChannelSettings;
 static int prevDisplayQSODataState;
-
 
 // public interface
 int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
@@ -308,7 +306,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					}
 					else
 					{
-						ucDrawRect(0, (CCScanActive ? 32 : CONTACT_Y_POS), 128, 16, true);
+						ucDrawRect(0, CONTACT_Y_POS, 128, 16, true);
 					}
 				}
 				else
