@@ -32,9 +32,6 @@ static int selectedFreq = VFO_SELECTED_FREQUENCY_INPUT_RX;
 static struct_codeplugRxGroup_t rxGroupData;
 static struct_codeplugContact_t contactData;
 
-static bool displaySquelch=false;
-static int scanDirection = 1;
-
 // internal prototypes
 static void handleEvent(uiEvent_t *ev);
 static void handleQuickMenuEvent(uiEvent_t *ev);

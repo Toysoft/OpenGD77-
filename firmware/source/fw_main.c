@@ -353,7 +353,7 @@ void fw_main_task(void *data)
 							currentMenu != MENU_TX_SCREEN )
 					{
 						bool wasScanning = false;
-						if (menuVFOModeIsScanning() || menuChannelModeIsScanning())
+						if (scanActive)
 						{
 							if (currentMenu == MENU_VFO_MODE)
 							{
