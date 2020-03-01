@@ -1464,7 +1464,7 @@ static void scanning(void)
 			}
 			else
 			{
-				uint32_t offset=currentChannelData->txFreq - currentChannelData->rxFreq;
+				int offset = currentChannelData->txFreq - currentChannelData->rxFreq;
 				currentChannelData->rxFreq=vfoScanLow;
 				currentChannelData->txFreq=currentChannelData->rxFreq+offset;
 				trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq,DMR_MODE_AUTO);
@@ -1478,7 +1478,7 @@ static void scanning(void)
 			}
 			else
 			{
-				uint32_t offset=currentChannelData->txFreq - currentChannelData->rxFreq;
+				int offset = currentChannelData->txFreq - currentChannelData->rxFreq;
 				currentChannelData->rxFreq=vfoScanHigh;
 				currentChannelData->txFreq=currentChannelData->rxFreq+offset;
 				trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq,DMR_MODE_AUTO);
