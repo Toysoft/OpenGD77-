@@ -1362,9 +1362,15 @@ static void startScan(void)
 		vfoScanLow=nonVolatileSettings.vfoAScanLow;
 	}
 
-
-	if((vfoScanLow < vfoScanHigh) && (trxGetBandFromFrequency(vfoScanLow)==trxGetBandFromFrequency(vfoScanHigh)) && (trxGetBandFromFrequency(vfoScanLow) == trxGetBandFromFrequency(currentChannelData->rxFreq)))
+	// Check that the Low freq is lower than the High freq, and that the Low and High frequencies are in the same band.
+	if(	(vfoScanLow < vfoScanHigh) && (trxGetBandFromFrequency(vfoScanLow) == trxGetBandFromFrequency(vfoScanHigh)))
 	{
+		// If the current Rx freq is outside the scan range, set it to the lower scan range
+		if (currentChannelData->rxFreq < vfoScanLow || currentChannelData->rxFreq >= vfoScanHigh)
+		{
+			 currentChannelData->rxFreq = vfoScanLow;
+		}
+
 		for(int i= 0;i<MAX_ZONE_SCAN_NUISANCE_CHANNELS;i++)						//clear all nuisance delete channels at start of scanning
 		{
 			nuisanceDelete[i]=-1;
