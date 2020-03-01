@@ -1365,12 +1365,6 @@ static void startScan(void)
 	// Check that the Low freq is lower than the High freq, and that the Low and High frequencies are in the same band.
 	if(	(vfoScanLow < vfoScanHigh) && (trxGetBandFromFrequency(vfoScanLow) == trxGetBandFromFrequency(vfoScanHigh)))
 	{
-		// If the current Rx freq is outside the scan range, set it to the lower scan range
-		if (currentChannelData->rxFreq < vfoScanLow || currentChannelData->rxFreq >= vfoScanHigh)
-		{
-			 currentChannelData->rxFreq = vfoScanLow;
-		}
-
 		for(int i= 0;i<MAX_ZONE_SCAN_NUISANCE_CHANNELS;i++)						//clear all nuisance delete channels at start of scanning
 		{
 			nuisanceDelete[i]=-1;
@@ -1381,10 +1375,10 @@ static void startScan(void)
 
 		if((currentChannelData->rxFreq < vfoScanLow) || (currentChannelData->rxFreq > vfoScanHigh))    //if we are not already inside the Low and High Limit freqs then move to the low limit.
 		{
-		uint32_t offset=currentChannelData->txFreq - currentChannelData->rxFreq;
-		currentChannelData->rxFreq=vfoScanLow;
-		currentChannelData->txFreq=currentChannelData->rxFreq+offset;
-		trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq,DMR_MODE_AUTO);
+			int offset = currentChannelData->txFreq - currentChannelData->rxFreq;
+			currentChannelData->rxFreq=vfoScanLow;
+			currentChannelData->txFreq=currentChannelData->rxFreq+offset;
+			trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq,DMR_MODE_AUTO);
 		}
 		scanActive=true;
 		scanTimer=500;
