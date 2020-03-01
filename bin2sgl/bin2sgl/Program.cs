@@ -32,18 +32,46 @@
 
 using System;
 using System.IO;
+using System.Collections.Generic;
 
 namespace bin2sgl
 {
     class Program
-    {
-        static void encrypt(string[] args)
+	{
+		public enum OutputType
+		{
+			OutputType_GD77,
+			OutputType_DM1801
+		}
+
+		private static OutputType outputType = OutputType.OutputType_GD77;
+
+		static void encrypt(string[] args)
         {
-            int shift = 0x0807;
+			int shift = 0;
+			int len = 0;
+			int flength = 0;
             FileStream stream_fw_in;
             string outputFilename = Path.GetFileNameWithoutExtension(args[0]) + ".sgl";
 
-            try
+			switch(outputType)
+			{
+				case OutputType.OutputType_GD77:
+					len = DataArrays.Header318_0x0807.Length;
+					shift = 0x0807;
+					flength = 0x77001; // The header, from firmware version 3.1.8 expects the file to be 0x77001 long
+					Console.WriteLine("GD77");
+					break;
+
+				case OutputType.OutputType_DM1801:
+					len = DataArrays.Header219_0x0807.Length;
+					shift = 0x2C7C;
+					flength = 0x78001; // The header, from firmware version 2.1.9 expects the file to be 0x78001 long
+					Console.WriteLine("DM-1801");
+					break;
+			}
+
+			try
             {
                 try
                 {
@@ -56,15 +84,15 @@ namespace bin2sgl
                 }
                 FileStream stream_fw_out = new FileStream(outputFilename, FileMode.Create, FileAccess.Write, FileShare.ReadWrite);
 
-                int len = DataArrays.Header318_0x0807.Length;
-                for (int i = 0; i < len; i++)
+				//int len = DataArrays.Header318_0x0807.Length;
+				for (int i = 0; i < len; i++)
                 {
-                    stream_fw_out.WriteByte(DataArrays.Header318_0x0807[i]);
+                    stream_fw_out.WriteByte(((outputType == OutputType.OutputType_GD77) ? DataArrays.Header318_0x0807[i] : DataArrays.Header219_0x0807[i]));
                 }
 
                 int length = 0;
                 // The header, from firmware version 3.1.8 expects the file to be 0x77001 long
-                while (length < 0x77001)
+                while (length < flength)
                 {
                     int data = stream_fw_in.ReadByte();// This may attempt to read past of the end of the file if its shorter than 0x77001
 
@@ -88,23 +116,39 @@ namespace bin2sgl
 
                 stream_fw_in.Close();
                 stream_fw_out.Close();
-                Console.Write("Created " + outputFilename);
+                Console.WriteLine("Created " + outputFilename);
             }
             catch(Exception ex)
             {
                 Console.Write("Error :-(\n" + ex.ToString());
             }
-        }
+		}
 
-        static void Main(string[] args)
-        {
-            if (args.Length == 1)
+		private static string[] RemoveArgAt(string[] args, int index)
+		{
+			var foos = new List<string>(args);
+			foos.RemoveAt(index);
+			return foos.ToArray();
+		}
+
+		static void Main(string[] args)
+		{
+			int idx = Array.IndexOf(args, "DM-1801");
+
+			outputType = ((idx >= 0) ? OutputType.OutputType_DM1801 : OutputType.OutputType_GD77);
+
+			if (idx >= 0)
+			{
+				args = RemoveArgAt(args, idx);
+			}
+
+			if (args.Length > 0)
             {
                 encrypt(args);
             }
             else
             {
-                Console.Write("Usage: bin2sgl filename");
+                Console.WriteLine("Usage: bin2sgl [DM-1801] filename");
             }
         }
     }
