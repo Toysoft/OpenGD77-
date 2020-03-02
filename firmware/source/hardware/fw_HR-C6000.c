@@ -1383,30 +1383,6 @@ void fw_hrc6000_task(void *data)
     }
 }
 
-void buildLCDataFromParams(uint8_t *data,uint8_t FLCO,uint32_t srcId,uint32_t dstId)
-{
-	data[0] = FLCO;
-	data[1] = 0x00;
-	data[2] = 0x00;
-	data[3] = (dstId >> 16) & 0xFF;
-	data[4] = (dstId >> 8) & 0xFF;
-	data[5] = (dstId >> 0) & 0xFF;
-	data[6] = (srcId >> 16) & 0xFF;
-	data[7] = (srcId >> 8) & 0xFF;
-	data[8] = (srcId >> 0) & 0xFF;
-	data[9] = 0x00;
-	data[10] = 0x00;
-	data[11] = 0x00;
-}
-
-void buildLC_DataFromLD_Data(uint8_t *outData,uint8_t *LC_DataBytes)
-{
-	memcpy(outData,LC_DataBytes,9);
-	outData[9] = 0x00;
-	outData[10] = 0x00;
-	outData[11] = 0x00;
-}
-
 void setupPcOrTGHeader(void)
 {
 	uint8_t spi_tx[12];
