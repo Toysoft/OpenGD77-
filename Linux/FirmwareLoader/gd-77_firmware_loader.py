@@ -31,9 +31,21 @@ import getopt, sys
 import ntpath
 import os.path
 from array import array
+import enum
+
+class SGLFormatOutput(enum.Enum):
+    GD_77 = 0
+    DM_1801 = 1
+
+    def __int__(self):
+        return self.value
+
 
 # Globals
 responseOK = [0x41]
+outputModes = ["GD-77", "DM-1801"]
+outputFormat = SGLFormatOutput.GD_77
+
 
 
 ########################################################################
@@ -200,10 +212,17 @@ def sendInitialCommands(dev, encodeKey):
     commandLetterA      =[ 0x41] #A
     command0            =[[0x44,0x4f,0x57,0x4e,0x4c,0x4f,0x41,0x44],[0x23,0x55,0x50,0x44,0x41,0x54,0x45,0x3f]] # DOWNLOAD
     command1            =[commandLetterA,responseOK] 
-    command2            =[[0x44, 0x56, 0x30, 0x31, (0x61 + 0x00), (0x61 + 0x0C), (0x61 + 0x0D), (0x61 + 0x01)],[0x44, 0x56, 0x30, 0x31]] #.... DV01enhi (DV01enhi comes from deobfuscated sgl file)
     command3            =[[0x46, 0x2d, 0x50, 0x52, 0x4f, 0x47, 0xff, 0xff],responseOK] #... F-PROG..
-    command4            =[[0x53, 0x47, 0x2d, 0x4d, 0x44, 0x2d, 0x37, 0x36, 0x30, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff],responseOK] #SG-MD-760
-    command5            =[[0x4d, 0x44, 0x2d, 0x37, 0x36, 0x30, 0xff, 0xff],responseOK] #MD-760..
+
+    if (outputFormat == SGLFormatOutput.GD_77):
+        command2            =[[0x44, 0x56, 0x30, 0x31, (0x61 + 0x00), (0x61 + 0x0C), (0x61 + 0x0D), (0x61 + 0x01)],[0x44, 0x56, 0x30, 0x31]] #.... DV01enhi (DV01enhi comes from deobfuscated sgl file)
+        command4            =[[0x53, 0x47, 0x2d, 0x4d, 0x44, 0x2d, 0x37, 0x36, 0x30, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff],responseOK] #SG-MD-760
+        command5            =[[0x4d, 0x44, 0x2d, 0x37, 0x36, 0x30, 0xff, 0xff],responseOK] #MD-760..
+    else:
+        command2            =[[0x44, 0x56, 0x30, 0x33, 0x74, 0x21, 0x44, 0x39],[0x44, 0x56, 0x30, 0x33]] #.... last 4 bytes of the command are the offset encoded as letters a - p (hard coded fr
+        command4            =[[0x42, 0x46, 0x2d, 0x44, 0x4d, 0x52, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff],responseOK] #BF-DMR
+        command5            =[[0x31, 0x38, 0x30, 0x31, 0xff, 0xff, 0xff, 0xff],responseOK] # MD-1801
+        
     command6            =[[0x56, 0x31, 0x2e, 0x30, 0x30, 0x2e, 0x30, 0x31],responseOK] #V1.00.01
     commandErase        =[[0x46, 0x2d, 0x45, 0x52, 0x41, 0x53, 0x45, 0xff],responseOK] #F-ERASE
     commandPostErase    =[commandLetterA,responseOK] 
@@ -292,6 +311,7 @@ def usage():
     print("")
     print("    -h, --help                     : Display this help text")
     print("    -f, --firmware=<filename.sgl>  : Flash <filename.sgl> instead of default file \"GD-77_V3.1.2.sgl\"")
+    print("    -m, --model=<type>             : Select HT model (GD-77 is the default). Models are: {}".format(", ".join(str(x) for x in outputModes)) + ".")
     print("")
 
 #####################################################
@@ -301,11 +321,11 @@ def main():
     sglFile = "firmware.sgl"
     dev = usb.core.find(idVendor=0x15a2, idProduct=0x0073)
     if (dev):
-        encodeKey = [ (0x61 + 0x00), (0x61 + 0x0C), (0x61 + 0x0D), (0x61 + 0x01) ]
-
+        global outputFormat
+        
         # Command line argument parsing
         try:                                
-            opts, args = getopt.getopt(sys.argv[1:], "hf:", ["help", "firmware="])
+            opts, args = getopt.getopt(sys.argv[1:], "hf:m:", ["help", "firmware=", "model="])
         except getopt.GetoptError as err:
             print(str(err))
             usage()
@@ -317,6 +337,14 @@ def main():
                 sys.exit(2)
             elif opt in ("-f", "--firmware"):
                 sglFile = arg
+            elif opt in ("-m", "--model"):
+                try:
+                    index = outputModes.index(arg)
+                except ValueError as e:
+                    print("Model \"{}\" is unknown".format(arg))
+                    sys.exit(2)
+                    
+                outputFormat = SGLFormatOutput(index)
             else:
                 assert False, "Unhandled option"
 
@@ -331,7 +359,7 @@ def main():
         except NotImplementedError as e:
             pass
         
-        print("Now flashing your GD-77 with \"" + sglFile + "\"")
+        print("Now flashing your {} with \"{}\"".format(outputModes[int(outputFormat)], sglFile))
         
         #seems to be needed for the usb to work !
         dev.set_configuration()
@@ -339,8 +367,14 @@ def main():
         with open(sglFile, 'rb') as f:
             fileBuf = f.read()
             
-        # Chech firmware        
+        # Check firmware        
         filename, file_extension = os.path.splitext(sglFile)
+
+        # Define encodeKey according to HT model
+        if (outputFormat == SGLFormatOutput.GD_77):
+            encodeKey = [ (0x61 + 0x00), (0x61 + 0x0C), (0x61 + 0x0D), (0x61 + 0x01) ]
+        else:
+            encodeKey = [ (0x74), (0x21), (0x44), (0x39) ]
 
         if file_extension == ".sgl":
             ## Could be a SGL file !
@@ -361,7 +395,7 @@ def main():
 
         if (sendInitialCommands(dev, encodeKey) == True):
             if (sendFileData(fileBuf, dev) == True):
-                print("Firmware update complete. Please reboot the GD-77")
+                print("Firmware update complete. Please reboot the {}.".format(outputModes[int(outputFormat)]))
             else:
                 print("Error while sending data")
         else:
@@ -370,7 +404,7 @@ def main():
         usb.util.dispose_resources(dev) #free up the USB device
         
     else:
-        print("Cant find GD-77")
+        print("Cant find the {}".format(outputModes[int(outputFormat)]))
 
 
 ## Run the program
