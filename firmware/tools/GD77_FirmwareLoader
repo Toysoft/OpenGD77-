@@ -4,12 +4,15 @@ let ret=0
 
 OS=`uname -s`
 
-case $OS in
-    'Linux')
-	mono "$1/GD77_FirmwareLoader-Linux.exe" ${@:2}
+FIRMWARE="$(echo ${@:2:1})"
+DM1801=$(echo "${@:3:1})" | grep -o DM-1801)
+
+case "$OS" in
+    "Linux")
+	mono "$1/GD77_FirmwareLoader-Linux.exe" $DM1801 $FIRMWARE
 	ret=$?
 	;;
-    'Darwin')
+    "Darwin")
 	# doesn't even exist yet. Use Python script instead ?
 	#mono "$1/GD77_FirmwareLoader-Darwin.exe" ${@:2}
 	ret=$?

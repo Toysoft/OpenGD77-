@@ -77,7 +77,7 @@ bool SPI_Flash_init(void)
 
     partNumber = SPI_Flash_readPartID();
 
-    if (partNumber == 0x4014 || partNumber == 0x4017)
+    if (partNumber == 0x4014 || partNumber == 0x4017 || partNumber == 0x4015)
     {
     	return true;
     }

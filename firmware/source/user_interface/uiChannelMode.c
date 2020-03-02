@@ -41,31 +41,10 @@ static struct_codeplugRxGroup_t rxGroupData;
 static struct_codeplugContact_t contactData;
 static char currentZoneName[17];
 static int directChannelNumber=0;
-static bool displaySquelch=false;
+
 int currentChannelNumber=0;
 static bool isDisplayingQSOData=false;
 static bool isTxRxFreqSwap=false;
-typedef enum
-{
-	SCAN_SCANNING = 0,
-	SCAN_SHORT_PAUSED,
-	SCAN_PAUSED
-} ScanZoneState_t;
-
-
-static int scanTimer=0;
-static ScanZoneState_t scanState = SCAN_SCANNING;		//state flag for scan routine
-bool uiChannelModeScanActive = false;					//scan active flag
-static const int SCAN_SHORT_PAUSE_TIME = 500;			//time to wait after carrier detected to allow time for full signal detection. (CTCSS or DMR)
-static const int SCAN_TOTAL_INTERVAL = 30;			    //time between each scan step
-static const int SCAN_DMR_SIMPLEX_MIN_INTERVAL=60;		//minimum time between steps when scanning DMR Simplex. (needs extra time to capture TDMA Pulsing)
-static const int SCAN_FREQ_CHANGE_SETTLING_INTERVAL = 1;//Time after frequency is changed before RSSI sampling starts
-static const int SCAN_SKIP_CHANNEL_INTERVAL = 1;		//This is actually just an implicit flag value to indicate the channel should be skipped
-
-
-#define MAX_ZONE_SCAN_NUISANCE_CHANNELS 16
-static int nuisanceDelete[MAX_ZONE_SCAN_NUISANCE_CHANNELS];
-static int nuisanceDeleteIndex = 0;
 
 static int tmpQuickMenuDmrFilterLevel;
 static int tmpQuickMenuAnalogFilterLevel;
@@ -74,7 +53,7 @@ static int prevDisplayQSODataState;
 
 static struct_codeplugChannel_t channelNextChannelData={.rxFreq=0};
 static bool nextChannelReady = false;
-static uint16_t nextChannelIndex = 0;
+static int nextChannelIndex = 0;
 
 
 int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
@@ -124,7 +103,7 @@ int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 
 		menuChannelModeUpdateScreen(0);
 
-		if (uiChannelModeScanActive==false)
+		if (scanActive==false)
 		{
 			scanState = SCAN_SCANNING;
 		}
@@ -153,7 +132,7 @@ int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 				{
 					m = ev->time;
 
-					if (uiChannelModeScanActive && (scanState == SCAN_PAUSED))
+					if (scanActive && (scanState == SCAN_PAUSED))
 					{
 						ucClearRows(0, 2, false);
 						menuUtilityRenderHeader();
@@ -165,11 +144,11 @@ int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 
 					// Only render the second row which contains the bar graph, if we're not scanning,
 					// as there is no need to redraw the rest of the screen
-					ucRenderRows(((uiChannelModeScanActive && (scanState == SCAN_PAUSED)) ? 0 : 1), 2);
+					ucRenderRows(((scanActive && (scanState == SCAN_PAUSED)) ? 0 : 1), 2);
 				}
 			}
 
-			if(uiChannelModeScanActive==true)
+			if(scanActive==true)
 			{
 				scanning();
 			}
@@ -204,10 +183,22 @@ static void searchNextChannel(void) {
 	if (currentZone.NOT_IN_MEMORY_isAllChannelsZone)
 	{
 		do {
-			nextChannelIndex++;
-			if (nextChannelIndex>1024)
+			nextChannelIndex += scanDirection;
+			if (scanDirection == 1)
 			{
-				nextChannelIndex = 1;
+				if (nextChannelIndex>1024)
+				{
+					nextChannelIndex = 1;
+				}
+			}
+			else
+			{
+				// Note this is inefficient check all the index down from 1024 until it gets to the first valid index from the end.
+				// To improve this. Highest valid channel number would need to be found and cached when the radio boots up
+				if (nextChannelIndex < 1)
+				{
+					nextChannelIndex = 1024;
+				}
 			}
 		} while(!codeplugChannelIndexIsValid(nextChannelIndex));
 		channel = nextChannelIndex;
@@ -215,11 +206,20 @@ static void searchNextChannel(void) {
 	}
 	else
 	{
-		nextChannelIndex++;
-		if (nextChannelIndex > currentZone.NOT_IN_MEMORY_numChannelsInZone - 1)
+		nextChannelIndex += scanDirection;
+		if (scanDirection == 1)
 		{
-			nextChannelIndex = 0;
-
+			if (nextChannelIndex > currentZone.NOT_IN_MEMORY_numChannelsInZone - 1)
+			{
+				nextChannelIndex = 0;
+			}
+		}
+		else
+		{
+			if (nextChannelIndex < 0)
+			{
+				nextChannelIndex = currentZone.NOT_IN_MEMORY_numChannelsInZone - 1;
+			}
 		}
 		codeplugChannelGetDataForIndex(currentZone.channels[nextChannelIndex],&channelNextChannelData);
 		channel = currentZone.channels[nextChannelIndex];
@@ -520,31 +520,47 @@ static void handleEvent(uiEvent_t *ev)
 {
 	displayLightTrigger();
 
-	// if we are scanning and down key is pressed then enter current channel into nuisance delete array.
-	if((scanState==SCAN_PAUSED) && ((ev->events & KEY_EVENT) && (ev->keys.key == KEY_DOWN)) && (!(ev->buttons & BUTTON_SK2)))
+	if (scanActive && (ev->events & KEY_EVENT))
 	{
-		nuisanceDelete[nuisanceDeleteIndex++] = settingsCurrentChannelNumber;
-		if(nuisanceDeleteIndex > (MAX_ZONE_SCAN_NUISANCE_CHANNELS - 1))
+		// Key pressed during scanning
+
+		if (!(ev->buttons & BUTTON_SK2))
 		{
-			nuisanceDeleteIndex = 0; //rolling list of last MAX_NUISANCE_CHANNELS deletes.
+			// if we are scanning and down key is pressed then enter current channel into nuisance delete array.
+			if(scanState==SCAN_PAUSED &&  ev->keys.key == KEY_RIGHT)
+			{
+				nuisanceDelete[nuisanceDeleteIndex++] = settingsCurrentChannelNumber;
+				if(nuisanceDeleteIndex > (MAX_ZONE_SCAN_NUISANCE_CHANNELS - 1))
+				{
+					nuisanceDeleteIndex = 0; //rolling list of last MAX_NUISANCE_CHANNELS deletes.
+				}
+				scanTimer = SCAN_SKIP_CHANNEL_INTERVAL;	//force scan to continue;
+				scanState=SCAN_SCANNING;
+				fw_reset_keyboard();
+				return;
+			}
+
+			// Left key reverses the scan direction
+			if (scanState == SCAN_SCANNING && ev->keys.key == KEY_LEFT)
+			{
+				scanDirection *= -1;
+				fw_reset_keyboard();
+				return;
+			}
 		}
-		scanTimer = SCAN_SKIP_CHANNEL_INTERVAL;	//force scan to continue;
-		scanState=SCAN_SCANNING;
-		fw_reset_keyboard();
-		return;
+		// stop the scan on any button except UP without Shift (allows scan to be manually continued)
+		// or SK2 on its own (allows Backlight to be triggered)
+		if (((ev->keys.key == KEY_UP) && (ev->buttons & BUTTON_SK2) == 0) == false)
+		{
+			menuChannelModeStopScanning();
+			fw_reset_keyboard();
+			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+			menuChannelModeUpdateScreen(0);
+			return;
+		}
 	}
 
-	// stop the scan on any button except UP without Shift (allows scan to be manually continued)
-	// or SK2 on its own (allows Backlight to be triggered)
-	if (uiChannelModeScanActive &&
-			( (ev->events & KEY_EVENT) && ( ((ev->keys.key == KEY_UP) && ((ev->buttons & BUTTON_SK2) == 0)) == false ) ) )
-	{
-		menuChannelModeStopScanning();
-		fw_reset_keyboard();
-		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-		menuChannelModeUpdateScreen(0);
-		return;
-	}
+
 
 	if (ev->events & FUNCTION_EVENT)
 	{
@@ -1106,6 +1122,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 				{
 					nonVolatileSettings.dmrFilterLevel = tmpQuickMenuDmrFilterLevel;
 					init_digital_DMR_RX();
+					disableAudioAmp(AUDIO_AMP_MODE_RF);
 				}
 				else
 				{
@@ -1199,12 +1216,15 @@ int menuChannelModeQuickMenu(uiEvent_t *ev, bool isFirstRun)
 
 static void startScan(void)
 {
+	scanDirection = 1;
+
 	for(int i= 0;i<MAX_ZONE_SCAN_NUISANCE_CHANNELS;i++)						//clear all nuisance delete channels at start of scanning
 	{
 		nuisanceDelete[i]=-1;
-		nuisanceDeleteIndex=0;
 	}
-	uiChannelModeScanActive = true;
+	nuisanceDeleteIndex=0;
+
+	scanActive = true;
 	scanTimer = SCAN_SHORT_PAUSE_TIME;
 	scanState = SCAN_SCANNING;
 	menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
@@ -1232,7 +1252,7 @@ static void scanning(void)
 		{
 			if (nonVolatileSettings.scanModePause == SCAN_MODE_STOP)
 			{
-				uiChannelModeScanActive = false;
+				scanActive = false;
 				// Just update the header (to prevent hidden mode)
 				ucClearRows(0,  2, false);
 				menuUtilityRenderHeader();
@@ -1251,7 +1271,7 @@ static void scanning(void)
 			{
 				if (nonVolatileSettings.scanModePause == SCAN_MODE_STOP)
 				{
-					uiChannelModeScanActive = false;
+					scanActive = false;
 					// Just update the header (to prevent hidden mode)
 					ucClearRows(0,  2, false);
 					menuUtilityRenderHeader();
@@ -1288,7 +1308,6 @@ static void scanning(void)
 	}
 	else
 	{
-
 		if (nextChannelReady)
 		{
 			setNextChannel();
@@ -1308,21 +1327,14 @@ static void scanning(void)
 	}
 }
 
-bool menuChannelModeIsScanning(void)
-{
-	return uiChannelModeScanActive;
-}
-
 void menuChannelModeStopScanning(void)
 {
-	uiChannelModeScanActive = false;
+	scanActive = false;
 }
-
 
 void menuChannelColdStart(void)
 {
-	// Force to re-read codeplug data (needed due to "All Channels" translation)
-	channelScreenChannelData.rxFreq = 0;
+	channelScreenChannelData.rxFreq = 0;	// Force to re-read codeplug data (needed due to "All Channels" translation)
 }
 
 static void menuChannelUpdateTrxID(void )

@@ -121,13 +121,11 @@ static inline void HRC6000TxInterruptHandler(void);
 static void HRC6000TransitionToTx(void);
 static void triggerQSOdataDisplay(void);
 
-#define USE_COLOUR_CODE_COUNTING
 
-#ifdef USE_COLOUR_CODE_COUNTING
-	void initReceivedColourCodes(void);
-	volatile uint32_t receivedColourCodes[16];
-	volatile int	bestColourCodeIndex = -1;
-#endif
+void initReceivedColourCodes(void);
+volatile uint32_t receivedColourCodes[16];
+volatile int	bestColourCodeIndex = -1;
+
 
 enum RXSyncClass { SYNC_CLASS_HEADER = 0, SYNC_CLASS_VOICE = 1, SYNC_CLASS_DATA = 2, SYNC_CLASS_RC = 3};
 
@@ -778,8 +776,6 @@ inline static void HRC6000SysInterruptHandler(void)
 
 		if (nonVolatileSettings.dmrFilterLevel < DMR_FILTER_CC )
 		{
-
-#ifdef USE_COLOUR_CODE_COUNTING
 			// This code implements a more complex strategy to lock onto the CC that is received the most often,
 			// This strategy
 			// but is not necessarily better than the other
@@ -807,19 +803,6 @@ inline static void HRC6000SysInterruptHandler(void)
 					//SEGGER_RTT_printf(0, "receivedColourCodes[rxColorCode] %d %d %d\n",receivedColourCodes[rxColorCode], bestColourCodeIndex,rxColorCode);
 				}
 			}
-#else
-			if(rxColorCode==lastRxColorCode)
-			{
-				trxSetDMRColourCode(rxColorCode);
-				currentChannelData->rxColor=rxColorCode;
-				lastRxColorCode=rxColorCode;
-
-			}
-			else
-			{
-				lastRxColorCode=rxColorCode;
-			}
-#endif
 		}
 
 		uint8_t LCBuf[12];
@@ -1300,9 +1283,7 @@ void init_digital(void)
 	init_digital_state();
     NVIC_EnableIRQ(PORTC_IRQn);
 	init_codec();
-#ifdef USE_COLOUR_CODE_COUNTING
 	initReceivedColourCodes();
-#endif
 }
 
 void terminate_digital(void)
@@ -1313,13 +1294,11 @@ void terminate_digital(void)
     NVIC_DisableIRQ(PORTC_IRQn);
 }
 
-#ifdef USE_COLOUR_CODE_COUNTING
 void initReceivedColourCodes(void)
 {
 	memset((void*)&receivedColourCodes[0],0,sizeof(uint32_t)*16);
 	bestColourCodeIndex = -1;
 }
-#endif
 
 void triggerQSOdataDisplay(void)
 {
@@ -1381,30 +1360,6 @@ void fw_hrc6000_task(void *data)
 
 		vTaskDelay(0);
     }
-}
-
-void buildLCDataFromParams(uint8_t *data,uint8_t FLCO,uint32_t srcId,uint32_t dstId)
-{
-	data[0] = FLCO;
-	data[1] = 0x00;
-	data[2] = 0x00;
-	data[3] = (dstId >> 16) & 0xFF;
-	data[4] = (dstId >> 8) & 0xFF;
-	data[5] = (dstId >> 0) & 0xFF;
-	data[6] = (srcId >> 16) & 0xFF;
-	data[7] = (srcId >> 8) & 0xFF;
-	data[8] = (srcId >> 0) & 0xFF;
-	data[9] = 0x00;
-	data[10] = 0x00;
-	data[11] = 0x00;
-}
-
-void buildLC_DataFromLD_Data(uint8_t *outData,uint8_t *LC_DataBytes)
-{
-	memcpy(outData,LC_DataBytes,9);
-	outData[9] = 0x00;
-	outData[10] = 0x00;
-	outData[11] = 0x00;
 }
 
 void setupPcOrTGHeader(void)
@@ -1579,6 +1534,10 @@ void tick_HR_C6000(void)
 	}
 	else
 	{
+		if (slot_state == DMR_STATE_IDLE)
+		{
+			trxCheckDigitalSquelch();
+		}
 		// receiving RF DMR
 		if (settingsUsbMode == USB_MODE_HOTSPOT)
 		{
@@ -1619,9 +1578,7 @@ void tick_HR_C6000(void)
 		readDMRRSSI--;
 		if (readDMRRSSI==0)
 		{
-			taskENTER_CRITICAL();
 			trxReadRSSIAndNoise();
-			taskEXIT_CRITICAL();
 		}
 	}
 
