@@ -84,10 +84,7 @@ namespace GD77_FirmwareLoader
 						Environment.Exit(-1);
 					}
 
-					bool curs = Console.CursorVisible;
-					Console.CursorVisible = false;
 					exitCode = FirmwareLoader.UploadFirmware(args[0]);
-					Console.CursorVisible = curs;
 				}
 			}
 			//	Console.WriteLine("Usage GD77_FirmwareLoader filename");
