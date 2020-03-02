@@ -103,28 +103,6 @@ void settingsInitVFOChannel(int vfoNumber)
 	{
 		settingsVFOChannel[vfoNumber].contact=1;
 	}
-
-/*
-	if (settingsVFOChannel[vfoNumber].chMode == RADIO_MODE_ANALOG)
-	{
-		// In Analog mode, some crucial DMR settings will be invalid.
-		// So we need to set them to usable defaults
-		settingsVFOChannel[vfoNumber].rxGroupList=1;
-		settingsVFOChannel[vfoNumber].rxColor = 1;
-		nonVolatileSettings.overrideTG = 9;// Set the override TG to local TG 9
-		trxTalkGroupOrPcId = nonVolatileSettings.overrideTG;
-	}
-
-	if (!trxCheckFrequencyInAmateurBand(settingsVFOChannel[vfoNumber].rxFreq))
-	{
-		settingsVFOChannel[vfoNumber].rxFreq = BAND_UHF_MIN;
-	}
-
-	if (!trxCheckFrequencyInAmateurBand(settingsVFOChannel[vfoNumber].txFreq))
-	{
-		settingsVFOChannel[vfoNumber].txFreq = BAND_UHF_MIN;
-	}
-*/
 }
 
 void settingsRestoreDefaultSettings(void)
@@ -167,13 +145,13 @@ void settingsRestoreDefaultSettings(void)
 	nonVolatileSettings.hotspotType = HOTSPOT_TYPE_OFF;
 	nonVolatileSettings.transmitTalkerAlias	= false;
     nonVolatileSettings.privateCalls = true;
-	nonVolatileSettings.vfoAScanLow=14400000;						//Low frequency limit for VFO A Scanning
-	nonVolatileSettings.vfoAScanHigh=14600000;						//High Frequency limit for VFO A Scanning
-	nonVolatileSettings.vfoBScanLow=43000000;						//Low frequency limit for VFO B Scanning
-	nonVolatileSettings.vfoBScanHigh=44000000;						//High Frequency limit for VFO B Scanning
+    // Set all these value to zero to force the operator to set their own limits.
+	nonVolatileSettings.vfoAScanLow=0;	//Low frequency limit for VFO A Scanning
+	nonVolatileSettings.vfoAScanHigh=0;	//High Frequency limit for VFO A Scanning
+	nonVolatileSettings.vfoBScanLow=0;	//Low frequency limit for VFO B Scanning
+	nonVolatileSettings.vfoBScanHigh=0;	//High Frequency limit for VFO B Scanning
 	nonVolatileSettings.contactDisplayPriority = CONTACT_DISPLAY_PRIO_CC_DB_TA;
 	nonVolatileSettings.splitContact = SPLIT_CONTACT_SINGLE_LINE_ONLY;
-
 
 	currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];// Set the current channel data to point to the VFO data since the default screen will be the VFO
 

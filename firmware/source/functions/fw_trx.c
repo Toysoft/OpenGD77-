@@ -38,6 +38,7 @@ int trxCurrentBand[2] = {RADIO_BAND_VHF,RADIO_BAND_VHF};// Rx and Tx band.
 const frequencyBand_t RADIO_FREQUENCY_BANDS[RADIO_BANDS_TOTAL_NUM] =  {
 													{
 														.minFreq=13400000,
+
 														.maxFreq=17400000
 													},// VHF
 													{
@@ -192,10 +193,7 @@ int trx_carrier_detected(void)
 {
 	uint8_t squelch;
 
-	// The task Critical wrapper may not be necessary and is only added as a precaution
-	taskENTER_CRITICAL();
 	trxReadRSSIAndNoise();
-	taskEXIT_CRITICAL();
 
 	// check for variable squelch control
 	if (currentChannelData->sql!=0)
@@ -216,6 +214,33 @@ int trx_carrier_detected(void)
 		return 0;
 	}
 
+}
+
+void trxCheckDigitalSquelch(void)
+{
+	trx_measure_count++;
+	if (trx_measure_count==25)
+	{
+		uint8_t squelch;
+
+		trxReadRSSIAndNoise();
+
+
+		// Don't check for variable squelch, as some people seem to have this set to fully open on their DMR channels.
+		/*
+		if (currentChannelData->sql!=0)
+		{
+			squelch =  TRX_SQUELCH_MAX - (((currentChannelData->sql-1)*11)>>2);
+		}
+		else*/
+		{
+			squelch =  TRX_SQUELCH_MAX - (((nonVolatileSettings.squelchDefaults[trxCurrentBand[TRX_RX_FREQ_BAND]])*11)>>2);
+		}
+
+		GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, (trxRxNoise < squelch));
+
+		trx_measure_count=0;
+	}
 }
 
 void trx_check_analog_squelch(void)

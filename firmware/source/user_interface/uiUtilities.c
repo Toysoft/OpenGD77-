@@ -57,7 +57,21 @@ uint32_t lastTG=0;
 
 static dmrIDsCache_t dmrIDsCache;
 
+int nuisanceDelete[MAX_ZONE_SCAN_NUISANCE_CHANNELS];
+int nuisanceDeleteIndex;
+int scanTimer=0;
+bool scanActive=false;
+ScanState_t scanState = SCAN_SCANNING;		//state flag for scan routine.
+int scanDirection = 1;
 
+bool displaySquelch=false;
+
+
+const int SCAN_SHORT_PAUSE_TIME = 500;			//time to wait after carrier detected to allow time for full signal detection. (CTCSS or DMR)
+const int SCAN_TOTAL_INTERVAL = 30;			    //time between each scan step
+const int SCAN_DMR_SIMPLEX_MIN_INTERVAL=60;		//minimum time between steps when scanning DMR Simplex. (needs extra time to capture TDMA Pulsing)
+const int SCAN_FREQ_CHANGE_SETTLING_INTERVAL = 1;//Time after frequency is changed before RSSI sampling starts
+const int SCAN_SKIP_CHANNEL_INTERVAL = 1;		//This is actually just an implicit flag value to indicate the channel should be skipped
 
 /*
  * Remove space at the end of the array, and return pointer to first non space character
@@ -1079,14 +1093,13 @@ void menuUtilityRenderHeader(void)
 		}
 	}
 
-	if (menuChannelModeIsScanning() || menuVFOModeIsScanning())
+	if (scanActive &&  menuVFOModeIsScanning())
 	{
 		int blinkPeriod = 1000;
 		if (scanBlinkPhase)
 		{
 			blinkPeriod = 500;
 		}
-
 
 		if ((fw_millis() - blinkTime) > blinkPeriod)
 		{

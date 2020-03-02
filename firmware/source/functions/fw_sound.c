@@ -78,6 +78,7 @@ const int melody_ACK_beep[] = { 440, 120, 660, 120, 880, 120, -1, -1 };
 const int melody_NACK_beep[] = { 494, 120, 466, 120, -1, -1 };
 const int melody_ERROR_beep[] = { 440, 30, 0, 30, 440, 30, 0, 30, 440, 30, -1, -1 };
 const int melody_tx_timeout_beep[] = { 440, 60, 494, 60, 440, 60, 494, 60, 440, 60, 494, 60, 440, 60, 494, 60, -1, -1 };
+const int melody_dmr_tx_start_beep[] = { 800, 50,-1, -1 };
 volatile int *melody_play = NULL;
 volatile int melody_idx = 0;
 int soundBeepVolumeDivider;
@@ -208,36 +209,22 @@ void terminate_sound(void)
 
 void setup_soundBuffer(void)
 {
-	//taskENTER_CRITICAL();
 	currentWaveBuffer = (uint8_t *)audioAndHotspotDataBuffer.wavbuffer[wavbuffer_write_idx];// cast just to prevent compiler warning
-	//taskEXIT_CRITICAL();
 }
 
 void store_soundbuffer(void)
 {
 	taskENTER_CRITICAL();
 	int tmp_wavbuffer_count = wavbuffer_count;
-//	taskEXIT_CRITICAL();
 
 	if (tmp_wavbuffer_count<WAV_BUFFER_COUNT)
 	{
-		/*
-		taskENTER_CRITICAL();
-		for (int wav_idx=0;wav_idx<WAV_BUFFER_SIZE;wav_idx++)
-		{
-			audioAndHotspotDataBuffer.wavbuffer[wavbuffer_write_idx][wav_idx]=tmp_wavbuffer[wav_idx];
-		}
-		taskEXIT_CRITICAL();
-		*/
 		wavbuffer_write_idx++;
 		if (wavbuffer_write_idx>=WAV_BUFFER_COUNT)
 		{
 			wavbuffer_write_idx=0;
 		}
-
-	//	taskENTER_CRITICAL();
 		wavbuffer_count++;
-		//taskEXIT_CRITICAL();
 	}
 	taskEXIT_CRITICAL();
 }
@@ -245,23 +232,17 @@ void store_soundbuffer(void)
 void retrieve_soundbuffer(void)
 {
 	taskENTER_CRITICAL();
-	int tmp_wavbuffer_count = wavbuffer_count;
-	taskEXIT_CRITICAL();
-
-	if (tmp_wavbuffer_count>0)
+	if (wavbuffer_count>0)
 	{
-
 		currentWaveBuffer = (uint8_t *)audioAndHotspotDataBuffer.wavbuffer[wavbuffer_read_idx];// cast just to prevent compiler warning
 		wavbuffer_read_idx++;
 		if (wavbuffer_read_idx>=WAV_BUFFER_COUNT)
 		{
 			wavbuffer_read_idx=0;
 		}
-
-		taskENTER_CRITICAL();
 		wavbuffer_count--;
-		taskEXIT_CRITICAL();
 	}
+	taskEXIT_CRITICAL();
 }
 
 
