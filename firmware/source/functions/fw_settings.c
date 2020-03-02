@@ -167,13 +167,13 @@ void settingsRestoreDefaultSettings(void)
 	nonVolatileSettings.hotspotType = HOTSPOT_TYPE_OFF;
 	nonVolatileSettings.transmitTalkerAlias	= false;
     nonVolatileSettings.privateCalls = true;
-	nonVolatileSettings.vfoAScanLow=14400000;						//Low frequency limit for VFO A Scanning
-	nonVolatileSettings.vfoAScanHigh=14600000;						//High Frequency limit for VFO A Scanning
-	nonVolatileSettings.vfoBScanLow=43000000;						//Low frequency limit for VFO B Scanning
-	nonVolatileSettings.vfoBScanHigh=44000000;						//High Frequency limit for VFO B Scanning
+    // Set all these value to zero to force the operator to set their own limits.
+	nonVolatileSettings.vfoAScanLow=0;	//Low frequency limit for VFO A Scanning
+	nonVolatileSettings.vfoAScanHigh=0;	//High Frequency limit for VFO A Scanning
+	nonVolatileSettings.vfoBScanLow=0;	//Low frequency limit for VFO B Scanning
+	nonVolatileSettings.vfoBScanHigh=0;	//High Frequency limit for VFO B Scanning
 	nonVolatileSettings.contactDisplayPriority = CONTACT_DISPLAY_PRIO_CC_DB_TA;
 	nonVolatileSettings.splitContact = SPLIT_CONTACT_SINGLE_LINE_ONLY;
-
 
 	currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];// Set the current channel data to point to the VFO data since the default screen will be the VFO
 
