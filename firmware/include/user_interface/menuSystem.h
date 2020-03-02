@@ -40,7 +40,6 @@ extern int menuDisplayLightTimer;
 extern int uiPrivateCallState;
 extern int uiPrivateCallLastID;
 
-
 typedef int (*menuFunctionPointer_t)(uiEvent_t *, bool); // Typedef for menu function pointers.  Functions are passed the key, the button and the event data. Event can be a Key or a button or both. Last arg is for when the function is only called to initialise and display its screen.
 typedef struct menuControlDataStruct
 {
@@ -67,7 +66,6 @@ void menuChannelColdStart();
 void menuVFOModeUpdateScreen(int txTimeSecs);
 void menuVFOModeStopScanning(void);
 bool menuVFOModeIsScanning(void);
-bool menuChannelModeIsScanning(void);
 void menuChannelModeStopScanning(void);
 void menuCPSUpdate(int command,int x, int y, ucFont_t fontSize, ucTextAlign_t alignment, bool isInverted,char *szMsg);
 
@@ -100,7 +98,6 @@ void menuLastHeardUpdateScreen(bool showTitleOrHeader, bool displayDetails);
 
 void menuClearPrivateCall(void);
 void menuAcceptPrivateCall(int id);
-
 
 /*
  * ---------------------- IMPORTANT ----------------------------
@@ -162,7 +159,6 @@ extern const menuItemNew_t menuDataMainMenu[];
 extern const menuItemNew_t menuDataContact[];
 extern const menuItemNew_t menuDataContactContact [];
 extern const menuItemNew_t * menusData[];
-
 
 int menuVFOMode(uiEvent_t *event, bool isFirstRun);
 int menuVFOModeQuickMenu(uiEvent_t *event, bool isFirstRun);
