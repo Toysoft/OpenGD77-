@@ -20,36 +20,46 @@
 #include "fw_calibration.h"
 #include "fw_trx.h"
 
-static const uint32_t EXT_DACDATA_shift 			= 0x0008F05D;
-static const uint32_t EXT_twopoint_mod  			= 0x0008F008;
-static const uint32_t EXT_Q_MOD2_offset 			= 0x0008F00A;
-static const uint32_t EXT_phase_reduce  			= 0x0008F055;
+#if(PLATFORM == GD-77)
 
-static const uint32_t EXT_pga_gain      			= 0x0008F065;
-static const uint32_t EXT_voice_gain_tx 			= 0x0008F066;
-static const uint32_t EXT_gain_tx       			= 0x0008F067;
-static const uint32_t EXT_padrv_ibit    			= 0x0008F064;
+static const uint32_t CALIBRATION_BASE 				= 0x0008F000;
 
-static const uint32_t EXT_xmitter_dev_wideband		= 0x0008F068;
-static const uint32_t EXT_xmitter_dev_narrowband	= 0x0008F06A;
+#elif (PLATFORM == DM-1801)
 
-static const uint32_t EXT_dac_vgain_analog 			= 0x0008F06C;
-static const uint32_t EXT_volume_analog    			= 0x0008F06D;
+static const uint32_t CALIBRATION_BASE 				= 0x00070000;
 
-static const uint32_t EXT_noise1_th_wideband   		= 0x0008F047;
-static const uint32_t EXT_noise2_th_wideband   		= 0x0008F049;
-static const uint32_t EXT_rssi3_th_wideband    		= 0x0008F04b;
-static const uint32_t EXT_noise1_th_narrowband 		= 0x0008F04d;
-static const uint32_t EXT_noise2_th_narrowband 		= 0x0008F04f;
-static const uint32_t EXT_rssi3_th_narrowband  		= 0x0008F051;
+#endif
 
-static const uint32_t EXT_squelch_th 				= 0x0008F03f;
+static const uint32_t EXT_DACDATA_shift 			= CALIBRATION_BASE + 0x00005D;
+static const uint32_t EXT_twopoint_mod  			= CALIBRATION_BASE + 0x000008;
+static const uint32_t EXT_Q_MOD2_offset 			= CALIBRATION_BASE + 0x00000A;
+static const uint32_t EXT_phase_reduce  			= CALIBRATION_BASE + 0x000055;
 
-static const uint32_t EXT_uhf_dev_tone				= 0x0008F05E;
-static const uint32_t EXT_vhf_dev_tone				= 0x0008F0CE;
+static const uint32_t EXT_pga_gain      			= CALIBRATION_BASE + 0x000065;
+static const uint32_t EXT_voice_gain_tx 			= CALIBRATION_BASE + 0x000066;
+static const uint32_t EXT_gain_tx       			= CALIBRATION_BASE + 0x000067;
+static const uint32_t EXT_padrv_ibit    			= CALIBRATION_BASE + 0x000064;
 
-static const uint32_t POWER_ADDRESS_UHF_400MHZ 		= 0x8F00B;//UHF is in 5Mhz bands starting at 400Mhz.
-static const uint32_t POWER_ADDRESS_VHF_135MHZ 		= 0x8F07B;//VHF is in 5Mhz bands from 135Mhz (Only first 8 entries are used)
+static const uint32_t EXT_xmitter_dev_wideband		= CALIBRATION_BASE + 0x000068;
+static const uint32_t EXT_xmitter_dev_narrowband	= CALIBRATION_BASE + 0x00006A;
+
+static const uint32_t EXT_dac_vgain_analog 			= CALIBRATION_BASE + 0x00006C;
+static const uint32_t EXT_volume_analog    			= CALIBRATION_BASE + 0x00006D;
+
+static const uint32_t EXT_noise1_th_wideband   		= CALIBRATION_BASE + 0x000047;
+static const uint32_t EXT_noise2_th_wideband   		= CALIBRATION_BASE + 0x000049;
+static const uint32_t EXT_rssi3_th_wideband    		= CALIBRATION_BASE + 0x00004b;
+static const uint32_t EXT_noise1_th_narrowband 		= CALIBRATION_BASE + 0x00004d;
+static const uint32_t EXT_noise2_th_narrowband 		= CALIBRATION_BASE + 0x00004f;
+static const uint32_t EXT_rssi3_th_narrowband  		= CALIBRATION_BASE + 0x000051;
+
+static const uint32_t EXT_squelch_th 				= CALIBRATION_BASE + 0x00003f;
+
+static const uint32_t EXT_uhf_dev_tone				= CALIBRATION_BASE + 0x00005E;
+static const uint32_t EXT_vhf_dev_tone				= CALIBRATION_BASE + 0x0000CE;
+
+static const uint32_t POWER_ADDRESS_UHF_400MHZ 		= CALIBRATION_BASE + 0x00000B;//UHF is in 5Mhz bands starting at 400Mhz.
+static const uint32_t POWER_ADDRESS_VHF_135MHZ 		= CALIBRATION_BASE + 0x00007B;//VHF is in 5Mhz bands from 135Mhz (Only first 8 entries are used)
 
 /*
 calibrationStruct_t calibrationVHF;
