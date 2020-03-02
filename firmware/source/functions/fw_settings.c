@@ -103,28 +103,6 @@ void settingsInitVFOChannel(int vfoNumber)
 	{
 		settingsVFOChannel[vfoNumber].contact=1;
 	}
-
-/*
-	if (settingsVFOChannel[vfoNumber].chMode == RADIO_MODE_ANALOG)
-	{
-		// In Analog mode, some crucial DMR settings will be invalid.
-		// So we need to set them to usable defaults
-		settingsVFOChannel[vfoNumber].rxGroupList=1;
-		settingsVFOChannel[vfoNumber].rxColor = 1;
-		nonVolatileSettings.overrideTG = 9;// Set the override TG to local TG 9
-		trxTalkGroupOrPcId = nonVolatileSettings.overrideTG;
-	}
-
-	if (!trxCheckFrequencyInAmateurBand(settingsVFOChannel[vfoNumber].rxFreq))
-	{
-		settingsVFOChannel[vfoNumber].rxFreq = BAND_UHF_MIN;
-	}
-
-	if (!trxCheckFrequencyInAmateurBand(settingsVFOChannel[vfoNumber].txFreq))
-	{
-		settingsVFOChannel[vfoNumber].txFreq = BAND_UHF_MIN;
-	}
-*/
 }
 
 void settingsRestoreDefaultSettings(void)
