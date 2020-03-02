@@ -1122,6 +1122,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 				{
 					nonVolatileSettings.dmrFilterLevel = tmpQuickMenuDmrFilterLevel;
 					init_digital_DMR_RX();
+					disableAudioAmp(AUDIO_AMP_MODE_RF);
 				}
 				else
 				{
