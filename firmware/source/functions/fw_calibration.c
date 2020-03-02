@@ -26,7 +26,7 @@ static const uint32_t CALIBRATION_BASE 				= 0x0008F000;
 
 #elif (PLATFORM == DM-1801)
 
-static const uint32_t CALIBRATION_BASE 				= 0x00070000;
+static const uint32_t CALIBRATION_BASE 				= 0x0006F000;
 
 #endif
 
