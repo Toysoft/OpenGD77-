@@ -80,14 +80,13 @@
 #define Pin_INT_C6000_TS     18
 
 // Connections with C6000
-// OUT/ON  E0 - C6000 RESETn
-// OUT/ON  E1 - C6000 PWD
+
 #define Port_INT_C6000_RESET PORTE
 #define GPIO_INT_C6000_RESET GPIOE
-#define Pin_INT_C6000_RESET  0
+#define Pin_INT_C6000_RESET  2
 #define Port_INT_C6000_PWD   PORTE
 #define GPIO_INT_C6000_PWD   GPIOE
-#define Pin_INT_C6000_PWD    1
+#define Pin_INT_C6000_PWD    3
 
 #endif
 
