@@ -951,7 +951,7 @@ static void handleUpKey(uiEvent_t *ev)
 	}
 	else
 	{
-		if (scanState == SCAN_SCANNING)
+		if (scanActive)
 		{
 			stepFrequency(VFO_FREQ_STEP_TABLE[(currentChannelData->VFOflag5 >> 4)] * scanDirection);
 		}
