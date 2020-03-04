@@ -773,8 +773,8 @@ inline static void HRC6000SysInterruptHandler(void)
 
 	if (!trxIsTransmitting) // ignore the LC data when we are transmitting
 	{
-
-		if (nonVolatileSettings.dmrFilterLevel < DMR_FILTER_CC )
+		// reg0x52 Bit 3 (0x08) CACH
+		if ((reg0x52 & 0x08)!=0 && nonVolatileSettings.dmrFilterLevel < DMR_FILTER_CC )
 		{
 			// This code implements a more complex strategy to lock onto the CC that is received the most often,
 			// This strategy
