@@ -46,6 +46,7 @@ const stringsTable_t finnishLanguage =
 .last_heard		= "Viimeksi kuultu",
 .options		= "Asetukset",
 .display_options	= "Näytön Asetukset",
+.sound_options				= "Sound options", // MaxLen: 16
 .channel_details	= "Kanava Asetukset",
 .new_contact		= "Uusi kontakti",
 .new_channel		= "New channel", // MaxLen: 16, leave room for a space and four channel digits after

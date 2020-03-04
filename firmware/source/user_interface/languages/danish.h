@@ -46,6 +46,7 @@ const stringsTable_t danishLanguage =
 .last_heard				= "Sidst Hørt",
 .options				= "Valg",
 .display_options		= "Display Valg",
+.sound_options				= "Sound options", // MaxLen: 16
 .channel_details		= "Kanal detaljer",
 .new_contact			= "Ny Kontakt",
 .new_channel			= "Ny kanal", // MaxLen: 16, leave room for a space and four channel digits after

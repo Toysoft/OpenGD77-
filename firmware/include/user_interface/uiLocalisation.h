@@ -35,6 +35,7 @@ typedef struct stringsTable
    const char firmware_info[LANGUAGE_TEXTS_LENGTH];// Menu number  8
    const char options[LANGUAGE_TEXTS_LENGTH];// Menu number  9
    const char display_options[LANGUAGE_TEXTS_LENGTH];// Menu number  10
+   const char sound_options[LANGUAGE_TEXTS_LENGTH];// Menu number  --
    const char channel_details[LANGUAGE_TEXTS_LENGTH];// Menu number  11
    const char language[LANGUAGE_TEXTS_LENGTH];// Menu number  12
    const char new_contact[LANGUAGE_TEXTS_LENGTH];// Menu number  13

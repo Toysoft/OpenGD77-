@@ -46,6 +46,7 @@ const stringsTable_t turkishLanguage =
 .last_heard				= "Son Duyulanlar", // MaxLen: 16
 .options				= "Opsiyonlar", // MaxLen: 16
 .display_options			= "Ekran Opsiyon", // MaxLen: 16
+.sound_options				= "Sound options", // MaxLen: 16
 .channel_details			= "Kanal Detay", // MaxLen: 16
 .new_contact				= "Yeni Ki–i", // MaxLen: 16
 .new_channel				= "Yeni Kanal", // MaxLen: 16, leave room for a space and four channel digits after

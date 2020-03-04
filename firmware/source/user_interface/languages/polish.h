@@ -46,6 +46,7 @@ const stringsTable_t polishLanguage =
 .last_heard				= "Ostatnio aktywne", // MaxLen: 16
 .options				= "Opcje", // MaxLen: 16
 .display_options			= "Opcje ekranu", // MaxLen: 16
+.sound_options				= "Sound options", // MaxLen: 16
 .channel_details			= "Detale kanaˆu", // MaxLen: 16
 .new_contact				= "Nowy kontakt", // MaxLen: 16
 .new_channel				= "Nowy kanaˆ", // MaxLen: 16, leave room for a space and four channel digits after

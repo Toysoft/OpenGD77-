@@ -46,6 +46,7 @@ const stringsTable_t spanishLanguage =
 .last_heard				= "Ult. escuchados", // MaxLen: 16
 .options				= "Opciones", // MaxLen: 16
 .display_options		= "Opciones display", // MaxLen: 16
+.sound_options				= "Sound options", // MaxLen: 16
 .channel_details		= "Detalles Canal", // MaxLen: 16
 .new_contact			= "Nuevo contacto", // MaxLen: 16
 .new_channel			= "Nuevo canal", // MaxLen: 16, leave room for a space and four channel digits after

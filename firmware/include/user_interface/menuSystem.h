@@ -121,6 +121,7 @@ enum MENU_SCREENS { MENU_SPLASH_SCREEN=0,
 					MENU_LAST_HEARD,
 					MENU_OPTIONS,
 					MENU_DISPLAY,
+					MENU_SOUND,
 					MENU_CREDITS,
 					MENU_CHANNEL_DETAILS,
 					MENU_HOTSPOT_MODE,
@@ -176,6 +177,7 @@ int menuRSSIScreen(uiEvent_t *event, bool isFirstRun);
 int menuLastHeard(uiEvent_t *event, bool isFirstRun);
 int menuOptions(uiEvent_t *event, bool isFirstRun);
 int menuDisplayOptions(uiEvent_t *event, bool isFirstRun);
+int menuSoundOptions(uiEvent_t *event, bool isFirstRun);
 int menuCredits(uiEvent_t *event, bool isFirstRun);
 int menuChannelDetails(uiEvent_t *event, bool isFirstRun);
 int menuHotspotMode(uiEvent_t *event, bool isFirstRun);

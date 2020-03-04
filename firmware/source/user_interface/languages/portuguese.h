@@ -46,6 +46,7 @@ const stringsTable_t portuguesLanguage =
 .last_heard				= "Ultima escutada",
 .options				= "Opcoes",
 .display_options		= "Opcoes Visor",
+.sound_options				= "Sound options", // MaxLen: 16
 .channel_details		= "Detalhes Canal",
 .new_contact			= "Contacto Novo",
 .new_channel			= "Canal novo", // MaxLen: 16, leave room for a space and four channel digits after

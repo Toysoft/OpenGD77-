@@ -46,6 +46,7 @@ const stringsTable_t germanLanguage =
 .last_heard				= "Zuletzt gehört", // MaxLen: 16
 .options				= "Einstellungen", // MaxLen: 16
 .display_options		= "Display Optionen", // MaxLen: 16
+.sound_options				= "Sound options", // MaxLen: 16
 .channel_details		= "Kanal Details", // MaxLen: 16
 .new_contact			= "Neuer Kontakt", // MaxLen: 16
 .new_channel			= "Neuer Kanal", // MaxLen: 16, leave room for a space and four channel digits after

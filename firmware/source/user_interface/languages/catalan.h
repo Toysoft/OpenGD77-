@@ -46,6 +46,7 @@ const stringsTable_t catalanLanguage=
 .last_heard				= "Escoltats",
 .options				= "Opcions",
 .display_options		= "Opcions pantalla",
+.sound_options				= "Sound options", // MaxLen: 16
 .channel_details		= "Detalls Canal",
 .new_contact			= "Nou contacte",
 .new_channel			= "Nou canal", // MaxLen: 16, leave room for a space and four channel digits after
