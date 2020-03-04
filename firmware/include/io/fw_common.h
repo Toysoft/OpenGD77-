@@ -106,11 +106,11 @@ extern gpio_pin_config_t pin_config_output;
 
 #define Port_UHF_TX_amp_power PORTE
 #define GPIO_UHF_TX_amp_power GPIOE
-#define Pin_UHF_TX_amp_power  0
+#define Pin_UHF_TX_amp_power  1
 
 #define Port_VHF_TX_amp_power PORTE
 #define GPIO_VHF_TX_amp_power GPIOE
-#define Pin_VHF_TX_amp_power  1
+#define Pin_VHF_TX_amp_power  0
 
 #endif
 
