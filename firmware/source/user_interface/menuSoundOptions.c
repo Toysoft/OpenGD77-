@@ -24,7 +24,7 @@
 static void updateScreen(void);
 static void handleEvent(uiEvent_t *ev);
 
-enum SOUND_MENU_LIST { OPTIONS_MENU_TIMEOUT_BEEP = 0, OPTIONS_MENU_BEEP_VOLUME, OPTIONS_MIC_GAIN_DMR,
+enum SOUND_MENU_LIST { OPTIONS_MENU_TIMEOUT_BEEP = 0, OPTIONS_MENU_BEEP_VOLUME, OPTIONS_MENU_TX_BEEP, OPTIONS_MIC_GAIN_DMR,
 						NUM_SOUND_MENU_ITEMS};
 
 
@@ -51,7 +51,6 @@ static void updateScreen(void)
 	char buf[bufferLen];
 
 	ucClearBuf();
-#warning TRANSLATE ME
 	menuDisplayTitle(currentLanguage->sound_options);
 
 	// Can only display 3 of the options at a time menu at -1, 0 and +1
@@ -76,6 +75,12 @@ static void updateScreen(void)
 			case OPTIONS_MENU_BEEP_VOLUME:// Beep volume reduction
 				snprintf(buf, bufferLen, "%s:%ddB", currentLanguage->beep_volume, (2 - nonVolatileSettings.beepVolumeDivider) * 3);
 				soundBeepVolumeDivider = nonVolatileSettings.beepVolumeDivider;
+				break;
+			case OPTIONS_MENU_TX_BEEP:
+				{
+					const char *beepTX[] = {currentLanguage->none, currentLanguage->start, currentLanguage->stop, currentLanguage->both};
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->tx_beep, beepTX[nonVolatileSettings.beepOptions]);
+				}
 				break;
 			case OPTIONS_MIC_GAIN_DMR:// DMR Mic gain
 				snprintf(buf, bufferLen, "%s:%ddB", currentLanguage->dmr_mic_gain, (nonVolatileSettings.micGainDMR - 11) * 3);
@@ -118,6 +123,12 @@ static void handleEvent(uiEvent_t *ev)
 						nonVolatileSettings.beepVolumeDivider--;
 					}
 					break;
+				case OPTIONS_MENU_TX_BEEP:
+					if (nonVolatileSettings.beepOptions < (BEEP_TX_START | BEEP_TX_STOP))
+					{
+						nonVolatileSettings.beepOptions++;
+					}
+					break;
 				case OPTIONS_MIC_GAIN_DMR:// DMR Mic gain
 					if (nonVolatileSettings.micGainDMR < 15)
 					{
@@ -141,6 +152,12 @@ static void handleEvent(uiEvent_t *ev)
 					if (nonVolatileSettings.beepVolumeDivider < 10)
 					{
 						nonVolatileSettings.beepVolumeDivider++;
+					}
+					break;
+				case OPTIONS_MENU_TX_BEEP:
+					if (nonVolatileSettings.beepOptions > BEEP_TX_NONE)
+					{
+						nonVolatileSettings.beepOptions--;
 					}
 					break;
 				case OPTIONS_MIC_GAIN_DMR:// DMR Mic gain

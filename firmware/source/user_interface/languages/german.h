@@ -148,6 +148,9 @@ const stringsTable_t germanLanguage =
 .one_line				= "1 Zeile", // MaxLen 16 (with ':' + .contact)
 .two_lines				= "2 Zeilen", // MaxLen 16 (with ':' + .contact)
 .priority_order				= "ID-Prio", // MaxLen 16 (with ':' + 'Cc/DB/TA')
+.tx_beep				= "TX Beep", // MaxLen 16 (with ':' + .star/.stop/.both/.none)
+.start					= "Start", // MaxLen 16 (with ':' + .tx_beep)
+.both					= "Both" // MaxLen 16 (with ':' + .tx_beep)
 };
 /********************************************************************
  *

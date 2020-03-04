@@ -148,6 +148,9 @@ const stringsTable_t turkishLanguage =
 .one_line				= "1 sat“r", // MaxLen 16 (with ':' + .contact)
 .two_lines				= "2 sat“r", // MaxLen 16 (with ':' + .contact)
 .priority_order				= "Öncelik", // MaxLen 16 (with ':' + 'Cc/DB/TA')
+.tx_beep				= "TX Beep", // MaxLen 16 (with ':' + .star/.stop/.both/.none)
+.start					= "Start", // MaxLen 16 (with ':' + .tx_beep)
+.both					= "Both" // MaxLen 16 (with ':' + .tx_beep)
 };
 /********************************************************************
  *

@@ -129,7 +129,8 @@ int menuTxScreen(uiEvent_t *ev, bool isFirstRun)
 			{
 				if (trxGetMode() == RADIO_MODE_DIGITAL)
 				{
-					if (slot_state == DMR_STATE_TX_START_1 && melody_play== NULL)
+					if ((nonVolatileSettings.beepOptions & BEEP_TX_START) &&
+							(slot_state == DMR_STATE_TX_START_1) && (melody_play == NULL))
 					{
 						set_melody(melody_dmr_tx_start_beep);
 					}
