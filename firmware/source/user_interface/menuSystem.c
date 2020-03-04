@@ -258,7 +258,7 @@ const char menuStringTable[32][17] = { "",//0
 */
 
 const menuItemNew_t menuDataMainMenu[] = {
-	{11,12 },// number of menus
+	{12,12 },// number of menus
 	{ 2,  MENU_CREDITS },
 	{ 3,  MENU_ZONE_LIST },
 	{ 4,  MENU_RSSI_SCREEN },
@@ -274,8 +274,8 @@ const menuItemNew_t menuDataMainMenu[] = {
 };
 const menuItemNew_t menuDataContact[] = {
 	{ 2, 2} ,// length
-	{ 13 , MENU_CONTACT_NEW },// 7 New Contact
-	{ 14, MENU_CONTACT_LIST },// 24 Contacts List
+	{ 14 , MENU_CONTACT_NEW },// 7 New Contact
+	{ 15, MENU_CONTACT_LIST },// 24 Contacts List
 	{ -1, MENU_CONTACT_LIST },// 24 Contacts Lis
 };
 

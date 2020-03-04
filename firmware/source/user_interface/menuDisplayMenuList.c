@@ -28,7 +28,7 @@ int menuDisplayMenuList(uiEvent_t *ev, bool isFirstRun)
 	{
 		gMenuCurrentMenuList = (menuItemNew_t *)menusData[menuSystemGetCurrentMenuNumber()];
 		gMenusEndIndex = gMenuCurrentMenuList[0].menuNum;// first entry actually contains the number of entries
-		gMenuCurrentMenuList = & gMenuCurrentMenuList[1];// move to first real index
+		gMenuCurrentMenuList = &gMenuCurrentMenuList[1];// move to first real index
 		updateScreen();
 	}
 	else
