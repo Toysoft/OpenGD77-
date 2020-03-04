@@ -83,18 +83,6 @@ extern gpio_pin_config_t pin_config_output;
 #define Pin_Power_Switch	13
 
 // Other connections
-// OUT/OFF A17 - RF_ant_switch
-// OUT/OFF B0  - audio_amp_enable
-// OUT/ON  C5  - RX_audio_mux
-// OUT/OFF C6  - TX_audio_mux
-// OUT/OFF C13 - VHF_RX_amp_power
-// OUT/OFF C15 - UHF_RX_amp_power
-// OUT/OFF E2  - UHF_TX_amp_power
-// OUT/OFF E3  - VHF_TX_amp_power
-
-#define Port_RF_ant_switch    PORTA
-#define GPIO_RF_ant_switch    GPIOA
-#define Pin_RF_ant_switch     17
 
 #define Port_audio_amp_enable     PORTB
 #define GPIO_audio_amp_enable     GPIOB
