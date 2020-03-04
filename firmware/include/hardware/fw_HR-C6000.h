@@ -32,29 +32,35 @@
 #if(PLATFORM == GD-77)
 
 // C6000 interrupts
-// IN      C7  - C6000 RF_RX_INTER
-// IN      C16 - C6000 RF_TX_INTER
-// IN      C17 - C6000 SYS_INTER
-// IN      C18 - C6000 TIME_SLOT_INTER
+
+// Rx interrupt
 #define Port_INT_C6000_RF_RX PORTC
 #define GPIO_INT_C6000_RF_RX GPIOC
 #define Pin_INT_C6000_RF_RX  7
+
+// Tx interrupt
 #define Port_INT_C6000_RF_TX PORTC
 #define GPIO_INT_C6000_RF_TX GPIOC
 #define Pin_INT_C6000_RF_TX  16
+
+// Sys interrupt
 #define Port_INT_C6000_SYS   PORTC
 #define GPIO_INT_C6000_SYS   GPIOC
 #define Pin_INT_C6000_SYS    17
+
+// Timeslot interrupt
 #define Port_INT_C6000_TS    PORTC
 #define GPIO_INT_C6000_TS    GPIOC
 #define Pin_INT_C6000_TS     18
 
 // Connections with C6000
-// OUT/ON  E0 - C6000 RESETn
-// OUT/ON  E1 - C6000 PWD
+
+// Reset
 #define Port_INT_C6000_RESET PORTE
 #define GPIO_INT_C6000_RESET GPIOE
 #define Pin_INT_C6000_RESET  0
+
+// Power down
 #define Port_INT_C6000_PWD   PORTE
 #define GPIO_INT_C6000_PWD   GPIOE
 #define Pin_INT_C6000_PWD    1
@@ -62,28 +68,35 @@
 #elif (PLATFORM == DM-1801)
 
 // C6000 interrupts
-// IN      C7  - C6000 RF_RX_INTER
-// IN      C16 - C6000 RF_TX_INTER
-// IN      C17 - C6000 SYS_INTER
-// IN      C18 - C6000 TIME_SLOT_INTER
+
+// Rx interrupt
 #define Port_INT_C6000_RF_RX PORTC
 #define GPIO_INT_C6000_RF_RX GPIOC
-#define Pin_INT_C6000_RF_RX  7
+#define Pin_INT_C6000_RF_RX  16
+
+// Tx Interrupt
 #define Port_INT_C6000_RF_TX PORTC
 #define GPIO_INT_C6000_RF_TX GPIOC
-#define Pin_INT_C6000_RF_TX  16
+#define Pin_INT_C6000_RF_TX  7
+
+// Sys interrupt
 #define Port_INT_C6000_SYS   PORTC
 #define GPIO_INT_C6000_SYS   GPIOC
 #define Pin_INT_C6000_SYS    17
+
+// Timeslot interrupt
 #define Port_INT_C6000_TS    PORTC
 #define GPIO_INT_C6000_TS    GPIOC
 #define Pin_INT_C6000_TS     18
 
 // Connections with C6000
 
+// Reset
 #define Port_INT_C6000_RESET PORTE
 #define GPIO_INT_C6000_RESET GPIOE
 #define Pin_INT_C6000_RESET  2
+
+// Power down
 #define Port_INT_C6000_PWD   PORTE
 #define GPIO_INT_C6000_PWD   GPIOE
 #define Pin_INT_C6000_PWD    3
