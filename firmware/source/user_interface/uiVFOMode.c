@@ -780,7 +780,7 @@ static void handleEvent(uiEvent_t *ev)
 				nonVolatileSettings.currentVFONumber = 1 - nonVolatileSettings.currentVFONumber;// Switch to other VFO
 				currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];
 				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-				menuVFOModeUpdateScreen(0);
+				menuSystemPopAllAndDisplayRootMenu(); // Force to set all TX/RX settings.
 				return;
 			}
 #endif
