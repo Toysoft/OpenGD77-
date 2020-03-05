@@ -46,6 +46,7 @@ const stringsTable_t englishLanguage =
 .last_heard				= "Last heard", // MaxLen: 16
 .options				= "Options", // MaxLen: 16
 .display_options			= "Display options", // MaxLen: 16
+.sound_options				= "Sound options", // MaxLen: 16
 .channel_details			= "Channel details", // MaxLen: 16
 .new_contact				= "New contact", // MaxLen: 16
 .new_channel				= "New channel", // MaxLen: 16, leave room for a space and four channel digits after
@@ -85,7 +86,7 @@ const stringsTable_t englishLanguage =
 .all					= "All", // MaxLen: 16 (with .type)
 .type					= "Type", // MaxLen: 16 (with .type)
 .timeSlot				= "Timeslot", // MaxLen: 16 (plus ':' and  .none, '1' or '2')
-.none					= "None", // MaxLen: 16 (with .timeSlot, "Rx CTCSS:" and ""Tx CTCSS:", .filter and .mode )
+.none					= "None", // MaxLen: 16 (with .timeSlot, "Rx CTCSS:" and ""Tx CTCSS:", .filter/.mode/.dmr_beep)
 .contact_saved				= "Contact saved", // MaxLen: 16
 .duplicate				= "Duplicate", // MaxLen: 16
 .tg					= "TG",  // MaxLen: 8
@@ -143,10 +144,13 @@ const stringsTable_t englishLanguage =
 .manual					= "Manual",  // MaxLen 16 (with .mode + ':')
 .ptt_toggle				= "PTT latch", // MaxLen 16 (with ':' + .on or .off)
 .private_call_handling			= "Allow PC", // MaxLen 16 (with ':' + .on or .off)
-.stop					= "Stop", // Maxlen 16 (with ':' + .scan_mode)
+.stop					= "Stop", // Maxlen 16 (with ':' + .scan_mode/.dmr_beep)
 .one_line				= "1 line", // MaxLen 16 (with ':' + .contact)
 .two_lines				= "2 lines", // MaxLen 16 (with ':' + .contact)
 .priority_order				= "Order", // MaxLen 16 (with ':' + 'Cc/DB/TA')
+.dmr_beep				= "DMR beep", // MaxLen 16 (with ':' + .star/.stop/.both/.none)
+.start					= "Start", // MaxLen 16 (with ':' + .dmr_beep)
+.both					= "Both" // MaxLen 16 (with ':' + .dmr_beep)
 };
 /********************************************************************
  *

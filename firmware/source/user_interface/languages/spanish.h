@@ -46,6 +46,7 @@ const stringsTable_t spanishLanguage =
 .last_heard				= "Ult. escuchados", // MaxLen: 16
 .options				= "Opciones", // MaxLen: 16
 .display_options		= "Opciones display", // MaxLen: 16
+.sound_options			= "Opciones sonido", // MaxLen: 16
 .channel_details		= "Detalles Canal", // MaxLen: 16
 .new_contact			= "Nuevo contacto", // MaxLen: 16
 .new_channel			= "Nuevo canal", // MaxLen: 16, leave room for a space and four channel digits after
@@ -147,6 +148,9 @@ const stringsTable_t spanishLanguage =
 .one_line				= "1 linea", // MaxLen 16 (with ':' + .contact)
 .two_lines				= "2 linea", // MaxLen 16 (with ':' + .contact)
 .priority_order				= "Orden", // MaxLen 16 (with ':' + 'Cc/DB/TA')
+.dmr_beep				= "DMR beep", // MaxLen 16 (with ':' + .star/.stop/.both/.none)
+.start					= "Inicio", // MaxLen 16 (with ':' + .dmr_beep)
+.both					= "Ambos" // MaxLen 16 (with ':' + .dmr_beep)
 };
 /********************************************************************
  *

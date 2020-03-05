@@ -46,6 +46,7 @@ const stringsTable_t portuguesLanguage =
 .last_heard				= "Ultima escutada",
 .options				= "Opcoes",
 .display_options		= "Opcoes Visor",
+.sound_options				= "Sound options", // MaxLen: 16
 .channel_details		= "Detalhes Canal",
 .new_contact			= "Contacto Novo",
 .new_channel			= "Canal novo", // MaxLen: 16, leave room for a space and four channel digits after
@@ -147,6 +148,9 @@ const stringsTable_t portuguesLanguage =
 .one_line				= "1 line", // MaxLen 16 (with ':' + .contact)
 .two_lines				= "2 lines", // MaxLen 16 (with ':' + .contact)
 .priority_order				= "Order", // MaxLen 16 (with ':' + 'Cc/DB/TA')
+.dmr_beep				= "DMR beep", // MaxLen 16 (with ':' + .star/.stop/.both/.none)
+.start					= "Start", // MaxLen 16 (with ':' + .dmr_beep)
+.both					= "Both" // MaxLen 16 (with ':' + .dmr_beep)
 };
 /********************************************************************
  *
