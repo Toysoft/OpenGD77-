@@ -23,6 +23,11 @@
 int menuDisplayLightTimer=-1;
 menuItemNew_t *gMenuCurrentMenuList;
 
+int gMenusCurrentItemIndex; // each menu can re-use this var to hold the position in their display list. To save wasted memory if they each had their own variable
+int gMenusStartIndex;// as above
+int gMenusEndIndex;// as above
+
+
 menuControlDataStruct_t menuControlData = { .stackPosition = 0, .stack = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, .itemIndex = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
 
 
@@ -203,12 +208,6 @@ void displayLightOverrideTimeout(int timeout)
 		fw_displayEnableBacklight(true);
 	}
 }
-
-const int MENU_EVENT_SAVE_SETTINGS = -1;
-int gMenusCurrentItemIndex; // each menu can re-use this var to hold the position in their display list. To save wasted memory if they each had their own variable
-int gMenusStartIndex;// as above
-int gMenusEndIndex;// as above
-
 
 void menuInitMenuSystem(void)
 {
