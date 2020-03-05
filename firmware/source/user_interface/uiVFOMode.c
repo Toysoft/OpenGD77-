@@ -1306,6 +1306,12 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 	{
 		MENU_DEC(gMenusCurrentItemIndex, NUM_VFO_SCREEN_QUICK_MENU_ITEMS);
 	}
+	else if (((ev->events & BUTTON_EVENT) && (ev->buttons & BUTTON_ORANGE)) && (gMenusCurrentItemIndex==VFO_SCREEN_QUICK_MENU_SCAN))
+	{
+		startScan();
+		menuSystemPopPreviousMenu();
+		return;
+	}
 
 	updateQuickMenuScreen();
 }
