@@ -20,7 +20,7 @@
  *
  * Translators: SQ7PTE
  *
- * Rev: 4.6
+ * Rev: 4.7
  */
 #ifndef USER_INTERFACE_LANGUAGES_POLISH_H_
 #define USER_INTERFACE_LANGUAGES_POLISH_H_
@@ -46,7 +46,7 @@ const stringsTable_t polishLanguage =
 .last_heard				= "Ostatnio aktywne", // MaxLen: 16
 .options				= "Opcje", // MaxLen: 16
 .display_options			= "Opcje ekranu", // MaxLen: 16
-.sound_options				= "Sound options", // MaxLen: 16
+.sound_options				= "Opcje dêwiÜku", // MaxLen: 16
 .channel_details			= "Detale kanaàu", // MaxLen: 16
 .new_contact				= "Nowy kontakt", // MaxLen: 16
 .new_channel				= "Nowy kanaà", // MaxLen: 16, leave room for a space and four channel digits after
@@ -148,9 +148,9 @@ const stringsTable_t polishLanguage =
 .one_line				= "1 linia", // MaxLen 16 (with ':' + .contact)
 .two_lines				= "2 linie", // MaxLen 16 (with ':' + .contact)
 .priority_order				= "WybÛr", // MaxLen 16 (with ':' + 'Cc/DB/TA')
-.dmr_beep				= "DMR beep", // MaxLen 16 (with ':' + .star/.stop/.both/.none)
+.dmr_beep				= "WybÛr bipa", // MaxLen 16 (with ':' + .star/.stop/.both/.none)
 .start					= "Start", // MaxLen 16 (with ':' + .dmr_beep)
-.both					= "Both" // MaxLen 16 (with ':' + .dmr_beep)
+.both					= "Oba" // MaxLen 16 (with ':' + .dmr_beep)
 };
 /********************************************************************
  *
