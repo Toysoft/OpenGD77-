@@ -23,6 +23,11 @@
 int menuDisplayLightTimer=-1;
 menuItemNew_t *gMenuCurrentMenuList;
 
+int gMenusCurrentItemIndex; // each menu can re-use this var to hold the position in their display list. To save wasted memory if they each had their own variable
+int gMenusStartIndex;// as above
+int gMenusEndIndex;// as above
+
+
 menuControlDataStruct_t menuControlData = { .stackPosition = 0, .stack = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, .itemIndex = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
 
 
@@ -204,12 +209,6 @@ void displayLightOverrideTimeout(int timeout)
 	}
 }
 
-const int MENU_EVENT_SAVE_SETTINGS = -1;
-int gMenusCurrentItemIndex; // each menu can re-use this var to hold the position in their display list. To save wasted memory if they each had their own variable
-int gMenusStartIndex;// as above
-int gMenusEndIndex;// as above
-
-
 void menuInitMenuSystem(void)
 {
 	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .function = 0, .events = NO_EVENT, .hasEvent = false, .time = fw_millis() };
@@ -258,7 +257,7 @@ const char menuStringTable[32][17] = { "",//0
 */
 
 const menuItemNew_t menuDataMainMenu[] = {
-	{12,12 },// number of menus
+	{ 12, 12 }, // Special entry: number of menus entries, both member must be set to the same number
 	{ 2,  MENU_CREDITS },
 	{ 3,  MENU_ZONE_LIST },
 	{ 4,  MENU_RSSI_SCREEN },
@@ -273,10 +272,9 @@ const menuItemNew_t menuDataMainMenu[] = {
 	{ 13, MENU_LANGUAGE},
 };
 const menuItemNew_t menuDataContact[] = {
-	{ 2, 2} ,// length
-	{ 14 , MENU_CONTACT_NEW },// 7 New Contact
-	{ 15, MENU_CONTACT_LIST },// 24 Contacts List
-	{ -1, MENU_CONTACT_LIST },// 24 Contacts Lis
+	{ 2, 2} , // Special entry: number of menus entries, both member must be set to the same number
+	{ 14, MENU_CONTACT_NEW },
+	{ 15, MENU_CONTACT_LIST },
 };
 
 /*
@@ -308,28 +306,28 @@ void menuDisplayEntry(int loopOffset, int focusedItem,const char *entryText)
 
 int menuGetMenuOffset(int maxMenuEntries, int loopOffset)
 {
-     int offset = gMenusCurrentItemIndex + loopOffset;
+	int offset = gMenusCurrentItemIndex + loopOffset;
 
-     if (offset < 0)
-     {
-	  if ((maxMenuEntries == 1) && (maxMenuEntries < MENU_MAX_DISPLAYED_ENTRIES))
-	       offset = MENU_MAX_DISPLAYED_ENTRIES - 1;
-	  else
-	       offset = maxMenuEntries + offset;
-     }
+	if (offset < 0)
+	{
+		if ((maxMenuEntries == 1) && (maxMenuEntries < MENU_MAX_DISPLAYED_ENTRIES))
+			offset = MENU_MAX_DISPLAYED_ENTRIES - 1;
+		else
+			offset = maxMenuEntries + offset;
+	}
 
-     if (maxMenuEntries < MENU_MAX_DISPLAYED_ENTRIES)
-     {
-	  if (loopOffset == 1)
-	       offset = MENU_MAX_DISPLAYED_ENTRIES - 1;
-     }
-     else
-     {
-	  if (offset >= maxMenuEntries)
-	       offset = offset - maxMenuEntries;
-     }
+	if (maxMenuEntries < MENU_MAX_DISPLAYED_ENTRIES)
+	{
+		if (loopOffset == 1)
+			offset = MENU_MAX_DISPLAYED_ENTRIES - 1;
+	}
+	else
+	{
+		if (offset >= maxMenuEntries)
+			offset = offset - maxMenuEntries;
+	}
 
-     return offset;
+	return offset;
 }
 
 /*

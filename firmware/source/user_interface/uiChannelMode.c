@@ -636,7 +636,7 @@ static void handleEvent(uiEvent_t *ev)
 			}
 			else
 			{
-				// ToDo Quick Menu
+				// Quick Menu
 				menuSystemPushNewMenu(MENU_CHANNEL_QUICK_MENU);
 			}
 
@@ -722,7 +722,9 @@ static void handleEvent(uiEvent_t *ev)
 			}
 			else
 			{
+#if (PLATFORM == GD-77)
 				menuSystemSetCurrentMenu(MENU_VFO_MODE);
+#endif
 				return;
 			}
 		}
