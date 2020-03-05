@@ -766,7 +766,9 @@ static void handleEvent(uiEvent_t *ev)
 					return;// The event has been handled
 				}
 
+#if (PLATFORM == GD-77)
 				menuSystemSetCurrentMenu(MENU_CHANNEL_MODE);
+#endif
 				return;
 			}
 #if (PLATFORM == DM-1801)
@@ -1014,10 +1016,17 @@ static void stepFrequency(int increment)
 }
 
 // Quick Menu functions
-enum VFO_SCREEN_QUICK_MENU_ITEMS { 	VFO_SCREEN_QUICK_MENU_VFO_A_B=0,VFO_SCREEN_QUICK_MENU_VFO_TO_NEW,VFO_SCREEN_QUICK_MENU_TX_SWAP_RX, VFO_SCREEN_QUICK_MENU_BOTH_TO_RX, VFO_SCREEN_QUICK_MENU_BOTH_TO_TX,
-									VFO_SCREEN_QUICK_MENU_FILTER,VFO_SCREEN_SCAN_LOW_FREQ,VFO_SCREEN_SCAN_HIGH_FREQ,VFO_SCREEN_QUICK_MENU_SCAN,
-									NUM_VFO_SCREEN_QUICK_MENU_ITEMS };// The last item in the list is used so that we automatically get a total number of items in the list
-
+enum VFO_SCREEN_QUICK_MENU_ITEMS // The last item in the list is used so that we automatically get a total number of items in the list
+{
+#if (PLATFORM == GD-77)
+	VFO_SCREEN_QUICK_MENU_VFO_A_B = 0, VFO_SCREEN_QUICK_MENU_VFO_TO_NEW,
+#elif (PLATFORM == DM-1801)
+	VFO_SCREEN_QUICK_MENU_VFO_TO_NEW = 0,
+#endif
+	VFO_SCREEN_QUICK_MENU_TX_SWAP_RX, VFO_SCREEN_QUICK_MENU_BOTH_TO_RX, VFO_SCREEN_QUICK_MENU_BOTH_TO_TX,
+	VFO_SCREEN_QUICK_MENU_FILTER,VFO_SCREEN_SCAN_LOW_FREQ,VFO_SCREEN_SCAN_HIGH_FREQ,VFO_SCREEN_QUICK_MENU_SCAN,
+	NUM_VFO_SCREEN_QUICK_MENU_ITEMS
+};
 
 int menuVFOModeQuickMenu(uiEvent_t *ev, bool isFirstRun)
 {
@@ -1075,9 +1084,11 @@ static void updateQuickMenuScreen(void)
 					snprintf(buf, bufferLen, "%s:%s", currentLanguage->filter, ((tmpQuickMenuDmrFilterLevel == 0) ? currentLanguage->none : DMR_FILTER_LEVELS[tmpQuickMenuDmrFilterLevel]));
 				}
 				break;
+#if (PLATFORM == GD-77)
 			case VFO_SCREEN_QUICK_MENU_VFO_A_B:
 				sprintf(buf, "VFO:%c", ((nonVolatileSettings.currentVFONumber==0) ? 'A' : 'B'));
 				break;
+#endif
 			case VFO_SCREEN_SCAN_LOW_FREQ:
 				strcpy(buf, "Rx --> Scan Low");
 				break;
@@ -1216,6 +1227,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 		menuSystemPopPreviousMenu();
 		return;
 	}
+#if (PLATFORM == GD-77)
 	else if (((ev->events & BUTTON_EVENT) && (ev->buttons & BUTTON_ORANGE)) && (gMenusCurrentItemIndex==VFO_SCREEN_QUICK_MENU_VFO_A_B))
 	{
 		nonVolatileSettings.currentVFONumber = 1 - nonVolatileSettings.currentVFONumber;// Switch to other VFO
@@ -1223,6 +1235,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 		menuSystemPopPreviousMenu();
 		return;
 	}
+#endif
 	else if (KEYCHECK_PRESS(ev->keys,KEY_RIGHT))
 	{
 		switch(gMenusCurrentItemIndex)
@@ -1243,6 +1256,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 					}
 				}
 				break;
+#if (PLATFORM == GD-77)
 			case VFO_SCREEN_QUICK_MENU_VFO_A_B:
 				if (nonVolatileSettings.currentVFONumber==0)
 				{
@@ -1250,6 +1264,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 					currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];
 				}
 				break;
+#endif
 			}
 	}
 	else if (KEYCHECK_PRESS(ev->keys,KEY_LEFT))
@@ -1272,6 +1287,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 					}
 				}
 				break;
+#if (PLATFORM == GD-77)
 			case VFO_SCREEN_QUICK_MENU_VFO_A_B:
 				if (nonVolatileSettings.currentVFONumber==1)
 				{
@@ -1279,6 +1295,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 					currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];
 				}
 				break;
+#endif
 		}
 	}
 	else if (KEYCHECK_PRESS(ev->keys,KEY_DOWN))

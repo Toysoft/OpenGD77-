@@ -722,7 +722,9 @@ static void handleEvent(uiEvent_t *ev)
 			}
 			else
 			{
+#if (PLATFORM == GD-77)
 				menuSystemSetCurrentMenu(MENU_VFO_MODE);
+#endif
 				return;
 			}
 		}
