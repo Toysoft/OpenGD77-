@@ -48,6 +48,7 @@ extern const int melody_ERROR_beep[];
 extern const int melody_tx_timeout_beep[];
 extern const int melody_private_call[];
 extern const int melody_dmr_tx_start_beep[];
+extern const int melody_dmr_tx_stop_beep[];
 extern volatile int *melody_play;
 extern volatile int melody_idx;
 extern volatile int micAudioSamplesTotal;

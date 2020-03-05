@@ -46,6 +46,7 @@ const stringsTable_t polishLanguage =
 .last_heard				= "Ostatnio aktywne", // MaxLen: 16
 .options				= "Opcje", // MaxLen: 16
 .display_options			= "Opcje ekranu", // MaxLen: 16
+.sound_options				= "Sound options", // MaxLen: 16
 .channel_details			= "Detale kanaˆu", // MaxLen: 16
 .new_contact				= "Nowy kontakt", // MaxLen: 16
 .new_channel				= "Nowy kanaˆ", // MaxLen: 16, leave room for a space and four channel digits after
@@ -147,6 +148,9 @@ const stringsTable_t polishLanguage =
 .one_line				= "1 linia", // MaxLen 16 (with ':' + .contact)
 .two_lines				= "2 linie", // MaxLen 16 (with ':' + .contact)
 .priority_order				= "Wybór", // MaxLen 16 (with ':' + 'Cc/DB/TA')
+.tx_beep				= "TX Beep", // MaxLen 16 (with ':' + .star/.stop/.both/.none)
+.start					= "Start", // MaxLen 16 (with ':' + .tx_beep)
+.both					= "Both" // MaxLen 16 (with ':' + .tx_beep)
 };
 /********************************************************************
  *

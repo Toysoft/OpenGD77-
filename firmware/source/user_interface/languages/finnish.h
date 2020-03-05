@@ -46,6 +46,7 @@ const stringsTable_t finnishLanguage =
 .last_heard		= "Viimeksi kuultu",
 .options		= "Asetukset",
 .display_options	= "Näytön Asetukset",
+.sound_options				= "Sound options", // MaxLen: 16
 .channel_details	= "Kanava Asetukset",
 .new_contact		= "Uusi kontakti",
 .new_channel		= "New channel", // MaxLen: 16, leave room for a space and four channel digits after
@@ -147,6 +148,9 @@ const stringsTable_t finnishLanguage =
 .one_line		= "1 rivi", 		// MaxLen 16 (with ':' + .contact)
 .two_lines		= "2 riviä", 		// MaxLen 16 (with ':' + .contact)
 .priority_order		= "Järjest", 		// MaxLen 16 (with ':' + 'Cc/DB/TA')
+.tx_beep				= "TX Beep", // MaxLen 16 (with ':' + .star/.stop/.both/.none)
+.start					= "Start", // MaxLen 16 (with ':' + .tx_beep)
+.both					= "Both" // MaxLen 16 (with ':' + .tx_beep)
 };
 /********************************************************************
  *

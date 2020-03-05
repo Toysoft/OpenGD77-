@@ -33,6 +33,9 @@ enum CONTACT_DISPLAY_PRIO { CONTACT_DISPLAY_PRIO_CC_DB_TA = 0, CONTACT_DISPLAY_P
 enum SCAN_MODE { SCAN_MODE_HOLD = 0, SCAN_MODE_PAUSE, SCAN_MODE_STOP };
 enum SPLIT_CONTACT { SPLIT_CONTACT_SINGLE_LINE_ONLY = 0, SPLIT_CONTACT_ON_TWO_LINES, SPLIT_CONTACT_AUTO };
 
+extern const uint8_t BEEP_TX_NONE;
+extern const uint8_t BEEP_TX_START;
+extern const uint8_t BEEP_TX_STOP;
 
 extern int settingsCurrentChannelNumber;
 extern bool settingsPrivateCallMuteMode;
@@ -80,6 +83,7 @@ typedef struct settingsStruct
 	uint32_t		vfoBScanHigh;                 //High frequency for VFO B Scanning
 	uint8_t			contactDisplayPriority;
 	uint8_t			splitContact;
+	uint8_t			beepOptions;
 
 } settingsStruct_t;
 

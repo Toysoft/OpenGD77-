@@ -46,6 +46,7 @@ const stringsTable_t italianLanguage =
 .last_heard				= "Ultimi Ricevuti", // MaxLen: 16
 .options				= "Opzioni", // MaxLen: 16
 .display_options		= "Opz. Display", // MaxLen: 16
+.sound_options				= "Sound options", // MaxLen: 16
 .channel_details		= "Dettagli canale", // MaxLen: 16
 .new_contact			= "Nuovo Contatto", // MaxLen: 16
 .new_channel			= "Nuovo can.", // MaxLen: 16, leave room for a space and four channel digits after
@@ -147,6 +148,9 @@ const stringsTable_t italianLanguage =
 .one_line				= "1 linea", // MaxLen 16 (with ':' + .contact)
 .two_lines				= "2 linee", // MaxLen 16 (with ':' + .contact)
 .priority_order			= "Prio.", // MaxLen 16 (with ':' + 'Cc/DB/TA')
+.tx_beep				= "TX Beep", // MaxLen 16 (with ':' + .star/.stop/.both/.none)
+.start					= "Start", // MaxLen 16 (with ':' + .tx_beep)
+.both					= "Both" // MaxLen 16 (with ':' + .tx_beep)
 };
 /********************************************************************
  *
