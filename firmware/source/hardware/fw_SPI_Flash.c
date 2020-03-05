@@ -92,10 +92,13 @@ bool SPI_Flash_init(void)
 bool SPI_Flash_read(uint32_t addr,uint8_t *dataBuf,int size)
 {
   uint8_t commandBuf[4]= {READ,addr>>16,addr>>8,addr} ;// command
+  /*
+   * This is very ineffecient and the Flash never seems to be busy
   if(spi_flash_busy())
   {
     return false;
   }
+  */
   spi_flash_enable();
   spi_flash_transfer_buf(commandBuf,commandBuf,4);
   for(int i=0;i<size;i++)
