@@ -51,7 +51,7 @@ typedef struct menuControlDataStruct
 
 typedef struct menuItemNew
 {
-       int stringNumber;
+       int stringOffset; // String offset in stringsTable_t
        int menuNum;
 } menuItemNew_t;
 

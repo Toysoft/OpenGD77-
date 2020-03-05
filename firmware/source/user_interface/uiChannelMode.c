@@ -636,7 +636,7 @@ static void handleEvent(uiEvent_t *ev)
 			}
 			else
 			{
-				// ToDo Quick Menu
+				// Quick Menu
 				menuSystemPushNewMenu(MENU_CHANNEL_QUICK_MENU);
 			}
 
