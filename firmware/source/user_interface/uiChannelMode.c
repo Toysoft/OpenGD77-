@@ -726,6 +726,14 @@ static void handleEvent(uiEvent_t *ev)
 				return;
 			}
 		}
+#if (PLATFORM == DM-1801)
+		else if (KEYCHECK_SHORTUP(ev->keys, KEY_VFO_MR))
+		{
+			directChannelNumber = 0;
+			menuSystemSetCurrentMenu(MENU_VFO_MODE);
+			return;
+		}
+#endif
 		else if (KEYCHECK_LONGDOWN(ev->keys, KEY_RIGHT))
 		{
 			// Long press allows the 5W+ power setting to be selected immediately

@@ -27,7 +27,14 @@
 
 static const int STORAGE_BASE_ADDRESS 		= 0x6000;
 
-static const int STORAGE_MAGIC_NUMBER 		= 0x4744;
+static const int STORAGE_MAGIC_NUMBER 		= 0x4745;
+
+// Bit patterns for DMR Beep
+const uint8_t BEEP_TX_NONE  = 0x00;
+const uint8_t BEEP_TX_START = 0x01;
+const uint8_t BEEP_TX_STOP  = 0x02;
+
+
 
 settingsStruct_t nonVolatileSettings;
 struct_codeplugChannel_t *currentChannelData;
@@ -152,6 +159,7 @@ void settingsRestoreDefaultSettings(void)
 	nonVolatileSettings.vfoBScanHigh=0;	//High Frequency limit for VFO B Scanning
 	nonVolatileSettings.contactDisplayPriority = CONTACT_DISPLAY_PRIO_CC_DB_TA;
 	nonVolatileSettings.splitContact = SPLIT_CONTACT_SINGLE_LINE_ONLY;
+	nonVolatileSettings.beepOptions = BEEP_TX_START;
 
 	currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];// Set the current channel data to point to the VFO data since the default screen will be the VFO
 

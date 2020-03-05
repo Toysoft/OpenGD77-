@@ -111,29 +111,32 @@
 #define SCAN_STAR   0x00008000
 #define SCAN_HASH   0x00020000
 
-#define KEY_GREENSTAR  '+'    // GREEN + STAR
+#define KEY_GREENSTAR   '+'    // GREEN + STAR
 
-#define KEY_UP    1
-#define KEY_DOWN  2
-#define KEY_LEFT  3
-#define KEY_RIGHT 4
-#define KEY_GREEN 13
-#define KEY_RED   27
-#define KEY_0     '0'
-#define KEY_1     '1'
-#define KEY_2     '2'
-#define KEY_3     '3'
-#define KEY_4     '4'
-#define KEY_5     '5'
-#define KEY_6     '6'
-#define KEY_7     '7'
-#define KEY_8     '8'
-#define KEY_9     '9'
-#define KEY_STAR  '*'
-#define KEY_HASH  '#'
+#define KEY_UP           1
+#define KEY_DOWN         2
+#define KEY_LEFT         3
+#define KEY_RIGHT        4
 
-#define KEY_VFO_MR	5
-#define KEY_A_B		6
+#if (PLATFORM == DM-1801)
+#define KEY_VFO_MR       5
+#define KEY_A_B          6
+#endif
+
+#define KEY_GREEN       13
+#define KEY_RED         27
+#define KEY_0           '0'
+#define KEY_1           '1'
+#define KEY_2           '2'
+#define KEY_3           '3'
+#define KEY_4           '4'
+#define KEY_5           '5'
+#define KEY_6           '6'
+#define KEY_7           '7'
+#define KEY_8           '8'
+#define KEY_9           '9'
+#define KEY_STAR        '*'
+#define KEY_HASH        '#'
 
 
 #define KEY_MOD_DOWN    0x01

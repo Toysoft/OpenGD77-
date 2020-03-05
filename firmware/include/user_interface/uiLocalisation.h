@@ -35,9 +35,10 @@ typedef struct stringsTable
    const char firmware_info[LANGUAGE_TEXTS_LENGTH];// Menu number  8
    const char options[LANGUAGE_TEXTS_LENGTH];// Menu number  9
    const char display_options[LANGUAGE_TEXTS_LENGTH];// Menu number  10
-   const char channel_details[LANGUAGE_TEXTS_LENGTH];// Menu number  11
-   const char language[LANGUAGE_TEXTS_LENGTH];// Menu number  12
-   const char new_contact[LANGUAGE_TEXTS_LENGTH];// Menu number  13
+   const char sound_options[LANGUAGE_TEXTS_LENGTH];// Menu number  11
+   const char channel_details[LANGUAGE_TEXTS_LENGTH];// Menu number  12
+   const char language[LANGUAGE_TEXTS_LENGTH];// Menu number  13
+   const char new_contact[LANGUAGE_TEXTS_LENGTH];// Menu number  14
    const char contact_list[LANGUAGE_TEXTS_LENGTH];// Menu number  15
    const char contact_details[LANGUAGE_TEXTS_LENGTH];// Menu number 16
    const char hotspot_mode[LANGUAGE_TEXTS_LENGTH];// Menu number 17
@@ -139,6 +140,9 @@ typedef struct stringsTable
    const char *two_lines;
    const char *new_channel;
    const char *priority_order;
+   const char *dmr_beep;
+   const char *start;
+   const char *both;
 } stringsTable_t;
 
 extern const stringsTable_t languages[];

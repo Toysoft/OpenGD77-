@@ -769,6 +769,21 @@ static void handleEvent(uiEvent_t *ev)
 				menuSystemSetCurrentMenu(MENU_CHANNEL_MODE);
 				return;
 			}
+#if (PLATFORM == DM-1801)
+			else if (KEYCHECK_SHORTUP(ev->keys, KEY_VFO_MR))
+			{
+				menuSystemSetCurrentMenu(MENU_CHANNEL_MODE);
+				return;
+			}
+			else if (KEYCHECK_SHORTUP(ev->keys, KEY_A_B))
+			{
+				nonVolatileSettings.currentVFONumber = 1 - nonVolatileSettings.currentVFONumber;// Switch to other VFO
+				currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];
+				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+				menuSystemPopAllAndDisplayRootMenu(); // Force to set all TX/RX settings.
+				return;
+			}
+#endif
 			else if (KEYCHECK_LONGDOWN(ev->keys, KEY_RIGHT))
 			{
 				// Long press allows the 5W+ power setting to be selected immediately
@@ -951,7 +966,7 @@ static void handleUpKey(uiEvent_t *ev)
 	}
 	else
 	{
-		if (scanState == SCAN_SCANNING)
+		if (scanActive)
 		{
 			stepFrequency(VFO_FREQ_STEP_TABLE[(currentChannelData->VFOflag5 >> 4)] * scanDirection);
 		}
