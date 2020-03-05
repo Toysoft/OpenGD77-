@@ -148,9 +148,9 @@ const stringsTable_t finnishLanguage =
 .one_line		= "1 rivi", 		// MaxLen 16 (with ':' + .contact)
 .two_lines		= "2 riviä", 		// MaxLen 16 (with ':' + .contact)
 .priority_order		= "Järjest", 		// MaxLen 16 (with ':' + 'Cc/DB/TA')
-.tx_beep				= "TX Beep", // MaxLen 16 (with ':' + .star/.stop/.both/.none)
-.start					= "Start", // MaxLen 16 (with ':' + .tx_beep)
-.both					= "Both" // MaxLen 16 (with ':' + .tx_beep)
+.dmr_beep				= "DMR beep", // MaxLen 16 (with ':' + .star/.stop/.both/.none)
+.start					= "Start", // MaxLen 16 (with ':' + .dmr_beep)
+.both					= "Both" // MaxLen 16 (with ':' + .dmr_beep)
 };
 /********************************************************************
  *

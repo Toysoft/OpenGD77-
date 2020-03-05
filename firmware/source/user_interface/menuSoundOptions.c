@@ -24,7 +24,7 @@
 static void updateScreen(void);
 static void handleEvent(uiEvent_t *ev);
 
-enum SOUND_MENU_LIST { OPTIONS_MENU_TIMEOUT_BEEP = 0, OPTIONS_MENU_BEEP_VOLUME, OPTIONS_MENU_TX_BEEP, OPTIONS_MIC_GAIN_DMR,
+enum SOUND_MENU_LIST { OPTIONS_MENU_TIMEOUT_BEEP = 0, OPTIONS_MENU_BEEP_VOLUME, OPTIONS_MENU_DMR_BEEP, OPTIONS_MIC_GAIN_DMR,
 						NUM_SOUND_MENU_ITEMS};
 
 
@@ -76,10 +76,10 @@ static void updateScreen(void)
 				snprintf(buf, bufferLen, "%s:%ddB", currentLanguage->beep_volume, (2 - nonVolatileSettings.beepVolumeDivider) * 3);
 				soundBeepVolumeDivider = nonVolatileSettings.beepVolumeDivider;
 				break;
-			case OPTIONS_MENU_TX_BEEP:
+			case OPTIONS_MENU_DMR_BEEP:
 				{
 					const char *beepTX[] = {currentLanguage->none, currentLanguage->start, currentLanguage->stop, currentLanguage->both};
-					snprintf(buf, bufferLen, "%s:%s", currentLanguage->tx_beep, beepTX[nonVolatileSettings.beepOptions]);
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->dmr_beep, beepTX[nonVolatileSettings.beepOptions]);
 				}
 				break;
 			case OPTIONS_MIC_GAIN_DMR:// DMR Mic gain
@@ -123,7 +123,7 @@ static void handleEvent(uiEvent_t *ev)
 						nonVolatileSettings.beepVolumeDivider--;
 					}
 					break;
-				case OPTIONS_MENU_TX_BEEP:
+				case OPTIONS_MENU_DMR_BEEP:
 					if (nonVolatileSettings.beepOptions < (BEEP_TX_START | BEEP_TX_STOP))
 					{
 						nonVolatileSettings.beepOptions++;
@@ -154,7 +154,7 @@ static void handleEvent(uiEvent_t *ev)
 						nonVolatileSettings.beepVolumeDivider++;
 					}
 					break;
-				case OPTIONS_MENU_TX_BEEP:
+				case OPTIONS_MENU_DMR_BEEP:
 					if (nonVolatileSettings.beepOptions > BEEP_TX_NONE)
 					{
 						nonVolatileSettings.beepOptions--;
