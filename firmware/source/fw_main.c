@@ -61,6 +61,13 @@ static void show_lowbattery(void)
 	ucRender();
 }
 
+static void showErrorMessage(char *message)
+{
+	ucClearBuf();
+	ucPrintCentered(32, message, FONT_8x16);
+	ucRender();
+}
+
 void fw_main_task(void *data)
 {
 	keyboardCode_t keys;
@@ -107,6 +114,12 @@ void fw_main_task(void *data)
     dac_init();
 
     SPI_Flash_init();
+
+    if (!checkAndCopyCalibrationToCommonLocation())
+	{
+		showErrorMessage("FLASH MEM ERROR");
+		while(1U) {};
+	}
 
     // Init AT1846S
     I2C_AT1846S_init();
