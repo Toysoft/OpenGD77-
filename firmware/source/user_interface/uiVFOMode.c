@@ -769,6 +769,20 @@ static void handleEvent(uiEvent_t *ev)
 				menuSystemSetCurrentMenu(MENU_CHANNEL_MODE);
 				return;
 			}
+#if (PLATFORM == DM-1801)
+			else if (KEYCHECK_SHORTUP(ev->keys, KEY_VFO_MR))
+			{
+				menuSystemSetCurrentMenu(MENU_CHANNEL_MODE);
+				return;
+			}
+			else if (KEYCHECK_SHORTUP(ev->keys, KEY_A_B))
+			{
+				nonVolatileSettings.currentVFONumber = 1 - nonVolatileSettings.currentVFONumber;// Switch to other VFO
+				currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];
+				menuSystemPopPreviousMenu();
+				return;
+			}
+#endif
 			else if (KEYCHECK_LONGDOWN(ev->keys, KEY_RIGHT))
 			{
 				// Long press allows the 5W+ power setting to be selected immediately
