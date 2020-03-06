@@ -20,7 +20,7 @@
  * Translators: DG3GSP, DL4LEX
  *
  *
- * Rev: 3.6
+ * Rev: 3.7
  */
 #ifndef USER_INTERFACE_LANGUAGES_GERMAN_H_
 #define USER_INTERFACE_LANGUAGES_GERMAN_H_
@@ -46,7 +46,7 @@ const stringsTable_t germanLanguage =
 .last_heard				= "Zuletzt gehört", // MaxLen: 16
 .options				= "Einstellungen", // MaxLen: 16
 .display_options		= "Display Optionen", // MaxLen: 16
-.sound_options				= "Sound options", // MaxLen: 16
+.sound_options				= "Audio Optionen", // MaxLen: 16
 .channel_details		= "Kanal Details", // MaxLen: 16
 .new_contact			= "Neuer Kontakt", // MaxLen: 16
 .new_channel			= "Neuer Kanal", // MaxLen: 16, leave room for a space and four channel digits after
@@ -148,9 +148,9 @@ const stringsTable_t germanLanguage =
 .one_line				= "1 Zeile", // MaxLen 16 (with ':' + .contact)
 .two_lines				= "2 Zeilen", // MaxLen 16 (with ':' + .contact)
 .priority_order				= "ID-Prio", // MaxLen 16 (with ':' + 'Cc/DB/TA')
-.dmr_beep				= "DMR beep", // MaxLen 16 (with ':' + .star/.stop/.both/.none)
+.dmr_beep				= "DMR TX Ton", // MaxLen 16 (with ':' + .star/.stop/.both/.none)
 .start					= "Start", // MaxLen 16 (with ':' + .dmr_beep)
-.both					= "Both" // MaxLen 16 (with ':' + .dmr_beep)
+.both					= "Beide" // MaxLen 16 (with ':' + .dmr_beep)
 };
 /********************************************************************
  *
