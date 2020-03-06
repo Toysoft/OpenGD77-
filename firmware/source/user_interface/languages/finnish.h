@@ -20,7 +20,7 @@
  * Translators: OH1E
  *
  *
- * Rev: 11 
+ * Rev: 12 
  */
 #ifndef USER_INTERFACE_LANGUAGES_FINNISH_H_
 #define USER_INTERFACE_LANGUAGES_FINNISH_H_
@@ -44,12 +44,12 @@ const stringsTable_t finnishLanguage =
 .contacts		= "Kontaktit",
 .firmware_info		= "Laiteohjelmisto",
 .last_heard		= "Viimeksi kuultu",
-.options		= "Asetukset",
+.options		= "Yleis  Asetukset",
 .display_options	= "Näytön Asetukset",
-.sound_options				= "Sound options", // MaxLen: 16
+.sound_options		= "Ääni   Asetukset", 	// MaxLen: 16
 .channel_details	= "Kanava Asetukset",
 .new_contact		= "Uusi kontakti",
-.new_channel		= "New channel", // MaxLen: 16, leave room for a space and four channel digits after
+.new_channel		= "Uusi kanava", 	// MaxLen: 16, leave room for a space and four channel digits after
 .contact_list		= "Kontakti lista",
 .hotspot_mode		= "Hotspotti tila",
 .contact_details	= "Kontakti Asetus",
@@ -80,7 +80,7 @@ const stringsTable_t finnishLanguage =
 .scan			= "Skannaus",
 .channelToVfo		= "Kanava --> VFO",
 .vfoToChannel		= "VFO --> Kanava",
-.vfoToNewChannel	= "VFO --> New Chan", // MaxLen: 16
+.vfoToNewChannel	= "VFO --> Uusi kan", 	// MaxLen: 16
 .group			= "Ryhmä", 		// MaxLen: 16 (with .type)
 .private		= "Privaatti", 		// MaxLen: 16 (with .type)
 .all			= "Kaikki", 		// MaxLen: 16 (with .type)
@@ -110,7 +110,7 @@ const stringsTable_t finnishLanguage =
 .calibration		= "Kalibriointi", 	// MaxLen: 16 (with ':' + .on or .off)
 .band_limits		= "Bändi Rajoitu", 	// MaxLen: 16 (with ':' + .on or .off)
 .beep_volume		= "NäpÄäniVoim", 	// MaxLen: 16 (with ':' + -24..6 + 'dB')
-.dmr_mic_gain		= "DMRMicGain", 	// MaxLen: 16 (with ':' + -33..12 + 'dB')
+.dmr_mic_gain		= "DMR MicGain", 	// MaxLen: 16 (with ':' + -33..12 + 'dB')
 .key_long		= "Näp pitkä",	 	// MaxLen: 11 (with ':' + x.xs fitted)
 .key_repeat		= "Näp toisto", 	// MaxLen: 11 (with ':' + x.xs fitted)
 .dmr_filter_timeout	= "Suodin aika", 	// MaxLen: 16 (with ':' + 1..90 + 's')
@@ -148,9 +148,9 @@ const stringsTable_t finnishLanguage =
 .one_line		= "1 rivi", 		// MaxLen 16 (with ':' + .contact)
 .two_lines		= "2 riviä", 		// MaxLen 16 (with ':' + .contact)
 .priority_order		= "Järjest", 		// MaxLen 16 (with ':' + 'Cc/DB/TA')
-.dmr_beep				= "DMR beep", // MaxLen 16 (with ':' + .star/.stop/.both/.none)
-.start					= "Start", // MaxLen 16 (with ':' + .dmr_beep)
-.both					= "Both" // MaxLen 16 (with ':' + .dmr_beep)
+.dmr_beep		= "DMR piippi", 	// MaxLen 16 (with ':' + .star/.stop/.both/.none)
+.start			= "Alku", 		// MaxLen 16 (with ':' + .dmr_beep)
+.both			= "Molemm" 		// MaxLen 16 (with ':' + .dmr_beep)
 };
 /********************************************************************
  *
