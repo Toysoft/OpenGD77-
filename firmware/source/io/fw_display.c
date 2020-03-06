@@ -53,7 +53,7 @@ void fw_init_display(bool isInverseColour)
    ftmParam.firstEdgeDelayPercent = 0U;
    FTM_GetDefaultConfig(&ftmInfo);
    FTM_Init(BOARD_FTM_BASEADDR, &ftmInfo);/* Initialize FTM module */
-   FTM_SetupPwm(BOARD_FTM_BASEADDR, &ftmParam, 1U, kFTM_CenterAlignedPwm, 2400U, CLOCK_GetFreq(kCLOCK_BusClk));   /* Configure ftm params with frequency 24kHZ */
+   FTM_SetupPwm(BOARD_FTM_BASEADDR, &ftmParam, 1U, kFTM_CenterAlignedPwm, 10000U, CLOCK_GetFreq(kCLOCK_BusClk));   /* Configure ftm params with frequency 10kHZ */
    FTM_StartTimer(BOARD_FTM_BASEADDR, kFTM_SystemClock);
 #else
    GPIO_PinInit(GPIO_Display_Light, Pin_Display_Light, &pin_config_output);
