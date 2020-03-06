@@ -150,7 +150,7 @@ const stringsTable_t italianLanguage =
 .priority_order			= "Prio.", // MaxLen 16 (with ':' + 'Cc/DB/TA')
 .dmr_beep				= "DMR bip", // MaxLen 16 (with ':' + .star/.stop/.both/.none)
 .start					= "Inizio", // MaxLen 16 (with ':' + .dmr_beep)
-.both					= "Doppio" // MaxLen 16 (with ':' + .dmr_beep)
+.both					= "Ambedue" // MaxLen 16 (with ':' + .dmr_beep)
 };
 /********************************************************************
  *
