@@ -978,7 +978,7 @@ In DMR mode when using either the VFO or the Zones and Channels, you can use the
 
 When programming the radio using the CPS first add all the TalkGroups that you think you may wish to use into the Digital Contacts list.
 
-![](media/cps-treeview-rx-grouplist.png)
+![](media/cps-tg-contacts.png)
 
 Next create one or more “TG Lists” and populate each with the sets of the Talkgroups that you will want to use with different channels. You can have the same Talkgroups in many TG Lists.
 
