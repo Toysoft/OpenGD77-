@@ -523,21 +523,24 @@ void trxActivateTx(void)
 
 void trxSetPowerFromLevel(int powerLevel)
 {
+#if(PLATFORM == GD-77)
+
+static const float fractionalPowers[4] = {0.62,0.75,0.85,0.93};
+
+#elif (PLATFORM == DM-1801)
+
+static const float fractionalPowers[4] = {0.28,0.37,0.62,0.82};
+
+#endif
 	int stepPerWatt = (trxPowerSettings.highPower - trxPowerSettings.lowPower)/( 5 - 1);
 
 	switch(powerLevel)
 	{
 		case 0:// 50mW
-			txPower = trxPowerSettings.lowPower * 0.62;//- 700;
-			break;
 		case 1:// 250mW
-			txPower = trxPowerSettings.lowPower * 0.75;//- 470;
-			break;
 		case 2:// 500mW
-			txPower = trxPowerSettings.lowPower * 0.85;//- 290;
-			break;
 		case 3:// 750mW
-			txPower = trxPowerSettings.lowPower * 0.93;//- 150;
+			txPower = trxPowerSettings.lowPower * fractionalPowers[powerLevel];
 			break;
 		case 4:// 1W
 			txPower = trxPowerSettings.lowPower;
