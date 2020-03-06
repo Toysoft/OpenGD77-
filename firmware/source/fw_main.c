@@ -135,7 +135,7 @@ void fw_main_task(void *data)
     init_HR_C6000_interrupts();
 
     // Small startup delay after initialization to stabilize system
-    vTaskDelay(portTICK_PERIOD_MS * 500);
+  //  vTaskDelay(portTICK_PERIOD_MS * 500);
 
 	init_pit();
 

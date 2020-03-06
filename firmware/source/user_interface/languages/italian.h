@@ -46,7 +46,7 @@ const stringsTable_t italianLanguage =
 .last_heard				= "Ultimi Ricevuti", // MaxLen: 16
 .options				= "Opzioni", // MaxLen: 16
 .display_options		= "Opz. Display", // MaxLen: 16
-.sound_options				= "Sound options", // MaxLen: 16
+.sound_options				= "Opzioni Audio", // MaxLen: 16
 .channel_details		= "Dettagli canale", // MaxLen: 16
 .new_contact			= "Nuovo Contatto", // MaxLen: 16
 .new_channel			= "Nuovo can.", // MaxLen: 16, leave room for a space and four channel digits after
@@ -144,13 +144,13 @@ const stringsTable_t italianLanguage =
 .manual					= "Manuale",  // MaxLen 16 (with .mode + ':') 
 .ptt_toggle				= "Auto-PTT", // MaxLen 16 (with ':' + .on or .off)
 .private_call_handling	= "Gest. PC", // MaxLen 16 (with ':' + .on ot .off)
-.stop					= "Stop", // Maxlen 16 (with ':' + .scan_mode)
+.stop					= "Fine", // Maxlen 16 (with ':' + .scan_mode)
 .one_line				= "1 linea", // MaxLen 16 (with ':' + .contact)
 .two_lines				= "2 linee", // MaxLen 16 (with ':' + .contact)
 .priority_order			= "Prio.", // MaxLen 16 (with ':' + 'Cc/DB/TA')
-.dmr_beep				= "DMR beep", // MaxLen 16 (with ':' + .star/.stop/.both/.none)
-.start					= "Start", // MaxLen 16 (with ':' + .dmr_beep)
-.both					= "Both" // MaxLen 16 (with ':' + .dmr_beep)
+.dmr_beep				= "DMR bip", // MaxLen 16 (with ':' + .star/.stop/.both/.none)
+.start					= "Inizio", // MaxLen 16 (with ':' + .dmr_beep)
+.both					= "Doppio" // MaxLen 16 (with ':' + .dmr_beep)
 };
 /********************************************************************
  *

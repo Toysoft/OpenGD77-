@@ -275,11 +275,11 @@ bool calibrationGetRSSIMeterParams(calibrationRSSIMeter_t *rssiMeterValues)					
 																									//High Byte is High End of Meter Range
 	if (trxCurrentBand[TRX_RX_FREQ_BAND] == RADIO_BAND_UHF)
 	{
-		address = 0x8F053;
+		address = CALIBRATION_BASE + 0x0053;
 	}
 	else
 	{
-		address = 0x8F0C3;
+		address = CALIBRATION_BASE + 0x0C3;
 	}
 
 	if (SPI_Flash_read(address,(uint8_t *)rssiMeterValues,2))
