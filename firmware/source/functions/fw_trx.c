@@ -523,13 +523,19 @@ void trxActivateTx(void)
 
 void trxSetPowerFromLevel(int powerLevel)
 {
+// Note. Fraction values for 200Mhz are currently the same as the VHF band, because there isn't any way to set the 1W value on 220Mhz as there are only 2 calibration tables
 #if(PLATFORM == GD-77)
 
-static const float fractionalPowers[4] = {0.62,0.75,0.85,0.93};
+static const float fractionalPowers[3][4] = {	{0.59,0.73,0.84,0.93},// VHF
+												{0.62,0.75,0.85,0.93},// 220Mhz
+												{0.62,0.75,0.85,0.93}};// UHF
 
 #elif (PLATFORM == DM-1801)
 
-static const float fractionalPowers[4] = {0.28,0.37,0.62,0.82};
+
+static const float fractionalPowers[3][4] = {	{0.28,0.37,0.62,0.82},// VHF
+												{0.28,0.37,0.62,0.82},// 220Mhz
+												{0.05,0.25,0.51,0.75}};// UHF
 
 #endif
 	int stepPerWatt = (trxPowerSettings.highPower - trxPowerSettings.lowPower)/( 5 - 1);
@@ -540,7 +546,7 @@ static const float fractionalPowers[4] = {0.28,0.37,0.62,0.82};
 		case 1:// 250mW
 		case 2:// 500mW
 		case 3:// 750mW
-			txPower = trxPowerSettings.lowPower * fractionalPowers[powerLevel];
+			txPower = trxPowerSettings.lowPower * fractionalPowers[trxCurrentBand[TRX_TX_FREQ_BAND]][powerLevel];
 			break;
 		case 4:// 1W
 			txPower = trxPowerSettings.lowPower;
