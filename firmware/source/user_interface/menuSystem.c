@@ -68,6 +68,8 @@ const menuItemNew_t * menusData[] = { 	NULL,// splash
 										NULL,// Contact List Quick Menu
 										NULL,// Contact Details
 										NULL,// New Contact
+										NULL,// Language
+										NULL,// Private Call
 								};
 
 const menuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
