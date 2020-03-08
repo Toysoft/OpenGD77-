@@ -20,7 +20,7 @@
  * Translators: EA3IGM, EA5SW, EB3AM, EA3BIL
  *
  *
- * Rev: 4
+ * Rev: 5
  */
 #ifndef USER_INTERFACE_LANGUAGES_CATALAN_H_
 #define USER_INTERFACE_LANGUAGES_CATALAN_H_
@@ -46,7 +46,7 @@ const stringsTable_t catalanLanguage=
 .last_heard				= "Escoltats",
 .options				= "Opcions",
 .display_options		= "Opcions pantalla",
-.sound_options				= "Sound options", // MaxLen: 16
+.sound_options				= "Opcions de só", // MaxLen: 16
 .channel_details		= "Detalls Canal",
 .new_contact			= "Nou contacte",
 .new_channel			= "Nou canal", // MaxLen: 16, leave room for a space and four channel digits after
@@ -149,8 +149,8 @@ const stringsTable_t catalanLanguage=
 .two_lines				= "2 linies", // MaxLen 16 (with ':' + .contact)
 .priority_order			= "Prio.", // MaxLen 16 (with ':' + 'Cc/DB/TA')
 .dmr_beep				= "DMR beep", // MaxLen 16 (with ':' + .star/.stop/.both/.none)
-.start					= "Start", // MaxLen 16 (with ':' + .dmr_beep)
-.both					= "Both" // MaxLen 16 (with ':' + .dmr_beep)
+.start					= "Inici", // MaxLen 16 (with ':' + .dmr_beep)
+.both					= "Tots" // MaxLen 16 (with ':' + .dmr_beep)
 };
 /********************************************************************
  *
