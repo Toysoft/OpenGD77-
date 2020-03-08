@@ -25,7 +25,7 @@
 extern gpio_pin_config_t pin_config_input;
 extern gpio_pin_config_t pin_config_output;
 
-#if(PLATFORM == GD-77  || PLATFORM == GD77S)
+#if defined(PLATFORM_GD77) || defined(PLATFORM_GD77S)
 
 // Power On/Off logic
 #define Port_Keep_Power_On  PORTE
@@ -72,7 +72,7 @@ extern gpio_pin_config_t pin_config_output;
 #define GPIO_VHF_TX_amp_power GPIOE
 #define Pin_VHF_TX_amp_power  3
 
-#elif (PLATFORM == DM-1801)
+#elif defined(PLATFORM_DM1801)
 
 // Power On/Off logic
 #define Port_Keep_Power_On  PORTE

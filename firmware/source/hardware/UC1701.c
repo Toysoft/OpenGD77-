@@ -49,11 +49,18 @@ int activeBufNum=0;
 
 void UC1701_setCommandMode(bool isCommand)
 {
+#if defined(PLATFORM_GD77S)
+	return;
+#else
 	GPIO_PinWrite(GPIO_Display_RS, Pin_Display_RS, !isCommand);
+#endif
 }
 
 void UC1701_transfer(register uint8_t data1)
 {
+#if defined(PLATFORM_GD77S)
+	return;
+#else
 	for (register int i=0; i<8; i++)
 	{
 		GPIO_Display_SCK->PCOR = 1U << Pin_Display_SCK;
@@ -70,6 +77,7 @@ void UC1701_transfer(register uint8_t data1)
 
 		data1=data1<<1;
 	}
+#endif
 }
 
 int16_t ucSetPixel(int16_t x, int16_t y, bool color)
@@ -95,6 +103,9 @@ int16_t ucSetPixel(int16_t x, int16_t y, bool color)
 
 void ucRenderRows(int16_t startRow, int16_t endRow)
 {
+#if defined(PLATFORM_GD77S)
+	return;
+#else
 	uint8_t *rowPos = (screenBuf + startRow*128);
 	taskENTER_CRITICAL();
 	for(int16_t row=startRow;row<endRow;row++)
@@ -134,6 +145,7 @@ void ucRenderRows(int16_t startRow, int16_t endRow)
 		}
 	}
 	taskEXIT_CRITICAL();
+#endif
 }
 
 void ucRender(void)
@@ -327,6 +339,10 @@ void ucSetInverseVideo(bool isInverted)
 
 void ucBegin(bool isInverted)
 {
+#if defined(PLATFORM_GD77S)
+	ucClearBuf();
+	return;
+#else
 	GPIO_PinWrite(GPIO_Display_CS, Pin_Display_CS, 0);// Enable CS permanently
     // Set the LCD parameters...
 	UC1701_setCommandMode(true);
@@ -350,6 +366,7 @@ void ucBegin(bool isInverted)
     UC1701_transfer(0xAF); // Set Display Enable
     ucClearBuf();
     ucRender();
+#endif
 }
 
 void ucSetContrast(uint8_t contrast)

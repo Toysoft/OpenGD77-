@@ -9,6 +9,9 @@ for e in "$@"; do
 	"DM-1801")
 	    MODEL="-m DM-1801"
 	    ;;
+	"GD-77S")
+	    MODEL="-m GD-77S"
+	    ;;
 	*)
 	    FILENAME="-f $e"
 	    ;;
