@@ -25,7 +25,7 @@
 #include "fw_common.h"
 
 
-#if(PLATFORM == GD-77)
+#if(PLATFORM == GD-77  || PLATFORM == GD77S)
 
 #define Port_SPI_FLASH_CS_U  	PORTA
 #define GPIO_SPI_FLASH_CS_U  	GPIOA

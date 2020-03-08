@@ -43,7 +43,13 @@ static void updateScreen(void)
 	buf[11] = 0; // git hash id 7 char long;
 
 	ucClearBuf();
+
+#if(PLATFORM == GD-77)
 	ucPrintCentered(5, "OpenGD77", FONT_8x16);
+#elif (PLATFORM == DM-1801)
+	ucPrintCentered(5, "OpenDM1801", FONT_8x16);
+#endif
+
 	ucPrintCentered(24, currentLanguage->built, FONT_8x8);
 	ucPrintCentered(34,__TIME__, FONT_8x8);
 	ucPrintCentered(44,__DATE__, FONT_8x8);

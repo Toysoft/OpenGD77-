@@ -27,7 +27,7 @@
 
 #include "fw_sound.h"
 
-#if(PLATFORM == GD-77)
+#if(PLATFORM == GD-77 || PLATFORM == GD77S)
 
 // I2S to C6000 (I2S)
 // OUT/ON  A16 - I2S FS to C6000

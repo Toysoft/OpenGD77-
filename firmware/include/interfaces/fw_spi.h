@@ -35,7 +35,7 @@ extern uint8_t SPI_masterSendBuffer_SPI0[SPI_DATA_LENGTH];
 extern uint8_t spi_masterReceiveBuffer_SPI1[SPI_DATA_LENGTH];
 extern uint8_t SPI_masterSendBuffer_SPI1[SPI_DATA_LENGTH];
 
-#if(PLATFORM == GD-77)
+#if(PLATFORM == GD-77  || PLATFORM == GD77S)
 
 // SPI1 to C6000 (V_SPI)
 // OUT/ON  B10 - SPI /V_CS to C6000

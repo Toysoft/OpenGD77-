@@ -21,7 +21,7 @@
 
 #include "fw_common.h"
 
-#if(PLATFORM == GD-77)
+#if(PLATFORM == GD-77 || PLATFORM == GD77S)
 
 // column lines
 #define Port_Key_Col0   PORTC

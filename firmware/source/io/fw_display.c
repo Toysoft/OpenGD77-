@@ -112,6 +112,7 @@ bool fw_displayIsBacklightLit(void)
 #endif
 }
 
+#ifdef DISPLAY_LED_PWM
 void fw_displaySetBacklightIntensityPercentage(uint8_t intensityPercentage)
 {
     FTM_UpdateChnlEdgeLevelSelect(BOARD_FTM_BASEADDR, BOARD_FTM_CHANNEL, 0U);    //Disable channel output before updating the dutycycle
@@ -119,3 +120,4 @@ void fw_displaySetBacklightIntensityPercentage(uint8_t intensityPercentage)
     FTM_SetSoftwareTrigger(BOARD_FTM_BASEADDR, true);    // Software trigger to update registers
     FTM_UpdateChnlEdgeLevelSelect(BOARD_FTM_BASEADDR, BOARD_FTM_CHANNEL, kFTM_HighTrue);    // Start channel output with updated dutycycle
 }
+#endif

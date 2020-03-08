@@ -25,7 +25,7 @@
 extern gpio_pin_config_t pin_config_input;
 extern gpio_pin_config_t pin_config_output;
 
-#if(PLATFORM == GD-77)
+#if(PLATFORM == GD-77  || PLATFORM == GD77S)
 
 // Power On/Off logic
 #define Port_Keep_Power_On  PORTE

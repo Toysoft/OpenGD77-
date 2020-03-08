@@ -33,7 +33,7 @@
 extern uint8_t i2c_master_buff[I2C_DATA_LENGTH];
 extern volatile int isI2cInUse;
 
-#if(PLATFORM == GD-77)
+#if(PLATFORM == GD-77 || PLATFORM == GD77S)
 
 // I2C0a to AT24C512 EEPROM & AT1846S
 // OUT/ON E24 - I2C SCL to AT24C512 EEPROM & AT1846S

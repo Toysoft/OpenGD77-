@@ -29,7 +29,7 @@
 
 #include "fw_codec.h"
 
-#if(PLATFORM == GD-77)
+#if(PLATFORM == GD-77  || PLATFORM == GD77S)
 
 // C6000 interrupts
 

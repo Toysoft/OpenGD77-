@@ -44,7 +44,7 @@ enum KEY_STATE
 
 volatile bool keypadLocked = false;
 
-#if(PLATFORM == GD-77)
+#if(PLATFORM == GD-77  || PLATFORM == GD77S)
 
 static const uint32_t keyMap[] = {
 		KEY_1, KEY_2, KEY_3, KEY_GREEN, KEY_RIGHT,

@@ -455,7 +455,8 @@ static void handleEvent(uiEvent_t *ev)
 
 		// settingsCurrentChannelNumber is -1 when in VFO mode
 		// But the VFO is stored in the nonVolatile settings, and not saved back to the codeplug
-		if (settingsCurrentChannelNumber != -1 )
+		// Also don't store this back to the codeplug unless the Function key (Blue / SK2 ) is pressed at the same time.
+		if (settingsCurrentChannelNumber != -1 && (ev->buttons & BUTTON_SK2) )
 		{
 			codeplugChannelSaveDataForIndex(settingsCurrentChannelNumber,currentChannelData);
 		}

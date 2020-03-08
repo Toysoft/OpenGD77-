@@ -766,7 +766,7 @@ static void handleEvent(uiEvent_t *ev)
 					return;// The event has been handled
 				}
 
-#if (PLATFORM == GD-77)
+#if (PLATFORM == GD-77 || PLATFORM == GD77S )
 				menuSystemSetCurrentMenu(MENU_CHANNEL_MODE);
 #endif
 				return;
@@ -1018,13 +1018,13 @@ static void stepFrequency(int increment)
 // Quick Menu functions
 enum VFO_SCREEN_QUICK_MENU_ITEMS // The last item in the list is used so that we automatically get a total number of items in the list
 {
-#if (PLATFORM == GD-77)
+#if (PLATFORM == GD-77 || PLATFORM == GD77S)
 	VFO_SCREEN_QUICK_MENU_VFO_A_B = 0, VFO_SCREEN_QUICK_MENU_SCAN,
 #elif (PLATFORM == DM-1801)
 	VFO_SCREEN_QUICK_MENU_SCAN = 0,
 #endif
 	VFO_SCREEN_QUICK_MENU_TX_SWAP_RX, VFO_SCREEN_QUICK_MENU_BOTH_TO_RX, VFO_SCREEN_QUICK_MENU_BOTH_TO_TX,
-	VFO_SCREEN_QUICK_MENU_FILTER, VFO_SCREEN_QUICK_MENU_VFO_TO_NEW, VFO_SCREEN_SCAN_LOW_FREQ, VFO_SCREEN_SCAN_HIGH_FREQ,
+	VFO_SCREEN_QUICK_MENU_FILTER,VFO_SCREEN_QUICK_MENU_VFO_TO_NEW, VFO_SCREEN_SCAN_LOW_FREQ, VFO_SCREEN_SCAN_HIGH_FREQ, VFO_SCREEN_CODE_SCAN,
 	NUM_VFO_SCREEN_QUICK_MENU_ITEMS
 };
 
@@ -1089,13 +1089,24 @@ static void updateQuickMenuScreen(void)
 				sprintf(buf, "VFO:%c", ((nonVolatileSettings.currentVFONumber==0) ? 'A' : 'B'));
 				break;
 #endif
+
+
 			case VFO_SCREEN_SCAN_LOW_FREQ:
 				strcpy(buf, "Rx --> Scan Low");
 				break;
 			case VFO_SCREEN_SCAN_HIGH_FREQ:
 				strcpy(buf, "Rx --> Scan High");
 				break;
-
+			case VFO_SCREEN_CODE_SCAN:
+				if(trxGetMode() == RADIO_MODE_ANALOG)
+				{
+					strncpy(buf, currentLanguage->tone_scan, bufferLen);
+				}
+				else
+				{
+					sprintf(buf, "%s %s", currentLanguage->tone_scan, currentLanguage->n_a, bufferLen);
+				}
+				break;
 			default:
 				strcpy(buf, "");
 		}
@@ -1221,6 +1232,16 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 				else
 				{
 					nonVolatileSettings.vfoAScanHigh=currentChannelData->rxFreq;
+				}
+				break;
+			case VFO_SCREEN_CODE_SCAN:
+				if(trxGetMode() == RADIO_MODE_ANALOG)
+				{
+					toneScanActive=true;
+					scanTimer=TONESCANINTERVAL;
+					scanIndex=1;
+					trxSetRxCTCSS(TRX_CTCSSTones[scanIndex]);
+					disableAudioAmp(AUDIO_AMP_MODE_RF);
 				}
 				break;
 		}
