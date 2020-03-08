@@ -41,6 +41,7 @@ namespace bin2sgl
 		public enum OutputType
 		{
 			OutputType_GD77,
+			OutputType_GD77S,
 			OutputType_DM1801
 		}
 
@@ -49,22 +50,25 @@ namespace bin2sgl
 		static void encrypt(string[] args)
         {
 			int shift = 0;
-			int len = 0;
 			int flength = 0;
             FileStream stream_fw_in;
             string outputFilename = Path.GetFileNameWithoutExtension(args[0]) + ".sgl";
 
-			switch(outputType)
+			switch (outputType)
 			{
 				case OutputType.OutputType_GD77:
-					len = DataArrays.Header318_0x0807.Length;
 					shift = 0x0807;
 					flength = 0x77001; // The header, from firmware version 3.1.8 expects the file to be 0x77001 long
 					Console.WriteLine("GD77");
 					break;
 
+				case OutputType.OutputType_GD77S:
+					shift = 0x2a8e;
+					flength = 0x50001; // The header, from firmware version 1.2.0 expects the file to be 0x50001 long
+					Console.WriteLine("GD77S");
+					break;
+
 				case OutputType.OutputType_DM1801:
-					len = DataArrays.Header219_0x0807.Length;
 					shift = 0x2C7C;
 					flength = 0x78001; // The header, from firmware version 2.1.9 expects the file to be 0x78001 long
 					Console.WriteLine("DM-1801");
@@ -84,14 +88,32 @@ namespace bin2sgl
                 }
                 FileStream stream_fw_out = new FileStream(outputFilename, FileMode.Create, FileAccess.Write, FileShare.ReadWrite);
 
-				//int len = DataArrays.Header318_0x0807.Length;
-				for (int i = 0; i < len; i++)
-                {
-                    stream_fw_out.WriteByte(((outputType == OutputType.OutputType_GD77) ? DataArrays.Header318_0x0807[i] : DataArrays.Header219_0x0807[i]));
-                }
+				// Copy header
+				switch (outputType)
+				{
+					case OutputType.OutputType_GD77:
+						for (int i = 0; i < DataArrays.Header318_0x0807.Length; i++)
+						{
+							stream_fw_out.WriteByte(DataArrays.Header318_0x0807[i]);
+						}
+						break;
 
-                int length = 0;
-                // The header, from firmware version 3.1.8 expects the file to be 0x77001 long
+					case OutputType.OutputType_GD77S:
+						for (int i = 0; i < DataArrays.Header120_0x2a8e.Length; i++)
+						{
+							stream_fw_out.WriteByte(DataArrays.Header120_0x2a8e[i]);
+						}
+						break;
+
+					case OutputType.OutputType_DM1801:
+						for (int i = 0; i < DataArrays.Header219_0x2c7c.Length; i++)
+						{
+							stream_fw_out.WriteByte(DataArrays.Header219_0x2c7c[i]);
+						}
+						break;
+				}
+
+				int length = 0;
                 while (length < flength)
                 {
                     int data = stream_fw_in.ReadByte();// This may attempt to read past of the end of the file if its shorter than 0x77001
@@ -133,13 +155,20 @@ namespace bin2sgl
 
 		static void Main(string[] args)
 		{
-			int idx = Array.IndexOf(args, "DM-1801");
+			int idxDM1801 = Array.IndexOf(args, "DM-1801");
+			int idxGD77S = Array.IndexOf(args, "GD-77S");
 
-			outputType = ((idx >= 0) ? OutputType.OutputType_DM1801 : OutputType.OutputType_GD77);
+			outputType = OutputType.OutputType_GD77; // Default platform target
 
-			if (idx >= 0)
+			if (idxGD77S >= 0)
 			{
-				args = RemoveArgAt(args, idx);
+				outputType = OutputType.OutputType_GD77S;
+				args = RemoveArgAt(args, idxGD77S);
+			}
+			else if (idxDM1801 >= 0)
+			{
+				outputType = OutputType.OutputType_DM1801;
+				args = RemoveArgAt(args, idxDM1801);
 			}
 
 			if (args.Length > 0)
@@ -148,7 +177,7 @@ namespace bin2sgl
             }
             else
             {
-                Console.WriteLine("Usage: bin2sgl [DM-1801] filename");
+                Console.WriteLine("Usage: bin2sgl [DM-1801 | GD-77S] filename");
             }
         }
     }
