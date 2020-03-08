@@ -21,7 +21,7 @@
 
 #include "fw_common.h"
 
-#if(PLATFORM == GD-77 || PLATFORM == GD77S)
+#if(PLATFORM == GD77 || PLATFORM == GD77S)
 
 #define Port_PTT		PORTA
 #define GPIO_PTT		GPIOA
@@ -36,7 +36,7 @@
 #define GPIO_Orange		GPIOA
 #define Pin_Orange		2
 
-#elif (PLATFORM == DM-1801)
+#elif (PLATFORM == DM1801)
 
 #define Port_PTT		PORTA
 #define GPIO_PTT		GPIOA

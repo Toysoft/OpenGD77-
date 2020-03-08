@@ -25,7 +25,7 @@
 #define DISPLAY_LED_PWM
 
 
-#if(PLATFORM == GD-77 || PLATFORM == GD77S)
+#if(PLATFORM == GD77 || PLATFORM == GD77S)
 
 #define Port_Display_Light	PORTC
 #define GPIO_Display_Light	GPIOC
@@ -49,7 +49,7 @@
 #define BOARD_FTM_BASEADDR FTM0
 #define BOARD_FTM_CHANNEL kFTM_Chnl_3
 
-#elif (PLATFORM == DM-1801)
+#elif (PLATFORM == DM1801)
 
 #define Port_Display_Light	PORTC
 #define GPIO_Display_Light	GPIOC

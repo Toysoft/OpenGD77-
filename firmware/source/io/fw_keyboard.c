@@ -44,7 +44,7 @@ enum KEY_STATE
 
 volatile bool keypadLocked = false;
 
-#if(PLATFORM == GD-77  || PLATFORM == GD77S)
+#if(PLATFORM == GD77  || PLATFORM == GD77S)
 
 static const uint32_t keyMap[] = {
 		KEY_1, KEY_2, KEY_3, KEY_GREEN, KEY_RIGHT,
@@ -53,7 +53,7 @@ static const uint32_t keyMap[] = {
 		KEY_STAR, KEY_0, KEY_HASH, KEY_RED, (uint32_t)NULL
 };
 
-#elif (PLATFORM == DM-1801)
+#elif (PLATFORM == DM1801)
 
 static const uint32_t keyMap[] = {
 		KEY_1, KEY_2, KEY_3, KEY_GREEN, KEY_A_B,

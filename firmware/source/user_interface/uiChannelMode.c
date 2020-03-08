@@ -722,13 +722,13 @@ static void handleEvent(uiEvent_t *ev)
 			}
 			else
 			{
-#if (PLATFORM == GD-77)
+#if (PLATFORM == GD77)
 				menuSystemSetCurrentMenu(MENU_VFO_MODE);
 #endif
 				return;
 			}
 		}
-#if (PLATFORM == DM-1801)
+#if (PLATFORM == DM1801)
 		else if (KEYCHECK_SHORTUP(ev->keys, KEY_VFO_MR))
 		{
 			directChannelNumber = 0;
