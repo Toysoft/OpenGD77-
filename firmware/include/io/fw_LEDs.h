@@ -21,7 +21,7 @@
 
 #include "fw_common.h"
 
-#if(PLATFORM == GD77 || PLATFORM == GD77S)
+#if defined(PLATFORM_GD77) || defined(PLATFORM_GD77S)
 
 #define Port_LEDgreen	PORTB
 #define GPIO_LEDgreen	GPIOB
@@ -31,7 +31,7 @@
 #define GPIO_LEDred		GPIOC
 #define Pin_LEDred		14
 
-#elif (PLATFORM == DM1801)
+#elif defined(PLATFORM_DM1801)
 
 #define Port_LEDgreen	PORTA
 #define GPIO_LEDgreen	GPIOA

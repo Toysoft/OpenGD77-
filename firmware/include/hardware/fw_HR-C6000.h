@@ -29,7 +29,7 @@
 
 #include "fw_codec.h"
 
-#if(PLATFORM == GD77  || PLATFORM == GD77S)
+#if defined(PLATFORM_GD77) || defined(PLATFORM_GD77S)
 
 // C6000 interrupts
 
@@ -65,7 +65,7 @@
 #define GPIO_INT_C6000_PWD   GPIOE
 #define Pin_INT_C6000_PWD    1
 
-#elif (PLATFORM == DM1801)
+#elif defined(PLATFORM_DM1801)
 
 // C6000 interrupts
 

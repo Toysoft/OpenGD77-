@@ -35,7 +35,7 @@ extern uint8_t SPI_masterSendBuffer_SPI0[SPI_DATA_LENGTH];
 extern uint8_t spi_masterReceiveBuffer_SPI1[SPI_DATA_LENGTH];
 extern uint8_t SPI_masterSendBuffer_SPI1[SPI_DATA_LENGTH];
 
-#if(PLATFORM == GD77  || PLATFORM == GD77S)
+#if defined(PLATFORM_GD77) || defined(PLATFORM_GD77S)
 
 // SPI1 to C6000 (V_SPI)
 // OUT/ON  B10 - SPI /V_CS to C6000
@@ -73,7 +73,7 @@ extern uint8_t SPI_masterSendBuffer_SPI1[SPI_DATA_LENGTH];
 #define GPIO_SPI_DO_C6000_U  GPIOD
 #define Pin_SPI_DO_C6000_U   3
 
-#elif (PLATFORM == DM1801)
+#elif defined(PLATFORM_DM1801)
 
 // SPI1 to C6000 (V_SPI)
 // OUT/ON  B10 - SPI /V_CS to C6000

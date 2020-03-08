@@ -49,7 +49,7 @@ int activeBufNum=0;
 
 void UC1701_setCommandMode(bool isCommand)
 {
-#if (PLATFORM == GD77S)
+#if defined(PLATFORM_GD77S)
 	return;
 #else
 	GPIO_PinWrite(GPIO_Display_RS, Pin_Display_RS, !isCommand);
@@ -58,7 +58,7 @@ void UC1701_setCommandMode(bool isCommand)
 
 void UC1701_transfer(register uint8_t data1)
 {
-#if (PLATFORM == GD77S)
+#if defined(PLATFORM_GD77S)
 	return;
 #else
 	for (register int i=0; i<8; i++)
@@ -103,7 +103,7 @@ int16_t ucSetPixel(int16_t x, int16_t y, bool color)
 
 void ucRenderRows(int16_t startRow, int16_t endRow)
 {
-#if (PLATFORM == GD77S)
+#if defined(PLATFORM_GD77S)
 	return;
 #else
 	uint8_t *rowPos = (screenBuf + startRow*128);
@@ -339,7 +339,7 @@ void ucSetInverseVideo(bool isInverted)
 
 void ucBegin(bool isInverted)
 {
-#if (PLATFORM == GD77S)
+#if defined(PLATFORM_GD77S)
 	ucClearBuf();
 	return;
 #else

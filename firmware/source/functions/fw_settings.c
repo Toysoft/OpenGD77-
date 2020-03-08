@@ -149,7 +149,7 @@ void settingsRestoreDefaultSettings(void)
 	nonVolatileSettings.squelchDefaults[RADIO_BAND_220MHz]	= 10;// 1 - 21 = 0 - 100% , same as from the CPS variable squelch
 	nonVolatileSettings.squelchDefaults[RADIO_BAND_UHF]		= 10;// 1 - 21 = 0 - 100% , same as from the CPS variable squelch
 	nonVolatileSettings.pttToggle = false; // PTT act as a toggle button
-#if (PLATFORM == GD77S)
+#if defined(PLATFORM_GD77S)
 	nonVolatileSettings.hotspotType = HOTSPOT_TYPE_MMDVM;
 #else
 	nonVolatileSettings.hotspotType = HOTSPOT_TYPE_OFF;
