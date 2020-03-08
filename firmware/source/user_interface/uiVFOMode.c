@@ -1024,7 +1024,7 @@ enum VFO_SCREEN_QUICK_MENU_ITEMS // The last item in the list is used so that we
 	VFO_SCREEN_QUICK_MENU_SCAN = 0,
 #endif
 	VFO_SCREEN_QUICK_MENU_TX_SWAP_RX, VFO_SCREEN_QUICK_MENU_BOTH_TO_RX, VFO_SCREEN_QUICK_MENU_BOTH_TO_TX,
-	VFO_SCREEN_QUICK_MENU_FILTER, VFO_SCREEN_QUICK_MENU_VFO_TO_NEW, VFO_SCREEN_SCAN_LOW_FREQ, VFO_SCREEN_SCAN_HIGH_FREQ,
+	VFO_SCREEN_QUICK_MENU_FILTER,VFO_SCREEN_QUICK_MENU_VFO_TO_NEW, VFO_SCREEN_SCAN_LOW_FREQ, VFO_SCREEN_SCAN_HIGH_FREQ, VFO_SCREEN_CODE_SCAN,
 	NUM_VFO_SCREEN_QUICK_MENU_ITEMS
 };
 
@@ -1089,13 +1089,24 @@ static void updateQuickMenuScreen(void)
 				sprintf(buf, "VFO:%c", ((nonVolatileSettings.currentVFONumber==0) ? 'A' : 'B'));
 				break;
 #endif
+
+
 			case VFO_SCREEN_SCAN_LOW_FREQ:
 				strcpy(buf, "Rx --> Scan Low");
 				break;
 			case VFO_SCREEN_SCAN_HIGH_FREQ:
 				strcpy(buf, "Rx --> Scan High");
 				break;
-
+			case VFO_SCREEN_CODE_SCAN:
+				if(trxGetMode() == RADIO_MODE_ANALOG)
+				{
+					strncpy(buf, currentLanguage->tone_scan, bufferLen);
+				}
+				else
+				{
+					sprintf(buf, "%s %s", currentLanguage->tone_scan, currentLanguage->n_a, bufferLen);
+				}
+				break;
 			default:
 				strcpy(buf, "");
 		}
@@ -1221,6 +1232,16 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 				else
 				{
 					nonVolatileSettings.vfoAScanHigh=currentChannelData->rxFreq;
+				}
+				break;
+			case VFO_SCREEN_CODE_SCAN:
+				if(trxGetMode() == RADIO_MODE_ANALOG)
+				{
+					toneScanActive=true;
+					scanTimer=TONESCANINTERVAL;
+					scanIndex=1;
+					trxSetRxCTCSS(TRX_CTCSSTones[scanIndex]);
+					disableAudioAmp(AUDIO_AMP_MODE_RF);
 				}
 				break;
 		}
