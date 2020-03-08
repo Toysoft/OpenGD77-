@@ -21,7 +21,7 @@
 
 #include "fw_common.h"
 
-#if(PLATFORM == GD-77 || PLATFORM == GD77S)
+#if defined(PLATFORM_GD77) || defined(PLATFORM_GD77S)
 
 // column lines
 #define Port_Key_Col0   PORTC
@@ -54,7 +54,7 @@
 #define GPIO_Key_Row4 	GPIOB
 #define Pin_Key_Row4	23
 
-#elif (PLATFORM == DM-1801)
+#elif defined(PLATFORM_DM1801)
 
 // column lines
 #define Port_Key_Col0   PORTC
@@ -118,7 +118,7 @@
 #define KEY_LEFT         3
 #define KEY_RIGHT        4
 
-#if (PLATFORM == DM-1801)
+#if defined(PLATFORM_DM1801)
 #define KEY_VFO_MR       5
 #define KEY_A_B          6
 #endif

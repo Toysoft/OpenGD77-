@@ -96,7 +96,7 @@ void fw_main_task(void *data)
 	}
     settingsLoadSettings();
 
-#if (PLATFORM != GD77S)
+#if ! defined(PLATFORM_GD77S)
 	fw_init_display(nonVolatileSettings.displayInverseVideo);
 #endif
     // Init SPI
@@ -183,7 +183,7 @@ void fw_main_task(void *data)
 
 			fw_check_button_event(&buttons, &button_event); // Read button state and event
 
-#if (PLATFORM != GD77S)
+#if ! defined(PLATFORM_GD77S)
 			fw_check_key_event(&keys, &key_event); // Read keyboard state and event
 #endif
 			// EVENT_*_CHANGED can be cleared later, so check this now as hasEvent has to be set anyway.
@@ -263,7 +263,7 @@ void fw_main_task(void *data)
 				}
 			}
 
-#if (PLATFORM != GD77S)
+#if ! defined(PLATFORM_GD77S)
 			if ((key_event == EVENT_KEY_CHANGE) && ((buttons & BUTTON_PTT) == 0) && (keys.key != 0))
 			{
 				// Do not send any beep while scanning, otherwise enabling the AMP will be handled as a valid signal detection.
@@ -358,7 +358,7 @@ void fw_main_task(void *data)
 
 			if (button_event == EVENT_BUTTON_CHANGE)
 			{
-#if (PLATFORM != GD77S)
+#if ! defined(PLATFORM_GD77S)
 				displayLightTrigger();
 #endif
 				if ((buttons & BUTTON_PTT) != 0)

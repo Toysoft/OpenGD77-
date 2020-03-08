@@ -27,7 +27,7 @@
 
 #include "fw_sound.h"
 
-#if(PLATFORM == GD-77 || PLATFORM == GD77S)
+#if defined(PLATFORM_GD77) || defined(PLATFORM_GD77S)
 
 // I2S to C6000 (I2S)
 // OUT/ON  A16 - I2S FS to C6000
@@ -47,7 +47,7 @@
 #define GPIO_I2S_TX_C6000    GPIOA
 #define Pin_I2S_TX_C6000     15
 
-#elif (PLATFORM == DM-1801)
+#elif defined(PLATFORM_DM1801)
 
 // I2S to C6000 (I2S)
 // OUT/ON  A16 - I2S FS to C6000

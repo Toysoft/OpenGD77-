@@ -44,9 +44,9 @@ static void updateScreen(void)
 
 	ucClearBuf();
 
-#if(PLATFORM == GD-77)
+#if defined(PLATFORM_GD77)
 	ucPrintCentered(5, "OpenGD77", FONT_8x16);
-#elif (PLATFORM == DM-1801)
+#elif defined(PLATFORM_DM1801)
 	ucPrintCentered(5, "OpenDM1801", FONT_8x16);
 #endif
 

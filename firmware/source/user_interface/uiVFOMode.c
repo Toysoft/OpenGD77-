@@ -766,12 +766,12 @@ static void handleEvent(uiEvent_t *ev)
 					return;// The event has been handled
 				}
 
-#if (PLATFORM == GD-77 || PLATFORM == GD77S )
+#if defined(PLATFORM_GD77) || defined(PLATFORM_GD77S)
 				menuSystemSetCurrentMenu(MENU_CHANNEL_MODE);
 #endif
 				return;
 			}
-#if (PLATFORM == DM-1801)
+#if defined(PLATFORM_DM1801)
 			else if (KEYCHECK_SHORTUP(ev->keys, KEY_VFO_MR))
 			{
 				menuSystemSetCurrentMenu(MENU_CHANNEL_MODE);
@@ -1018,9 +1018,9 @@ static void stepFrequency(int increment)
 // Quick Menu functions
 enum VFO_SCREEN_QUICK_MENU_ITEMS // The last item in the list is used so that we automatically get a total number of items in the list
 {
-#if (PLATFORM == GD-77 || PLATFORM == GD77S)
+#if defined(PLATFORM_GD77) || defined(PLATFORM_GD77S)
 	VFO_SCREEN_QUICK_MENU_VFO_A_B = 0, VFO_SCREEN_QUICK_MENU_SCAN,
-#elif (PLATFORM == DM-1801)
+#elif defined(PLATFORM_DM1801)
 	VFO_SCREEN_QUICK_MENU_SCAN = 0,
 #endif
 	VFO_SCREEN_QUICK_MENU_TX_SWAP_RX, VFO_SCREEN_QUICK_MENU_BOTH_TO_RX, VFO_SCREEN_QUICK_MENU_BOTH_TO_TX,
@@ -1084,7 +1084,7 @@ static void updateQuickMenuScreen(void)
 					snprintf(buf, bufferLen, "%s:%s", currentLanguage->filter, ((tmpQuickMenuDmrFilterLevel == 0) ? currentLanguage->none : DMR_FILTER_LEVELS[tmpQuickMenuDmrFilterLevel]));
 				}
 				break;
-#if (PLATFORM == GD-77)
+#if defined(PLATFORM_GD77)
 			case VFO_SCREEN_QUICK_MENU_VFO_A_B:
 				sprintf(buf, "VFO:%c", ((nonVolatileSettings.currentVFONumber==0) ? 'A' : 'B'));
 				break;
@@ -1248,7 +1248,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 		menuSystemPopPreviousMenu();
 		return;
 	}
-#if (PLATFORM == GD-77)
+#if defined(PLATFORM_GD77)
 	else if (((ev->events & BUTTON_EVENT) && (ev->buttons & BUTTON_ORANGE)) && (gMenusCurrentItemIndex==VFO_SCREEN_QUICK_MENU_VFO_A_B))
 	{
 		nonVolatileSettings.currentVFONumber = 1 - nonVolatileSettings.currentVFONumber;// Switch to other VFO
@@ -1277,7 +1277,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 					}
 				}
 				break;
-#if (PLATFORM == GD-77)
+#if defined(PLATFORM_GD77)
 			case VFO_SCREEN_QUICK_MENU_VFO_A_B:
 				if (nonVolatileSettings.currentVFONumber==0)
 				{
@@ -1308,7 +1308,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 					}
 				}
 				break;
-#if (PLATFORM == GD-77)
+#if defined(PLATFORM_GD77)
 			case VFO_SCREEN_QUICK_MENU_VFO_A_B:
 				if (nonVolatileSettings.currentVFONumber==1)
 				{
