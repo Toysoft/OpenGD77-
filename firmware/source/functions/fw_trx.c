@@ -524,7 +524,7 @@ void trxActivateTx(void)
 void trxSetPowerFromLevel(int powerLevel)
 {
 // Note. Fraction values for 200Mhz are currently the same as the VHF band, because there isn't any way to set the 1W value on 220Mhz as there are only 2 calibration tables
-#if(PLATFORM == GD-77)
+#if(PLATFORM == GD-77  || PLATFORM == GD77S)
 
 static const float fractionalPowers[3][4] = {	{0.59,0.73,0.84,0.93},// VHF
 												{0.62,0.75,0.85,0.93},// 220Mhz

@@ -25,7 +25,7 @@
 #define DISPLAY_LED_PWM
 
 
-#if(PLATFORM == GD-77)
+#if(PLATFORM == GD-77 || PLATFORM == GD77S)
 
 #define Port_Display_Light	PORTC
 #define GPIO_Display_Light	GPIOC

@@ -766,7 +766,7 @@ static void handleEvent(uiEvent_t *ev)
 					return;// The event has been handled
 				}
 
-#if (PLATFORM == GD-77)
+#if (PLATFORM == GD-77 || PLATFORM == GD77S )
 				menuSystemSetCurrentMenu(MENU_CHANNEL_MODE);
 #endif
 				return;
@@ -1018,7 +1018,7 @@ static void stepFrequency(int increment)
 // Quick Menu functions
 enum VFO_SCREEN_QUICK_MENU_ITEMS // The last item in the list is used so that we automatically get a total number of items in the list
 {
-#if (PLATFORM == GD-77)
+#if (PLATFORM == GD-77 || PLATFORM == GD77S)
 	VFO_SCREEN_QUICK_MENU_VFO_A_B = 0, VFO_SCREEN_QUICK_MENU_SCAN,
 #elif (PLATFORM == DM-1801)
 	VFO_SCREEN_QUICK_MENU_SCAN = 0,

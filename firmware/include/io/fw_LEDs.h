@@ -21,7 +21,7 @@
 
 #include "fw_common.h"
 
-#if(PLATFORM == GD-77)
+#if(PLATFORM == GD-77 || PLATFORM == GD77S)
 
 #define Port_LEDgreen	PORTB
 #define GPIO_LEDgreen	GPIOB

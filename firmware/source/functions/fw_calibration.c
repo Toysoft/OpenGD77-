@@ -296,7 +296,7 @@ bool calibrationGetRSSIMeterParams(calibrationRSSIMeter_t *rssiMeterValues)					
 // 0xF000 and if not, to copy it to that location in the external Flash memory
 bool checkAndCopyCalibrationToCommonLocation(void)
 {
-#if(PLATFORM == GD-77)
+#if(PLATFORM == GD-77  || PLATFORM == GD77S)
 
 const uint32_t VARIANT_CALIBRATION_BASE 				= 0x0008F000;
 const int MARKER_BYTES_LENGTH = 8;
