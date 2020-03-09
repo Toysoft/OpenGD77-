@@ -84,6 +84,9 @@ void fw_init_display(bool isInverseColour)
 
 void fw_displayEnableBacklight(bool onof)
 {
+#if defined(PLATFORM_GD77S)
+	return;
+#endif
 	if (onof==true)
 	{
 #ifdef DISPLAY_LED_PWM

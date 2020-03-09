@@ -93,7 +93,24 @@ void fw_main_task(void *data)
 	if (buttons & BUTTON_SK2)
 	{
 		settingsRestoreDefaultSettings();
+
 	}
+
+#if defined(PLATFORM_GD77S)
+	if (buttons & BUTTON_SK1)
+	{
+		nonVolatileSettings.hotspotType = HOTSPOT_TYPE_MMDVM;
+		settingsSaveSettings(false);
+	}
+	else
+	{
+		if (buttons & BUTTON_SK2)
+		{
+			nonVolatileSettings.hotspotType = HOTSPOT_TYPE_BLUEDV;
+			settingsSaveSettings(false);
+		}
+	}
+#endif
     settingsLoadSettings();
 
 #if ! defined(PLATFORM_GD77S)
@@ -186,6 +203,7 @@ void fw_main_task(void *data)
 #if ! defined(PLATFORM_GD77S)
 			fw_check_key_event(&keys, &key_event); // Read keyboard state and event
 #endif
+
 			// EVENT_*_CHANGED can be cleared later, so check this now as hasEvent has to be set anyway.
 			keyOrButtonChanged = ((key_event != NO_EVENT) || (button_event != NO_EVENT));
 
@@ -264,7 +282,7 @@ void fw_main_task(void *data)
 			}
 
 #if ! defined(PLATFORM_GD77S)
-			if ((key_event == EVENT_KEY_CHANGE) && ((buttons & BUTTON_PTT) == 0) && (keys.key != 0))
+		if ((key_event == EVENT_KEY_CHANGE) && ((buttons & BUTTON_PTT) == 0) && (keys.key != 0))
 			{
 				// Do not send any beep while scanning, otherwise enabling the AMP will be handled as a valid signal detection.
 				if (keys.event & KEY_MOD_PRESS)
@@ -358,9 +376,7 @@ void fw_main_task(void *data)
 
 			if (button_event == EVENT_BUTTON_CHANGE)
 			{
-#if ! defined(PLATFORM_GD77S)
 				displayLightTrigger();
-#endif
 				if ((buttons & BUTTON_PTT) != 0)
 				{
 					int currentMenu = menuSystemGetCurrentMenuNumber();

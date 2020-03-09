@@ -340,7 +340,7 @@ void ucSetInverseVideo(bool isInverted)
 void ucBegin(bool isInverted)
 {
 #if defined(PLATFORM_GD77S)
-	ucClearBuf();
+	//ucClearBuf();
 	return;
 #else
 	GPIO_PinWrite(GPIO_Display_CS, Pin_Display_CS, 0);// Enable CS permanently

@@ -41,22 +41,29 @@ uint32_t fw_read_buttons(void)
 {
 	uint32_t result = BUTTON_NONE;
 
-	if (GPIO_PinRead(GPIO_PTT, Pin_PTT)==0)
-	{
-		result |= BUTTON_PTT;
-	}
-	if (GPIO_PinRead(GPIO_SK1, Pin_SK1)==0)
-	{
-		result |= BUTTON_SK1;
-	}
-	if (GPIO_PinRead(GPIO_SK2, Pin_SK2)==0)
-	{
-		result |= BUTTON_SK2;
-	}
+#if ! defined(PLATFORM_GD77S)
+
 	if (GPIO_PinRead(GPIO_Orange, Pin_Orange)==0)
 	{
 		result |= BUTTON_ORANGE;
 	}
+
+	if (GPIO_PinRead(GPIO_PTT, Pin_PTT)==0)
+	{
+		result |= BUTTON_PTT;
+	}
+#endif
+
+	if (GPIO_PinRead(GPIO_SK1, Pin_SK1)==0)
+	{
+		result |= BUTTON_SK1;
+	}
+
+	if (GPIO_PinRead(GPIO_SK2, Pin_SK2)==0)
+	{
+		result |= BUTTON_SK2;
+	}
+
 
 	return result;
 }
