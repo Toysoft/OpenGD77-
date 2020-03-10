@@ -100,6 +100,8 @@ static volatile int repeaterWakeupResponseTimeout=0;
 static volatile int isWaking = WAKING_MODE_NONE;
 static volatile int rxwait;// used for Repeater wakeup sequence
 static volatile int rxcnt;// used for Repeater wakeup sequence
+static volatile int tsLockCount=0;
+
 volatile int lastTimeCode=0;
 static volatile uint8_t previousLCBuf[12];
 volatile bool updateLastHeard=false;
@@ -927,6 +929,7 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 
 	if (slot_state == DMR_STATE_REPEATER_WAKE_4 || timeCode == -1)			//if we are waking up the repeater, or we don't currently have a valid value for the timecode
 	{
+		tsLockCount=0;
 		timeCode=receivedTimeCode;							//use the received TC directly from the CACH
 	}
 	else
@@ -934,15 +937,18 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 		timeCode=!timeCode;									//toggle the timecode.
 		if(timeCode==receivedTimeCode)						//if this agrees with the received version
 		{
+			tsLockCount++;
 			if(rxcnt>0) rxcnt--;							//decrement the disagree count
 		}
 		else												//if there is a disagree it might be just a glitch so ignore it a couple of times.
 		{
 			rxcnt++;										//count the number of disagrees.
+			tsLockCount--;
 			if(rxcnt>3)										//if we have had four disagrees then re-sync.
 			{
 				timeCode=receivedTimeCode;
 				rxcnt=0;
+				tsLockCount=0;
 			}
 		}
 	}
@@ -955,7 +961,7 @@ inline static void HRC6000TimeslotInterruptHandler(void)
 			if (trxDMRMode == DMR_MODE_PASSIVE)
 			{
 
-				if( !isWaking &&  trxIsTransmitting && !checkTimeSlotFilter() && (rxcnt==0))
+				if( !isWaking &&  trxIsTransmitting && !checkTimeSlotFilter() && (rxcnt==0) && (tsLockCount > 4))
 				{
 						HRC6000TransitionToTx();
 				}
@@ -1279,6 +1285,7 @@ void init_digital(void)
 	disableAudioAmp(AUDIO_AMP_MODE_RF);
     GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, false);
     timeCode = -1;// Clear current timecode synchronisation
+    tsLockCount = 0;
 	init_digital_DMR_RX();
 	init_digital_state();
     NVIC_EnableIRQ(PORTC_IRQn);
