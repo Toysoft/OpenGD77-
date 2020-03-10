@@ -1,7 +1,7 @@
 ![](media/OpenGD77-logo.png)
 
-# OpenGD77 User Guide
-OpenGD77 is a work-in-progress, so is this User Guide. Last major update was on 18th December 2019. For documentation ToDo (including incremental changes), please refer to https://github.com/jangelor/OpenGD77/wiki/Documentation-ToDo . For latest discussions, please refer to the development and community forum at https://opengd77.com .
+# OpenGD77 / OpenDM1801 User Guide
+OpenGD77 / OpenDM1801 is a work-in-progress, so is this User Guide. Last major update was on 18th December 2019. For documentation ToDo (including incremental changes), please refer to https://github.com/jangelor/OpenGD77/wiki/Documentation-ToDo . For latest discussions, please refer to the development and community forum at https://opengd77.com .
 <!-- MDTOC maxdepth:6 firsth1:1 numbering:0 flatten:0 bullets:1 updateOnSave:1 -->
 
 - [OpenGD77 User Guide](#opengd77-user-guide)   
@@ -105,7 +105,7 @@ OpenGD77 is a work-in-progress, so is this User Guide. Last major update was on 
       - [To make a Private Call](#to-make-a-private-call)   
       - [To Receive a Private Call](#to-receive-a-private-call)   
    - [Hotspot mode](#hotspot-mode)   
-   - [Programming Channels and Talkgroups for use with OpenGD77](#programming-channels-and-talkgroups-for-use-with-opengd77)   
+   - [Programming Channels and Talkgroups for use with the firmware](#programming-channels-and-talkgroups-for-use-with-opengd77)   
       - [Overview](#overview)   
          - [New Driver Installation](#new-driver-installation)   
          - [OpenGD77 Menu](#opengd77-menu)   
@@ -131,22 +131,19 @@ Due to the rapid pace of development some of photos of screens are now out of da
 
 The photos will be updated when the firmware in a particular area stabilises
 
-The intention of the OpenGD77 project is to create a fully featured non-commercial firmware that entirely replaces the Radioddity GD-77’s factory firmware. This firmware is specifically designed for **Amateur Radio** use, and has features not available in the official firmware.
+The intention of the project is to create a fully featured non-commercial firmware that entirely replaces the Radioddity GD-77’s (and Baofeng DM-1801's) factory firmware. This firmware is specifically designed for **Amateur Radio** use, and has features not available in the official firmware.
 
 **Note:**
 **The firmware is still under development and there are some key areas of functionality which have yet to be written.**
 
-1. Currently the stable firmware works in Tier 2 and hotspot modes.
+1. DMR Tier 2 Tx and Rx voice transmissions works. 
 
-   There is pre-release (Alpha 2) version which supports Tier2 as well as advanced functions, repeater and duplex hotspot operation, but it is currently under development and may have some minor issues.
+   Text messaging and other similar features are currently not supported, but are on the To Do list.
 
 1. FM RX and TX transmission works.
 
    This includes repeater operation using CTCSS on both TX and RX.
-
-1. On DMR, only Talk Group “calls” and Private calls are currently possible.
-
-   Text messaging and other similar features are currently not supported, but are on the To Do list.
+   
 
    For a full list of current bugs, and proposed enhancements see
    <https://github.com/rogerclarkmelbourne/opengd77/issues>
@@ -179,11 +176,8 @@ Thanks to all the Beta Testers that provide detailed bug reports and user feedba
 
 **Firmware source code and binaries:**
 
-**Stable version:** (Tier 2 + Hotspot mode)
-<https://github.com/rogerclarkmelbourne/OpenGD77/blob/master/firmware_binaries/daily_builds/OpenGD77_stable.sgl>
-
-**Tier 2 “Alpha 2” version:** (includes Hotspot mode)
-<https://github.com/rogerclarkmelbourne/OpenGD77/blob/master/firmware_binaries/daily_builds/OpenGD77_latest.sgl>
+**Latest version:**
+https://github.com/rogerclarkmelbourne/OpenGD77/releases/
 
 **GD-77 Community CPS with support for OpenGD77:**<br>
 <https://github.com/rogerclarkmelbourne/radioddity_gd-77_cps/blob/master/installer/OpenGD77CPSInstaller.exe>
@@ -196,21 +190,21 @@ Thanks to all the Beta Testers that provide detailed bug reports and user feedba
 
 ## Installation
 
-The firmware can be installed onto the GD-77 using the firmware update tool provided by Radioddity with their official firmware update packages. This can be downloaded from Radioddity’s website [radioddity.com](https://radioddity.com/) . See Radioddity’s documentation on how to use their firmware update tool.
+The firmware can be installed onto the GD-77, or DM-1801,  using the firmware update tool provided by Radioddity, or Baofeng with their official firmware update packages. This can be downloaded from Radioddity’s website [radioddity.com](https://radioddity.com/) . See Radioddity’s documentation on how to use their firmware update tool.
 
-The Community and OpenGD77 CPS now also has a feature in the Extras menu to upload the firmware into the radio.
+The Community and OpenGD77 / OpenDM1801 CPS now also has a feature in the Extras menu to upload the firmware into the radio.
 
-The OpenGD77 firmware (.sgl file) can be downloaded from Github, using either of the links as listed in section 1.1 of this guide.
+The firmware (.sgl file) can be downloaded from Github, using either of the links as listed in section 1.1 of this guide.
 
-Installation of the OpenGD77 firmware is undertaken at the owners own risk, but the official firmware can usually be reloaded onto the GD-77 if the user has problems with the OpenGD77 firmware.
+Installation of the firmware is undertaken at the owners own risk, but the official firmware can usually be reloaded onto the radio if the user has problems with the firmware.
 
-*Note:* The official Radioddity GD-77 CPS PC software is not compatible with the OpenGD77 firmware, and the “Community CPS” or the "OpenGD77 CPS" should be used instead. This can be downloaded from the link show in section 1.1 of this guide
+*Note:* The official Radioddity CPS PC software is not compatible with the firmware, and the “Community CPS” or the "OpenGD77 CPS" should be used instead. This can be downloaded from the link show in section 1.1 of this guide. This CPS must also be used for the Baofeng DM-1801
 
 ## Main screens (VFO and Channel screens)
 
-The OpenGD77 firmware has 2 main screens.  The VFO screen and the Channel screen. These are similar to the channel and VFO screens in the official firmware, except have additional functionality.
+The firmware has 2 main screens.  The VFO screen and the Channel screen. These are similar to the channel and VFO screens in the official firmware, except have additional functionality.
 
-Initially after the OpenGD77 firmware is installed, the VFO screen will be displayed.
+Initially after the firmware is installed, the VFO screen will be displayed.
 
 ![](media/vfo-screen.png)
 
@@ -250,7 +244,7 @@ In DMR mode, pressing the **Star** key toggles between TimeSlot 1 and TimeSlot 2
 ### Controlling Tx power
 
 Press **Function + Right** to increase the power. Press **Function + Left** to decrease the power. Power can be set to 250mW, 500mW, 750mW, 1W, 2W, 3W, 4W and 5W.
-*Note:* The power output will only be correct after the operator has calibrated their own radio, as the GD-77 does not seem to have very accurate power calibration applied in the factory by TYT.
+*Note:* The power output will only be correct after the operator has calibrated their own radio, as these radios do not seem to have very accurate power calibration applied in the factory.
 
 ### Signal strength bar graph
 
@@ -352,7 +346,7 @@ Listening to the input of a repeater will only work in DMR mode if both the TX f
 
 However to listen on the input of a repeater, the signal that is received does not contain the synchronisation information hence the radio needs to be put into DMR Active mode in order to receive the signal.
 
-I am not sure whether the official firmware is able to receive on the input of a repeater if a channel was setup with the TX and RX frequencies swapped, but because of the way the OpenGD77 firmware actually monitors both TimeSlots simultaneously, but only decodes the TG/ID and audio for the selected TS.
+I am not sure whether the official firmware is able to receive on the input of a repeater if a channel was setup with the TX and RX frequencies swapped, but because of the way the firmware actually monitors both TimeSlots simultaneously, but only decodes the TG/ID and audio for the selected TS.
 
 ### DMR specific functionality (VFO and Channel screens)
 
@@ -577,7 +571,7 @@ To unlock the keypad, press and hold the **Function** button and press the **Sta
 
 ### Text entry
 
-OpenGD77 now supports alphanumeric text entry while creating a new contact or editing an existing one.
+The firmware now supports alphanumeric text entry while creating a new contact or editing an existing one.
 
 ![](media/text-entry.png)
 
@@ -619,7 +613,7 @@ This menu is used to select which groups of channels, called a Zone, is used in 
 
 ![](media/zones.png)
 
-In addition to the Zones that are defined in the CPS and uploaded to the GD-77 using the Community CPS, the firmware creates a special Zone called **All Channels**.
+In addition to the Zones that are defined in the CPS and uploaded to the radio using the Community CPS, the firmware creates a special Zone called **All Channels**.
 
 ![](media/all-channels.png)
 
@@ -689,7 +683,7 @@ The **Options** screen is the new name for the **Utilities** menu.
 
 ![](media/menu-options.png)
 
-This menu controls various settings specific to the OpenGD77 firmware
+This menu controls various settings specific to the firmware
 
 ![](media/options-screen.png)
 
@@ -714,7 +708,7 @@ Turns ON/OFF the calibration function (default OFF).
 
 Some radios seem to have invalid calibration data, possibly because the official firmware has corrupted the calibration parameters in the Flash memory. This requires a power cycle for the setting to apply.
 
-If the radio does not seem to transmit or receive correctly, or if it does not work correctly (e.g., high BER) with certain hotspots, try disabling the calibration and rebooting the radio, as the nominal calibration parameters used by the OpenGD77 firmware normally work almost as well as correct calibration data.
+If the radio does not seem to transmit or receive correctly, or if it does not work correctly (e.g., high BER) with certain hotspots, try disabling the calibration and rebooting the radio, as the nominal calibration parameters used by the firmware normally work almost as well as correct calibration data.
 
 #### Fact Reset
 
@@ -767,10 +761,10 @@ This option allows for Normal or inverse colour display. Normal is white backgro
 *Note.* This does not completely replicated the GD-77 “Black” display hardware version, because that radio uses a different LCD panel which physically has a back background, whereas the normal GD-77 have a LCD panel with white background
 
 #### Brightness
-The OpenGD77 firmware allows the display backlight brightness to be controlled from 100% to 0%, in 10% steps between 10% and 100% and below 10% the brightness is controlled in 1% steps. The default backlight brightness (default 100%). Use the **Right** and **Left** arrow keys to adjust the brightness.
+The firmware allows the display backlight brightness to be controlled from 100% to 0%, in 10% steps between 10% and 100% and below 10% the brightness is controlled in 1% steps. The default backlight brightness (default 100%). Use the **Right** and **Left** arrow keys to adjust the brightness.
 
 #### Contrast
-The OpenGD77 firmware allows the display contrast to be controlled. The values are the number sent to the LCD panel controller, with a usable range from 12 to 30. Higher values result in more contrast, but also increase the darkness of the background. The Official firmware uses a value of 12, however this is did not appear to be the optimum value, so the OpenGD77 firmware uses 18 as the default.
+The firmware allows the display contrast to be controlled. The values are the number sent to the LCD panel controller, with a usable range from 12 to 30. Higher values result in more contrast, but also increase the darkness of the background. The Official firmware uses a value of 12, however this is did not appear to be the optimum value, so the firmware uses 18 as the default.
 
 #### Timeout
 Sets the time before the display backlight is extinguished (default 5 seconds). Setting this value to zero prevents the backlight from turning off at all.
@@ -845,7 +839,7 @@ Pressing the **Green** menu key confirms the changes and saves the settings to t
 
 ![](media/credits.png)
 
-Details of the creators of OpenGD77 firmware.
+Details of the creators of firmware.
 
 If other developers contribute to the development effort they will be added to this screen, and the addition details will be viewed by pressing the **Down Arrow** to scroll the text
 
@@ -900,15 +894,15 @@ Once the private call is complete, you can return to the Talkgroup you were on p
 
 ## Hotspot mode
 
-The OpenGD77 firmware can operate as a DMR (*voice only*) hotspot when connected via its USB programming cable to a Raspberry Pi running PiStar or any other device that is running MMDVMHost.
+The firmware can operate as a DMR (*voice only*) hotspot when connected via its USB programming cable to a Raspberry Pi running PiStar or any other device that is running MMDVMHost.
 
 *Note.* Hotspot mode may be compatible with software like BlueDV, but your mileage may vary.
 
-First, connect the GD-77 to a Raspberry Pi via its programming cable.
+First, connect the radio to a Raspberry Pi via its programming cable.
 
 ![](media/hotspot-connections.jpg)
 
-Hotspot mode works with the Raspberry Pi Zero, but a adaptor cable is needed to convert from the micro USB port on the RPi Zero to the full size USB plug on the GD-77 programming cable.
+Hotspot mode works with the Raspberry Pi Zero, but a adaptor cable is needed to convert from the micro USB port on the RPi Zero to the full size USB plug on the radio's programming cable.
 
 In the PiStar Configuration screen, select “OpenGD77 DMR hotspot (USB)” as the modem type.
 
@@ -916,19 +910,19 @@ In the PiStar Configuration screen, select “OpenGD77 DMR hotspot (USB)” as t
 
 If your version of PiStar does not contain the OpenGD77 DMR Hotspot as an option, please update your version of PiStar.
 
-After connecting the radio to the raspberry pi, hold down the black side key while powering on the GD77. Assuming the modem type has been set properly in PiStar, the display will change on the GD-77 to show it is in Hotspot Mode, and will show the Colour Code, Receive frequency and approximate TX power in mW.
+After connecting the radio to the raspberry pi, hold down the black side key while powering on the radio. Assuming the modem type has been set properly in PiStar, the display will change on the radio to show it is in Hotspot Mode, and will show the Colour Code, Receive frequency and approximate TX power in mW.
 
 ![](media/hotspot-mode.jpg)
 
-If the GD-77 does not enter Hotspot mode, power cycle the GD-77 and power cycle PiStar
+If the radio does not enter Hotspot mode, power cycle the radio and power cycle PiStar
 
-If the GD-77 still fails to enter hotspot mode, check your USB connections.
+If the radio still fails to enter hotspot mode, check your USB connections.
 
 *Note.* By default PiStar configures the “modem” to have a power setting of “100” in the Expert -> MMDVMHost settings.
 
-This is 100% of the maximum power of the modem, and in the case of the GD-77 the maximum power output is 5W, but the radio is not designed to operate as a hotspot, where it may be continuously transmitting.
+This is 100% of the maximum power of the modem, and in the case of the radio the maximum power output is 5W, but the radio is not designed to operate as a hotspot, where it may be continuously transmitting.
 
-The maximum power setting that the GD-77 can support for continuous transmission will vary depending on the operating environment, including the ambient temperature and antenna SWR, etc.
+The maximum power setting that the radio can support for continuous transmission will vary depending on the operating environment, including the ambient temperature and antenna SWR, etc.
 
 It is the responsibility of the user to set an appropriate power level that will not overheat and damage the PA.
 
@@ -940,9 +934,9 @@ If the power setting in the PiStar MMDVMHost Expert settings is any other value 
 
 The receive frequency specified by PiStar will be displayed at the bottom of the screen.
 
-*Note.* Offsets should not be applied to the TX or RX frequencies in PiStar, because the GD-77 should not need any offsets, and any offset will be reflected in the frequency displayed on the GD-77, because PiStar actually sends the master frequency +/- the offset to the hotspot.
+*Note.* Offsets should not be applied to the TX or RX frequencies in PiStar, because the radio should not need any offsets, and any offset will be reflected in the frequency displayed on the radio, because PiStar actually sends the master frequency +/- the offset to the hotspot.
 
-When the GD-77 receives a RF DMR signal, the green LED on the top of the GD-77 will illuminate as normal, and the name and callsign are displayed if the DMR ID database contains that ID. If the ID is not in the DMR ID database, the ID number will be shown.
+When the radio receives a RF DMR signal, the green LED on the top of the radio will illuminate as normal, and the name and callsign are displayed if the DMR ID database contains that ID. If the ID is not in the DMR ID database, the ID number will be shown.
 
 ![](media/hotspot-rx.jpg)
 
@@ -950,16 +944,16 @@ When PiStar receives traffic from the Internet and sends it to the hotspot for t
 
 The LED on the top of the radio also turns red to indicate the radio is transmitting
 
-## Programming Channels and Talkgroups for use with OpenGD77
+## Programming Channels and Talkgroups for use with the firmware
 
-**NOTE**: You cannot use the standard Radioddity CPS to write to a GD-77 flashed with the OpenGD77 firmware. If you wish to use the Radioddity CPS the radio will need to run the official Radioddity firmware. Once the codeplug has been written to the GD-77 with your ID and callsign, you can then flash the OpenGD77 firmware to the radio and it will then read and operate with the code plug written to it with the standard firmware and CPS software.
+**NOTE**: You cannot use the standard Radioddity CPS, of Baofeng CPS, to write to a radio flashed with the firmware. If you wish to use the Radioddity CPS the radio will need to run the official Radioddity firmware. Once the codeplug has been written to the radio with your ID and callsign, you can then flash the firmware to the radio and it will then read and operate with the code plug written to it with the standard firmware and CPS software.
 
 As an alternative to the Radioddity CPS you can use the latest version of the “Community CPS” by Roger Clark that includes support for OpenGD77. Community CPS supports both the official GD77 firmware and OpenGD77.
 
 Please download the latest GD77 Community CPS from here:
 <https://github.com/rogerclarkmelbourne/radioddity_gd-77_cps/raw/master/installer/RadioddityGD77CPS31XCommunityEditionInstaller.exe>
 
-Another alternative is to use the OpenGD77 CPS, which has functionalities specificially designed for OpenGD77. Some highlights include:
+Another alternative is to use the OpenGD77 CPS, which has functionalities specificially designed for the firmware. Some highlights include:
 
 * 80 channels per zone
 * "TG lists" instead of "Rx lists" to define TalkGroups assigned per channel for Left-Right scrolling
@@ -972,7 +966,7 @@ Please see the next section for information specific to the Community CPS and Op
 
 ### Overview
 
-OpenGD77 simplifies the concept of TalkGroups, for maximum convenience for radio amateurs. Unlike most commercial DMR radios it is not necessary to create multiple channels to use the same frequency with many different transmit TalkGroups. Changing is as simple as scrolling **Left** and **Right** across your TalkGroup list or entering an *ad hoc* TalkGroup by pressing the **hash** key.
+The firmware simplifies the concept of TalkGroups, for maximum convenience for radio amateurs. Unlike most commercial DMR radios it is not necessary to create multiple channels to use the same frequency with many different transmit TalkGroups. Changing is as simple as scrolling **Left** and **Right** across your TalkGroup list or entering an *ad hoc* TalkGroup by pressing the **hash** key.
 
 In DMR mode when using either the VFO or the Zones and Channels, you can use the LEFT/RIGHT arrow keys to scroll through and select any of the TalkGroups in the Rx Group list assigned to the current channel, or to VFO A.
 
@@ -986,22 +980,22 @@ Next create one or more “TG Lists” and populate each with the sets of the Ta
 
 Now setup the channels. Enter the frequencies, slot and colour code as normal for a DMR channel.
 
-Note. Currently the OpenGD77 firmware does not use the “Contact” e.g., shown as TG9 below. Instead it uses the TG’s in the TG list.
+Note. Currently the firmware does not use the “Contact” e.g., shown as TG9 below. Instead it uses the TG’s in the TG list.
 However we advise all users to set the “Contact” to the first channel in the TG list assigned to the channel.
 
 Next select the TG List that you wish to use for the channel.
 
-The OpenGD77 firmware can use the TG list to filter the incoming DMR signal, or it can operate in “Digital Monitor Mode” (aka promiscuous mode) all the time. This can be set in the radio quick menu setting for **Filter**.
+The firmware can use the TG list to filter the incoming DMR signal, or it can operate in “Digital Monitor Mode” (aka promiscuous mode) all the time. This can be set in the radio quick menu setting for **Filter**.
 
 ![](media/cps-channel-rx-grouplist.png)
 
-*Note.* The “Contact” is not used by the OpenGD77 firmware. You must use the TG list to define the TG’s you want to use with each channel. Hence you must have at least 1 TG list and it must contain at least 1 Digital Contact which is a TalkGroup.
+*Note.* The “Contact” is not used by the firmware. You must use the TG list to define the TG’s you want to use with each channel. Hence you must have at least 1 TG list and it must contain at least 1 Digital Contact which is a TalkGroup.
 
 Finally save your codeplug to your computer before writing the code plug to the radio using either the standard Radioddity CPS to programme the radio before flashing it to OpenGD77 or if you are using the special OpenGD77 compatible version of the “Community CPS”, (as detailed in the next section) you can write the code plug directly to an already flashed OpenGD77 radio.
 
 #### New Driver Installation
 
-The CPS installer now also installs the OpenGD77 comm port driver, however the comm port driver can be installed manually by downloading the files from
+The CPS installer now also installs the comm port driver, however the comm port driver can be installed manually by downloading the files from
 <https://github.com/rogerclarkmelbourne/OpenGD77/tree/master/OpenGD77CommDriver>
 
 To install the driver, download and unzip the zip file, and run the .bat file
@@ -1033,14 +1027,14 @@ To read the codeplug, press the “Read codeplug” button, wait for all 3 data 
 
 #### Writing DMR IDs -- the User Database
 
-The OpenGD77 supports extended DMR ID information, with up to 15 character for Callsign and name, as well as doubling the memory capacity for DMR IDs.
+The the firmware supports extended DMR ID information, with up to 15 character for Callsign and name, as well as doubling the memory capacity for DMR IDs.
 
 Please select the “Enhanced firmware mode” Checkbox, and change the Number of characters menu to the desired DMR callsign and name length.
 
 Then, you can add in DMR IDs into the database by selecting an ID prefix. You can continue adding DMR IDs based on your commonly heard prefixes until you fill up the allocation.
 
-*Note.* Because the memory size used for the DMR ID is currently limited to 256, you can store more DMR IDs if you assign fewer characters per ID. Depending on actual information, OpenGD77 can store approximately 14,000-15,000 IDs in its user database.
+*Note.* Because the memory size used for the DMR ID is currently limited to 256, you can store more DMR IDs if you assign fewer characters per ID. Depending on actual information, the firmware can store approximately 14,000-15,000 IDs in its user database.
 
-As OpenGD77 supports Talker Alias, you might find this sufficient -- OpenGD77 will display callsign and name data retrieved from the DMR stream, for user IDs not stored in your radio's User Database.
+As the firmware supports Talker Alias, you might find this sufficient -- the firmware will display callsign and name data retrieved from the DMR stream, for user IDs not stored in your radio's User Database.
 
 ![](media/cps-dmr-ids.png)
