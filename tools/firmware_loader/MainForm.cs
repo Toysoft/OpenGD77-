@@ -45,6 +45,19 @@ namespace GD77_FirmwareLoader
 			InitializeComponent();
 		}
 
+		private void rbModel_CheckedChanged(object sender, EventArgs e)
+		{
+			RadioButton rb = sender as RadioButton;
+
+			if (rb != null)
+			{
+				if (rb.Checked)
+				{
+					FirmwareLoader.outputType = (FirmwareLoader.OutputType)rb.Tag;
+				}
+			}
+		}
+
 		private void btnOpenFile_Click(object sender, EventArgs e)
 		{
 			OpenFileDialog openFileDialog1 = new OpenFileDialog();

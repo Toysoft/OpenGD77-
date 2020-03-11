@@ -49,6 +49,7 @@ namespace GD77_FirmwareLoader
 		public enum OutputType
 		{
 			OutputType_GD77,
+			OutputType_GD77S,
 			OutputType_DM1801
 		}
 
