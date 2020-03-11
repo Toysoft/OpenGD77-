@@ -66,12 +66,6 @@ namespace GD77_FirmwareLoader
 
 			this.rbModels[(int)FirmwareLoader.outputType].Checked = true;
 
-			switch (FirmwareLoader.outputType)
-			{
-				case FirmwareLoader.OutputType.OutputType_GD77:
-					break;
-			}
-
 			this.grpboxModel.Controls.Add(this.rbModels[0]);
 			this.grpboxModel.Controls.Add(this.rbModels[1]);
 			this.grpboxModel.Controls.Add(this.rbModels[2]);
