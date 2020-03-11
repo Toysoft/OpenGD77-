@@ -55,26 +55,54 @@ namespace GD77_FirmwareLoader
 
 		public static OutputType outputType = OutputType.OutputType_GD77;
 
+		public static String getModelName()
+		{
+			switch (outputType)
+			{
+				case OutputType.OutputType_GD77:
+					return "GD-77";
+				case OutputType.OutputType_GD77S:
+					return "GD-77S";
+				case OutputType.OutputType_DM1801:
+					return "DM-1801";
+			}
+
+			return "Unknown";
+		}
+
 		public static int UploadFirmware(string fileName,FrmProgress progessForm=null)
 		{
-			byte[] encodeKey;
+			byte[] encodeKey = null;
+
 			_progessForm = progessForm;
 
-			if (outputType == OutputType.OutputType_GD77)
+			switch (outputType)
 			{
-				encodeKey = new Byte[4] { (0x61 + 0x00), (0x61 + 0x0C), (0x61 + 0x0D), (0x61 + 0x01) };
-				Console.WriteLine("GD-77 Support");
-			}
-			else // DM-1801
-			{
-				encodeKey = new Byte[4] { (0x74), (0x21), (0x44), (0x39) };
-				Console.WriteLine("DM-1801 Support");
+				case OutputType.OutputType_GD77:
+					encodeKey = new Byte[4] { (0x61 + 0x00), (0x61 + 0x0C), (0x61 + 0x0D), (0x61 + 0x01) };
+					Console.WriteLine("GD-77 Support");
+					break;
+
+				case OutputType.OutputType_GD77S:
+					Console.WriteLine("GD-77S Support");
+					Console.WriteLine("GD-77S is not yet supported");
+					if (_progessForm != null)
+					{
+						MessageBox.Show("GD-77S is not yet supported", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+					}
+					return -1;
+					//break;
+
+				case OutputType.OutputType_DM1801:
+					encodeKey = new Byte[4] { (0x74), (0x21), (0x44), (0x39) };
+					Console.WriteLine("DM-1801 Support");
+					break;
 			}
 
 			_specifiedDevice = SpecifiedDevice.FindSpecifiedDevice(0x15A2, 0x0073);
 			if (_specifiedDevice == null)
 			{
-				Console.WriteLine("Error. Can't connect to the {0}", ((outputType == OutputType.OutputType_GD77) ? "GD-77" : "DM-1801")); 
+				Console.WriteLine("Error. Can't connect to the {0}", getModelName()); 
 				return -1;
 			}
 
@@ -108,10 +136,10 @@ namespace GD77_FirmwareLoader
 				int respCode = sendFileData(fileBuf);
 				if (respCode == 0)
 				{
-					Console.WriteLine("\n *** Firmware update complete. Please reboot the {0} ***", ((outputType == OutputType.OutputType_GD77) ? "GD-77" : "DM-1801"));
+					Console.WriteLine("\n *** Firmware update complete. Please reboot the {0} ***", getModelName());
 					if (_progessForm != null)
 					{
-						MessageBox.Show(String.Format("Firmware update complete.Please reboot the {0}.", ((outputType == OutputType.OutputType_GD77) ? "GD-77" : "DM-1801")), "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+						MessageBox.Show(String.Format("Firmware update complete.Please reboot the {0}.", getModelName()), "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
 					}
 				}
 				else
@@ -133,6 +161,7 @@ namespace GD77_FirmwareLoader
 			}
 			else
 			{
+				MessageBox.Show("Error while sending initial commands.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				Console.WriteLine("\nError while sending initial commands");
 				return -4;
 			}
@@ -289,23 +318,32 @@ namespace GD77_FirmwareLoader
 			byte[] commandLetterA = new byte[] { 0x41 }; //A
 			byte[][] command0 = new byte[][] { new byte[] { 0x44, 0x4f, 0x57, 0x4e, 0x4c, 0x4f, 0x41, 0x44 }, new byte[] { 0x23, 0x55, 0x50, 0x44, 0x41, 0x54, 0x45, 0x3f } }; // DOWNLOAD
 			byte[][] command1 = new byte[][] { commandLetterA, responseOK };
-			byte[][] command2;
+			byte[][] command2 = null;
 			byte[][] command3 = new byte[][] { new byte[] { 0x46, 0x2d, 0x50, 0x52, 0x4f, 0x47, 0xff, 0xff }, responseOK }; //... F-PROG..
-			byte[][] command4;
-			byte[][] command5;
+			byte[][] command4 = null;
+			byte[][] command5 = null;
 			byte[][] command6 = new byte[][] { new byte[] { 0x56, 0x31, 0x2e, 0x30, 0x30, 0x2e, 0x30, 0x31 }, responseOK }; //V1.00.01
 
-			if (outputType == OutputType.OutputType_GD77)
+			switch (outputType)
 			{
-				command2 = new byte[][] { new byte[] { 0x44, 0x56, 0x30, 0x31, (0x61 + 0x00), (0x61 + 0x0C), (0x61 + 0x0D), (0x61 + 0x01) }, new byte[] { 0x44, 0x56, 0x30, 0x31 } }; //.... last 4 bytes of the command are the offset encoded as letters a - p (hard coded fr
-				command4 = new byte[][] { new byte[] { 0x53, 0x47, 0x2d, 0x4d, 0x44, 0x2d, 0x37, 0x36, 0x30, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff }, responseOK }; //SG-MD-760
-				command5 = new byte[][] { new byte[] { 0x4d, 0x44, 0x2d, 0x37, 0x36, 0x30, 0xff, 0xff }, responseOK }; //MD-760..
-			}
-			else
-			{
-				command2 = new byte[][] { new byte[] { 0x44, 0x56, 0x30, 0x33, 0x74, 0x21, 0x44, 0x39 }, new byte[] { 0x44, 0x56, 0x30, 0x33 } }; //.... last 4 bytes of the command are the offset encoded as letters a - p (hard coded fr
-				command4 = new byte[][] { new byte[] { 0x42, 0x46, 0x2d, 0x44, 0x4d, 0x52, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff }, responseOK }; //BF-DMR
-				command5 = new byte[][] { new byte[] { 0x31, 0x38, 0x30, 0x31, 0xff, 0xff, 0xff, 0xff }, responseOK }; //1801..
+				case OutputType.OutputType_GD77:
+					command2 = new byte[][] { new byte[] { 0x44, 0x56, 0x30, 0x31, (0x61 + 0x00), (0x61 + 0x0C), (0x61 + 0x0D), (0x61 + 0x01) }, new byte[] { 0x44, 0x56, 0x30, 0x31 } }; //.... last 4 bytes of the command are the offset encoded as letters a - p (hard coded fr
+					command4 = new byte[][] { new byte[] { 0x53, 0x47, 0x2d, 0x4d, 0x44, 0x2d, 0x37, 0x36, 0x30, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff }, responseOK }; //SG-MD-760
+					command5 = new byte[][] { new byte[] { 0x4d, 0x44, 0x2d, 0x37, 0x36, 0x30, 0xff, 0xff }, responseOK }; //MD-760..
+					break;
+
+				case OutputType.OutputType_GD77S:
+					command2 = new byte[][] { new byte[] { 0x0 }, new byte[] { 0x0 } };
+					command4 = new byte[][] { new byte[] { 0x0 }, new byte[] { 0x0 } };
+					command5 = new byte[][] { new byte[] { 0x0 }, new byte[] { 0x0 } };
+					MessageBox.Show("GD-77S is not yet supported", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+					return false;
+
+				case OutputType.OutputType_DM1801:
+					command2 = new byte[][] { new byte[] { 0x44, 0x56, 0x30, 0x33, 0x74, 0x21, 0x44, 0x39 }, new byte[] { 0x44, 0x56, 0x30, 0x33 } }; //.... last 4 bytes of the command are the offset encoded as letters a - p (hard coded fr
+					command4 = new byte[][] { new byte[] { 0x42, 0x46, 0x2d, 0x44, 0x4d, 0x52, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff }, responseOK }; //BF-DMR
+					command5 = new byte[][] { new byte[] { 0x31, 0x38, 0x30, 0x31, 0xff, 0xff, 0xff, 0xff }, responseOK }; //1801..
+					break;
 			}
 
 			byte[][] commandErase = new byte[][] { new byte[] { 0x46, 0x2d, 0x45, 0x52, 0x41, 0x53, 0x45, 0xff }, responseOK }; //F-ERASE
