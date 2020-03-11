@@ -28,11 +28,15 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 using System;
-using System.Collections.Generic;
 using System.Linq;
+#if (LINUX_BUILD)
+using UsbLibDotNetDevice;
+#else
+using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using UsbLibrary;
+#endif
 using System.IO;
 using System.Windows.Forms;
 
@@ -43,7 +47,16 @@ namespace GD77_FirmwareLoader
 	{
 		private static readonly byte[] responseOK = { 0x41 };
 
+#if (LINUX_BUILD)
+		public static UsbLibDotNetHIDDevice _specifiedDevice = null;
+		private static readonly string waitPromp = "-\\|/";
+        private static int waitPrompIndex = 3;
+#else
 		private static SpecifiedDevice _specifiedDevice = null;
+#endif
+
+		private static readonly int VENDOR_ID = 0x15A2;
+		private static readonly int PRODUCT_ID = 0x0073;
 		private static FrmProgress _progessForm;
 
 		public enum OutputType
@@ -99,7 +112,11 @@ namespace GD77_FirmwareLoader
 					break;
 			}
 
-			_specifiedDevice = SpecifiedDevice.FindSpecifiedDevice(0x15A2, 0x0073);
+#if (LINUX_BUILD)
+			_specifiedDevice = UsbLibDotNetHIDDevice.FindDevice(VENDOR_ID, PRODUCT_ID);
+#else
+			_specifiedDevice = SpecifiedDevice.FindSpecifiedDevice(VENDOR_ID, PRODUCT_ID);
+#endif
 			if (_specifiedDevice == null)
 			{
 				Console.WriteLine("Error. Can't connect to the {0}", getModelName()); 
@@ -148,12 +165,20 @@ namespace GD77_FirmwareLoader
 					{
 						case -1:
 							Console.WriteLine("\nError. File to large");
+							if (_progessForm != null)
+							{
+								MessageBox.Show("Error. File to large.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+							}
 							break;
 						case -2:
 						case -3:
 						case -4:
 						case -5:
 							Console.WriteLine("\nError " + respCode + " While sending data file");
+							if (_progessForm != null)
+							{
+								MessageBox.Show("Error " + respCode + " While sending data file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+							}
 							break;
 					}
 					return -3;
@@ -161,8 +186,11 @@ namespace GD77_FirmwareLoader
 			}
 			else
 			{
-				MessageBox.Show("Error while sending initial commands.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				Console.WriteLine("\nError while sending initial commands");
+				if (_progessForm != null)
+				{
+					MessageBox.Show("Error while sending initial commands.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				}
 				return -4;
 			}
 			return 0;
@@ -179,8 +207,12 @@ namespace GD77_FirmwareLoader
 				Buffer.BlockCopy(resp, 0, responsePadded, 0, resp.Length);
 			}
 
+#if (LINUX_BUILD)
+			_specifiedDevice.SendAndReceiveData(cmd, recBuf);
+#else
 			_specifiedDevice.SendData(cmd);
 			_specifiedDevice.ReceiveData(recBuf);// Wait for response
+#endif
 
 			if (recBuf.SequenceEqual(responsePadded))
 			{
@@ -188,7 +220,12 @@ namespace GD77_FirmwareLoader
 			}
 			else
 			{
-				Console.WriteLine("Error read returned ");
+				Console.WriteLine();
+				Console.WriteLine("Error unexpected response from {0}: {1}", getModelName(), BitConverter.ToString(recBuf));
+				if (_progessForm != null)
+				{
+					MessageBox.Show(String.Format("Error unexpected response from {0}: {1}", getModelName(), BitConverter.ToString(recBuf)), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				}
 				return false;
 			}
 		}
@@ -242,6 +279,12 @@ namespace GD77_FirmwareLoader
 			int fileLength = fileBuf.Length;
 			int totalBlocks = (fileLength / BLOCK_LENGTH) + 1;
 
+#if EXTENDED_DEBUG
+#else
+			Console.Write(" - Programming data ");
+			int cursorLPos = Console.CursorLeft;
+			int cursorTPos = Console.CursorTop;
+#endif
 
 			while (address < fileLength)
 			{
@@ -274,11 +317,17 @@ namespace GD77_FirmwareLoader
 #if EXTENDED_DEBUG
 						Console.WriteLine("Sent block " + (address / BLOCK_LENGTH) + " of " + totalBlocks);
 #else
+#if (LINUX_BUILD)
+						waitPrompIndex = (waitPrompIndex + 1) % 4;
+						Console.SetCursorPosition(cursorLPos, cursorTPos);
+						Console.Write(waitPromp[waitPrompIndex]);
+#else
 						Console.Write(".");
+#endif
 #endif
 						if (sendAndCheckResponse(createChecksumData(fileBuf, checksumStartAddress, address), responseOK) == false)
 						{
-							Console.WriteLine("Error sending checksum");
+							Console.WriteLine("Error sending checksum.");
 							return -3;
 						}
 					}
@@ -288,7 +337,13 @@ namespace GD77_FirmwareLoader
 #if EXTENDED_DEBUG
 					Console.WriteLine("Sending last block");
 #else
+#if (LINUX_BUILD)
+					waitPrompIndex = (waitPrompIndex + 1) % 4;
+					Console.SetCursorPosition(cursorLPos, cursorTPos);
+					Console.Write(waitPromp[waitPrompIndex]);
+#else
 					Console.Write(".");
+#endif
 #endif
 
 					dataTransferSize = fileLength - address;
@@ -297,7 +352,7 @@ namespace GD77_FirmwareLoader
 
 					if (sendAndCheckResponse(dataHeader, responseOK) == false)
 					{
-						Console.WriteLine("Error sending data");
+						Console.WriteLine("Error sending data.");
 						return -4;
 					}
 
@@ -305,15 +360,23 @@ namespace GD77_FirmwareLoader
 
 					if (sendAndCheckResponse(createChecksumData(fileBuf, checksumStartAddress, address), responseOK) == false)
 					{
-						Console.WriteLine("Error sending checksum");
+						Console.WriteLine("Error sending checksum.");
 						return -5;
 					}
 				}
 			}
+
+#if EXTENDED_DEBUG
+#else
+#if (LINUX_BUILD)
+			Console.SetCursorPosition(cursorLPos, cursorTPos);
+			Console.Write(": done.");
+#endif
+#endif
 			return 0;
 		}
 
-		static private bool sendInitialCommands(byte [] encodeKey)
+		static private bool sendInitialCommands(byte[] encodeKey)
 		{
 			byte[] commandLetterA = new byte[] { 0x41 }; //A
 			byte[][] command0 = new byte[][] { new byte[] { 0x44, 0x4f, 0x57, 0x4e, 0x4c, 0x4f, 0x41, 0x44 }, new byte[] { 0x23, 0x55, 0x50, 0x44, 0x41, 0x54, 0x45, 0x3f } }; // DOWNLOAD
@@ -350,6 +413,10 @@ namespace GD77_FirmwareLoader
 			byte[][] commandPostErase = new byte[][] { commandLetterA, responseOK };
 			byte[][] commandProgram = { new byte[] { 0x50, 0x52, 0x4f, 0x47, 0x52, 0x41, 0x4d, 0xf }, responseOK };//PROGRAM
 			byte[][][] commands = { command0, command1, command2, command3, command4, command5, command6, commandErase, commandPostErase, commandProgram };
+#if (LINUX_BUILD)
+			string[] commandNames = {"Sending Download command", "Sending ACK", "Sending encryption key", "Sending F-PROG command", "Sending radio modem number", 
+				"Sending radio modem number 2", "Sending version", "Sending erase command", "Send post erase command", "Sending Program command"};
+#endif
 			int commandNumber = 0;
 
 			Buffer.BlockCopy(encodeKey, 0, command2[0], 4, 4);
@@ -359,28 +426,46 @@ namespace GD77_FirmwareLoader
 			{
 				if (_progessForm != null)
 				{
+#if (LINUX_BUILD)
+					_progessForm.SetLabel(commandNames[commandNumber]);
+#else
 					_progessForm.SetLabel("Sending command " + commandNumber);
+#endif
 				}
+
 #if EXTENDED_DEBUG
+#if (LINUX_BUILD)
+				Console.WriteLine("Sending command " + commandNames[commandNumber] + " [ " + commandNumber + " ]");
+#else
 				Console.WriteLine("Sending command " + commandNumber);
+#endif
+#else
+#if (LINUX_BUILD)
+				Console.Write("\n - " + commandNames[commandNumber]);
 #else
 				Console.Write(".");
+#endif
 #endif
 
 				if (sendAndCheckResponse(commands[commandNumber][0], commands[commandNumber][1]) == false)
 				{
-					Console.WriteLine("Error sending command ");
+					Console.WriteLine("Error sending command.");
 					return false;
 				}
 				commandNumber = commandNumber + 1;
 			}
+
+#if EXTENDED_DEBUG
+#else
+			Console.WriteLine();
+#endif
 			return true;
 		}
 
-		static byte[] encrypt(byte [] unencrypted)
-        {
+		static byte[] encrypt(byte[] unencrypted)
+		{
 			int shift;
-			byte [] encrypted = new byte[unencrypted.Length];
+			byte[] encrypted = new byte[unencrypted.Length];
 			int data;
 
 			if (outputType == OutputType.OutputType_GD77)
@@ -392,25 +477,23 @@ namespace GD77_FirmwareLoader
 				shift = 0x2C7C;
 			}
 
-				byte[] encryptionTable  = new byte[32768];
-				int len = unencrypted.Length;
-				for(int address=0;address<len;address++)
+			byte[] encryptionTable = new byte[32768];
+			int len = unencrypted.Length;
+			for (int address = 0; address < len; address++)
+			{
+				data = unencrypted[address] ^ DataTable.EncryptionTable[shift++];
+
+				data = ~(((data >> 3) & 0x1F) | ((data << 5) & 0xE0)); // 0x1F is 0b00011111   0xE0 is 0b11100000
+
+				encrypted[address] = (byte)data;
+
+				if (shift >= 0x7fff)
 				{
-					data = unencrypted[address] ^ DataTable.EncryptionTable[shift++];
-
-					data = ~(((data >> 3) & 0x1F) | ((data << 5) & 0xE0)); // 0x1F is 0b00011111   0xE0 is 0b11100000
-
-					encrypted[address] = (byte)data;
-
-					if (shift >= 0x7fff)
-					{
-						shift = 0;
-					}
-                }
-				return encrypted;
-        }
-
-
+					shift = 0;
+				}
+			}
+			return encrypted;
+		}
 
 		static byte[] checkForSGLAndReturnEncryptedData(byte[] fileBuf, byte[] encodeKey)
 		{

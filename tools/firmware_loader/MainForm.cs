@@ -34,7 +34,10 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.ComponentModel.Design;
 using System.IO;
+#if (LINUX_BUILD)
+#else
 using UsbLibrary;
+#endif
 
 namespace GD77_FirmwareLoader
 {
