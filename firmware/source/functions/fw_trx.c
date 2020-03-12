@@ -269,6 +269,18 @@ void trx_check_analog_squelch(void)
 				analogSignalReceived = true;
 				displayLightTrigger();
 				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
+
+				/*
+				 * On the DM-1801 there is a problem with unsquelched hiss being heard after the beep function ends
+				 * The work-around / solution is not leave the input of the amp connected to the C6000 at the end of the beep
+				 * unless there is a RF signal.
+				 * However this means that the mux may not be set to the AT-1846 when a signal is received
+				 * Although the state of the mux could be checked, its quicker just to always set it to the correct state.
+				 *
+				 * On the GD-77 in FM mode, changing the mux input to the RF chip (AT1846) while the amp is still enabled also causes a slight click, so
+				 * This code change has been applied to all platforms
+				 */
+				GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 1);// Set the audio path to AT1846 -> audio amp.
 			}
 			if(!rxCTCSSactive || (rxCTCSSactive & trxCheckCTCSSFlag()))
 			{

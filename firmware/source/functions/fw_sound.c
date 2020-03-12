@@ -83,16 +83,11 @@ const int melody_dmr_tx_stop_beep[] = { 500, 50, -1, -1 };
 volatile int *melody_play = NULL;
 volatile int melody_idx = 0;
 int soundBeepVolumeDivider;
-
-
-
 static uint8_t audioAmpStatusMask = 0;
 
 uint8_t getAudioAmpStatus(void) {
 	return audioAmpStatusMask;
 }
-
-
 
 void enableAudioAmp (uint8_t mode)
 {
@@ -383,17 +378,27 @@ void tick_melody(void)
 			{
 				if (trxGetMode() == RADIO_MODE_ANALOG)
 				{
-					GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 1);// Set the audio path to AT1846 -> audio amp.
-				}
-				else
-				{
-					// only mute the speaker if in DMR and not receiving
-					/*if (slot_state !=DMR_STATE_RX_1 && slot_state !=DMR_STATE_RX_2)
+					/*
+					 *  The DM-1801 audio amplifier seems very slow to respond to the control signal
+					 *  probably because the amp does not have an integrated enabled / disable pin,
+					 *  and instead the power to the amp is turned on and and off via a transistor.
+					 *  In FM mode when there is no signal, this results in the unsquelched hiss being heard at the end of the beep,
+					 *  in the time between the beep ending and the amp turning off.
+					 *  To resolve this problem, the audio mux control to the amp input, is left set to the output of the C6000
+					 *  unless there is a RF audio signal.
+					 *
+					 *  Note. Its quicker just to read the Green LED pin to see if there is an RF signal, but its safer to get he audio amp status
+					 *  to see if the amp is already on because of an RF signal.
+					 *
+					 *  On the GD-77. A click also seems to be induced at the end of the beep when the mux is changed back to the RF chip (AT1846)
+					 *  So this fix seems to slighly improve the GD-77 beep on FM
+					 */
+					if (getAudioAmpStatus() & AUDIO_AMP_MODE_RF)
 					{
-						GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
-
-					}*/
+						GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 1);// Set the audio path to AT1846 -> audio amp.
+					}
 				}
+
 				disableAudioAmp(AUDIO_AMP_MODE_BEEP);
 			    set_melody(NULL);
 			}
