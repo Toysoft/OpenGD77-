@@ -34,7 +34,10 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.ComponentModel.Design;
 using System.IO;
+#if (LINUX_BUILD)
+#else
 using UsbLibrary;
+#endif
 
 namespace GD77_FirmwareLoader
 {
@@ -45,10 +48,23 @@ namespace GD77_FirmwareLoader
 			InitializeComponent();
 		}
 
+		private void rbModel_CheckedChanged(object sender, EventArgs e)
+		{
+			RadioButton rb = sender as RadioButton;
+
+			if (rb != null)
+			{
+				if (rb.Checked)
+				{
+					FirmwareLoader.outputType = (FirmwareLoader.OutputType)rb.Tag;
+				}
+			}
+		}
+
 		private void btnOpenFile_Click(object sender, EventArgs e)
 		{
 			OpenFileDialog openFileDialog1 = new OpenFileDialog();
-			openFileDialog1.Filter = "binary files (*.bin)|*.bin|firmware files (*.sgl)|*.sgl|All files (*.*)|*.*";
+			openFileDialog1.Filter = "firmware files (*.sgl)|*.sgl|binary files (*.bin)|*.bin|All files (*.*)|*.*";
 			openFileDialog1.RestoreDirectory = true;
 
 			if (openFileDialog1.ShowDialog() == DialogResult.OK)
@@ -58,6 +74,8 @@ namespace GD77_FirmwareLoader
 					FrmProgress frmProgress = new FrmProgress();
 					frmProgress.SetLabel("");
 					frmProgress.SetProgressPercentage(0);
+					frmProgress.FormBorderStyle = FormBorderStyle.FixedSingle;
+					frmProgress.MaximizeBox = false;
 					frmProgress.Show();
 					FirmwareLoader.UploadFirmware(openFileDialog1.FileName, frmProgress);
 					frmProgress.Close();
