@@ -38,9 +38,9 @@ namespace GD77_FirmwareLoader
 			// Model selector
 			//
 			this.grpboxModel = new System.Windows.Forms.GroupBox();
-			this.grpboxModel.Text = " Select your radio type";
+			this.grpboxModel.Text = " Select your radio type ";
 			this.grpboxModel.Location = new System.Drawing.Point(5, 5);
-			this.grpboxModel.Size = new System.Drawing.Size(200, 85);
+			this.grpboxModel.Size = new System.Drawing.Size(220, 85);
 			this.rbModels = new System.Windows.Forms.RadioButton[3];
 
 			this.rbModels[0] = new System.Windows.Forms.RadioButton();
@@ -77,7 +77,7 @@ namespace GD77_FirmwareLoader
 			// 
 			// btnOpenFile
 			// 
-			this.btnOpenFile.Location = new System.Drawing.Point(220, 67);
+			this.btnOpenFile.Location = new System.Drawing.Point(240, 67);
 			this.btnOpenFile.Name = "btnOpenFile";
 			this.btnOpenFile.AutoSize = true;
 			this.btnOpenFile.TabIndex = 0;
