@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -35,18 +35,28 @@ namespace GD77_FirmwareLoader
 			}
 			else
 			{
-				int idx = Array.IndexOf(args, "DM-1801");
+				int idxDM1801 = Array.IndexOf(args, "DM-1801");
+				int idxGD77S = Array.IndexOf(args, "GD-77S");
 
-				FirmwareLoader.outputType = ((idx >= 0) ? FirmwareLoader.OutputType.OutputType_DM1801 : FirmwareLoader.OutputType.OutputType_GD77);
 
-				if (idx >= 0)
+				if (idxDM1801 >= 0)
 				{
-					args = RemoveArgAt(args, idx);
+					FirmwareLoader.outputType = FirmwareLoader.OutputType.OutputType_DM1801;
+					args = RemoveArgAt(args, idxDM1801);
+				}
+				else if(idxGD77S >= 0)
+				{
+					FirmwareLoader.outputType = FirmwareLoader.OutputType.OutputType_GD77S;
+					args = RemoveArgAt(args, idxGD77S);
+				}
+				else
+				{
+					FirmwareLoader.outputType = FirmwareLoader.OutputType.OutputType_GD77;
 				}
 
 				if (args.Contains("--help") || args.Contains("-h") || args.Contains("/h"))
 				{
-					Console.WriteLine("\nUsage: GD77_FirmwareLoader [GUI] [DM-1801] [filename]\n\n");
+					Console.WriteLine("\nUsage: GD77_FirmwareLoader [GUI] [DM-1801 | GD-77S] [filename]\n\n");
 					Environment.Exit(exitCode);
 				}
 
@@ -57,7 +67,7 @@ namespace GD77_FirmwareLoader
 					Application.Run(new MainForm());
 				}
 
-				idx = Array.IndexOf(args, "GUI");
+				int idx = Array.IndexOf(args, "GUI");
 				if (idx >= 0)
 				{
 					args = RemoveArgAt(args, idx);
