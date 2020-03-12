@@ -135,7 +135,7 @@ void fw_main_task(void *data)
 
     if (!checkAndCopyCalibrationToCommonLocation())
 	{
-		showErrorMessage("FLASH MEM ERROR");
+		showErrorMessage("CAL DATA ERROR");
 		while(1U) {};
 	}
 
