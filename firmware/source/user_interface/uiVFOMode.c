@@ -25,8 +25,6 @@
 
 enum VFO_SELECTED_FREQUENCY_INPUT  {VFO_SELECTED_FREQUENCY_INPUT_RX , VFO_SELECTED_FREQUENCY_INPUT_TX};
 
-static char freq_enter_digits[8] = { '-', '-', '-', '-', '-', '-', '-', '-' };
-static int freq_enter_idx = 0;
 static int selectedFreq = VFO_SELECTED_FREQUENCY_INPUT_RX;
 
 static struct_codeplugRxGroup_t rxGroupData;
@@ -36,8 +34,6 @@ static struct_codeplugContact_t contactData;
 static void handleEvent(uiEvent_t *ev);
 static void handleQuickMenuEvent(uiEvent_t *ev);
 static void updateQuickMenuScreen(void);
-static void reset_freq_enter_digits(void);
-static int read_freq_enter_digits(void);
 static void update_frequency(int tmp_frequency);
 static void stepFrequency(int increment);
 static void loadContact(void);
@@ -69,6 +65,7 @@ int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
 	{
 		LinkItem_t *item = NULL;
 		uint32_t rxID = HRC6000GetReceivedSrcId();
+		freq_enter_idx = 0;
 
 		isDisplayingQSOData=false;
 		nonVolatileSettings.initialMenuNumber=MENU_VFO_MODE;
@@ -426,29 +423,6 @@ void menuVFOModeStopScanning(void)
 	menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 	menuVFOModeUpdateScreen(0); // Needs to redraw the screen now
 	displayLightTrigger();
-}
-
-static void reset_freq_enter_digits(void)
-{
-	for (int i=0;i<8;i++)
-	{
-		freq_enter_digits[i]='-';
-	}
-	freq_enter_idx = 0;
-}
-
-static int read_freq_enter_digits(void)
-{
-	int result=0;
-	for (int i=0;i<8;i++)
-	{
-		result=result*10;
-		if ((freq_enter_digits[i]>='0') && (freq_enter_digits[i]<='9'))
-		{
-			result=result+freq_enter_digits[i]-'0';
-		}
-	}
-	return result;
 }
 
 static void update_frequency(int frequency)
@@ -921,7 +895,6 @@ static void handleEvent(uiEvent_t *ev)
 				{
 					update_frequency(tmp_frequency);
 					reset_freq_enter_digits();
-	//	        	    set_melody(melody_ACK_beep);
 				}
 				else
 				{

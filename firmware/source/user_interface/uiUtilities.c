@@ -66,6 +66,10 @@ int scanDirection = 1;
 
 bool displaySquelch=false;
 
+char freq_enter_digits[8] = { '-', '-', '-', '-', '-', '-', '-', '-' };
+int freq_enter_idx;
+
+
 
 const int SCAN_SHORT_PAUSE_TIME = 500;			//time to wait after carrier detected to allow time for full signal detection. (CTCSS or DMR)
 const int SCAN_TOTAL_INTERVAL = 30;			    //time between each scan step
@@ -1341,4 +1345,27 @@ void printFrequency(bool isTX, bool hasFocus, uint8_t y, uint32_t frequency, boo
 	ucPrintAt(FREQUENCY_X_POS, y, buffer, FONT_8x16);
 	// Unit
 	ucPrintAt(128 - (3 * 8), y, "MHz", FONT_8x16);
+}
+
+void reset_freq_enter_digits(void)
+{
+	for (int i=0;i<8;i++)
+	{
+		freq_enter_digits[i]='-';
+	}
+	freq_enter_idx = 0;
+}
+
+int read_freq_enter_digits(void)
+{
+	int result=0;
+	for (int i=0;i<8;i++)
+	{
+		result=result*10;
+		if ((freq_enter_digits[i]>='0') && (freq_enter_digits[i]<='9'))
+		{
+			result=result+freq_enter_digits[i]-'0';
+		}
+	}
+	return result;
 }

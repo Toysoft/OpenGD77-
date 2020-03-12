@@ -35,14 +35,20 @@ static char channelName[17];
 static int namePos;
 
 
-enum CHANNEL_DETAILS_DISPLAY_LIST { CH_DETAILS_NAME = 0, CH_DETAILS_MODE, CH_DETAILS_DMR_CC, CH_DETAILS_DMR_TS,CH_DETAILS_RXCTCSS, CH_DETAILS_TXCTCSS , CH_DETAILS_RXFREQ, CH_DETAILS_TXFREQ, CH_DETAILS_BANDWIDTH,
-									CH_DETAILS_FREQ_STEP, CH_DETAILS_TOT, CH_DETAILS_ZONE_SKIP,CH_DETAILS_ALL_SKIP,CH_DETAILS_RXGROUP,
+enum CHANNEL_DETAILS_DISPLAY_LIST { CH_DETAILS_NAME = 0,
+									CH_DETAILS_RXFREQ, CH_DETAILS_TXFREQ,
+									CH_DETAILS_MODE,
+									CH_DETAILS_DMR_CC, CH_DETAILS_DMR_TS, CH_DETAILS_RXGROUP,
+									CH_DETAILS_RXCTCSS, CH_DETAILS_TXCTCSS , CH_DETAILS_BANDWIDTH,
+									CH_DETAILS_FREQ_STEP, CH_DETAILS_TOT,
+									CH_DETAILS_ZONE_SKIP,CH_DETAILS_ALL_SKIP,
 									NUM_CH_DETAILS_ITEMS};// The last item in the list is used so that we automatically get a total number of items in the list
 
 int menuChannelDetails(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
+		freq_enter_idx = 0;
 		memcpy(&tmpChannel,currentChannelData,sizeof(struct_codeplugChannel_t));
 
 		for(int i=0;i<TRX_NUM_CTCSS;i++)
@@ -108,139 +114,169 @@ static void updateScreen(void)
 	ucClearBuf();
 	menuDisplayTitle(currentLanguage->channel_details);
 
-	keypadAlphaEnable = (gMenusCurrentItemIndex == CH_DETAILS_NAME);
-
-	// Can only display 3 of the options at a time menu at -1, 0 and +1
-	for(int i = -1; i <= 1; i++)
+	if (freq_enter_idx!=0)
 	{
-		mNum = menuGetMenuOffset(NUM_CH_DETAILS_ITEMS, i);
-		buf[0] = 0;
-
-		switch(mNum)
-		{
-			case CH_DETAILS_NAME:
-				strncpy(buf, channelName, 17);
-			break;
-			case CH_DETAILS_MODE:
-				if (tmpChannel.chMode == RADIO_MODE_ANALOG)
-				{
-					snprintf(buf, bufferLen, "%s:FM", currentLanguage->mode);
-				}
-				else
-				{
-					snprintf(buf, bufferLen, "%s:DMR", currentLanguage->mode);
-				}
-				break;
-			break;
-			case CH_DETAILS_DMR_CC:
-				if (tmpChannel.chMode == RADIO_MODE_ANALOG)
-				{
-					snprintf(buf, bufferLen, "%s:%s", currentLanguage->colour_code, currentLanguage->n_a);
-				}
-				else
-				{
-					snprintf(buf, bufferLen, "%s:%d", currentLanguage->colour_code, tmpChannel.rxColor);
-				}
-				break;
-			case CH_DETAILS_DMR_TS:
-				if (tmpChannel.chMode == RADIO_MODE_ANALOG)
-				{
-					snprintf(buf, bufferLen, "%s:%s", currentLanguage->timeSlot, currentLanguage->n_a);
-				}
-				else
-				{
-					snprintf(buf, bufferLen, "%s:%d", currentLanguage->timeSlot, ((tmpChannel.flag2 & 0x40) >> 6) + 1);
-				}
-				break;
-			case CH_DETAILS_RXCTCSS:
-				if (tmpChannel.chMode == RADIO_MODE_ANALOG)
-				{
-					if (tmpChannel.txTone == TRX_CTCSS_TONE_NONE)
-					{
-						snprintf(buf, bufferLen, "Tx CTCSS:%s", currentLanguage->none);
-					}
-					else
-					{
-						snprintf(buf, bufferLen, "Tx CTCSS:%d.%dHz", tmpChannel.txTone / 10 , tmpChannel.txTone % 10);
-					}
-				}
-				else
-				{
-					snprintf(buf, bufferLen, "Tx CTCSS:%s", currentLanguage->n_a);
-				}
-				break;
-			case CH_DETAILS_TXCTCSS:
-				if (tmpChannel.chMode == RADIO_MODE_ANALOG)
-				{
-					if (tmpChannel.rxTone == TRX_CTCSS_TONE_NONE)
-					{
-						snprintf(buf, bufferLen, "Rx CTCSS:%s", currentLanguage->none);
-					}
-					else
-					{
-						snprintf(buf, bufferLen, "Rx CTCSS:%d.%dHz", tmpChannel.rxTone / 10 , tmpChannel.rxTone % 10);
-					}
-				}
-				else
-				{
-					snprintf(buf, bufferLen, "Rx CTCSS:%s", currentLanguage->n_a);
-				}
-				break;
-			case CH_DETAILS_RXFREQ:
-				val_before_dp = tmpChannel.rxFreq / 100000;
-				val_after_dp = tmpChannel.rxFreq - val_before_dp * 100000;
-				snprintf(buf, bufferLen, "Rx:%d.%05dMHz", val_before_dp, val_after_dp);
-				break;
-			case CH_DETAILS_TXFREQ:
-				val_before_dp = tmpChannel.txFreq / 100000;
-				val_after_dp = tmpChannel.txFreq - val_before_dp * 100000;
-				snprintf(buf, bufferLen, "Tx:%d.%05dMHz", val_before_dp, val_after_dp);
-				break;
-			case CH_DETAILS_BANDWIDTH:
-				// Bandwidth
-				if (tmpChannel.chMode == RADIO_MODE_DIGITAL)
-				{
-					snprintf(buf, bufferLen, "%s:%s", currentLanguage->bandwidth, currentLanguage->n_a);
-				}
-				else
-				{
-					snprintf(buf, bufferLen, "%s:%s", currentLanguage->bandwidth, ((tmpChannel.flag4 & 0x02) == 0x02) ? "25kHz" : "12.5kHz");
-				}
-				break;
-			case CH_DETAILS_FREQ_STEP:
-					tmpVal = VFO_FREQ_STEP_TABLE[(tmpChannel.VFOflag5 >> 4)] / 100;
-					snprintf(buf, bufferLen, "%s:%d.%02dkHz", currentLanguage->stepFreq, tmpVal, VFO_FREQ_STEP_TABLE[(tmpChannel.VFOflag5 >> 4)] - (tmpVal * 100));
-				break;
-			case CH_DETAILS_TOT:// TOT
-				if (tmpChannel.tot != 0)
-				{
-					snprintf(buf, bufferLen, "%s:%ds", currentLanguage->tot, tmpChannel.tot * 15);
-				}
-				else
-				{
-					snprintf(buf, bufferLen, "%s:%s",currentLanguage->tot, currentLanguage->off);
-				}
-				break;
-			case CH_DETAILS_ZONE_SKIP:						// Zone Scan Skip Channel (Using CPS Auto Scan flag)
-				snprintf(buf, bufferLen, "%s:%s", currentLanguage->zone_skip, ((tmpChannel.flag4 & 0x20) == 0x20) ? currentLanguage->yes : currentLanguage->no);
-				break;
- 			case CH_DETAILS_ALL_SKIP:					// All Scan Skip Channel (Using CPS Lone Worker flag)
-				snprintf(buf, bufferLen, "%s:%s", currentLanguage->all_skip, ((tmpChannel.flag4 & 0x10) == 0x10) ? currentLanguage->yes : currentLanguage->no);
-				break;
-				
-			case CH_DETAILS_RXGROUP:
-				codeplugRxGroupGetDataForIndex(tmpChannel.rxGroupList, &rxGroupBuf);
-				codeplugUtilConvertBufToString(rxGroupBuf.name, rxNameBuf, 16);
-				snprintf(buf, bufferLen, "%s:%s", currentLanguage->rx_group, rxNameBuf);
-				break;
-		}
-
-		buf[bufferLen - 1] = 0;
-		menuDisplayEntry(i, mNum, buf);
+		snprintf(buf, bufferLen, "%c%c%c.%c%c%c%c%c MHz", freq_enter_digits[0], freq_enter_digits[1], freq_enter_digits[2],
+				freq_enter_digits[3], freq_enter_digits[4], freq_enter_digits[5], freq_enter_digits[6], freq_enter_digits[7]);
+		ucPrintCentered(32, buf, FONT_8x16);
 	}
+	else
+	{
+		keypadAlphaEnable = (gMenusCurrentItemIndex == CH_DETAILS_NAME);
 
+		// Can only display 3 of the options at a time menu at -1, 0 and +1
+		for(int i = -1; i <= 1; i++)
+		{
+			mNum = menuGetMenuOffset(NUM_CH_DETAILS_ITEMS, i);
+			buf[0] = 0;
+
+			switch(mNum)
+			{
+				case CH_DETAILS_NAME:
+					strncpy(buf, channelName, 17);
+				break;
+				case CH_DETAILS_MODE:
+					if (tmpChannel.chMode == RADIO_MODE_ANALOG)
+					{
+						snprintf(buf, bufferLen, "%s:FM", currentLanguage->mode);
+					}
+					else
+					{
+						snprintf(buf, bufferLen, "%s:DMR", currentLanguage->mode);
+					}
+					break;
+				break;
+				case CH_DETAILS_DMR_CC:
+					if (tmpChannel.chMode == RADIO_MODE_ANALOG)
+					{
+						snprintf(buf, bufferLen, "%s:%s", currentLanguage->colour_code, currentLanguage->n_a);
+					}
+					else
+					{
+						snprintf(buf, bufferLen, "%s:%d", currentLanguage->colour_code, tmpChannel.rxColor);
+					}
+					break;
+				case CH_DETAILS_DMR_TS:
+					if (tmpChannel.chMode == RADIO_MODE_ANALOG)
+					{
+						snprintf(buf, bufferLen, "%s:%s", currentLanguage->timeSlot, currentLanguage->n_a);
+					}
+					else
+					{
+						snprintf(buf, bufferLen, "%s:%d", currentLanguage->timeSlot, ((tmpChannel.flag2 & 0x40) >> 6) + 1);
+					}
+					break;
+				case CH_DETAILS_RXCTCSS:
+					if (tmpChannel.chMode == RADIO_MODE_ANALOG)
+					{
+						if (tmpChannel.txTone == TRX_CTCSS_TONE_NONE)
+						{
+							snprintf(buf, bufferLen, "Tx CTCSS:%s", currentLanguage->none);
+						}
+						else
+						{
+							snprintf(buf, bufferLen, "Tx CTCSS:%d.%dHz", tmpChannel.txTone / 10 , tmpChannel.txTone % 10);
+						}
+					}
+					else
+					{
+						snprintf(buf, bufferLen, "Tx CTCSS:%s", currentLanguage->n_a);
+					}
+					break;
+				case CH_DETAILS_TXCTCSS:
+					if (tmpChannel.chMode == RADIO_MODE_ANALOG)
+					{
+						if (tmpChannel.rxTone == TRX_CTCSS_TONE_NONE)
+						{
+							snprintf(buf, bufferLen, "Rx CTCSS:%s", currentLanguage->none);
+						}
+						else
+						{
+							snprintf(buf, bufferLen, "Rx CTCSS:%d.%dHz", tmpChannel.rxTone / 10 , tmpChannel.rxTone % 10);
+						}
+					}
+					else
+					{
+						snprintf(buf, bufferLen, "Rx CTCSS:%s", currentLanguage->n_a);
+					}
+					break;
+				case CH_DETAILS_RXFREQ:
+					val_before_dp = tmpChannel.rxFreq / 100000;
+					val_after_dp = tmpChannel.rxFreq - val_before_dp * 100000;
+					snprintf(buf, bufferLen, "Rx:%d.%05dMHz", val_before_dp, val_after_dp);
+					break;
+				case CH_DETAILS_TXFREQ:
+					val_before_dp = tmpChannel.txFreq / 100000;
+					val_after_dp = tmpChannel.txFreq - val_before_dp * 100000;
+					snprintf(buf, bufferLen, "Tx:%d.%05dMHz", val_before_dp, val_after_dp);
+					break;
+				case CH_DETAILS_BANDWIDTH:
+					// Bandwidth
+					if (tmpChannel.chMode == RADIO_MODE_DIGITAL)
+					{
+						snprintf(buf, bufferLen, "%s:%s", currentLanguage->bandwidth, currentLanguage->n_a);
+					}
+					else
+					{
+						snprintf(buf, bufferLen, "%s:%s", currentLanguage->bandwidth, ((tmpChannel.flag4 & 0x02) == 0x02) ? "25kHz" : "12.5kHz");
+					}
+					break;
+				case CH_DETAILS_FREQ_STEP:
+						tmpVal = VFO_FREQ_STEP_TABLE[(tmpChannel.VFOflag5 >> 4)] / 100;
+						snprintf(buf, bufferLen, "%s:%d.%02dkHz", currentLanguage->stepFreq, tmpVal, VFO_FREQ_STEP_TABLE[(tmpChannel.VFOflag5 >> 4)] - (tmpVal * 100));
+					break;
+				case CH_DETAILS_TOT:// TOT
+					if (tmpChannel.tot != 0)
+					{
+						snprintf(buf, bufferLen, "%s:%ds", currentLanguage->tot, tmpChannel.tot * 15);
+					}
+					else
+					{
+						snprintf(buf, bufferLen, "%s:%s",currentLanguage->tot, currentLanguage->off);
+					}
+					break;
+				case CH_DETAILS_ZONE_SKIP:						// Zone Scan Skip Channel (Using CPS Auto Scan flag)
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->zone_skip, ((tmpChannel.flag4 & 0x20) == 0x20) ? currentLanguage->yes : currentLanguage->no);
+					break;
+				case CH_DETAILS_ALL_SKIP:					// All Scan Skip Channel (Using CPS Lone Worker flag)
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->all_skip, ((tmpChannel.flag4 & 0x10) == 0x10) ? currentLanguage->yes : currentLanguage->no);
+					break;
+
+				case CH_DETAILS_RXGROUP:
+					codeplugRxGroupGetDataForIndex(tmpChannel.rxGroupList, &rxGroupBuf);
+					codeplugUtilConvertBufToString(rxGroupBuf.name, rxNameBuf, 16);
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->rx_group, rxNameBuf);
+					break;
+			}
+
+			buf[bufferLen - 1] = 0;
+			menuDisplayEntry(i, mNum, buf);
+		}
+	}
 	ucRender();
 	displayLightTrigger();
+}
+
+static void updateFrequency(void)
+{
+	int tmp_frequency=read_freq_enter_digits();
+	if (trxGetBandFromFrequency(tmp_frequency)!=-1)
+	{
+		switch(gMenusCurrentItemIndex)
+		{
+		case CH_DETAILS_RXFREQ:
+			tmpChannel.rxFreq = tmp_frequency;
+			break;
+		case CH_DETAILS_TXFREQ:
+			tmpChannel.txFreq = tmp_frequency;
+			break;
+		}
+		reset_freq_enter_digits();
+	}
+	else
+	{
+		set_melody(melody_ERROR_beep);
+	}
 }
 
 static void handleEvent(uiEvent_t *ev)
@@ -252,6 +288,52 @@ static void handleEvent(uiEvent_t *ev)
 	{
 		gMenusCurrentItemIndex = ev->function;
 	}
+
+
+	if (gMenusCurrentItemIndex == CH_DETAILS_RXFREQ || gMenusCurrentItemIndex == CH_DETAILS_TXFREQ)
+	{
+
+		if (freq_enter_idx !=0 )
+		{
+			if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
+			{
+				updateFrequency();
+				updateScreen();
+				return;
+			}
+			if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
+			{
+				updateScreen();
+				return;
+			}
+			if (KEYCHECK_SHORTUP(ev->keys,KEY_LEFT))
+			{
+				freq_enter_idx--;
+				freq_enter_digits[freq_enter_idx]='-';
+				updateScreen();
+				return;
+			}
+		}
+
+		if (freq_enter_idx < 8)
+		{
+			int keyval = menuGetKeypadKeyValue(ev, true);
+			if (keyval != 99)
+			{
+				freq_enter_digits[freq_enter_idx] = (char) keyval+'0';
+				freq_enter_idx++;
+				if (freq_enter_idx==8)
+				{
+					updateFrequency();
+					freq_enter_idx=0;
+				}
+				updateScreen();
+				return;
+			}
+		}
+	}
+
+	// Not entering a frequency numeric digit
 
 	if (KEYCHECK_PRESS(ev->keys,KEY_DOWN))
 	{
