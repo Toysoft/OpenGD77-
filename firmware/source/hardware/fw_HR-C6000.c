@@ -781,7 +781,6 @@ inline static void HRC6000SysInterruptHandler(void)
 			if(rxColorCode==lastRxColorCode)
 			{
 				trxSetDMRColourCode(rxColorCode);
-				currentChannelData->rxColor=rxColorCode;
 			}
 		lastRxColorCode=rxColorCode;
 		}

@@ -578,10 +578,10 @@ static void handleEvent(uiEvent_t *ev)
 		// If Blue button is pressed during reception it sets the Tx TG to the incoming TG
 		if (isDisplayingQSOData && (ev->buttons & BUTTON_SK2) && trxGetMode() == RADIO_MODE_DIGITAL &&
 				(trxTalkGroupOrPcId != tg ||
-				(dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot())))
+				(dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot()) ||
+				(trxGetDMRColourCode() != currentChannelData->rxColor)))
 		{
 			lastHeardClearLastID();
-
 
 			// Set TS to overriden TS
 			if (dmrMonitorCapturedTS != -1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot())
@@ -602,6 +602,8 @@ static void handleEvent(uiEvent_t *ev)
 					nonVolatileSettings.overrideTG = trxTalkGroupOrPcId;
 				}
 			}
+
+			currentChannelData->rxColor = trxGetDMRColourCode();// Set the CC to the current CC, which may have been determined by the CC finding algorithm in C6000.c
 
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 			menuChannelModeUpdateScreen(0);

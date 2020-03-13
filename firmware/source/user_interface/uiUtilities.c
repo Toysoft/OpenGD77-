@@ -1012,7 +1012,9 @@ void menuUtilityRenderQSOData(void)
 		else
 		{
 			// Group call
-			if ((LinkHead->talkGroupOrPcId & 0xFFFFFF) != trxTalkGroupOrPcId || (dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot()))
+			if (	(LinkHead->talkGroupOrPcId & 0xFFFFFF) != trxTalkGroupOrPcId ||
+					(dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot()) ||
+					(trxGetDMRColourCode() != currentChannelData->rxColor))
 			{
 				// draw the text in inverse video
 				ucClearRows(2, 4, true);
