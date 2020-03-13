@@ -19,4 +19,4 @@
 .incbin "../linkerdata/codec_bin_section_1.bin"
 
 .section .codec_bin_section_2
-.incbin "../linkerdata/codec_bin_section_1.bin"
+.incbin "../linkerdata/codec_bin_section_2.bin"
