@@ -16,7 +16,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "fw_buttons.h"
+#include <buttons.h>
 
 static uint32_t old_button_state;
 

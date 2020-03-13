@@ -15,12 +15,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
+#include <codeplug.h>
+#include <settings.h>
+#include <trx.h>
 #include <user_interface/menuSystem.h>
 #include <user_interface/uiUtilities.h>
 #include <user_interface/uiLocalisation.h>
-#include "fw_trx.h"
-#include "fw_codeplug.h"
-#include "fw_settings.h"
 
 
 static void handleEvent(uiEvent_t *ev);

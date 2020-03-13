@@ -19,10 +19,10 @@
 #ifndef _FW_CODEC_H_
 #define _FW_CODEC_H_
 
-#include "fw_common.h"
-#include "fw_HR-C6000.h"
+#include "common.h"
+#include "HR-C6000.h"
 
-#include "fw_sound.h"
+#include "sound.h"
 #include "mbelib.h"
 
 #define QUAUX(X) #X

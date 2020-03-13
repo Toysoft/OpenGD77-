@@ -15,13 +15,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-#include <hardware/fw_HR-C6000.h>
+#include <codeplug.h>
+#include <HR-C6000.h>
+#include <settings.h>
+#include <trx.h>
 #include <user_interface/menuSystem.h>
 #include <user_interface/uiUtilities.h>
 #include <user_interface/uiLocalisation.h>
-#include "fw_trx.h"
-#include "fw_settings.h"
-#include "fw_codeplug.h"
 
 enum VFO_SELECTED_FREQUENCY_INPUT  {VFO_SELECTED_FREQUENCY_INPUT_RX , VFO_SELECTED_FREQUENCY_INPUT_TX};
 

@@ -16,7 +16,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <functions/fw_ticks.h>
+#include <ticks.h>
 
 #define PIT_COUNTS_PER_MS  10U
 

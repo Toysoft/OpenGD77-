@@ -20,6 +20,7 @@
  * @file    firmware.c
  * @brief   Application entry point.
  */
+#include <main.h>
 #include <stdio.h>
 #include "board.h"
 #include "peripherals.h"
@@ -27,7 +28,6 @@
 #include "clock_config.h"
 #include "MK22F51212.h"
 
-#include "fw_main.h"
 
 /*
  * @brief   Application entry point.

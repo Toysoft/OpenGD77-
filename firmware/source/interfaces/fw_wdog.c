@@ -16,8 +16,8 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "fw_wdog.h"
-#include "fw_pit.h"
+#include <pit.h>
+#include <wdog.h>
 
 TaskHandle_t fwwatchdogTaskHandle;
 

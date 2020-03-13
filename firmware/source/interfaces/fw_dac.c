@@ -16,7 +16,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "fw_dac.h"
+#include <dac.h>
 
 void dac_init(void)
 {

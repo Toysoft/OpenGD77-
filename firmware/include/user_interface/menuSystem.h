@@ -17,7 +17,7 @@
  */
 #ifndef _FW_MENUSYSTEM_H_
 #define _FW_MENUSYSTEM_H_
-#include "fw_main.h"
+#include "main.h"
 
 typedef enum { NO_EVENT = 0, KEY_EVENT = 0x01, BUTTON_EVENT = 0x02, FUNCTION_EVENT = 0x04 } uiEventInput_t;
 

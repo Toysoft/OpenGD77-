@@ -16,11 +16,11 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "fw_keyboard.h"
-#include "fw_buttons.h"
-#include "fw_pit.h"
-#include "fw_settings.h"
-#include "fw_usb_com.h"
+#include <buttons.h>
+#include <keyboard.h>
+#include <pit.h>
+#include <settings.h>
+#include <usb_com.h>
 
 static char oldKeyboardCode;
 static uint32_t keyDebounceScancode;

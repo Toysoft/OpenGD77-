@@ -15,10 +15,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
+#include <ticks.h>
 #include <user_interface/menuSystem.h>
 #include <user_interface/uiUtilities.h>
 #include <user_interface/uiLocalisation.h>
-#include <functions/fw_ticks.h>
 
 static const int LAST_HEARD_NUM_LINES_ON_DISPLAY = 3;
 static bool displayLHDetails = false;

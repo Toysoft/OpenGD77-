@@ -20,11 +20,11 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <display.h>
 #include <hardware/UC1701.h>
 #include <hardware/UC1701_charset.h>
+#include <settings.h>
 #include <user_interface/uiLocalisation.h>
-#include "fw_display.h"
-#include "fw_settings.h"
 
 // number representing the maximum angle (e.g. if 100, then if you pass in start=0 and end=50, you get a half circle)
 // this can be changed with setArcParams function at runtime

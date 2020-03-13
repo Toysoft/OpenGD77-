@@ -20,7 +20,7 @@
 #ifndef _FW_MBELIB_H_
 #define _FW_MBELIB_H_
 
-#include "fw_common.h"
+#include "common.h"
 
 void mbe_checkGolayBlock (long int *block);
 int mbe_golay2312 (char *in, char *out);

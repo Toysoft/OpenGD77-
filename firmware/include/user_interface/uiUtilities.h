@@ -18,8 +18,8 @@
 #ifndef _MENU_UTILITY_QSO_DATA_H_
 #define _MENU_UTILITY_QSO_DATA_H_                    /**< Symbol preventing repeated inclusion */
 #include <user_interface/menuSystem.h>
-#include <functions/fw_settings.h>
-#include "fw_common.h"
+#include <functions/settings.h>
+#include "common.h"
 
 #define MAX_ZONE_SCAN_NUISANCE_CHANNELS 16
 #define NUM_LASTHEARD_STORED 32

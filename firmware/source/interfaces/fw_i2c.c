@@ -16,7 +16,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "fw_i2c.h"
+#include <i2c.h>
 #include <SeggerRTT/RTT/SEGGER_RTT.h>
 
 uint8_t i2c_master_buff[I2C_DATA_LENGTH];

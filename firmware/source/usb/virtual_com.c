@@ -21,7 +21,7 @@
 #include "fsl_common.h"
 #include "pin_mux.h"
 
-#include "fw_usb_com.h"
+#include <usb_com.h>
 
 /*******************************************************************************
 * Definitions

@@ -16,8 +16,8 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <hardware/fw_AT1846S.h>
-#include "fw_trx.h"
+#include <AT1846S.h>
+#include <trx.h>
 
 static const uint8_t AT1846InitSettings[][AT1846_BYTES_PER_COMMAND] = {
 		{0x30, 0x00, 0x04}, // Poweron 1846s

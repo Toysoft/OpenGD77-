@@ -18,8 +18,8 @@
 #include <user_interface/menuSystem.h>
 #include <user_interface/uiLocalisation.h>
 #include <user_interface/uiUtilities.h>
-#include <functions/fw_ticks.h>
-#include "fw_settings.h"
+#include <settings.h>
+#include <ticks.h>
 
 static void updateScreen(void);
 static void handleEvent(uiEvent_t *ev);

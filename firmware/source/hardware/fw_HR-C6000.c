@@ -18,13 +18,13 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <dmr/dmrDefines.h>
-#include <hardware/fw_HR-C6000.h>
-#include "fw_settings.h"
+#include <hotspot/dmrDefines.h>
+#include <HR-C6000.h>
+#include <settings.h>
 #include <SeggerRTT/RTT/SEGGER_RTT.h>
+#include <trx.h>
 #include <user_interface/menuHotspot.h>
 #include <user_interface/uiUtilities.h>
-#include "fw_trx.h"
 
 
 static const int SYS_INT_SEND_REQUEST_REJECTED  = 0x80;

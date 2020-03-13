@@ -16,7 +16,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "fw_LEDs.h"
+#include <LEDs.h>
 
 void fw_init_LEDs(void)
 {

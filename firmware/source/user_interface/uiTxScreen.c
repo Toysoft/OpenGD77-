@@ -15,12 +15,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-#include <hardware/fw_HR-C6000.h>
+#include <HR-C6000.h>
+#include <settings.h>
+#include <sound.h>
 #include <user_interface/menuSystem.h>
 #include <user_interface/uiUtilities.h>
 #include <user_interface/uiLocalisation.h>
-#include "fw_settings.h"
-#include "fw_sound.h"
 
 
 static void updateScreen(void);

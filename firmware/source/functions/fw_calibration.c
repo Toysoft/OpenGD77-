@@ -17,8 +17,8 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "fw_calibration.h"
-#include "fw_trx.h"
+#include <calibration.h>
+#include <trx.h>
 
 
 static const uint32_t CALIBRATION_BASE 				= 0xF000;

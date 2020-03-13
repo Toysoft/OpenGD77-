@@ -16,7 +16,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "fw_spi.h"
+#include <hr-c6000_spi.h>
 
 __attribute__((section(".data.$RAM2"))) uint8_t spi_masterReceiveBuffer_SPI0[SPI_DATA_LENGTH] = {0};
 __attribute__((section(".data.$RAM2"))) uint8_t SPI_masterSendBuffer_SPI0[SPI_DATA_LENGTH] = {0};

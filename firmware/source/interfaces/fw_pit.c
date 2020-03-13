@@ -16,7 +16,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "fw_pit.h"
+#include <pit.h>
 
 volatile uint32_t timer_maintask;
 volatile uint32_t timer_beeptask;

@@ -16,7 +16,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "fw_adc.h"
+#include <adc.h>
 
 static volatile uint32_t adc_channel;
 volatile uint32_t adc0_dp1;

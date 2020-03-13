@@ -16,7 +16,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "fw_common.h"
+#include <common.h>
 
 gpio_pin_config_t pin_config_input =
 {

@@ -15,13 +15,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-#include <hardware/fw_HR-C6000.h>
+#include <codeplug.h>
+#include <HR-C6000.h>
+#include <settings.h>
+#include <ticks.h>
 #include <user_interface/menuSystem.h>
 #include <user_interface/uiUtilities.h>
 #include <user_interface/uiLocalisation.h>
-#include "fw_settings.h"
-#include "fw_codeplug.h"
-#include "fw_ticks.h"
 
 static char digits[9];
 static int pcIdx;

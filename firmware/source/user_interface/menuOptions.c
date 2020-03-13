@@ -15,11 +15,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
+#include <settings.h>
 #include <user_interface/menuSystem.h>
 #include <user_interface/uiLocalisation.h>
-#include <functions/fw_settings.h>
-#include <interfaces/fw_wdog.h>
 #include <user_interface/uiUtilities.h>
+#include <wdog.h>
 
 static void updateScreen(void);
 static void handleEvent(uiEvent_t *ev);

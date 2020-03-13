@@ -17,8 +17,8 @@
  */
 #include <user_interface/menuSystem.h>
 #include <user_interface/uiLocalisation.h>
-#include <functions/fw_ticks.h>
-#include "fw_settings.h"
+#include <settings.h>
+#include <ticks.h>
 
 int menuDisplayLightTimer=-1;
 menuItemNew_t *gMenuCurrentMenuList;

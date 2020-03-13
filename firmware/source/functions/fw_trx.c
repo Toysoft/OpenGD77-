@@ -16,12 +16,12 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <hardware/fw_AT1846S.h>
-#include <hardware/fw_HR-C6000.h>
+#include <AT1846S.h>
+#include <calibration.h>
+#include <HR-C6000.h>
+#include <settings.h>
+#include <trx.h>
 #include <user_interface/menuSystem.h>
-#include "fw_trx.h"
-#include "fw_settings.h"
-#include "fw_calibration.h"
 
 
 int trx_measure_count = 0;

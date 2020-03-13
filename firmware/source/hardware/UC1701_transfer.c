@@ -19,9 +19,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
+#include <display.h>
 #include <hardware/UC1701.h>
-#include "fw_display.h"
-#include "fw_settings.h"
+#include <settings.h>
 
 /*
  * IMPORTANT

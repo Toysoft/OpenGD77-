@@ -16,9 +16,9 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <hardware/fw_HR-C6000.h>
-#include "fw_sound.h"
-#include "fw_settings.h"
+#include <HR-C6000.h>
+#include <settings.h>
+#include <sound.h>
 typedef union byteSwap16
 {
 	int16_t byte16;

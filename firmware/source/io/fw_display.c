@@ -18,12 +18,12 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <display.h>
 #include <hardware/UC1701.h>
+#include <settings.h>
 #include "FreeRTOS.h"
 #include "task.h"
 
-#include "fw_display.h"
-#include "fw_settings.h"
 
 #ifdef DISPLAY_LED_PWM
 	#include "fsl_ftm.h"

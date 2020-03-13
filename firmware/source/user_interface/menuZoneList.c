@@ -15,11 +15,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-#include <fw_codeplug.h>
+#include <codeplug.h>
+#include <main.h>
+#include <settings.h>
 #include <user_interface/menuSystem.h>
 #include <user_interface/uiLocalisation.h>
-#include "fw_main.h"
-#include "fw_settings.h"
 
 static void updateScreen(void);
 static void handleEvent(uiEvent_t *ev);

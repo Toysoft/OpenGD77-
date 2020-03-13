@@ -17,13 +17,13 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <hardware/fw_EEPROM.h>
+#include <codeplug.h>
+#include <EEPROM.h>
+#include <settings.h>
+#include <sound.h>
+#include <trx.h>
 #include <user_interface/menuSystem.h>
 #include <user_interface/uiLocalisation.h>
-#include "fw_settings.h"
-#include "fw_trx.h"
-#include "fw_codeplug.h"
-#include "fw_sound.h"
 
 static const int STORAGE_BASE_ADDRESS 		= 0x6000;
 

@@ -17,7 +17,7 @@
  */
 #ifndef _FW_HOTSPOT_H_
 #define _FW_HOTSPOT_H_
-#include "fw_main.h"
+#include "main.h"
 void hotspotRxFrameHandler(uint8_t* frameBuf);
 //extern uint8_t hotspotTxLC[9];
 

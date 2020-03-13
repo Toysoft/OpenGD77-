@@ -16,7 +16,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "fw_i2s.h"
+#include <i2s.h>
 
 #define I2S_DMA_TX 0
 #define I2S_DMA_RX 1

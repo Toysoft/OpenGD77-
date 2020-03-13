@@ -16,13 +16,13 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <codeplug.h>
+#include <EEPROM.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <hardware/fw_EEPROM.h>
-#include <hardware/fw_SPI_Flash.h>
-#include "fw_codeplug.h"
-#include "fw_trx.h"
-#include "fw_usb_com.h"
+#include <SPI_Flash.h>
+#include <trx.h>
+#include <usb_com.h>
 #include <user_interface/uiLocalisation.h>
 
 

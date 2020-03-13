@@ -17,8 +17,8 @@
  */
 #include <user_interface/menuSystem.h>
 #include <user_interface/uiLocalisation.h>
-#include <functions/fw_ticks.h>
-#include "fw_settings.h"
+#include <settings.h>
+#include <ticks.h>
 
 enum LOCK_STATE { LOCK_NONE = 0x00, LOCK_KEYPAD = 0x01, LOCK_PTT = 0x02, LOCK_BOTH = 0x03 };
 
