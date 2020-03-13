@@ -47,38 +47,6 @@ static const uint8_t *screenBufEnd = screenBuf + sizeof(screenBuf);
 #endif
 int activeBufNum=0;
 
-void UC1701_setCommandMode(bool isCommand)
-{
-#if defined(PLATFORM_GD77S)
-	return;
-#else
-	GPIO_PinWrite(GPIO_Display_RS, Pin_Display_RS, !isCommand);
-#endif
-}
-
-void UC1701_transfer(register uint8_t data1)
-{
-#if defined(PLATFORM_GD77S)
-	return;
-#else
-	for (register int i=0; i<8; i++)
-	{
-		GPIO_Display_SCK->PCOR = 1U << Pin_Display_SCK;
-
-		if ((data1&0x80) == 0U)
-		{
-			GPIO_Display_SDA->PCOR = 1U << Pin_Display_SDA;// Hopefully the compiler will otimise this to a value rather than using a shift
-		}
-		else
-		{
-			GPIO_Display_SDA->PSOR = 1U << Pin_Display_SDA;// Hopefully the compiler will otimise this to a value rather than using a shift
-		}
-		GPIO_Display_SCK->PSOR = 1U << Pin_Display_SCK;// Hopefully the compiler will otimise this to a value rather than using a shift
-
-		data1=data1<<1;
-	}
-#endif
-}
 
 int16_t ucSetPixel(int16_t x, int16_t y, bool color)
 {
@@ -101,52 +69,7 @@ int16_t ucSetPixel(int16_t x, int16_t y, bool color)
 	return 0;
 }
 
-void ucRenderRows(int16_t startRow, int16_t endRow)
-{
-#if defined(PLATFORM_GD77S)
-	return;
-#else
-	uint8_t *rowPos = (screenBuf + startRow*128);
-	taskENTER_CRITICAL();
-	for(int16_t row=startRow;row<endRow;row++)
-	{
-		UC1701_setCommandMode(true);
-		UC1701_transfer(0xb0 | row); // set Y
-		UC1701_transfer(0x10 | 0); // set X (high MSB)
 
-// Note there are 4 pixels at the left which are no in the hardware of the LCD panel, but are in the RAM buffer of the controller
-		UC1701_transfer(0x00 | 4); // set X (low MSB).
-
-		UC1701_setCommandMode(false);
-		uint8_t data1;
-		for(int16_t line=0;line<128;line++)
-		{
-			//UC1701_transfer(*rowPos++);
-			data1= *rowPos;
-			for (register int i=0; i<8; i++)
-			{
-				//__asm volatile( "nop" );
-				GPIO_Display_SCK->PCOR = 1U << Pin_Display_SCK;
-				//__asm volatile( "nop" );
-				if ((data1&0x80) == 0U)
-				{
-					GPIO_Display_SDA->PCOR = 1U << Pin_Display_SDA;// Hopefully the compiler will optimise this to a value rather than using a shift
-				}
-				else
-				{
-					GPIO_Display_SDA->PSOR = 1U << Pin_Display_SDA;// Hopefully the compiler will optimise this to a value rather than using a shift
-				}
-				//__asm volatile( "nop" );
-				GPIO_Display_SCK->PSOR = 1U << Pin_Display_SCK;// Hopefully the compiler will optimise this to a value rather than using a shift
-
-				data1=data1<<1;
-			}
-			rowPos++;
-		}
-	}
-	taskEXIT_CRITICAL();
-#endif
-}
 
 void ucRender(void)
 {
@@ -321,61 +244,10 @@ int ucPrintCore(int16_t x, int16_t y, const char *szMsg, ucFont_t fontSize, ucTe
 	return 0;
 }
 
-void ucSetInverseVideo(bool isInverted)
-{
-	UC1701_setCommandMode(true);
-	if (isInverted)
-	{
-		UC1701_transfer(0xA7); // Black background, white pixels
-	}
-	else
-	{
-		UC1701_transfer(0xA4); // White background, black pixels
-	}
 
-    UC1701_transfer(0xAF); // Set Display Enable
-    UC1701_setCommandMode(false);
-}
 
-void ucBegin(bool isInverted)
-{
-#if defined(PLATFORM_GD77S)
-	//ucClearBuf();
-	return;
-#else
-	GPIO_PinWrite(GPIO_Display_CS, Pin_Display_CS, 0);// Enable CS permanently
-    // Set the LCD parameters...
-	UC1701_setCommandMode(true);
-	UC1701_transfer(0xE2); // System Reset
-	UC1701_transfer(0x2F); // Voltage Follower On
-	UC1701_transfer(0x81); // Set Electronic Volume = 15
-	UC1701_transfer(nonVolatileSettings.displayContrast); //
-	UC1701_transfer(0xA2); // Set Bias = 1/9
-	UC1701_transfer(0xA1); // A0 Set SEG Direction
-	UC1701_transfer(0xC0); // Set COM Direction
-	if (isInverted)
-	{
-		UC1701_transfer(0xA7); // Black background, white pixels
-	}
-	else
-	{
-		UC1701_transfer(0xA4); // White background, black pixels
-	}
 
-    UC1701_setCommandMode(true);
-    UC1701_transfer(0xAF); // Set Display Enable
-    ucClearBuf();
-    ucRender();
-#endif
-}
 
-void ucSetContrast(uint8_t contrast)
-{
-	UC1701_setCommandMode(true);
-	UC1701_transfer(0x81);              // command to set contrast
-	UC1701_transfer(contrast);          // set contrast
-	UC1701_setCommandMode(false);
-}
 
 void ucClearBuf(void)
 {
