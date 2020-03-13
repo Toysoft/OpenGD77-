@@ -23,7 +23,7 @@
 #include "fw_HR-C6000.h"
 
 #include "fw_sound.h"
-#include "fw_mbelib.h"
+#include "mbelib.h"
 
 #define QUAUX(X) #X
 #define QU(X) QUAUX(X)

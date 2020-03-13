@@ -18,8 +18,8 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <hardware/fw_HR-C6000.h>
 #include <dmr/dmrDefines.h>
+#include <hardware/fw_HR-C6000.h>
 #include "fw_settings.h"
 #include <SeggerRTT/RTT/SEGGER_RTT.h>
 #include <user_interface/menuHotspot.h>

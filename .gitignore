@@ -5,6 +5,7 @@
 /firmware/Release
 /firmware/*.launch
 /firmware/linkerdata/*.dat
+/firmware/linkerdata/*.bin
 /ComTool/.vs
 /ComTool/ComTool/bin
 /ComTool/ComTool/obj

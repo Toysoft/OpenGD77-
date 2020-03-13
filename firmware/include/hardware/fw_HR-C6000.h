@@ -27,7 +27,7 @@
 #include "fw_spi.h"
 #include "fw_usb_com.h"
 
-#include "fw_codec.h"
+#include "codec.h"
 
 #if defined(PLATFORM_GD77) || defined(PLATFORM_GD77S)
 
