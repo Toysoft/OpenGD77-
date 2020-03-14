@@ -123,15 +123,14 @@ OpenGD77 / OpenDM1801 is a work-in-progress, so is this User Guide. Last major u
 
 ## Introduction
 
-This user guide is a work in progress as is the Open GD77 firmware. If you find any errors or omissions please let me know so they can be corrected.
-
-This manual covers both the original Tier 1 / Phase one version, which includes Hotspot mode, as well as the Tier 2 Alpha versions which don’t include Hotspot mode, but to have other new features.
+This user guide is a work in progress as is the OpenGD77 / OpenDM1801 firmware. If you find any errors or omissions please let me know so they can be corrected.
 
 Due to the rapid pace of development some of photos of screens are now out of date and not completely accurate.
 
 The photos will be updated when the firmware in a particular area stabilises
 
-The intention of the project is to create a fully featured non-commercial firmware that entirely replaces the Radioddity GD-77’s (and Baofeng DM-1801's) factory firmware. This firmware is specifically designed for **Amateur Radio** use, and has features not available in the official firmware.
+The intention of the project is to create a fully featured non-commercial firmware that entirely replaces the Radioddity GD-77, and Baofeng DM-1801 factory firmware. 
+This firmware is specifically designed for **Amateur Radio** use, and has features not available in the official firmware.
 
 **Note:**
 **The firmware is still under development and there are some key areas of functionality which have yet to be written.**
@@ -148,11 +147,9 @@ The intention of the project is to create a fully featured non-commercial firmwa
    For a full list of current bugs, and proposed enhancements see
    <https://github.com/rogerclarkmelbourne/opengd77/issues>
 
-The firmware is designed for Amateur Radio use, especially on DMR, and has a number of features for Amateur Radio use which are not normally available on commercial DMR radios.
 
-These include direct numerical entry of DMR TalkGroup numbers and use of the Rx Group list to control the TG’s selectable for each DMR “channel”.
-
-Also, as far as possible the firmware is open source. This allows anyone to modify the firmware to suit their own individual needs, and also for peer review and improvement of the firmware source code.
+Also, as far as possible the firmware is open source. 
+This allows anyone to modify the firmware to suit their own individual needs, and also for peer review and improvement of the firmware source code.
 
 ### Credits
 
@@ -164,7 +161,7 @@ The Tier 2 functionality, User Interface, Display driver, Codeplug API, EEPROM m
 
 Multiple bug fixes and additions from Alex DL4LEX, including the Lock Screen and DTMF and Tone burst functions
 
-Graphical and other enhancements from Daniel F1RMB
+Graphical and other enhancements, and Hotspot mode fixes from Daniel F1RMB
 
 Additions from Colin G4EML, including FM CTCSS and “All Channels” zone functionality
 
