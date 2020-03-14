@@ -259,7 +259,7 @@ static void updateScreen(void)
 
 static void updateFrequency(void)
 {
-	int tmp_frequency=read_freq_enter_digits();
+	int tmp_frequency=read_freq_enter_digits(0,8);
 	if (trxGetBandFromFrequency(tmp_frequency)!=-1)
 	{
 		switch(gMenusCurrentItemIndex)

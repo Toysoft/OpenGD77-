@@ -101,7 +101,7 @@ extern const uint32_t RSSI_UPDATE_COUNTER_RELOAD;
 extern settingsStruct_t originalNonVolatileSettings; // used to store previous settings in options edition related menus.
 extern int nuisanceDelete[MAX_ZONE_SCAN_NUISANCE_CHANNELS];
 extern int nuisanceDeleteIndex;
-extern char freq_enter_digits[8];
+extern char freq_enter_digits[12];
 extern int freq_enter_idx;
 
 char *chomp(char *str);
@@ -118,9 +118,9 @@ void lastHeardClearLastID(void);
 void drawRSSIBarGraph(void);
 void drawDMRMicLevelBarGraph(void);
 void setOverrideTGorPC(int tgOrPc, bool privateCall);
-void printFrequency(bool isTX, bool hasFocus, uint8_t y, uint32_t frequency, bool displayVFOChannel);
+void printFrequency(bool isTX, bool hasFocus, uint8_t y, uint32_t frequency, bool displayVFOChannel,bool isScanMode);
 void printToneAndSquelch(void);
 void reset_freq_enter_digits(void);
-int read_freq_enter_digits(void);
+int read_freq_enter_digits(int startDigit, int endDigit);
 
 #endif

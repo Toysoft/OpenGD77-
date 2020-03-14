@@ -403,8 +403,8 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				if (displayChannelSettings)
 				{
 					printToneAndSquelch();
-					printFrequency(false, false, 32, currentChannelData->rxFreq, false);
-					printFrequency(true, false, 48, currentChannelData->txFreq, false);
+					printFrequency(false, false, 32, currentChannelData->rxFreq, false, false);
+					printFrequency(true, false, 48, currentChannelData->txFreq, false, false);
 				}
 				else
 				{
