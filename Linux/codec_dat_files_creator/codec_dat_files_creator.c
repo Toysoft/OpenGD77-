@@ -36,7 +36,7 @@
 // And use the following command to compile:
 // gcc -Wall -O2 -s `pkg-config libcurl --cflags` -o codec_dat_files_creator codec_dat_files_creator.c `pkg-config libcurl --libs`
 //
-//#define USE_LIBCURL 1
+#define USE_LIBCURL 1
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -2787,7 +2787,7 @@ static const uint8_t DecryptionTable[] = {
      0x5D, 0xDF, 0x64, 0xDA, 0x13, 0xA7, 0x80, 0x00
 };
 
-static const char *DEFAULT_FIRMWARE = "GD-77_V3.1.1.sgl";
+static const char *DEFAULT_FIRMWARE = "generic_dmr_codec.bin";
 
 
 /**
@@ -3059,7 +3059,7 @@ static bool downloadData(void)
      
      printf("Downloading...\n");
      cHandle = curl_easy_init();
-     curl_easy_setopt(cHandle, CURLOPT_URL, "http://github.com/rogerclarkmelbourne/Radioddity_GD-77/raw/master/firmware/GD-77_V3.1.1.sgl");
+     curl_easy_setopt(cHandle, CURLOPT_URL, "https://github.com/rogerclarkmelbourne/Radioddity_GD-77/raw/master/Generic_devices/generic_dmr_codec.bin");
      curl_easy_setopt(cHandle, CURLOPT_NOPROGRESS, 0L);
      curl_easy_setopt(cHandle, CURLOPT_USERAGENT, "curl/7.35.0");
      curl_easy_setopt(cHandle, CURLOPT_MAXREDIRS, 50L);
