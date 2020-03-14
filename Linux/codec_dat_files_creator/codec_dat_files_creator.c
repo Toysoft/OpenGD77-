@@ -36,7 +36,7 @@
 // And use the following command to compile:
 // gcc -Wall -O2 -s `pkg-config libcurl --cflags` -o codec_dat_files_creator codec_dat_files_creator.c `pkg-config libcurl --libs`
 //
-#define USE_LIBCURL 1
+//#define USE_LIBCURL 1
 
 #include <stdio.h>
 #include <stdlib.h>
