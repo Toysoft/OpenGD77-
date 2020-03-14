@@ -31,15 +31,27 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+//
+// Uncomment to enable download support using libcurl
+// And use the following command to compile:
+// gcc -Wall -O2 -s `pkg-config libcurl --cflags` -o codec_dat_files_creator codec_dat_files_creator.c `pkg-config libcurl --libs`
+//
+//#define USE_LIBCURL 1
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
+
+#ifdef USE_LIBCURL
+#include <curl/curl.h>
+#endif
 
 static const uint8_t DecryptionTable[] = {
      0xCF, 0xCE, 0x51, 0xCD, 0x6E, 0xF4, 0x29, 0xC1, 0x92, 0x11, 0x35, 0x17,
@@ -2901,6 +2913,14 @@ static uint8_t *checkForSGLAndReturnEncryptedData(uint8_t *fileBuf, size_t fileB
      return NULL;
 }
 
+#ifdef USE_LIBCURL
+static bool fileExist(const char *filename)
+{
+     struct stat buffer;   
+     return (stat(filename, &buffer) == 0);
+}
+#endif
+
 /**
  * ** F1RMB: Yeah, this function contains 2 goto labels, ugly but cleaner.
  **/
@@ -2956,7 +2976,7 @@ static int ExtractData(const char *inFile)
 
 	       size_t fileBufLen = (0x4000 - 0x400);
 
-	       // Write fw_311_0x00004400_0x00007fff.dat
+	       // Write codec_bin_section_1.bin
 	       // Allocate memory chunk for file's data
 	       if ((fileBuf = calloc(fileBufLen, sizeof(uint8_t))) == NULL)
 	       {
@@ -2967,14 +2987,14 @@ static int ExtractData(const char *inFile)
 	       // Copy decoded data to the buffer that will be saved in data file.
 	       memcpy(fileBuf, (dataBuf + 0x400), fileBufLen * sizeof(uint8_t));
 
-	       if (SaveDataToFile("fw_311_0x00004400_0x00007fff.dat", fileBuf, fileBufLen) != 0)
+	       if (SaveDataToFile("codec_bin_section_1.bin", fileBuf, fileBufLen) != 0)
 	       {
 		    goto failure;
 	       }
 	       
 	       free(fileBuf);
 	       
-	       // Write fw_311_0x00050000_0x0007afff.dat
+	       // Write codec_bin_section_2.bin
 	       fileBuf = NULL;
 	       fileBufLen = (0x77000 - 0x4c000);
 	       
@@ -2988,7 +3008,7 @@ static int ExtractData(const char *inFile)
 	       // Copy decoded data to the buffer that will be saved in data file.
 	       memcpy(fileBuf, (dataBuf + 0x4c000), fileBufLen * sizeof(uint8_t));
 
-	       if (SaveDataToFile("fw_311_0x00050000_0x0007afff.dat", fileBuf, fileBufLen) != 0)
+	       if (SaveDataToFile("codec_bin_section_2.bin", fileBuf, fileBufLen) != 0)
 	       {
 		    goto failure;
 	       }
@@ -3030,11 +3050,53 @@ static int ExtractData(const char *inFile)
      return retval;
 }
 
+#ifdef USE_LIBCURL
+static bool downloadData(void)
+{
+     CURL *cHandle;
+     FILE *outFile;
+     CURLcode ret = CURLE_FAILED_INIT;
+     
+     printf("Downloading...\n");
+     cHandle = curl_easy_init();
+     curl_easy_setopt(cHandle, CURLOPT_URL, "http://github.com/rogerclarkmelbourne/Radioddity_GD-77/raw/master/firmware/GD-77_V3.1.1.sgl");
+     curl_easy_setopt(cHandle, CURLOPT_NOPROGRESS, 0L);
+     curl_easy_setopt(cHandle, CURLOPT_USERAGENT, "curl/7.35.0");
+     curl_easy_setopt(cHandle, CURLOPT_MAXREDIRS, 50L);
+     curl_easy_setopt(cHandle, CURLOPT_FOLLOWLOCATION, 1L);
+     curl_easy_setopt(cHandle, CURLOPT_TCP_KEEPALIVE, 1L);
+
+     if ((outFile = fopen(DEFAULT_FIRMWARE, "wb")) != NULL)
+     {
+	  curl_easy_setopt(cHandle, CURLOPT_WRITEDATA, outFile);
+	  ret = curl_easy_perform(cHandle);
+	  fclose(outFile);
+     }
+     
+     curl_easy_cleanup(cHandle);
+     
+     return (ret == CURLE_OK);
+}
+
+#endif
+
+
 /**
  *
  **/
 int main(int argc, char **argv)
 {
+#ifdef USE_LIBCURL
+     if ((argc < 2) && (fileExist(DEFAULT_FIRMWARE) == false))
+     {
+	  if (!downloadData())
+	  {
+	       fprintf(stderr, "ERROR: unable to download\n");
+	       return EXIT_FAILURE;
+	  }
+     }
+#endif
+     
      // Only take the first argument, of specified, otherwise default filename.
      if (ExtractData((argc >= 2 ? argv[1] : DEFAULT_FIRMWARE)) != 0)
      {
