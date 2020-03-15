@@ -1101,7 +1101,7 @@ static void updateQuickMenuScreen(void)
 		switch(mNum)
 		{
 		    case VFO_SCREEN_QUICK_MENU_SCAN:
-		    	snprintf(buf, bufferLen,"%s:%s",currentLanguage->scan,((screenOperationMode[nonVolatileSettings.currentVFONumber] == VFO_SCREEN_OPERATION_SCAN)?currentLanguage->off:currentLanguage->on));
+		    	snprintf(buf, bufferLen,"%s %s",currentLanguage->scan,((screenOperationMode[nonVolatileSettings.currentVFONumber] == VFO_SCREEN_OPERATION_SCAN)?currentLanguage->off:currentLanguage->on));
 				break;
 		    case VFO_SCREEN_QUICK_MENU_VFO_TO_NEW:
 		    	strncpy(buf, currentLanguage->vfoToNewChannel, bufferLen);
