@@ -3,8 +3,8 @@ src = UC1701_font_tool.c
 obj = $(src:.c=.o)
 
 CC = gcc
-CFLAGS = -Wall -O2 -DBUILD_FONT_TOOL -I../../firmware/include/hardware
-CFLAGS_DEBUG = -Wall -O0 -g -DBUILD_FONT_TOOL -I../../firmware/include/hardware
+CFLAGS = -Wall -O2 -DBUILD_FONT_TOOL -I../../../firmware/include/hardware
+CFLAGS_DEBUG = -Wall -O0 -g -DBUILD_FONT_TOOL -I../../../firmware/include/hardware
 LDFLAGS = -static -s
 LDFLAGS_DEBUG =
 
