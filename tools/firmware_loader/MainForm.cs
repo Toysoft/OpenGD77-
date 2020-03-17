@@ -86,8 +86,6 @@ namespace GD77_FirmwareLoader
 			String pattern = "";
 			String urlFW = "";
 
-			Console.WriteLine("Download String Completed");
-
 			this.progressBar.Visible = false;
 
 			// Define Regex's patterm, according to current Model selection
