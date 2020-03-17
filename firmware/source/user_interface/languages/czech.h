@@ -20,7 +20,7 @@
  * Translators: OK2HAD
  *
  *
- * Rev: 2.1
+ * Rev: 2.2
  */
 #ifndef USER_INTERFACE_LANGUAGES_CZECH_H_
 #define USER_INTERFACE_LANGUAGES_CZECH_H_
@@ -37,21 +37,21 @@ const stringsTable_t czechLanguage =
 .LANGUAGE_NAME 			= "estina", // MaxLen: 16
 .language				= "Jazyk", // MaxLen: 16
 .menu					= "Menu", // MaxLen: 16
-.credits				= "P›ispevatelé", // MaxLen: 16
+.credits				= "P›ispvatelé", // MaxLen: 16
 .zone					= "Zóna", // MaxLen: 16
-.rssi					= "Sila signálu", // MaxLen: 16
+.rssi					= "Síla signálu", // MaxLen: 16
 .battery				= "Baterie", // MaxLen: 16
-.contacts				= "Kontakt", // MaxLen: 16
+.contacts				= "Kontakty", // MaxLen: 16
 .firmware_info			= "Firmware Info", // MaxLen: 16
-.last_heard				= "Poslední volající", // MaxLen: 16
+.last_heard				= "PosledníKdoVolal", // MaxLen: 16
 .options				= "Nastavení", // MaxLen: 16
 .display_options		= "NastaveníDisplay", // MaxLen: 16
 .sound_options				= "Nastavení zvuku", // MaxLen: 16
-.channel_details		= "Kanal Detail", // MaxLen: 16
+.channel_details		= "Kanál Detail", // MaxLen: 16
 .new_contact			= "Nový Kontakt", // MaxLen: 16
 .new_channel			= "Nový Kanal", // MaxLen: 16, leave room for a space and four channel digits after
 .contact_list			= "Kontakt list", // MaxLen: 16
-.hotspot_mode			= "Hotspot-Mod", // MaxLen: 16
+.hotspot_mode			= "Hotspot-Mód", // MaxLen: 16
 .contact_details		= "Kontakt Detail", // MaxLen: 16
 .built					= "Sestavení", // MaxLen: 16
 .zones					= "Zóny", // MaxLen: 16
@@ -69,18 +69,18 @@ const stringsTable_t czechLanguage =
 .tg_entry				= "TG Zadání", // MaxLen: 15
 .pc_entry				= "PC Zadání", // MaxLen: 15
 .user_dmr_id			= "Uživ. DMR ID", // MaxLen: 15
-.contact 				= "Kontakt", // MaxLen: 15
+.contact 				= "Kontakty", // MaxLen: 15
 .accept_call			= "P›ijmout hovor?", // MaxLen: 16
-.private_call			= "Soukromý Hovor", // MaxLen: 16
+.private_call			= "Seznam kontakt¡", // MaxLen: 16
 .squelch				= "Squelch",  // MaxLen: 8
 .quick_menu 			= "Rychlé menu", // MaxLen: 16
 .filter					= "Filtr", // MaxLen: 7 (with ':' + settings: "None", "CC", "CC,TS", "CC,TS,TG")
 .all_channels			= "Všechny Kanály", // MaxLen: 16
 .gotoChannel			= "Další kanál",  // MaxLen: 11 (" 1024")
 .scan					= "Sken", // MaxLen: 16
-.channelToVfo			= "Kanal-->VFO", // MaxLen: 16
-.vfoToChannel			= "VFO-->Kanal", // MaxLen: 16
-.vfoToNewChannel		= "VFO-->Novy Kanal", // MaxLen: 16
+.channelToVfo			= "Kanál-->VFO", // MaxLen: 16
+.vfoToChannel			= "VFO-->Kanál", // MaxLen: 16
+.vfoToNewChannel		= "VFO-->Nový Kanál", // MaxLen: 16
 .group					= "Group", // MaxLen: 16 (with .type)
 .private				= "Soukromé", // MaxLen: 16 (with .type)
 .all					= "Všechno", // MaxLen: 16 (with .type)
@@ -105,13 +105,13 @@ const stringsTable_t czechLanguage =
 .no						= "Ne", // MaxLen: 16 (with ':' + .zone_skip, .all_skip or .factory_reset)
 .rx_group				= "Rx Group", // MaxLen: 16 (with ':' and codeplug group name)
 .on						= "Zap", // MaxLen: 16 (with ':' + .calibration or .band_limits)
-.timeout_beep			= "TonLimit", // MaxLen: 16 (with ':' + .off or 5..20)
-.factory_reset			= "Uplný-Reset", // MaxLen: 16 (with ':' + .yes or .no)
+.timeout_beep			= "TónLimit", // MaxLen: 16 (with ':' + .off or 5..20)
+.factory_reset			= "Úplný-Reset", // MaxLen: 16 (with ':' + .yes or .no)
 .calibration			= "Kalibrace", // MaxLen: 16 (with ':' + .on or .off)
 .band_limits			= "OmezitPásmo", // MaxLen: 16 (with ':' + .on or .off)
 .beep_volume			= "ZvukKláves", // MaxLen: 16 (with ':' + -24..6 + 'dB')
 .dmr_mic_gain			= "DMR mic", // MaxLen: 16 (with ':' + -33..12 + 'dB')
-.key_long				= "Drž", // MaxLen: 11 (with ':' + x.xs fitted)
+.key_long				= "Držet", // MaxLen: 11 (with ':' + x.xs fitted)
 .key_repeat				= "Znovu", // MaxLen: 11 (with ':' + x.xs fitted)
 .dmr_filter_timeout		= "asDMRFiltru", // MaxLen: 16 (with ':' + 1..90 + 's')
 .brightness				= "Jas", // MaxLen: 16 (with ':' + 0..100 + '%')
@@ -135,12 +135,12 @@ const stringsTable_t czechLanguage =
 .select_tx				= "Vybrat TX", // MaxLen: 16
 .edit_contact			= "Upravit kontakt", // MaxLen: 16
 .delete_contact			= "Smazat Kontakt", // MaxLen: 16
-.group_call				= "Group €ísla", // MaxLen: 16
-.all_call				= "Vsechny €ísla", // MaxLen: 16
+.group_call				= "Seznam Group", // MaxLen: 16
+.all_call				= "Všechny €ísla", // MaxLen: 16
 .tone_scan				= "CTCSS Sken",//// MaxLen: 16
 .cc_scan				= "CC Sken",//// MaxLen: 16
 .low_battery			= "SLABÁ BATERIE!",//// MaxLen: 16
-.Auto					= "Automatický", // MaxLen 16 (with .mode + ':') 
+.Auto					= "Automat.", // MaxLen 16 (with .mode + ':') 
 .manual					= "Manualní",  // MaxLen 16 (with .mode + ':') 
 .ptt_toggle				= "PTT p›epnout", // MaxLen 16 (with ':' + .on or .off)
 .private_call_handling		= "Soukr.Volání", // MaxLen 16 (with ':' + .on ot .off)
