@@ -318,36 +318,37 @@ def usage():
 # Main function.
 #####################################################
 def main():
+    global outputFormat
     sglFile = "firmware.sgl"
-    dev = usb.core.find(idVendor=0x15a2, idProduct=0x0073)
-    if (dev):
-        global outputFormat
-        
-        # Command line argument parsing
-        try:                                
-            opts, args = getopt.getopt(sys.argv[1:], "hf:m:", ["help", "firmware=", "model="])
-        except getopt.GetoptError as err:
-            print(str(err))
+
+    # Command line argument parsing
+    try:                                
+        opts, args = getopt.getopt(sys.argv[1:], "hf:m:", ["help", "firmware=", "model="])
+    except getopt.GetoptError as err:
+        print(str(err))
+        usage()
+        sys.exit(2)
+
+    for opt, arg in opts:
+        if opt in ("-h", "--help"):
             usage()
             sys.exit(2)
-        
-        for opt, arg in opts:
-            if opt in ("-h", "--help"):
-                usage()
+        elif opt in ("-f", "--firmware"):
+            sglFile = arg
+        elif opt in ("-m", "--model"):
+            try:
+                index = outputModes.index(arg)
+            except ValueError as e:
+                print("Model \"{}\" is unknown".format(arg))
                 sys.exit(2)
-            elif opt in ("-f", "--firmware"):
-                sglFile = arg
-            elif opt in ("-m", "--model"):
-                try:
-                    index = outputModes.index(arg)
-                except ValueError as e:
-                    print("Model \"{}\" is unknown".format(arg))
-                    sys.exit(2)
-                    
-                outputFormat = SGLFormatOutput(index)
-            else:
-                assert False, "Unhandled option"
 
+            outputFormat = SGLFormatOutput(index)
+        else:
+            assert False, "Unhandled option"
+
+    # Try to connect USB device
+    dev = usb.core.find(idVendor=0x15a2, idProduct=0x0073)
+    if (dev):
         if (os.path.isfile(sglFile) == False):
             print("Firmware file \"" + sglFile + "\" is missing.")
             sys.exit(2)
