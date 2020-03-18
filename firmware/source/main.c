@@ -136,7 +136,10 @@ void fw_main_task(void *data)
     if (!checkAndCopyCalibrationToCommonLocation())
 	{
 		showErrorMessage("CAL DATA ERROR");
-		while(1U) {};
+		while(1U)
+		{
+			tick_com_request();
+		};
 	}
 
     // Init AT1846S
@@ -381,8 +384,12 @@ void fw_main_task(void *data)
 				{
 					int currentMenu = menuSystemGetCurrentMenuNumber();
 
-					if ((slot_state == DMR_STATE_IDLE || trxDMRMode == DMR_MODE_PASSIVE) &&
-							trxGetMode() != RADIO_MODE_NONE &&
+					/*
+					 * This code would prevent transmission on simplex if the radio is receiving a DMR signal.
+					 * if ((slot_state == DMR_STATE_IDLE || trxDMRMode == DMR_MODE_PASSIVE)  &&
+					 *
+					 */
+					if (	trxGetMode() != RADIO_MODE_NONE &&
 							settingsUsbMode != USB_MODE_HOTSPOT &&
 							currentMenu != MENU_POWER_OFF &&
 							currentMenu != MENU_SPLASH_SCREEN &&

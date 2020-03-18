@@ -51,7 +51,8 @@ int menuContactDetails(uiEvent_t *ev, bool isFirstRun)
 		callTypeString[1]= currentLanguage->private;
 		callTypeString[2]= currentLanguage->all;
 
-		if (contactListContactIndex == 0) {
+		if (contactListContactIndex == 0)
+		{
 			contactDetailsIndex = codeplugContactGetFreeIndex();
 			tmpContact.name[0] = 0x00;
 			tmpContact.callType = CONTACT_CALLTYPE_TG;
@@ -60,8 +61,10 @@ int menuContactDetails(uiEvent_t *ev, bool isFirstRun)
 			digits[0] = 0x00;
 			memset(contactName, 0, 20);
 			namePos = 0;
-		} else {
-			contactDetailsIndex = contactListContactIndex;
+		}
+		else
+		{
+			contactDetailsIndex = contactListContactData.NOT_IN_CODEPLUGDATA_indexNumber;
 			memcpy(&tmpContact, &contactListContactData,sizeof(struct_codeplugContact_t));
 			itoa(tmpContact.tgNumber, digits, 10);
 			codeplugUtilConvertBufToString(tmpContact.name, contactName, 16);
@@ -106,14 +109,18 @@ static void updateScreen(void)
 
 	ucClearBuf();
 
-	if (tmpContact.name[0] == 0x00) {
+	if (tmpContact.name[0] == 0x00)
+	{
 		strncpy(buf, currentLanguage->new_contact, bufferLen);
 		buf[bufferLen - 1] = 0;
-	} else {
+	}
+	else
+	{
 		codeplugUtilConvertBufToString(tmpContact.name, buf, 16);
 	}
 	menuDisplayTitle(buf);
-	if (gMenusCurrentItemIndex == CONTACT_DETAILS_NAME) {
+	if (gMenusCurrentItemIndex == CONTACT_DETAILS_NAME)
+	{
 		keypadAlphaEnable = true;
 	}
 	else
@@ -193,182 +200,198 @@ static void handleEvent(uiEvent_t *ev)
 	char buf[bufferLen];
 	int sLen = strlen(digits);
 
-	switch (menuContactDetailsState) {
-	case MENU_CONTACT_DETAILS_DISPLAY:
-		if (ev->events & KEY_EVENT) {
+	switch (menuContactDetailsState)
+	{
+		case MENU_CONTACT_DETAILS_DISPLAY:
+		if (ev->events & KEY_EVENT)
+		{
 			if (KEYCHECK_PRESS(ev->keys,KEY_DOWN))
 			{
 				MENU_INC(gMenusCurrentItemIndex, NUM_CONTACT_DETAILS_ITEMS);
 			}
-			else if (KEYCHECK_PRESS(ev->keys,KEY_UP))
+			else
 			{
-				MENU_DEC(gMenusCurrentItemIndex, NUM_CONTACT_DETAILS_ITEMS);
-			}
-			else if (KEYCHECK_PRESS(ev->keys,KEY_RIGHT))
-			{
-				switch(gMenusCurrentItemIndex)
+				if (KEYCHECK_PRESS(ev->keys,KEY_UP))
 				{
-				case CONTACT_DETAILS_NAME:
-					moveCursorRightInString(contactName, &namePos, 16, (ev->buttons & BUTTON_SK2));
-					updateCursor(true);
-					break;
-				case CONTACT_DETAILS_TG:
-					break;
-				case CONTACT_DETAILS_CALLTYPE:
-					MENU_INC(tmpContact.callType,3);
-					break;
-				case CONTACT_DETAILS_TS:
-					switch (tmpContact.reserve1 & 0x3) {
-					case 1:
-					case 3:
-						tmpContact.reserve1 &= 0xfc;
-						break;
-					case 0:
-						tmpContact.reserve1 |= 0x02;
-						break;
-					case 2:
-						tmpContact.reserve1 |= 0x03;
-						break;
-					}
-					break;
-				}
-			}
-			else if (KEYCHECK_PRESS(ev->keys,KEY_LEFT))
-			{
-				switch(gMenusCurrentItemIndex)
-				{
-				case CONTACT_DETAILS_NAME:
-					moveCursorLeftInString(contactName, &namePos, (ev->buttons & BUTTON_SK2));
-					updateCursor(true);
-					break;
-				case CONTACT_DETAILS_TG:
-					if (sLen>0) {
-						digits[sLen-1] = 0x00;
-					}
-					updateCursor(true);
-					break;
-				case CONTACT_DETAILS_CALLTYPE:
-					MENU_DEC(tmpContact.callType,3);
-					break;
-				case CONTACT_DETAILS_TS:
-					switch (tmpContact.reserve1 & 0x3) {
-					case 1:
-					case 3:
-						tmpContact.reserve1 &= 0xfc;
-						tmpContact.reserve1 |= 0x02;
-						break;
-					case 0:
-						tmpContact.reserve1 |= 0x03;
-						break;
-					case 2:
-						tmpContact.reserve1 &= 0xfc;
-						break;
-					}
-					break;
-				}
-			}
-			else if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
-			{
-				if (tmpContact.callType == CONTACT_CALLTYPE_ALL)
-				{
-					tmpContact.tgNumber = 16777215;
+					MENU_DEC(gMenusCurrentItemIndex, NUM_CONTACT_DETAILS_ITEMS);
 				}
 				else
 				{
-					tmpContact.tgNumber = atoi(digits);
-				}
-
-				if (tmpContact.tgNumber > 0 && tmpContact.tgNumber <= 9999999)
-				{
-					struct_codeplugContact_t contact;
-					int index = codeplugContactIndexByTGorPC(tmpContact.tgNumber, tmpContact.callType, &contact);
-					if (index > 0 && index != tmpContact.NOT_IN_CODEPLUGDATA_indexNumber)
+					if (KEYCHECK_PRESS(ev->keys,KEY_RIGHT))
 					{
-						menuContactDetailsTimeout = 2000;
-						menuContactDetailsState = MENU_CONTACT_DETAILS_EXISTS;
+						switch(gMenusCurrentItemIndex)
+						{
+						case CONTACT_DETAILS_NAME:
+							moveCursorRightInString(contactName, &namePos, 16, (ev->buttons & BUTTON_SK2));
+							updateCursor(true);
+							break;
+						case CONTACT_DETAILS_TG:
+							break;
+						case CONTACT_DETAILS_CALLTYPE:
+							MENU_INC(tmpContact.callType,3);
+							break;
+						case CONTACT_DETAILS_TS:
+							switch (tmpContact.reserve1 & 0x3)
+							{
+							case 1:
+							case 3:
+								tmpContact.reserve1 &= 0xfc;
+								break;
+							case 0:
+								tmpContact.reserve1 |= 0x02;
+								break;
+							case 2:
+								tmpContact.reserve1 |= 0x03;
+								break;
+							}
+							break;
+						}
 					}
 					else
 					{
-						codeplugUtilConvertStringToBuf(contactName, tmpContact.name, 16);
-						if (contactDetailsIndex > 0 && contactDetailsIndex <= 1024)
+						if (KEYCHECK_PRESS(ev->keys,KEY_LEFT))
 						{
-							if (tmpContact.name[0] == 0xff)
+							switch(gMenusCurrentItemIndex)
 							{
-								if (tmpContact.callType == CONTACT_CALLTYPE_PC)
-								{
-									if (dmrIDLookup(tmpContact.tgNumber,&foundRecord))
-									{
-										codeplugUtilConvertStringToBuf(foundRecord.text, tmpContact.name, 16);
-									} else {
-										snprintf(buf, bufferLen, "%s %d", currentLanguage->pc, tmpContact.tgNumber);
-										buf[bufferLen - 1] = 0;
-										codeplugUtilConvertStringToBuf(buf, tmpContact.name, 16);
+								case CONTACT_DETAILS_NAME:
+									moveCursorLeftInString(contactName, &namePos, (ev->buttons & BUTTON_SK2));
+									updateCursor(true);
+									break;
+								case CONTACT_DETAILS_TG:
+									if (sLen>0) {
+										digits[sLen-1] = 0x00;
 									}
+									updateCursor(true);
+									break;
+								case CONTACT_DETAILS_CALLTYPE:
+									MENU_DEC(tmpContact.callType,3);
+									break;
+								case CONTACT_DETAILS_TS:
+									switch (tmpContact.reserve1 & 0x3)
+									{
+										case 1:
+										case 3:
+											tmpContact.reserve1 &= 0xfc;
+											tmpContact.reserve1 |= 0x02;
+											break;
+										case 0:
+											tmpContact.reserve1 |= 0x03;
+											break;
+										case 2:
+											tmpContact.reserve1 &= 0xfc;
+											break;
+									}
+									break;
+							}
+						}
+						else
+						{
+							if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
+							{
+								if (tmpContact.callType == CONTACT_CALLTYPE_ALL)
+								{
+									tmpContact.tgNumber = 16777215;
 								}
 								else
 								{
-									snprintf(buf, bufferLen, "%s %d", currentLanguage->tg, tmpContact.tgNumber);
-									buf[bufferLen - 1] = 0;
-									codeplugUtilConvertStringToBuf(buf, tmpContact.name, 16);
+									tmpContact.tgNumber = atoi(digits);
+								}
+
+								if (tmpContact.tgNumber > 0 && tmpContact.tgNumber <= 9999999)
+								{
+									codeplugUtilConvertStringToBuf(contactName, tmpContact.name, 16);
+									if (contactDetailsIndex > 0 && contactDetailsIndex <= 1024)
+									{
+										if (tmpContact.name[0] == 0xff)
+										{
+											if (tmpContact.callType == CONTACT_CALLTYPE_PC)
+											{
+												if (dmrIDLookup(tmpContact.tgNumber,&foundRecord))
+												{
+													codeplugUtilConvertStringToBuf(foundRecord.text, tmpContact.name, 16);
+												}
+												else
+												{
+													snprintf(buf, bufferLen, "%s %d", currentLanguage->pc, tmpContact.tgNumber);
+													buf[bufferLen - 1] = 0;
+													codeplugUtilConvertStringToBuf(buf, tmpContact.name, 16);
+												}
+											}
+											else
+											{
+												snprintf(buf, bufferLen, "%s %d", currentLanguage->tg, tmpContact.tgNumber);
+												buf[bufferLen - 1] = 0;
+												codeplugUtilConvertStringToBuf(buf, tmpContact.name, 16);
+											}
+										}
+										codeplugContactSaveDataForIndex(contactDetailsIndex, &tmpContact);
+										menuContactDetailsTimeout = 2000;
+										menuContactDetailsState = MENU_CONTACT_DETAILS_SAVED;
+									}
 								}
 							}
-							codeplugContactSaveDataForIndex(contactDetailsIndex, &tmpContact);
-//							contactListContactIndex = 0;
-							menuContactDetailsTimeout = 2000;
-							menuContactDetailsState = MENU_CONTACT_DETAILS_SAVED;
+							else
+							{
+								if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
+								{
+									menuSystemPopPreviousMenu();
+									return;
+								}
+								else
+								{
+									if (gMenusCurrentItemIndex == CONTACT_DETAILS_TG)
+									{
+										// Add a digit
+										if (sLen < 7)
+										{
+											int keyval = menuGetKeypadKeyValue(ev, true);
+
+											char c[2] = {0, 0};
+
+											if (keyval != 99)
+											{
+												c[0] = keyval+'0';
+												strcat(digits, c);
+											}
+										}
+									}
+									else
+									{
+										if (gMenusCurrentItemIndex == CONTACT_DETAILS_NAME)
+										{
+											if (ev->keys.event == KEY_MOD_PREVIEW)
+											{
+												contactName[namePos] = ev->keys.key;
+												updateCursor(true);
+											}
+											if (ev->keys.event == KEY_MOD_PRESS)
+											{
+												contactName[namePos] = ev->keys.key;
+												if (namePos < strlen(contactName) && namePos < 15)
+												{
+													namePos++;
+												}
+												updateCursor(true);
+											}
+										}
+									}
+								}
+							}
 						}
 					}
 				}
 			}
-			else if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
-			{
-//				contactListContactIndex = 0;
-				menuSystemPopPreviousMenu();
-				return;
-			}
-			else if (gMenusCurrentItemIndex == CONTACT_DETAILS_TG) {
-				// Add a digit
-				if (sLen < 7)
-				{
-					int keyval = menuGetKeypadKeyValue(ev, true);
-
-					char c[2] = {0, 0};
-
-					if (keyval != 99)
-					{
-						c[0] = keyval+'0';
-						strcat(digits, c);
-					}
-				}
-			} else if (gMenusCurrentItemIndex == CONTACT_DETAILS_NAME)
-			{
-				if (ev->keys.event == KEY_MOD_PREVIEW) {
-					contactName[namePos] = ev->keys.key;
-					updateCursor(true);
-				}
-				if (ev->keys.event == KEY_MOD_PRESS) {
-					contactName[namePos] = ev->keys.key;
-					if (namePos < strlen(contactName) && namePos < 15) {
-						namePos++;
-					}
-					updateCursor(true);
-				}
-			}
-
 			updateScreen();
-
 		}
 		break;
 	case MENU_CONTACT_DETAILS_SAVED:
         menuContactDetailsTimeout--;
 		if ((menuContactDetailsTimeout == 0) || KEYCHECK_SHORTUP(ev->keys, KEY_GREEN) || KEYCHECK_SHORTUP(ev->keys, KEY_RED))
 		{
-//			contactListContactIndex = 0;
 			menuSystemPopPreviousMenu();
 			return;
 		}
 		updateScreen();
-
 		break;
 	case MENU_CONTACT_DETAILS_EXISTS:
         menuContactDetailsTimeout--;
@@ -377,7 +400,6 @@ static void handleEvent(uiEvent_t *ev)
 			menuContactDetailsState = MENU_CONTACT_DETAILS_DISPLAY;
 		}
 		updateScreen();
-
 		break;
 	}
 }
