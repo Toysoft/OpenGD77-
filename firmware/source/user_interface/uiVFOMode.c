@@ -759,7 +759,14 @@ static void handleEvent(uiEvent_t *ev)
 			{
 				if (screenOperationMode[nonVolatileSettings.currentVFONumber] == VFO_SCREEN_OPERATION_SCAN)
 				{
-					scanActive=true;
+					if (!scanActive)
+					{
+						scanActive=true;
+					}
+					else
+					{
+						handleUpKey(ev);
+					}
 				}
 				else
 				{
