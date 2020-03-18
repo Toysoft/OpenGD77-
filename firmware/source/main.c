@@ -136,7 +136,10 @@ void fw_main_task(void *data)
     if (!checkAndCopyCalibrationToCommonLocation())
 	{
 		showErrorMessage("CAL DATA ERROR");
-		while(1U) {};
+		while(1U)
+		{
+			tick_com_request();
+		};
 	}
 
     // Init AT1846S
