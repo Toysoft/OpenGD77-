@@ -95,7 +95,7 @@ namespace GD77_FirmwareLoader
 			this.btnDownload.Name = "btnDownload";
 			this.btnDownload.Size = new System.Drawing.Size(130, 24);
 			this.btnDownload.TabIndex = 1;
-			this.btnDownload.Text = "Download && Flash";
+			this.btnDownload.Text = "Download && Update";
 			this.btnDownload.UseVisualStyleBackColor = true;
 			this.btnDownload.Click += new System.EventHandler(this.btnDownload_Click);
 
@@ -106,7 +106,7 @@ namespace GD77_FirmwareLoader
 			this.btnOpenFile.Name = "btnOpenFile";
 			this.btnOpenFile.Size = new System.Drawing.Size(130, 24);
 			this.btnOpenFile.TabIndex = 2;
-			this.btnOpenFile.Text = "Select a File && Flash";
+			this.btnOpenFile.Text = "Select a File && Update";
 			this.btnOpenFile.UseVisualStyleBackColor = true;
 			this.btnOpenFile.Click += new System.EventHandler(this.btnOpenFile_Click);
 

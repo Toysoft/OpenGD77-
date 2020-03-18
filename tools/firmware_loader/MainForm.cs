@@ -181,6 +181,7 @@ namespace GD77_FirmwareLoader
 			Uri uri = new Uri("https://github.com/rogerclarkmelbourne/OpenGD77/releases/latest");
 
 			wc = new WebClient();
+			ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
 
 			this.progressBar.Value = 0;
 
