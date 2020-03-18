@@ -31,6 +31,8 @@ namespace GD77_FirmwareLoader
 		/// </summary>
 		private void InitializeComponent()
 		{
+			this.progressBar = new System.Windows.Forms.ProgressBar();
+			this.btnDownload = new System.Windows.Forms.Button();
 			this.btnOpenFile = new System.Windows.Forms.Button();
 			this.SuspendLayout();
 
@@ -74,14 +76,37 @@ namespace GD77_FirmwareLoader
 			this.grpboxModel.Controls.Add(this.rbModels[2]);
 			this.Controls.Add(this.grpboxModel);
 
+			//
+			// progressBar
+			//
+			this.progressBar.Location = new System.Drawing.Point(240, 33);
+			this.progressBar.Name = "progressBar";
+			this.progressBar.Size = new System.Drawing.Size(130, 8);
+			this.progressBar.TabIndex = 0;
+			this.progressBar.Visible = false;
+			this.progressBar.Minimum = 0;
+			this.progressBar.Maximum = 100;
+			this.progressBar.Value = 0;
+
+			// 
+			// btnDownload
+			// 
+			this.btnDownload.Location = new System.Drawing.Point(240, 42);
+			this.btnDownload.Name = "btnDownload";
+			this.btnDownload.Size = new System.Drawing.Size(130, 24);
+			this.btnDownload.TabIndex = 1;
+			this.btnDownload.Text = "Download && Update";
+			this.btnDownload.UseVisualStyleBackColor = true;
+			this.btnDownload.Click += new System.EventHandler(this.btnDownload_Click);
+
 			// 
 			// btnOpenFile
 			// 
 			this.btnOpenFile.Location = new System.Drawing.Point(240, 67);
 			this.btnOpenFile.Name = "btnOpenFile";
-			this.btnOpenFile.AutoSize = true;
-			this.btnOpenFile.TabIndex = 0;
-			this.btnOpenFile.Text = "Select file and upload";
+			this.btnOpenFile.Size = new System.Drawing.Size(130, 24);
+			this.btnOpenFile.TabIndex = 2;
+			this.btnOpenFile.Text = "Select a File && Update";
 			this.btnOpenFile.UseVisualStyleBackColor = true;
 			this.btnOpenFile.Click += new System.EventHandler(this.btnOpenFile_Click);
 
@@ -91,6 +116,8 @@ namespace GD77_FirmwareLoader
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(380, 100);
+			this.Controls.Add(this.progressBar);
+			this.Controls.Add(this.btnDownload);
 			this.Controls.Add(this.btnOpenFile);
 			this.KeyPreview = true;
 			this.Name = "MainForm";
@@ -102,6 +129,8 @@ namespace GD77_FirmwareLoader
 
 		#endregion
 
+		private ProgressBar progressBar;
+		private Button btnDownload;
 		private Button btnOpenFile;
 		private GroupBox grpboxModel;
 		private RadioButton[] rbModels;
