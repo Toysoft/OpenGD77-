@@ -22,9 +22,25 @@
 #    debian like: sudo apt-get install python-future
 #    or: pip install future
 #
-# You also need python-usb or python3-usb
+# You also need python-usb or python3-usb, enum34 and urllib3
 #
 ################################################################################################################################################
+
+######################### Error codes #########################
+#
+# -1:  Missing firmware file
+# -2:  Wrong SGL file format
+# -3:  Unencrypted firmware
+# -4:  Firmware file is too large
+# -5:  Unknown HT model type
+# -6:  Command line parsing error
+# -7:  Online download firmware location error
+# -8:  Online download firmware binary error
+# -9:  Online firmware download failure
+# -10: Unsupported GD-77S (will be removed in the futur)
+#
+###############################################################
+
 from __future__ import print_function
 import usb
 import getopt, sys
@@ -32,10 +48,14 @@ import ntpath
 import os.path
 from array import array
 import enum
+import urllib3
+import re
+import tempfile
 
 class SGLFormatOutput(enum.Enum):
     GD_77 = 0
-    DM_1801 = 1
+    GD_77S = 1
+    DM_1801 = 2
 
     def __int__(self):
         return self.value
@@ -43,10 +63,9 @@ class SGLFormatOutput(enum.Enum):
 
 # Globals
 responseOK = [0x41]
-outputModes = ["GD-77", "DM-1801"]
+outputModes = ["GD-77", "GD-77S", "DM-1801"]
 outputFormat = SGLFormatOutput.GD_77
-
-
+downloadedFW = ""
 
 ########################################################################
 # Utilities to dump hex for testing
@@ -69,6 +88,74 @@ def hexdumpArray2(buf):
         cbuf = cbuf + "%0.2X-" % b
     return cbuf[:-1]
 
+def downloadFirmware():
+    url = "https://github.com/rogerclarkmelbourne/OpenGD77/releases/latest"
+    urlBase = "http://github.com"
+    httpPool = urllib3.PoolManager()
+    pattern = ""
+    urlFW = ""
+    webContent = ""
+        
+    print("Try to download the firmware for your {} from the project page".format(outputModes[int(outputFormat)]))
+    print(" - " + "Retrieve firmware location");
+
+    try:
+        response = httpPool.request('GET', url)
+    except urllib3.URLError as e:
+        print("".format(e.reason))
+        sys.exit(-7)
+        
+    webContent = str(response.data)
+    
+    if (outputFormat == SGLFormatOutput.GD_77):
+        pattern = r'/rogerclarkmelbourne/OpenGD77/releases/download/R([0-9\.]+)/OpenGD77\.sgl'
+    elif (outputFormat == SGLFormatOutput.GD_77S):
+        pattern = '/rogerclarkmelbourne/OpenGD77/releases/download/R([0-9\.]+)/OpenGD77S_HS\.sgl'
+    elif (outputFormat == SGLFormatOutput.DM_1801):
+        pattern = '/rogerclarkmelbourne/OpenGD77/releases/download/R([0-9\.]+)/OpenDM1801\.sgl'
+    
+    contentArray = webContent.split("\n")    
+    
+    for l in contentArray:
+        m = re.search(pattern, l)
+        if (m != None):
+            urlFW = urlBase + m.group(0)
+            break
+    
+    if (len(urlFW)):
+        global downloadedFW
+        downloadedFW = os.path.join(tempfile.gettempdir(), next(tempfile._get_candidate_names()) + '.sgl')
+        
+        print(" - " + "Downloading the firmware, please wait");
+        
+        try:
+            response = httpPool.request('GET', urlFW, preload_content=False)
+        except urllib3.URLError as e:
+            print("".format(e.reason))
+            sys.exit(-8)
+
+        length = response.getheader('content-length')
+        
+        if (length != None):
+            length = int(length)
+            blocksize = max(4096, (length//100))
+        else:
+            blocksize = 4096
+        
+        # Download data        
+        with open(downloadedFW, "w+b") as f:
+            while True:
+                data = response.read(blocksize)
+                
+                if not data:
+                    break
+                
+                f.write(data)
+        f.close()
+        return True
+    
+    return False
+        
 ########################################################################
 # Send the data packet to the GD-77 and confirm the response is correct
 ########################################################################
@@ -218,7 +305,11 @@ def sendInitialCommands(dev, encodeKey):
         command2            =[[0x44, 0x56, 0x30, 0x31, (0x61 + 0x00), (0x61 + 0x0C), (0x61 + 0x0D), (0x61 + 0x01)],[0x44, 0x56, 0x30, 0x31]] #.... DV01enhi (DV01enhi comes from deobfuscated sgl file)
         command4            =[[0x53, 0x47, 0x2d, 0x4d, 0x44, 0x2d, 0x37, 0x36, 0x30, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff],responseOK] #SG-MD-760
         command5            =[[0x4d, 0x44, 0x2d, 0x37, 0x36, 0x30, 0xff, 0xff],responseOK] #MD-760..
-    else:
+    elif (outputFormat == SGLFormatOutput.GD_77S):
+        command2            =[[0x44, 0x56, 0x30, 0x31, (0x61 + 0x00), (0x61 + 0x0C), (0x61 + 0x0D), (0x61 + 0x01)],[0x44, 0x56, 0x30, 0x31]] #.... DV01enhi (DV01enhi comes from deobfuscated sgl file)
+        command4            =[[0x53, 0x47, 0x2d, 0x4d, 0x44, 0x2d, 0x37, 0x36, 0x30, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff],responseOK] #SG-MD-760
+        command5            =[[0x4d, 0x44, 0x2d, 0x37, 0x36, 0x30, 0xff, 0xff],responseOK] #MD-760..
+    elif (outputFormat == SGLFormatOutput.DM_1801):
         command2            =[[0x44, 0x56, 0x30, 0x33, 0x74, 0x21, 0x44, 0x39],[0x44, 0x56, 0x30, 0x33]] #.... last 4 bytes of the command are the offset encoded as letters a - p (hard coded fr
         command4            =[[0x42, 0x46, 0x2d, 0x44, 0x4d, 0x52, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff],responseOK] #BF-DMR
         command5            =[[0x31, 0x38, 0x30, 0x31, 0xff, 0xff, 0xff, 0xff],responseOK] # MD-1801
@@ -312,6 +403,7 @@ def usage():
     print("    -h, --help                     : Display this help text")
     print("    -f, --firmware=<filename.sgl>  : Flash <filename.sgl> instead of default file \"GD-77_V3.1.2.sgl\"")
     print("    -m, --model=<type>             : Select HT model (GD-77 is the default). Models are: {}".format(", ".join(str(x) for x in outputModes)) + ".")
+    print("    -d, --download                 : Download firmware from the project website")
     print("")
 
 #####################################################
@@ -320,19 +412,20 @@ def usage():
 def main():
     global outputFormat
     sglFile = "firmware.sgl"
+    doDownload = False
 
     # Command line argument parsing
     try:                                
-        opts, args = getopt.getopt(sys.argv[1:], "hf:m:", ["help", "firmware=", "model="])
+        opts, args = getopt.getopt(sys.argv[1:], "hf:m:d", ["help", "firmware=", "model=", "download"])
     except getopt.GetoptError as err:
         print(str(err))
         usage()
-        sys.exit(2)
+        sys.exit(-6)
 
     for opt, arg in opts:
         if opt in ("-h", "--help"):
             usage()
-            sys.exit(2)
+            sys.exit(0)
         elif opt in ("-f", "--firmware"):
             sglFile = arg
         elif opt in ("-m", "--model"):
@@ -340,18 +433,32 @@ def main():
                 index = outputModes.index(arg)
             except ValueError as e:
                 print("Model \"{}\" is unknown".format(arg))
-                sys.exit(2)
+                sys.exit(-5)
 
             outputFormat = SGLFormatOutput(index)
+            
+            if (outputFormat == SGLFormatOutput.GD_77S):
+                print("GD-77S is not supported yet")
+                sys.exit(-10)
+        elif opt in ["-d", "--download"]:
+            doDownload = True
         else:
             assert False, "Unhandled option"
+
+    # Try to download the firmware
+    if (doDownload == True):
+        if (downloadFirmware() == True):
+            sglFile = downloadedFW
+        else:
+            print("Firmware download failed")
+            sys.exit(-9)
 
     # Try to connect USB device
     dev = usb.core.find(idVendor=0x15a2, idProduct=0x0073)
     if (dev):
         if (os.path.isfile(sglFile) == False):
             print("Firmware file \"" + sglFile + "\" is missing.")
-            sys.exit(2)
+            sys.exit(-1)
 
         # Needed on Linux
         try:
@@ -374,7 +481,9 @@ def main():
         # Define encodeKey according to HT model
         if (outputFormat == SGLFormatOutput.GD_77):
             encodeKey = [ (0x61 + 0x00), (0x61 + 0x0C), (0x61 + 0x0D), (0x61 + 0x01) ]
-        else:
+        elif (outputFormat == SGLFormatOutput.GD_77S):
+            encodeKey = [ (0x61 + 0x00), (0x61 + 0x0C), (0x61 + 0x0D), (0x61 + 0x01) ]
+        elif (outputFormat == SGLFormatOutput.DM_1801):
             encodeKey = [ (0x74), (0x21), (0x44), (0x39) ]
 
         if file_extension == ".sgl":
@@ -383,16 +492,16 @@ def main():
             
             if fileBuf == None:
                 print("Error. Missing SGL in .sgl file header")
-                sys.exit(-1)
+                sys.exit(-2)
                 
             print("Firmware file confirmed as SGL")
         else:
             print("Firmware file is an unencrypted binary. Exiting")
-            sys.exit(-10)
+            sys.exit(-3)
 
         if len(fileBuf) > 0x7b000:
             print("Error. Firmware file too large.")
-            sys.exit(-2)
+            sys.exit(-4)
 
         if (sendInitialCommands(dev, encodeKey) == True):
             if (sendFileData(fileBuf, dev) == True):
@@ -406,7 +515,12 @@ def main():
         
     else:
         print("Cant find the {}".format(outputModes[int(outputFormat)]))
+        
+    # Remove downloaded firmware, if any
+    if (len(downloadedFW)):
+        if (os.path.isfile(downloadedFW)):
+            os.remove(downloadedFW)
 
 
 ## Run the program
-main() 
+main()
