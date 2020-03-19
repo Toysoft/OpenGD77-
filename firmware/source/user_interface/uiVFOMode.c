@@ -41,22 +41,20 @@ static void loadContact(void);
 static void toneScan(void);
 static void scanning(void);
 static void initScan(void);
+static void menuVFOUpdateTrxID(void );
+static void setCurrentFreqToScanLimits(void);
 static void handleUpKey(uiEvent_t *ev);
+
 static bool isDisplayingQSOData=false;
 static int tmpQuickMenuDmrFilterLevel;
 static int tmpQuickMenuAnalogFilterLevel;
-static void menuVFOUpdateTrxID(void );
-
 static int16_t newChannelIndex = 0;
 static bool toneScanActive = false;					//tone scan active flag  (CTCSS)
 static const int TONESCANINTERVAL=200;			//time between each tone for lowest tone. (higher tones take less time.)
 static int scanIndex=0;
 static bool displayChannelSettings;
 static int prevDisplayQSODataState;
-
 static vfoScreenOperationMode_t screenOperationMode[2] = {VFO_SCREEN_OPERATION_NORMAL,VFO_SCREEN_OPERATION_NORMAL};// For VFO A and B
-
-
 
 
 // public interface
@@ -400,7 +398,6 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 			}
 			else
 			{
-
 				if (screenOperationMode[nonVolatileSettings.currentVFONumber] == VFO_SCREEN_OPERATION_NORMAL)
 				{
 					snprintf(buffer, bufferLen, "%c%c%c.%c%c%c%c%c MHz", freq_enter_digits[0], freq_enter_digits[1], freq_enter_digits[2],
@@ -759,7 +756,16 @@ static void handleEvent(uiEvent_t *ev)
 			{
 				if (screenOperationMode[nonVolatileSettings.currentVFONumber] == VFO_SCREEN_OPERATION_SCAN)
 				{
-					scanActive=true;
+
+					setCurrentFreqToScanLimits();
+					if (!scanActive)
+					{
+						scanActive=true;
+					}
+					else
+					{
+						handleUpKey(ev);
+					}
 				}
 				else
 				{
@@ -928,17 +934,27 @@ static void handleEvent(uiEvent_t *ev)
 			}
 			else if (KEYCHECK_SHORTUP(ev->keys, KEY_GREEN))
 			{
-				int tmp_frequency=read_freq_enter_digits(0,8);
-				if (trxGetBandFromFrequency(tmp_frequency)!=-1)
+				if (screenOperationMode[nonVolatileSettings.currentVFONumber] == VFO_SCREEN_OPERATION_NORMAL)
 				{
-					update_frequency(tmp_frequency);
-					reset_freq_enter_digits();
+					int tmp_frequency=read_freq_enter_digits(0,8);
+					if (trxGetBandFromFrequency(tmp_frequency)!=-1)
+					{
+						update_frequency(tmp_frequency);
+						reset_freq_enter_digits();
+					}
+					else
+					{
+						set_melody(melody_ERROR_beep);
+					}
+					menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 				}
 				else
 				{
-					set_melody(melody_ERROR_beep);
+					if (freq_enter_idx!=0)
+					{
+						set_melody(melody_ERROR_beep);
+					}
 				}
-				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 			}
 		}
 		if (freq_enter_idx < ((screenOperationMode[nonVolatileSettings.currentVFONumber] == VFO_SCREEN_OPERATION_NORMAL )?8:12))
@@ -978,11 +994,8 @@ static void handleEvent(uiEvent_t *ev)
 							nonVolatileSettings.vfoScanLow[nonVolatileSettings.currentVFONumber] = fLower;
 							nonVolatileSettings.vfoScanHigh[nonVolatileSettings.currentVFONumber] = fUpper;
 
-							if (currentChannelData->rxFreq < fLower || currentChannelData->rxFreq > fUpper)
-							{
-								update_frequency(fLower);
-							}
 							reset_freq_enter_digits();
+							set_melody(melody_ACK_beep);
 							menuVFOModeUpdateScreen(0);
 						}
 						else
@@ -1458,6 +1471,16 @@ static void menuVFOUpdateTrxID(void )
 
 }
 
+static void setCurrentFreqToScanLimits(void)
+{
+	if((currentChannelData->rxFreq < nonVolatileSettings.vfoScanLow[nonVolatileSettings.currentVFONumber]) || (currentChannelData->rxFreq > nonVolatileSettings.vfoScanHigh[nonVolatileSettings.currentVFONumber]))    //if we are not already inside the Low and High Limit freqs then move to the low limit.
+	{
+		int offset = currentChannelData->txFreq - currentChannelData->rxFreq;
+		currentChannelData->rxFreq=nonVolatileSettings.vfoScanLow[nonVolatileSettings.currentVFONumber];
+		currentChannelData->txFreq=currentChannelData->rxFreq+offset;
+		trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq,DMR_MODE_AUTO);
+	}
+}
 
 static void initScan(void)
 {
@@ -1481,15 +1504,6 @@ static void initScan(void)
 
 	selectedFreq = VFO_SELECTED_FREQUENCY_INPUT_RX;
 
-	if((currentChannelData->rxFreq < nonVolatileSettings.vfoScanLow[nonVolatileSettings.currentVFONumber]) || (currentChannelData->rxFreq > nonVolatileSettings.vfoScanHigh[nonVolatileSettings.currentVFONumber]))    //if we are not already inside the Low and High Limit freqs then move to the low limit.
-	{
-		int offset = currentChannelData->txFreq - currentChannelData->rxFreq;
-		currentChannelData->rxFreq=nonVolatileSettings.vfoScanLow[nonVolatileSettings.currentVFONumber];
-		currentChannelData->txFreq=currentChannelData->rxFreq+offset;
-		trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq,DMR_MODE_AUTO);
-	}
-
-	//scanActive=true;
 	scanTimer=500;
 	scanState = SCAN_SCANNING;
 	menuSystemPopAllAndDisplaySpecificRootMenu(MENU_VFO_MODE);
