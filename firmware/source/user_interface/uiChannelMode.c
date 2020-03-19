@@ -966,7 +966,11 @@ static void handleEvent(uiEvent_t *ev)
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 			menuChannelModeUpdateScreen(0);
 		}
-		else if (KEYCHECK_PRESS(ev->keys,KEY_UP))
+		else if (KEYCHECK_LONGDOWN(ev->keys, KEY_UP))
+		{
+			startScan();
+		}
+		else if (KEYCHECK_SHORTUP(ev->keys,KEY_UP))
 		{
 			handleUpKey(ev);
 		}
@@ -1052,7 +1056,7 @@ static void handleUpKey(uiEvent_t *ev)
 
 // Quick Menu functions
 
-enum CHANNEL_SCREEN_QUICK_MENU_ITEMS { CH_SCREEN_QUICK_MENU_SCAN=0, CH_SCREEN_QUICK_MENU_COPY2VFO, CH_SCREEN_QUICK_MENU_COPY_FROM_VFO,
+enum CHANNEL_SCREEN_QUICK_MENU_ITEMS {  CH_SCREEN_QUICK_MENU_COPY2VFO = 0, CH_SCREEN_QUICK_MENU_COPY_FROM_VFO,
 	CH_SCREEN_QUICK_MENU_FILTER,
 	NUM_CH_SCREEN_QUICK_MENU_ITEMS };// The last item in the list is used so that we automatically get a total number of items in the list
 
@@ -1072,9 +1076,6 @@ static void updateQuickMenuScreen(void)
 
 		switch(mNum)
 		{
-			case CH_SCREEN_QUICK_MENU_SCAN:
-				strncpy(buf, currentLanguage->scan, bufferLen);
-				break;
 			case CH_SCREEN_QUICK_MENU_COPY2VFO:
 				strncpy(buf, currentLanguage->channelToVfo, bufferLen);
 				break;
@@ -1116,10 +1117,6 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 	{
 		switch(gMenusCurrentItemIndex)
 		{
-			case CH_SCREEN_QUICK_MENU_SCAN:
-				startScan();
-				menuSystemPopPreviousMenu();
-				break;
 			case CH_SCREEN_QUICK_MENU_COPY2VFO:
 				memcpy(&settingsVFOChannel[nonVolatileSettings.currentVFONumber].rxFreq,&channelScreenChannelData.rxFreq,sizeof(struct_codeplugChannel_t) - 16);// Don't copy the name of channel, which are in the first 16 bytes
 				menuSystemPopAllAndDisplaySpecificRootMenu(MENU_VFO_MODE);
@@ -1196,16 +1193,9 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 	{
 		MENU_DEC(gMenusCurrentItemIndex, NUM_CH_SCREEN_QUICK_MENU_ITEMS);
 	}
-	else if (((ev->events & BUTTON_EVENT) && (ev->buttons & BUTTON_ORANGE)) && (gMenusCurrentItemIndex==CH_SCREEN_QUICK_MENU_SCAN))
-	{
-		startScan();
-		menuSystemPopPreviousMenu();
-		return;
-	}
 
 	updateQuickMenuScreen();
 }
-
 
 int menuChannelModeQuickMenu(uiEvent_t *ev, bool isFirstRun)
 {
@@ -1225,7 +1215,6 @@ int menuChannelModeQuickMenu(uiEvent_t *ev, bool isFirstRun)
 }
 
 //Scan Mode
-
 static void startScan(void)
 {
 	scanDirection = 1;
