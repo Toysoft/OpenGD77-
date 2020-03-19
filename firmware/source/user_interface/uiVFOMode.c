@@ -514,8 +514,6 @@ static void handleEvent(uiEvent_t *ev)
 
 	if (scanActive && (ev->events & KEY_EVENT))
 	{
-		// Key pressed during scanning
-
 		if (!(ev->buttons & BUTTON_SK2))
 		{
 			// Right key sets the current frequency as a 'niusance' frequency.
@@ -541,10 +539,9 @@ static void handleEvent(uiEvent_t *ev)
 			}
 		}
 
-
-		// stop the scan on any button except UP without Shift (allows scan to be manually continued)
+		// Stop the scan on any key except UP without Shift (allows scan to be manually continued)
 		// or SK2 on its own (allows Backlight to be triggered)
-		if (( (ev->events & KEY_EVENT) && ( ((ev->keys.key == KEY_UP) && ((ev->buttons & BUTTON_SK2) == 0)) == false ) ) )
+		if (ev->keys.key != KEY_UP )
 		{
 			menuVFOModeStopScanning();
 			fw_reset_keyboard();
@@ -557,12 +554,21 @@ static void handleEvent(uiEvent_t *ev)
 		if (ev->function == START_SCANNING)
 		{
 			initScan();
+			setCurrentFreqToScanLimits();
+			scanActive = true;
 			return;
 		}
 	}
 
 	if (ev->events & BUTTON_EVENT)
 	{
+		// Stop the scan if any button is pressed.
+		if (scanActive)
+		{
+			menuVFOModeStopScanning();
+			return;
+		}
+
 		uint32_t tg = (LinkHead->talkGroupOrPcId & 0xFFFFFF);
 
 		// If Blue button is pressed during reception it sets the Tx TG to the incoming TG
