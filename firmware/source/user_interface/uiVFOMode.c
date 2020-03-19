@@ -49,15 +49,14 @@ static bool isDisplayingQSOData=false;
 static int tmpQuickMenuDmrFilterLevel;
 static int tmpQuickMenuAnalogFilterLevel;
 static int16_t newChannelIndex = 0;
-static bool toneScanActive = false;					//tone scan active flag  (CTCSS)
-static const int TONESCANINTERVAL=200;			//time between each tone for lowest tone. (higher tones take less time.)
+static bool toneScanActive = false;//tone scan active flag  (CTCSS)
+static const int TONESCANINTERVAL=200;//time between each tone for lowest tone. (higher tones take less time.)
 static int scanIndex=0;
 static bool displayChannelSettings;
 static int prevDisplayQSODataState;
 static vfoScreenOperationMode_t screenOperationMode[2] = {VFO_SCREEN_OPERATION_NORMAL,VFO_SCREEN_OPERATION_NORMAL};// For VFO A and B
 
-
-// public interface
+// Public interface
 int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
 {
 	static uint32_t m = 0, sqm = 0;
@@ -366,9 +365,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 				{
 					// if CC scan is active, Rx freq is moved down to the Tx location,
 					// as Contact Info will be displayed here
-
 					printFrequency(false, (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_RX), 32, currentChannelData->rxFreq, true, screenOperationMode[nonVolatileSettings.currentVFONumber] == VFO_SCREEN_OPERATION_SCAN);
-
 				}
 				else
 				{
@@ -524,7 +521,7 @@ static void handleEvent(uiEvent_t *ev)
 				{
 					nuisanceDeleteIndex = 0; //rolling list of last MAX_NUISANCE_CHANNELS deletes.
 				}
-				scanTimer = SCAN_SKIP_CHANNEL_INTERVAL;	//force scan to continue;
+				scanTimer = SCAN_SKIP_CHANNEL_INTERVAL;//force scan to continue;
 				scanState=SCAN_SCANNING;
 				fw_reset_keyboard();
 				return;
@@ -745,7 +742,7 @@ static void handleEvent(uiEvent_t *ev)
 					menuVFOModeUpdateScreen(0);
 				}
 			}
-			else if (KEYCHECK_PRESS(ev->keys,KEY_DOWN))
+			else if (KEYCHECK_SHORTUP(ev->keys,KEY_DOWN))
 			{
 				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 				if (ev->buttons & BUTTON_SK2 )
@@ -758,7 +755,17 @@ static void handleEvent(uiEvent_t *ev)
 					menuVFOModeUpdateScreen(0);
 				}
 			}
-			else if (KEYCHECK_PRESS(ev->keys,KEY_UP))
+			else if (KEYCHECK_LONGDOWN(ev->keys,KEY_DOWN))
+			{
+				if (screenOperationMode[nonVolatileSettings.currentVFONumber] == VFO_SCREEN_OPERATION_SCAN)
+				{
+
+					screenOperationMode[nonVolatileSettings.currentVFONumber] = VFO_SCREEN_OPERATION_NORMAL;
+					menuVFOModeStopScanning();
+					return;
+				}
+			}
+			else if (KEYCHECK_SHORTUP(ev->keys,KEY_UP))
 			{
 				if (screenOperationMode[nonVolatileSettings.currentVFONumber] == VFO_SCREEN_OPERATION_SCAN)
 				{
@@ -776,6 +783,14 @@ static void handleEvent(uiEvent_t *ev)
 				else
 				{
 					handleUpKey(ev);
+				}
+			}
+			else if (KEYCHECK_LONGDOWN(ev->keys,KEY_UP))
+			{
+				if (screenOperationMode[nonVolatileSettings.currentVFONumber] != VFO_SCREEN_OPERATION_SCAN)
+				{
+					initScan();
+					return;
 				}
 			}
 			else if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
@@ -853,9 +868,9 @@ static void handleEvent(uiEvent_t *ev)
 					}
 					else
 					{
-						if(currentChannelData->sql == 0)			//If we were using default squelch level
+						if(currentChannelData->sql == 0) //If we were using default squelch level
 						{
-							currentChannelData->sql = nonVolatileSettings.squelchDefaults[trxCurrentBand[TRX_RX_FREQ_BAND]];			//start the adjustment from that point.
+							currentChannelData->sql = nonVolatileSettings.squelchDefaults[trxCurrentBand[TRX_RX_FREQ_BAND]];//start the adjustment from that point.
 						}
 						else
 						{
@@ -980,7 +995,7 @@ static void handleEvent(uiEvent_t *ev)
 						{
 							update_frequency(tmp_frequency);
 							reset_freq_enter_digits();
-		//	        	    set_melody(melody_ACK_beep);
+							set_melody(melody_ACK_beep);
 						}
 						else
 						{
@@ -1042,9 +1057,6 @@ static void handleUpKey(uiEvent_t *ev)
 	scanState = SCAN_SCANNING;
 }
 
-
-
-
 static void stepFrequency(int increment)
 {
 	int tmp_frequencyTx;
@@ -1075,16 +1087,16 @@ static void stepFrequency(int increment)
 	}
 }
 
-// Quick Menu functions
+// ---------------------------------------- Quick Menu functions -------------------------------------------------------------------
 enum VFO_SCREEN_QUICK_MENU_ITEMS // The last item in the list is used so that we automatically get a total number of items in the list
 {
 #if defined(PLATFORM_GD77) || defined(PLATFORM_GD77S)
-	VFO_SCREEN_QUICK_MENU_VFO_A_B = 0, VFO_SCREEN_QUICK_MENU_SCAN,
+	VFO_SCREEN_QUICK_MENU_VFO_A_B = 0,
 #elif defined(PLATFORM_DM1801)
 	VFO_SCREEN_QUICK_MENU_SCAN = 0,
 #endif
 	VFO_SCREEN_QUICK_MENU_TX_SWAP_RX, VFO_SCREEN_QUICK_MENU_BOTH_TO_RX, VFO_SCREEN_QUICK_MENU_BOTH_TO_TX,
-	VFO_SCREEN_QUICK_MENU_FILTER,VFO_SCREEN_QUICK_MENU_VFO_TO_NEW, VFO_SCREEN_CODE_SCAN,
+	VFO_SCREEN_QUICK_MENU_FILTER,VFO_SCREEN_QUICK_MENU_VFO_TO_NEW,
 	NUM_VFO_SCREEN_QUICK_MENU_ITEMS
 };
 
@@ -1119,9 +1131,6 @@ static void updateQuickMenuScreen(void)
 
 		switch(mNum)
 		{
-		    case VFO_SCREEN_QUICK_MENU_SCAN:
-		    	snprintf(buf, bufferLen,"%s %s",currentLanguage->scan,((screenOperationMode[nonVolatileSettings.currentVFONumber] == VFO_SCREEN_OPERATION_SCAN)?currentLanguage->off:currentLanguage->on));
-				break;
 		    case VFO_SCREEN_QUICK_MENU_VFO_TO_NEW:
 		    	strncpy(buf, currentLanguage->vfoToNewChannel, bufferLen);
 		    	break;
@@ -1149,25 +1158,6 @@ static void updateQuickMenuScreen(void)
 				sprintf(buf, "VFO:%c", ((nonVolatileSettings.currentVFONumber==0) ? 'A' : 'B'));
 				break;
 #endif
-
-/*
-			case VFO_SCREEN_SCAN_LOW_FREQ:
-				strcpy(buf, "Rx --> Scan Low");
-				break;
-			case VFO_SCREEN_SCAN_HIGH_FREQ:
-				strcpy(buf, "Rx --> Scan High");
-				break;
-*/
-			case VFO_SCREEN_CODE_SCAN:
-				if(trxGetMode() == RADIO_MODE_ANALOG)
-				{
-					strncpy(buf, currentLanguage->tone_scan, bufferLen);
-				}
-				else
-				{
-					sprintf(buf, "%s %s", currentLanguage->tone_scan, currentLanguage->n_a, bufferLen);
-				}
-				break;
 			default:
 				strcpy(buf, "");
 				break;
@@ -1176,7 +1166,6 @@ static void updateQuickMenuScreen(void)
 		buf[bufferLen - 1] = 0;
 		menuDisplayEntry(i, mNum, buf);
 	}
-
 	ucRender();
 }
 
@@ -1195,19 +1184,8 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 	{
 		switch(gMenusCurrentItemIndex)
 		{
-			case VFO_SCREEN_QUICK_MENU_SCAN:
-				if (screenOperationMode[nonVolatileSettings.currentVFONumber] == VFO_SCREEN_OPERATION_NORMAL)
-				{
-					initScan();
-				}
-				else
-				{
-					screenOperationMode[nonVolatileSettings.currentVFONumber] = VFO_SCREEN_OPERATION_NORMAL;
-				}
-				break;
 			case VFO_SCREEN_QUICK_MENU_VFO_TO_NEW:
 				//look for empty channel
-
 				for (newChannelIndex = 1; newChannelIndex< 1024; newChannelIndex++)
 				{
 					if (!codeplugChannelIndexIsValid(newChannelIndex)) {
@@ -1280,39 +1258,6 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 				else
 				{
 					nonVolatileSettings.analogFilterLevel = tmpQuickMenuAnalogFilterLevel;
-				}
-				break;
-				/*
-			case VFO_SCREEN_SCAN_LOW_FREQ:
-				if(nonVolatileSettings.currentVFONumber==1)
-				{
-					nonVolatileSettings.vfoScanLow[nonVolatileSettings.currentVFONumber]=currentChannelData->rxFreq;
-				}
-				else
-				{
-					nonVolatileSettings.vfoScanLow[nonVolatileSettings.currentVFONumber]=currentChannelData->rxFreq;
-				}
-				break;
-
-			case VFO_SCREEN_SCAN_HIGH_FREQ:
-				if(nonVolatileSettings.currentVFONumber==1)
-				{
-					nonVolatileSettings.vfoScanHigh[nonVolatileSettings.currentVFONumber]=currentChannelData->rxFreq;
-				}
-				else
-				{
-					nonVolatileSettings.vfoScanHigh[nonVolatileSettings.currentVFONumber]=currentChannelData->rxFreq;
-				}
-				break;
-				*/
-			case VFO_SCREEN_CODE_SCAN:
-				if(trxGetMode() == RADIO_MODE_ANALOG)
-				{
-					toneScanActive=true;
-					scanTimer=TONESCANINTERVAL;
-					scanIndex=1;
-					trxSetRxCTCSS(TRX_CTCSSTones[scanIndex]);
-					disableAudioAmp(AUDIO_AMP_MODE_RF);
 				}
 				break;
 		}
@@ -1398,12 +1343,6 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 	{
 		MENU_DEC(gMenusCurrentItemIndex, NUM_VFO_SCREEN_QUICK_MENU_ITEMS);
 	}
-	else if (((ev->events & BUTTON_EVENT) && (ev->buttons & BUTTON_ORANGE)) && (gMenusCurrentItemIndex==VFO_SCREEN_QUICK_MENU_SCAN))
-	{
-		initScan();
-		menuSystemPopPreviousMenu();
-		return;
-	}
 
 	updateQuickMenuScreen();
 }
@@ -1440,13 +1379,12 @@ static void toneScan(void)
 		trxAT1846RxOff();
 		trxSetRxCTCSS(TRX_CTCSSTones[scanIndex]);
 		scanTimer=TONESCANINTERVAL-(scanIndex*2);
-		trx_measure_count=0;							//synchronise the measurement with the scan.
+		trx_measure_count=0;//synchronise the measurement with the scan.
 		trxAT1846RxOn();
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		menuVFOModeUpdateScreen(0);
 	}
 }
-
 
 static void menuVFOUpdateTrxID(void )
 {
@@ -1474,7 +1412,6 @@ static void menuVFOUpdateTrxID(void )
 	}
 	lastHeardClearLastID();
 	menuClearPrivateCall();
-
 }
 
 static void setCurrentFreqToScanLimits(void)
@@ -1494,15 +1431,15 @@ static void initScan(void)
 	screenOperationMode[nonVolatileSettings.currentVFONumber] = VFO_SCREEN_OPERATION_SCAN;
 	scanDirection = 1;
 
-	// Check that the Low freq is lower than the High freq, and that the Low and High frequencies are in the same band.
-
+	// If scan limits have not been defined. Set them to the current Rx freq -1MHz to +1MHz
 	if (nonVolatileSettings.vfoScanLow[nonVolatileSettings.currentVFONumber] == 0 || nonVolatileSettings.vfoScanHigh[nonVolatileSettings.currentVFONumber] == 0)
 	{
 		nonVolatileSettings.vfoScanLow[nonVolatileSettings.currentVFONumber]=currentChannelData->rxFreq - 100000;
 		nonVolatileSettings.vfoScanHigh[nonVolatileSettings.currentVFONumber]=currentChannelData->rxFreq + 100000;
 	}
 
-	for(int i= 0;i<MAX_ZONE_SCAN_NUISANCE_CHANNELS;i++)						//clear all nuisance delete channels at start of scanning
+	//clear all nuisance delete channels at start of scanning
+	for(int i= 0;i<MAX_ZONE_SCAN_NUISANCE_CHANNELS;i++)
 	{
 		nuisanceDelete[i]=-1;
 	}
@@ -1513,12 +1450,12 @@ static void initScan(void)
 	scanTimer=500;
 	scanState = SCAN_SCANNING;
 	menuSystemPopAllAndDisplaySpecificRootMenu(MENU_VFO_MODE);
-
 }
 
 static void scanning(void)
 {
-	if((scanState == SCAN_SCANNING) && (scanTimer > SCAN_SKIP_CHANNEL_INTERVAL) && (scanTimer < ( SCAN_TOTAL_INTERVAL - SCAN_FREQ_CHANGE_SETTLING_INTERVAL)))							    			//after initial settling time
+	//After initial settling time
+	if((scanState == SCAN_SCANNING) && (scanTimer > SCAN_SKIP_CHANNEL_INTERVAL) && (scanTimer < ( SCAN_TOTAL_INTERVAL - SCAN_FREQ_CHANGE_SETTLING_INTERVAL)))
 	{
 		//test for presence of RF Carrier.
 		// In FM mode the dmr slot_state will always be DMR_STATE_IDLE
@@ -1554,16 +1491,16 @@ static void scanning(void)
 				}
 				else
 				{
-					scanTimer = SCAN_SHORT_PAUSE_TIME;												//start short delay to allow full detection of signal
-					scanState = SCAN_SHORT_PAUSED;															//state 1 = pause and test for valid signal that produces audio
+					scanTimer = SCAN_SHORT_PAUSE_TIME;//start short delay to allow full detection of signal
+					scanState = SCAN_SHORT_PAUSED;//state 1 = pause and test for valid signal that produces audio
 				}
 			}
 		}
 	}
 
-	if(((scanState == SCAN_PAUSED) && (nonVolatileSettings.scanModePause == SCAN_MODE_HOLD)) || (scanState == SCAN_SHORT_PAUSED))   // only do this once if scan mode is PAUSE do it every time if scan mode is HOLD
+	// Only do this once if scan mode is PAUSE do it every time if scan mode is HOLD
+	if(((scanState == SCAN_PAUSED) && (nonVolatileSettings.scanModePause == SCAN_MODE_HOLD)) || (scanState == SCAN_SHORT_PAUSED))
 	{
-	    //if (GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable) == 1)	    	// if speaker on we must be receiving a signal so extend the time before resuming scan.
 	    if (getAudioAmpStatus() & AUDIO_AMP_MODE_RF)
 	    {
 	    	scanTimer = nonVolatileSettings.scanDelay * 1000;
@@ -1578,7 +1515,7 @@ static void scanning(void)
 	else
 	{
 
-		trx_measure_count=0;														//needed to allow time for Rx to settle after channel change.
+		trx_measure_count=0;//needed to allow time for Rx to settle after channel change.
 		uiEvent_t tmpEvent={ .buttons = 0, .keys = NO_KEYCODE, .function = 0, .events = NO_EVENT, .hasEvent = 0, .time = 0 };
 
 		if (scanDirection==1)
@@ -1610,7 +1547,8 @@ static void scanning(void)
 			}
 		}
 
-		if ((trxGetMode() == RADIO_MODE_DIGITAL) && (trxDMRMode == DMR_MODE_ACTIVE) && (SCAN_TOTAL_INTERVAL < SCAN_DMR_SIMPLEX_MIN_INTERVAL) )				//allow extra time if scanning a simplex DMR channel.
+		//allow extra time if scanning a simplex DMR channel.
+		if ((trxGetMode() == RADIO_MODE_DIGITAL) && (trxDMRMode == DMR_MODE_ACTIVE) && (SCAN_TOTAL_INTERVAL < SCAN_DMR_SIMPLEX_MIN_INTERVAL) )
 		{
 			scanTimer = SCAN_DMR_SIMPLEX_MIN_INTERVAL;
 		}
@@ -1619,10 +1557,10 @@ static void scanning(void)
 			scanTimer = SCAN_TOTAL_INTERVAL;
 		}
 
-		scanState = SCAN_SCANNING;													//state 0 = settling and test for carrier present.
+		scanState = SCAN_SCANNING;//state 0 = settling and test for carrier present.
 
-
-		for(int i=0;i<MAX_ZONE_SCAN_NUISANCE_CHANNELS;i++)														//check all nuisance delete entries and skip channel if there is a match
+		//check all nuisance delete entries and skip channel if there is a match
+		for(int i=0;i<MAX_ZONE_SCAN_NUISANCE_CHANNELS;i++)
 		{
 			if (nuisanceDelete[i]==-1)
 			{
@@ -1639,7 +1577,3 @@ static void scanning(void)
 		}
 	}
 }
-
-
-
-
