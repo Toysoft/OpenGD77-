@@ -35,7 +35,8 @@ import enum
 
 class SGLFormatOutput(enum.Enum):
     GD_77 = 0
-    DM_1801 = 1
+    GD_77S = 1
+    DM_1801 = 2
 
     def __int__(self):
         return self.value
@@ -43,7 +44,7 @@ class SGLFormatOutput(enum.Enum):
 
 # Globals
 responseOK = [0x41]
-outputModes = ["GD-77", "DM-1801"]
+outputModes = ["GD-77", "GD-77S", "DM-1801"]
 outputFormat = SGLFormatOutput.GD_77
 
 
@@ -218,7 +219,11 @@ def sendInitialCommands(dev, encodeKey):
         command2            =[[0x44, 0x56, 0x30, 0x31, (0x61 + 0x00), (0x61 + 0x0C), (0x61 + 0x0D), (0x61 + 0x01)],[0x44, 0x56, 0x30, 0x31]] #.... DV01enhi (DV01enhi comes from deobfuscated sgl file)
         command4            =[[0x53, 0x47, 0x2d, 0x4d, 0x44, 0x2d, 0x37, 0x36, 0x30, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff],responseOK] #SG-MD-760
         command5            =[[0x4d, 0x44, 0x2d, 0x37, 0x36, 0x30, 0xff, 0xff],responseOK] #MD-760..
-    else:
+    elif (outputFormat == SGLFormatOutput.GD_77S):
+        command2            =[[0x44, 0x56, 0x30, 0x31, (0x61 + 0x00), (0x61 + 0x0C), (0x61 + 0x0D), (0x61 + 0x01)],[0x44, 0x56, 0x30, 0x31]] #.... DV01enhi (DV01enhi comes from deobfuscated sgl file)
+        command4            =[[0x53, 0x47, 0x2d, 0x4d, 0x44, 0x2d, 0x37, 0x36, 0x30, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff],responseOK] #SG-MD-760
+        command5            =[[0x4d, 0x44, 0x2d, 0x37, 0x36, 0x30, 0xff, 0xff],responseOK] #MD-760..
+    elif (outputFormat == SGLFormatOutput.DM_1801):
         command2            =[[0x44, 0x56, 0x30, 0x33, 0x74, 0x21, 0x44, 0x39],[0x44, 0x56, 0x30, 0x33]] #.... last 4 bytes of the command are the offset encoded as letters a - p (hard coded fr
         command4            =[[0x42, 0x46, 0x2d, 0x44, 0x4d, 0x52, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff],responseOK] #BF-DMR
         command5            =[[0x31, 0x38, 0x30, 0x31, 0xff, 0xff, 0xff, 0xff],responseOK] # MD-1801
@@ -343,6 +348,11 @@ def main():
                 sys.exit(2)
 
             outputFormat = SGLFormatOutput(index)
+            
+        if (outputFormat == SGLFormatOutput.GD_77S):
+            print("GD-77S is not supported yet")
+            sys.exit(3)
+
         else:
             assert False, "Unhandled option"
 
@@ -374,7 +384,9 @@ def main():
         # Define encodeKey according to HT model
         if (outputFormat == SGLFormatOutput.GD_77):
             encodeKey = [ (0x61 + 0x00), (0x61 + 0x0C), (0x61 + 0x0D), (0x61 + 0x01) ]
-        else:
+        elif (outputFormat == SGLFormatOutput.GD_77S):
+            encodeKey = [ (0x61 + 0x00), (0x61 + 0x0C), (0x61 + 0x0D), (0x61 + 0x01) ]
+        elif (outputFormat == SGLFormatOutput.DM_1801):
             encodeKey = [ (0x74), (0x21), (0x44), (0x39) ]
 
         if file_extension == ".sgl":
