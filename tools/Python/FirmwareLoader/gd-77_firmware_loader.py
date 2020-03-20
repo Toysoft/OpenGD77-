@@ -37,7 +37,8 @@
 # -7:  Online download firmware location error
 # -8:  Online download firmware binary error
 # -9:  Online firmware download failure
-# -10: Unsupported GD-77S (will be removed in the futur)
+# -10: Firmare/HT mismatch
+# -99: Unsupported GD-77S (will be removed in the futur)
 #
 ###############################################################
 
@@ -56,6 +57,7 @@ class SGLFormatOutput(enum.Enum):
     GD_77 = 0
     GD_77S = 1
     DM_1801 = 2
+    UNKNOWN = 3
 
     def __int__(self):
         return self.value
@@ -63,8 +65,8 @@ class SGLFormatOutput(enum.Enum):
 
 # Globals
 responseOK = [0x41]
-outputModes = ["GD-77", "GD-77S", "DM-1801"]
-outputFormat = SGLFormatOutput.GD_77
+outputModes = ["GD-77", "GD-77S", "DM-1801", "Unknown"]
+outputFormat = SGLFormatOutput.UNKNOWN
 downloadedFW = ""
 
 ########################################################################
@@ -88,6 +90,12 @@ def hexdumpArray2(buf):
         cbuf = cbuf + "%0.2X-" % b
     return cbuf[:-1]
 
+def strdumpArray(buf):
+    cbuf = ""
+    for b in buf:
+        cbuf = cbuf + chr(b)
+    return cbuf
+
 def downloadFirmware():
     url = "https://github.com/rogerclarkmelbourne/OpenGD77/releases/latest"
     urlBase = "http://github.com"
@@ -96,7 +104,7 @@ def downloadFirmware():
     urlFW = ""
     webContent = ""
         
-    print("Try to download the firmware for your {} from the project page".format(outputModes[int(outputFormat)]))
+    print(" - " + "Try to download the firmware for your {} from the project page".format(outputModes[int(outputFormat)]))
     print(" - " + "Retrieve firmware location");
 
     try:
@@ -157,6 +165,38 @@ def downloadFirmware():
     return False
         
 ########################################################################
+# Send the data packet to the GD-77 and return response
+########################################################################
+def sendAndGetResponse(dev, cmd):
+    USB_WRITE_ENDPOINT  = 0x02
+    USB_READ_ENDPOINT   = 0x81
+    TRANSFER_LENGTH     = 38
+    zeroPad = [0x0] * TRANSFER_LENGTH
+    headerData = [0x0] * 4
+    resp = []
+        
+    headerData[0] = 1
+    headerData[1] = 0
+    headerData[2] = ((len(cmd) >> 0) & 0xff)
+    headerData[3] = ((len(cmd) >> 8) & 0xff)
+
+    if (len(resp) < TRANSFER_LENGTH):
+        resp = resp + zeroPad[0:TRANSFER_LENGTH - len(resp)]
+
+    cmd = headerData + cmd
+    
+    #print("TX: " + hexdumpArray2(cmd))
+    #print("TX: '{}'".format(strdumpArray(cmd[4:])))
+
+    ret = dev.write(USB_WRITE_ENDPOINT, cmd)
+    ret = dev.read(USB_READ_ENDPOINT, TRANSFER_LENGTH + 4, 5000)
+    
+    #print("RX: " + hexdumpArray2(ret[4:]))
+    #print("RX: '{}'".format(strdumpArray(ret[4:])))
+
+    return ret[4:]
+
+########################################################################
 # Send the data packet to the GD-77 and confirm the response is correct
 ########################################################################
 def sendAndCheckResponse(dev, cmd, resp):
@@ -177,16 +217,19 @@ def sendAndCheckResponse(dev, cmd, resp):
     cmd = headerData + cmd
     
     #print("TX: " + hexdumpArray2(cmd))
+    #print("TX: '{}'".format(strdumpArray(cmd[4:])))
 
     ret = dev.write(USB_WRITE_ENDPOINT, cmd)
     ret = dev.read(USB_READ_ENDPOINT, TRANSFER_LENGTH + 4, 5000)
     expected = array("B", resp)
-    ##print("RX: " + hexdumpArray2(ret[4:]))
+    
+    #print("RX: " + hexdumpArray2(ret[4:]))
+    #print("RX: '{}'".format(strdumpArray(ret[4:])))
 
     if (expected == ret[4:]):
         return True
     else:
-        print("Error read returned " + str(ret))
+        print("Error. Read returned: " + str(ret))
         return False
 
  
@@ -292,6 +335,34 @@ def sendFileData(fileBuf, dev):
             print("")
     return True
 
+#####################################################
+# Probe connected model
+###########################################b##########
+def probeModel(dev):
+    commandLetterA = [ 0x41 ] # 'A'
+    command0       = [[ 0x44, 0x4f, 0x57, 0x4e, 0x4c, 0x4f, 0x41, 0x44 ], [ 0x23, 0x55, 0x50, 0x44, 0x41, 0x54, 0x45, 0x3f ]] # 'DOWNLOAD'
+    command1       = [ commandLetterA, responseOK ] 
+    commandDummy   = [ 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF ]
+    #commandMOD     = [ 0x46, 0x2D, 0x4D, 0x4F, 0x44, 0xff, 0xff, 0xff ] # F-MOD...
+    #commandEND     = [ 0x45, 0x4E, 0x44, 0xFF ] # END.
+    commandID      = [ command0, command1 ]
+    models         = [[ 'DV01', SGLFormatOutput.GD_77 ], [ 'DV02', SGLFormatOutput.GD_77S ], [ 'DV03', SGLFormatOutput.DM_1801 ]]
+
+    commandNumber = 0
+    while commandNumber < len(commandID):
+        if sendAndCheckResponse(dev, commandID[commandNumber][0], commandID[commandNumber][1]) == False:
+            return SGLFormatOutput.UNKNOWN
+        commandNumber = commandNumber + 1
+
+    resp = sendAndGetResponse(dev, commandDummy)
+    ##dummy = sendAndGetResponse(dev, command0[0])
+
+    for x in models:
+        if (x[0] == str(resp[:4].tostring().decode("ascii"))):
+            return x[1]
+
+    return SGLFormatOutput.UNKNOWN
+
 ###########################################################################################################################################
 # Send commands to the GD-77 to verify we are the updater, prepare to program including erasing the internal program flash memory
 ###########################################################################################################################################
@@ -317,7 +388,7 @@ def sendInitialCommands(dev, encodeKey):
     command6            =[[0x56, 0x31, 0x2e, 0x30, 0x30, 0x2e, 0x30, 0x31],responseOK] #V1.00.01
     commandErase        =[[0x46, 0x2d, 0x45, 0x52, 0x41, 0x53, 0x45, 0xff],responseOK] #F-ERASE
     commandPostErase    =[commandLetterA,responseOK] 
-    commandProgram      =[[0x50, 0x52, 0x4f, 0x47, 0x52, 0x41, 0x4d, 0xf],responseOK] #PROGRAM
+    commandProgram      =[[0x50, 0x52, 0x4f, 0x47, 0x52, 0x41, 0x4d, 0xf],responseOK] #PROGRAM    
     commands            =[command0,command1,command2,command3,command4,command5,command6,commandErase,commandPostErase,commandProgram]
     commandNames        =["Sending Download command", "Sending ACK", "Sending encryption key", "Sending F-PROG command", "Sending radio modem number", "Sending radio modem number 2", "Sending version", "Sending erase command", "Send post erase command", "Sending Program command"]
     commandNumber = 0
@@ -339,14 +410,16 @@ def sendInitialCommands(dev, encodeKey):
 ###########################################################################################################################################
 #
 ###########################################################################################################################################
-def checkForSGLAndReturnEncryptedData(fileBuf, encodeKey):
+def checkForSGLAndReturnEncryptedData(fileBuf, encodeKey, headerModel):
     header_tag = list("SGL!")
-
+    
     if (sys.version_info > (3, 0)):
         buf_in_4 = list("".join(map(chr, fileBuf[0:4])))
+        headerModel.append(fileBuf[11])
     else:
         buf_in_4 = list(fileBuf[0:4])
-    
+        headerModel.append(ord(fileBuf[11]))
+
     if buf_in_4 == header_tag:
         # read and decode offset and xor tag
         buf_in_4 = list(fileBuf[0x000C : 0x000C + 4])
@@ -383,8 +456,8 @@ def checkForSGLAndReturnEncryptedData(fileBuf, encodeKey):
         length3 = buf_in_512[0x0002]
         length4 = buf_in_512[0x0003]
         length = (length4 << 24) + (length3 << 16) + (length2 << 8) + length1
-        
-	    # extract encoded raw firmware
+
+        # extract encoded raw firmware
         retBuf = [0x00] * length;
         retBuf = fileBuf[len(fileBuf) - length : len(fileBuf) - length + len(retBuf) ]
 
@@ -401,8 +474,8 @@ def usage():
     print("       " + ntpath.basename(sys.argv[0]) + " [OPTION]")
     print("")
     print("    -h, --help                     : Display this help text")
-    print("    -f, --firmware=<filename.sgl>  : Flash <filename.sgl> instead of default file \"GD-77_V3.1.2.sgl\"")
-    print("    -m, --model=<type>             : Select HT model (GD-77 is the default). Models are: {}".format(", ".join(str(x) for x in outputModes)) + ".")
+    print("    -f, --firmware=<filename.sgl>  : Flash <filename.sgl> instead of default file \"firmware.sgl\"")
+    print("    -m, --model=<type>             : Select transceiver model. Models are: {}".format(", ".join(str(x) for x in outputModes[:-1])) + ".")
     print("    -d, --download                 : Download firmware from the project website")
     print("")
 
@@ -439,27 +512,19 @@ def main():
             
             if (outputFormat == SGLFormatOutput.GD_77S):
                 print("GD-77S is not supported yet")
-                sys.exit(-10)
+                sys.exit(-99)
+            elif (outputFormat == SGLFormatOutput.UNKNOWN):
+                print("Unsupported model")
+                sys.exit(-5)
+                
         elif opt in ["-d", "--download"]:
             doDownload = True
         else:
             assert False, "Unhandled option"
 
-    # Try to download the firmware
-    if (doDownload == True):
-        if (downloadFirmware() == True):
-            sglFile = downloadedFW
-        else:
-            print("Firmware download failed")
-            sys.exit(-9)
-
     # Try to connect USB device
     dev = usb.core.find(idVendor=0x15a2, idProduct=0x0073)
     if (dev):
-        if (os.path.isfile(sglFile) == False):
-            print("Firmware file \"" + sglFile + "\" is missing.")
-            sys.exit(-1)
-
         # Needed on Linux
         try:
             if dev.is_kernel_driver_active(0):
@@ -467,11 +532,30 @@ def main():
         except NotImplementedError as e:
             pass
         
-        print("Now flashing your {} with \"{}\"".format(outputModes[int(outputFormat)], sglFile))
-        
         #seems to be needed for the usb to work !
         dev.set_configuration()
 
+        if (outputFormat == SGLFormatOutput.UNKNOWN):
+            outputFormat = probeModel(dev)
+            if (outputFormat == SGLFormatOutput.UNKNOWN):
+                print("Error. Failed to detect you transceiver model.")
+                sys.exit(-5)
+            print(" - Detected model: {}".format(outputModes[int(outputFormat)]))
+        
+        # Try to download the firmware
+        if (doDownload == True):
+            if (downloadFirmware() == True):
+                sglFile = downloadedFW
+            else:
+                print("Firmware download failed")
+                sys.exit(-9)
+
+        if (os.path.isfile(sglFile) == False):
+            print("Firmware file \"" + sglFile + "\" is missing.")
+            sys.exit(-1)
+
+        print(" - " + "Now flashing your {} with \"{}\"".format(outputModes[int(outputFormat)], sglFile))
+        
         with open(sglFile, 'rb') as f:
             fileBuf = f.read()
             
@@ -486,15 +570,24 @@ def main():
         elif (outputFormat == SGLFormatOutput.DM_1801):
             encodeKey = [ (0x74), (0x21), (0x44), (0x39) ]
 
-        if file_extension == ".sgl":
-            ## Could be a SGL file !
-            fileBuf = checkForSGLAndReturnEncryptedData(fileBuf, encodeKey)
+        if (file_extension == ".sgl"):
+            firmwareModelTag = { SGLFormatOutput.GD_77: 0x1B , SGLFormatOutput.GD_77S: 0x70, SGLFormatOutput.DM_1801: 0x4F }
+            headerModel = []
             
-            if fileBuf == None:
+            ## Could be a SGL file !
+            fileBuf = checkForSGLAndReturnEncryptedData(fileBuf, encodeKey, headerModel)
+
+            if (fileBuf == None):
                 print("Error. Missing SGL in .sgl file header")
                 sys.exit(-2)
                 
-            print("Firmware file confirmed as SGL")
+            print(" - " + "Firmware file confirmed as SGL")
+
+            # Check if the firmware matches the transceiver model
+            if (headerModel[0] != firmwareModelTag[outputFormat]):
+                print("Error. The firmware doesn't match the transceiver model.")
+                sys.exit(-10)
+                
         else:
             print("Firmware file is an unencrypted binary. Exiting")
             sys.exit(-3)
@@ -514,7 +607,7 @@ def main():
         usb.util.dispose_resources(dev) #free up the USB device
         
     else:
-        print("Cant find the {}".format(outputModes[int(outputFormat)]))
+        print("Error. Can't find your transceiver.")
         
     # Remove downloaded firmware, if any
     if (len(downloadedFW)):
