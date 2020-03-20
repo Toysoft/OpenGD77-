@@ -34,13 +34,11 @@ using System.Linq;
 using UsbLibDotNetDevice;
 #else
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using UsbLibrary;
 #endif
 using System.IO;
 using System.Windows.Forms;
-using System.Collections.Generic;
 
 namespace GD77_FirmwareLoader
 {
@@ -96,7 +94,7 @@ namespace GD77_FirmwareLoader
 			return getModelString(outputType);
 		}
 
-		public static int UploadFirmware(string fileName,FrmProgress progessForm=null)
+		public static int UploadFirmware(string fileName, FrmProgress progessForm=null)
 		{
 			byte[] encodeKey = null;
 
@@ -106,12 +104,12 @@ namespace GD77_FirmwareLoader
 			{
 				case OutputType.OutputType_GD77:
 					encodeKey = new Byte[4] { (0x61 + 0x00), (0x61 + 0x0C), (0x61 + 0x0D), (0x61 + 0x01) };
-					Console.WriteLine("GD-77 Support");
+					Console.WriteLine(" - GD-77 Support");
 					break;
 
 				case OutputType.OutputType_GD77S:
-					Console.WriteLine("GD-77S Support");
-					Console.WriteLine("GD-77S is not yet supported");
+					Console.WriteLine(" - GD-77S Support");
+					Console.WriteLine("Error. GD-77S is not yet supported");
 					if (_progessForm != null)
 					{
 						MessageBox.Show("GD-77S is not yet supported", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -121,12 +119,12 @@ namespace GD77_FirmwareLoader
 
 				case OutputType.OutputType_DM1801:
 					encodeKey = new Byte[4] { (0x74), (0x21), (0x44), (0x39) };
-					Console.WriteLine("DM-1801 Support");
+					Console.WriteLine(" - DM-1801 Support");
 					break;
 
 
 				case OutputType.OutputType_UNKOWN:
-					Console.WriteLine("Unknown model type");
+					Console.WriteLine("Error. Unknown model type");
 					return -99;
 			}
 
@@ -145,8 +143,15 @@ namespace GD77_FirmwareLoader
 			byte[] fileBuf = File.ReadAllBytes(fileName);
 			if (Path.GetExtension(fileName).ToLower() == ".sgl")
 			{
+				Dictionary<FirmwareLoader.OutputType, byte> firmwareModelTag = new Dictionary<FirmwareLoader.OutputType, byte>();
+				byte headerModel = 0x00;
+
+				firmwareModelTag.Add(OutputType.OutputType_GD77, 0x1B);
+				firmwareModelTag.Add(OutputType.OutputType_GD77S, 0x70);
+				firmwareModelTag.Add(OutputType.OutputType_DM1801, 0x4F);
+
 				// Couls be a SGL file !
-				fileBuf = checkForSGLAndReturnEncryptedData(fileBuf, encodeKey);
+				fileBuf = checkForSGLAndReturnEncryptedData(fileBuf, encodeKey, ref headerModel);
 				if (fileBuf == null)
 				{
 					Console.WriteLine("Error. Missing SGL! in .sgl file header");
@@ -154,18 +159,31 @@ namespace GD77_FirmwareLoader
 					_specifiedDevice = null;
 					return -5;
 				}
-				Console.WriteLine("Firmware file confirmed as SGL");
+
+				Console.WriteLine(" - Firmware file confirmed as SGL");
+
+				if (firmwareModelTag[FirmwareLoader.outputType] != headerModel)
+				{
+					Console.WriteLine("Error. The firmware doesn't match the transceiver model.");
+					if (_progessForm != null)
+					{
+						MessageBox.Show("Error. The firmware doesn't match the transceiver model.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+					}
+					_specifiedDevice.Dispose();
+					_specifiedDevice = null;
+					return -10;
+				}
 			}
 			else
 			{
-				Console.WriteLine("Firmware file is unencrypted binary");
+				Console.WriteLine(" - Firmware file is unencrypted binary");
 				fileBuf = encrypt(fileBuf);
 			}
 
 
 			if (fileBuf.Length > 0x7b000)
 			{
-				Console.WriteLine("\nError. Firmware file too large.");
+				Console.WriteLine("Error. Firmware file too large.");
 				_specifiedDevice.Dispose();
 				_specifiedDevice = null;
 				return -2;
@@ -437,8 +455,6 @@ namespace GD77_FirmwareLoader
 			int commandNumber = 0;
 			byte[] resp;
 
-			Console.WriteLine("Probing");
-
 #if (LINUX_BUILD)
 			_specifiedDevice = UsbLibDotNetHIDDevice.FindDevice(VENDOR_ID, PRODUCT_ID);
 #else
@@ -522,6 +538,7 @@ namespace GD77_FirmwareLoader
 			byte[][] commandProgram = { new byte[] { 0x50, 0x52, 0x4f, 0x47, 0x52, 0x41, 0x4d, 0xf }, responseOK };//PROGRAM
 			byte[][][] commands = { command0, command1, command2, command3, command4, command5, command6, commandErase, commandPostErase, commandProgram };
 #if (LINUX_BUILD)
+			bool firstCommand = true;
 			string[] commandNames = {"Sending Download command", "Sending ACK", "Sending encryption key", "Sending F-PROG command", "Sending radio modem number", 
 				"Sending radio modem number 2", "Sending version", "Sending erase command", "Send post erase command", "Sending Program command"};
 #endif
@@ -549,7 +566,11 @@ namespace GD77_FirmwareLoader
 #endif
 #else
 #if (LINUX_BUILD)
-				Console.Write("\n - " + commandNames[commandNumber]);
+				Console.Write(String.Format("{0} - {1}", (firstCommand ? "" : "\n"), commandNames[commandNumber]));
+				if (firstCommand)
+				{
+					firstCommand = false;
+				}
 #else
 				Console.Write(".");
 #endif
@@ -603,13 +624,16 @@ namespace GD77_FirmwareLoader
 			return encrypted;
 		}
 
-		static byte[] checkForSGLAndReturnEncryptedData(byte[] fileBuf, byte[] encodeKey)
+		static byte[] checkForSGLAndReturnEncryptedData(byte[] fileBuf, byte[] encodeKey, ref byte headerModel)
 		{
 			byte[] header_tag = new byte[] { (byte)'S', (byte)'G', (byte)'L', (byte)'!' };
 
 			// read header tag
 			byte[] buf_in_4 = new byte[4];
+
 			Buffer.BlockCopy(fileBuf, 0, buf_in_4, 0, buf_in_4.Length);
+
+			headerModel = Buffer.GetByte(fileBuf, 11);
 
 			if (buf_in_4.SequenceEqual(header_tag))
 			{

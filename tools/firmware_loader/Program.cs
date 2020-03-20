@@ -83,7 +83,7 @@ namespace GD77_FirmwareLoader
 				else
 				{
 					FirmwareLoader.outputType = FirmwareLoader.probeModel();
-					Console.WriteLine(String.Format("Detected mode: {0}", FirmwareLoader.getModelName()));
+					Console.WriteLine(String.Format(" - Detected model: {0}", FirmwareLoader.getModelName()));
 				}
 
 				if (args.Length == 0)
