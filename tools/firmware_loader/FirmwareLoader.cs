@@ -32,6 +32,7 @@ using System.Text;
 using System.Linq;
 #if (LINUX_BUILD)
 using UsbLibDotNetDevice;
+using System.Collections.Generic;
 #else
 using System.Collections.Generic;
 using System.Threading.Tasks;
