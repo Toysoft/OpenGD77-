@@ -171,17 +171,12 @@ def sendAndGetResponse(dev, cmd):
     USB_WRITE_ENDPOINT  = 0x02
     USB_READ_ENDPOINT   = 0x81
     TRANSFER_LENGTH     = 38
-    zeroPad = [0x0] * TRANSFER_LENGTH
     headerData = [0x0] * 4
-    resp = []
         
     headerData[0] = 1
     headerData[1] = 0
     headerData[2] = ((len(cmd) >> 0) & 0xff)
     headerData[3] = ((len(cmd) >> 8) & 0xff)
-
-    if (len(resp) < TRANSFER_LENGTH):
-        resp = resp + zeroPad[0:TRANSFER_LENGTH - len(resp)]
 
     cmd = headerData + cmd
     
