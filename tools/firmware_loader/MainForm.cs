@@ -70,6 +70,7 @@ namespace GD77_FirmwareLoader
 		private void enableUI(bool state)
 		{
 			this.grpboxModel.Enabled = state;
+			this.btnDetect.Enabled = state;
 			this.btnDownload.Enabled = state;
 			this.btnOpenFile.Enabled = state;
 		}
@@ -174,6 +175,22 @@ namespace GD77_FirmwareLoader
 				File.Delete(tempFile);
 
 			enableUI(true);
+		}
+
+		private void btnDetect_Click(object sender, EventArgs e)
+		{
+			this.btnDetect.Enabled = false;
+
+			FirmwareLoader.outputType = FirmwareLoader.probeModel();
+
+			if ((FirmwareLoader.outputType < FirmwareLoader.OutputType.OutputType_GD77) || (FirmwareLoader.outputType > FirmwareLoader.OutputType.OutputType_DM1801))
+			{
+				MessageBox.Show("Error: Unable to detect your radio.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				FirmwareLoader.outputType = FirmwareLoader.OutputType.OutputType_GD77;
+			}
+
+			this.rbModels[(int)FirmwareLoader.outputType].Checked = true;
+			this.btnDetect.Enabled = true;
 		}
 
 		private void btnDownload_Click(object sender, EventArgs e)

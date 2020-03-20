@@ -246,7 +246,7 @@ namespace UsbLibDotNetDevice
 			return hex.Replace("-", "");
 		}
 
-		~UsbLibDotNetHIDDevice()
+		public void Dispose()
 		{
 			if (this.m_usbDevice != null)
 			{
@@ -268,6 +268,13 @@ namespace UsbLibDotNetDevice
 				}
 				this.m_usbDevice = null;
 			}
+
+			GC.SuppressFinalize(this);
+		}
+
+		~UsbLibDotNetHIDDevice()
+		{
+			this.Dispose();
 		}
 
 	}
