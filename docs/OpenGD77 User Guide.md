@@ -1028,14 +1028,14 @@ To read the codeplug, press the “Read codeplug” button, wait for all 3 data 
 
 #### Writing DMR IDs -- the User Database
 
-The the firmware supports extended DMR ID information, with up to 15 character for Callsign and name, as well as doubling the memory capacity for DMR IDs.
+The the firmware supports extended DMR ID information, with up to 16 characters for Callsign and name, as well as doubling the memory capacity for DMR IDs.
 
-Please select the “Enhanced firmware mode” Checkbox, and change the Number of characters menu to the desired DMR callsign and name length.
+Please change the Number of characters menu to the desired DMR callsign and name length.
 
 Then, you can add in DMR IDs into the database by selecting an ID prefix. You can continue adding DMR IDs based on your commonly heard prefixes until you fill up the allocation.
 
-*Note.* Because the memory size used for the DMR ID is currently limited to 256, you can store more DMR IDs if you assign fewer characters per ID. Depending on actual information, the firmware can store approximately 14,000-15,000 IDs in its user database.
+![](media/cps-dmr-ids.png)
+
+*Note.* Because the memory size used for the DMR ID is limited, you can store more DMR IDs if you assign fewer characters per ID. Depending on actual information, the firmware can store approximately 13,000-26,000 IDs in its user database.
 
 As the firmware supports Talker Alias, you might find this sufficient -- the firmware will display callsign and name data retrieved from the DMR stream, for user IDs not stored in your radio's User Database.
-
-![](media/cps-dmr-ids.png)
