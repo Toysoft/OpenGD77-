@@ -49,6 +49,7 @@ static bool isTxRxFreqSwap=false;
 static int tmpQuickMenuDmrFilterLevel;
 static int tmpQuickMenuAnalogFilterLevel;
 static bool displayChannelSettings;
+static bool reverseRepeater;
 static int prevDisplayQSODataState;
 
 static struct_codeplugChannel_t channelNextChannelData={.rxFreq=0};
@@ -67,6 +68,7 @@ int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 
 		nonVolatileSettings.initialMenuNumber = MENU_CHANNEL_MODE;// This menu.
 		displayChannelSettings = false;
+		reverseRepeater = false;
 		nextChannelReady = false;
 
 		// We're in digital mode, RXing, and current talker is already at the top of last heard list,
@@ -609,17 +611,17 @@ static void handleEvent(uiEvent_t *ev)
 			menuChannelModeUpdateScreen(0);
 			return;
 		}
-
+#ifdef BLACK_BUTTON_DISPLAYS_CHANNEL_DETAILS
 		// Display channel settings (RX/TX/etc) while SK1 is pressed
 		if ((displayChannelSettings == false) && (ev->buttons & BUTTON_SK1))
 		{
 			int prevQSODisp = prevDisplayQSODataState;
-
 			displayChannelSettings = true;
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 			menuChannelModeUpdateScreen(0);
 			prevDisplayQSODataState = prevQSODisp;
 			return;
+
 		}
 		else if ((displayChannelSettings==true) && (ev->buttons & BUTTON_SK1)==0)
 		{
@@ -628,6 +630,19 @@ static void handleEvent(uiEvent_t *ev)
 			menuChannelModeUpdateScreen(0);
 			return;
 		}
+#else
+		if ((reverseRepeater == false) && (ev->buttons & BUTTON_SK1))
+		{
+			trxSetFrequency(channelScreenChannelData.txFreq, channelScreenChannelData.rxFreq, DMR_MODE_ACTIVE);// Swap Tx and Rx freqs but force DMR Active
+
+			reverseRepeater = true;
+		}
+		else if ((reverseRepeater==true) && (ev->buttons & BUTTON_SK1)==0)
+		{
+			trxSetFrequency(channelScreenChannelData.rxFreq, channelScreenChannelData.txFreq, DMR_MODE_AUTO);
+			reverseRepeater=false;
+		}
+#endif
 		if (ev->buttons & BUTTON_ORANGE)
 		{
 			if (ev->buttons & BUTTON_SK2)
