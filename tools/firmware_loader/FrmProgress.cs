@@ -23,12 +23,15 @@ namespace GD77_FirmwareLoader
 		{
 			this.BringToFront();
 			this.lblMessage.Text = txt;
+			this.lblMessage.Update();
 			this.Refresh();
 		}
 		public void SetProgressPercentage(int perc)
 		{
 			this.BringToFront();
 			this.progressBar1.Value = perc;
+			this.progressBar1.Update();
+			this.Refresh();
 		}
 	}
 }

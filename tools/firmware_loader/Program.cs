@@ -29,35 +29,61 @@ namespace GD77_FirmwareLoader
 			*/
 			if (args.Length == 0)
 			{
+				FirmwareLoader.outputType = FirmwareLoader.probeModel();
+
+				if ((FirmwareLoader.outputType < FirmwareLoader.OutputType.OutputType_GD77) || (FirmwareLoader.outputType > FirmwareLoader.OutputType.OutputType_DM1801))
+				{
+					Console.WriteLine("Unable to detect HT model, using GD-77 as fallback.");
+					FirmwareLoader.outputType = FirmwareLoader.OutputType.OutputType_GD77;
+				}
+				else
+				{
+					Console.WriteLine(String.Format("Detected mode: {0}", FirmwareLoader.getModelName()));
+				}
+
 				Application.EnableVisualStyles();
 				Application.SetCompatibleTextRenderingDefault(false);
 				Application.Run(new MainForm());
 			}
 			else
 			{
+				if (args.Contains("--help") || args.Contains("-h") || args.Contains("/h"))
+				{
+					//FirmwareLoader.OutputType[] models = new FirmwareLoader.OutputType[] { FirmwareLoader.OutputType.OutputType_GD77, FirmwareLoader.OutputType.OutputType_GD77S, FirmwareLoader.OutputType.OutputType_DM1801 };
+					String[] modelsString = {
+						FirmwareLoader.getModelString(FirmwareLoader.OutputType.OutputType_GD77),
+						FirmwareLoader.getModelString(FirmwareLoader.OutputType.OutputType_GD77S),
+						FirmwareLoader.getModelString(FirmwareLoader.OutputType.OutputType_DM1801)
+						};
+					String allModels = String.Join(" | ", modelsString);
+
+					Console.WriteLine(String.Format("\nUsage: GD77_FirmwareLoader [GUI] [{0}] [filename]\n\n", allModels));
+					Environment.Exit(exitCode);
+				}
+
+				int idxGD77 = Array.IndexOf(args, "GD-77");
 				int idxDM1801 = Array.IndexOf(args, "DM-1801");
 				int idxGD77S = Array.IndexOf(args, "GD-77S");
 
-
-				if (idxDM1801 >= 0)
+				if (idxGD77 >= 0)
 				{
-					FirmwareLoader.outputType = FirmwareLoader.OutputType.OutputType_DM1801;
-					args = RemoveArgAt(args, idxDM1801);
+					FirmwareLoader.outputType = FirmwareLoader.OutputType.OutputType_GD77;
+					args = RemoveArgAt(args, idxGD77);
 				}
-				else if(idxGD77S >= 0)
+				else if (idxGD77S >= 0)
 				{
 					FirmwareLoader.outputType = FirmwareLoader.OutputType.OutputType_GD77S;
 					args = RemoveArgAt(args, idxGD77S);
 				}
+				else if (idxDM1801 >= 0)
+				{
+					FirmwareLoader.outputType = FirmwareLoader.OutputType.OutputType_DM1801;
+					args = RemoveArgAt(args, idxDM1801);
+				}
 				else
 				{
-					FirmwareLoader.outputType = FirmwareLoader.OutputType.OutputType_GD77;
-				}
-
-				if (args.Contains("--help") || args.Contains("-h") || args.Contains("/h"))
-				{
-					Console.WriteLine("\nUsage: GD77_FirmwareLoader [GUI] [DM-1801 | GD-77S] [filename]\n\n");
-					Environment.Exit(exitCode);
+					FirmwareLoader.outputType = FirmwareLoader.probeModel();
+					Console.WriteLine(String.Format(" - Detected model: {0}", FirmwareLoader.getModelName()));
 				}
 
 				if (args.Length == 0)
