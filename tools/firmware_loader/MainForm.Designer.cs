@@ -32,6 +32,7 @@ namespace GD77_FirmwareLoader
 		private void InitializeComponent()
 		{
 			this.progressBar = new System.Windows.Forms.ProgressBar();
+			this.btnDetect = new System.Windows.Forms.Button();
 			this.btnDownload = new System.Windows.Forms.Button();
 			this.btnOpenFile = new System.Windows.Forms.Button();
 			this.SuspendLayout();
@@ -89,6 +90,17 @@ namespace GD77_FirmwareLoader
 			this.progressBar.Value = 0;
 
 			// 
+			// btnDetect
+			// 
+			this.btnDetect.Location = new System.Drawing.Point(240, 8);
+			this.btnDetect.Name = "btnDownload";
+			this.btnDetect.Size = new System.Drawing.Size(130, 24);
+			this.btnDetect.TabIndex = 1;
+			this.btnDetect.Text = "Detect Radio Type";
+			this.btnDetect.UseVisualStyleBackColor = true;
+			this.btnDetect.Click += new System.EventHandler(this.btnDetect_Click);
+
+			// 
 			// btnDownload
 			// 
 			this.btnDownload.Location = new System.Drawing.Point(240, 42);
@@ -116,6 +128,7 @@ namespace GD77_FirmwareLoader
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(380, 100);
+			this.Controls.Add(this.btnDetect);
 			this.Controls.Add(this.progressBar);
 			this.Controls.Add(this.btnDownload);
 			this.Controls.Add(this.btnOpenFile);
@@ -130,6 +143,7 @@ namespace GD77_FirmwareLoader
 		#endregion
 
 		private ProgressBar progressBar;
+		private Button btnDetect;
 		private Button btnDownload;
 		private Button btnOpenFile;
 		private GroupBox grpboxModel;
