@@ -353,7 +353,7 @@ def probeModel(dev):
     ##dummy = sendAndGetResponse(dev, command0[0])
 
     for x in models:
-        if (x[0] == str(resp[:4].tostring().decode("ascii"))):
+        if (x[0] == str((resp[:4].tobytes().decode("ascii")) if (sys.version_info > (3, 0)) else (resp[:4].tostring().decode("ascii")))):
             return x[1]
 
     return SGLFormatOutput.UNKNOWN
