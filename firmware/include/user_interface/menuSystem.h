@@ -99,6 +99,8 @@ void menuLastHeardUpdateScreen(bool showTitleOrHeader, bool displayDetails);
 void menuClearPrivateCall(void);
 void menuAcceptPrivateCall(int id);
 
+bool menuHotspotModeIsRunning(void);
+
 /*
  * ---------------------- IMPORTANT ----------------------------
  *
