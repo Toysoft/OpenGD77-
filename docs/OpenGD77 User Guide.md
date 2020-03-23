@@ -564,7 +564,11 @@ To the lock the keypad.
 
 On either the VFO or the Channel screen, press the **Green** menu key to display the Main menu, then press the **Star** key. Pressing the **Star** key from any top-level item within the Main menu locks the keypad.
 
-To unlock the keypad, press and hold the **Function** button and press the **Star** key
+To unlock the keypad, press and hold the **Function** button and press the **Star** key.
+
+![](media/keypad-and-ptt-locked.png)
+
+You can also lock the PTT button by pressing the **Green** menu key to display the Main menu and then pressing the **Hash (#)** key. The keypad *and* the PTT can both be locked at the same time by first locking the PTT and then the keypad.
 
 ### Text entry
 
