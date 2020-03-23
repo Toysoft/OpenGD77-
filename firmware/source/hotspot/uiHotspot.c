@@ -309,6 +309,7 @@ static uint8_t cwBuffer[64U];
 static uint16_t cwpoLen;
 static uint16_t cwpoPtr;
 static bool cwKeying = false;
+static bool hotspotModeRunning = false;
 // End of CWID related
 
 
@@ -335,6 +336,7 @@ int menuHotspotMode(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
+		hotspotModeRunning = true;
 		hotspotState = HOTSPOT_STATE_NOT_CONNECTED;
 
 		savedTGorPC = trxTalkGroupOrPcId;// Save the current TG or PC
@@ -418,6 +420,11 @@ int menuHotspotMode(uiEvent_t *ev, bool isFirstRun)
 	}
 
 	return 0;
+}
+
+bool menuHotspotModeIsRunning(void)
+{
+	return hotspotModeRunning;
 }
 
 static void displayContactInfo(uint8_t y, char *text, size_t maxLen)
@@ -709,6 +716,7 @@ static void hotspotExit(void)
 	trxDMRID = codeplugGetUserDMRID();
 	settingsUsbMode = USB_MODE_CPS;
 	mmdvmHostIsConnected = false;
+	hotspotModeRunning = false;
 	menuSystemPopAllAndDisplayRootMenu();
 }
 
