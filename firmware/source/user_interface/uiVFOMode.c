@@ -1091,11 +1091,11 @@ static void stepFrequency(int increment)
 enum VFO_SCREEN_QUICK_MENU_ITEMS // The last item in the list is used so that we automatically get a total number of items in the list
 {
 #if defined(PLATFORM_GD77) || defined(PLATFORM_GD77S)
-	VFO_SCREEN_QUICK_MENU_VFO_A_B = 0,
+	VFO_SCREEN_QUICK_MENU_VFO_A_B = 0, VFO_SCREEN_QUICK_MENU_TX_SWAP_RX,
 #elif defined(PLATFORM_DM1801)
-	VFO_SCREEN_QUICK_MENU_SCAN = 0,
+	VFO_SCREEN_QUICK_MENU_TX_SWAP_RX = 0,
 #endif
-	VFO_SCREEN_QUICK_MENU_TX_SWAP_RX, VFO_SCREEN_QUICK_MENU_BOTH_TO_RX, VFO_SCREEN_QUICK_MENU_BOTH_TO_TX,
+	VFO_SCREEN_QUICK_MENU_BOTH_TO_RX, VFO_SCREEN_QUICK_MENU_BOTH_TO_TX,
 	VFO_SCREEN_QUICK_MENU_FILTER,VFO_SCREEN_QUICK_MENU_VFO_TO_NEW,
 	NUM_VFO_SCREEN_QUICK_MENU_ITEMS
 };
@@ -1153,7 +1153,7 @@ static void updateQuickMenuScreen(void)
 					snprintf(buf, bufferLen, "%s:%s", currentLanguage->filter, ((tmpQuickMenuDmrFilterLevel == 0) ? currentLanguage->none : DMR_FILTER_LEVELS[tmpQuickMenuDmrFilterLevel]));
 				}
 				break;
-#if defined(PLATFORM_GD77)
+#if defined(PLATFORM_GD77) || defined(PLATFORM_GD77S)
 			case VFO_SCREEN_QUICK_MENU_VFO_A_B:
 				sprintf(buf, "VFO:%c", ((nonVolatileSettings.currentVFONumber==0) ? 'A' : 'B'));
 				break;
@@ -1264,7 +1264,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 		menuSystemPopPreviousMenu();
 		return;
 	}
-#if defined(PLATFORM_GD77)
+#if defined(PLATFORM_GD77) || defined(PLATFORM_GD77S)
 	else if (((ev->events & BUTTON_EVENT) && (ev->buttons & BUTTON_ORANGE)) && (gMenusCurrentItemIndex==VFO_SCREEN_QUICK_MENU_VFO_A_B))
 	{
 		nonVolatileSettings.currentVFONumber = 1 - nonVolatileSettings.currentVFONumber;// Switch to other VFO
@@ -1293,7 +1293,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 					}
 				}
 				break;
-#if defined(PLATFORM_GD77)
+#if defined(PLATFORM_GD77) || defined(PLATFORM_GD77S)
 			case VFO_SCREEN_QUICK_MENU_VFO_A_B:
 				if (nonVolatileSettings.currentVFONumber==0)
 				{
@@ -1324,7 +1324,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 					}
 				}
 				break;
-#if defined(PLATFORM_GD77)
+#if defined(PLATFORM_GD77) || defined(PLATFORM_GD77S)
 			case VFO_SCREEN_QUICK_MENU_VFO_A_B:
 				if (nonVolatileSettings.currentVFONumber==1)
 				{
