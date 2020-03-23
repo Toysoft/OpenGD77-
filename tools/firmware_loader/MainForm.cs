@@ -119,6 +119,22 @@ namespace GD77_FirmwareLoader
 			// Is firmware's URL found ?
 			if (urlFW.Length > 0)
 			{
+				// Extract release version
+				// If there is no match the process will go further anyway.
+				pattern = @"/R([0-9\.]+)/";
+
+				Match match = Regex.Match(urlFW, pattern, RegexOptions.IgnoreCase);
+
+				if (match.Success)
+				{
+					if (MessageBox.Show(String.Format("It will download and install the firmware version {0}.\nPlease confirm.",
+						match.Groups[0].Value.Trim('/')), "Question", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No)
+					{
+						enableUI(true);
+						return;
+					}
+				}
+
 				tempFile = System.IO.Path.GetTempPath() + Guid.NewGuid().ToString() + ".sgl";
 
 				// Download the firmware binary to a temporary file
