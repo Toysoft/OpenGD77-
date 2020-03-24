@@ -99,6 +99,9 @@ void menuLastHeardUpdateScreen(bool showTitleOrHeader, bool displayDetails);
 void menuClearPrivateCall(void);
 void menuAcceptPrivateCall(int id);
 
+void menuHotspotRestoreSettings(void);
+
+
 /*
  * ---------------------- IMPORTANT ----------------------------
  *

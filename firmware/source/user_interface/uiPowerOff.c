@@ -48,7 +48,7 @@ static void handleEvent(uiEvent_t *ev)
 {
 	static uint32_t m = 0;
 
-	if ((GPIO_PinRead(GPIO_Power_Switch, Pin_Power_Switch)==0) && (battery_voltage>CUTOFF_VOLTAGE_LOWER_HYST))
+	if ((GPIO_PinRead(GPIO_Power_Switch, Pin_Power_Switch) == 0) && (battery_voltage > CUTOFF_VOLTAGE_LOWER_HYST))
 	{
 		// I think this is to handle if the power button is turned back on during shutdown
 		menuSystemPopPreviousMenu();
@@ -64,7 +64,6 @@ static void handleEvent(uiEvent_t *ev)
 
 	if ((ev->time - m) > 500)
 	{
-		// This turns the power off to the CPU.
-		GPIO_PinWrite(GPIO_Keep_Power_On, Pin_Keep_Power_On, 0);
+		fw_powerOffFinalStage();
 	}
 }

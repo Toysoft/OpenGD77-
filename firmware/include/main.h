@@ -60,5 +60,6 @@ extern bool Display_light_Touched;
 extern const char *FIRMWARE_VERSION_STRING;
 
 void fw_init(void);
+void fw_powerOffFinalStage(void);
 
 #endif /* _FW_MAIN_H_ */

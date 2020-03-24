@@ -54,6 +54,24 @@ void fw_init(void)
     vTaskStartScheduler();
 }
 
+void fw_powerOffFinalStage(void)
+{
+	// If user was in a private call when they turned the radio off we need to restore the last Tg prior to stating the Private call.
+	// to the nonVolatile Setting overrideTG, otherwise when the radio is turned on again it be in PC mode to that station.
+	if ((trxTalkGroupOrPcId>>24) == PC_CALL_FLAG)
+	{
+		nonVolatileSettings.overrideTG = menuUtilityTgBeforePcMode;
+	}
+
+	menuHotspotRestoreSettings();
+
+	settingsSaveSettings(true);
+
+	// This turns the power off to the CPU.
+	GPIO_PinWrite(GPIO_Keep_Power_On, Pin_Keep_Power_On, 0);
+}
+
+
 static void show_lowbattery(void)
 {
 	ucClearBuf();
@@ -525,34 +543,25 @@ void fw_main_task(void *data)
 
         	menuSystemCallCurrentMenuTick(&ev);
 
-        	if (((GPIO_PinRead(GPIO_Power_Switch, Pin_Power_Switch)!=0)
-        			|| (battery_voltage<CUTOFF_VOLTAGE_LOWER_HYST))
+        	if (((GPIO_PinRead(GPIO_Power_Switch, Pin_Power_Switch) != 0)
+        			|| (battery_voltage < CUTOFF_VOLTAGE_LOWER_HYST))
         			&& (menuSystemGetCurrentMenuNumber() != MENU_POWER_OFF))
         	{
-        		// If user was in a private call when they turned the radio off we need to restore the last Tg prior to stating the Private call.
-        		// to the nonVolatile Setting overrideTG, otherwise when the radio is turned on again it be in PC mode to that station.
-        		if ((trxTalkGroupOrPcId>>24) == PC_CALL_FLAG)
-        		{
-        			nonVolatileSettings.overrideTG = menuUtilityTgBeforePcMode;
-        		}
-				settingsSaveSettings(true);
-
-        		if (battery_voltage<CUTOFF_VOLTAGE_LOWER_HYST)
+        		if (battery_voltage < CUTOFF_VOLTAGE_LOWER_HYST)
         		{
         			show_lowbattery();
 
-                	if (GPIO_PinRead(GPIO_Power_Switch, Pin_Power_Switch)!=0)
-					{
-        				// This turns the power off to the CPU.
-        				GPIO_PinWrite(GPIO_Keep_Power_On, Pin_Keep_Power_On, 0);
+        			if (GPIO_PinRead(GPIO_Power_Switch, Pin_Power_Switch) != 0)
+        			{
+        				fw_powerOffFinalStage();
         			}
         		}
         		else
         		{
-					menuSystemPushNewMenu(MENU_POWER_OFF);
+        			menuSystemPushNewMenu(MENU_POWER_OFF);
         		}
-    		    GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
-    		    set_melody(NULL);
+        		GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
+        		set_melody(NULL);
         	}
 
     		if ((nonVolatileSettings.backlightMode == BACKLIGHT_MODE_AUTO) && (menuDisplayLightTimer > 0))
