@@ -405,8 +405,8 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				if (displayChannelSettings)
 				{
 					printToneAndSquelch();
-					printFrequency(false, false, 32, currentChannelData->rxFreq, false, false);
-					printFrequency(true, false, 48, currentChannelData->txFreq, false, false);
+					printFrequency(false, false, 32, (reverseRepeater ? currentChannelData->txFreq : currentChannelData->rxFreq), false, false);
+					printFrequency(true, false, 48, (reverseRepeater ? currentChannelData->rxFreq : currentChannelData->txFreq), false, false);
 				}
 				else
 				{
@@ -611,9 +611,31 @@ static void handleEvent(uiEvent_t *ev)
 			menuChannelModeUpdateScreen(0);
 			return;
 		}
-#ifdef BLACK_BUTTON_DISPLAYS_CHANNEL_DETAILS
+
+		if ((reverseRepeater == false) && ((ev->buttons & BUTTON_SK1) && (ev->buttons & BUTTON_ORANGE)))
+		{
+			trxSetFrequency(channelScreenChannelData.txFreq, channelScreenChannelData.rxFreq, DMR_MODE_ACTIVE);// Swap Tx and Rx freqs but force DMR Active
+			reverseRepeater = true;
+			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+			menuChannelModeUpdateScreen(0);
+			return;
+		}
+		else if ((reverseRepeater == true) && ((ev->buttons & BUTTON_ORANGE) == 0))
+		{
+			trxSetFrequency(channelScreenChannelData.rxFreq, channelScreenChannelData.txFreq, DMR_MODE_AUTO);
+			reverseRepeater = false;
+
+			// We are still displaying channel details (SK1 has been released), force to update the screen
+			if (displayChannelSettings)
+			{
+				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+				menuChannelModeUpdateScreen(0);
+			}
+
+			return;
+		}
 		// Display channel settings (RX/TX/etc) while SK1 is pressed
-		if ((displayChannelSettings == false) && (ev->buttons & BUTTON_SK1))
+		else if ((displayChannelSettings == false) && (ev->buttons & BUTTON_SK1))
 		{
 			int prevQSODisp = prevDisplayQSODataState;
 			displayChannelSettings = true;
@@ -623,27 +645,15 @@ static void handleEvent(uiEvent_t *ev)
 			return;
 
 		}
-		else if ((displayChannelSettings==true) && (ev->buttons & BUTTON_SK1)==0)
+		else if ((displayChannelSettings == true) && ((ev->buttons & BUTTON_SK1) == 0))
 		{
 			displayChannelSettings = false;
 			menuDisplayQSODataState = prevDisplayQSODataState;
 			menuChannelModeUpdateScreen(0);
 			return;
 		}
-#else
-		if ((reverseRepeater == false) && (ev->buttons & BUTTON_SK1))
-		{
-			trxSetFrequency(channelScreenChannelData.txFreq, channelScreenChannelData.rxFreq, DMR_MODE_ACTIVE);// Swap Tx and Rx freqs but force DMR Active
 
-			reverseRepeater = true;
-		}
-		else if ((reverseRepeater==true) && (ev->buttons & BUTTON_SK1)==0)
-		{
-			trxSetFrequency(channelScreenChannelData.rxFreq, channelScreenChannelData.txFreq, DMR_MODE_AUTO);
-			reverseRepeater=false;
-		}
-#endif
-		if (ev->buttons & BUTTON_ORANGE)
+		if ((ev->buttons & BUTTON_ORANGE) && ((ev->buttons & BUTTON_SK1) == 0))
 		{
 			if (ev->buttons & BUTTON_SK2)
 			{
