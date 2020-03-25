@@ -776,14 +776,13 @@ inline static void HRC6000SysInterruptHandler(void)
 
 	if (!trxIsTransmitting) // ignore the LC data when we are transmitting
 	{
-		if ((menuHotspotModeIsRunning() == false) && (ccHold == false) && (nonVolatileSettings.dmrFilterLevel < DMR_FILTER_CC))
+		if ((!ccHold) && (nonVolatileSettings.dmrFilterLevel < DMR_FILTER_CC) )
 		{
 			if(rxColorCode==lastRxColorCode)
 			{
 				trxSetDMRColourCode(rxColorCode);
 			}
-
-			lastRxColorCode=rxColorCode;
+		lastRxColorCode=rxColorCode;
 		}
 
 		uint8_t LCBuf[12];
