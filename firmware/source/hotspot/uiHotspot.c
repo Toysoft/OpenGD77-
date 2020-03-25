@@ -123,9 +123,9 @@ M: 2020-01-07 09:52:15.246 DMR Slot 2, received network end of voice transmissio
 
 #define PROTOCOL_VERSION    1U
 
-#define MMDVM_HEADER_LENGTH  4U
+#define MMDVM_HEADER_LENGTH 4U
 
-#define HOTSPOT_VERSION_STRING "OpenGD77 Hotspot v0.1.0"
+#define HOTSPOT_VERSION_STRING "OpenGD77 Hotspot v0.1.1"
 #define concat(a, b) a " GitID #" b ""
 static const char HARDWARE[] = concat(HOTSPOT_VERSION_STRING, GITVERSION);
 
@@ -309,7 +309,8 @@ static uint8_t cwBuffer[64U];
 static uint16_t cwpoLen;
 static uint16_t cwpoPtr;
 static bool cwKeying = false;
-static bool hotspotModeRunning = false;
+static uint8_t savedDMRFilterLevel = 0xFF; // 0xFF value means unset
+
 // End of CWID related
 
 
@@ -336,7 +337,15 @@ int menuHotspotMode(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		hotspotModeRunning = true;
+		// DMR filter level isn't saved yet (cycling power OFF/ON quickly can corrupt
+		// this value otherwise, as menuHotspotMode(true) could be called twice.
+		if (savedDMRFilterLevel == 0xFF)
+		{
+			// Override DMR filtering
+			savedDMRFilterLevel = nonVolatileSettings.dmrFilterLevel;
+			nonVolatileSettings.dmrFilterLevel = DMR_FILTER_CC_TS;
+		}
+
 		hotspotState = HOTSPOT_STATE_NOT_CONNECTED;
 
 		savedTGorPC = trxTalkGroupOrPcId;// Save the current TG or PC
@@ -422,9 +431,13 @@ int menuHotspotMode(uiEvent_t *ev, bool isFirstRun)
 	return 0;
 }
 
-bool menuHotspotModeIsRunning(void)
+void menuHotspotRestoreSettings(void)
 {
-	return hotspotModeRunning;
+	if (savedDMRFilterLevel != 0xFF)
+	{
+		nonVolatileSettings.dmrFilterLevel = savedDMRFilterLevel;
+		savedDMRFilterLevel = 0xFF; // Unset saved DMR filter level
+	}
 }
 
 static void displayContactInfo(uint8_t y, char *text, size_t maxLen)
@@ -716,7 +729,7 @@ static void hotspotExit(void)
 	trxDMRID = codeplugGetUserDMRID();
 	settingsUsbMode = USB_MODE_CPS;
 	mmdvmHostIsConnected = false;
-	hotspotModeRunning = false;
+	menuHotspotRestoreSettings();
 	menuSystemPopAllAndDisplayRootMenu();
 }
 
