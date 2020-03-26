@@ -165,14 +165,6 @@ void trxSetModeAndBandwidth(int mode, bool bandwidthIs25kHz)
 
 int trxGetNextOrPrevBandFromFrequency(int frequency, bool nextBand)
 {
-	for (int i = 0; i < RADIO_BANDS_TOTAL_NUM; i++)
-	{
-		if ((frequency >= RADIO_FREQUENCY_BANDS[i].minFreq) && (frequency < RADIO_FREQUENCY_BANDS[i].maxFreq))
-		{
-			return i;
-		}
-	}
-
 	if (nextBand)
 	{
 		if (frequency > RADIO_FREQUENCY_BANDS[RADIO_BANDS_TOTAL_NUM - 1].maxFreq)
