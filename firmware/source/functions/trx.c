@@ -163,11 +163,51 @@ void trxSetModeAndBandwidth(int mode, bool bandwidthIs25kHz)
 	}
 }
 
+int trxGetNextOrPrevBandFromFrequency(int frequency, bool nextBand)
+{
+	for (int i = 0; i < RADIO_BANDS_TOTAL_NUM; i++)
+	{
+		if ((frequency >= RADIO_FREQUENCY_BANDS[i].minFreq) && (frequency < RADIO_FREQUENCY_BANDS[i].maxFreq))
+		{
+			return i;
+		}
+	}
+
+	if (nextBand)
+	{
+		if (frequency > RADIO_FREQUENCY_BANDS[RADIO_BANDS_TOTAL_NUM - 1].maxFreq)
+		{
+			return 0; // First band
+		}
+
+		for(int band = 0; band < RADIO_BANDS_TOTAL_NUM - 1; band++)
+		{
+			if (frequency > RADIO_FREQUENCY_BANDS[band].maxFreq && frequency < RADIO_FREQUENCY_BANDS[band + 1].minFreq)
+				return (band + 1); // Next band
+		}
+	}
+	else
+	{
+		if (frequency < RADIO_FREQUENCY_BANDS[0].minFreq)
+		{
+			return (RADIO_BANDS_TOTAL_NUM - 1); // Last band
+		}
+
+		for(int band = 1; band < RADIO_BANDS_TOTAL_NUM; band++)
+		{
+			if (frequency < RADIO_FREQUENCY_BANDS[band].minFreq && frequency > RADIO_FREQUENCY_BANDS[band - 1].maxFreq)
+				return (band - 1); // Prev band
+		}
+	}
+
+	return -1;
+}
+
 int trxGetBandFromFrequency(int frequency)
 {
-	for(int i=0;i<RADIO_BANDS_TOTAL_NUM;i++)
+	for(int i = 0; i < RADIO_BANDS_TOTAL_NUM; i++)
 	{
-		if (frequency >= RADIO_FREQUENCY_BANDS[i].minFreq && frequency < RADIO_FREQUENCY_BANDS[i].maxFreq)
+		if ((frequency >= RADIO_FREQUENCY_BANDS[i].minFreq) && (frequency <= RADIO_FREQUENCY_BANDS[i].maxFreq))
 		{
 			return i;
 		}
@@ -177,9 +217,9 @@ int trxGetBandFromFrequency(int frequency)
 
 bool trxCheckFrequencyInAmateurBand(int tmp_frequency)
 {
-	return ((tmp_frequency>=BAND_VHF_MIN) && (tmp_frequency<=BAND_VHF_MAX)) ||
-			((tmp_frequency>=BAND_UHF_MIN) && (tmp_frequency<=BAND_UHF_MAX)) ||
-			((tmp_frequency>=BAND_222_MIN) && (tmp_frequency<=BAND_222_MAX));
+	return ((tmp_frequency >= BAND_VHF_MIN) && (tmp_frequency <= BAND_VHF_MAX)) ||
+			((tmp_frequency >= BAND_UHF_MIN) && (tmp_frequency <= BAND_UHF_MAX)) ||
+			((tmp_frequency >= BAND_222_MIN) && (tmp_frequency <= BAND_222_MAX));
 }
 
 void trxReadRSSIAndNoise(void)
