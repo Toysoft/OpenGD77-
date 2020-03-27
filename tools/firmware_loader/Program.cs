@@ -31,7 +31,7 @@ namespace GD77_FirmwareLoader
 			{
 				FirmwareLoader.outputType = FirmwareLoader.probeModel();
 
-				if ((FirmwareLoader.outputType < FirmwareLoader.OutputType.OutputType_GD77) || (FirmwareLoader.outputType > FirmwareLoader.OutputType.OutputType_DM1801))
+				if ((FirmwareLoader.outputType < FirmwareLoader.OutputType.OutputType_GD77) || (FirmwareLoader.outputType > FirmwareLoader.OutputType.OutputType_DM5R))
 				{
 					Console.WriteLine("Unable to detect HT model, using GD-77 as fallback.");
 					FirmwareLoader.outputType = FirmwareLoader.OutputType.OutputType_GD77;
@@ -53,7 +53,8 @@ namespace GD77_FirmwareLoader
 					String[] modelsString = {
 						FirmwareLoader.getModelString(FirmwareLoader.OutputType.OutputType_GD77),
 						FirmwareLoader.getModelString(FirmwareLoader.OutputType.OutputType_GD77S),
-						FirmwareLoader.getModelString(FirmwareLoader.OutputType.OutputType_DM1801)
+						FirmwareLoader.getModelString(FirmwareLoader.OutputType.OutputType_DM1801),
+                                                FirmwareLoader.getModelString(FirmwareLoader.OutputType.OutputType_DM5R)
 						};
 					String allModels = String.Join(" | ", modelsString);
 
@@ -64,6 +65,7 @@ namespace GD77_FirmwareLoader
 				int idxGD77 = Array.IndexOf(args, "GD-77");
 				int idxDM1801 = Array.IndexOf(args, "DM-1801");
 				int idxGD77S = Array.IndexOf(args, "GD-77S");
+				int idxDM5R = Array.IndexOf(args, "DM-5R");
 
 				if (idxGD77 >= 0)
 				{
@@ -79,6 +81,11 @@ namespace GD77_FirmwareLoader
 				{
 					FirmwareLoader.outputType = FirmwareLoader.OutputType.OutputType_DM1801;
 					args = RemoveArgAt(args, idxDM1801);
+				}
+				else if (idxDM5R >= 0)
+				{
+					FirmwareLoader.outputType = FirmwareLoader.OutputType.OutputType_DM5R;
+					args = RemoveArgAt(args, idxDM5R);
 				}
 				else
 				{

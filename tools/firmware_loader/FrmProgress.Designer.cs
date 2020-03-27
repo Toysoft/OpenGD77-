@@ -57,7 +57,7 @@
 			this.Controls.Add(this.lblMessage);
 			this.Controls.Add(this.progressBar1);
 			this.Name = "FrmProgress";
-			this.Text = "Open(GD-77/DM-1801) Firmware Loader";
+			this.Text = "Open(GD-77/MD-1801/DM-5R) Firmware Loader";
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
 			this.MaximizeBox = false;
 			this.ResumeLayout(false);

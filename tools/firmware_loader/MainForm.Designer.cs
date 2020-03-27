@@ -43,8 +43,8 @@ namespace GD77_FirmwareLoader
 			this.grpboxModel = new System.Windows.Forms.GroupBox();
 			this.grpboxModel.Text = " Select your radio type ";
 			this.grpboxModel.Location = new System.Drawing.Point(5, 5);
-			this.grpboxModel.Size = new System.Drawing.Size(220, 85);
-			this.rbModels = new System.Windows.Forms.RadioButton[3];
+			this.grpboxModel.Size = new System.Drawing.Size(220, 105);
+			this.rbModels = new System.Windows.Forms.RadioButton[4];
 
 			this.rbModels[0] = new System.Windows.Forms.RadioButton();
 			this.rbModels[0].Text = "Radioddity GD-77 / TYT MD-760";
@@ -70,11 +70,20 @@ namespace GD77_FirmwareLoader
 			this.rbModels[2].AutoSize = true;
 			this.rbModels[2].CheckedChanged += new System.EventHandler(this.rbModel_CheckedChanged);
 
+			this.rbModels[3] = new System.Windows.Forms.RadioButton();
+			this.rbModels[3].Text = "Baofeng DM-5R";
+			this.rbModels[3].Location = new System.Drawing.Point(5, 75);
+			this.rbModels[3].UseVisualStyleBackColor = true;
+			this.rbModels[3].Tag = (int)FirmwareLoader.OutputType.OutputType_DM5R;
+			this.rbModels[3].AutoSize = true;
+			this.rbModels[3].CheckedChanged += new System.EventHandler(this.rbModel_CheckedChanged);
+
 			this.rbModels[(int)FirmwareLoader.outputType].Checked = true;
 
 			this.grpboxModel.Controls.Add(this.rbModels[0]);
 			this.grpboxModel.Controls.Add(this.rbModels[1]);
 			this.grpboxModel.Controls.Add(this.rbModels[2]);
+			this.grpboxModel.Controls.Add(this.rbModels[3]);
 			this.Controls.Add(this.grpboxModel);
 
 			//
@@ -127,14 +136,14 @@ namespace GD77_FirmwareLoader
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(380, 100);
+			this.ClientSize = new System.Drawing.Size(380, 120);
 			this.Controls.Add(this.btnDetect);
 			this.Controls.Add(this.progressBar);
 			this.Controls.Add(this.btnDownload);
 			this.Controls.Add(this.btnOpenFile);
 			this.KeyPreview = true;
 			this.Name = "MainForm";
-			this.Text = "Open(GD77/GD77S/MD1801) Firmware loader";
+			this.Text = "Open(GD77/GD77S/MD1801/DM5R) Firmware loader";
 			this.FormBorderStyle = FormBorderStyle.FixedSingle;
 			this.MaximizeBox = false;
 			this.ResumeLayout(false);
