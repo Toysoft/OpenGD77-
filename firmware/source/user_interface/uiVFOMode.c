@@ -19,6 +19,7 @@
 #include <HR-C6000.h>
 #include <settings.h>
 #include <trx.h>
+#include <functions/ticks.h>
 #include <user_interface/menuSystem.h>
 #include <user_interface/uiUtilities.h>
 #include <user_interface/uiLocalisation.h>
@@ -59,7 +60,7 @@ static vfoScreenOperationMode_t screenOperationMode[2] = {VFO_SCREEN_OPERATION_N
 // Public interface
 int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
 {
-	static uint32_t m = 0, sqm = 0;
+	static uint32_t m = 0, sqm = 0, curm = 0;
 
 	if (isFirstRun)
 	{
@@ -169,6 +170,13 @@ int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
 	{
 		if (ev->events == NO_EVENT)
 		{
+			// We are entering digits, so update the screen as we have a cursor to blink
+			if ((freq_enter_idx > 0) && ((ev->time - curm) > 300))
+			{
+				curm = ev->time;
+				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN; // Redraw will happen just below
+			}
+
 			// is there an incoming DMR signal
 			if (menuDisplayQSODataState != QSO_DISPLAY_IDLE)
 			{
@@ -203,6 +211,7 @@ int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
 					// as there is no need to redraw the rest of the screen
 					ucRenderRows(((scanActive && (scanState == SCAN_PAUSED)) ? 0 : 1), 2);
 				}
+
 			}
 
 			if(toneScanActive==true)
@@ -247,6 +256,8 @@ int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
 
 void menuVFOModeUpdateScreen(int txTimeSecs)
 {
+	static bool blink = false;
+	static uint32_t blinkTime = 0;
 	static const int bufferLen = 17;
 	char buffer[bufferLen];
 	struct_codeplugContact_t contact;
@@ -359,7 +370,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 
 			}
 
-			if (freq_enter_idx==0)
+			if (freq_enter_idx == 0)
 			{
 				if (!trxIsTransmitting)
 				{
@@ -387,35 +398,72 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 				}
 				else
 				{
-					snprintf(buffer, bufferLen, "%d.%03d  %d.%03d", 	nonVolatileSettings.vfoScanLow[nonVolatileSettings.currentVFONumber] / 100000, (nonVolatileSettings.vfoScanLow[nonVolatileSettings.currentVFONumber] - (nonVolatileSettings.vfoScanLow[nonVolatileSettings.currentVFONumber] / 100000) * 100000)/100,
-																	nonVolatileSettings.vfoScanHigh[nonVolatileSettings.currentVFONumber] / 100000, (nonVolatileSettings.vfoScanHigh[nonVolatileSettings.currentVFONumber] - (nonVolatileSettings.vfoScanHigh[nonVolatileSettings.currentVFONumber] / 100000) * 100000)/100);
+					// Low/High scanning freqs
+					snprintf(buffer, bufferLen, "%d.%03d", nonVolatileSettings.vfoScanLow[nonVolatileSettings.currentVFONumber] / 100000, (nonVolatileSettings.vfoScanLow[nonVolatileSettings.currentVFONumber] - (nonVolatileSettings.vfoScanLow[nonVolatileSettings.currentVFONumber] / 100000) * 100000)/100);
 					buffer[bufferLen - 1] = 0;
-					ucPrintAt(0, 48, buffer, FONT_8x16);
+					ucPrintAt(2, 48, buffer, FONT_8x16);
+					snprintf(buffer, bufferLen, "%d.%03d", nonVolatileSettings.vfoScanHigh[nonVolatileSettings.currentVFONumber] / 100000, (nonVolatileSettings.vfoScanHigh[nonVolatileSettings.currentVFONumber] - (nonVolatileSettings.vfoScanHigh[nonVolatileSettings.currentVFONumber] / 100000) * 100000)/100);
+					buffer[bufferLen - 1] = 0;
+					ucPrintAt(128 - ((7 * 8) + 2), 48, buffer, FONT_8x16);
+
+					// Scanning direction arrow
+					static const int scanDirArrow[2][6] = {
+							{ 59, 55, 67, 51, 67, 59 }, // Down
+							{ 59, 59, 59, 51, 67, 55 }, // Up
+					};
+					ucFillTriangle(scanDirArrow[(scanDirection > 0)][0], scanDirArrow[(scanDirection > 0)][1],
+								   scanDirArrow[(scanDirection > 0)][2], scanDirArrow[(scanDirection > 0)][3],
+								   scanDirArrow[(scanDirection > 0)][4], scanDirArrow[(scanDirection > 0)][5], true);
 				}
 			}
-			else
+			else // Entering digits
 			{
+				int8_t xCursor = -1;
+				int8_t yCursor = -1;
+
 				if (screenOperationMode[nonVolatileSettings.currentVFONumber] == VFO_SCREEN_OPERATION_NORMAL)
 				{
 					snprintf(buffer, bufferLen, "%c%c%c.%c%c%c%c%c MHz", freq_enter_digits[0], freq_enter_digits[1], freq_enter_digits[2],
 							freq_enter_digits[3], freq_enter_digits[4], freq_enter_digits[5], freq_enter_digits[6], freq_enter_digits[7]);
+					ucPrintCentered((selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX) ? 48 : 32, buffer, FONT_8x16);
 
-					if (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX)
+					if (freq_enter_idx < 8)
 					{
-						ucPrintCentered(48, buffer, FONT_8x16);
-					}
-					else
-					{
-						ucPrintCentered(32, buffer, FONT_8x16);
+						xCursor = ((128 - (strlen(buffer) * 8)) >> 1) + ((freq_enter_idx + ((freq_enter_idx > 2) ? 1 : 0)) * 8);
+						yCursor = ((selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX) ? 48 : 32) + 14;
 					}
 				}
 				else
 				{
-					snprintf(buffer, bufferLen, "%c%c%c.%c%c%c  %c%c%c.%c%c%c",
-							freq_enter_digits[0], freq_enter_digits[1], freq_enter_digits[2], freq_enter_digits[3], freq_enter_digits[4], freq_enter_digits[5],
-							freq_enter_digits[6] , freq_enter_digits[7], freq_enter_digits[8], freq_enter_digits[9], freq_enter_digits[10], freq_enter_digits[11]);
-					ucPrintCentered(48, buffer, FONT_8x16);
+					ucPrintAt(5, 32, "Low", FONT_8x16);
+					ucDrawFastVLine(0, 37, 24, true);
+					ucDrawFastHLine(1, 48, 57, true);
+					sprintf(buffer, "%c%c%c.%c%c%c", freq_enter_digits[0], freq_enter_digits[1], freq_enter_digits[2],
+													 freq_enter_digits[3], freq_enter_digits[4], freq_enter_digits[5]);
+					ucPrintAt(2, 48, buffer, FONT_8x16);
+
+					ucPrintAt(73, 32, "High", FONT_8x16);
+					ucDrawFastVLine(68, 37, 24, true);
+					ucDrawFastHLine(69, 48, 57, true);
+					sprintf(buffer, "%c%c%c.%c%c%c", freq_enter_digits[6], freq_enter_digits[7], freq_enter_digits[8],
+													 freq_enter_digits[9], freq_enter_digits[10], freq_enter_digits[11]);
+					ucPrintAt(128 - ((7 * 8) + 2), 48, buffer, FONT_8x16);
+
+					// Cursor
+					//freq_enter_idx
 				}
+
+				if ((xCursor >= 0) && (yCursor >= 0))
+				{
+					ucDrawFastHLine(xCursor + 1, yCursor, 6, blink);
+
+					if ((fw_millis() - blinkTime) > 500)
+					{
+						blinkTime = fw_millis();
+						blink = !blink;
+					}
+				}
+
 			}
 
 			ucRender();
@@ -659,7 +707,7 @@ static void handleEvent(uiEvent_t *ev)
 		}
 
 
-		if (freq_enter_idx==0)
+		if (freq_enter_idx == 0)
 		{
 			if (KEYCHECK_SHORTUP(ev->keys,KEY_HASH))
 			{
@@ -939,7 +987,7 @@ static void handleEvent(uiEvent_t *ev)
 				}
 			}
 		}
-		else
+		else // (freq_enter_idx == 0)
 		{
 			if (KEYCHECK_PRESS(ev->keys,KEY_LEFT))
 			{
@@ -978,7 +1026,8 @@ static void handleEvent(uiEvent_t *ev)
 				}
 			}
 		}
-		if (freq_enter_idx < ((screenOperationMode[nonVolatileSettings.currentVFONumber] == VFO_SCREEN_OPERATION_NORMAL )?8:12))
+
+		if (freq_enter_idx < ((screenOperationMode[nonVolatileSettings.currentVFONumber] == VFO_SCREEN_OPERATION_NORMAL) ? 8 : 12))
 		{
 			int keyval = menuGetKeypadKeyValue(ev, true);
 			if (keyval != 99)
@@ -1030,7 +1079,6 @@ static void handleEvent(uiEvent_t *ev)
 			}
 		}
 	}
-//	menuVFOModeUpdateScreen(0);
 }
 
 
