@@ -23,6 +23,8 @@
 #include <user_interface/uiUtilities.h>
 #include <user_interface/uiLocalisation.h>
 
+#define swap(x, y) do { typeof(x) t = x; x = y; y = t; } while(0)
+
 enum VFO_SELECTED_FREQUENCY_INPUT  {VFO_SELECTED_FREQUENCY_INPUT_RX , VFO_SELECTED_FREQUENCY_INPUT_TX};
 typedef enum vfoScreenOperationMode {VFO_SCREEN_OPERATION_NORMAL , VFO_SCREEN_OPERATION_SCAN} vfoScreenOperationMode_t;
 
@@ -513,7 +515,7 @@ static void handleEvent(uiEvent_t *ev)
 	{
 		if (!(ev->buttons & BUTTON_SK2))
 		{
-			// Right key sets the current frequency as a 'niusance' frequency.
+			// Right key sets the current frequency as a 'nuisance' frequency.
 			if(scanState==SCAN_PAUSED &&  ev->keys.key == KEY_RIGHT)
 			{
 				nuisanceDelete[nuisanceDeleteIndex++]=currentChannelData->rxFreq;
@@ -538,7 +540,7 @@ static void handleEvent(uiEvent_t *ev)
 
 		// Stop the scan on any key except UP without Shift (allows scan to be manually continued)
 		// or SK2 on its own (allows Backlight to be triggered)
-		if (ev->keys.key != KEY_UP )
+		if (ev->keys.key != KEY_UP)
 		{
 			menuVFOModeStopScanning();
 			fw_reset_keyboard();
@@ -614,13 +616,14 @@ static void handleEvent(uiEvent_t *ev)
 			prevDisplayQSODataState = prevQSODisp;
 			return;
 		}
-		else if ((displayChannelSettings == true) && (ev->buttons & BUTTON_SK1)==0)
+		else if ((displayChannelSettings == true) && (ev->buttons & BUTTON_SK1) == 0)
 		{
 			displayChannelSettings = false;
 			menuDisplayQSODataState = prevDisplayQSODataState;
 			menuVFOModeUpdateScreen(0);
 			return;
 		}
+
 		if (ev->buttons & BUTTON_ORANGE)
 		{
 			if (ev->buttons & BUTTON_SK2)
@@ -642,7 +645,7 @@ static void handleEvent(uiEvent_t *ev)
 	{
 		if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 		{
-			if (ev->buttons & BUTTON_SK2 )
+			if (ev->buttons & BUTTON_SK2)
 			{
 				menuSystemPushNewMenu(MENU_CHANNEL_DETAILS);
 				reset_freq_enter_digits();
@@ -677,7 +680,7 @@ static void handleEvent(uiEvent_t *ev)
 
 			if (KEYCHECK_SHORTUP(ev->keys,KEY_STAR))
 			{
-				if (ev->buttons & BUTTON_SK2 )
+				if (ev->buttons & BUTTON_SK2)
 				{
 					if (trxGetMode() == RADIO_MODE_ANALOG)
 					{
@@ -759,7 +762,6 @@ static void handleEvent(uiEvent_t *ev)
 			{
 				if (screenOperationMode[nonVolatileSettings.currentVFONumber] == VFO_SCREEN_OPERATION_SCAN)
 				{
-
 					screenOperationMode[nonVolatileSettings.currentVFONumber] = VFO_SCREEN_OPERATION_NORMAL;
 					menuVFOModeStopScanning();
 					return;
@@ -769,7 +771,6 @@ static void handleEvent(uiEvent_t *ev)
 			{
 				if (screenOperationMode[nonVolatileSettings.currentVFONumber] == VFO_SCREEN_OPERATION_SCAN)
 				{
-
 					setCurrentFreqToScanLimits();
 					if (!scanActive)
 					{
@@ -1010,6 +1011,11 @@ static void handleEvent(uiEvent_t *ev)
 						int fLower=read_freq_enter_digits(0,6)  * 100;
 						int fUpper=read_freq_enter_digits(6,12) * 100;
 
+						if (fLower > fUpper)
+						{
+							swap(fLower, fUpper);
+						}
+
 						if (trxGetBandFromFrequency(fLower)!=-1 && trxGetBandFromFrequency(fUpper)!=-1 && (fLower < fUpper))
 						{
 							nonVolatileSettings.vfoScanLow[nonVolatileSettings.currentVFONumber] = fLower;
@@ -1072,7 +1078,24 @@ static void stepFrequency(int increment)
 		tmp_frequencyRx  = currentChannelData->rxFreq + increment;
 		tmp_frequencyTx  = currentChannelData->txFreq + increment;
 	}
-	if (trxGetBandFromFrequency(tmp_frequencyRx)!=-1)
+
+	// Out of frequency in the current band, update freq to the next or prev band.
+	if (trxGetBandFromFrequency(tmp_frequencyRx) == -1)
+	{
+		int band = trxGetNextOrPrevBandFromFrequency(tmp_frequencyRx, (increment > 0));
+
+		if (band != -1)
+		{
+			tmp_frequencyRx = ((increment > 0) ? RADIO_FREQUENCY_BANDS[band].minFreq : RADIO_FREQUENCY_BANDS[band].maxFreq);
+			tmp_frequencyTx = tmp_frequencyRx;
+		}
+		else
+		{
+			// ??
+		}
+	}
+
+	if (trxGetBandFromFrequency(tmp_frequencyRx) != -1)
 	{
 		currentChannelData->txFreq = tmp_frequencyTx;
 		currentChannelData->rxFreq =  tmp_frequencyRx;
@@ -1518,32 +1541,32 @@ static void scanning(void)
 		trx_measure_count=0;//needed to allow time for Rx to settle after channel change.
 		uiEvent_t tmpEvent={ .buttons = 0, .keys = NO_KEYCODE, .function = 0, .events = NO_EVENT, .hasEvent = 0, .time = 0 };
 
-		if (scanDirection==1)
+		if (scanDirection == 1)
 		{
-			if(currentChannelData->rxFreq + VFO_FREQ_STEP_TABLE[(currentChannelData->VFOflag5 >> 4)]  <= nonVolatileSettings.vfoScanHigh[nonVolatileSettings.currentVFONumber])
+			if(currentChannelData->rxFreq + VFO_FREQ_STEP_TABLE[(currentChannelData->VFOflag5 >> 4)] <= nonVolatileSettings.vfoScanHigh[nonVolatileSettings.currentVFONumber])
 			{
 				handleUpKey(&tmpEvent);
 			}
 			else
 			{
 				int offset = currentChannelData->txFreq - currentChannelData->rxFreq;
-				currentChannelData->rxFreq=nonVolatileSettings.vfoScanLow[nonVolatileSettings.currentVFONumber];
-				currentChannelData->txFreq=currentChannelData->rxFreq+offset;
-				trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq,DMR_MODE_AUTO);
+				currentChannelData->rxFreq = nonVolatileSettings.vfoScanLow[nonVolatileSettings.currentVFONumber];
+				currentChannelData->txFreq = currentChannelData->rxFreq + offset;
+				trxSetFrequency(currentChannelData->rxFreq, currentChannelData->txFreq, DMR_MODE_AUTO);
 			}
 		}
 		else
 		{
-			if(currentChannelData->rxFreq + VFO_FREQ_STEP_TABLE[(currentChannelData->VFOflag5 >> 4)]  >= nonVolatileSettings.vfoScanLow[nonVolatileSettings.currentVFONumber])
+			if(currentChannelData->rxFreq + VFO_FREQ_STEP_TABLE[(currentChannelData->VFOflag5 >> 4)] >= nonVolatileSettings.vfoScanLow[nonVolatileSettings.currentVFONumber])
 			{
 				handleUpKey(&tmpEvent);
 			}
 			else
 			{
 				int offset = currentChannelData->txFreq - currentChannelData->rxFreq;
-				currentChannelData->rxFreq=nonVolatileSettings.vfoScanHigh[nonVolatileSettings.currentVFONumber];
-				currentChannelData->txFreq=currentChannelData->rxFreq+offset;
-				trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq,DMR_MODE_AUTO);
+				currentChannelData->rxFreq = nonVolatileSettings.vfoScanHigh[nonVolatileSettings.currentVFONumber];
+				currentChannelData->txFreq = currentChannelData->rxFreq+offset;
+				trxSetFrequency(currentChannelData->rxFreq, currentChannelData->txFreq, DMR_MODE_AUTO);
 			}
 		}
 
