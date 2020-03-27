@@ -427,6 +427,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 							freq_enter_digits[3], freq_enter_digits[4], freq_enter_digits[5], freq_enter_digits[6], freq_enter_digits[7]);
 					ucPrintCentered((selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX) ? 48 : 32, buffer, FONT_8x16);
 
+					// Cursor
 					if (freq_enter_idx < 8)
 					{
 						xCursor = ((128 - (strlen(buffer) * 8)) >> 1) + ((freq_enter_idx + ((freq_enter_idx > 2) ? 1 : 0)) * 8);
@@ -435,6 +436,8 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 				}
 				else
 				{
+					uint8_t hiX = 128 - ((7 * 8) + 2);
+
 					ucPrintAt(5, 32, "Low", FONT_8x16);
 					ucDrawFastVLine(0, 37, 24, true);
 					ucDrawFastHLine(1, 48, 57, true);
@@ -447,10 +450,17 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					ucDrawFastHLine(69, 48, 57, true);
 					sprintf(buffer, "%c%c%c.%c%c%c", freq_enter_digits[6], freq_enter_digits[7], freq_enter_digits[8],
 													 freq_enter_digits[9], freq_enter_digits[10], freq_enter_digits[11]);
-					ucPrintAt(128 - ((7 * 8) + 2), 48, buffer, FONT_8x16);
+					ucPrintAt(hiX, 48, buffer, FONT_8x16);
 
 					// Cursor
-					//freq_enter_idx
+					if (freq_enter_idx < 12)
+					{
+						xCursor = ((freq_enter_idx < 6) ? 10 : hiX) // X start
+								+ (((freq_enter_idx < 6) ? (freq_enter_idx - 1) : (freq_enter_idx - 7)) * 8) // Length
+								+ ((freq_enter_idx > 2 ? (freq_enter_idx > 8 ? 2 : 1) : 0) * 8); // MHz/kHz separator(s)
+						yCursor = 48 + 14;
+					}
+
 				}
 
 				if ((xCursor >= 0) && (yCursor >= 0))
