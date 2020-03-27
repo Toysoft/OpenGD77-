@@ -612,7 +612,7 @@ static void handleEvent(uiEvent_t *ev)
 			return;
 		}
 
-		if ((reverseRepeater == false) && ((ev->buttons & BUTTON_SK1) && (ev->buttons & BUTTON_ORANGE)))
+		if ((reverseRepeater == false) && ((ev->buttons & BUTTON_SK1) && (ev->buttons & BUTTON_SK2)))
 		{
 			trxSetFrequency(channelScreenChannelData.txFreq, channelScreenChannelData.rxFreq, DMR_MODE_ACTIVE);// Swap Tx and Rx freqs but force DMR Active
 			reverseRepeater = true;
@@ -620,7 +620,7 @@ static void handleEvent(uiEvent_t *ev)
 			menuChannelModeUpdateScreen(0);
 			return;
 		}
-		else if ((reverseRepeater == true) && ((ev->buttons & BUTTON_ORANGE) == 0))
+		else if ((reverseRepeater == true) && (!(ev->buttons & BUTTON_SK1) || !(ev->buttons & BUTTON_SK2)))
 		{
 			trxSetFrequency(channelScreenChannelData.rxFreq, channelScreenChannelData.txFreq, DMR_MODE_AUTO);
 			reverseRepeater = false;
