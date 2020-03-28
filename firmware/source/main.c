@@ -68,7 +68,9 @@ void fw_powerOffFinalStage(void)
 	settingsSaveSettings(true);
 
 	// This turns the power off to the CPU.
+#if !defined(PLATFORM_DM5R)
 	GPIO_PinWrite(GPIO_Keep_Power_On, Pin_Keep_Power_On, 0);
+#endif
 }
 
 
@@ -183,7 +185,9 @@ void fw_main_task(void *data)
 	if (get_battery_voltage()<CUTOFF_VOLTAGE_UPPER_HYST)
 	{
 		show_lowbattery();
+#if !defined(PLATFORM_DM5R)
 		GPIO_PinWrite(GPIO_Keep_Power_On, Pin_Keep_Power_On, 0);
+#endif
 		while(1U) {};
 	}
 
@@ -543,18 +547,26 @@ void fw_main_task(void *data)
 
         	menuSystemCallCurrentMenuTick(&ev);
 
+#if defined(PLATFORM_DM5R)
+        	if ((battery_voltage < CUTOFF_VOLTAGE_LOWER_HYST)
+        			&& (menuSystemGetCurrentMenuNumber() != MENU_POWER_OFF))
+#else
         	if (((GPIO_PinRead(GPIO_Power_Switch, Pin_Power_Switch) != 0)
         			|| (battery_voltage < CUTOFF_VOLTAGE_LOWER_HYST))
         			&& (menuSystemGetCurrentMenuNumber() != MENU_POWER_OFF))
+#endif
         	{
         		if (battery_voltage < CUTOFF_VOLTAGE_LOWER_HYST)
         		{
         			show_lowbattery();
-
+#if defined(PLATFORM_DM5R)
+        			fw_powerOffFinalStage();
+#else
         			if (GPIO_PinRead(GPIO_Power_Switch, Pin_Power_Switch) != 0)
         			{
         				fw_powerOffFinalStage();
         			}
+#endif
         		}
         		else
         		{
