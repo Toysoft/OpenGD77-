@@ -56,6 +56,8 @@ void fw_init(void)
 
 void fw_powerOffFinalStage(void)
 {
+	uint32_t m;
+
 	// If user was in a private call when they turned the radio off we need to restore the last Tg prior to stating the Private call.
 	// to the nonVolatile Setting overrideTG, otherwise when the radio is turned on again it be in PC mode to that station.
 	if ((trxTalkGroupOrPcId>>24) == PC_CALL_FLAG)
@@ -65,10 +67,24 @@ void fw_powerOffFinalStage(void)
 
 	menuHotspotRestoreSettings();
 
+	m = fw_millis();
 	settingsSaveSettings(true);
+
+	// Give it a bit of time before pulling the plug as DM-1801 EEPROM looks slower
+	// than GD-77 to write, then quickly power cycling triggers settings reset.
+	while (1U)
+	{
+		if ((fw_millis() - m) > 50)
+		{
+			break;
+		}
+	}
 
 	// This turns the power off to the CPU.
 	GPIO_PinWrite(GPIO_Keep_Power_On, Pin_Keep_Power_On, 0);
+
+	// Death trap
+	while(1U) {}
 }
 
 
