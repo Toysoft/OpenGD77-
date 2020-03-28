@@ -68,9 +68,15 @@ static void updateScreen(void)
 	if (!customDataHasImage)
 	{
 		ucClearBuf();
+#if defined(PLATFORM_DM5R)
+		ucPrintCentered(0, "OpenGD77", FONT_8x16);
+		ucPrintCentered(16, line1, FONT_8x16);
+		ucPrintCentered(32, line2, FONT_8x16);
+#else
 		ucPrintCentered(10, "OpenGD77", FONT_8x16);
 		ucPrintCentered(28, line1, FONT_8x16);
 		ucPrintCentered(42, line2, FONT_8x16);
+#endif
 	}
 
 	ucRender();
