@@ -31,7 +31,11 @@ typedef struct
 	uint32_t 	    time;
 } uiEvent_t;
 
+#if defined(PLATFORM_DM5R)
+#define MENU_MAX_DISPLAYED_ENTRIES 2
+#else
 #define MENU_MAX_DISPLAYED_ENTRIES 3
+#endif
 #define MENU_INC(O, M) do { O = (O + 1) % M; } while(0)
 #define MENU_DEC(O, M) do { O = (O + M - 1) % M; } while(0)
 
