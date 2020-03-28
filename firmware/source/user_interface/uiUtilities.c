@@ -30,10 +30,18 @@
 settingsStruct_t originalNonVolatileSettings;
 
 const int QSO_TIMER_TIMEOUT = 2400;
+
+#if defined(PLATFORM_DM5R)
+const int TX_TIMER_Y_OFFSET = 12;
+const int CONTACT_Y_POS = 12;
+static const int BAR_Y_POS = 8;
+#else
 const int TX_TIMER_Y_OFFSET = 8;
 const int CONTACT_Y_POS = 16;
-const int FREQUENCY_X_POS = /* '>Ta'*/ (3 * 8) + 4;
 static const int BAR_Y_POS = 10;
+#endif
+
+const int FREQUENCY_X_POS = /* '>Ta'*/ (3 * 8) + 4;
 const int MAX_POWER_SETTING_NUM = 9;
 
 static const int DMRID_MEMORY_STORAGE_START = 0x30000;
@@ -1079,7 +1087,11 @@ void menuUtilityRenderQSOData(void)
 
 void menuUtilityRenderHeader(void)
 {
+#if defined(PLATFORM_DM5R)
+	const int Y_OFFSET = 0;
+#else
 	const int Y_OFFSET = 2;
+#endif
 	static const int bufferLen = 17;
 	char buffer[bufferLen];
 	static bool scanBlinkPhase = true;
@@ -1233,7 +1245,11 @@ void drawRSSIBarGraph(void)
 {
 	int dBm,barGraphLength;
 
+#if defined(PLATFORM_DM5R)
+	ucFillRect(0, BAR_Y_POS,128,3,true);
+#else
 	ucFillRect(0, BAR_Y_POS,128,4,true);
+#endif
 
 	if (trxCurrentBand[TRX_RX_FREQ_BAND] == RADIO_BAND_UHF)
 	{
@@ -1257,7 +1273,11 @@ void drawRSSIBarGraph(void)
 	{
 		barGraphLength=123;
 	}
+#if defined(PLATFORM_DM5R)
+	ucFillRect(0, BAR_Y_POS,barGraphLength,3,false);
+#else
 	ucFillRect(0, BAR_Y_POS,barGraphLength,4,false);
+#endif
 	trxRxSignal=0;
 }
 
