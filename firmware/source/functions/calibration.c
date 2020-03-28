@@ -308,6 +308,12 @@ const uint32_t VARIANT_CALIBRATION_BASE 				= 0x0006F000;
 const int MARKER_BYTES_LENGTH = 2;
 const uint8_t MARKER_BYTES[] = {0xA0 ,0x0F};// DM-1801 only seems to consistently have the first 2 bytes the same.
 
+#elif defined(PLATFORM_DM5R)
+
+const uint32_t VARIANT_CALIBRATION_BASE = 0x00017c00;	// Found by marker bytes matching
+const int MARKER_BYTES_LENGTH = 8;
+const uint8_t MARKER_BYTES[] = {0xA0 ,0x0F ,0xC0 ,0x12 ,0xA0 ,0x0F ,0xC0 ,0x12};
+
 #endif
 
 	const int CALIBRATION_TABLE_LENGTH = 0xE0;
