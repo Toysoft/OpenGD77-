@@ -696,6 +696,7 @@ static void handleEvent(uiEvent_t *ev)
 			return;
 		}
 
+#if !defined(PLATFORM_DM5R)
 		if (ev->buttons & BUTTON_ORANGE)
 		{
 			if (ev->buttons & BUTTON_SK2)
@@ -711,6 +712,7 @@ static void handleEvent(uiEvent_t *ev)
 
 			return;
 		}
+#endif
 	}
 
 	if (ev->events & KEY_EVENT)
@@ -895,6 +897,23 @@ static void handleEvent(uiEvent_t *ev)
 				currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];
 				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 				menuSystemPopAllAndDisplayRootMenu(); // Force to set all TX/RX settings.
+				return;
+			}
+#endif
+#if defined(PLATFORM_DM5R)
+			else if (KEYCHECK_LONGDOWN(ev->keys, KEY_VFO_MR) && ((ev->buttons & BUTTON_SK1) == 0))
+			{
+				if (ev->buttons & BUTTON_SK2)
+				{
+					settingsPrivateCallMuteMode = !settingsPrivateCallMuteMode;// Toggle PC mute only mode
+					menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+					menuVFOModeUpdateScreen(0);
+				}
+				else
+				{
+					menuSystemPushNewMenu(MENU_VFO_QUICK_MENU);
+				}
+
 				return;
 			}
 #endif
