@@ -104,6 +104,7 @@ extern int nuisanceDeleteIndex;
 extern char freq_enter_digits[12];
 extern int freq_enter_idx;
 
+bool isQSODataAvailableForCurrentTalker(void);
 char *chomp(char *str);
 int32_t getFirstSpacePos(char *str);
 void dmrIDCacheInit(void);

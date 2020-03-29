@@ -75,6 +75,25 @@ const int SCAN_DMR_SIMPLEX_MIN_INTERVAL=60;		//minimum time between steps when s
 const int SCAN_FREQ_CHANGE_SETTLING_INTERVAL = 1;//Time after frequency is changed before RSSI sampling starts
 const int SCAN_SKIP_CHANNEL_INTERVAL = 1;		//This is actually just an implicit flag value to indicate the channel should be skipped
 
+
+bool isQSODataAvailableForCurrentTalker(void)
+{
+	LinkItem_t *item = NULL;
+	uint32_t rxID = HRC6000GetReceivedSrcId();
+
+	// We're in digital mode, RXing, and current talker is already at the top of last heard list,
+	// hence immediately display complete contact/TG info on screen
+	if ((trxIsTransmitting == false) && ((trxGetMode() == RADIO_MODE_DIGITAL) && (rxID != 0) && (HRC6000GetReceivedTgOrPcId() != 0)) &&
+			(getAudioAmpStatus() & AUDIO_AMP_MODE_RF)
+			&& checkTalkGroupFilter() &&
+			(((item = lastheardFindInList(rxID)) != NULL) && (item == LinkHead)))
+	{
+		return true;
+	}
+
+	return false;
+}
+
 /*
  * Remove space at the end of the array, and return pointer to first non space character
  */

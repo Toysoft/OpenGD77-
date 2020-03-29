@@ -102,7 +102,7 @@ void fw_beep_task(void *data);
 
 
 uint8_t getAudioAmpStatus(void);
-void enableAudioAmp (uint8_t mode);
-void disableAudioAmp (uint8_t mode);
+void enableAudioAmp(uint8_t mode);
+void disableAudioAmp(uint8_t mode);
 
 #endif /* _FW_SOUND_H_ */
