@@ -238,7 +238,11 @@ void fw_main_task(void *data)
 
 				if ((currentMenu == MENU_CHANNEL_MODE) || (currentMenu == MENU_VFO_MODE))
 				{
+#if defined(PLATFORM_DM5R)
+					ucFillRect(0, 0, 128, 8, true);
+#else
 					ucClearRows(0, 2, false);
+#endif
 					menuUtilityRenderHeader();
 					ucRenderRows(0, 2);
 				}
