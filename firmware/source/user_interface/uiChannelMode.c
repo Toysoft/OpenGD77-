@@ -755,7 +755,7 @@ static void handleEvent(uiEvent_t *ev)
 				return;
 			}
 		}
-#if defined(PLATFORM_DM1801)
+#if defined(PLATFORM_DM1801) || defined(PLATFORM_DM5R)
 		else if (KEYCHECK_SHORTUP(ev->keys, KEY_VFO_MR))
 		{
 			directChannelNumber = 0;

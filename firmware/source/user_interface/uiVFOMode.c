@@ -883,7 +883,7 @@ static void handleEvent(uiEvent_t *ev)
 #endif
 				return;
 			}
-#if defined(PLATFORM_DM1801)
+#if defined(PLATFORM_DM1801) || defined(PLATFORM_DM5R)
 			else if (KEYCHECK_SHORTUP(ev->keys, KEY_VFO_MR))
 			{
 				menuSystemSetCurrentMenu(MENU_CHANNEL_MODE);
