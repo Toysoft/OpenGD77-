@@ -849,7 +849,11 @@ static void displayChannelNameOrRxFrequency(char *buffer, size_t maxLen)
 		snprintf(buffer, maxLen, "%d.%05d MHz", val_before_dp, val_after_dp);
 		buffer[maxLen - 1] = 0;
 	}
+#if defined(PLATFORM_DM5R)
+	ucPrintCentered(41, buffer, FONT_6x8);
+#else
 	ucPrintCentered(52, buffer, FONT_6x8);
+#endif
 }
 
 static void printSplitOrSpanText(uint8_t y, char *text)
@@ -861,7 +865,11 @@ static void printSplitOrSpanText(uint8_t y, char *text)
 
 	if (len <= 16)
 	{
+#if defined(PLATFORM_DM5R)
+		ucPrintCentered(y, text, FONT_6x8);
+#else
 		ucPrintCentered(y, text, FONT_8x16);
+#endif
 	}
 	else
 	{
@@ -935,7 +943,11 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 		{
 			memcpy(buffer, text, 17);
 			buffer[16] = 0;
+#if defined(PLATFORM_DM5R)
+			ucPrintCentered(24, chomp(buffer), FONT_8x8);
+#else
 			ucPrintCentered(32, chomp(buffer), FONT_8x16);
+#endif
 			displayChannelNameOrRxFrequency(buffer, (sizeof(buffer) / sizeof(buffer[0])));
 			return;
 		}
@@ -945,15 +957,22 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 			// Callsign found
 			memcpy(buffer, text, cpos);
 			buffer[cpos] = 0;
+#if defined(PLATFORM_DM5R)
+			ucPrintCentered(24, chomp(buffer), FONT_8x8);
+#else
 			ucPrintCentered(32, chomp(buffer), FONT_8x16);
-
+#endif
 			memcpy(buffer, text + (cpos + 1), (maxLen - (cpos + 1)));
 			buffer[(strlen(text) - (cpos + 1))] = 0;
 
 			pbuf = chomp(buffer);
 
 			if (strlen(pbuf))
+#if defined(PLATFORM_DM5R)
+				printSplitOrSpanText(32, pbuf);
+#else
 				printSplitOrSpanText(48, pbuf);
+#endif
 			else
 				displayChannelNameOrRxFrequency(buffer, (sizeof(buffer) / sizeof(buffer[0])));
 		}
@@ -963,7 +982,11 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 			memcpy(buffer, text, 16);
 			buffer[16] = 0;
 
+#if defined(PLATFORM_DM5R)
+			ucPrintCentered(24, chomp(buffer), FONT_8x8);
+#else
 			ucPrintCentered(32, chomp(buffer), FONT_8x16);
+#endif
 
 			memcpy(buffer, text + 16, (maxLen - 16));
 			buffer[(strlen(text) - 16)] = 0;
@@ -971,7 +994,11 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 			pbuf = chomp(buffer);
 
 			if (strlen(pbuf))
+#if defined(PLATFORM_DM5R)
+				printSplitOrSpanText(32, pbuf);
+#else
 				printSplitOrSpanText(48, pbuf);
+#endif
 			else
 				displayChannelNameOrRxFrequency(buffer, (sizeof(buffer) / sizeof(buffer[0])));
 		}
@@ -980,7 +1007,11 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 	{
 		memcpy(buffer, text, 17);
 		buffer[16] = 0;
+#if defined(PLATFORM_DM5R)
+		ucPrintCentered(24, chomp(buffer), FONT_8x8);
+#else
 		ucPrintCentered(32, chomp(buffer), FONT_8x16);
+#endif
 		displayChannelNameOrRxFrequency(buffer, (sizeof(buffer) / sizeof(buffer[0])));
 	}
 }
@@ -1011,8 +1042,13 @@ void menuUtilityRenderQSOData(void)
 
 			if (LinkHead->talkGroupOrPcId != (trxDMRID | (PC_CALL_FLAG << 24)))
 			{
+#if defined(PLATFORM_DM5R)
+				ucPrintCentered(42, LinkHead->talkgroup, FONT_6x8);
+				ucPrintAt(1, 42, "=>", FONT_6x8);
+#else
 				ucPrintCentered(52, LinkHead->talkgroup, FONT_6x8);
 				ucPrintAt(1, 52, "=>", FONT_6x8);
+#endif
 			}
 		}
 		else
@@ -1022,13 +1058,23 @@ void menuUtilityRenderQSOData(void)
 					(dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot()) ||
 					(trxGetDMRColourCode() != currentChannelData->rxColor))
 			{
+#if defined(PLATFORM_DM5R)
+				// draw the text in inverse video
+				ucFillRect(0, CONTACT_Y_POS, 128, 11, false);
+				ucPrintCore(0, CONTACT_Y_POS + 2, LinkHead->talkgroup, FONT_8x8, TEXT_ALIGN_CENTER, true);
+#else
 				// draw the text in inverse video
 				ucClearRows(2, 4, true);
 				ucPrintCore(0, CONTACT_Y_POS, LinkHead->talkgroup, FONT_8x16, TEXT_ALIGN_CENTER, true);
+#endif
 			}
 			else
 			{
+#if defined(PLATFORM_DM5R)
+				ucPrintCentered(CONTACT_Y_POS + 2, LinkHead->talkgroup, FONT_8x8);
+#else
 				ucPrintCentered(CONTACT_Y_POS, LinkHead->talkgroup, FONT_8x16);
+#endif
 			}
 
 			switch (nonVolatileSettings.contactDisplayPriority)
@@ -1353,18 +1399,36 @@ void printFrequency(bool isTX, bool hasFocus, uint8_t y, uint32_t frequency, boo
 
 	// Focus + direction
 	snprintf(buffer, bufferLen, "%c%c", ((hasFocus && !isScanMode)? '>' : ' '), (isTX ? 'T' : 'R'));
+
+#if defined(PLATFORM_DM5R)
+	ucPrintAt(0, y - 1, buffer, FONT_6x8_BOLD);
+#else
 	ucPrintAt(0, y, buffer, FONT_8x16);
+#endif
+
 	// VFO
 	if (displayVFOChannel)
 	{
-		ucPrintAt(16, y + 8, (nonVolatileSettings.currentVFONumber == 0) ? "A" : "B", FONT_8x8);
+#if defined(PLATFORM_DM5R)
+		ucPrintAt(12, y, (nonVolatileSettings.currentVFONumber == 0) ? "A" : "B", FONT_6x8);
+#else
+		ucPrintAt(16, y + 8, (nonVolatileSettings.currentVFONumber == 0) ? "A" : "B", FONT_6x8);
+#endif
 	}
 	// Frequency
 	snprintf(buffer, bufferLen, "%d.%05d", val_before_dp, val_after_dp);
 	buffer[bufferLen - 1] = 0;
+#if defined(PLATFORM_DM5R)
+	ucPrintAt(FREQUENCY_X_POS, y, buffer, FONT_8x8);
+#else
 	ucPrintAt(FREQUENCY_X_POS, y, buffer, FONT_8x16);
+#endif
 	// Unit
+#if defined(PLATFORM_DM5R)
+	ucPrintAt(128 - (3 * 8), y, "MHz", FONT_8x8);
+#else
 	ucPrintAt(128 - (3 * 8), y, "MHz", FONT_8x16);
+#endif
 }
 
 void reset_freq_enter_digits(void)
