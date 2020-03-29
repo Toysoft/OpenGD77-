@@ -63,9 +63,6 @@ int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 
 	if (isFirstRun)
 	{
-		LinkItem_t *item = NULL;
-		uint32_t rxID = HRC6000GetReceivedSrcId();
-
 		nonVolatileSettings.initialMenuNumber = MENU_CHANNEL_MODE;// This menu.
 		displayChannelSettings = false;
 		reverseRepeater = false;
@@ -74,18 +71,7 @@ int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 		// We're in digital mode, RXing, and current talker is already at the top of last heard list,
 		// hence immediately display complete contact/TG info on screen
 		// This mostly happens when getting out of a menu.
-		if ((trxIsTransmitting == false) && ((trxGetMode() == RADIO_MODE_DIGITAL) && (rxID != 0) && (HRC6000GetReceivedTgOrPcId() != 0)) &&
-				//(GPIO_PinRead(GPIO_audio_amp_enable, Pin_audio_amp_enable) == 1)
-				(getAudioAmpStatus() & AUDIO_AMP_MODE_RF) &&
-				checkTalkGroupFilter() &&
-				(((item = lastheardFindInList(rxID)) != NULL) && (item == LinkHead)))
-		{
-			menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;
-		}
-		else
-		{
-			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-		}
+		menuDisplayQSODataState = (isQSODataAvailableForCurrentTalker() ? QSO_DISPLAY_CALLER_DATA : QSO_DISPLAY_DEFAULT_SCREEN);
 
 		lastHeardClearLastID();
 		prevDisplayQSODataState = QSO_DISPLAY_IDLE;
@@ -663,16 +649,7 @@ static void handleEvent(uiEvent_t *ev)
 			// display QSO Data
 			if (menuDisplayQSODataState == QSO_DISPLAY_DEFAULT_SCREEN)
 			{
-				LinkItem_t *item = NULL;
-				uint32_t rxID = HRC6000GetReceivedSrcId();
-
-				// We're in digital mode, RXing, and current talker is already at the top of last heard list,
-				// hence immediately display complete contact/TG info on screen
-				// This mostly happens when getting out of a menu.
-				if ((trxIsTransmitting == false) && ((trxGetMode() == RADIO_MODE_DIGITAL) && (rxID != 0) && (HRC6000GetReceivedTgOrPcId() != 0)) &&
-						(getAudioAmpStatus() & AUDIO_AMP_MODE_RF)
-						&& checkTalkGroupFilter() &&
-						(((item = lastheardFindInList(rxID)) != NULL) && (item == LinkHead)))
+				if (isQSODataAvailableForCurrentTalker())
 				{
 					menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;
 				}
