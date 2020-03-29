@@ -125,7 +125,7 @@ M: 2020-01-07 09:52:15.246 DMR Slot 2, received network end of voice transmissio
 
 #define MMDVM_HEADER_LENGTH 4U
 
-#define HOTSPOT_VERSION_STRING "OpenGD77 Hotspot v0.1.1"
+#define HOTSPOT_VERSION_STRING "OpenGD77 Hotspot v0.1.2"
 #define concat(a, b) a " GitID #" b ""
 static const char HARDWARE[] = concat(HOTSPOT_VERSION_STRING, GITVERSION);
 
@@ -146,7 +146,8 @@ static const uint8_t END_FRAME_PATTERN[]    = { 0x5D,0x7F,0x77,0xFD,0x75,0x79 };
 
 static uint32_t freq_rx = 0;
 static uint32_t freq_tx = 0;
-static uint8_t rf_power;
+static uint8_t colorCode = 1;
+static uint8_t rf_power = 255;
 static uint32_t tx_delay = 0;
 static uint32_t savedTGorPC;
 static uint8_t hotspotTxLC[9];
@@ -391,6 +392,28 @@ int menuHotspotMode(uiEvent_t *ev, bool isFirstRun)
 		tx_delay = 0;
 
 		MMDVMHostRxState = MMDVMHOST_RX_READY; // We have not sent anything to MMDVMHost, so it can't be busy yet.
+
+		// Set CC, QRG and power, in case hotspot menu has left then re-enter.
+		trxSetDMRColourCode(colorCode);
+
+		if (trxCheckFrequencyInAmateurBand(freq_rx) && trxCheckFrequencyInAmateurBand(freq_tx))
+		{
+			trxSetFrequency(freq_rx, freq_tx, DMR_MODE_ACTIVE);
+		}
+
+		if (rf_power != 255)
+		{
+			if (rf_power < 50)
+			{
+				hotspotPowerLevel = rf_power / 12;
+			}
+			else
+			{
+				hotspotPowerLevel = (rf_power / 50) + 3;
+			}
+
+			trxSetPowerFromLevel(hotspotPowerLevel);
+		}
 
 		ucClearBuf();
 		ucPrintCentered(0, "Hotspot", FONT_8x16);
@@ -1808,13 +1831,14 @@ static uint8_t setConfig(volatile const uint8_t *data, uint8_t length)
 
 	modemState = (MMDVM_STATE)data[3U];
 
-	uint8_t colorCode = data[6U];
+	uint8_t tmpColorCode = data[6U];
 
-	if (colorCode > 15U)
+	if (tmpColorCode > 15U)
 	{
 		return 4U;
 	}
 
+	colorCode = tmpColorCode;
 	trxSetDMRColourCode(colorCode);
 
 	/* To Do
