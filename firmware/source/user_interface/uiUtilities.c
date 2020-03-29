@@ -1383,10 +1383,17 @@ void printToneAndSquelch(void)
 		{
 			snprintf(buf, 24, "%s%d.%dHz", buf, currentChannelData->txTone / 10 , currentChannelData->txTone % 10);
 		}
+#if defined(PLATFORM_DM5R)
+		ucPrintCentered(13, buf, FONT_6x8);
+
+		snprintf(buf, 24, "SQL:%d%%", 5*(((currentChannelData->sql == 0) ? nonVolatileSettings.squelchDefaults[trxCurrentBand[TRX_RX_FREQ_BAND]] : currentChannelData->sql)-1));
+		ucPrintCentered(21 + 1, buf, FONT_6x8);
+#else
 		ucPrintCentered(16, buf, FONT_6x8);
 
 		snprintf(buf, 24, "SQL:%d%%", 5*(((currentChannelData->sql == 0) ? nonVolatileSettings.squelchDefaults[trxCurrentBand[TRX_RX_FREQ_BAND]] : currentChannelData->sql)-1));
 		ucPrintCentered(24 + 1, buf, FONT_6x8);
+#endif
 	}
 }
 
