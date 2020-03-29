@@ -85,11 +85,12 @@ volatile int melody_idx = 0;
 int soundBeepVolumeDivider;
 static uint8_t audioAmpStatusMask = 0;
 
-uint8_t getAudioAmpStatus(void) {
+uint8_t getAudioAmpStatus(void)
+{
 	return audioAmpStatusMask;
 }
 
-void enableAudioAmp (uint8_t mode)
+void enableAudioAmp(uint8_t mode)
 {
 	bool wasEnabled = (audioAmpStatusMask != 0x0);
 
@@ -101,7 +102,7 @@ void enableAudioAmp (uint8_t mode)
 	}
 }
 
-void disableAudioAmp (uint8_t mode)
+void disableAudioAmp(uint8_t mode)
 {
 	audioAmpStatusMask &= ~mode;
 
