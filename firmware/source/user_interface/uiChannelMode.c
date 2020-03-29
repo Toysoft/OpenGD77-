@@ -375,6 +375,15 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 		return;
 	}
 
+	// We're currently displaying details, and it shouldn't be overridden by QSO data
+	if (displayChannelSettings && ((menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA)
+			|| (menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA_UPDATE)))
+	{
+		// We will not restore the previous QSO Data as a new caller just arose.
+		prevDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+	}
+
 	ucClearBuf();
 	menuUtilityRenderHeader();
 
