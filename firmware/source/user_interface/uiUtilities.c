@@ -83,7 +83,6 @@ bool isQSODataAvailableForCurrentTalker(void)
 
 	// We're in digital mode, RXing, and current talker is already at the top of last heard list,
 	// hence immediately display complete contact/TG info on screen
-	// This mostly happens when getting out of a menu.
 	if ((trxIsTransmitting == false) && ((trxGetMode() == RADIO_MODE_DIGITAL) && (rxID != 0) && (HRC6000GetReceivedTgOrPcId() != 0)) &&
 			(getAudioAmpStatus() & AUDIO_AMP_MODE_RF)
 			&& checkTalkGroupFilter() &&
