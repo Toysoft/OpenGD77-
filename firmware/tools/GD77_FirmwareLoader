@@ -7,10 +7,11 @@ OS=`uname -s`
 FIRMWARE="$(echo ${@:2:1})"
 DM1801=$(echo "${@:3:1})" | grep -o DM-1801)
 GD77S=$(echo "${@:3:1})" | grep -o GD-77S)
+DM5RS=$(echo "${@:3:1})" | grep -o DM-5R)
 
 case "$OS" in
     "Linux")
-	mono "$1/GD77_FirmwareLoader-Linux.exe" $DM1801 $GD77S $FIRMWARE
+	mono "$1/GD77_FirmwareLoader-Linux.exe" $DM1801 $GD77S $DM5R $FIRMWARE
 	ret=$?
 	;;
     "Darwin")
