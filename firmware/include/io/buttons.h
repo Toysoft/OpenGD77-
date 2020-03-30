@@ -69,7 +69,7 @@
 #define BUTTON_PTT    0x00000001
 #define BUTTON_SK1    0x00000002
 #define BUTTON_SK2    0x00000004
-#if !defined(PATFORM_DM5R)
+#if !defined(PLATFORM_DM5R)
 #define BUTTON_ORANGE 0x00000008
 #endif
 

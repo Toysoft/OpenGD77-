@@ -270,7 +270,11 @@ void fw_main_task(void *data)
 					}
 
 					// Lockout ORANGE AND BLUE (BLACK stay active regardless lock status, useful to trigger backlight)
+#if defined(PLATFORM_DM5R)
+					if (button_event == EVENT_BUTTON_CHANGE && (buttons & BUTTON_SK2))
+#else
 					if (button_event == EVENT_BUTTON_CHANGE && ((buttons & BUTTON_ORANGE) || (buttons & BUTTON_SK2)))
+#endif
 					{
 						if ((PTTToggledDown == false) && (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN))
 						{
@@ -359,9 +363,15 @@ void fw_main_task(void *data)
 			// PTT toggle feature
 			//
 			// PTT is locked down, but any button but SK1 is pressed, virtually release PTT
+#if defined(PLATFORM_DM5R)
+			if ((nonVolatileSettings.pttToggle && PTTToggledDown) &&
+							(((buttons & BUTTON_SK2)) ||
+									((keys.key != 0) && (keys.event & KEY_MOD_UP))))
+#else
 			if ((nonVolatileSettings.pttToggle && PTTToggledDown) &&
 					(((button_event & EVENT_BUTTON_CHANGE) && ((buttons & BUTTON_ORANGE) || (buttons & BUTTON_SK2))) ||
 							((keys.key != 0) && (keys.event & KEY_MOD_UP))))
+#endif
 			{
 				PTTToggledDown = false;
 				button_event = EVENT_BUTTON_CHANGE;
