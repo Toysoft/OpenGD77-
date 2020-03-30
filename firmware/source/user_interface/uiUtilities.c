@@ -1037,14 +1037,19 @@ void menuUtilityRenderQSOData(void)
 		if ((LinkHead->talkGroupOrPcId >> 24) == PC_CALL_FLAG) // &&  (LinkHead->id & 0xFFFFFF) != (trxTalkGroupOrPcId & 0xFFFFFF))
 		{
 			// Its a Private call
+#if defined(PLATFORM_DM5R)
+			ucPrintCentered(16, LinkHead->contact, FONT_8x8);
+			ucPrintCentered(24, currentLanguage->private_call, FONT_8x8);
+#else
 			ucPrintCentered(16, LinkHead->contact, FONT_8x16);
 			ucPrintCentered(32, currentLanguage->private_call, FONT_8x16);
+#endif
 
 			if (LinkHead->talkGroupOrPcId != (trxDMRID | (PC_CALL_FLAG << 24)))
 			{
 #if defined(PLATFORM_DM5R)
-				ucPrintCentered(42, LinkHead->talkgroup, FONT_6x8);
-				ucPrintAt(1, 42, "=>", FONT_6x8);
+				ucPrintCentered(41, LinkHead->talkgroup, FONT_6x8);
+				ucPrintAt(1, 41, "=>", FONT_6x8);
 #else
 				ucPrintCentered(52, LinkHead->talkgroup, FONT_6x8);
 				ucPrintAt(1, 52, "=>", FONT_6x8);
