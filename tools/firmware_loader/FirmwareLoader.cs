@@ -123,7 +123,7 @@ namespace GD77_FirmwareLoader
 
 				case OutputType.OutputType_DM5R:
 					encodeKey = new Byte[4] { (0x53), (0x36), (0x37), (0x62) };
-					Console.WriteLine("DM-5R Support");
+					Console.WriteLine(" - DM-5R Support");
 					break;
 
 
