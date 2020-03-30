@@ -171,7 +171,7 @@ static int savedPowerLevel = -1;// no power level saved yet
 static int hotspotPowerLevel = 0;// no power level saved yet
 
 static uint32_t mmdvmHostLastActiveTime = 0; // store last activity time (ms)
-static const uint32_t MMDVMHOST_TIMEOUT = 10000; // 10s timeout (MMDVMHost mode only, there is no timeout for BlueDV)
+static const uint32_t MMDVMHOST_TIMEOUT = 20000; // 10s timeout (MMDVMHost mode only, there is no timeout for BlueDV)
 static bool mmdvmHostIsConnected = false;
 
 static bool displayFWVersion;
