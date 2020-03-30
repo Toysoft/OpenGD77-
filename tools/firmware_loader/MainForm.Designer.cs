@@ -71,7 +71,7 @@ namespace GD77_FirmwareLoader
 			this.rbModels[2].CheckedChanged += new System.EventHandler(this.rbModel_CheckedChanged);
 
 			this.rbModels[3] = new System.Windows.Forms.RadioButton();
-			this.rbModels[3].Text = "Baofeng DM-5R";
+			this.rbModels[3].Text = "Baofeng DM-5R / RD-5R";
 			this.rbModels[3].Location = new System.Drawing.Point(5, 75);
 			this.rbModels[3].UseVisualStyleBackColor = true;
 			this.rbModels[3].Tag = (int)FirmwareLoader.OutputType.OutputType_DM5R;
