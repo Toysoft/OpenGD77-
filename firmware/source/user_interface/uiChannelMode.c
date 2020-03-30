@@ -851,7 +851,12 @@ static void handleEvent(uiEvent_t *ev)
 				}
 			}
 		}
+#if defined(PLATFORM_DM5R)
+		// same behavior as for KEY_LEFT
+		else if (KEYCHECK_UP(ev->keys,KEY_RIGHT))
+#else
 		else if (KEYCHECK_PRESS(ev->keys, KEY_RIGHT))
+#endif
 		{
 			if (ev->buttons & BUTTON_SK2)
 			{
@@ -903,7 +908,11 @@ static void handleEvent(uiEvent_t *ev)
 			}
 
 		}
+#if defined(PLATFORM_DM5R)
+		else if (KEYCHECK_UP(ev->keys,KEY_LEFT))
+#else
 		else if (KEYCHECK_PRESS(ev->keys,KEY_LEFT))
+#endif
 		{
 			if (ev->buttons & BUTTON_SK2)
 			{

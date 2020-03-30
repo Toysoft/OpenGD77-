@@ -891,7 +891,11 @@ static void handleEvent(uiEvent_t *ev)
 				menuSystemSetCurrentMenu(MENU_CHANNEL_MODE);
 				return;
 			}
+#if defined(PLATFORM_DM5R)
+			else if (KEYCHECK_LONGDOWN(ev->keys, KEY_LEFT))		// "A/B" mapped as "LEFT", VFO switching available with long press
+#else
 			else if (KEYCHECK_SHORTUP(ev->keys, KEY_A_B))
+#endif
 			{
 				nonVolatileSettings.currentVFONumber = 1 - nonVolatileSettings.currentVFONumber;// Switch to other VFO
 				currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];
@@ -931,7 +935,12 @@ static void handleEvent(uiEvent_t *ev)
 					}
 				}
 			}
+#if defined(PLATFORM_DM5R)
+			// same behavior as for KEY_LEFT
+			else if (KEYCHECK_UP(ev->keys,KEY_RIGHT))
+#else
 			else if (KEYCHECK_PRESS(ev->keys, KEY_RIGHT))
+#endif
 			{
 				if (ev->buttons & BUTTON_SK2)
 				{
@@ -979,7 +988,11 @@ static void handleEvent(uiEvent_t *ev)
 					}
 				}
 			}
+#if defined(PLATFORM_DM5R)
+			else if (KEYCHECK_UP(ev->keys,KEY_LEFT))
+#else
 			else if (KEYCHECK_PRESS(ev->keys,KEY_LEFT))
+#endif
 			{
 				if (ev->buttons & BUTTON_SK2)
 				{
