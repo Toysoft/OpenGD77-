@@ -588,17 +588,23 @@ namespace GD77_FirmwareLoader
 
 		static byte[] encrypt(byte[] unencrypted)
 		{
-			int shift;
+			int shift = 0;
 			byte[] encrypted = new byte[unencrypted.Length];
 			int data;
 
-			if (outputType == OutputType.OutputType_GD77)
+			switch (outputType)
 			{
-				shift = 0x0807;
-			}
-			else
-			{
-				shift = 0x2C7C;
+				case OutputType.OutputType_GD77:
+					shift = 0x0807;
+					break;
+
+				case OutputType.OutputType_GD77S:
+					shift = 0x2a8e;
+					break;
+
+				case OutputType.OutputType_DM1801:
+					shift = 0x2C7C;
+					break;
 			}
 
 			byte[] encryptionTable = new byte[32768];
