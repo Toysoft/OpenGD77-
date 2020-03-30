@@ -615,7 +615,7 @@ static void handleEvent(uiEvent_t *ev)
 			menuChannelModeUpdateScreen(0);
 			return;
 		}
-		else if ((reverseRepeater == true) && (!(ev->buttons & BUTTON_SK1) || !(ev->buttons & BUTTON_SK2)))
+		else if ((reverseRepeater == true) && ((ev->buttons & BUTTON_SK2) == 0))
 		{
 			trxSetFrequency(channelScreenChannelData.rxFreq, channelScreenChannelData.txFreq, DMR_MODE_AUTO);
 			reverseRepeater = false;
@@ -653,6 +653,13 @@ static void handleEvent(uiEvent_t *ev)
 				{
 					menuDisplayQSODataState = QSO_DISPLAY_CALLER_DATA;
 				}
+			}
+
+			// Leaving Channel Details disable reverse repeater feature
+			if (reverseRepeater)
+			{
+				trxSetFrequency(channelScreenChannelData.rxFreq, channelScreenChannelData.txFreq, DMR_MODE_AUTO);
+				reverseRepeater = false;
 			}
 
 			menuChannelModeUpdateScreen(0);
