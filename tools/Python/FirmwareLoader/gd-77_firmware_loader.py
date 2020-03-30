@@ -57,7 +57,8 @@ class SGLFormatOutput(enum.Enum):
     GD_77 = 0
     GD_77S = 1
     DM_1801 = 2
-    UNKNOWN = 3
+    DM_5R = 3
+    UNKNOWN = 4
 
     def __int__(self):
         return self.value
@@ -65,7 +66,7 @@ class SGLFormatOutput(enum.Enum):
 
 # Globals
 responseOK = [0x41]
-outputModes = ["GD-77", "GD-77S", "DM-1801", "Unknown"]
+outputModes = ["GD-77", "GD-77S", "DM-1801", "DM-5R", "Unknown"]
 outputFormat = SGLFormatOutput.UNKNOWN
 downloadedFW = ""
 
@@ -121,6 +122,8 @@ def downloadFirmware():
         pattern = '/rogerclarkmelbourne/OpenGD77/releases/download/R([0-9\.]+)/OpenGD77S_HS\.sgl'
     elif (outputFormat == SGLFormatOutput.DM_1801):
         pattern = '/rogerclarkmelbourne/OpenGD77/releases/download/R([0-9\.]+)/OpenDM1801\.sgl'
+    elif (outputFormat == SGLFormatOutput.DM_5R):
+        pattern = '/rogerclarkmelbourne/OpenGD77/releases/download/R([0-9\.]+)/OpenDM5R\.sgl'
     
     contentArray = webContent.split("\n")    
     
@@ -342,6 +345,7 @@ def probeModel(dev):
     #commandEND     = [ 0x45, 0x4E, 0x44, 0xFF ] # END.
     commandID      = [ command0, command1 ]
     models         = [[ 'DV01', SGLFormatOutput.GD_77 ], [ 'DV02', SGLFormatOutput.GD_77S ], [ 'DV03', SGLFormatOutput.DM_1801 ]]
+    # DM-5R also have "DV02" id
 
     commandNumber = 0
     while commandNumber < len(commandID):
@@ -379,7 +383,11 @@ def sendInitialCommands(dev, encodeKey):
         command2            =[[0x44, 0x56, 0x30, 0x33, 0x74, 0x21, 0x44, 0x39],[0x44, 0x56, 0x30, 0x33]] #.... last 4 bytes of the command are the offset encoded as letters a - p (hard coded fr
         command4            =[[0x42, 0x46, 0x2d, 0x44, 0x4d, 0x52, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff],responseOK] #BF-DMR
         command5            =[[0x31, 0x38, 0x30, 0x31, 0xff, 0xff, 0xff, 0xff],responseOK] # MD-1801
-        
+    elif (outputFormat == SGLFormatOutput.DM_5R):
+        command2            =[[0x44, 0x56, 0x30, 0x32, 0x53, 0x36, 0x37, 0x62],[0x44, 0x56, 0x30, 0x32]] #.... last 4 bytes of the command are the offset encoded as letters a - p (hard coded fr
+        command4            =[[0x42, 0x46, 0x2D, 0x35, 0x52, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff],responseOK] #BF-5R
+        command5            =[[0x42, 0x46, 0x2D, 0x35, 0x52, 0xff, 0xff, 0xff],responseOK] # BF-5R
+
     command6            =[[0x56, 0x31, 0x2e, 0x30, 0x30, 0x2e, 0x30, 0x31],responseOK] #V1.00.01
     commandErase        =[[0x46, 0x2d, 0x45, 0x52, 0x41, 0x53, 0x45, 0xff],responseOK] #F-ERASE
     commandPostErase    =[commandLetterA,responseOK] 
@@ -561,9 +569,11 @@ def main():
             encodeKey = [ (0x47), (0x70), (0x6d), (0x4a) ]
         elif (outputFormat == SGLFormatOutput.DM_1801):
             encodeKey = [ (0x74), (0x21), (0x44), (0x39) ]
+        elif (outputFormat == SGLFormatOutput.DM_5R):
+            encodeKey = [ (0x53), (0x36), (0x37), (0x62) ]
 
         if (file_extension == ".sgl"):
-            firmwareModelTag = { SGLFormatOutput.GD_77: 0x1B , SGLFormatOutput.GD_77S: 0x70, SGLFormatOutput.DM_1801: 0x4F }
+            firmwareModelTag = { SGLFormatOutput.GD_77: 0x1B , SGLFormatOutput.GD_77S: 0x70, SGLFormatOutput.DM_1801: 0x4F, SGLFormatOutput.DM_5R: 0x5C}
             headerModel = []
             
             ## Could be a SGL file !
