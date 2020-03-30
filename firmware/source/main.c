@@ -178,8 +178,10 @@ void fw_main_task(void *data)
     // Init HR-C6000 interrupts
     init_HR_C6000_interrupts();
 
+#if defined(PLATFORM_DM5R)
     // set torch state
     torch_state = false;
+#endif
 
     // Small startup delay after initialization to stabilize system
   //  vTaskDelay(portTICK_PERIOD_MS * 500);
