@@ -35,9 +35,6 @@
 #endif
 
 bool PTTToggledDown = false; // PTT toggle feature
-#if defined(PLATFORM_DM5R)
-bool torch_state;			 // Baofeng DM-5R torch
-#endif
 
 void fw_main_task(void *data);
 
@@ -193,11 +190,6 @@ void fw_main_task(void *data)
 
     // Init HR-C6000 interrupts
     init_HR_C6000_interrupts();
-
-#if defined(PLATFORM_DM5R)
-    // set torch state
-    torch_state = false;
-#endif
 
     // Small startup delay after initialization to stabilize system
   //  vTaskDelay(portTICK_PERIOD_MS * 500);
@@ -593,7 +585,7 @@ void fw_main_task(void *data)
 #if defined(PLATFORM_DM5R)
         	if (keyFunction == TOGGLE_TORCH)
         	{
-        		toggle_torch(&torch_state);
+        		toggle_torch();
         	}
 #endif
 

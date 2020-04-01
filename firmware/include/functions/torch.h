@@ -20,8 +20,6 @@
 #define _FW_TORCH_H_
 #include <stdbool.h>
 
-extern bool torch_state;
-
-void toggle_torch(bool *torch_state);
+void toggle_torch();
 
 #endif
