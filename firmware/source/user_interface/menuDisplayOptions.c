@@ -343,6 +343,10 @@ static void handleEvent(uiEvent_t *ev)
 		else if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 		{
 			// All parameters has already been applied
+#if defined(PLATFORM_DM5R)
+			// Save settings on exit
+			settingsSaveSettings(false);
+#endif
 			menuSystemPopAllAndDisplayRootMenu();
 			return;
 		}

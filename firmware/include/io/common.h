@@ -112,6 +112,42 @@ extern gpio_pin_config_t pin_config_output;
 #define GPIO_VHF_TX_amp_power GPIOE
 #define Pin_VHF_TX_amp_power  0
 
+#elif defined(PLATFORM_DM5R)
+
+// Torch
+#define Port_Torch  PORTD
+#define GPIO_Torch  GPIOD
+#define Pin_Torch	4
+
+// Other connections
+#define Port_audio_amp_enable PORTC
+#define GPIO_audio_amp_enable GPIOC
+#define Pin_audio_amp_enable  15
+
+#define Port_RX_audio_mux     PORTA
+#define GPIO_RX_audio_mux     GPIOA
+#define Pin_RX_audio_mux      19
+
+#define Port_TX_audio_mux     PORTD
+#define GPIO_TX_audio_mux     GPIOD
+#define Pin_TX_audio_mux      7
+
+#define Port_VHF_RX_amp_power PORTC
+#define GPIO_VHF_RX_amp_power GPIOC
+#define Pin_VHF_RX_amp_power  14
+
+#define Port_UHF_RX_amp_power PORTC
+#define GPIO_UHF_RX_amp_power GPIOC
+#define Pin_UHF_RX_amp_power  13
+
+#define Port_UHF_TX_amp_power PORTE
+#define GPIO_UHF_TX_amp_power GPIOE
+#define Pin_UHF_TX_amp_power  6
+
+#define Port_VHF_TX_amp_power PORTC
+#define GPIO_VHF_TX_amp_power GPIOC
+#define Pin_VHF_TX_amp_power  4
+
 #endif
 
 

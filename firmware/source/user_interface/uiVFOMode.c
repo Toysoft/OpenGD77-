@@ -178,7 +178,11 @@ int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
 				{
 					displaySquelch = false;
 
+#if defined(PLATFORM_DM5R)
+					ucFillRect(0, 16, 128, 8, true);
+#else
 					ucClearRows(2, 4, false);
+#endif
 					ucRenderRows(2,4);
 				}
 
@@ -258,7 +262,11 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 	if ((trxGetMode() == RADIO_MODE_DIGITAL) && (HRC6000GetReceivedTgOrPcId() == 0) &&
 			((menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA) || (menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA_UPDATE)))
 	{
+#if defined(PLATFORM_DM5R)
+		ucFillRect(0, 0, 128, 8, true);
+#else
 		ucClearRows(0,  2, false);
+#endif
 		menuUtilityRenderHeader();
 		ucRenderRows(0,  2);
 		return;
@@ -309,11 +317,19 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 
 					if (trxIsTransmitting)
 					{
+#if defined(PLATFORM_DM5R)
+						ucDrawRect(0, 26, 128, 11, true);
+#else
 						ucDrawRect(0, 34, 128, 16, true);
+#endif
 					}
 					else
 					{
+#if defined(PLATFORM_DM5R)
+						ucDrawRect(0, CONTACT_Y_POS, 128, 11, true);
+#else
 						ucDrawRect(0, CONTACT_Y_POS, 128, 16, true);
+#endif
 					}
 				}
 				else
@@ -325,11 +341,19 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 
 				if (trxIsTransmitting)
 				{
+#if defined(PLATFORM_DM5R)
+					ucPrintCentered(28, buffer, FONT_8x8);
+#else
 					ucPrintCentered(34, buffer, FONT_8x16);
+#endif
 				}
 				else
 				{
+#if defined(PLATFORM_DM5R)
+					ucPrintCentered(CONTACT_Y_POS + 2, buffer, FONT_8x8);
+#else
 					ucPrintCentered(CONTACT_Y_POS, buffer, FONT_8x16);
+#endif
 				}
 			}
 			else
@@ -348,10 +372,21 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					strncpy(buffer, currentLanguage->squelch, 9);
 					buffer[8] = 0; // Avoid overlap with bargraph
 					// Center squelch word between col0 and bargraph, if possible.
+#if defined(PLATFORM_DM5R)
+					ucPrintAt(0 + ((strlen(buffer) * 8) < xbar - 2 ? (((xbar - 2) - (strlen(buffer) * 8)) >> 1) : 0), 16, buffer, FONT_8x8);
+#else
 					ucPrintAt(0 + ((strlen(buffer) * 8) < xbar - 2 ? (((xbar - 2) - (strlen(buffer) * 8)) >> 1) : 0), 16, buffer, FONT_8x16);
+#endif
+
 					int bargraph = 1 + ((currentChannelData->sql - 1) * 5) /2;
+
+#if defined(PLATFORM_DM5R)
+					ucDrawRect(xbar - 2, 16, 55, 8, true);
+					ucFillRect(xbar, 18, bargraph, 4, false);
+#else
 					ucDrawRect(xbar - 2, 17, 55, 13, true);
 					ucFillRect(xbar, 19, bargraph, 9, false);
+#endif
 				}
 
 				// SK1 is pressed, we don't want to clear the first info row after 1s
@@ -374,7 +409,11 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 				{
 					// if CC scan is active, Rx freq is moved down to the Tx location,
 					// as Contact Info will be displayed here
+#if defined(PLATFORM_DM5R)
+					printFrequency(false, (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_RX), 31, currentChannelData->rxFreq, true, screenOperationMode[nonVolatileSettings.currentVFONumber] == VFO_SCREEN_OPERATION_SCAN);
+#else
 					printFrequency(false, (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_RX), 32, currentChannelData->rxFreq, true, screenOperationMode[nonVolatileSettings.currentVFONumber] == VFO_SCREEN_OPERATION_SCAN);
+#endif
 				}
 				else
 				{
@@ -383,27 +422,46 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					if (displaySquelch)
 					{
 						displaySquelch = false;
+#if defined(PLATFORM_DM5R)
+						ucFillRect(0, 16, 128, 8, true);
+#else
 						ucClearRows(2, 4, false);
+#endif
 					}
 
 					snprintf(buffer, bufferLen, " %d ", txTimeSecs);
+#if defined(PLATFORM_DM5R)
+					ucPrintCentered(TX_TIMER_Y_OFFSET, buffer, FONT_8x16);
+#else
 					ucPrintCentered(TX_TIMER_Y_OFFSET, buffer, FONT_16x32);
+#endif
 				}
 
 				if (screenOperationMode[nonVolatileSettings.currentVFONumber] == VFO_SCREEN_OPERATION_NORMAL)
 				{
+#if defined(PLATFORM_DM5R)
+					printFrequency(true, (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX || trxIsTransmitting), 40, currentChannelData->txFreq, true, false);
+#else
 					printFrequency(true, (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX || trxIsTransmitting), 48, currentChannelData->txFreq, true, false);
+#endif
 				}
 				else
 				{
 					// Low/High scanning freqs
 					snprintf(buffer, bufferLen, "%d.%03d", nonVolatileSettings.vfoScanLow[nonVolatileSettings.currentVFONumber] / 100000, (nonVolatileSettings.vfoScanLow[nonVolatileSettings.currentVFONumber] - (nonVolatileSettings.vfoScanLow[nonVolatileSettings.currentVFONumber] / 100000) * 100000)/100);
 					buffer[bufferLen - 1] = 0;
+#if defined(PLATFORM_DM5R)
+					ucPrintAt(2, 40, buffer, FONT_8x8);
+#else
 					ucPrintAt(2, 48, buffer, FONT_8x16);
+#endif
 					snprintf(buffer, bufferLen, "%d.%03d", nonVolatileSettings.vfoScanHigh[nonVolatileSettings.currentVFONumber] / 100000, (nonVolatileSettings.vfoScanHigh[nonVolatileSettings.currentVFONumber] - (nonVolatileSettings.vfoScanHigh[nonVolatileSettings.currentVFONumber] / 100000) * 100000)/100);
 					buffer[bufferLen - 1] = 0;
+#if defined(PLATFORM_DM5R)
+					ucPrintAt(128 - ((7 * 8) + 2), 40, buffer, FONT_8x16);
+#else
 					ucPrintAt(128 - ((7 * 8) + 2), 48, buffer, FONT_8x16);
-
+#endif
 					// Scanning direction arrow
 					static const int scanDirArrow[2][6] = {
 							{ 59, 55, 67, 51, 67, 59 }, // Down
@@ -421,10 +479,17 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 
 				if (screenOperationMode[nonVolatileSettings.currentVFONumber] == VFO_SCREEN_OPERATION_NORMAL)
 				{
+#if defined(PLATFORM_DM5R)
+					snprintf(buffer, bufferLen, "%c%c%c.%c%c%c%c%c", freq_enter_digits[0], freq_enter_digits[1], freq_enter_digits[2],
+							freq_enter_digits[3], freq_enter_digits[4], freq_enter_digits[5], freq_enter_digits[6], freq_enter_digits[7]);
+
+					ucPrintCentered((selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX) ? 40 : 24, buffer, FONT_8x16);
+#else
 					snprintf(buffer, bufferLen, "%c%c%c.%c%c%c%c%c MHz", freq_enter_digits[0], freq_enter_digits[1], freq_enter_digits[2],
 							freq_enter_digits[3], freq_enter_digits[4], freq_enter_digits[5], freq_enter_digits[6], freq_enter_digits[7]);
-					ucPrintCentered((selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX) ? 48 : 32, buffer, FONT_8x16);
 
+					ucPrintCentered((selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX) ? 48 : 32, buffer, FONT_8x16);
+#endif
 					// Cursor
 					if (freq_enter_idx < 8)
 					{
@@ -436,27 +501,49 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 				{
 					uint8_t hiX = 128 - ((7 * 8) + 2);
 
+#if defined(PLATFORM_DM5R)
+					ucPrintAt(5, 24, "Low", FONT_8x8);
+					ucDrawFastVLine(0, 29, 24, true);
+					ucDrawFastHLine(1, 40, 57, true);
+#else
 					ucPrintAt(5, 32, "Low", FONT_8x16);
 					ucDrawFastVLine(0, 37, 24, true);
 					ucDrawFastHLine(1, 48, 57, true);
+#endif
+
 					sprintf(buffer, "%c%c%c.%c%c%c", freq_enter_digits[0], freq_enter_digits[1], freq_enter_digits[2],
 													 freq_enter_digits[3], freq_enter_digits[4], freq_enter_digits[5]);
+#if defined(PLATFORM_DM5R)
+					ucPrintAt(2, 40, buffer, FONT_8x8);
+					ucPrintAt(73, 24, "High", FONT_8x8);
+					ucDrawFastVLine(68, 29, 24, true);
+					ucDrawFastHLine(69, 40, 57, true);
+#else
 					ucPrintAt(2, 48, buffer, FONT_8x16);
-
 					ucPrintAt(73, 32, "High", FONT_8x16);
 					ucDrawFastVLine(68, 37, 24, true);
 					ucDrawFastHLine(69, 48, 57, true);
+#endif
+
 					sprintf(buffer, "%c%c%c.%c%c%c", freq_enter_digits[6], freq_enter_digits[7], freq_enter_digits[8],
 													 freq_enter_digits[9], freq_enter_digits[10], freq_enter_digits[11]);
+#if defined(PLATFORM_DM5R)
+					ucPrintAt(hiX, 40, buffer, FONT_8x8);
+#else
 					ucPrintAt(hiX, 48, buffer, FONT_8x16);
-
+#endif
 					// Cursor
 					if (freq_enter_idx < 12)
 					{
 						xCursor = ((freq_enter_idx < 6) ? 10 : hiX) // X start
 								+ (((freq_enter_idx < 6) ? (freq_enter_idx - 1) : (freq_enter_idx - 7)) * 8) // Length
 								+ ((freq_enter_idx > 2 ? (freq_enter_idx > 8 ? 2 : 1) : 0) * 8); // MHz/kHz separator(s)
+
+#if defined(PLATFORM_DM5R)
+						yCursor = 40 + 14;
+#else
 						yCursor = 48 + 14;
+#endif
 					}
 
 				}
@@ -689,6 +776,7 @@ static void handleEvent(uiEvent_t *ev)
 			return;
 		}
 
+#if !defined(PLATFORM_DM5R)
 		if (ev->buttons & BUTTON_ORANGE)
 		{
 			if (ev->buttons & BUTTON_SK2)
@@ -704,6 +792,7 @@ static void handleEvent(uiEvent_t *ev)
 
 			return;
 		}
+#endif
 	}
 
 	if (ev->events & KEY_EVENT)
@@ -1180,7 +1269,7 @@ enum VFO_SCREEN_QUICK_MENU_ITEMS // The last item in the list is used so that we
 {
 #if defined(PLATFORM_GD77) || defined(PLATFORM_GD77S)
 	VFO_SCREEN_QUICK_MENU_VFO_A_B = 0, VFO_SCREEN_QUICK_MENU_TX_SWAP_RX,
-#elif defined(PLATFORM_DM1801)
+#elif defined(PLATFORM_DM1801) || defined(PLATFORM_DM5R)
 	VFO_SCREEN_QUICK_MENU_TX_SWAP_RX = 0,
 #endif
 	VFO_SCREEN_QUICK_MENU_BOTH_TO_RX, VFO_SCREEN_QUICK_MENU_BOTH_TO_TX,

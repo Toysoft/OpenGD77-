@@ -112,7 +112,11 @@ int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 				{
 					displaySquelch = false;
 
+#if defined(PLATFORM_DM5R)
+					ucFillRect(0, 15, 128, 9, true);
+#else
 					ucClearRows(2, 4, false);
+#endif
 					ucRenderRows(2,4);
 				}
 
@@ -122,7 +126,11 @@ int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 
 					if (scanActive && (scanState == SCAN_PAUSED))
 					{
+#if defined(PLATFORM_DM5R)
+						ucFillRect(0, 16, 128, 8, true);
+#else
 						ucClearRows(0, 2, false);
+#endif
 						menuUtilityRenderHeader();
 					}
 					else
@@ -355,7 +363,11 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 	if ((trxGetMode() == RADIO_MODE_DIGITAL) && (HRC6000GetReceivedTgOrPcId() == 0) &&
 			((menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA) || (menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA_UPDATE)))
 	{
+#if defined(PLATFORM_DM5R)
+		ucFillRect(0, 0, 128, 8, true);
+#else
 		ucClearRows(0,  2, false);
+#endif
 		menuUtilityRenderHeader();
 		ucRenderRows(0,  2);
 		return;
@@ -386,12 +398,20 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				if (displaySquelch)
 				{
 					displaySquelch = false;
+#if defined(PLATFORM_DM5R)
+					ucFillRect(0, 15, 128, 9, true);
+#else
 					ucClearRows(2, 4, false);
+#endif
 				}
 
 				snprintf(buffer, bufferLen, " %d ", txTimeSecs);
 				buffer[bufferLen - 1] = 0;
+#if defined(PLATFORM_DM5R)
+				ucPrintCentered(TX_TIMER_Y_OFFSET, buffer, FONT_8x16);
+#else
 				ucPrintCentered(TX_TIMER_Y_OFFSET, buffer, FONT_16x32);
+#endif
 				verticalPositionOffset=16;
 			}
 			else
@@ -400,8 +420,14 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				if (displayChannelSettings)
 				{
 					printToneAndSquelch();
+
+#if defined(PLATFORM_DM5R)
+					printFrequency(false, false, 31, (reverseRepeater ? currentChannelData->txFreq : currentChannelData->rxFreq), false, false);
+					printFrequency(true, false, 40, (reverseRepeater ? currentChannelData->rxFreq : currentChannelData->txFreq), false, false);
+#else
 					printFrequency(false, false, 32, (reverseRepeater ? currentChannelData->txFreq : currentChannelData->rxFreq), false, false);
 					printFrequency(true, false, 48, (reverseRepeater ? currentChannelData->rxFreq : currentChannelData->txFreq), false, false);
+#endif
 				}
 				else
 				{
@@ -417,7 +443,11 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 							snprintf(nameBuf, nameBufferLen, "%s Ch:%d",currentLanguage->all_channels, channelNumber);
 						}
 						nameBuf[nameBufferLen - 1] = 0;
+#if defined(PLATFORM_DM5R)
+						ucPrintCentered(40 , nameBuf, FONT_6x8);
+#else
 						ucPrintCentered(50 , nameBuf, FONT_6x8);
+#endif
 					}
 					else
 					{
@@ -432,7 +462,11 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 							snprintf(nameBuf, nameBufferLen, "%s Ch:%d", currentZoneName,channelNumber);
 							nameBuf[nameBufferLen - 1] = 0;
 						}
+#if defined(PLATFORM_DM5R)
+						ucPrintCentered(40, (char *)nameBuf, FONT_6x8);
+#else
 						ucPrintCentered(50, (char *)nameBuf, FONT_6x8);
+#endif
 					}
 				}
 			}
@@ -440,7 +474,11 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 			if (!displayChannelSettings)
 			{
 				codeplugUtilConvertBufToString(channelScreenChannelData.name, nameBuf, 16);
+#if defined(PLATFORM_DM5R)
+				ucPrintCentered(24 + verticalPositionOffset, nameBuf, FONT_8x8);
+#else
 				ucPrintCentered(32 + verticalPositionOffset, nameBuf, FONT_8x16);
+#endif
 			}
 
 			if (trxGetMode() == RADIO_MODE_DIGITAL)
@@ -468,13 +506,21 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 						}
 					}
 					nameBuf[bufferLen - 1] = 0;
+#if defined(PLATFORM_DM5R)
+					ucDrawRect(0, CONTACT_Y_POS + verticalPositionOffset, 128, 11, true);
+#else
 					ucDrawRect(0, CONTACT_Y_POS + verticalPositionOffset, 128, 16, true);
+#endif
 				}
 				else
 				{
 					codeplugUtilConvertBufToString(contactData.name, nameBuf, 16);
 				}
+#if defined(PLATFORM_DM5R)
+				ucPrintCentered(CONTACT_Y_POS + verticalPositionOffset + 2, nameBuf, FONT_8x8);
+#else
 				ucPrintCentered(CONTACT_Y_POS + verticalPositionOffset, nameBuf, FONT_8x16);
+#endif
 			}
 			// Squelch will be cleared later, 1s after last change
 			else if(displaySquelch && !trxIsTransmitting && !displayChannelSettings)
@@ -484,10 +530,19 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				strncpy(buffer, currentLanguage->squelch, 9);
 				buffer[8] = 0; // Avoid overlap with bargraph
 				// Center squelch word between col0 and bargraph, if possible.
+#if defined(PLATFORM_DM5R)
+				ucPrintAt(0 + ((strlen(buffer) * 8) < xbar - 2 ? (((xbar - 2) - (strlen(buffer) * 8)) >> 1) : 0), 16, buffer, FONT_8x8);
+#else
 				ucPrintAt(0 + ((strlen(buffer) * 8) < xbar - 2 ? (((xbar - 2) - (strlen(buffer) * 8)) >> 1) : 0), 16, buffer, FONT_8x16);
+#endif
 				int bargraph = 1 + ((currentChannelData->sql - 1) * 5) /2;
+#if defined(PLATFORM_DM5R)
+				ucDrawRect(xbar - 2, 15, 55, 8, true);
+				ucFillRect(xbar, 17, bargraph, 4, false);
+#else
 				ucDrawRect(xbar - 2, 17, 55, 13, true);
 				ucFillRect(xbar, 19, bargraph, 9, false);
+#endif
 			}
 
 			// SK1 is pressed, we don't want to clear the first info row after 1s
@@ -666,6 +721,7 @@ static void handleEvent(uiEvent_t *ev)
 			return;
 		}
 
+#if !defined(PLATFORM_DM5R)
 		if ((ev->buttons & BUTTON_ORANGE) && ((ev->buttons & BUTTON_SK1) == 0))
 		{
 			if (ev->buttons & BUTTON_SK2)
@@ -682,6 +738,7 @@ static void handleEvent(uiEvent_t *ev)
 
 			return;
 		}
+#endif
 	}
 
 	if (ev->events & KEY_EVENT)
@@ -768,11 +825,28 @@ static void handleEvent(uiEvent_t *ev)
 				return;
 			}
 		}
-#if defined(PLATFORM_DM1801)
+#if defined(PLATFORM_DM1801) || defined(PLATFORM_DM5R)
 		else if (KEYCHECK_SHORTUP(ev->keys, KEY_VFO_MR))
 		{
 			directChannelNumber = 0;
 			menuSystemSetCurrentMenu(MENU_VFO_MODE);
+			return;
+		}
+#endif
+#if defined(PLATFORM_DM5R)
+		else if (KEYCHECK_LONGDOWN(ev->keys, KEY_VFO_MR) && ((ev->buttons & BUTTON_SK1) == 0))
+		{
+			if (ev->buttons & BUTTON_SK2)
+			{
+				settingsPrivateCallMuteMode = !settingsPrivateCallMuteMode;// Toggle PC mute only mode
+				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+				menuVFOModeUpdateScreen(0);
+			}
+			else
+			{
+				menuSystemPushNewMenu(MENU_VFO_QUICK_MENU);
+			}
+
 			return;
 		}
 #endif
@@ -790,7 +864,12 @@ static void handleEvent(uiEvent_t *ev)
 				}
 			}
 		}
+#if defined(PLATFORM_DM5R)
+		// same behavior as for KEY_LEFT
+		else if (KEYCHECK_UP(ev->keys,KEY_RIGHT))
+#else
 		else if (KEYCHECK_PRESS(ev->keys, KEY_RIGHT))
+#endif
 		{
 			if (ev->buttons & BUTTON_SK2)
 			{
@@ -842,7 +921,11 @@ static void handleEvent(uiEvent_t *ev)
 			}
 
 		}
+#if defined(PLATFORM_DM5R)
+		else if (KEYCHECK_UP(ev->keys,KEY_LEFT))
+#else
 		else if (KEYCHECK_PRESS(ev->keys,KEY_LEFT))
+#endif
 		{
 			if (ev->buttons & BUTTON_SK2)
 			{

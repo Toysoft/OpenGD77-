@@ -990,11 +990,19 @@ void ucDrawChoice(ucChoice_t choice, bool clearRegion)
 	char *rText = NULL;
 	uint8_t lCenter = 12;
 	uint8_t rCenter = 115;
+#if defined(PLATFORM_DM5R)
+	uint8_t y = 40;
+#else
 	uint8_t y = 49;
+#endif
 
 	if (clearRegion)
 	{
+#if defined(PLATFORM_DM5R)
+		ucFillRect(0, 32, 128, 16, true);
+#else
 		ucFillRect(0, 48, 128, 16, true);
+#endif
 	}
 
 	if (choice >= CHOICES_NUM) {
@@ -1011,7 +1019,11 @@ void ucDrawChoice(ucChoice_t choice, bool clearRegion)
 		if (x < 2)
 			x = 2;
 
+#if defined(PLATFORM_DM5R)
+		ucPrintAt(x, y, lText, FONT_8x8);
+#else
 		ucPrintAt(x, y, lText, FONT_8x16);
+#endif
 	}
 
 	if(rText)
@@ -1022,7 +1034,11 @@ void ucDrawChoice(ucChoice_t choice, bool clearRegion)
 		if ((x + len) > 126)
 			x = (126 - len);
 
+#if defined(PLATFORM_DM5R)
+		ucPrintAt(x, y, rText, FONT_8x8);
+#else
 		ucPrintAt(x, y, rText, FONT_8x16);
+#endif
 	}
 }
 

@@ -71,6 +71,10 @@ static void handleEvent(uiEvent_t *ev)
 		nonVolatileSettings.languageIndex = gMenusCurrentItemIndex;
 		currentLanguage = &languages[gMenusCurrentItemIndex];
 		menuSystemLanguageHasChanged();
+#if defined(PLATFORM_DM5R)
+		// Save settings on exit
+		settingsSaveSettings(false);
+#endif
 		menuSystemPopAllAndDisplayRootMenu();
 		return;
 	}

@@ -35,6 +35,9 @@
 #endif
 
 bool PTTToggledDown = false; // PTT toggle feature
+#if defined(PLATFORM_DM5R)
+bool torch_state;			 // Baofeng DM-5R torch
+#endif
 
 void fw_main_task(void *data);
 
@@ -80,11 +83,13 @@ void fw_powerOffFinalStage(void)
 		}
 	}
 
+#if !defined(PLATFORM_DM5R)
 	// This turns the power off to the CPU.
 	GPIO_PinWrite(GPIO_Keep_Power_On, Pin_Keep_Power_On, 0);
 
 	// Death trap
 	while(1U) {}
+#endif
 }
 
 
@@ -189,6 +194,11 @@ void fw_main_task(void *data)
     // Init HR-C6000 interrupts
     init_HR_C6000_interrupts();
 
+#if defined(PLATFORM_DM5R)
+    // set torch state
+    torch_state = false;
+#endif
+
     // Small startup delay after initialization to stabilize system
   //  vTaskDelay(portTICK_PERIOD_MS * 500);
 
@@ -199,7 +209,9 @@ void fw_main_task(void *data)
 	if (get_battery_voltage()<CUTOFF_VOLTAGE_UPPER_HYST)
 	{
 		show_lowbattery();
+#if !defined(PLATFORM_DM5R)
 		GPIO_PinWrite(GPIO_Keep_Power_On, Pin_Keep_Power_On, 0);
+#endif
 		while(1U) {};
 	}
 
@@ -250,7 +262,11 @@ void fw_main_task(void *data)
 
 				if ((currentMenu == MENU_CHANNEL_MODE) || (currentMenu == MENU_VFO_MODE))
 				{
+#if defined(PLATFORM_DM5R)
+					ucFillRect(0, 0, 128, 8, true);
+#else
 					ucClearRows(0, 2, false);
+#endif
 					menuUtilityRenderHeader();
 					ucRenderRows(0, 2);
 				}
@@ -278,7 +294,11 @@ void fw_main_task(void *data)
 					}
 
 					// Lockout ORANGE AND BLUE (BLACK stay active regardless lock status, useful to trigger backlight)
+#if defined(PLATFORM_DM5R)
+					if (button_event == EVENT_BUTTON_CHANGE && (buttons & BUTTON_SK2))
+#else
 					if (button_event == EVENT_BUTTON_CHANGE && ((buttons & BUTTON_ORANGE) || (buttons & BUTTON_SK2)))
+#endif
 					{
 						if ((PTTToggledDown == false) && (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN))
 						{
@@ -367,9 +387,15 @@ void fw_main_task(void *data)
 			// PTT toggle feature
 			//
 			// PTT is locked down, but any button but SK1 is pressed, virtually release PTT
+#if defined(PLATFORM_DM5R)
+			if ((nonVolatileSettings.pttToggle && PTTToggledDown) &&
+							(((buttons & BUTTON_SK2)) ||
+									((keys.key != 0) && (keys.event & KEY_MOD_UP))))
+#else
 			if ((nonVolatileSettings.pttToggle && PTTToggledDown) &&
 					(((button_event & EVENT_BUTTON_CHANGE) && ((buttons & BUTTON_ORANGE) || (buttons & BUTTON_SK2))) ||
 							((keys.key != 0) && (keys.event & KEY_MOD_UP))))
+#endif
 			{
 				PTTToggledDown = false;
 				button_event = EVENT_BUTTON_CHANGE;
@@ -518,6 +544,11 @@ void fw_main_task(void *data)
 				case '4':
 					keyFunction = ( MENU_CHANNEL_DETAILS << 8) | 2;
 					break;
+#if defined(PLATFORM_DM5R)
+				case '5':
+					keyFunction = TOGGLE_TORCH;
+					break;
+#endif
 				case '7':
 					keyFunction = (MENU_DISPLAY <<8) + DEC_BRIGHTNESS;
 					break;
@@ -559,18 +590,33 @@ void fw_main_task(void *data)
 
         	menuSystemCallCurrentMenuTick(&ev);
 
+#if defined(PLATFORM_DM5R)
+        	if (keyFunction == TOGGLE_TORCH)
+        	{
+        		toggle_torch(&torch_state);
+        	}
+#endif
+
+#if defined(PLATFORM_DM5R)
+        	if ((battery_voltage < CUTOFF_VOLTAGE_LOWER_HYST)
+        			&& (menuSystemGetCurrentMenuNumber() != MENU_POWER_OFF))
+#else
         	if (((GPIO_PinRead(GPIO_Power_Switch, Pin_Power_Switch) != 0)
         			|| (battery_voltage < CUTOFF_VOLTAGE_LOWER_HYST))
         			&& (menuSystemGetCurrentMenuNumber() != MENU_POWER_OFF))
+#endif
         	{
         		if (battery_voltage < CUTOFF_VOLTAGE_LOWER_HYST)
         		{
         			show_lowbattery();
-
+#if defined(PLATFORM_DM5R)
+        			fw_powerOffFinalStage();
+#else
         			if (GPIO_PinRead(GPIO_Power_Switch, Pin_Power_Switch) != 0)
         			{
         				fw_powerOffFinalStage();
         			}
+#endif
         		}
         		else
         		{

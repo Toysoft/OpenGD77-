@@ -111,6 +111,44 @@ extern uint8_t SPI_masterSendBuffer_SPI1[SPI_DATA_LENGTH];
 #define GPIO_SPI_DO_C6000_U  GPIOD
 #define Pin_SPI_DO_C6000_U   3
 
+#elif defined(PLATFORM_DM5R)
+
+// SPI1 to C6000 (V_SPI)
+// OUT/ON  B10 - SPI /V_CS to C6000
+// OUT/OFF B11 - SPI V_CLK to C6000
+// OUT/ON  B16 - SPI V_DI to C6000
+// IN      B17 - SPI V_DO to C6000
+#define Port_SPI_CS_C6000_V  PORTB
+#define GPIO_SPI_CS_C6000_V  GPIOB
+#define Pin_SPI_CS_C6000_V   10
+#define Port_SPI_CLK_C6000_V PORTB
+#define GPIO_SPI_CLK_C6000_V GPIOB
+#define Pin_SPI_CLK_C6000_V  11
+#define Port_SPI_DI_C6000_V  PORTB
+#define GPIO_SPI_DI_C6000_V  GPIOB
+#define Pin_SPI_DI_C6000_V   16
+#define Port_SPI_DO_C6000_V  PORTB
+#define GPIO_SPI_DO_C6000_V  GPIOB
+#define Pin_SPI_DO_C6000_V   17
+
+// SPI0 to C6000 (U_SPI)
+// OUT/ON  D0 - SPI /U_CS to C6000
+// OUT/OFF D1 - SPI U_CLK to C6000
+// OUT/ON  D2 - SPI U_DI to C6000
+// IN      D3 - SPI U_DO to C6000
+#define Port_SPI_CS_C6000_U  PORTD
+#define GPIO_SPI_CS_C6000_U  GPIOD
+#define Pin_SPI_CS_C6000_U   0
+#define Port_SPI_CLK_C6000_U PORTD
+#define GPIO_SPI_CLK_C6000_U GPIOD
+#define Pin_SPI_CLK_C6000_U  1
+#define Port_SPI_DI_C6000_U  PORTD
+#define GPIO_SPI_DI_C6000_U  GPIOD
+#define Pin_SPI_DI_C6000_U   2
+#define Port_SPI_DO_C6000_U  PORTD
+#define GPIO_SPI_DO_C6000_U  GPIOD
+#define Pin_SPI_DO_C6000_U   3
+
 #endif
 
 

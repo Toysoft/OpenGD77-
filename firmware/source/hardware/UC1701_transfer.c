@@ -60,7 +60,9 @@ void ucRenderRows(int16_t startRow, int16_t endRow)
 		UC1701_transfer(0x10 | 0); // set X (high MSB)
 
 // Note there are 4 pixels at the left which are no in the hardware of the LCD panel, but are in the RAM buffer of the controller
+#if !defined(PLATFORM_DM5R)
 		UC1701_transfer(0x00 | 4); // set X (low MSB).
+#endif
 
 		UC1701_setDataMode();
 		uint8_t data1;
@@ -153,8 +155,13 @@ void ucBegin(bool isInverted)
 	UC1701_transfer(0x81); // Set Electronic Volume = 15
 	UC1701_transfer(nonVolatileSettings.displayContrast); //
 	UC1701_transfer(0xA2); // Set Bias = 1/9
+#if defined(PLATFORM_DM5R)
+	UC1701_transfer(0xA0); // Set SEG Direction
+	UC1701_transfer(0xC8); // Set COM Direction
+#else
 	UC1701_transfer(0xA1); // A0 Set SEG Direction
 	UC1701_transfer(0xC0); // Set COM Direction
+#endif
 	if (isInverted)
 	{
 		UC1701_transfer(0xA7); // Black background, white pixels

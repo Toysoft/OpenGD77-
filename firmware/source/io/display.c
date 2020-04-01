@@ -38,7 +38,11 @@ void fw_init_display(bool isInverseColour)
     PORT_SetPinMux(Port_Display_SDA, Pin_Display_SDA, kPORT_MuxAsGpio);
 
 #ifdef DISPLAY_LED_PWM
+#if defined(PLATFORM_DM5R)
+    PORT_SetPinMux(Port_Display_Light, Pin_Display_Light, kPORT_MuxAlt7);/* Configured as PWM FTM0_CH2 */
+#else
    PORT_SetPinMux(Port_Display_Light, Pin_Display_Light, kPORT_MuxAlt4);/* Configured as PWM FTM0_CH3 */
+#endif
 #else
    PORT_SetPinMux(Port_Display_Light, Pin_Display_Light, kPORT_MuxAsGpio);
 #endif
