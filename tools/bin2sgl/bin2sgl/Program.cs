@@ -65,7 +65,7 @@ namespace bin2sgl
 
 				case OutputType.OutputType_GD77S:
 					shift = 0x2a8e;
-					flength = 0x50001; // The header, from firmware version 1.2.0 expects the file to be 0x50001 long
+					flength = 0x77001; // The header, from firmware version 1.2.0 expects the file to be 0x50001 long, but it has been hacked to 0x77001
 					Console.WriteLine("GD77S");
 					break;
 
