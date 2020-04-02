@@ -145,7 +145,12 @@ void settingsRestoreDefaultSettings(void)
 	nonVolatileSettings.displayInverseVideo=false;// Not inverse video
 	nonVolatileSettings.useCalibration = true;// enable the new calibration system
 	nonVolatileSettings.txFreqLimited = true;// Limit Tx frequency to US Amateur bands
-	nonVolatileSettings.txPowerLevel=4;// 1 W
+	nonVolatileSettings.txPowerLevel=
+#if defined(PLATFORM_GD77S)
+			1; // 250mW
+#else
+			4; // 1 W
+#endif
 	nonVolatileSettings.overrideTG=0;// 0 = No override
 	nonVolatileSettings.txTimeoutBeepX5Secs = 0;
 	nonVolatileSettings.beepVolumeDivider = 1;// no reduction in volume
