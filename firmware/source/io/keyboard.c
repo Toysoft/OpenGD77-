@@ -82,6 +82,7 @@ static const char keypadAlphaMap[11][31] = {
 
 void fw_init_keyboard(void)
 {
+#if ! defined(PLATFORM_GD77S)
 	 port_pin_config_t config = {
 	      kPORT_PullUp,
 	      kPORT_FastSlewRate,
@@ -117,6 +118,7 @@ void fw_init_keyboard(void)
     GPIO_PinInit(GPIO_Key_Row2, Pin_Key_Row2, &pin_config_input);
     GPIO_PinInit(GPIO_Key_Row3, Pin_Key_Row3, &pin_config_input);
     GPIO_PinInit(GPIO_Key_Row4, Pin_Key_Row4, &pin_config_input);
+#endif // ! PLATFORM_GD77S
 
 	oldKeyboardCode = 0;
 	keyDebounceScancode = 0;
@@ -139,13 +141,18 @@ void fw_reset_keyboard(void)
 
 inline uint8_t fw_read_keyboard_col(void)
 {
+#if defined(PLATFORM_GD77S)
+	return 0;
+#else
 	return ~((GPIOB->PDIR)>>19) & 0x1f;
+#endif
 }
 
 uint32_t fw_read_keyboard(void)
 {
 	uint32_t result = 0;
 
+#if ! defined(PLATFORM_GD77S)
 	for (int col=3; col>=0; col--)
 	{
 		GPIO_PinInit(GPIOC, col, &pin_config_output);
@@ -158,6 +165,7 @@ uint32_t fw_read_keyboard(void)
 		GPIO_PinWrite(GPIOC, col, 1);
 		GPIO_PinInit(GPIOC, col, &pin_config_input);
 	}
+#endif // ! PLATFORM_GD77S
 
     return result;
 }
