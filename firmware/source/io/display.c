@@ -25,48 +25,51 @@
 #include "task.h"
 
 
+#if ! defined(PLATFORM_GD77S)
 #ifdef DISPLAY_LED_PWM
 	#include "fsl_ftm.h"
 #endif
+#endif // ! PLATFORM_GD77S
 
 void fw_init_display(bool isInverseColour)
 {
-    PORT_SetPinMux(Port_Display_CS, Pin_Display_CS, kPORT_MuxAsGpio);
-    PORT_SetPinMux(Port_Display_RST, Pin_Display_RST, kPORT_MuxAsGpio);
-    PORT_SetPinMux(Port_Display_RS, Pin_Display_RS, kPORT_MuxAsGpio);
-    PORT_SetPinMux(Port_Display_SCK, Pin_Display_SCK, kPORT_MuxAsGpio);
-    PORT_SetPinMux(Port_Display_SDA, Pin_Display_SDA, kPORT_MuxAsGpio);
+#if ! defined(PLATFORM_GD77S)
+	PORT_SetPinMux(Port_Display_CS, Pin_Display_CS, kPORT_MuxAsGpio);
+	PORT_SetPinMux(Port_Display_RST, Pin_Display_RST, kPORT_MuxAsGpio);
+	PORT_SetPinMux(Port_Display_RS, Pin_Display_RS, kPORT_MuxAsGpio);
+	PORT_SetPinMux(Port_Display_SCK, Pin_Display_SCK, kPORT_MuxAsGpio);
+	PORT_SetPinMux(Port_Display_SDA, Pin_Display_SDA, kPORT_MuxAsGpio);
 
 #ifdef DISPLAY_LED_PWM
-   PORT_SetPinMux(Port_Display_Light, Pin_Display_Light, kPORT_MuxAlt4);/* Configured as PWM FTM0_CH3 */
+	PORT_SetPinMux(Port_Display_Light, Pin_Display_Light, kPORT_MuxAlt4);/* Configured as PWM FTM0_CH3 */
 #else
-   PORT_SetPinMux(Port_Display_Light, Pin_Display_Light, kPORT_MuxAsGpio);
+	PORT_SetPinMux(Port_Display_Light, Pin_Display_Light, kPORT_MuxAsGpio);
 #endif
 
 #ifdef DISPLAY_LED_PWM
-   ftm_config_t ftmInfo;
-   ftm_chnl_pwm_signal_param_t ftmParam;
+	ftm_config_t ftmInfo;
+	ftm_chnl_pwm_signal_param_t ftmParam;
 
-   ftmParam.chnlNumber = BOARD_FTM_CHANNEL;
-   ftmParam.level = kFTM_HighTrue;
-   ftmParam.dutyCyclePercent = 0U;// initially 0%
-   ftmParam.firstEdgeDelayPercent = 0U;
-   FTM_GetDefaultConfig(&ftmInfo);
-   FTM_Init(BOARD_FTM_BASEADDR, &ftmInfo);/* Initialize FTM module */
-   FTM_SetupPwm(BOARD_FTM_BASEADDR, &ftmParam, 1U, kFTM_CenterAlignedPwm, 10000U, CLOCK_GetFreq(kCLOCK_BusClk));   /* Configure ftm params with frequency 10kHZ */
-   FTM_StartTimer(BOARD_FTM_BASEADDR, kFTM_SystemClock);
+	ftmParam.chnlNumber = BOARD_FTM_CHANNEL;
+	ftmParam.level = kFTM_HighTrue;
+	ftmParam.dutyCyclePercent = 0U;// initially 0%
+	ftmParam.firstEdgeDelayPercent = 0U;
+	FTM_GetDefaultConfig(&ftmInfo);
+	FTM_Init(BOARD_FTM_BASEADDR, &ftmInfo);/* Initialize FTM module */
+	FTM_SetupPwm(BOARD_FTM_BASEADDR, &ftmParam, 1U, kFTM_CenterAlignedPwm, 10000U, CLOCK_GetFreq(kCLOCK_BusClk));   /* Configure ftm params with frequency 10kHZ */
+	FTM_StartTimer(BOARD_FTM_BASEADDR, kFTM_SystemClock);
 #else
-   GPIO_PinInit(GPIO_Display_Light, Pin_Display_Light, &pin_config_output);
-   GPIO_PinWrite(GPIO_Display_Light, Pin_Display_Light, 0);
+	GPIO_PinInit(GPIO_Display_Light, Pin_Display_Light, &pin_config_output);
+	GPIO_PinWrite(GPIO_Display_Light, Pin_Display_Light, 0);
 #endif
 
-    GPIO_PinInit(GPIO_Display_CS, Pin_Display_CS, &pin_config_output);
-    GPIO_PinInit(GPIO_Display_RST, Pin_Display_RST, &pin_config_output);
-    GPIO_PinInit(GPIO_Display_RS, Pin_Display_RS, &pin_config_output);
-    GPIO_PinInit(GPIO_Display_SCK, Pin_Display_SCK, &pin_config_output);
-    GPIO_PinInit(GPIO_Display_SDA, Pin_Display_SDA, &pin_config_output);
+	GPIO_PinInit(GPIO_Display_CS, Pin_Display_CS, &pin_config_output);
+	GPIO_PinInit(GPIO_Display_RST, Pin_Display_RST, &pin_config_output);
+	GPIO_PinInit(GPIO_Display_RS, Pin_Display_RS, &pin_config_output);
+	GPIO_PinInit(GPIO_Display_SCK, Pin_Display_SCK, &pin_config_output);
+	GPIO_PinInit(GPIO_Display_SDA, Pin_Display_SDA, &pin_config_output);
 
-    // Init pins
+	// Init pins
 	GPIO_PinWrite(GPIO_Display_CS, Pin_Display_CS, 1);
 	GPIO_PinWrite(GPIO_Display_RST, Pin_Display_RST, 1);
 	GPIO_PinWrite(GPIO_Display_RS, Pin_Display_RS, 1);
@@ -75,19 +78,18 @@ void fw_init_display(bool isInverseColour)
 
 	// Reset LCD
 	GPIO_PinWrite(GPIO_Display_RST, Pin_Display_RST, 0);
-    vTaskDelay(portTICK_PERIOD_MS * 1);
+	vTaskDelay(portTICK_PERIOD_MS * 1);
 	GPIO_PinWrite(GPIO_Display_RST, Pin_Display_RST, 1);
 	vTaskDelay(portTICK_PERIOD_MS * 5);
 
-    ucBegin(isInverseColour);
+	ucBegin(isInverseColour);
+#endif // ! PLATFORM_GD77S
 }
 
 void fw_displayEnableBacklight(bool onof)
 {
-#if defined(PLATFORM_GD77S)
-	return;
-#endif
-	if (onof==true)
+#if ! defined(PLATFORM_GD77S)
+	if (onof == true)
 	{
 #ifdef DISPLAY_LED_PWM
 		fw_displaySetBacklightIntensityPercentage(nonVolatileSettings.displayBacklightPercentage);
@@ -104,17 +106,23 @@ void fw_displayEnableBacklight(bool onof)
 		GPIO_PinWrite(GPIO_Display_Light, Pin_Display_Light, 0);
 #endif
 	}
+#endif // ! PLATFORM_GD77S
 }
 
 bool fw_displayIsBacklightLit(void)
 {
+#if defined(PLATFORM_GD77S)
+	return false;
+#else
 #ifdef DISPLAY_LED_PWM
 	return (BOARD_FTM_BASEADDR->CONTROLS[BOARD_FTM_CHANNEL].CnV != 0);
 #else
 	return (GPIO_PinRead(GPIO_Display_Light, Pin_Display_Light) == 1);
 #endif
+#endif // PLATFORM_GD77S
 }
 
+#if ! defined(PLATFORM_GD77S)
 #ifdef DISPLAY_LED_PWM
 void fw_displaySetBacklightIntensityPercentage(uint8_t intensityPercentage)
 {
@@ -124,3 +132,4 @@ void fw_displaySetBacklightIntensityPercentage(uint8_t intensityPercentage)
     FTM_UpdateChnlEdgeLevelSelect(BOARD_FTM_BASEADDR, BOARD_FTM_CHANNEL, kFTM_HighTrue);    // Start channel output with updated dutycycle
 }
 #endif
+#endif // ! PLATFORM_GD77S

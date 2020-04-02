@@ -36,6 +36,7 @@ void UC1701_setCommandMode();
 void UC1701_setDataMode();
 void UC1701_transfer(register uint8_t data1);
 
+#if ! defined(PLATFORM_GD77S)
 void UC1701_setCommandMode()
 {
 	GPIO_Display_RS->PCOR = 1U << Pin_Display_RS;// set the command / data pin low to signify Command mode
@@ -45,12 +46,11 @@ void UC1701_setDataMode()
 {
 	GPIO_Display_RS->PSOR = 1U << Pin_Display_RS;// set the command / data pin low to signify Data mode
 }
+#endif // ! PLATFORM_GD77S
 
 void ucRenderRows(int16_t startRow, int16_t endRow)
 {
-#if defined(PLATFORM_GD77S)
-	return;
-#else
+#if ! defined(PLATFORM_GD77S)
 	uint8_t *rowPos = (screenBuf + startRow*128);
 	taskENTER_CRITICAL();
 	for(int16_t row=startRow;row<endRow;row++)
@@ -89,14 +89,12 @@ void ucRenderRows(int16_t startRow, int16_t endRow)
 		}
 	}
 	taskEXIT_CRITICAL();
-#endif
+#endif // ! PLATFORM_GD77S
 }
 
 void UC1701_transfer(register uint8_t data1)
 {
-#if defined(PLATFORM_GD77S)
-	return;
-#else
+#if ! defined(PLATFORM_GD77S)
 	for (register int i=0; i<8; i++)
 	{
 		GPIO_Display_SCK->PCOR = 1U << Pin_Display_SCK;
@@ -113,16 +111,12 @@ void UC1701_transfer(register uint8_t data1)
 
 		data1=data1<<1;
 	}
-#endif
+#endif // ! PLATFORM_GD77S
 }
-
-
 
 void ucSetInverseVideo(bool isInverted)
 {
-#if defined(PLATFORM_GD77S)
-	return;
-#else
+#if ! defined(PLATFORM_GD77S)
 	UC1701_setCommandMode();
 	if (isInverted)
 	{
@@ -135,16 +129,12 @@ void ucSetInverseVideo(bool isInverted)
 
     UC1701_transfer(0xAF); // Set Display Enable
     UC1701_setDataMode();
-#endif
+#endif // ! PLATFORM_GD77S
 }
-
 
 void ucBegin(bool isInverted)
 {
-#if defined(PLATFORM_GD77S)
-	//ucClearBuf();
-	return;
-#else
+#if ! defined(PLATFORM_GD77S)
 	GPIO_PinWrite(GPIO_Display_CS, Pin_Display_CS, 0);// Enable CS permanently
     // Set the LCD parameters...
 	UC1701_setCommandMode();
@@ -168,17 +158,15 @@ void ucBegin(bool isInverted)
     UC1701_transfer(0xAF); // Set Display Enable
     ucClearBuf();
     ucRender();
-#endif
+#endif // ! PLATFORM_GD77S
 }
 
 void ucSetContrast(uint8_t contrast)
 {
-#if defined(PLATFORM_GD77S)
-	return;
-#else
+#if ! defined(PLATFORM_GD77S)
 	UC1701_setCommandMode();
 	UC1701_transfer(0x81);              // command to set contrast
 	UC1701_transfer(contrast);          // set contrast
 	UC1701_setDataMode();
-#endif
+#endif // ! PLATFORM_GD77S
 }

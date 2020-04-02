@@ -131,6 +131,7 @@ struct
 };
 #endif
 
+#if ! defined(PLATFORM_GD77S)
 
 const uint8_t font_6x8[] = {
    0x00, 0x00, // Ignored.
@@ -2088,5 +2089,7 @@ const uint8_t font_AtariST_8x16[] = {
    0xC0, 0xE0, 0x60, 0xC0, 0x80, 0x80, 0xC0, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00  // '~'
 };
 */
+
+#endif // ! PLATFORM_GD77S
 
 #endif /* __UC1701_CHARSET_H__ */

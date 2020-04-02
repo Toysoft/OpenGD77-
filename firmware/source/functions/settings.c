@@ -121,7 +121,12 @@ void settingsRestoreDefaultSettings(void)
 	nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE]=0;
 	nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_B_MODE]=0;
 	nonVolatileSettings.currentZone = 0;
-	nonVolatileSettings.backlightMode = BACKLIGHT_MODE_AUTO;
+	nonVolatileSettings.backlightMode =
+#if defined(PLATFORM_GD77S)
+			BACKLIGHT_MODE_NONE;
+#else
+			BACKLIGHT_MODE_AUTO;
+#endif
 	nonVolatileSettings.backLightTimeout = 0;//0 = never timeout. 1 - 255 time in seconds
 	nonVolatileSettings.displayContrast =
 #if defined(PLATFORM_DM1801)
@@ -129,7 +134,12 @@ void settingsRestoreDefaultSettings(void)
 #else
 			0x12; // 18
 #endif
-	nonVolatileSettings.initialMenuNumber=MENU_VFO_MODE;
+	nonVolatileSettings.initialMenuNumber =
+#if defined(PLATFORM_GD77S)
+			MENU_CHANNEL_MODE;
+#else
+			MENU_VFO_MODE;
+#endif
 	nonVolatileSettings.displayBacklightPercentage=100U;// 100% brightness
 	nonVolatileSettings.displayBacklightPercentageOff=0U;// 0% brightness
 	nonVolatileSettings.displayInverseVideo=false;// Not inverse video
@@ -160,7 +170,12 @@ void settingsRestoreDefaultSettings(void)
 	nonVolatileSettings.hotspotType = HOTSPOT_TYPE_OFF;
 #endif
 	nonVolatileSettings.transmitTalkerAlias	= false;
-    nonVolatileSettings.privateCalls = true;
+    nonVolatileSettings.privateCalls =
+#if defined(PLATFORM_GD77S)
+    		false;
+#else
+    		true;
+#endif
     // Set all these value to zero to force the operator to set their own limits.
 	nonVolatileSettings.vfoScanLow[0]=0;
 	nonVolatileSettings.vfoScanLow[1]=0;
@@ -170,7 +185,11 @@ void settingsRestoreDefaultSettings(void)
 
 	nonVolatileSettings.contactDisplayPriority = CONTACT_DISPLAY_PRIO_CC_DB_TA;
 	nonVolatileSettings.splitContact = SPLIT_CONTACT_SINGLE_LINE_ONLY;
-	nonVolatileSettings.beepOptions = BEEP_TX_START;
+	nonVolatileSettings.beepOptions =
+#if defined(PLATFORM_GD77S)
+			BEEP_TX_STOP |
+#endif
+			BEEP_TX_START;
 
 	currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];// Set the current channel data to point to the VFO data since the default screen will be the VFO
 
