@@ -91,6 +91,7 @@ static inline bool checkWritePos(uint8_t * writePos)
 
 int ucPrintCore(int16_t x, int16_t y, const char *szMsg, ucFont_t fontSize, ucTextAlign_t alignment, bool isInverted)
 {
+#if ! defined(PLATFORM_GD77S)
 	int16_t i, sLen;
 	uint8_t *currentCharData;
 	int16_t charWidthPixels;
@@ -241,13 +242,9 @@ int ucPrintCore(int16_t x, int16_t y, const char *szMsg, ucFont_t fontSize, ucTe
 			}
 		}
 	}
+#endif // ! PLATFORM_GD77S
 	return 0;
 }
-
-
-
-
-
 
 void ucClearBuf(void)
 {
@@ -269,7 +266,6 @@ void ucClearRows(int16_t startRow, int16_t endRow, bool isInverted)
 	//ucFillRect(0, (startRow * 8), 128, (8 * (endRow - startRow)), true);
     memset(screenBuf + (128 * startRow), (isInverted ? 0xFF : 0x00), (128 * (endRow - startRow)));
 }
-
 
 void ucPrintCentered(uint8_t y,const char *text, ucFont_t fontSize)
 {

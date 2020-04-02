@@ -149,9 +149,8 @@ void fw_main_task(void *data)
 #endif
     settingsLoadSettings();
 
-#if ! defined(PLATFORM_GD77S)
 	fw_init_display(nonVolatileSettings.displayInverseVideo);
-#endif
+
     // Init SPI
     init_SPI();
     setup_SPI0();
@@ -241,9 +240,7 @@ void fw_main_task(void *data)
 
 			fw_check_button_event(&buttons, &button_event); // Read button state and event
 
-#if ! defined(PLATFORM_GD77S)
 			fw_check_key_event(&keys, &key_event); // Read keyboard state and event
-#endif
 
 			// EVENT_*_CHANGED can be cleared later, so check this now as hasEvent has to be set anyway.
 			keyOrButtonChanged = ((key_event != NO_EVENT) || (button_event != NO_EVENT));

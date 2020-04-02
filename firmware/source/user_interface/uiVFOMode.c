@@ -580,7 +580,11 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 
 void menuVFOModeStopScanning(void)
 {
-	toneScanActive = false;
+	if (toneScanActive)
+	{
+		trxSetRxCTCSS(currentChannelData->rxTone);
+		toneScanActive=false;
+	}
 	scanActive=false;
 	menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 	menuVFOModeUpdateScreen(0); // Needs to redraw the screen now
@@ -1362,7 +1366,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 
 	if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{
-		toneScanActive=false;
+		menuVFOModeStopScanning();
 
 		menuSystemPopPreviousMenu();
 		return;

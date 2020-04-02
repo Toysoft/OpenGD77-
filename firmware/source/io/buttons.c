@@ -45,9 +45,7 @@ uint32_t fw_read_buttons(void)
 {
 	uint32_t result = BUTTON_NONE;
 
-#if ! defined(PLATFORM_GD77S)
-
-#if ! defined(PLATFORM_DM5R)
+#if ! defined(PLATFORM_GD77S) && ! defined(PLATFORM_DM5R)
 	if (GPIO_PinRead(GPIO_Orange, Pin_Orange)==0)
 	{
 		result |= BUTTON_ORANGE;
@@ -58,7 +56,6 @@ uint32_t fw_read_buttons(void)
 	{
 		result |= BUTTON_PTT;
 	}
-#endif
 
 	if (GPIO_PinRead(GPIO_SK1, Pin_SK1)==0)
 	{

@@ -489,10 +489,11 @@ def main():
     global outputFormat
     sglFile = "firmware.sgl"
     doDownload = False
+    doForce = False
 
     # Command line argument parsing
     try:                                
-        opts, args = getopt.getopt(sys.argv[1:], "hf:m:d", ["help", "firmware=", "model=", "download"])
+        opts, args = getopt.getopt(sys.argv[1:], "hf:m:dF", ["help", "firmware=", "model=", "download", "force"])
     except getopt.GetoptError as err:
         print(str(err))
         usage()
@@ -519,6 +520,8 @@ def main():
                 
         elif opt in ["-d", "--download"]:
             doDownload = True
+        elif opt in ["-F", "--force"]:
+            doForce = True
         else:
             assert False, "Unhandled option"
 
@@ -585,11 +588,12 @@ def main():
                 
             print(" - " + "Firmware file confirmed as SGL")
 
-            # Check if the firmware matches the transceiver model
-            if (headerModel[0] != firmwareModelTag[outputFormat]):
-                print("Error. The firmware doesn't match the transceiver model.")
-                sys.exit(-10)
-                
+            if (doForce == False):
+                # Check if the firmware matches the transceiver model
+                if (headerModel[0] != firmwareModelTag[outputFormat]):
+                    print("Error. The firmware doesn't match the transceiver model.")
+                    sys.exit(-10)
+                    
         else:
             print("Firmware file is an unencrypted binary. Exiting")
             sys.exit(-3)
