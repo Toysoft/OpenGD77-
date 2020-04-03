@@ -153,7 +153,12 @@ void settingsRestoreDefaultSettings(void)
 #endif
 	nonVolatileSettings.overrideTG=0;// 0 = No override
 	nonVolatileSettings.txTimeoutBeepX5Secs = 0;
-	nonVolatileSettings.beepVolumeDivider = 1;// no reduction in volume
+	nonVolatileSettings.beepVolumeDivider =
+#if defined(PLATFORM_GD77S)
+			5; // -9dB: Beeps are way too loud on the GD77S
+#else
+			1; // no reduction in volume
+#endif
 	nonVolatileSettings.micGainDMR = 11;// Normal value used by the official firmware
 	nonVolatileSettings.tsManualOverride = 0; // No manual TS override using the Star key
 	nonVolatileSettings.keypadTimerLong = 5;

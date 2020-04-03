@@ -36,6 +36,7 @@
 #include "buttons.h"
 #include "LEDs.h"
 #include "keyboard.h"
+#include "rotary_switch.h"
 #include "display.h"
 
 #include "UC1701.h"

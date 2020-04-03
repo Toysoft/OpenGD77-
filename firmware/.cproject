@@ -2423,6 +2423,12 @@
 							<inputType id="com.crt.advproject.compiler.input.2144477099" superClass="com.crt.advproject.compiler.input"/>
 						</tool>
 					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.227813548.source/io/rotary_switch.c" name="rotary_switch.c" rcbsApplicability="disable" resourcePath="source/io/rotary_switch.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.306730578">
+						<tool id="com.crt.advproject.gcc.exe.debug.306730578" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.599786990">
+							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.1105355966" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
+							<inputType id="com.crt.advproject.compiler.input.2144477099" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
 					<fileInfo id="com.crt.advproject.config.exe.debug.1021312312.227813548.source/io/fw_common.c" name="fw_common.c" rcbsApplicability="disable" resourcePath="source/io/common.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.2133419866">
 						<tool id="com.crt.advproject.gcc.exe.debug.2133419866" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.599786990">
 							<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.291804196" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.size" valueType="enumerated"/>
