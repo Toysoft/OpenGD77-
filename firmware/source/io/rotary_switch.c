@@ -34,12 +34,12 @@ void init_rotary_switch(void)
 	PORT_SetPinMux(Port_RotarySW_Line2, Pin_RotarySW_Line2, kPORT_MuxAsGpio);
 	PORT_SetPinMux(Port_RotarySW_Line3, Pin_RotarySW_Line3, kPORT_MuxAsGpio);
 
-    GPIO_PinInit(GPIO_RotarySW_Line0, Pin_RotarySW_Line0, &pin_config_input);
-    GPIO_PinInit(GPIO_RotarySW_Line1, Pin_RotarySW_Line1, &pin_config_input);
-    GPIO_PinInit(GPIO_RotarySW_Line2, Pin_RotarySW_Line2, &pin_config_input);
-    GPIO_PinInit(GPIO_RotarySW_Line3, Pin_RotarySW_Line3, &pin_config_input);
+	GPIO_PinInit(GPIO_RotarySW_Line0, Pin_RotarySW_Line0, &pin_config_input);
+	GPIO_PinInit(GPIO_RotarySW_Line1, Pin_RotarySW_Line1, &pin_config_input);
+	GPIO_PinInit(GPIO_RotarySW_Line2, Pin_RotarySW_Line2, &pin_config_input);
+	GPIO_PinInit(GPIO_RotarySW_Line3, Pin_RotarySW_Line3, &pin_config_input);
 
-    prevPosition = -1;
+	prevPosition = -1;
 #endif
 }
 
