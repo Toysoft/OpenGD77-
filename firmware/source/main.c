@@ -109,8 +109,10 @@ void fw_main_task(void *data)
 	int keyFunction;
 	uint32_t buttons;
 	int button_event;
+	uint32_t rotary;
+	int rotary_event;
 	int function_event;
-	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .function = 0, .events = NO_EVENT, .hasEvent = false, .time = 0 };
+	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .rotary = 0, .function = 0, .events = NO_EVENT, .hasEvent = false, .time = 0 };
 	bool keyOrButtonChanged = false;
 
     USB_DeviceApplicationInit();
@@ -122,6 +124,7 @@ void fw_main_task(void *data)
 	fw_init_buttons();
 	fw_init_LEDs();
 	fw_init_keyboard();
+	init_rotary_switch();
 
 	fw_check_button_event(&buttons, &button_event);// Read button state and event
 	if (buttons & BUTTON_SK2)
@@ -238,8 +241,10 @@ void fw_main_task(void *data)
 
 			fw_check_key_event(&keys, &key_event); // Read keyboard state and event
 
+			check_rotary_switch_event(&rotary, &rotary_event); // Rotary switch state and event (GD-77S only)
+
 			// EVENT_*_CHANGED can be cleared later, so check this now as hasEvent has to be set anyway.
-			keyOrButtonChanged = ((key_event != NO_EVENT) || (button_event != NO_EVENT));
+			keyOrButtonChanged = ((key_event != NO_EVENT) || (button_event != NO_EVENT) || (rotary_event != NO_EVENT));
 
 			if (batteryVoltageHasChanged == true)
 			{
@@ -540,8 +545,10 @@ void fw_main_task(void *data)
 					}
 					ev.function = keyFunction & 0xff;
 					buttons = BUTTON_NONE;
+					rotary = 0;
 					key_event = EVENT_KEY_NONE;
 					button_event = EVENT_BUTTON_NONE;
+					rotary_event = EVENT_ROTARY_NONE;
 					keys.key = 0;
 					keys.event = 0;
 					function_event = FUNCTION_EVENT;
@@ -550,7 +557,8 @@ void fw_main_task(void *data)
 			}
     		ev.buttons = buttons;
     		ev.keys = keys;
-    		ev.events = function_event | (button_event<<1) | key_event;
+    		ev.rotary = rotary;
+    		ev.events = function_event | (button_event << 1) | (rotary_event << 3) | key_event;
     		ev.hasEvent = keyOrButtonChanged || function_event;
     		ev.time = fw_millis();
 

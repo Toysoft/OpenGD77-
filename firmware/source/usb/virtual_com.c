@@ -435,7 +435,9 @@ void USB_DeviceApplicationInit(void)
 
     if (kStatus_USB_Success != USB_DeviceClassInit(CONTROLLER_ID, &s_cdcAcmConfigList, &s_cdcVcom.deviceHandle))
     {
+#if defined(USE_SEGGER_RTT)
     	SEGGER_RTT_printf(0, "USB device init failed\r\n");
+#endif
 //        usb_echo("USB device init failed\r\n");
     }
     else
