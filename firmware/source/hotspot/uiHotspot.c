@@ -125,7 +125,7 @@ M: 2020-01-07 09:52:15.246 DMR Slot 2, received network end of voice transmissio
 
 #define MMDVM_HEADER_LENGTH 4U
 
-#define HOTSPOT_VERSION_STRING "OpenGD77 Hotspot v0.1.2"
+#define HOTSPOT_VERSION_STRING "OpenGD77 Hotspot v0.1.3"
 #define concat(a, b) a " GitID #" b ""
 static const char HARDWARE[] = concat(HOTSPOT_VERSION_STRING, GITVERSION);
 
@@ -691,7 +691,12 @@ static bool handleEvent(uiEvent_t *ev)
 {
 	displayLightTrigger();
 
-	if (KEYCHECK_SHORTUP(ev->keys, KEY_RED))
+	if (KEYCHECK_SHORTUP(ev->keys, KEY_RED)
+#if defined(PLATFORM_GD77S)
+			// There is no RED key on the GD-77S, use Orange button to exit the hotspot mode
+			|| ((ev->events & BUTTON_EVENT) && (ev->buttons & BUTTON_ORANGE))
+#endif
+	)
 	{
 		// Do not permit to leave HS in MMDVMHost mode, otherwise that will mess up the communication
 		// and MMDVMHost won't recover from that, sometimes.
@@ -1924,6 +1929,7 @@ static uint8_t setMode(volatile const uint8_t* data, uint8_t length)
 
 static void getVersion(void)
 {
+	char    buffer[80];
 	uint8_t buf[128];
 	uint8_t count = 0U;
 
@@ -1934,8 +1940,20 @@ static void getVersion(void)
 
 	count = 4U;
 
-	for (uint8_t i = 0U; HARDWARE[i] != 0x00U; i++, count++)
-		buf[count] = HARDWARE[i];
+	snprintf(buffer, sizeof(buffer), "%s (Radio:%s, Mode:%s)", HARDWARE,
+#if defined(PLATFORM_GD77)
+			"GD-77"
+#elif defined(PLATFORM_GD77S)
+			"GD-77S"
+#elif defined(PLATFORM_DM1801)
+			"DM-1801"
+#else
+			"Unknown"
+#endif
+			,(nonVolatileSettings.hotspotType == HOTSPOT_TYPE_MMDVM ? "MMDVM" : "BlueDV"));
+
+	for (uint8_t i = 0U; buffer[i] != 0x00U; i++, count++)
+		buf[count] = buffer[i];
 
 	buf[1U] = count;
 
