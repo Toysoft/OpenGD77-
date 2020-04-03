@@ -131,7 +131,9 @@ void settingsRestoreDefaultSettings(void)
 	nonVolatileSettings.displayContrast =
 #if defined(PLATFORM_DM1801)
 			0x0e; // 14
-#else
+#elif defined (PLATFORM_DM5R)
+			0x06;
+	#else
 			0x12; // 18
 #endif
 	nonVolatileSettings.initialMenuNumber =

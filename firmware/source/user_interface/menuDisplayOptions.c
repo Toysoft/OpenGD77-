@@ -26,8 +26,14 @@ static void handleEvent(uiEvent_t *ev);
 static void updateBacklightMode(uint8_t mode);
 
 static const int BACKLIGHT_MAX_TIMEOUT = 30;
-static const int CONTRAST_MAX_VALUE = 30;// Maximum value which still seems to be readable
-static const int CONTRAST_MIN_VALUE = 5;// Minimum value which still seems to be readable
+#if defined (PLATFORM_DM5R)
+	static const int CONTRAST_MAX_VALUE = 10;// Maximum value which still seems to be readable
+	static const int CONTRAST_MIN_VALUE = 0;// Minimum value which still seems to be readable
+#else
+	static const int CONTRAST_MAX_VALUE = 30;// Maximum value which still seems to be readable
+	static const int CONTRAST_MIN_VALUE = 5;// Minimum value which still seems to be readable
+#endif
+
 static const int BACKLIGHT_TIMEOUT_STEP = 5;
 static const int BACKLIGHT_MAX_PERCENTAGE = 100;
 static const int BACKLIGHT_PERCENTAGE_STEP = 10;
