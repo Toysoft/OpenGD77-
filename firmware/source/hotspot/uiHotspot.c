@@ -425,6 +425,11 @@ int menuHotspotMode(uiEvent_t *ev, bool isFirstRun)
 	}
 	else
 	{
+
+#if defined(PLATFORM_GD77S)
+		heartBeatActivityForGD77S(ev);
+#endif
+
 		if (ev->hasEvent)
 		{
 			if (handleEvent(ev) == false)
