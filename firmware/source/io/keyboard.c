@@ -83,15 +83,15 @@ static const char keypadAlphaMap[11][31] = {
 void fw_init_keyboard(void)
 {
 #if ! defined(PLATFORM_GD77S)
-	 port_pin_config_t config = {
-	      kPORT_PullUp,
-	      kPORT_FastSlewRate,
-	      kPORT_PassiveFilterDisable,
-	      kPORT_OpenDrainDisable,
-	      kPORT_LowDriveStrength,
-	      kPORT_MuxAsGpio,
+	port_pin_config_t config = {
+			kPORT_PullUp,
+			kPORT_FastSlewRate,
+			kPORT_PassiveFilterDisable,
+			kPORT_OpenDrainDisable,
+			kPORT_LowDriveStrength,
+			kPORT_MuxAsGpio,
 			kPORT_UnlockRegister
-	 };
+	};
 
     // column lines
 	PORT_SetPinMux(Port_Key_Col0, Pin_Key_Col0, kPORT_MuxAsGpio);
