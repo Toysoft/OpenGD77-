@@ -876,6 +876,10 @@ static void handleEvent(uiEvent_t *ev)
 				}
 
 #if defined(PLATFORM_GD77) || defined(PLATFORM_GD77S)
+				if ((trxGetMode() == RADIO_MODE_DIGITAL) && (getAudioAmpStatus() & AUDIO_AMP_MODE_RF))
+				{
+					clearActiveDMRID();
+				}
 				menuSystemSetCurrentMenu(MENU_CHANNEL_MODE);
 #endif
 				return;
@@ -883,6 +887,10 @@ static void handleEvent(uiEvent_t *ev)
 #if defined(PLATFORM_DM1801)
 			else if (KEYCHECK_SHORTUP(ev->keys, KEY_VFO_MR))
 			{
+				if ((trxGetMode() == RADIO_MODE_DIGITAL) && (getAudioAmpStatus() & AUDIO_AMP_MODE_RF))
+				{
+					clearActiveDMRID();
+				}
 				menuSystemSetCurrentMenu(MENU_CHANNEL_MODE);
 				return;
 			}
