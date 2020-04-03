@@ -130,24 +130,8 @@ void fw_main_task(void *data)
 	if (buttons & BUTTON_SK2)
 	{
 		settingsRestoreDefaultSettings();
-
 	}
 
-#if defined(PLATFORM_GD77S)
-	if (buttons & BUTTON_SK1)
-	{
-		nonVolatileSettings.hotspotType = HOTSPOT_TYPE_MMDVM;
-		settingsSaveSettings(false);
-	}
-	else
-	{
-		if (buttons & BUTTON_SK2)
-		{
-			nonVolatileSettings.hotspotType = HOTSPOT_TYPE_BLUEDV;
-			settingsSaveSettings(false);
-		}
-	}
-#endif
     settingsLoadSettings();
 
 	fw_init_display(nonVolatileSettings.displayInverseVideo);
@@ -212,7 +196,6 @@ void fw_main_task(void *data)
 
     fw_init_beep_task();
 
-
 #if defined(USE_SEGGER_RTT)
     SEGGER_RTT_ConfigUpBuffer(0, NULL, NULL, 0, SEGGER_RTT_MODE_NO_BLOCK_TRIM);
     SEGGER_RTT_printf(0,"Segger RTT initialised\n");
@@ -222,6 +205,14 @@ void fw_main_task(void *data)
     codeplugInitContactsCache();
     dmrIDCacheInit();
     menuInitMenuSystem();
+
+#if defined(PLATFORM_GD77S)
+    // Change hotspot modem type setting
+	if (buttons & BUTTON_SK1)
+	{
+		nonVolatileSettings.hotspotType = (buttons & BUTTON_PTT) ? HOTSPOT_TYPE_BLUEDV : HOTSPOT_TYPE_MMDVM;
+	}
+#endif
 
     while (1U)
     {
