@@ -106,6 +106,10 @@ void menuAcceptPrivateCall(int id);
 
 void menuHotspotRestoreSettings(void);
 
+#if defined(PLATFORM_GD77S)
+void heartBeatActivityForGD77S(uiEvent_t *ev);
+#endif
+
 
 /*
  * ---------------------- IMPORTANT ----------------------------
