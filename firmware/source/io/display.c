@@ -115,7 +115,7 @@ bool fw_displayIsBacklightLit(void)
 	return false;
 #else
 #ifdef DISPLAY_LED_PWM
-	uint32_t cnv  = BOARD_FTM_BASEADDR->CONTROLS[BOARD_FTM_CHANNEL].CnV;
+	uint32_t cnv = BOARD_FTM_BASEADDR->CONTROLS[BOARD_FTM_CHANNEL].CnV;
 	uint32_t mod = BOARD_FTM_BASEADDR->MOD;
 	uint32_t dutyCyclePercent = 0;
 
