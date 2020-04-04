@@ -32,6 +32,7 @@ int txstopdelay = 0;
 volatile bool trxIsTransmittingTone = false;
 static uint16_t txPower;
 static bool analogSignalReceived = false;
+static bool digitalSignalReceived = false;
 
 int trxCurrentBand[2] = {RADIO_BAND_VHF,RADIO_BAND_VHF};// Rx and Tx band.
 
@@ -269,7 +270,26 @@ void trxCheckDigitalSquelch(void)
 			squelch =  TRX_SQUELCH_MAX - (((nonVolatileSettings.squelchDefaults[trxCurrentBand[TRX_RX_FREQ_BAND]])*11)>>2);
 		}
 
+#if 0
 		GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, (trxRxNoise < squelch));
+#else
+		if (trxRxNoise < squelch)
+		{
+			if(!digitalSignalReceived)
+			{
+				digitalSignalReceived = true;
+				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
+			}
+		}
+		else
+		{
+			if (digitalSignalReceived)
+			{
+				digitalSignalReceived = false;
+				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
+			}
+		}
+#endif
 
 		trx_measure_count=0;
 	}
@@ -296,7 +316,6 @@ void trx_check_analog_squelch(void)
 
 		if (trxRxNoise < squelch)
 		{
-
 			if(!analogSignalReceived)
 			{
 				analogSignalReceived = true;
@@ -306,8 +325,11 @@ void trx_check_analog_squelch(void)
 		}
 		else
 		{
-			analogSignalReceived=false;
-			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
+			if(analogSignalReceived)
+			{
+				analogSignalReceived=false;
+				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
+			}
 		}
 
 

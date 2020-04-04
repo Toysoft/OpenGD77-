@@ -545,29 +545,41 @@ void heartBeatActivityForGD77S(uiEvent_t *ev)
 	static uint8_t        beatRoll = 0;
 	static uint32_t       mTime = 0;
 
-	return;
-
-	if (trxIsTransmitting || (GPIO_PinRead(GPIO_LEDgreen, Pin_LEDgreen)) || ev->hasEvent || (getAudioAmpStatus() & AUDIO_AMP_MODE_RF))
+	// <paranoid_mode>
+	//   We use real time GPIO readouts, as LED could be turned on/off by another task.
+	// </paranoid_mode>
+	if ((GPIO_PinRead(GPIO_LEDred, Pin_LEDred) || GPIO_PinRead(GPIO_LEDgreen, Pin_LEDgreen)) // Any led is ON
+			&& (trxIsTransmitting || (getAudioAmpStatus() & AUDIO_AMP_MODE_RF) || ev->hasEvent)) // we're transmitting, or receiving, or user interaction.
 	{
 		// Turn off the red LED, if not transmitting
-		if ((GPIO_PinRead(GPIO_LEDred, Pin_LEDred)) && (trxIsTransmitting == false))
+		if (GPIO_PinRead(GPIO_LEDred, Pin_LEDred) && (trxIsTransmitting == false))
 		{
 			GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
 		}
 
+		// Turn off the green LED, if not receiving
+		if (GPIO_PinRead(GPIO_LEDgreen, Pin_LEDgreen) && trxIsTransmitting)
+		{
+			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
+		}
+
+		// Reset pattern sequence
 		beatRoll = 0;
+		// And update the timer for the next first starting (OFF for 5 seconds) blink sequence.
 		mTime = ev->time;
 		return;
 	}
 
+	// Nothing is happening, blink
 	if ((!trxIsTransmitting) && (!(ev->hasEvent) || (!(getAudioAmpStatus() & AUDIO_AMP_MODE_RF))))
 	{
-		// Blink
+		// Blink both LEDs to have Orange color
 		if ((ev->time - mTime) > periods[beatRoll])
 		{
 			mTime = ev->time;
 			beatRoll = (beatRoll + 1) % (sizeof(periods) / sizeof(periods[0]));
 			GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, (beatRoll % 2));
+			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, (beatRoll % 2));
 		}
 	}
 }
