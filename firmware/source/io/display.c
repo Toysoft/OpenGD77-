@@ -115,7 +115,20 @@ bool fw_displayIsBacklightLit(void)
 	return false;
 #else
 #ifdef DISPLAY_LED_PWM
-	return (BOARD_FTM_BASEADDR->CONTROLS[BOARD_FTM_CHANNEL].CnV != 0);
+	uint32_t cnv  = BOARD_FTM_BASEADDR->CONTROLS[BOARD_FTM_CHANNEL].CnV;
+	uint32_t mod = BOARD_FTM_BASEADDR->MOD;
+	uint32_t dutyCyclePercent = 0;
+
+	// Calculate dutyCyclePercent value
+	if (cnv == (mod + 1))
+	{
+		dutyCyclePercent = 100;
+	}
+	else
+	{
+		dutyCyclePercent = (uint32_t)((((float)cnv / (float)mod) * 100.0) + 0.5);
+	}
+	return (dutyCyclePercent != nonVolatileSettings.displayBacklightPercentageOff);
 #else
 	return (GPIO_PinRead(GPIO_Display_Light, Pin_Display_Light) == 1);
 #endif
