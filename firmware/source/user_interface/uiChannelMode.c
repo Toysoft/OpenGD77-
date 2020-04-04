@@ -104,6 +104,11 @@ int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 	}
 	else
 	{
+
+#if defined(PLATFORM_GD77S)
+		heartBeatActivityForGD77S(ev);
+#endif
+
 		if (ev->events == NO_EVENT)
 		{
 #if defined(PLATFORM_GD77S)
@@ -534,6 +539,39 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 }
 
 #if defined(PLATFORM_GD77S)
+void heartBeatActivityForGD77S(uiEvent_t *ev)
+{
+	static const uint32_t periods[] = { 5000, 100, 100, 100, 100, 100 };
+	static uint8_t        beatRoll = 0;
+	static uint32_t       mTime = 0;
+
+	return;
+
+	if (trxIsTransmitting || (GPIO_PinRead(GPIO_LEDgreen, Pin_LEDgreen)) || ev->hasEvent || (getAudioAmpStatus() & AUDIO_AMP_MODE_RF))
+	{
+		// Turn off the red LED, if not transmitting
+		if ((GPIO_PinRead(GPIO_LEDred, Pin_LEDred)) && (trxIsTransmitting == false))
+		{
+			GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
+		}
+
+		beatRoll = 0;
+		mTime = ev->time;
+		return;
+	}
+
+	if ((!trxIsTransmitting) && (!(ev->hasEvent) || (!(getAudioAmpStatus() & AUDIO_AMP_MODE_RF))))
+	{
+		// Blink
+		if ((ev->time - mTime) > periods[beatRoll])
+		{
+			mTime = ev->time;
+			beatRoll = (beatRoll + 1) % (sizeof(periods) / sizeof(periods[0]));
+			GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, (beatRoll % 2));
+		}
+	}
+}
+
 static uint16_t getCurrentChannelInCurrentZone(void)
 {
 	return (currentZone.NOT_IN_MEMORY_isAllChannelsZone ? nonVolatileSettings.currentChannelIndexInAllZone : nonVolatileSettings.currentChannelIndexInZone + 1);
