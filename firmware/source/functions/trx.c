@@ -270,9 +270,6 @@ void trxCheckDigitalSquelch(void)
 			squelch =  TRX_SQUELCH_MAX - (((nonVolatileSettings.squelchDefaults[trxCurrentBand[TRX_RX_FREQ_BAND]])*11)>>2);
 		}
 
-#if 0
-		GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, (trxRxNoise < squelch));
-#else
 		if (trxRxNoise < squelch)
 		{
 			if(!digitalSignalReceived)
@@ -289,7 +286,6 @@ void trxCheckDigitalSquelch(void)
 				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
 			}
 		}
-#endif
 
 		trx_measure_count=0;
 	}
