@@ -1334,11 +1334,7 @@ void drawRSSIBarGraph(void)
 	{
 		barGraphLength=123;
 	}
-#if defined(PLATFORM_DM5R)
-	ucFillRect(0, BAR_Y_POS,barGraphLength,3,false);
-#else
 	ucFillRect(0, BAR_Y_POS,barGraphLength,4,false);
-#endif
 	trxRxSignal=0;
 }
 
