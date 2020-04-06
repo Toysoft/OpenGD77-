@@ -1396,7 +1396,6 @@ void printToneAndSquelch(void)
 		}
 #if defined(PLATFORM_DM5R)
 		ucPrintCentered(13, buf, FONT_SIZE_1);
-
 		snprintf(buf, 24, "SQL:%d%%", 5*(((currentChannelData->sql == 0) ? nonVolatileSettings.squelchDefaults[trxCurrentBand[TRX_RX_FREQ_BAND]] : currentChannelData->sql)-1));
 		ucPrintCentered(21 + 1, buf, FONT_SIZE_1);
 #else
@@ -1410,6 +1409,11 @@ void printToneAndSquelch(void)
 
 void printFrequency(bool isTX, bool hasFocus, uint8_t y, uint32_t frequency, bool displayVFOChannel, bool isScanMode)
 {
+#if defined(PLATFORM_DM5R)
+const int VFO_LETTER_Y_OFFSET = 0;// This is the different in height of the SIZE_1 and SIZE_3 fonts
+#else
+const int VFO_LETTER_Y_OFFSET = 8;// This is the different in height of the SIZE_1 and SIZE_3 fonts
+#endif
 	static const int bufferLen = 17;
 	char buffer[bufferLen];
 	int val_before_dp = frequency / 100000;
@@ -1418,35 +1422,17 @@ void printFrequency(bool isTX, bool hasFocus, uint8_t y, uint32_t frequency, boo
 	// Focus + direction
 	snprintf(buffer, bufferLen, "%c%c", ((hasFocus && !isScanMode)? '>' : ' '), (isTX ? 'T' : 'R'));
 
-#if defined(PLATFORM_DM5R)
-	ucPrintAt(0, y - 1, buffer, FONT_SIZE_1_BOLD);
-#else
 	ucPrintAt(0, y, buffer, FONT_SIZE_3);
-#endif
-
 	// VFO
 	if (displayVFOChannel)
 	{
-#if defined(PLATFORM_DM5R)
-		ucPrintAt(12, y, (nonVolatileSettings.currentVFONumber == 0) ? "A" : "B", FONT_SIZE_1);
-#else
-		ucPrintAt(16, y + 8, (nonVolatileSettings.currentVFONumber == 0) ? "A" : "B", FONT_SIZE_1);
-#endif
+		ucPrintAt(16, y + VFO_LETTER_Y_OFFSET, (nonVolatileSettings.currentVFONumber == 0) ? "A" : "B", FONT_SIZE_1);
 	}
 	// Frequency
 	snprintf(buffer, bufferLen, "%d.%05d", val_before_dp, val_after_dp);
 	buffer[bufferLen - 1] = 0;
-#if defined(PLATFORM_DM5R)
-	ucPrintAt(FREQUENCY_X_POS, y, buffer, FONT_SIZE_2);
-#else
 	ucPrintAt(FREQUENCY_X_POS, y, buffer, FONT_SIZE_3);
-#endif
-	// Unit
-#if defined(PLATFORM_DM5R)
-	ucPrintAt(128 - (3 * 8), y, "MHz", FONT_SIZE_2);
-#else
 	ucPrintAt(128 - (3 * 8), y, "MHz", FONT_SIZE_3);
-#endif
 }
 
 void reset_freq_enter_digits(void)
