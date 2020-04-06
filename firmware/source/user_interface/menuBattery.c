@@ -185,9 +185,9 @@ static void updateScreen(bool forceRedraw)
 				}
 
 #if defined(PLATFORM_DM5R)
-				ucPrintAt(20, 16, buffer, FONT_16x32);
+				ucPrintAt(20, 16, buffer, FONT_SIZE_4);
 #else
-				ucPrintAt(20, 22, buffer, FONT_16x32);
+				ucPrintAt(20, 22, buffer, FONT_SIZE_4);
 #endif
 
 				uint32_t h = (uint32_t)(((averageBatteryVoltage - CUTOFF_VOLTAGE_UPPER_HYST) * MAX_BATTERY_BAR_HEIGHT) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));
@@ -263,9 +263,9 @@ static void updateScreen(bool forceRedraw)
 
 					// Min/Max Voltage ticks and values
 					ucDrawFastHLine(chartX - 6, (chartY + chartHeight) - minVH, 3, true);
-					ucPrintAt(chartX - 3 - 12 - 3, ((chartY + chartHeight) - minVH) - 3, "7V", FONT_6x8);
+					ucPrintAt(chartX - 3 - 12 - 3, ((chartY + chartHeight) - minVH) - 3, "7V", FONT_SIZE_1);
 					ucDrawFastHLine(chartX - 6, (chartY + chartHeight) - maxVH, 3, true);
-					ucPrintAt(chartX - 3 - 12 - 3, ((chartY + chartHeight) - maxVH) - 3, "8V", FONT_6x8);
+					ucPrintAt(chartX - 3 - 12 - 3, ((chartY + chartHeight) - maxVH) - 3, "8V", FONT_SIZE_1);
 
 					// Time ticks
 					for (uint8_t i = 0; i < chartWidth + 2; i += 22 /* ~ 15 minutes */)

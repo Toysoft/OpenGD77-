@@ -342,17 +342,17 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 				if (trxIsTransmitting)
 				{
 #if defined(PLATFORM_DM5R)
-					ucPrintCentered(28, buffer, FONT_8x8);
+					ucPrintCentered(28, buffer, FONT_SIZE_3);
 #else
-					ucPrintCentered(34, buffer, FONT_8x16);
+					ucPrintCentered(34, buffer, FONT_SIZE_3);
 #endif
 				}
 				else
 				{
 #if defined(PLATFORM_DM5R)
-					ucPrintCentered(CONTACT_Y_POS + 2, buffer, FONT_8x8);
+					ucPrintCentered(CONTACT_Y_POS + 2, buffer, FONT_SIZE_3);
 #else
-					ucPrintCentered(CONTACT_Y_POS, buffer, FONT_8x16);
+					ucPrintCentered(CONTACT_Y_POS, buffer, FONT_SIZE_3);
 #endif
 				}
 			}
@@ -373,9 +373,9 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					buffer[8] = 0; // Avoid overlap with bargraph
 					// Center squelch word between col0 and bargraph, if possible.
 #if defined(PLATFORM_DM5R)
-					ucPrintAt(0 + ((strlen(buffer) * 8) < xbar - 2 ? (((xbar - 2) - (strlen(buffer) * 8)) >> 1) : 0), 16, buffer, FONT_8x8);
+					ucPrintAt(0 + ((strlen(buffer) * 8) < xbar - 2 ? (((xbar - 2) - (strlen(buffer) * 8)) >> 1) : 0), 16, buffer, FONT_SIZE_3);
 #else
-					ucPrintAt(0 + ((strlen(buffer) * 8) < xbar - 2 ? (((xbar - 2) - (strlen(buffer) * 8)) >> 1) : 0), 16, buffer, FONT_8x16);
+					ucPrintAt(0 + ((strlen(buffer) * 8) < xbar - 2 ? (((xbar - 2) - (strlen(buffer) * 8)) >> 1) : 0), 16, buffer, FONT_SIZE_3);
 #endif
 
 					int bargraph = 1 + ((currentChannelData->sql - 1) * 5) /2;
@@ -398,7 +398,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 				if(toneScanActive == true)
 				{
 					sprintf(buffer, "CTCSS %3d.%dHz", TRX_CTCSSTones[scanIndex] / 10, TRX_CTCSSTones[scanIndex] % 10);
-					ucPrintCentered(16, buffer, FONT_8x16);
+					ucPrintCentered(16, buffer, FONT_SIZE_3);
 				}
 
 			}
@@ -431,9 +431,9 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 
 					snprintf(buffer, bufferLen, " %d ", txTimeSecs);
 #if defined(PLATFORM_DM5R)
-					ucPrintCentered(TX_TIMER_Y_OFFSET, buffer, FONT_8x16);
+					ucPrintCentered(TX_TIMER_Y_OFFSET, buffer, FONT_SIZE_4);
 #else
-					ucPrintCentered(TX_TIMER_Y_OFFSET, buffer, FONT_16x32);
+					ucPrintCentered(TX_TIMER_Y_OFFSET, buffer, FONT_SIZE_4);
 #endif
 				}
 
@@ -451,16 +451,16 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					snprintf(buffer, bufferLen, "%d.%03d", nonVolatileSettings.vfoScanLow[nonVolatileSettings.currentVFONumber] / 100000, (nonVolatileSettings.vfoScanLow[nonVolatileSettings.currentVFONumber] - (nonVolatileSettings.vfoScanLow[nonVolatileSettings.currentVFONumber] / 100000) * 100000)/100);
 					buffer[bufferLen - 1] = 0;
 #if defined(PLATFORM_DM5R)
-					ucPrintAt(2, 40, buffer, FONT_8x8);
+					ucPrintAt(2, 40, buffer, FONT_SIZE_3);
 #else
-					ucPrintAt(2, 48, buffer, FONT_8x16);
+					ucPrintAt(2, 48, buffer, FONT_SIZE_3);
 #endif
 					snprintf(buffer, bufferLen, "%d.%03d", nonVolatileSettings.vfoScanHigh[nonVolatileSettings.currentVFONumber] / 100000, (nonVolatileSettings.vfoScanHigh[nonVolatileSettings.currentVFONumber] - (nonVolatileSettings.vfoScanHigh[nonVolatileSettings.currentVFONumber] / 100000) * 100000)/100);
 					buffer[bufferLen - 1] = 0;
 #if defined(PLATFORM_DM5R)
-					ucPrintAt(128 - ((7 * 8) + 2), 40, buffer, FONT_8x16);
+					ucPrintAt(128 - ((7 * 8) + 2), 40, buffer, FONT_SIZE_3);
 #else
-					ucPrintAt(128 - ((7 * 8) + 2), 48, buffer, FONT_8x16);
+					ucPrintAt(128 - ((7 * 8) + 2), 48, buffer, FONT_SIZE_3);
 #endif
 					// Scanning direction arrow
 					static const int scanDirArrow[2][6] = {
@@ -483,12 +483,12 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					snprintf(buffer, bufferLen, "%c%c%c.%c%c%c%c%c", freq_enter_digits[0], freq_enter_digits[1], freq_enter_digits[2],
 							freq_enter_digits[3], freq_enter_digits[4], freq_enter_digits[5], freq_enter_digits[6], freq_enter_digits[7]);
 
-					ucPrintCentered((selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX) ? 40 : 24, buffer, FONT_8x16);
+					ucPrintCentered((selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX) ? 40 : 24, buffer, FONT_SIZE_3);
 #else
 					snprintf(buffer, bufferLen, "%c%c%c.%c%c%c%c%c MHz", freq_enter_digits[0], freq_enter_digits[1], freq_enter_digits[2],
 							freq_enter_digits[3], freq_enter_digits[4], freq_enter_digits[5], freq_enter_digits[6], freq_enter_digits[7]);
 
-					ucPrintCentered((selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX) ? 48 : 32, buffer, FONT_8x16);
+					ucPrintCentered((selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX) ? 48 : 32, buffer, FONT_SIZE_3);
 #endif
 					// Cursor
 					if (freq_enter_idx < 8)
@@ -502,11 +502,11 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					uint8_t hiX = 128 - ((7 * 8) + 2);
 
 #if defined(PLATFORM_DM5R)
-					ucPrintAt(5, 24, "Low", FONT_8x8);
+					ucPrintAt(5, 24, "Low", FONT_SIZE_3);
 					ucDrawFastVLine(0, 29, 24, true);
 					ucDrawFastHLine(1, 40, 57, true);
 #else
-					ucPrintAt(5, 32, "Low", FONT_8x16);
+					ucPrintAt(5, 32, "Low", FONT_SIZE_3);
 					ucDrawFastVLine(0, 37, 24, true);
 					ucDrawFastHLine(1, 48, 57, true);
 #endif
@@ -514,13 +514,13 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					sprintf(buffer, "%c%c%c.%c%c%c", freq_enter_digits[0], freq_enter_digits[1], freq_enter_digits[2],
 													 freq_enter_digits[3], freq_enter_digits[4], freq_enter_digits[5]);
 #if defined(PLATFORM_DM5R)
-					ucPrintAt(2, 40, buffer, FONT_8x8);
-					ucPrintAt(73, 24, "High", FONT_8x8);
+					ucPrintAt(2, 40, buffer, FONT_SIZE_3);
+					ucPrintAt(73, 24, "High", FONT_SIZE_3);
 					ucDrawFastVLine(68, 29, 24, true);
 					ucDrawFastHLine(69, 40, 57, true);
 #else
-					ucPrintAt(2, 48, buffer, FONT_8x16);
-					ucPrintAt(73, 32, "High", FONT_8x16);
+					ucPrintAt(2, 48, buffer, FONT_SIZE_3);
+					ucPrintAt(73, 32, "High", FONT_SIZE_3);
 					ucDrawFastVLine(68, 37, 24, true);
 					ucDrawFastHLine(69, 48, 57, true);
 #endif
@@ -528,9 +528,9 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					sprintf(buffer, "%c%c%c.%c%c%c", freq_enter_digits[6], freq_enter_digits[7], freq_enter_digits[8],
 													 freq_enter_digits[9], freq_enter_digits[10], freq_enter_digits[11]);
 #if defined(PLATFORM_DM5R)
-					ucPrintAt(hiX, 40, buffer, FONT_8x8);
+					ucPrintAt(hiX, 40, buffer, FONT_SIZE_3);
 #else
-					ucPrintAt(hiX, 48, buffer, FONT_8x16);
+					ucPrintAt(hiX, 48, buffer, FONT_SIZE_3);
 #endif
 					// Cursor
 					if (freq_enter_idx < 12)

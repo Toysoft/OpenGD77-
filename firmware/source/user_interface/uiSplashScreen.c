@@ -69,13 +69,13 @@ static void updateScreen(void)
 	{
 		ucClearBuf();
 #if defined(PLATFORM_DM5R)
-		ucPrintCentered(0, "OpenGD77", FONT_8x16);
-		ucPrintCentered(16, line1, FONT_8x16);
-		ucPrintCentered(32, line2, FONT_8x16);
+		ucPrintCentered(0, "OpenDM5R", FONT_SIZE_3);
+		ucPrintCentered(16, line1, FONT_SIZE_3);
+		ucPrintCentered(32, line2, FONT_SIZE_3);
 #else
-		ucPrintCentered(10, "OpenGD77", FONT_8x16);
-		ucPrintCentered(28, line1, FONT_8x16);
-		ucPrintCentered(42, line2, FONT_8x16);
+		ucPrintCentered(10, "OpenGD77", FONT_SIZE_3);
+		ucPrintCentered(28, line1, FONT_SIZE_3);
+		ucPrintCentered(42, line2, FONT_SIZE_3);
 #endif
 	}
 

@@ -60,15 +60,11 @@ static void updateScreen(void)
 	ucClearBuf();
 	menuDisplayTitle(currentLanguage->credits);
 
-#if defined(PLATFORM_DM5R)
-	for(int i=0;i<4;i++)
-#else
-	for(int i=0;i<6;i++)
-#endif
+	for(int i=0;i<NUM_LINES_PER_SCREEN;i++)
 	{
 		if ((i+currentDisplayIndex) < NUM_CREDITS)
 		{
-			ucPrintCentered(i*8 + 16,(char *)creditTexts[i+currentDisplayIndex], FONT_6x8);
+			ucPrintCentered(i*8 + 16,(char *)creditTexts[i+currentDisplayIndex], FONT_SIZE_1);
 		}
 	}
 	ucRender();

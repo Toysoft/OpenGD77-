@@ -107,22 +107,39 @@ int ucPrintCore(int16_t x, int16_t y, const char *szMsg, ucFont_t fontSize, ucTe
 
     switch(fontSize)
     {
-    	case FONT_6x8:
+#if defined(PLATFORM_DM5R)
+       	case FONT_SIZE_1:
     		currentFont = (uint8_t *) font_6x8;
     		break;
-    	case FONT_6x8_BOLD:
+    	case FONT_SIZE_1_BOLD:
 			currentFont = (uint8_t *) font_6x8_bold;
     		break;
-    	case FONT_8x8:
+    	case FONT_SIZE_2:
+    		currentFont = (uint8_t *) font_8x8;//font_8x8;
+    		break;
+    	case FONT_SIZE_3:
+    		currentFont = (uint8_t *) font_8x8;//font_8x16;
+			break;
+    	case FONT_SIZE_4:
+    		currentFont = (uint8_t *) font_8x16;// font_16x32;
+			break;
+#else
+    	case FONT_SIZE_1:
+    		currentFont = (uint8_t *) font_6x8;
+    		break;
+    	case FONT_SIZE_1_BOLD:
+			currentFont = (uint8_t *) font_6x8_bold;
+    		break;
+    	case FONT_SIZE_2:
     		currentFont = (uint8_t *) font_8x8;
     		break;
-    	case FONT_8x16:
+    	case FONT_SIZE_3:
     		currentFont = (uint8_t *) font_8x16;
 			break;
-    	case FONT_16x32:
+    	case FONT_SIZE_4:
     		currentFont = (uint8_t *) font_16x32;
 			break;
-
+#endif
     	default:
     		return -2;// Invalid font selected
     		break;
@@ -1016,9 +1033,9 @@ void ucDrawChoice(ucChoice_t choice, bool clearRegion)
 			x = 2;
 
 #if defined(PLATFORM_DM5R)
-		ucPrintAt(x, y, lText, FONT_8x8);
+		ucPrintAt(x, y, lText, FONT_SIZE_2);
 #else
-		ucPrintAt(x, y, lText, FONT_8x16);
+		ucPrintAt(x, y, lText, FONT_SIZE_3);
 #endif
 	}
 
@@ -1031,9 +1048,9 @@ void ucDrawChoice(ucChoice_t choice, bool clearRegion)
 			x = (126 - len);
 
 #if defined(PLATFORM_DM5R)
-		ucPrintAt(x, y, rText, FONT_8x8);
+		ucPrintAt(x, y, rText, FONT_SIZE_2);
 #else
-		ucPrintAt(x, y, rText, FONT_8x16);
+		ucPrintAt(x, y, rText, FONT_SIZE_3);
 #endif
 	}
 }

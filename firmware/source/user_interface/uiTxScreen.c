@@ -68,25 +68,25 @@ int menuTxScreen(uiEvent_t *ev, bool isFirstRun)
 			ucClearBuf();
 #if defined(PLATFORM_DM5R)
 			ucDrawRoundRectWithDropShadow(4, 4, 120, 42, 5, true);
-			ucPrintCentered(4, currentLanguage->error, FONT_16x32);
+			ucPrintCentered(4, currentLanguage->error, FONT_SIZE_4);
 #else
 			ucDrawRoundRectWithDropShadow(4, 4, 120, 58, 5, true);
-			ucPrintCentered(4, currentLanguage->error, FONT_16x32);
+			ucPrintCentered(4, currentLanguage->error, FONT_SIZE_4);
 #endif
 			if ((currentChannelData->flag4 & 0x04) != 0x00)
 			{
 #if defined(PLATFORM_DM5R)
-				ucPrintCentered(32, currentLanguage->rx_only, FONT_6x8);
+				ucPrintCentered(32, currentLanguage->rx_only, FONT_SIZE_3);
 #else
-				ucPrintCentered(40, currentLanguage->rx_only, FONT_8x16);
+				ucPrintCentered(40, currentLanguage->rx_only, FONT_SIZE_3);
 #endif
 			}
 			else
 			{
 #if defined(PLATFORM_DM5R)
-				ucPrintCentered(40, currentLanguage->out_of_band, FONT_6x8);
+				ucPrintCentered(40, currentLanguage->out_of_band, FONT_SIZE_3);
 #else
-				ucPrintCentered(40, currentLanguage->out_of_band, FONT_8x16);
+				ucPrintCentered(40, currentLanguage->out_of_band, FONT_SIZE_3);
 #endif
 			}
 			ucRender();
@@ -129,9 +129,9 @@ int menuTxScreen(uiEvent_t *ev, bool isFirstRun)
 					set_melody(melody_tx_timeout_beep);
 					ucClearBuf();
 #if defined(PLATFORM_DM5R)
-					ucPrintCentered(20, currentLanguage->timeout, FONT_8x16);
+					ucPrintCentered(20, currentLanguage->timeout, FONT_SIZE_4);
 #else
-					ucPrintCentered(20, currentLanguage->timeout, FONT_16x32);
+					ucPrintCentered(20, currentLanguage->timeout, FONT_SIZE_4);
 #endif
 					ucRender();
 					PTTToggledDown = false;

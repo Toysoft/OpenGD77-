@@ -38,8 +38,8 @@ int menuPowerOff(uiEvent_t *ev, bool isFirstRun)
 static void updateScreen(void)
 {
 	ucClearBuf();
-	ucPrintCentered(12, currentLanguage->power_off, FONT_8x16);
-	ucPrintCentered(32, "73", FONT_8x16);
+	ucPrintCentered(12, currentLanguage->power_off, FONT_SIZE_3);
+	ucPrintCentered(32, "73", FONT_SIZE_3);
 	ucRender();
 	displayLightTrigger();
 }

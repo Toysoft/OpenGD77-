@@ -33,7 +33,7 @@ typedef struct
 } uiEvent_t;
 
 #if defined(PLATFORM_DM5R)
-#define MENU_MAX_DISPLAYED_ENTRIES 2
+#define MENU_MAX_DISPLAYED_ENTRIES 3
 #else
 #define MENU_MAX_DISPLAYED_ENTRIES 3
 #endif

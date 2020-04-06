@@ -293,17 +293,29 @@ const menuItemNew_t menuDataContactContact [] = {
 void menuDisplayTitle(const char *title)
 {
 	ucDrawFastHLine(0, 13, 128, true);
-	ucPrintCore(0, 3, title, FONT_8x8, TEXT_ALIGN_CENTER, false);
+	ucPrintCore(0, 3, title, FONT_SIZE_2, TEXT_ALIGN_CENTER, false);
 }
 
 void menuDisplayEntry(int loopOffset, int focusedItem,const char *entryText)
 {
+#if defined(PLATFORM_DM5R)
+const int FONT_SIZE_3_HEIGHT = 10;
+const int MENU_START_Y = 28;
+const int HIGHLIGHT_START_Y = 27;
+#else
+const int FONT_SIZE_3_HEIGHT = 16;
+const int MENU_START_Y = 32;
+const int HIGHLIGHT_START_Y = 32;
+#endif
+
 	bool focused = (focusedItem == gMenusCurrentItemIndex);
 
 	if (focused)
-		ucFillRoundRect(0, (loopOffset + 2) * 16, 128, 16, 2, true);
+	{
+		ucFillRoundRect(0, HIGHLIGHT_START_Y +  (loopOffset * FONT_SIZE_3_HEIGHT), 128, FONT_SIZE_3_HEIGHT, 2, true);
+	}
 
-	ucPrintCore(0, (loopOffset + 2) * 16, entryText, FONT_8x16, TEXT_ALIGN_LEFT, focused);
+	ucPrintCore(0,  MENU_START_Y +  (loopOffset * FONT_SIZE_3_HEIGHT), entryText, FONT_SIZE_3, TEXT_ALIGN_LEFT, focused);
 }
 
 int menuGetMenuOffset(int maxMenuEntries, int loopOffset)

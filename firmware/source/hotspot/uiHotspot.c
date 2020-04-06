@@ -416,9 +416,9 @@ int menuHotspotMode(uiEvent_t *ev, bool isFirstRun)
 		}
 
 		ucClearBuf();
-		ucPrintCentered(0, "Hotspot", FONT_8x16);
-		ucPrintCentered(32, "Waiting for", FONT_8x16);
-		ucPrintCentered(48, "Pi-Star", FONT_8x16);
+		ucPrintCentered(0, "Hotspot", FONT_SIZE_3);
+		ucPrintCentered(32, "Waiting for", FONT_SIZE_3);
+		ucPrintCentered(48, "Pi-Star", FONT_SIZE_3);
 		ucRender();
 
 		displayLightTrigger();
@@ -481,7 +481,7 @@ static void displayContactInfo(uint8_t y, char *text, size_t maxLen)
 			// Callsign found
 			memcpy(buffer, text, cpos);
 			buffer[cpos] = 0;
-			ucPrintCentered(y, chomp(buffer), FONT_8x16);
+			ucPrintCentered(y, chomp(buffer), FONT_SIZE_3);
 		}
 		else
 		{
@@ -489,14 +489,14 @@ static void displayContactInfo(uint8_t y, char *text, size_t maxLen)
 			memcpy(buffer, text, 16);
 			buffer[16] = 0;
 
-			ucPrintCentered(y, chomp(buffer), FONT_8x16);
+			ucPrintCentered(y, chomp(buffer), FONT_SIZE_3);
 		}
 	}
 	else
 	{
 		memcpy(buffer, text, strlen(text));
 		buffer[strlen(text)] = 0;
-		ucPrintCentered(y, chomp(buffer), FONT_8x16);
+		ucPrintCentered(y, chomp(buffer), FONT_SIZE_3);
 	}
 }
 
@@ -504,7 +504,7 @@ static void updateContactLine(uint8_t y)
 {
 	if ((LinkHead->talkGroupOrPcId >> 24) == PC_CALL_FLAG) // Its a Private call
 	{
-		ucPrintCentered(y, LinkHead->contact, FONT_8x16);
+		ucPrintCentered(y, LinkHead->contact, FONT_SIZE_3);
 	}
 	else // Group call
 	{
@@ -549,8 +549,8 @@ static void updateScreen(uint8_t rxCommandState)
 	currentRxCommandState = rxCommandState;
 
 	ucClearBuf();
-	ucPrintAt(4, 4, "DMR", FONT_6x8);
-	ucPrintCentered(0, "Hotspot", FONT_8x16);
+	ucPrintAt(4, 4, "DMR", FONT_SIZE_1);
+	ucPrintCentered(0, "Hotspot", FONT_SIZE_3);
 
 	int  batteryPerentage = (int)(((averageBatteryVoltage - CUTOFF_VOLTAGE_UPPER_HYST) * 100) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));
 	if (batteryPerentage > 100)
@@ -565,7 +565,7 @@ static void updateScreen(uint8_t rxCommandState)
 	snprintf(buffer, bufferLen, "%d%%", batteryPerentage);
 	buffer[bufferLen - 1] = 0;
 
-	ucPrintAt(128 - (strlen(buffer) * 6) - 4, 4, buffer, FONT_6x8);
+	ucPrintAt(128 - (strlen(buffer) * 6) - 4, 4, buffer, FONT_SIZE_1);
 
 	if (trxIsTransmitting)
 	{
@@ -573,14 +573,14 @@ static void updateScreen(uint8_t rxCommandState)
 		{
 			snprintf(buffer, 22U, "%s", &HOTSPOT_VERSION_STRING[16]);
 			buffer[21U] = 0;
-			ucPrintCentered(16 + 4, buffer, FONT_6x8);
+			ucPrintCentered(16 + 4, buffer, FONT_SIZE_1);
 		}
 		else
 		{
 			if (cwKeying)
 			{
 				sprintf(buffer, "%s", "<Tx CW ID>");
-				ucPrintCentered(16, buffer, FONT_8x16);
+				ucPrintCentered(16, buffer, FONT_SIZE_3);
 			}
 			else
 			{
@@ -605,7 +605,7 @@ static void updateScreen(uint8_t rxCommandState)
 			buffer[bufferLen - 1] = 0;
 		}
 
-		ucPrintCentered(32, buffer, FONT_8x16);
+		ucPrintCentered(32, buffer, FONT_SIZE_3);
 
 		val_before_dp = freq_tx / 100000;
 		val_after_dp = freq_tx - val_before_dp * 100000;
@@ -635,7 +635,7 @@ static void updateScreen(uint8_t rxCommandState)
 				}
 			}
 
-			ucPrintCentered(16 + (displayFWVersion ? 4 : 0), buffer, (displayFWVersion ? FONT_6x8 : FONT_8x16));
+			ucPrintCentered(16 + (displayFWVersion ? 4 : 0), buffer, (displayFWVersion ? FONT_SIZE_1 : FONT_SIZE_3));
 
 			if (rxedDMR_LC.FLCO == 0)
 			{
@@ -647,7 +647,7 @@ static void updateScreen(uint8_t rxCommandState)
 			}
 			buffer[bufferLen - 1] = 0;
 
-			ucPrintCentered(32, buffer, FONT_8x16);
+			ucPrintCentered(32, buffer, FONT_SIZE_3);
 		}
 		else
 		{
@@ -656,19 +656,19 @@ static void updateScreen(uint8_t rxCommandState)
 			{
 				snprintf(buffer, 22U, "%s", &HOTSPOT_VERSION_STRING[16]);
 				buffer[21U] = 0;
-				ucPrintCentered(16 + 4, buffer, FONT_6x8);
+				ucPrintCentered(16 + 4, buffer, FONT_SIZE_1);
 			}
 			else
 			{
 				if (modemState == STATE_POCSAG)
 				{
-					ucPrintCentered(16, "<POCSAG>", FONT_8x16);
+					ucPrintCentered(16, "<POCSAG>", FONT_SIZE_3);
 				}
 				else
 				{
 					if (strlen(mmdvmQSOInfoIP))
 					{
-						ucPrintCentered(16 + 4, mmdvmQSOInfoIP, FONT_6x8);
+						ucPrintCentered(16 + 4, mmdvmQSOInfoIP, FONT_SIZE_1);
 					}
 				}
 			}
@@ -676,9 +676,9 @@ static void updateScreen(uint8_t rxCommandState)
 			snprintf(buffer, bufferLen, "CC:%d", trxGetDMRColourCode());//, trxGetDMRTimeSlot()+1) ;
 			buffer[bufferLen - 1] = 0;
 
-			ucPrintCore(0, 32, buffer, FONT_8x16, TEXT_ALIGN_LEFT, false);
+			ucPrintCore(0, 32, buffer, FONT_SIZE_3, TEXT_ALIGN_LEFT, false);
 
-			ucPrintCore(0, 32, (char *)POWER_LEVELS[hotspotPowerLevel], FONT_8x16, TEXT_ALIGN_RIGHT, false);
+			ucPrintCore(0, 32, (char *)POWER_LEVELS[hotspotPowerLevel], FONT_SIZE_3, TEXT_ALIGN_RIGHT, false);
 		}
 		val_before_dp = freq_rx / 100000;
 		val_after_dp = freq_rx - val_before_dp * 100000;
@@ -686,7 +686,7 @@ static void updateScreen(uint8_t rxCommandState)
 		buffer[bufferLen - 1] = 0;
 	}
 
-	ucPrintCentered(48, buffer, FONT_8x16);
+	ucPrintCentered(48, buffer, FONT_SIZE_3);
 	ucRender();
 
 	displayLightTrigger();

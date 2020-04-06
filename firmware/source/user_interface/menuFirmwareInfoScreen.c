@@ -45,23 +45,23 @@ static void updateScreen(void)
 	ucClearBuf();
 
 #if defined(PLATFORM_GD77)
-	ucPrintCentered(5, "OpenGD77", FONT_8x16);
+	ucPrintCentered(5, "OpenGD77", FONT_SIZE_3);
 #elif defined(PLATFORM_DM1801)
-	ucPrintCentered(5, "OpenDM1801", FONT_8x16);
+	ucPrintCentered(5, "OpenDM1801", FONT_SIZE_3);
 #elif defined(PLATFORM_DM5R)
-	ucPrintCentered(0, "OpenDM5R", FONT_8x16);
+	ucPrintCentered(0, "OpenDM5R", FONT_SIZE_3);
 #endif
 
 #if defined(PLATFORM_DM5R)
-	ucPrintCentered(16, currentLanguage->built, FONT_8x8);
-	ucPrintCentered(24,__TIME__, FONT_8x8);
-	ucPrintCentered(32,__DATE__, FONT_8x8);
-	ucPrintCentered(40, buf, FONT_8x8);
+	ucPrintCentered(16, currentLanguage->built, FONT_SIZE_2);
+	ucPrintCentered(24,__TIME__, FONT_SIZE_2);
+	ucPrintCentered(32,__DATE__, FONT_SIZE_2);
+	ucPrintCentered(40, buf, FONT_SIZE_2);
 #else
-	ucPrintCentered(24, currentLanguage->built, FONT_8x8);
-	ucPrintCentered(34,__TIME__, FONT_8x8);
-	ucPrintCentered(44,__DATE__, FONT_8x8);
-	ucPrintCentered(54, buf, FONT_8x8);
+	ucPrintCentered(24, currentLanguage->built, FONT_SIZE_2);
+	ucPrintCentered(34,__TIME__, FONT_SIZE_2);
+	ucPrintCentered(44,__DATE__, FONT_SIZE_2);
+	ucPrintCentered(54, buf, FONT_SIZE_2);
 #endif
 	ucRender();
 	displayLightTrigger();
