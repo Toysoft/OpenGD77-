@@ -973,8 +973,8 @@ static void handleEvent(uiEvent_t *ev)
 #endif
 				return;
 			}
-#if defined(PLATFORM_DM1801)
-			else if (KEYCHECK_SHORTUP(ev->keys, KEY_VFO_MR))
+#if defined(PLATFORM_DM1801) || defined(PLATFORM_DM5R)
+			else if (KEYCHECK_SHORTUP(ev->keys, KEY_VFO_MR) )
 			{
 				if ((trxGetMode() == RADIO_MODE_DIGITAL) && (getAudioAmpStatus() & AUDIO_AMP_MODE_RF))
 				{
@@ -983,6 +983,8 @@ static void handleEvent(uiEvent_t *ev)
 				menuSystemSetCurrentMenu(MENU_CHANNEL_MODE);
 				return;
 			}
+#endif
+#if defined(PLATFORM_DM1801)
 			else if (KEYCHECK_SHORTUP(ev->keys, KEY_A_B))
 			{
 				nonVolatileSettings.currentVFONumber = 1 - nonVolatileSettings.currentVFONumber;// Switch to other VFO
