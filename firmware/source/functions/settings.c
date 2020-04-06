@@ -56,6 +56,16 @@ bool settingsSaveSettings(bool includeVFOs)
 	return EEPROM_Write(STORAGE_BASE_ADDRESS, (uint8_t*)&nonVolatileSettings, sizeof(settingsStruct_t));
 }
 
+bool settingsPlatformSpecificSaveSettings(bool includeVFOs)
+{
+#if defined(PLATFORM_DM5R)
+	return settingsSaveSettings(includeVFOs);
+#else
+	return true;
+#endif
+}
+
+
 bool settingsLoadSettings(void)
 {
 	bool readOK = EEPROM_Read(STORAGE_BASE_ADDRESS, (uint8_t*)&nonVolatileSettings, sizeof(settingsStruct_t));

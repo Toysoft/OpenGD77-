@@ -100,5 +100,6 @@ bool settingsSaveSettings(bool includeVFOs);
 bool settingsLoadSettings(void);
 void settingsRestoreDefaultSettings(void);
 void settingsInitVFOChannel(int vfoNumber);
+bool settingsPlatformSpecificSaveSettings(bool includeVFOs);
 
 #endif

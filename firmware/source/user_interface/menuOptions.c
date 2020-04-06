@@ -323,10 +323,7 @@ static void handleEvent(uiEvent_t *ev)
 			settingsRestoreDefaultSettings();
 			watchdogReboot();
 		}
-#if defined(PLATFORM_DM5R)
-		// Save settings on exit
-		settingsSaveSettings(false);
-#endif
+		settingsPlatformSpecificSaveSettings(false);// Some platform require the settings to be saved immediately
 		menuSystemPopAllAndDisplayRootMenu();
 		return;
 	}
