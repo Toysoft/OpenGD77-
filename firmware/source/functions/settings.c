@@ -147,9 +147,9 @@ void settingsRestoreDefaultSettings(void)
 	nonVolatileSettings.txFreqLimited = true;// Limit Tx frequency to US Amateur bands
 	nonVolatileSettings.txPowerLevel=
 #if defined(PLATFORM_GD77S)
-			1; // 250mW
+			3; // 750mW
 #else
-			4; // 1 W
+			4; // 1 W   3:750  2:500  1:250
 #endif
 	nonVolatileSettings.overrideTG=0;// 0 = No override
 	nonVolatileSettings.txTimeoutBeepX5Secs = 0;
