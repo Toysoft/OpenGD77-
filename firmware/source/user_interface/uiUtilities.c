@@ -1203,16 +1203,16 @@ void menuUtilityRenderHeader(void)
 			}
 			ucPrintCore(0, Y_OFFSET, buffer, FONT_SIZE_1, TEXT_ALIGN_LEFT, scanBlinkPhase);
 
-			if ((currentChannelData->txTone!=65535)||(currentChannelData->rxTone!=65535))
+			if (codeplugChannelToneIsCTCSS(currentChannelData->txTone) || codeplugChannelToneIsCTCSS(currentChannelData->rxTone))
 			{
 				int rectWidth = 7;
 				strcpy(buffer, "C");
-				if (currentChannelData->txTone!=65535)
+				if (codeplugChannelToneIsCTCSS(currentChannelData->txTone))
 				{
 					rectWidth += 6;
 					strcat(buffer, "T");
 				}
-				if (currentChannelData->rxTone!=65535)
+				if (codeplugChannelToneIsCTCSS(currentChannelData->rxTone))
 				{
 					rectWidth += 6;
 					strcat(buffer, "R");
@@ -1375,7 +1375,7 @@ void printToneAndSquelch(void)
 	char buf[24];
 	if (trxGetMode() == RADIO_MODE_ANALOG)
 	{
-		if (currentChannelData->rxTone == TRX_CTCSS_TONE_NONE)
+		if (!codeplugChannelToneIsCTCSS(currentChannelData->rxTone))
 		{
 			snprintf(buf, 24, "CTCSS:%s|", currentLanguage->none);
 			buf[23] = 0;
@@ -1385,7 +1385,7 @@ void printToneAndSquelch(void)
 			snprintf(buf, 24, "CTCSS:%d.%dHz|", currentChannelData->rxTone / 10 , currentChannelData->rxTone % 10);
 		}
 
-		if (currentChannelData->txTone == TRX_CTCSS_TONE_NONE)
+		if (!codeplugChannelToneIsCTCSS(currentChannelData->txTone))
 		{
 			snprintf(buf, 24, "%s%s", buf, currentLanguage->none);
 			buf[23] = 0;
