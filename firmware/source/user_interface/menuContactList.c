@@ -99,6 +99,7 @@ static void updateScreen(void)
 
 		if (gMenusEndIndex == 0)
 		{
+
 #if defined(PLATFORM_DM5R)
 			ucPrintCentered(20, currentLanguage->empty_list, FONT_SIZE_3);
 #else

@@ -868,6 +868,7 @@ static void displayChannelNameOrRxFrequency(char *buffer, size_t maxLen)
 		snprintf(buffer, maxLen, "%d.%05d MHz", val_before_dp, val_after_dp);
 		buffer[maxLen - 1] = 0;
 	}
+
 #if defined(PLATFORM_DM5R)
 	ucPrintCentered(41, buffer, FONT_SIZE_1);
 #else
@@ -972,6 +973,7 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 			// Callsign found
 			memcpy(buffer, text, cpos);
 			buffer[cpos] = 0;
+
 #if defined(PLATFORM_DM5R)
 			ucPrintCentered(28, chomp(buffer), FONT_SIZE_3);
 #else
@@ -1002,7 +1004,6 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 #else
 			ucPrintCentered(32, chomp(buffer), FONT_SIZE_3);
 #endif
-
 			memcpy(buffer, text + 16, (maxLen - 16));
 			buffer[(strlen(text) - 16)] = 0;
 
@@ -1022,6 +1023,7 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 	{
 		memcpy(buffer, text, 17);
 		buffer[16] = 0;
+
 #if defined(PLATFORM_DM5R)
 		ucPrintCentered(24, chomp(buffer), FONT_SIZE_3);
 #else
@@ -1053,6 +1055,7 @@ void menuUtilityRenderQSOData(void)
 		{
 			// Its a Private call
 			ucPrintCentered(16, LinkHead->contact, FONT_SIZE_3);
+
 #if defined(PLATFORM_DM5R)
 			ucPrintCentered(24, currentLanguage->private_call, FONT_SIZE_2);
 #else
@@ -1094,6 +1097,7 @@ void menuUtilityRenderQSOData(void)
 #else
 				ucPrintCentered(CONTACT_Y_POS, LinkHead->talkgroup, FONT_SIZE_3);
 #endif
+
 			}
 
 			switch (nonVolatileSettings.contactDisplayPriority)
@@ -1394,6 +1398,7 @@ void printToneAndSquelch(void)
 		{
 			snprintf(buf, 24, "%s%d.%dHz", buf, currentChannelData->txTone / 10 , currentChannelData->txTone % 10);
 		}
+
 #if defined(PLATFORM_DM5R)
 		ucPrintCentered(13, buf, FONT_SIZE_1);
 		snprintf(buf, 24, "SQL:%d%%", 5*(((currentChannelData->sql == 0) ? nonVolatileSettings.squelchDefaults[trxCurrentBand[TRX_RX_FREQ_BAND]] : currentChannelData->sql)-1));
@@ -1404,6 +1409,7 @@ void printToneAndSquelch(void)
 		snprintf(buf, 24, "SQL:%d%%", 5*(((currentChannelData->sql == 0) ? nonVolatileSettings.squelchDefaults[trxCurrentBand[TRX_RX_FREQ_BAND]] : currentChannelData->sql)-1));
 		ucPrintCentered(24 + 1, buf, FONT_SIZE_1);
 #endif
+
 	}
 }
 

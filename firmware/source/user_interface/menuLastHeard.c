@@ -207,7 +207,6 @@ static void menuLastHeardDisplayTA(uint8_t y, char *text, uint32_t time, uint32_
 #else
 		ucPrintAt((128 - (3 * 6)), (y + 6)	, "min", FONT_SIZE_1);
 #endif
-
 		ucPrintAt((128 - (strlen(buffer) * 8) - (3 * 6) - 1), y, buffer, FONT_SIZE_3);
 	}
 	else // search for callsign + first name
@@ -227,6 +226,7 @@ static void menuLastHeardDisplayTA(uint8_t y, char *text, uint32_t time, uint32_
 
 					memcpy(buffer, text, cpos);
 					buffer[cpos] = 0;
+
 					ucPrintCentered(y, chomp(buffer), FONT_SIZE_3);
 				}
 				else // Nope, look for first name
@@ -250,6 +250,7 @@ static void menuLastHeardDisplayTA(uint8_t y, char *text, uint32_t time, uint32_
 
 						snprintf(outputBuf, 16, "%s %s", chomp(buffer), chomp(nameBuf));
 						outputBuf[16] = 0;
+
 						ucPrintCentered(y, chomp(outputBuf), FONT_SIZE_3);
 					}
 					else
@@ -263,6 +264,7 @@ static void menuLastHeardDisplayTA(uint8_t y, char *text, uint32_t time, uint32_
 
 						snprintf(outputBuf, 16, "%s %s", chomp(buffer), chomp(nameBuf));
 						outputBuf[16] = 0;
+
 						ucPrintCentered(y, chomp(outputBuf), FONT_SIZE_3);
 					}
 				}
@@ -272,6 +274,7 @@ static void menuLastHeardDisplayTA(uint8_t y, char *text, uint32_t time, uint32_
 				// No space found, use a chainsaw
 				memcpy(buffer, text, 16);
 				buffer[16] = 0;
+
 				ucPrintCentered(y, chomp(buffer), FONT_SIZE_3);
 			}
 		}
@@ -279,6 +282,7 @@ static void menuLastHeardDisplayTA(uint8_t y, char *text, uint32_t time, uint32_
 		{
 			memcpy(buffer, text, strlen(text));
 			buffer[strlen(text)] = 0;
+
 			ucPrintCentered(y, chomp(buffer), FONT_SIZE_3);
 		}
 	}

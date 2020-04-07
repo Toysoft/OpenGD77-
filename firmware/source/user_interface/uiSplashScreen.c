@@ -68,16 +68,21 @@ static void updateScreen(void)
 	if (!customDataHasImage)
 	{
 		ucClearBuf();
+
 #if defined(PLATFORM_DM5R)
 		ucPrintCentered(0, "OpenDM5R", FONT_SIZE_3);
 		ucPrintCentered(16, line1, FONT_SIZE_3);
 		ucPrintCentered(32, line2, FONT_SIZE_3);
 #else
+#if defined(PLATFORM_GD77)
 		ucPrintCentered(10, "OpenGD77", FONT_SIZE_3);
+#elif defined(PLATFORM_DM1801)
+		ucPrintCentered(10, "OpenDM1801", FONT_SIZE_3);
+#endif
 		ucPrintCentered(28, line1, FONT_SIZE_3);
 		ucPrintCentered(42, line2, FONT_SIZE_3);
 #endif
-	}
+}
 
 	ucRender();
 	displayLightTrigger();

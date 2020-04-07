@@ -464,6 +464,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 							snprintf(nameBuf, nameBufferLen, "%s Ch:%d",currentLanguage->all_channels, channelNumber);
 						}
 						nameBuf[nameBufferLen - 1] = 0;
+
 #if defined(PLATFORM_DM5R)
 						ucPrintCentered(40 , nameBuf, FONT_SIZE_1);
 #else
@@ -483,11 +484,13 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 							snprintf(nameBuf, nameBufferLen, "%s Ch:%d", currentZoneName,channelNumber);
 							nameBuf[nameBufferLen - 1] = 0;
 						}
+
 #if defined(PLATFORM_DM5R)
 						ucPrintCentered(40, (char *)nameBuf, FONT_SIZE_1);
 #else
 						ucPrintCentered(50, (char *)nameBuf, FONT_SIZE_1);
 #endif
+
 					}
 				}
 			}
@@ -495,6 +498,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 			if (!displayChannelSettings)
 			{
 				codeplugUtilConvertBufToString(channelScreenChannelData.name, nameBuf, 16);
+
 #if defined(PLATFORM_DM5R)
 				ucPrintCentered(24 + verticalPositionOffset, nameBuf, FONT_SIZE_3);
 #else
@@ -537,6 +541,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				{
 					codeplugUtilConvertBufToString(contactData.name, nameBuf, 16);
 				}
+
 #if defined(PLATFORM_DM5R)
 				ucPrintCentered(CONTACT_Y_POS + verticalPositionOffset + 2, nameBuf, FONT_SIZE_3);
 #else

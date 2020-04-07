@@ -372,12 +372,12 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					strncpy(buffer, currentLanguage->squelch, 9);
 					buffer[8] = 0; // Avoid overlap with bargraph
 					// Center squelch word between col0 and bargraph, if possible.
+
 #if defined(PLATFORM_DM5R)
 					ucPrintAt(0 + ((strlen(buffer) * 8) < xbar - 2 ? (((xbar - 2) - (strlen(buffer) * 8)) >> 1) : 0), 16, buffer, FONT_SIZE_3);
 #else
 					ucPrintAt(0 + ((strlen(buffer) * 8) < xbar - 2 ? (((xbar - 2) - (strlen(buffer) * 8)) >> 1) : 0), 16, buffer, FONT_SIZE_3);
 #endif
-
 					int bargraph = 1 + ((currentChannelData->sql - 1) * 5) /2;
 
 #if defined(PLATFORM_DM5R)
@@ -428,13 +428,8 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 						ucClearRows(2, 4, false);
 #endif
 					}
-
 					snprintf(buffer, bufferLen, " %d ", txTimeSecs);
-#if defined(PLATFORM_DM5R)
 					ucPrintCentered(TX_TIMER_Y_OFFSET, buffer, FONT_SIZE_4);
-#else
-					ucPrintCentered(TX_TIMER_Y_OFFSET, buffer, FONT_SIZE_4);
-#endif
 				}
 
 				if (screenOperationMode[nonVolatileSettings.currentVFONumber] == VFO_SCREEN_OPERATION_NORMAL)
@@ -450,6 +445,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					// Low/High scanning freqs
 					snprintf(buffer, bufferLen, "%d.%03d", nonVolatileSettings.vfoScanLow[nonVolatileSettings.currentVFONumber] / 100000, (nonVolatileSettings.vfoScanLow[nonVolatileSettings.currentVFONumber] - (nonVolatileSettings.vfoScanLow[nonVolatileSettings.currentVFONumber] / 100000) * 100000)/100);
 					buffer[bufferLen - 1] = 0;
+
 #if defined(PLATFORM_DM5R)
 					ucPrintAt(2, 40, buffer, FONT_SIZE_3);
 #else
@@ -513,6 +509,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 
 					sprintf(buffer, "%c%c%c.%c%c%c", freq_enter_digits[0], freq_enter_digits[1], freq_enter_digits[2],
 													 freq_enter_digits[3], freq_enter_digits[4], freq_enter_digits[5]);
+
 #if defined(PLATFORM_DM5R)
 					ucPrintAt(2, 40, buffer, FONT_SIZE_3);
 					ucPrintAt(73, 24, "High", FONT_SIZE_3);
@@ -527,6 +524,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 
 					sprintf(buffer, "%c%c%c.%c%c%c", freq_enter_digits[6], freq_enter_digits[7], freq_enter_digits[8],
 													 freq_enter_digits[9], freq_enter_digits[10], freq_enter_digits[11]);
+
 #if defined(PLATFORM_DM5R)
 					ucPrintAt(hiX, 40, buffer, FONT_SIZE_3);
 #else
@@ -545,7 +543,6 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 						yCursor = 48 + 14;
 #endif
 					}
-
 				}
 
 				if ((xCursor >= 0) && (yCursor >= 0))

@@ -128,11 +128,7 @@ int menuTxScreen(uiEvent_t *ev, bool isFirstRun)
 				{
 					set_melody(melody_tx_timeout_beep);
 					ucClearBuf();
-#if defined(PLATFORM_DM5R)
 					ucPrintCentered(20, currentLanguage->timeout, FONT_SIZE_4);
-#else
-					ucPrintCentered(20, currentLanguage->timeout, FONT_SIZE_4);
-#endif
 					ucRender();
 					PTTToggledDown = false;
 					mto = ev->time;

@@ -62,7 +62,9 @@ static void updateScreen(void)
 	ucPrintCentered(34,__TIME__, FONT_SIZE_2);
 	ucPrintCentered(44,__DATE__, FONT_SIZE_2);
 	ucPrintCentered(54, buf, FONT_SIZE_2);
+
 #endif
+
 	ucRender();
 	displayLightTrigger();
 }
