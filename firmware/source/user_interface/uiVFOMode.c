@@ -373,11 +373,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					buffer[8] = 0; // Avoid overlap with bargraph
 					// Center squelch word between col0 and bargraph, if possible.
 
-#if defined(PLATFORM_DM5R)
 					ucPrintAt(0 + ((strlen(buffer) * 8) < xbar - 2 ? (((xbar - 2) - (strlen(buffer) * 8)) >> 1) : 0), 16, buffer, FONT_SIZE_3);
-#else
-					ucPrintAt(0 + ((strlen(buffer) * 8) < xbar - 2 ? (((xbar - 2) - (strlen(buffer) * 8)) >> 1) : 0), 16, buffer, FONT_SIZE_3);
-#endif
 					int bargraph = 1 + ((currentChannelData->sql - 1) * 5) /2;
 
 #if defined(PLATFORM_DM5R)
