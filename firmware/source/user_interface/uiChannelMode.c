@@ -592,30 +592,63 @@ void heartBeatActivityForGD77S(uiEvent_t *ev)
 	static uint8_t        beatRoll = 0;
 	static uint32_t       mTime = 0;
 
-	return;
-
-	if (trxIsTransmitting || (GPIO_PinRead(GPIO_LEDgreen, Pin_LEDgreen)) || ev->hasEvent || (getAudioAmpStatus() & AUDIO_AMP_MODE_RF))
+	// <paranoid_mode>
+	//   We use real time GPIO readouts, as LED could be turned on/off by another task.
+	// </paranoid_mode>
+	if ((GPIO_PinRead(GPIO_LEDred, Pin_LEDred) || GPIO_PinRead(GPIO_LEDgreen, Pin_LEDgreen)) // Any led is ON
+			&& (trxIsTransmitting || (ev->buttons & BUTTON_PTT) || (getAudioAmpStatus() & (AUDIO_AMP_MODE_RF | AUDIO_AMP_MODE_BEEP)) || trxCarrierDetected() || ev->hasEvent)) // we're transmitting, or receiving, or user interaction.
 	{
 		// Turn off the red LED, if not transmitting
-		if ((GPIO_PinRead(GPIO_LEDred, Pin_LEDred)) && (trxIsTransmitting == false))
+		if (GPIO_PinRead(GPIO_LEDred, Pin_LEDred) // Red is ON
+				&& ((trxIsTransmitting == false) || ((ev->buttons & BUTTON_PTT) == 0))) // No TX
 		{
 			GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
 		}
 
+		// Turn off the green LED, if not receiving, or no AF output
+		if (GPIO_PinRead(GPIO_LEDgreen, Pin_LEDgreen)) // Green is ON
+		{
+			if ((trxIsTransmitting || (ev->buttons & BUTTON_PTT))
+					|| ((trxGetMode() == RADIO_MODE_DIGITAL) && (slot_state != DMR_STATE_IDLE))
+					|| (((getAudioAmpStatus() & (AUDIO_AMP_MODE_RF | AUDIO_AMP_MODE_BEEP)) != 0) || trxCarrierDetected()))
+			{
+				if ((ev->buttons & BUTTON_PTT) && (trxIsTransmitting == false)) // RX Only or Out of Band
+				{
+					GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
+				}
+			}
+			else
+			{
+				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
+			}
+		}
+
+		// Reset pattern sequence
 		beatRoll = 0;
+		// And update the timer for the next first starting (OFF for 5 seconds) blink sequence.
 		mTime = ev->time;
 		return;
 	}
 
-	if ((!trxIsTransmitting) && (!(ev->hasEvent) || (!(getAudioAmpStatus() & AUDIO_AMP_MODE_RF))))
+	// Nothing is happening, blink
+	if (((trxIsTransmitting == false) && ((ev->buttons & BUTTON_PTT) == 0))
+			&& ((ev->hasEvent == false) && ((getAudioAmpStatus() & (AUDIO_AMP_MODE_RF | AUDIO_AMP_MODE_BEEP)) == 0) && (trxCarrierDetected() == false)))
 	{
-		// Blink
+		// Blink both LEDs to have Orange color
 		if ((ev->time - mTime) > periods[beatRoll])
 		{
 			mTime = ev->time;
 			beatRoll = (beatRoll + 1) % (sizeof(periods) / sizeof(periods[0]));
 			GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, (beatRoll % 2));
+			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, (beatRoll % 2));
 		}
+	}
+	else
+	{
+		// Reset pattern sequence
+		beatRoll = 0;
+		// And update the timer for the next first starting (OFF for 5 seconds) blink sequence.
+		mTime = ev->time;
 	}
 }
 
@@ -1561,7 +1594,7 @@ static void scanning(void)
 		}
 		else
 		{
-			if(trx_carrier_detected())
+			if(trxCarrierDetected())
 			{
 				if (nonVolatileSettings.scanModePause == SCAN_MODE_STOP)
 				{

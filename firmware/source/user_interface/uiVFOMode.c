@@ -1687,7 +1687,7 @@ static void scanning(void)
 		}
 		else
 		{
-			if(trx_carrier_detected())
+			if(trxCarrierDetected())
 			{
 				if (nonVolatileSettings.scanModePause == SCAN_MODE_STOP)
 				{
