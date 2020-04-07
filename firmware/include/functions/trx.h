@@ -66,8 +66,9 @@ extern volatile bool trxIsTransmittingTone;
 extern calibrationPowerValues_t trxPowerSettings;
 extern int trxCurrentBand[2];
 
-int trx_carrier_detected(void);
-void trx_check_analog_squelch(void);
+bool trxCarrierDetected(void);
+void trxCheckDigitalSquelch(void);
+void trxCheckAnalogSquelch(void);
 int	trxGetMode(void);
 int	trxGetBandwidthIs25kHz(void);
 int	trxGetFrequency(void);
@@ -99,6 +100,5 @@ void trxSetTone1(int toneFreq);
 void trxSetTone2(int toneFreq);
 void trxSetDTMF(int code);
 void trxUpdateTsForCurrentChannelWithSpecifiedContact(struct_codeplugContact_t *contactData);
-void trxCheckDigitalSquelch(void);
 
 #endif /* _FW_TRX_H_ */

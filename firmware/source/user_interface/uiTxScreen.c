@@ -231,6 +231,13 @@ static void handleEvent(uiEvent_t *ev)
 				}
 
 				GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
+
+				// If there is a signal, lit the Green LED
+				if ((GPIO_PinRead(GPIO_LEDgreen, Pin_LEDgreen) == 0) && (trxCarrierDetected() || (getAudioAmpStatus() & AUDIO_AMP_MODE_RF)))
+				{
+					GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
+				}
+
 				menuSystemPopPreviousMenu();
 			}
 		}

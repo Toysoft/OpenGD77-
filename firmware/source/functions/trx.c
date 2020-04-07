@@ -32,6 +32,7 @@ int txstopdelay = 0;
 volatile bool trxIsTransmittingTone = false;
 static uint16_t txPower;
 static bool analogSignalReceived = false;
+static bool digitalSignalReceived = false;
 
 int trxCurrentBand[2] = {RADIO_BAND_VHF,RADIO_BAND_VHF};// Rx and Tx band.
 
@@ -221,31 +222,43 @@ void trxReadRSSIAndNoise(void)
 	taskEXIT_CRITICAL();
 }
 
-int trx_carrier_detected(void)
+bool trxCarrierDetected(void)
 {
-	uint8_t squelch;
+	uint8_t squelch = 0;
 
 	trxReadRSSIAndNoise();
 
-	// check for variable squelch control
-	if (currentChannelData->sql!=0)
+	switch(currentMode)
 	{
-		squelch =  TRX_SQUELCH_MAX - (((currentChannelData->sql-1)*11)>>2);
-	}
-	else
-	{
-		squelch =  TRX_SQUELCH_MAX - (((nonVolatileSettings.squelchDefaults[trxCurrentBand[TRX_RX_FREQ_BAND]])*11)>>2);
+		case RADIO_MODE_NONE:
+			break;
+
+		case RADIO_MODE_ANALOG:
+			if (currentChannelData->sql != 0)
+			{
+				squelch =  TRX_SQUELCH_MAX - (((currentChannelData->sql-1)*11)>>2);
+			}
+			else
+			{
+				squelch =  TRX_SQUELCH_MAX - (((nonVolatileSettings.squelchDefaults[trxCurrentBand[TRX_RX_FREQ_BAND]])*11)>>2);
+			}
+			break;
+
+		case RADIO_MODE_DIGITAL:
+			// Don't check for variable squelch, as some people seem to have this set to fully open on their DMR channels.
+			/*
+			if (currentChannelData->sql!=0)
+			{
+				squelch =  TRX_SQUELCH_MAX - (((currentChannelData->sql-1)*11)>>2);
+			}
+			else*/
+			{
+				squelch =  TRX_SQUELCH_MAX - (((nonVolatileSettings.squelchDefaults[trxCurrentBand[TRX_RX_FREQ_BAND]])*11)>>2);
+			}
+			break;
 	}
 
-	if (trxRxNoise < squelch)
-	{
-		return 1;
-	}
-	else
-	{
-		return 0;
-	}
-
+	return (trxRxNoise < squelch);
 }
 
 void trxCheckDigitalSquelch(void)
@@ -269,13 +282,28 @@ void trxCheckDigitalSquelch(void)
 			squelch =  TRX_SQUELCH_MAX - (((nonVolatileSettings.squelchDefaults[trxCurrentBand[TRX_RX_FREQ_BAND]])*11)>>2);
 		}
 
-		GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, (trxRxNoise < squelch));
+		if (trxRxNoise < squelch)
+		{
+			if(!digitalSignalReceived)
+			{
+				digitalSignalReceived = true;
+				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
+			}
+		}
+		else
+		{
+			if (digitalSignalReceived)
+			{
+				digitalSignalReceived = false;
+				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
+			}
+		}
 
 		trx_measure_count=0;
 	}
 }
 
-void trx_check_analog_squelch(void)
+void trxCheckAnalogSquelch(void)
 {
 	trx_measure_count++;
 	if (trx_measure_count==25)
@@ -296,7 +324,6 @@ void trx_check_analog_squelch(void)
 
 		if (trxRxNoise < squelch)
 		{
-
 			if(!analogSignalReceived)
 			{
 				analogSignalReceived = true;
@@ -306,8 +333,11 @@ void trx_check_analog_squelch(void)
 		}
 		else
 		{
-			analogSignalReceived=false;
-			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
+			if(analogSignalReceived)
+			{
+				analogSignalReceived=false;
+				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
+			}
 		}
 
 
@@ -462,13 +492,13 @@ void trx_setRX(void)
 
 void trx_setTX(void)
 {
-	trxIsTransmitting=true;
+	trxIsTransmitting = true;
 
 	// RX pre-amp off
 	GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 0);
 	GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 0);
 
-//	set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0x00);
+	//	set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0x00);
 	if (currentMode == RADIO_MODE_ANALOG)
 	{
 		trxActivateTx();
@@ -496,7 +526,6 @@ void trxActivateRx(void)
 	GPIO_PinWrite(GPIO_UHF_TX_amp_power, Pin_UHF_TX_amp_power, 0);// UHF PA off
 
 	txPAEnabled=false;
-
 
     if (trxCurrentBand[TRX_RX_FREQ_BAND] == RADIO_BAND_UHF)
 	{
