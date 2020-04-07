@@ -959,7 +959,7 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 			memcpy(buffer, text, 17);
 			buffer[16] = 0;
 #if defined(PLATFORM_DM5R)
-			ucPrintCentered(24, chomp(buffer), FONT_SIZE_3);
+			ucPrintCentered(28, chomp(buffer), FONT_SIZE_3);
 #else
 			ucPrintCentered(32, chomp(buffer), FONT_SIZE_3);
 #endif
@@ -973,7 +973,7 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 			memcpy(buffer, text, cpos);
 			buffer[cpos] = 0;
 #if defined(PLATFORM_DM5R)
-			ucPrintCentered(24, chomp(buffer), FONT_SIZE_3);
+			ucPrintCentered(28, chomp(buffer), FONT_SIZE_3);
 #else
 			ucPrintCentered(32, chomp(buffer), FONT_SIZE_3);
 #endif
@@ -1079,7 +1079,7 @@ void menuUtilityRenderQSOData(void)
 			{
 #if defined(PLATFORM_DM5R)
 				// draw the text in inverse video
-				ucFillRect(0, CONTACT_Y_POS, 128, 11, false);
+				ucFillRect(0, CONTACT_Y_POS + 1, 128, 10, false);
 				ucPrintCore(0, CONTACT_Y_POS + 2, LinkHead->talkgroup, FONT_SIZE_3, TEXT_ALIGN_CENTER, true);
 #else
 				// draw the text in inverse video
