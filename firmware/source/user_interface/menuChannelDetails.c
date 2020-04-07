@@ -169,7 +169,7 @@ static void updateScreen(void)
 				case CH_DETAILS_RXCTCSS:
 					if (tmpChannel.chMode == RADIO_MODE_ANALOG)
 					{
-						if (tmpChannel.txTone == TRX_CTCSS_TONE_NONE)
+						if (!codeplugChannelToneIsCTCSS(tmpChannel.txTone))
 						{
 							snprintf(buf, bufferLen, "Tx CTCSS:%s", currentLanguage->none);
 						}
@@ -186,7 +186,7 @@ static void updateScreen(void)
 				case CH_DETAILS_TXCTCSS:
 					if (tmpChannel.chMode == RADIO_MODE_ANALOG)
 					{
-						if (tmpChannel.rxTone == TRX_CTCSS_TONE_NONE)
+						if (!codeplugChannelToneIsCTCSS(tmpChannel.rxTone))
 						{
 							snprintf(buf, bufferLen, "Rx CTCSS:%s", currentLanguage->none);
 						}

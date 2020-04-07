@@ -869,7 +869,7 @@ void trxUpdateTsForCurrentChannelWithSpecifiedContact(struct_codeplugContact_t *
 void trxSetTxCTCSS(int toneFreqX10)
 {
 	taskENTER_CRITICAL();
-	if (toneFreqX10 == 0xFFFF)
+	if (!codeplugChannelToneIsCTCSS(toneFreqX10))
 	{
 		// tone value of 0xffff in the codeplug seem to be a flag that no tone has been selected
         write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x4a, 0x00,0x00); //Zero the CTCSS1 Register
@@ -889,7 +889,7 @@ void trxSetTxCTCSS(int toneFreqX10)
 void trxSetRxCTCSS(int toneFreqX10)
 {
 	taskENTER_CRITICAL();
-	if (toneFreqX10 == 0xFFFF)
+	if (!codeplugChannelToneIsCTCSS(toneFreqX10))
 	{
 		// tone value of 0xffff in the codeplug seem to be a flag that no tone has been selected
         write_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x4d, 0x00,0x00); //Zero the CTCSS2 Register

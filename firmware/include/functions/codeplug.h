@@ -24,6 +24,7 @@ extern const int CODEPLUG_MAX_VARIABLE_SQUELCH;
 extern const int CODEPLUG_MIN_VARIABLE_SQUELCH;
 extern const int CODEPLUG_ZONE_DATA_SIZE;
 extern const int VFO_FREQ_STEP_TABLE[8];
+extern const uint16_t CODEPLUG_DCS_FLAGS_MASK;
 
 extern int codeplugChannelsPerZone;
 
@@ -132,6 +133,7 @@ void codeplugSetVFO_ChannelData(struct_codeplugChannel_t *vfoBuf,int VFONumber);
 bool codeplugChannelIndexIsValid(int index);
 void codeplugChannelIndexSetValid(int index);
 bool codeplugChannelSaveDataForIndex(int index, struct_codeplugChannel_t *channelBuf);
+bool codeplugChannelToneIsCTCSS(uint16_t tone);
 
 int codeplugContactsGetCount(int callType);
 int codeplugContactGetDataForNumber(int number, int callType, struct_codeplugContact_t *contact);
