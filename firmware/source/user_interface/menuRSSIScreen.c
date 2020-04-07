@@ -71,10 +71,10 @@ static void updateScreen(void)
 		menuDisplayTitle(currentLanguage->rssi);
 
 		sprintf(buffer, "%d", trxRxSignal);
-		ucPrintCore(0, 3, buffer, FONT_8x8, TEXT_ALIGN_RIGHT, false);
+		ucPrintCore(0, 3, buffer, FONT_SIZE_2, TEXT_ALIGN_RIGHT, false);
 
 		sprintf(buffer, "%d%s", dBm, "dBm");
-		ucPrintCentered(20, buffer, FONT_8x16);
+		ucPrintCentered(20, buffer, FONT_SIZE_3);
 
 		barGraphLength = ((dBm + 130) * 24)/10;
 		if (barGraphLength<0)
@@ -88,7 +88,7 @@ static void updateScreen(void)
 		}
 		ucFillRect(4, 40,barGraphLength,8,false);
 
-		ucPrintCore(5,50,"S1  S3  S5  S7  S9", FONT_6x8, TEXT_ALIGN_LEFT, false);
+		ucPrintCore(5,50,"S1  S3  S5  S7  S9", FONT_SIZE_1, TEXT_ALIGN_LEFT, false);
 		ucRender();
 		trxRxSignal=0;
 

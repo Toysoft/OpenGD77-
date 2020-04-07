@@ -31,11 +31,11 @@
 
 typedef enum
 {
-	FONT_6x8 = 0,
-	FONT_6x8_BOLD,
-	FONT_8x8,
-	FONT_8x16,
-	FONT_16x32
+	FONT_SIZE_1 = 0,
+	FONT_SIZE_1_BOLD,
+	FONT_SIZE_2,
+	FONT_SIZE_3,
+	FONT_SIZE_4
 } ucFont_t;
 
 typedef enum

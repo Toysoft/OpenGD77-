@@ -68,9 +68,9 @@ static void updateScreen(void)
 	if (!customDataHasImage)
 	{
 		ucClearBuf();
-		ucPrintCentered(10, "OpenGD77", FONT_8x16);
-		ucPrintCentered(28, line1, FONT_8x16);
-		ucPrintCentered(42, line2, FONT_8x16);
+		ucPrintCentered(10, "OpenGD77", FONT_SIZE_3);
+		ucPrintCentered(28, line1, FONT_SIZE_3);
+		ucPrintCentered(42, line2, FONT_SIZE_3);
 	}
 
 	ucRender();

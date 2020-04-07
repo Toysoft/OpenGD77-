@@ -91,14 +91,14 @@ void fw_powerOffFinalStage(void)
 static void show_lowbattery(void)
 {
 	ucClearBuf();
-	ucPrintCentered(32, currentLanguage->low_battery, FONT_8x16);
+	ucPrintCentered(32, currentLanguage->low_battery, FONT_SIZE_3);
 	ucRender();
 }
 
 static void showErrorMessage(char *message)
 {
 	ucClearBuf();
-	ucPrintCentered(32, message, FONT_8x16);
+	ucPrintCentered(32, message, FONT_SIZE_3);
 	ucRender();
 }
 

@@ -99,7 +99,7 @@ static void updateScreen(void)
 
 		if (gMenusEndIndex == 0)
 		{
-			ucPrintCentered(32, currentLanguage->empty_list, FONT_8x16);
+			ucPrintCentered(32, currentLanguage->empty_list, FONT_SIZE_3);
 		}
 		else
 		{
@@ -119,20 +119,20 @@ static void updateScreen(void)
 	case MENU_CONTACT_LIST_CONFIRM:
 		codeplugUtilConvertBufToString(contactListContactData.name, nameBuf, 16);
 		menuDisplayTitle(nameBuf);
-		ucPrintCentered(16, currentLanguage->delete_contact_qm, FONT_8x16);
+		ucPrintCentered(16, currentLanguage->delete_contact_qm, FONT_SIZE_3);
 		ucDrawChoice(CHOICE_YESNO, false);
 		break;
 	case MENU_CONTACT_LIST_DELETED:
 		codeplugUtilConvertBufToString(contactListContactData.name, nameBuf, 16);
 //		menuDisplayTitle(nameBuf);
-		ucPrintCentered(16, currentLanguage->contact_deleted, FONT_8x16);
+		ucPrintCentered(16, currentLanguage->contact_deleted, FONT_SIZE_3);
 		ucDrawChoice(CHOICE_DISMISS, false);
 		break;
 	case MENU_CONTACT_LIST_TG_IN_RXGROUP:
 		codeplugUtilConvertBufToString(contactListContactData.name, nameBuf, 16);
 		menuDisplayTitle(nameBuf);
-		ucPrintCentered(16, currentLanguage->contact_used, FONT_8x16);
-		ucPrintCentered(32, currentLanguage->in_rx_group, FONT_8x16);
+		ucPrintCentered(16, currentLanguage->contact_used, FONT_SIZE_3);
+		ucPrintCentered(32, currentLanguage->in_rx_group, FONT_SIZE_3);
 		ucDrawChoice(CHOICE_DISMISS, false);
 		break;
 	}

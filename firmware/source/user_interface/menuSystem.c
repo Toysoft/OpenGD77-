@@ -293,7 +293,7 @@ const menuItemNew_t menuDataContactContact [] = {
 void menuDisplayTitle(const char *title)
 {
 	ucDrawFastHLine(0, 13, 128, true);
-	ucPrintCore(0, 3, title, FONT_8x8, TEXT_ALIGN_CENTER, false);
+	ucPrintCore(0, 3, title, FONT_SIZE_2, TEXT_ALIGN_CENTER, false);
 }
 
 void menuDisplayEntry(int loopOffset, int focusedItem,const char *entryText)
@@ -303,7 +303,7 @@ void menuDisplayEntry(int loopOffset, int focusedItem,const char *entryText)
 	if (focused)
 		ucFillRoundRect(0, (loopOffset + 2) * 16, 128, 16, 2, true);
 
-	ucPrintCore(0, (loopOffset + 2) * 16, entryText, FONT_8x16, TEXT_ALIGN_LEFT, focused);
+	ucPrintCore(0, (loopOffset + 2) * 16, entryText, FONT_SIZE_3, TEXT_ALIGN_LEFT, focused);
 }
 
 int menuGetMenuOffset(int maxMenuEntries, int loopOffset)

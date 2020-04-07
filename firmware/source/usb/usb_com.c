@@ -213,7 +213,7 @@ static void handleCPSRequest(void)
 				break;
 			case 1:
 				// Clear CPS screen
-				menuCPSUpdate(0,0,0,FONT_6x8,TEXT_ALIGN_LEFT,0,NULL);
+				menuCPSUpdate(0,0,0,FONT_SIZE_1,TEXT_ALIGN_LEFT,0,NULL);
 				break;
 			case 2:
 				// Write a line of text to CPS screen
@@ -221,11 +221,11 @@ static void handleCPSRequest(void)
 				break;
 			case 3:
 				// Render CPS screen
-				menuCPSUpdate(2,0,0,FONT_6x8,TEXT_ALIGN_LEFT,0,NULL);
+				menuCPSUpdate(2,0,0,FONT_SIZE_1,TEXT_ALIGN_LEFT,0,NULL);
 				break;
 			case 4:
 				// Turn on the display backlight
-				menuCPSUpdate(3,0,0,FONT_6x8,TEXT_ALIGN_LEFT,0,NULL);
+				menuCPSUpdate(3,0,0,FONT_SIZE_1,TEXT_ALIGN_LEFT,0,NULL);
 				break;
 			case 5:
 				// Close
@@ -234,7 +234,7 @@ static void handleCPSRequest(void)
 					dmrIDCacheInit();
 					flashingDMRIDs = false;
 				}
-				menuCPSUpdate(6,0,0,FONT_6x8,TEXT_ALIGN_LEFT,0,NULL);
+				menuCPSUpdate(6,0,0,FONT_SIZE_1,TEXT_ALIGN_LEFT,0,NULL);
 				break;
 			case 6:
 				{
@@ -256,11 +256,11 @@ static void handleCPSRequest(void)
 							break;
 						case 3:
 							// flash green LED
-							menuCPSUpdate(4,0,0,FONT_6x8,TEXT_ALIGN_LEFT,0,NULL);
+							menuCPSUpdate(4,0,0,FONT_SIZE_1,TEXT_ALIGN_LEFT,0,NULL);
 							break;
 						case 4:
 							// flash red LED
-							menuCPSUpdate(5,0,0,FONT_6x8,TEXT_ALIGN_LEFT,0,NULL);
+							menuCPSUpdate(5,0,0,FONT_SIZE_1,TEXT_ALIGN_LEFT,0,NULL);
 							break;
 						default:
 							break;

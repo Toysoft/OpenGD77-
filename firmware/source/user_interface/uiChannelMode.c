@@ -416,7 +416,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 
 				snprintf(buffer, bufferLen, " %d ", txTimeSecs);
 				buffer[bufferLen - 1] = 0;
-				ucPrintCentered(TX_TIMER_Y_OFFSET, buffer, FONT_16x32);
+				ucPrintCentered(TX_TIMER_Y_OFFSET, buffer, FONT_SIZE_4);
 				verticalPositionOffset=16;
 			}
 			else
@@ -442,7 +442,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 							snprintf(nameBuf, nameBufferLen, "%s Ch:%d",currentLanguage->all_channels, channelNumber);
 						}
 						nameBuf[nameBufferLen - 1] = 0;
-						ucPrintCentered(50 , nameBuf, FONT_6x8);
+						ucPrintCentered(50 , nameBuf, FONT_SIZE_1);
 					}
 					else
 					{
@@ -457,7 +457,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 							snprintf(nameBuf, nameBufferLen, "%s Ch:%d", currentZoneName,channelNumber);
 							nameBuf[nameBufferLen - 1] = 0;
 						}
-						ucPrintCentered(50, (char *)nameBuf, FONT_6x8);
+						ucPrintCentered(50, (char *)nameBuf, FONT_SIZE_1);
 					}
 				}
 			}
@@ -465,7 +465,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 			if (!displayChannelSettings)
 			{
 				codeplugUtilConvertBufToString(channelScreenChannelData.name, nameBuf, 16);
-				ucPrintCentered(32 + verticalPositionOffset, nameBuf, FONT_8x16);
+				ucPrintCentered(32 + verticalPositionOffset, nameBuf, FONT_SIZE_3);
 			}
 
 			if (trxGetMode() == RADIO_MODE_DIGITAL)
@@ -499,7 +499,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				{
 					codeplugUtilConvertBufToString(contactData.name, nameBuf, 16);
 				}
-				ucPrintCentered(CONTACT_Y_POS + verticalPositionOffset, nameBuf, FONT_8x16);
+				ucPrintCentered(CONTACT_Y_POS + verticalPositionOffset, nameBuf, FONT_SIZE_3);
 			}
 			// Squelch will be cleared later, 1s after last change
 			else if(displaySquelch && !trxIsTransmitting && !displayChannelSettings)
@@ -509,7 +509,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				strncpy(buffer, currentLanguage->squelch, 9);
 				buffer[8] = 0; // Avoid overlap with bargraph
 				// Center squelch word between col0 and bargraph, if possible.
-				ucPrintAt(0 + ((strlen(buffer) * 8) < xbar - 2 ? (((xbar - 2) - (strlen(buffer) * 8)) >> 1) : 0), 16, buffer, FONT_8x16);
+				ucPrintAt(0 + ((strlen(buffer) * 8) < xbar - 2 ? (((xbar - 2) - (strlen(buffer) * 8)) >> 1) : 0), 16, buffer, FONT_SIZE_3);
 				int bargraph = 1 + ((currentChannelData->sql - 1) * 5) /2;
 				ucDrawRect(xbar - 2, 17, 55, 13, true);
 				ucFillRect(xbar, 19, bargraph, 9, false);

@@ -60,7 +60,7 @@ static void updateScreen(void)
 	{
 		if ((i+currentDisplayIndex) < NUM_CREDITS)
 		{
-			ucPrintCentered(i*8 + 16,(char *)creditTexts[i+currentDisplayIndex], FONT_6x8);
+			ucPrintCentered(i*8 + 16,(char *)creditTexts[i+currentDisplayIndex], FONT_SIZE_1);
 		}
 	}
 	ucRender();

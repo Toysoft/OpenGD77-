@@ -67,14 +67,14 @@ int menuTxScreen(uiEvent_t *ev, bool isFirstRun)
 			//
 			ucClearBuf();
 			ucDrawRoundRectWithDropShadow(4, 4, 120, 58, 5, true);
-			ucPrintCentered(4, currentLanguage->error, FONT_16x32);
+			ucPrintCentered(4, currentLanguage->error, FONT_SIZE_4);
 			if ((currentChannelData->flag4 & 0x04) != 0x00)
 			{
-				ucPrintCentered(40, currentLanguage->rx_only, FONT_8x16);
+				ucPrintCentered(40, currentLanguage->rx_only, FONT_SIZE_3);
 			}
 			else
 			{
-				ucPrintCentered(40, currentLanguage->out_of_band, FONT_8x16);
+				ucPrintCentered(40, currentLanguage->out_of_band, FONT_SIZE_3);
 			}
 			ucRender();
 			displayLightOverrideTimeout(-1);
@@ -115,7 +115,7 @@ int menuTxScreen(uiEvent_t *ev, bool isFirstRun)
 				{
 					set_melody(melody_tx_timeout_beep);
 					ucClearBuf();
-					ucPrintCentered(20, currentLanguage->timeout, FONT_16x32);
+					ucPrintCentered(20, currentLanguage->timeout, FONT_SIZE_4);
 					ucRender();
 					PTTToggledDown = false;
 					mto = ev->time;

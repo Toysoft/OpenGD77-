@@ -118,7 +118,7 @@ static void updateScreen(void)
 	{
 		snprintf(buf, bufferLen, "%c%c%c.%c%c%c%c%c MHz", freq_enter_digits[0], freq_enter_digits[1], freq_enter_digits[2],
 				freq_enter_digits[3], freq_enter_digits[4], freq_enter_digits[5], freq_enter_digits[6], freq_enter_digits[7]);
-		ucPrintCentered(32, buf, FONT_8x16);
+		ucPrintCentered(32, buf, FONT_SIZE_3);
 	}
 	else
 	{
