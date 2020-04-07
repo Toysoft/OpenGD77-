@@ -565,6 +565,10 @@ void heartBeatActivityForGD77S(uiEvent_t *ev)
 					|| ((trxGetMode() == RADIO_MODE_DIGITAL) && (slot_state != DMR_STATE_IDLE))
 					|| (((getAudioAmpStatus() & (AUDIO_AMP_MODE_RF | AUDIO_AMP_MODE_BEEP)) != 0) || trxCarrierDetected()))
 			{
+				if ((ev->buttons & BUTTON_PTT) && (trxIsTransmitting == false)) // RX Only or Out of Band
+				{
+					GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
+				}
 			}
 			else
 			{
@@ -580,8 +584,8 @@ void heartBeatActivityForGD77S(uiEvent_t *ev)
 	}
 
 	// Nothing is happening, blink
-	if (((trxIsTransmitting == false) || ((ev->buttons & BUTTON_PTT) == 0))
-			&& ((ev->hasEvent == false) || ((getAudioAmpStatus() & (AUDIO_AMP_MODE_RF | AUDIO_AMP_MODE_BEEP)) == 0) || (trxCarrierDetected() == false)))
+	if (((trxIsTransmitting == false) && ((ev->buttons & BUTTON_PTT) == 0))
+			&& ((ev->hasEvent == false) && ((getAudioAmpStatus() & (AUDIO_AMP_MODE_RF | AUDIO_AMP_MODE_BEEP)) == 0) && (trxCarrierDetected() == false)))
 	{
 		// Blink both LEDs to have Orange color
 		if ((ev->time - mTime) > periods[beatRoll])
@@ -591,6 +595,13 @@ void heartBeatActivityForGD77S(uiEvent_t *ev)
 			GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, (beatRoll % 2));
 			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, (beatRoll % 2));
 		}
+	}
+	else
+	{
+		// Reset pattern sequence
+		beatRoll = 0;
+		// And update the timer for the next first starting (OFF for 5 seconds) blink sequence.
+		mTime = ev->time;
 	}
 }
 
