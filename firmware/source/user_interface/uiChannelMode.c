@@ -1045,8 +1045,7 @@ static void handleEvent(uiEvent_t *ev)
 		}
 		else if (KEYCHECK_SHORTUP(ev->keys, KEY_STAR))
 		{
-			// Toggle TimeSlot
-			if (ev->buttons & BUTTON_SK2 )
+			if (ev->buttons & BUTTON_SK2 )  // Toggle Channel Mode
 			{
 				if (trxGetMode() == RADIO_MODE_ANALOG)
 				{
@@ -1057,7 +1056,15 @@ static void handleEvent(uiEvent_t *ev)
 				{
 					channelScreenChannelData.chMode = RADIO_MODE_ANALOG;
 					trxSetModeAndBandwidth(channelScreenChannelData.chMode, ((channelScreenChannelData.flag4 & 0x02) == 0x02));
-					trxSetTxCTCSS(currentChannelData->rxTone);
+					trxSetTxCTCSS(currentChannelData->txTone);
+					if (nonVolatileSettings.analogFilterLevel == ANALOG_FILTER_NONE)
+					{
+						trxSetRxCTCSS(TRX_CTCSS_TONE_NONE);
+					}
+					else
+					{
+						trxSetRxCTCSS(currentChannelData->rxTone);
+					}
 				}
 				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 				menuChannelModeUpdateScreen(0);
