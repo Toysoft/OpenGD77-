@@ -1265,12 +1265,12 @@ void init_digital_DMR_RX(void)
 void init_digital(void)
 {
 	disableAudioAmp(AUDIO_AMP_MODE_RF);
-    GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, false);
-    timeCode = -1;// Clear current timecode synchronisation
-    tsLockCount = 0;
+	GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
+	timeCode = -1;// Clear current timecode synchronisation
+	tsLockCount = 0;
 	init_digital_DMR_RX();
 	init_digital_state();
-    NVIC_EnableIRQ(PORTC_IRQn);
+	NVIC_EnableIRQ(PORTC_IRQn);
 	init_codec();
 }
 
@@ -1315,19 +1315,19 @@ void init_hrc6000_task(void)
 
 void fw_hrc6000_task(void *data)
 {
-    while (1U)
-    {
-    	taskENTER_CRITICAL();
-    	uint32_t tmp_timer_hrc6000task=timer_hrc6000task;
-    	taskEXIT_CRITICAL();
-    	if (tmp_timer_hrc6000task==0)
-    	{
-        	taskENTER_CRITICAL();
-        	timer_hrc6000task=10;
-        	alive_hrc6000task=true;
-        	taskEXIT_CRITICAL();
+	while (1U)
+	{
+		taskENTER_CRITICAL();
+		uint32_t tmp_timer_hrc6000task=timer_hrc6000task;
+		taskEXIT_CRITICAL();
+		if (tmp_timer_hrc6000task==0)
+		{
+			taskENTER_CRITICAL();
+			timer_hrc6000task=10;
+			alive_hrc6000task=true;
+			taskEXIT_CRITICAL();
 
-        	if (trxGetMode() == RADIO_MODE_DIGITAL)
+			if (trxGetMode() == RADIO_MODE_DIGITAL)
 			{
 				tick_HR_C6000();
 			}
@@ -1335,15 +1335,15 @@ void fw_hrc6000_task(void *data)
 			{
 				if (trxGetMode() == RADIO_MODE_ANALOG && melody_play==NULL)
 				{
-		        	taskENTER_CRITICAL();
-					trx_check_analog_squelch();
-		        	taskEXIT_CRITICAL();
+					taskENTER_CRITICAL();
+					trxCheckAnalogSquelch();
+					taskEXIT_CRITICAL();
 				}
 			}
-    	}
+		}
 
 		vTaskDelay(0);
-    }
+	}
 }
 
 void setupPcOrTGHeader(void)
