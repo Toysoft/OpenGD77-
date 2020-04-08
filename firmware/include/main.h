@@ -56,9 +56,6 @@
 #include "SPI_Flash.h"
 #include "EEPROM.h"
 
-#if defined(PLATFORM_DM5R)
-#include "torch.h"
-#endif
 
 extern int Display_light_Timer;
 extern bool Display_light_Touched;

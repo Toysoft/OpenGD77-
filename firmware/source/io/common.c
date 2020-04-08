@@ -51,12 +51,6 @@ void fw_init_common(void)
 	GPIO_PinWrite(GPIO_Keep_Power_On, Pin_Keep_Power_On, 1);
 #endif
 
-#if defined(PLATFORM_DM5R)
-	// Built-in torch
-	PORT_SetPinMux(Port_Torch, Pin_Torch, kPORT_MuxAsGpio);
-	GPIO_PinInit(GPIO_Torch, Pin_Torch, &pin_config_output);
-	GPIO_PinWrite(GPIO_Torch, Pin_Torch, 0);
-#endif
 
     // Speaker mute and RX/TX mux init
     PORT_SetPinMux(Port_audio_amp_enable, Pin_audio_amp_enable, kPORT_MuxAsGpio);
