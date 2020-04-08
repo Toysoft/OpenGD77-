@@ -390,7 +390,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					ucPrintCentered(TX_TIMER_Y_OFFSET, buffer, FONT_SIZE_4);
 				}
 
-				if (screenOperationMode[nonVolatileSettings.currentVFONumber] == VFO_SCREEN_OPERATION_NORMAL)
+				if (screenOperationMode[nonVolatileSettings.currentVFONumber] == VFO_SCREEN_OPERATION_NORMAL || trxIsTransmitting)
 				{
 					printFrequency(true, (selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX || trxIsTransmitting), 48, currentChannelData->txFreq, true, false);
 				}
