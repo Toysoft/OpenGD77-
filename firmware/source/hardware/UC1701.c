@@ -989,6 +989,16 @@ void ucDrawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16
 
 void ucDrawChoice(ucChoice_t choice, bool clearRegion)
 {
+#if defined(PLATFORM_DM5R)
+	const uint8_t TEXT_Y = 40;
+	const uint8_t FILLRECT_Y = 32;
+#else
+	const uint8_t TEXT_Y = 49;
+	const uint8_t FILLRECT_Y = 48;
+#endif
+	const uint8_t TEXT_L_CENTER_X = 12;
+	const uint8_t TEXT_R_CENTER_X = 115;
+
 	struct
 	{
 		char *lText;
@@ -1001,21 +1011,11 @@ void ucDrawChoice(ucChoice_t choice, bool clearRegion)
 	};
 	char *lText = NULL;
 	char *rText = NULL;
-	uint8_t lCenter = 12;
-	uint8_t rCenter = 115;
-#if defined(PLATFORM_DM5R)
-	uint8_t y = 40;
-#else
-	uint8_t y = 49;
-#endif
+
 
 	if (clearRegion)
 	{
-#if defined(PLATFORM_DM5R)
-		ucFillRect(0, 32, 128, 16, true);
-#else
-		ucFillRect(0, 48, 128, 16, true);
-#endif
+		ucFillRect(0, FILLRECT_Y, 128, 16, true);
 	}
 
 	if (choice >= CHOICES_NUM) {
@@ -1027,31 +1027,25 @@ void ucDrawChoice(ucChoice_t choice, bool clearRegion)
 
 	if (lText)
 	{
-		int16_t x = (lCenter - ((strlen(lText) * 8) >> 1));
+		int16_t x = (TEXT_L_CENTER_X - ((strlen(lText) * 8) >> 1));
 
 		if (x < 2)
+		{
 			x = 2;
-
-#if defined(PLATFORM_DM5R)
-		ucPrintAt(x, y, lText, FONT_SIZE_2);
-#else
-		ucPrintAt(x, y, lText, FONT_SIZE_3);
-#endif
+		}
+		ucPrintAt(x, TEXT_Y, lText, FONT_SIZE_3);
 	}
 
 	if(rText)
 	{
 		size_t len = (strlen(rText) * 8);
-		int16_t x = (rCenter - (len >> 1));
+		int16_t x = (TEXT_R_CENTER_X - (len >> 1));
 
 		if ((x + len) > 126)
+		{
 			x = (126 - len);
-
-#if defined(PLATFORM_DM5R)
-		ucPrintAt(x, y, rText, FONT_SIZE_2);
-#else
-		ucPrintAt(x, y, rText, FONT_SIZE_3);
-#endif
+		}
+		ucPrintAt(x, TEXT_Y, rText, FONT_SIZE_3);
 	}
 }
 
