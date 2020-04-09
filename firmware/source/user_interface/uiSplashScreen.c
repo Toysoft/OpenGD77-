@@ -21,7 +21,6 @@
 static void updateScreen(void);
 static void handleEvent(uiEvent_t *ev);
 
-
 int menuSplashScreen(uiEvent_t *ev, bool isFirstRun)
 {
 	uint8_t melodyBuf[512];
@@ -59,7 +58,6 @@ static void updateScreen(void)
 	strcpy(talkAliasText,line1);
 	strcat(talkAliasText,line2);
 
-
 	if (bootScreenType==0)
 	{
 		customDataHasImage = codeplugGetOpenGD77CustomData(CODEPLUG_CUSTOM_DATA_TYPE_IMAGE,ucGetDisplayBuffer() );
@@ -71,18 +69,14 @@ static void updateScreen(void)
 
 #if defined(PLATFORM_DM5R)
 		ucPrintCentered(0, "OpenDM5R", FONT_SIZE_3);
-		ucPrintCentered(16, line1, FONT_SIZE_3);
-		ucPrintCentered(32, line2, FONT_SIZE_3);
-#else
-#if defined(PLATFORM_GD77)
-		ucPrintCentered(10, "OpenGD77", FONT_SIZE_3);
+#elif defined(PLATFORM_GD77)
+		ucPrintCentered(8, "OpenGD77", FONT_SIZE_3);
 #elif defined(PLATFORM_DM1801)
-		ucPrintCentered(10, "OpenDM1801", FONT_SIZE_3);
+		ucPrintCentered(8, "OpenDM1801", FONT_SIZE_3);
 #endif
-		ucPrintCentered(28, line1, FONT_SIZE_3);
-		ucPrintCentered(42, line2, FONT_SIZE_3);
-#endif
-}
+		ucPrintCentered((DISPLAY_SIZE_Y/4)*2, line1, FONT_SIZE_3);
+		ucPrintCentered((DISPLAY_SIZE_Y/4)*3, line2, FONT_SIZE_3);
+	}
 
 	ucRender();
 	displayLightTrigger();

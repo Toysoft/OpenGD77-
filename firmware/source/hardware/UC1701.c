@@ -47,6 +47,15 @@ static const uint8_t *screenBufEnd = screenBuf + sizeof(screenBuf);
 #endif
 int activeBufNum=0;
 
+#if defined(PLATFORM_DM5R)
+const int DISPLAY_SIZE_Y = 48;
+const int FONT_SIZE_3_HEIGHT = 8;
+#else
+const int DISPLAY_SIZE_Y = 64;
+const int FONT_SIZE_3_HEIGHT = 16;
+#endif
+const int DISPLAY_SIZE_X = 128;
+
 
 int16_t ucSetPixel(int16_t x, int16_t y, bool color)
 {

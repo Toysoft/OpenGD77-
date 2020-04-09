@@ -66,28 +66,18 @@ int menuTxScreen(uiEvent_t *ev, bool isFirstRun)
 			// But this would require some sort of timer callback system, which we don't currently have.
 			//
 			ucClearBuf();
-#if defined(PLATFORM_DM5R)
-			ucDrawRoundRectWithDropShadow(4, 4, 120, 42, 5, true);
+
+			ucDrawRoundRectWithDropShadow(4, 4, 120, (DISPLAY_SIZE_Y - 6), 5, true);
 			ucPrintCentered(4, currentLanguage->error, FONT_SIZE_4);
-#else
-			ucDrawRoundRectWithDropShadow(4, 4, 120, 58, 5, true);
-			ucPrintCentered(4, currentLanguage->error, FONT_SIZE_4);
-#endif
+
 			if ((currentChannelData->flag4 & 0x04) != 0x00)
 			{
-#if defined(PLATFORM_DM5R)
-				ucPrintCentered(32, currentLanguage->rx_only, FONT_SIZE_3);
-#else
-				ucPrintCentered(40, currentLanguage->rx_only, FONT_SIZE_3);
-#endif
+
+				ucPrintCentered((DISPLAY_SIZE_Y - 24), currentLanguage->rx_only, FONT_SIZE_3);
 			}
 			else
 			{
-#if defined(PLATFORM_DM5R)
-				ucPrintCentered(40, currentLanguage->out_of_band, FONT_SIZE_3);
-#else
-				ucPrintCentered(40, currentLanguage->out_of_band, FONT_SIZE_3);
-#endif
+				ucPrintCentered((DISPLAY_SIZE_Y - 24), currentLanguage->out_of_band, FONT_SIZE_3);
 			}
 			ucRender();
 			displayLightOverrideTimeout(-1);

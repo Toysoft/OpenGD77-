@@ -62,6 +62,16 @@ static struct_codeplugChannel_t channelNextChannelData={.rxFreq=0};
 static bool nextChannelReady = false;
 static int nextChannelIndex = 0;
 
+#if defined(PLATFORM_DM5R)
+static const int  CH_NAME_Y_POS = 40;
+static const int  XBAR_Y_POS = 15;
+static const int  XBAR_H = 4;
+#else
+static const int  CH_NAME_Y_POS = 50;
+static const int  XBAR_Y_POS = 17;
+static const int  XBAR_H = 9;
+#endif
+
 
 int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 {
@@ -442,13 +452,8 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				{
 					printToneAndSquelch();
 
-#if defined(PLATFORM_DM5R)
-					printFrequency(false, false, 31, (reverseRepeater ? currentChannelData->txFreq : currentChannelData->rxFreq), false, false);
-					printFrequency(true, false, 40, (reverseRepeater ? currentChannelData->rxFreq : currentChannelData->txFreq), false, false);
-#else
 					printFrequency(false, false, 32, (reverseRepeater ? currentChannelData->txFreq : currentChannelData->rxFreq), false, false);
-					printFrequency(true, false, 48, (reverseRepeater ? currentChannelData->rxFreq : currentChannelData->txFreq), false, false);
-#endif
+					printFrequency(true, false, (DISPLAY_SIZE_Y - FONT_SIZE_3_HEIGHT), (reverseRepeater ? currentChannelData->rxFreq : currentChannelData->txFreq), false, false);
 				}
 				else
 				{
@@ -465,11 +470,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 						}
 						nameBuf[nameBufferLen - 1] = 0;
 
-#if defined(PLATFORM_DM5R)
-						ucPrintCentered(40 , nameBuf, FONT_SIZE_1);
-#else
-						ucPrintCentered(50 , nameBuf, FONT_SIZE_1);
-#endif
+						ucPrintCentered(CH_NAME_Y_POS , nameBuf, FONT_SIZE_1);
 					}
 					else
 					{
@@ -485,11 +486,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 							nameBuf[nameBufferLen - 1] = 0;
 						}
 
-#if defined(PLATFORM_DM5R)
-						ucPrintCentered(40, (char *)nameBuf, FONT_SIZE_1);
-#else
-						ucPrintCentered(50, (char *)nameBuf, FONT_SIZE_1);
-#endif
+						ucPrintCentered(CH_NAME_Y_POS, (char *)nameBuf, FONT_SIZE_1);
 
 					}
 				}
@@ -498,12 +495,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 			if (!displayChannelSettings)
 			{
 				codeplugUtilConvertBufToString(channelScreenChannelData.name, nameBuf, 16);
-
-#if defined(PLATFORM_DM5R)
-				ucPrintCentered(24 + verticalPositionOffset, nameBuf, FONT_SIZE_3);
-#else
-				ucPrintCentered(32 + verticalPositionOffset, nameBuf, FONT_SIZE_3);
-#endif
+				ucPrintCentered((DISPLAY_SIZE_Y / 2) + verticalPositionOffset, nameBuf, FONT_SIZE_3);
 			}
 
 			if (trxGetMode() == RADIO_MODE_DIGITAL)
@@ -558,13 +550,8 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				// Center squelch word between col0 and bargraph, if possible.
 				ucPrintAt(0 + ((strlen(buffer) * 8) < xbar - 2 ? (((xbar - 2) - (strlen(buffer) * 8)) >> 1) : 0), 16, buffer, FONT_SIZE_3);
 				int bargraph = 1 + ((currentChannelData->sql - 1) * 5) /2;
-#if defined(PLATFORM_DM5R)
-				ucDrawRect(xbar - 2, 15, 55, 8, true);
-				ucFillRect(xbar, 17, bargraph, 4, false);
-#else
-				ucDrawRect(xbar - 2, 17, 55, 13, true);
-				ucFillRect(xbar, 19, bargraph, 9, false);
-#endif
+				ucDrawRect(xbar - 2, XBAR_Y_POS, 55, XBAR_H + 4, true);
+				ucFillRect(xbar, XBAR_Y_POS + 2, bargraph, XBAR_H, false);
 			}
 
 			// SK1 is pressed, we don't want to clear the first info row after 1s

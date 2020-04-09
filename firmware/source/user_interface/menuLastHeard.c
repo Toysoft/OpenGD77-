@@ -96,21 +96,13 @@ void menuLastHeardUpdateScreen(bool showTitleOrHeader, bool displayDetails)
 	{
 		if (dmrIDLookup(item->id, &foundRecord))
 		{
-#if defined(PLATFORM_DM5R)
-			menuLastHeardDisplayTA(16 + (numDisplayed * 10), foundRecord.text, item->time, now, item->talkGroupOrPcId, 20, displayDetails);
-#else
-			menuLastHeardDisplayTA(16 + (numDisplayed * 16), foundRecord.text, item->time, now, item->talkGroupOrPcId, 20, displayDetails);
-#endif
+			menuLastHeardDisplayTA(16 + (numDisplayed * MENU_ENTRY_HEIGHT), foundRecord.text, item->time, now, item->talkGroupOrPcId, 20, displayDetails);
 		}
 		else
 		{
 			if (item->talkerAlias[0] != 0x00)
 			{
-#if defined(PLATFORM_DM5R)
-				menuLastHeardDisplayTA(16 + (numDisplayed * 10), item->talkerAlias, item->time, now, item->talkGroupOrPcId, 32, displayDetails);
-#else
-				menuLastHeardDisplayTA(16 + (numDisplayed * 16), item->talkerAlias, item->time, now, item->talkGroupOrPcId, 32, displayDetails);
-#endif
+				menuLastHeardDisplayTA(16 + (numDisplayed * MENU_ENTRY_HEIGHT), item->talkerAlias, item->time, now, item->talkGroupOrPcId, 32, displayDetails);
 			}
 			else
 			{
@@ -118,11 +110,7 @@ void menuLastHeardUpdateScreen(bool showTitleOrHeader, bool displayDetails)
 
 				snprintf(buffer, 17, "ID:%d", item->id);
 				buffer[16] = 0;
-#if defined(PLATFORM_DM5R)
-				menuLastHeardDisplayTA(16 + (numDisplayed * 10), buffer, item->time, now, item->talkGroupOrPcId, 17, displayDetails);
-#else
-				menuLastHeardDisplayTA(16 + (numDisplayed * 16), buffer, item->time, now, item->talkGroupOrPcId, 17, displayDetails);
-#endif
+				menuLastHeardDisplayTA(16 + (numDisplayed * MENU_ENTRY_HEIGHT), buffer, item->time, now, item->talkGroupOrPcId, 17, displayDetails);
 			}
 		}
 
