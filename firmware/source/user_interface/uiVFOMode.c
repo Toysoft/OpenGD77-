@@ -838,22 +838,7 @@ static void handleEvent(uiEvent_t *ev)
 			}
 			else if (KEYCHECK_SHORTUP(ev->keys,KEY_UP))
 			{
-				if (screenOperationMode[nonVolatileSettings.currentVFONumber] == VFO_SCREEN_OPERATION_SCAN)
-				{
-					setCurrentFreqToScanLimits();
-					if (!scanActive)
-					{
-						scanActive=true;
-					}
-					else
-					{
-						handleUpKey(ev);
-					}
-				}
-				else
-				{
-					handleUpKey(ev);
-				}
+				handleUpKey(ev);
 			}
 			else if (KEYCHECK_LONGDOWN(ev->keys,KEY_UP))
 			{
@@ -861,6 +846,14 @@ static void handleEvent(uiEvent_t *ev)
 				{
 					initScan();
 					return;
+				}
+				else
+				{
+					setCurrentFreqToScanLimits();
+					if (!scanActive)
+					{
+						scanActive=true;
+					}
 				}
 			}
 			else if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
