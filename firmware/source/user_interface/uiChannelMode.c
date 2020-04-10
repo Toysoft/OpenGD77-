@@ -22,7 +22,6 @@
 #include <user_interface/uiUtilities.h>
 #include <user_interface/uiLocalisation.h>
 
-
 static void handleEvent(uiEvent_t *ev);
 static void loadChannelData(bool useChannelDataInMemory);
 static void scanning(void);
@@ -669,6 +668,15 @@ static void checkAndUpdateSelectedChannel(uint16_t chanNum)
 
 	if (updateDisplay)
 	{
+		uint8_t buf[16];
+
+		buf[0U] = 2U;
+		buf[1U] = SPEECH_SYNTHESIS_CHANNEL;
+		//buf[2U] = SPEECH_SYNTHESIS_SEQUENCE_SEPARATOR;
+		buf[2U] = chanNum;
+
+		speechSynthesisSpeak(buf);
+
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 		menuChannelModeUpdateScreen(0);
 	}
@@ -685,6 +693,38 @@ static void handleEventForGD77S(uiEvent_t *ev)
 			clearActiveDMRID();
 			lastHeardClearLastID();
 		}
+	}
+
+	if (ev->events & BUTTON_EVENT)
+	{
+#if 1
+		// +
+		if (ev->buttons & BUTTON_SK1)
+		{
+			uint8_t buf[16];
+
+			buf[0U] = 1U;
+			buf[1U] = SPEECH_SYNTHESIS_PLEASE_CHARGE_THE_BATTERY;
+
+			speechSynthesisSpeak(buf);
+		}
+
+		// -
+		if (ev->buttons & BUTTON_SK2)
+		{
+			uint8_t buf[16];
+
+			buf[0U] = 6U;
+			buf[1U] = SPEECH_SYNTHESIS_BATTERY;
+			buf[2U] = SPEECH_SYNTHESIS_SEQUENCE_SEPARATOR;
+			buf[3U] = SPEECH_SYNTHESIS_ONE;
+			buf[4U] = SPEECH_SYNTHESIS_TWO;
+			buf[5U] = SPEECH_SYNTHESIS_THREE;
+			buf[6U] = SPEECH_SYNTHESIS_FOUR;
+
+			speechSynthesisSpeak(buf);
+		}
+#endif
 	}
 }
 #endif // PLATFORM_GD77S

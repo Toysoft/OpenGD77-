@@ -175,6 +175,10 @@ void fw_main_task(void *data)
     // Init HR-C6000 interrupts
     init_HR_C6000_interrupts();
 
+    // Speech Synthesis (GD77S Only)
+    speechSynthesisInit();
+
+
     // Small startup delay after initialization to stabilize system
   //  vTaskDelay(portTICK_PERIOD_MS * 500);
 
@@ -585,6 +589,7 @@ void fw_main_task(void *data)
     			}
     		}
     		tick_melody();
+    		speechSynthesisTick();
     	}
 		vTaskDelay(0);
     }
