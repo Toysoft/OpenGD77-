@@ -342,7 +342,7 @@ void trxCheckAnalogSquelch(void)
 
 
 
-		if(((!rxCTCSSactive) && (trxRxNoise < squelch)) || ((rxCTCSSactive) && (trxCheckCTCSSFlag())))
+		if((trxRxNoise < squelch) && (((rxCTCSSactive) && (trxCheckCTCSSFlag())) || (!rxCTCSSactive)))
 		{
 			GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 1);// Set the audio path to AT1846 -> audio amp.
 			enableAudioAmp(AUDIO_AMP_MODE_RF);
