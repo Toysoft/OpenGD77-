@@ -189,9 +189,9 @@ void speechSynthesisTick(void)
 		// Turn on Audio Amp
 		enableAudioAmp(AUDIO_AMP_MODE_BEEP);
 
-	    if (trxGetMode() == RADIO_MODE_ANALOG)
+		if (trxGetMode() == RADIO_MODE_ANALOG)
 		{
-		    GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 0);// set the audio mux HR-C6000 -> audio amp
+			GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 0);// set the audio mux HR-C6000 -> audio amp
 		}
 
 		GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 1);
