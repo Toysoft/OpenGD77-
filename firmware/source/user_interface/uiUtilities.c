@@ -1056,11 +1056,7 @@ void menuUtilityRenderQSOData(void)
 			// Its a Private call
 			ucPrintCentered(16, LinkHead->contact, FONT_SIZE_3);
 
-#if defined(PLATFORM_DM5R)
-			ucPrintCentered(24, currentLanguage->private_call, FONT_SIZE_2);
-#else
-			ucPrintCentered(32, currentLanguage->private_call, FONT_SIZE_3);
-#endif
+			ucPrintCentered((DISPLAY_SIZE_Y/2), currentLanguage->private_call, FONT_SIZE_3);
 
 			if (LinkHead->talkGroupOrPcId != (trxDMRID | (PC_CALL_FLAG << 24)))
 			{

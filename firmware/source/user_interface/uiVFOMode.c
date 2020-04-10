@@ -62,10 +62,23 @@ static vfoScreenOperationMode_t screenOperationMode[2] = {VFO_SCREEN_OPERATION_N
 #if defined(PLATFORM_DM5R)
 const int RX_FREQ_Y_POS = 31;
 const int TX_FREQ_Y_POS = 40;
+
+const int CONTACT_TX_Y_POS = 28;
+const int CONTACT_TX_FRAME_Y_POS = 26;
+const int CONTACT_Y_POS_OFFSET = 2;
+const int XBAR_Y_POS = 16;
+const int XBAR_H = 4;
 #else
 const int RX_FREQ_Y_POS = 32;
 const int TX_FREQ_Y_POS = 48;
+
+const int CONTACT_TX_Y_POS = 34;
+const int CONTACT_TX_FRAME_Y_POS = 34;
+const int CONTACT_Y_POS_OFFSET = 0;
+const int XBAR_Y_POS = 17;
+const int XBAR_H = 9;
 #endif
+
 
 // Public interface
 int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
@@ -185,12 +198,7 @@ int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
 				if (displaySquelch && ((ev->time - sqm) > 1000))
 				{
 					displaySquelch = false;
-
-#if defined(PLATFORM_DM5R)
-					ucFillRect(0, 16, 128, 8, true);
-#else
 					ucClearRows(2, 4, false);
-#endif
 					ucRenderRows(2,4);
 				}
 
@@ -325,19 +333,11 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 
 					if (trxIsTransmitting)
 					{
-#if defined(PLATFORM_DM5R)
-						ucDrawRect(0, 26, 128, 11, true);
-#else
-						ucDrawRect(0, 34, 128, 16, true);
-#endif
+						ucDrawRect(0, CONTACT_TX_FRAME_Y_POS, 128, MENU_ENTRY_HEIGHT, true);
 					}
 					else
 					{
-#if defined(PLATFORM_DM5R)
-						ucDrawRect(0, CONTACT_Y_POS, 128, 11, true);
-#else
-						ucDrawRect(0, CONTACT_Y_POS, 128, 16, true);
-#endif
+						ucDrawRect(0, CONTACT_Y_POS, 128, MENU_ENTRY_HEIGHT, true);
 					}
 				}
 				else
@@ -349,19 +349,11 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 
 				if (trxIsTransmitting)
 				{
-#if defined(PLATFORM_DM5R)
-					ucPrintCentered(28, buffer, FONT_SIZE_3);
-#else
-					ucPrintCentered(34, buffer, FONT_SIZE_3);
-#endif
+					ucPrintCentered(CONTACT_TX_Y_POS, buffer, FONT_SIZE_3);
 				}
 				else
 				{
-#if defined(PLATFORM_DM5R)
-					ucPrintCentered(CONTACT_Y_POS + 2, buffer, FONT_SIZE_3);
-#else
-					ucPrintCentered(CONTACT_Y_POS, buffer, FONT_SIZE_3);
-#endif
+					ucPrintCentered(CONTACT_Y_POS + CONTACT_Y_POS_OFFSET, buffer, FONT_SIZE_3);
 				}
 			}
 			else
@@ -384,13 +376,8 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					ucPrintAt(0 + ((strlen(buffer) * 8) < xbar - 2 ? (((xbar - 2) - (strlen(buffer) * 8)) >> 1) : 0), 16, buffer, FONT_SIZE_3);
 					int bargraph = 1 + ((currentChannelData->sql - 1) * 5) /2;
 
-#if defined(PLATFORM_DM5R)
-					ucDrawRect(xbar - 2, 16, 55, 8, true);
-					ucFillRect(xbar, 18, bargraph, 4, false);
-#else
-					ucDrawRect(xbar - 2, 17, 55, 13, true);
-					ucFillRect(xbar, 19, bargraph, 9, false);
-#endif
+					ucDrawRect(xbar - 2, XBAR_Y_POS, 55, XBAR_H + 4, true);
+					ucFillRect(xbar, XBAR_Y_POS + 2, bargraph, XBAR_H, false);
 				}
 
 				// SK1 is pressed, we don't want to clear the first info row after 1s
@@ -422,11 +409,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					if (displaySquelch)
 					{
 						displaySquelch = false;
-#if defined(PLATFORM_DM5R)
-						ucFillRect(0, 16, 128, 8, true);
-#else
 						ucClearRows(2, 4, false);
-#endif
 					}
 					snprintf(buffer, bufferLen, " %d ", txTimeSecs);
 					ucPrintCentered(TX_TIMER_Y_OFFSET, buffer, FONT_SIZE_4);
@@ -488,16 +471,13 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 				else
 				{
 					uint8_t hiX = 128 - ((7 * 8) + 2);
-
+					ucPrintAt(5, (DISPLAY_SIZE_Y / 2), "Low", FONT_SIZE_3);
 #if defined(PLATFORM_DM5R)
-					ucPrintAt(5, 24, "Low", FONT_SIZE_3);
 					ucDrawFastVLine(0, 29, 24, true);
-					ucDrawFastHLine(1, TX_FREQ_Y_POS, 57, true);
 #else
-					ucPrintAt(5, 32, "Low", FONT_SIZE_3);
 					ucDrawFastVLine(0, 37, 24, true);
-					ucDrawFastHLine(1, TX_FREQ_Y_POS, 57, true);
 #endif
+					ucDrawFastHLine(1, TX_FREQ_Y_POS, 57, true);
 
 					sprintf(buffer, "%c%c%c.%c%c%c", freq_enter_digits[0], freq_enter_digits[1], freq_enter_digits[2],
 													 freq_enter_digits[3], freq_enter_digits[4], freq_enter_digits[5]);

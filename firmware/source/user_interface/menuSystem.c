@@ -299,11 +299,9 @@ void menuDisplayTitle(const char *title)
 void menuDisplayEntry(int loopOffset, int focusedItem,const char *entryText)
 {
 #if defined(PLATFORM_DM5R)
-const int FONT_SIZE_3_HEIGHT = 10;
 const int MENU_START_Y = 28;
 const int HIGHLIGHT_START_Y = 27;
 #else
-const int FONT_SIZE_3_HEIGHT = 16;
 const int MENU_START_Y = 32;
 const int HIGHLIGHT_START_Y = 32;
 #endif

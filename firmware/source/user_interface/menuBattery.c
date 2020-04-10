@@ -133,11 +133,6 @@ static void updateScreen(bool forceRedraw)
 
 			if ((prevAverageBatteryVoltage != averageBatteryVoltage) || (averageBatteryVoltage < BATTERY_CRITICAL_VOLTAGE) || forceRedraw)
 			{
-#if defined(PLATFORM_DM5R)
-				const int MAX_BATTERY_BAR_HEIGHT = 20;
-#else
-				const int MAX_BATTERY_BAR_HEIGHT = 36;
-#endif
 				char buffer[17];
 				int val1 = averageBatteryVoltage / 10;
 				int val2 = averageBatteryVoltage - (val1 * 10);
@@ -151,28 +146,13 @@ static void updateScreen(bool forceRedraw)
 
 				if (forceRedraw)
 				{
-#if defined(PLATFORM_DM5R)
 					// Clear whole drawing region
-					ucFillRect(0, 14, 128, 48 - 14, true);
-
+					ucFillRect(0, 14, 128, DISPLAY_SIZE_Y - 14, true);
 					// Draw...
 					// Inner body frame
-					ucDrawRoundRect(97, 20, 26, 26, 3, true);
-
+					ucDrawRoundRect(97, 20, 26, DISPLAY_SIZE_Y-22, 3, true);
 					// Outer body frame
-					ucDrawRoundRect(96, 19, 28, 28, 3, true);
-#else
-					// Clear whole drawing region
-					ucFillRect(0, 14, 128, 64 - 14, true);
-
-					// Draw...
-					// Inner body frame
-					ucDrawRoundRect(97, 20, 26, 42, 3, true);
-
-					// Outer body frame
-					ucDrawRoundRect(96, 19, 28, 44, 3, true);
-#endif
-
+					ucDrawRoundRect(96, 19, 28, DISPLAY_SIZE_Y - 20, 3, true);
 					// Positive pole frame
 					ucFillRoundRect(96+9, 15, 10, 6, 2, true);
 				}
@@ -181,31 +161,23 @@ static void updateScreen(bool forceRedraw)
 					// Clear voltage area
 					ucFillRect(20, 22, (4 * 16), 32, true);
 					// Clear level area
-					ucFillRoundRect(100, 23, 20, MAX_BATTERY_BAR_HEIGHT, 2, false);
+					ucFillRoundRect(100, 23, 20, DISPLAY_SIZE_Y - 28, 2, false);
 				}
 
-#if defined(PLATFORM_DM5R)
-				ucPrintAt(20, 16, buffer, FONT_SIZE_4);
-#else
 				ucPrintAt(20, 22, buffer, FONT_SIZE_4);
-#endif
 
-				uint32_t h = (uint32_t)(((averageBatteryVoltage - CUTOFF_VOLTAGE_UPPER_HYST) * MAX_BATTERY_BAR_HEIGHT) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));
-				if (h > MAX_BATTERY_BAR_HEIGHT)
+				uint32_t h = (uint32_t)(((averageBatteryVoltage - CUTOFF_VOLTAGE_UPPER_HYST) * DISPLAY_SIZE_Y - 28) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));
+				if (h > DISPLAY_SIZE_Y - 28)
 				{
-					h = MAX_BATTERY_BAR_HEIGHT;
+					h = DISPLAY_SIZE_Y - 28;
 				}
 
 				// Draw Level
-				ucFillRoundRect(100, 23 + MAX_BATTERY_BAR_HEIGHT - h , 20, h, 2, (averageBatteryVoltage < BATTERY_CRITICAL_VOLTAGE) ? blink : true);
+				ucFillRoundRect(100, 23 + DISPLAY_SIZE_Y - 28 - h , 20, h, 2, (averageBatteryVoltage < BATTERY_CRITICAL_VOLTAGE) ? blink : true);
 			}
 
 			// Low blinking arrow
-#if defined(PLATFORM_DM5R)
-			ucFillTriangle(63, 47, 59, 43, 67, 43, blink);
-#else
-			ucFillTriangle(63, 63, 59, 59, 67, 59, blink);
-#endif
+			ucFillTriangle(63, DISPLAY_SIZE_Y -1 , 59, (DISPLAY_SIZE_Y -5), 67, (DISPLAY_SIZE_Y -5), blink);
 		}
 		break;
 
@@ -233,11 +205,8 @@ static void updateScreen(bool forceRedraw)
 			{
 				static const uint8_t chartX = 2 + (2 * 6) + 3 + 2;
 				static const uint8_t chartY = 14 + 1 + 2;
-#if defined(PLATFORM_DM5R)
-				static const uint8_t chartHeight = 22;
-#else
-				static const uint8_t chartHeight = 38;
-#endif
+				const int chartHeight = DISPLAY_SIZE_Y - 26;
+
 				// Min is 6.4V, Max is 8.2V
 				// Pick: MIN @ 7V, MAX @ 8V
 				uint32_t minVH = (uint32_t)(((70 - CUTOFF_VOLTAGE_UPPER_HYST) * chartHeight) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));
@@ -249,11 +218,7 @@ static void updateScreen(bool forceRedraw)
 				if (forceRedraw)
 				{
 					// Clear whole drawing region
-#if defined(PLATFORM_DM5R)
-					ucFillRect(0, 14, 128, 48 - 14, true);
-#else
-					ucFillRect(0, 14, 128, 64 - 14, true);
-#endif
+					ucFillRect(0, 14, 128, DISPLAY_SIZE_Y - 14, true);
 
 					// 2 axis chart
 					ucDrawFastVLine(chartX - 3, chartY - 2, chartHeight + 2 + 3, true);
@@ -297,12 +262,8 @@ static void updateScreen(bool forceRedraw)
 				}
 			}
 
-			// Low blinking arrow
-#if defined(PLATFORM_DM5R)
-			ucFillTriangle(63, 47, 59, 43, 67, 43, blink);
-#else
-			ucFillTriangle(63, 59, 59, 63, 67, 63, blink);
-#endif
+			// Upwards blinking arrow
+			ucFillTriangle(63,(DISPLAY_SIZE_Y - 5), 59,(DISPLAY_SIZE_Y - 1), 67,(DISPLAY_SIZE_Y - 1), blink);
 		}
 		break;
 	}
