@@ -47,6 +47,15 @@ static const uint8_t *screenBufEnd = screenBuf + sizeof(screenBuf);
 #endif
 int activeBufNum=0;
 
+#if defined(PLATFORM_RD5R)
+const int DISPLAY_SIZE_Y = 48;
+const int FONT_SIZE_3_HEIGHT = 8;
+#else
+const int DISPLAY_SIZE_Y = 64;
+const int FONT_SIZE_3_HEIGHT = 16;
+#endif
+const int DISPLAY_SIZE_X = 128;
+
 
 int16_t ucSetPixel(int16_t x, int16_t y, bool color)
 {
@@ -107,6 +116,23 @@ int ucPrintCore(int16_t x, int16_t y, const char *szMsg, ucFont_t fontSize, ucTe
 
     switch(fontSize)
     {
+#if defined(PLATFORM_RD5R)
+       	case FONT_SIZE_1:
+    		currentFont = (uint8_t *) font_6x8;
+    		break;
+    	case FONT_SIZE_1_BOLD:
+			currentFont = (uint8_t *) font_6x8_bold;
+    		break;
+    	case FONT_SIZE_2:
+    		currentFont = (uint8_t *) font_8x8;//font_8x8;
+    		break;
+    	case FONT_SIZE_3:
+    		currentFont = (uint8_t *) font_8x8;//font_8x16;
+			break;
+    	case FONT_SIZE_4:
+    		currentFont = (uint8_t *) font_8x16;// font_16x32;
+			break;
+#else
     	case FONT_SIZE_1:
     		currentFont = (uint8_t *) font_6x8;
     		break;
@@ -122,7 +148,7 @@ int ucPrintCore(int16_t x, int16_t y, const char *szMsg, ucFont_t fontSize, ucTe
     	case FONT_SIZE_4:
     		currentFont = (uint8_t *) font_16x32;
 			break;
-
+#endif
     	default:
     		return -2;// Invalid font selected
     		break;
@@ -972,6 +998,16 @@ void ucDrawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16
 
 void ucDrawChoice(ucChoice_t choice, bool clearRegion)
 {
+#if defined(PLATFORM_RD5R)
+	const uint8_t TEXT_Y = 40;
+	const uint8_t FILLRECT_Y = 32;
+#else
+	const uint8_t TEXT_Y = 49;
+	const uint8_t FILLRECT_Y = 48;
+#endif
+	const uint8_t TEXT_L_CENTER_X = 12;
+	const uint8_t TEXT_R_CENTER_X = 115;
+
 	struct
 	{
 		char *lText;
@@ -984,13 +1020,11 @@ void ucDrawChoice(ucChoice_t choice, bool clearRegion)
 	};
 	char *lText = NULL;
 	char *rText = NULL;
-	uint8_t lCenter = 12;
-	uint8_t rCenter = 115;
-	uint8_t y = 49;
+
 
 	if (clearRegion)
 	{
-		ucFillRect(0, 48, 128, 16, true);
+		ucFillRect(0, FILLRECT_Y, 128, 16, true);
 	}
 
 	if (choice >= CHOICES_NUM) {
@@ -1002,23 +1036,25 @@ void ucDrawChoice(ucChoice_t choice, bool clearRegion)
 
 	if (lText)
 	{
-		int16_t x = (lCenter - ((strlen(lText) * 8) >> 1));
+		int16_t x = (TEXT_L_CENTER_X - ((strlen(lText) * 8) >> 1));
 
 		if (x < 2)
+		{
 			x = 2;
-
-		ucPrintAt(x, y, lText, FONT_SIZE_3);
+		}
+		ucPrintAt(x, TEXT_Y, lText, FONT_SIZE_3);
 	}
 
 	if(rText)
 	{
 		size_t len = (strlen(rText) * 8);
-		int16_t x = (rCenter - (len >> 1));
+		int16_t x = (TEXT_R_CENTER_X - (len >> 1));
 
 		if ((x + len) > 126)
+		{
 			x = (126 - len);
-
-		ucPrintAt(x, y, rText, FONT_SIZE_3);
+		}
+		ucPrintAt(x, TEXT_Y, rText, FONT_SIZE_3);
 	}
 }
 

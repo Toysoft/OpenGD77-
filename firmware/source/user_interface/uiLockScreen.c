@@ -63,13 +63,13 @@ static void redrawScreen(bool update, bool state)
 	if (update)
 	{
 		// Clear inner rect only
-		ucFillRoundRect(5, 3, 118, 56, 5, false);
+		ucFillRoundRect(5, 3, 118, DISPLAY_SIZE_Y - 8, 5, false);
 	}
 	else
 	{
 		// Clear whole screen
 		ucClearBuf();
-		ucDrawRoundRectWithDropShadow(4, 4, 120, 58, 5, true);
+		ucDrawRoundRectWithDropShadow(4, 4, 120, DISPLAY_SIZE_Y - 6, 5, true);
 	}
 
 	if (state)
@@ -92,13 +92,21 @@ static void redrawScreen(bool update, bool state)
 		buf[bufferLen - 1] = 0;
 
 		ucPrintCentered(6, buf, FONT_SIZE_3);
+
+#if defined(PLATFORM_RD5R)
+
+		ucPrintCentered(14, currentLanguage->locked, FONT_SIZE_3);
+		ucPrintCentered(24, currentLanguage->press_blue_plus_star, FONT_SIZE_1);
+		ucPrintCentered(32, currentLanguage->to_unlock, FONT_SIZE_1);
+#else
 		ucPrintCentered(22, currentLanguage->locked, FONT_SIZE_3);
 		ucPrintCentered(40, currentLanguage->press_blue_plus_star, FONT_SIZE_1);
 		ucPrintCentered(48, currentLanguage->to_unlock, FONT_SIZE_1);
+#endif
 	}
 	else
 	{
-		ucPrintCentered(24, currentLanguage->unlocked, FONT_SIZE_3);
+		ucPrintCentered((DISPLAY_SIZE_Y - 16) / 2, currentLanguage->unlocked, FONT_SIZE_3);
 	}
 
 	ucRender();

@@ -172,6 +172,8 @@ static void handleEvent(uiEvent_t *ev)
 		else if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 		{
 			// All parameters has already been applied
+			SETTINGS_PLATFORM_SPECIFIC_SAVE_SETTINGS(false);// Some platform require the settings to be saved immediately
+
 			menuSystemPopAllAndDisplayRootMenu();
 			return;
 		}

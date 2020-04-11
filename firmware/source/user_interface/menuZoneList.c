@@ -88,6 +88,7 @@ static void handleEvent(uiEvent_t *ev)
 		nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE]=0;// Since we are switching zones the TRx Group index should be reset
 		channelScreenChannelData.rxFreq=0x00; // Flag to the Channel screen that the channel data is now invalid and needs to be reloaded
 		menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
+		SETTINGS_PLATFORM_SPECIFIC_SAVE_SETTINGS(false);// For Baofeng RD-5R
 
 		return;
 	}

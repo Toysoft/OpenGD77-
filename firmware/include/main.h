@@ -56,6 +56,7 @@
 #include "SPI_Flash.h"
 #include "EEPROM.h"
 
+
 extern int Display_light_Timer;
 extern bool Display_light_Touched;
 extern const char *FIRMWARE_VERSION_STRING;

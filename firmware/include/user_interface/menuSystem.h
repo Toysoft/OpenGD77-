@@ -32,7 +32,14 @@ typedef struct
 	uint32_t        time;
 } uiEvent_t;
 
+#if defined(PLATFORM_RD5R)
+#define MENU_ENTRY_HEIGHT 10
+#else
+#define MENU_ENTRY_HEIGHT 16
+#endif
+
 #define MENU_MAX_DISPLAYED_ENTRIES 3
+
 #define MENU_INC(O, M) do { O = (O + 1) % M; } while(0)
 #define MENU_DEC(O, M) do { O = (O + M - 1) % M; } while(0)
 
@@ -150,7 +157,8 @@ enum MENU_SCREENS { MENU_SPLASH_SCREEN=0,
 enum QUICK_FUNCTIONS {  QUICK_FUNCTIONS_MENU_PLACEHOLDER = 20,   // All values lower than this are used as menu entries
 						START_SCANNING,
 						INC_BRIGHTNESS,
-						DEC_BRIGHTNESS
+						DEC_BRIGHTNESS,
+						TOGGLE_TORCH
 };
 
 // This is used to store current position in menus. The system keeps track of its value, e.g entering in

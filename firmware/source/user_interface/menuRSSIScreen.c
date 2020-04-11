@@ -86,12 +86,12 @@ static void updateScreen(void)
 		{
 			barGraphLength=123;
 		}
-		ucFillRect(4, 40,barGraphLength,8,false);
 
-		ucPrintCore(5,50,"S1  S3  S5  S7  S9", FONT_SIZE_1, TEXT_ALIGN_LEFT, false);
+		ucFillRect(4, DISPLAY_SIZE_Y-18,barGraphLength,8,false);
+		ucPrintCore(5,DISPLAY_SIZE_Y-8,"S1  S3  S5  S7  S9", FONT_SIZE_1, TEXT_ALIGN_LEFT, false);
+
 		ucRender();
 		trxRxSignal=0;
-
 }
 
 
