@@ -38,6 +38,7 @@ void fw_init_common(void)
     CLOCK_EnableClock(kCLOCK_PortD);
     CLOCK_EnableClock(kCLOCK_PortE);
 
+#if !defined(PLATFORM_RD5R)
     // Power On/Off logic
     PORT_SetPinMux(Port_Keep_Power_On, Pin_Keep_Power_On, kPORT_MuxAsGpio);
     PORT_SetPinMux(Port_Power_Switch, Pin_Power_Switch, kPORT_MuxAsGpio);
@@ -48,6 +49,8 @@ void fw_init_common(void)
 
     // Power On/Off logic
 	GPIO_PinWrite(GPIO_Keep_Power_On, Pin_Keep_Power_On, 1);
+#endif
+
 
     // Speaker mute and RX/TX mux init
     PORT_SetPinMux(Port_audio_amp_enable, Pin_audio_amp_enable, kPORT_MuxAsGpio);

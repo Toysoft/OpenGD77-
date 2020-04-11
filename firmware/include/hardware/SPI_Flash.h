@@ -61,6 +61,24 @@
 #define GPIO_SPI_FLASH_DO_U GPIOE
 #define Pin_SPI_FLASH_DO_U 4
 
+#elif defined(PLATFORM_RD5R)
+
+#define Port_SPI_FLASH_CS_U  	PORTE
+#define GPIO_SPI_FLASH_CS_U  	GPIOE
+#define Pin_SPI_FLASH_CS_U   	2
+
+#define Port_SPI_FLASH_CLK_U 	PORTE
+#define GPIO_SPI_FLASH_CLK_U 	GPIOE
+#define Pin_SPI_FLASH_CLK_U  	5
+
+#define Port_SPI_FLASH_DI_U  	PORTE
+#define GPIO_SPI_FLASH_DI_U  	GPIOE
+#define Pin_SPI_FLASH_DI_U   	3
+
+#define Port_SPI_FLASH_DO_U  	PORTE
+#define GPIO_SPI_FLASH_DO_U  	GPIOE
+#define Pin_SPI_FLASH_DO_U   	4
+
 #endif
 
 

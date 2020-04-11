@@ -342,7 +342,7 @@ void trxCheckAnalogSquelch(void)
 
 
 
-		if(((!rxCTCSSactive) && (trxRxNoise < squelch)) || ((rxCTCSSactive) && (trxCheckCTCSSFlag())))
+		if((trxRxNoise < squelch) && (((rxCTCSSactive) && (trxCheckCTCSSFlag())) || (!rxCTCSSactive)))
 		{
 			GPIO_PinWrite(GPIO_RX_audio_mux, Pin_RX_audio_mux, 1);// Set the audio path to AT1846 -> audio amp.
 			enableAudioAmp(AUDIO_AMP_MODE_RF);
@@ -606,6 +606,14 @@ static const float fractionalPowers[3][4] = {	{0.59,0.73,0.84,0.93},// VHF
 static const float fractionalPowers[3][4] = {	{0.28,0.37,0.62,0.82},// VHF
 												{0.28,0.37,0.62,0.82},// 220Mhz
 												{0.05,0.25,0.51,0.75}};// UHF
+
+#elif defined(PLATFORM_RD5R)
+
+// Fixme: Using table form DM1801
+static const float fractionalPowers[3][4] = {	{0.28,0.37,0.62,0.82},// VHF
+												{0.28,0.37,0.62,0.82},// 220Mhz
+												{0.05,0.25,0.51,0.75}};// UHF
+
 
 #endif
 	int stepPerWatt = (trxPowerSettings.highPower - trxPowerSettings.lowPower)/( 5 - 1);

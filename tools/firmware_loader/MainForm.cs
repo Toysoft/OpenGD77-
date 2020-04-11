@@ -101,6 +101,9 @@ namespace GD77_FirmwareLoader
 				case FirmwareLoader.OutputType.OutputType_DM1801:
 					pattern = @"/rogerclarkmelbourne/OpenGD77/releases/download/R([0-9\.]+)/OpenDM1801\.sgl";
 					break;
+				case FirmwareLoader.OutputType.OutputType_RD5R:
+					pattern = @"/rogerclarkmelbourne/OpenGD77/releases/download/R([0-9\.]+)/OpenRD5R\.sgl";
+					break;
 			}
 
 			// Looking for firmware's URL

@@ -96,13 +96,13 @@ void menuLastHeardUpdateScreen(bool showTitleOrHeader, bool displayDetails)
 	{
 		if (dmrIDLookup(item->id, &foundRecord))
 		{
-			menuLastHeardDisplayTA(16 + (numDisplayed * 16), foundRecord.text, item->time, now, item->talkGroupOrPcId, 20, displayDetails);
+			menuLastHeardDisplayTA(16 + (numDisplayed * MENU_ENTRY_HEIGHT), foundRecord.text, item->time, now, item->talkGroupOrPcId, 20, displayDetails);
 		}
 		else
 		{
 			if (item->talkerAlias[0] != 0x00)
 			{
-				menuLastHeardDisplayTA(16 + (numDisplayed * 16), item->talkerAlias, item->time, now, item->talkGroupOrPcId, 32, displayDetails);
+				menuLastHeardDisplayTA(16 + (numDisplayed * MENU_ENTRY_HEIGHT), item->talkerAlias, item->time, now, item->talkGroupOrPcId, 32, displayDetails);
 			}
 			else
 			{
@@ -110,7 +110,7 @@ void menuLastHeardUpdateScreen(bool showTitleOrHeader, bool displayDetails)
 
 				snprintf(buffer, 17, "ID:%d", item->id);
 				buffer[16] = 0;
-				menuLastHeardDisplayTA(16 + (numDisplayed * 16), buffer, item->time, now, item->talkGroupOrPcId, 17, displayDetails);
+				menuLastHeardDisplayTA(16 + (numDisplayed * MENU_ENTRY_HEIGHT), buffer, item->time, now, item->talkGroupOrPcId, 17, displayDetails);
 			}
 		}
 
@@ -190,9 +190,12 @@ static void menuLastHeardDisplayTA(uint8_t y, char *text, uint32_t time, uint32_
 		snprintf(buffer, 5, "%d", diffTimeInMins);
 		buffer[5] = 0;
 
-		ucPrintAt((128 - (3 * 6)), (y + 6), "min", FONT_SIZE_1);
+#if defined(PLATFORM_RD5R)
+		ucPrintAt((128 - (3 * 6)), y		, "min", FONT_SIZE_1);
+#else
+		ucPrintAt((128 - (3 * 6)), (y + 6)	, "min", FONT_SIZE_1);
+#endif
 		ucPrintAt((128 - (strlen(buffer) * 8) - (3 * 6) - 1), y, buffer, FONT_SIZE_3);
-
 	}
 	else // search for callsign + first name
 	{

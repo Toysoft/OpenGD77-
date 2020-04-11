@@ -41,10 +41,19 @@
 #define GPIO_LEDred		GPIOC
 #define Pin_LEDred		14
 
+#elif defined(PLATFORM_RD5R)
+
+#define Port_LEDgreen	PORTB
+#define GPIO_LEDgreen	GPIOB
+#define Pin_LEDgreen	18
+
+#define Port_LEDred		PORTB
+#define GPIO_LEDred		GPIOB
+#define Pin_LEDred		0
+
 #endif
 
-
-
+void toggle_torch();
 void fw_init_LEDs(void);
 
 #endif /* _FW_LEDS_H_ */

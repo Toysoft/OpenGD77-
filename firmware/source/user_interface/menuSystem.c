@@ -298,12 +298,23 @@ void menuDisplayTitle(const char *title)
 
 void menuDisplayEntry(int loopOffset, int focusedItem,const char *entryText)
 {
+#if defined(PLATFORM_RD5R)
+const int MENU_START_Y = 28;
+const int HIGHLIGHT_START_Y = 27;
+#else
+const int MENU_START_Y = 32;
+const int HIGHLIGHT_START_Y = 32;
+#endif
+
 	bool focused = (focusedItem == gMenusCurrentItemIndex);
 
 	if (focused)
-		ucFillRoundRect(0, (loopOffset + 2) * 16, 128, 16, 2, true);
+	{
+		ucFillRoundRect(0, HIGHLIGHT_START_Y +  (loopOffset * FONT_SIZE_3_HEIGHT), 128, FONT_SIZE_3_HEIGHT, 2, true);
+	}
 
-	ucPrintCore(0, (loopOffset + 2) * 16, entryText, FONT_SIZE_3, TEXT_ALIGN_LEFT, focused);
+	ucPrintCore(0,  MENU_START_Y +  (loopOffset * FONT_SIZE_3_HEIGHT), entryText, FONT_SIZE_3, TEXT_ALIGN_LEFT, focused);
+
 }
 
 int menuGetMenuOffset(int maxMenuEntries, int loopOffset)

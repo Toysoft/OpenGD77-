@@ -48,7 +48,11 @@ static void handleEvent(uiEvent_t *ev)
 {
 	static uint32_t m = 0;
 
+#if defined(PLATFORM_RD5R)
+	if (battery_voltage > CUTOFF_VOLTAGE_LOWER_HYST)
+#else
 	if ((GPIO_PinRead(GPIO_Power_Switch, Pin_Power_Switch) == 0) && (battery_voltage > CUTOFF_VOLTAGE_LOWER_HYST))
+#endif
 	{
 		// I think this is to handle if the power button is turned back on during shutdown
 		menuSystemPopPreviousMenu();

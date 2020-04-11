@@ -77,6 +77,28 @@ extern volatile int isI2cInUse;
 #define GPIO_I2C0b_SDA     GPIOB
 #define Pin_I2C0b_SDA	   3
 
+#elif defined(PLATFORM_RD5R)
+
+// I2C0a to AT24C512 EEPROM & AT1846S
+// OUT/ON E24 - I2C SCL to AT24C512 EEPROM & AT1846S
+// OUT/ON E25 - I2C SDA to AT24C512 EEPROM & AT1846S
+#define Port_I2C0a_SCL     PORTE
+#define GPIO_I2C0a_SCL     GPIOE
+#define Pin_I2C0a_SCL	   24
+#define Port_I2C0a_SDA     PORTE
+#define GPIO_I2C0a_SDA     GPIOE
+#define Pin_I2C0a_SDA	   25
+
+// I2C0b to ALPU-MP-1413
+// OUT/ON B2 - I2C SCL to ALPU-MP-1413
+// OUT/ON B3 - I2C SDA to ALPU-MP-1413
+#define Port_I2C0b_SCL     PORTB
+#define GPIO_I2C0b_SCL     GPIOB
+#define Pin_I2C0b_SCL	   2
+#define Port_I2C0b_SDA     PORTB
+#define GPIO_I2C0b_SDA     GPIOB
+#define Pin_I2C0b_SDA	   3
+
 #endif
 
 

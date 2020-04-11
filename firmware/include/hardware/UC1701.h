@@ -55,6 +55,11 @@ typedef enum
 
 extern uint8_t screenBuf[];
 
+
+extern const int FONT_SIZE_3_HEIGHT;
+extern const int DISPLAY_SIZE_Y;
+extern const int DISPLAY_SIZE_X;
+
 void ucBegin(bool isInverted);
 void ucClearBuf(void);
 void ucClearRows(int16_t startRow, int16_t endRow, bool isInverted);
