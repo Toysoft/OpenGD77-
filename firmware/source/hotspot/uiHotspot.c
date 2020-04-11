@@ -18,7 +18,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 #include <calibration.h>
-#include <user_interface/menuHotspot.h>
+#include <hotspot/uiHotspot.h>
 #include <user_interface/menuSystem.h>
 #include <user_interface/uiUtilities.h>
 #include <ctype.h>
