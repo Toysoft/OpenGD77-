@@ -30,5 +30,8 @@ bool speechSynthesisIsSpeaking(void);
 void speechSynthesisSpeak(uint8_t *sentence);
 void speechSynthesisTick(void);
 
+uint8_t speechSynthesisBuildFromNumberInString(uint8_t *dest, uint8_t destSize, const char *str, bool enumerate);
+uint8_t speechSynthesisBuildNumerical(uint8_t *dest, uint8_t destSize, float value, uint8_t numberOfDecimals, bool enumerate);
+
 
 #endif /* _SPEECH_SYNTHESIS_H_ */

@@ -21,6 +21,10 @@
 #include <EPL003.h>
 #include <settings.h>
 #include <io/LEDs.h>
+#include <math.h>
+#include <stdio.h>
+#include <usb_com.h>
+
 
 
 #if defined(PLATFORM_GD77S)
@@ -242,5 +246,175 @@ void speechSynthesisTick(void)
 		}
 	}
 #endif
+}
+
+// Helper functions
+uint8_t speechSynthesisBuildFromNumberInString(uint8_t *dest, uint8_t destSize, const char *str, bool enumerate)
+{
+	uint8_t   *pBuf = dest;
+	char      *p = (char *)str;
+
+	// Just enumerates all numbers, plus '.', and sign
+	if (enumerate)
+	{
+		while ((*p != 0) && ((p - str) < destSize))
+		{
+			if ((*p >= '0') && (*p <= '9'))
+			{
+				*pBuf++ = (*p - 48) + SPEECH_SYNTHESIS_ZERO;
+			}
+			else if (*p == '.')
+			{
+				*pBuf++ = SPEECH_SYNTHESIS_POINT;
+			}
+			else if (*p == '+')
+			{
+				*pBuf++ = SPEECH_SYNTHESIS_PLUS;
+			}
+			else if (*p == '-')
+			{
+				*pBuf++ = SPEECH_SYNTHESIS_MINUS;
+			}
+
+			p++;
+		}
+	}
+	else // Builds a real spoken number (less the 'and')
+	{
+		uint8_t    len = strlen(p);
+		bool       sign = ((*str == '+') || (*str == '-'));
+
+		if (len > destSize)
+		{
+			return 0;
+		}
+
+		if (sign)
+		{
+			*pBuf++ = (*str == '+') ? SPEECH_SYNTHESIS_PLUS : SPEECH_SYNTHESIS_MINUS;
+
+			p++;
+			len--;
+		}
+
+		if (len > 3)
+		{
+			// Not that clean, but hey ! ;-)
+			*(p + 3) = 0;
+			len = 3;
+		}
+
+		switch (len)
+		{
+			case 3: // First digit
+			{
+				*pBuf++ = (*p - 48) + SPEECH_SYNTHESIS_ZERO;
+
+				if ((*p != '0') && *(p + 1) == '0')
+				{
+					*pBuf++ = SPEECH_SYNTHESIS_HUNDRED;
+				}
+
+				p++;
+			}
+
+			case 2: // Second digit
+			{
+				if (*p == '1')
+				{
+					*pBuf++ = (*(p + 1) - 48) + SPEECH_SYNTHESIS_TEN;
+					break;
+				}
+				else if (*p >= '2')
+				{
+					*pBuf++ = (*p - 50) + SPEECH_SYNTHESIS_TWENTY;
+
+					if (*(p + 1) == '0')
+					{
+						break;
+					}
+				}
+				else // zero
+				{
+					if (((len == 3) && (*(pBuf - 1) != SPEECH_SYNTHESIS_HUNDRED) && (*p == '0'))
+							|| ((len == 2) && (*p == '0')))
+					{
+						*pBuf++ = SPEECH_SYNTHESIS_ZERO;
+					}
+				}
+
+				p++;
+			}
+
+			case 1: // Third digit
+				if (((len > 1) && (*p != '0')) || (len == 1))
+				{
+					*pBuf++ = (*p - 48) + SPEECH_SYNTHESIS_ZERO;
+				}
+				break;
+
+			default:
+				// Noop
+				break;
+		}
+	}
+
+	return (pBuf - dest);
+}
+
+uint8_t speechSynthesisBuildNumerical(uint8_t *dest, uint8_t destSize, float value, uint8_t numberOfDecimals, bool enumerate)
+{
+	char str[16];
+	char *p = str;
+
+	// Is it an integer
+	if (ceilf(value) == value)
+	{
+		int iValue = (int)value;
+
+		snprintf(&str[0], 16, "%d", iValue);
+
+		return speechSynthesisBuildFromNumberInString(dest, destSize, p, enumerate);
+	}
+	else // Or a float
+	{
+		int     intValue = (int)value;
+		double  decValue = value - intValue;
+		uint8_t destPos;
+
+		if (numberOfDecimals == 0)
+		{
+			numberOfDecimals++;
+		}
+
+		// Int part
+		snprintf(&str[0], 16, "%d", intValue);
+
+		destPos = speechSynthesisBuildFromNumberInString(dest, destSize, p, enumerate);
+
+		if ((destPos + 2) <= destSize)
+		{
+			// Add a point
+			*(dest + (destPos++)) = SPEECH_SYNTHESIS_POINT;
+
+			// Then the decimal part
+#if 0 // With printf's float capable
+			snprintf(&str[0], 16, "%.*f", numberOfDecimals, decValue);
+			// starts at the first decimal digit
+			p = &str[2];
+#else // integer version
+			snprintf(&str[0], 16, "%03d", (int)(decValue * (value < -0.0 ? -1000.00 : 1000.00)));
+			if (numberOfDecimals < 3)
+			{
+				*(str + numberOfDecimals) = 0;
+			}
+			p = str;
+#endif
+
+			return (destPos + speechSynthesisBuildFromNumberInString((dest + destPos), (destSize - destPos), p, enumerate));
+		}
+	}
+
+	return 0U;
 }
 
