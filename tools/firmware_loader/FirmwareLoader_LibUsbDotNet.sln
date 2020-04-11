@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GD77_FirmwareLoader", "GD77_FirmwareLoader_LibUsbDotNet.csproj", "{58D9F832-3239-44CD-975A-9F17A3A6A74C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FirmwareLoader", "FirmwareLoader_LibUsbDotNet.csproj", "{58D9F832-3239-44CD-975A-9F17A3A6A74C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
