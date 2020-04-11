@@ -71,7 +71,7 @@ static void handleEvent(uiEvent_t *ev)
 		nonVolatileSettings.languageIndex = gMenusCurrentItemIndex;
 		currentLanguage = &languages[gMenusCurrentItemIndex];
 		menuSystemLanguageHasChanged();
-		settingsPlatformSpecificSaveSettings(false);// Some platform require the settings to be saved immediately
+		SETTINGS_PLATFORM_SPECIFIC_SAVE_SETTINGS(false);// Some platform require the settings to be saved immediately
 		menuSystemPopAllAndDisplayRootMenu();
 		return;
 	}

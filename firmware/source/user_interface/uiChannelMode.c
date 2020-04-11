@@ -111,6 +111,7 @@ int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 		{
 			scanState = SCAN_SCANNING;
 		}
+		SETTINGS_PLATFORM_SPECIFIC_SAVE_SETTINGS(false);// For Baofeng RD-5R
 	}
 	else
 	{
@@ -1250,6 +1251,7 @@ static void handleEvent(uiEvent_t *ev)
 			loadChannelData(false);
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 			menuChannelModeUpdateScreen(0);
+			SETTINGS_PLATFORM_SPECIFIC_SAVE_SETTINGS(false);
 		}
 		else if (KEYCHECK_LONGDOWN(ev->keys, KEY_UP))
 		{
@@ -1258,6 +1260,7 @@ static void handleEvent(uiEvent_t *ev)
 		else if (KEYCHECK_SHORTUP(ev->keys,KEY_UP))
 		{
 			handleUpKey(ev);
+			SETTINGS_PLATFORM_SPECIFIC_SAVE_SETTINGS(false);
 		}
 		else
 		{

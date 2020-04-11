@@ -87,6 +87,7 @@ int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
 
 	if (isFirstRun)
 	{
+
 		freq_enter_idx = 0;
 
 		isDisplayingQSOData=false;
@@ -175,6 +176,7 @@ int menuVFOMode(uiEvent_t *ev, bool isFirstRun)
 		lastHeardClearLastID();
 		reset_freq_enter_digits();
 		menuVFOModeUpdateScreen(0);
+		SETTINGS_PLATFORM_SPECIFIC_SAVE_SETTINGS(true);
 	}
 	else
 	{
@@ -588,6 +590,7 @@ static void update_frequency(int frequency)
 		}
 	}
 	menuClearPrivateCall();
+	SETTINGS_PLATFORM_SPECIFIC_SAVE_SETTINGS(true);// For Baofeng RD-5R
 }
 
 static void checkAndFixIndexInRxGroup(void)
@@ -873,6 +876,7 @@ static void handleEvent(uiEvent_t *ev)
 				{
 					stepFrequency(VFO_FREQ_STEP_TABLE[(currentChannelData->VFOflag5 >> 4)] * -1);
 					menuVFOModeUpdateScreen(0);
+					SETTINGS_PLATFORM_SPECIFIC_SAVE_SETTINGS(true);// For Baofeng RD-5R
 				}
 			}
 			else if (KEYCHECK_LONGDOWN(ev->keys,KEY_DOWN))
@@ -1181,6 +1185,7 @@ static void handleUpKey(uiEvent_t *ev)
 	}
 	scanTimer=500;
 	scanState = SCAN_SCANNING;
+	SETTINGS_PLATFORM_SPECIFIC_SAVE_SETTINGS(true);
 }
 
 static void stepFrequency(int increment)
