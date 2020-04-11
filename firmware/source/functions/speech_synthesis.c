@@ -252,6 +252,7 @@ void speechSynthesisTick(void)
 uint8_t speechSynthesisBuildFromNumberInString(uint8_t *dest, uint8_t destSize, const char *str, bool enumerate)
 {
 	uint8_t   *pBuf = dest;
+#if defined(PLATFORM_GD77S)
 	char      *p = (char *)str;
 
 	// Just enumerates all numbers, plus '.', and sign
@@ -358,12 +359,14 @@ uint8_t speechSynthesisBuildFromNumberInString(uint8_t *dest, uint8_t destSize, 
 				break;
 		}
 	}
+#endif
 
 	return (pBuf - dest);
 }
 
 uint8_t speechSynthesisBuildNumerical(uint8_t *dest, uint8_t destSize, float value, uint8_t numberOfDecimals, bool enumerate)
 {
+#if defined(PLATFORM_GD77S)
 	char str[16];
 	char *p = str;
 
@@ -414,6 +417,7 @@ uint8_t speechSynthesisBuildNumerical(uint8_t *dest, uint8_t destSize, float val
 			return (destPos + speechSynthesisBuildFromNumberInString((dest + destPos), (destSize - destPos), p, enumerate));
 		}
 	}
+#endif
 
 	return 0U;
 }
