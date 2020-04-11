@@ -157,7 +157,7 @@ void speechSynthesisInit(void)
 void speechSynthesisSpeak(uint8_t *sentence)
 {
 #if defined(PLATFORM_GD77S)
-	if ((sentence[0] > 0) && (sentence[0] <= sizeof(ssSeq.Buffer)))
+	if (!trxIsTransmitting && ((sentence[0] > 0) && (sentence[0] <= sizeof(ssSeq.Buffer))))
 	{
 		ssSeq.Pos = 0;
 		ssSeq.Length = sentence[0];
@@ -227,7 +227,10 @@ void speechSynthesisTick(void)
 			}
 
 			disableAudioAmp(AUDIO_AMP_MODE_BEEP);
-			GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
+			if (((getAudioAmpStatus() & AUDIO_AMP_MODE_RF) == 0) && (trxCarrierDetected() == 0))
+			{
+				GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
+			}
 			ssSeq.Length = 0;
 		}
 		else

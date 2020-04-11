@@ -33,7 +33,7 @@ static uint16_t getCurrentChannelInCurrentZone(void);
 #else
 static void startScan(void);
 static void handleUpKey(uiEvent_t *ev);
-static void menuChannelUpdateTrxID(void );
+static void menuChannelUpdateTrxID(void);
 #endif // PLATFORM_GD77S
 
 static void updateQuickMenuScreen(void);
