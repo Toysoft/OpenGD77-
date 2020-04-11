@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -7,29 +7,30 @@
     <ProjectGuid>{58D9F832-3239-44CD-975A-9F17A3A6A74C}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>GD77_FirmwareLoader</RootNamespace>
-    <AssemblyName>GD77_FirmwareLoader</AssemblyName>
+    <RootNamespace>FirmwareLoader</RootNamespace>
+    <AssemblyName>FirmwareLoader</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <DefineConstants>$(DefineConstants);LINUX_BUILD</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>$(DefineConstants);LINUX_BUILD</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DefineConstants>$(DefineConstants);LINUX_BUILD</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>$(DefineConstants);LINUX_BUILD</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DefineConstants>$(DefineConstants);LINUX_BUILD</DefineConstants>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>
@@ -50,6 +51,9 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="LibUsbDotNet">
+      <HintPath>LibUsbDotNet.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataTable.cs" />
@@ -70,19 +74,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UsbLib\DataRecievedEventArgs.cs" />
-    <Compile Include="UsbLib\DataRecievedEventHandler.cs" />
-    <Compile Include="UsbLib\DataSendEventArgs.cs" />
-    <Compile Include="UsbLib\DataSendEventHandler.cs" />
-    <Compile Include="UsbLib\GException0.cs" />
-    <Compile Include="UsbLib\HIDDevice.cs" />
-    <Compile Include="UsbLib\InputReport.cs" />
-    <Compile Include="UsbLib\OutputReport.cs" />
-    <Compile Include="UsbLib\Report.cs" />
-    <Compile Include="UsbLib\SpecifiedDevice.cs" />
-    <Compile Include="UsbLib\SpecifiedInputReport.cs" />
-    <Compile Include="UsbLib\SpecifiedOutputReport.cs" />
-    <Compile Include="UsbLib\Win32Usb.cs" />
     <EmbeddedResource Include="FrmProgress.resx">
       <DependentUpon>FrmProgress.cs</DependentUpon>
     </EmbeddedResource>
@@ -108,6 +99,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="UsbLibDotNetHIDDevice.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

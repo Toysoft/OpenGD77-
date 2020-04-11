@@ -71,10 +71,10 @@ namespace GD77_FirmwareLoader
 			this.rbModels[2].CheckedChanged += new System.EventHandler(this.rbModel_CheckedChanged);
 
 			this.rbModels[3] = new System.Windows.Forms.RadioButton();
-			this.rbModels[3].Text = "Baofeng DM-5R / RD-5R";
+			this.rbModels[3].Text = "Baofeng RD-5R / DM-5R Tier2";
 			this.rbModels[3].Location = new System.Drawing.Point(5, 75);
 			this.rbModels[3].UseVisualStyleBackColor = true;
-			this.rbModels[3].Tag = (int)FirmwareLoader.OutputType.OutputType_DM5R;
+			this.rbModels[3].Tag = (int)FirmwareLoader.OutputType.OutputType_RD5R;
 			this.rbModels[3].AutoSize = true;
 			this.rbModels[3].CheckedChanged += new System.EventHandler(this.rbModel_CheckedChanged);
 
@@ -143,7 +143,7 @@ namespace GD77_FirmwareLoader
 			this.Controls.Add(this.btnOpenFile);
 			this.KeyPreview = true;
 			this.Name = "MainForm";
-			this.Text = "Open(GD77/GD77S/MD1801/DM5R) Firmware loader";
+			this.Text = "Open(GD77/GD77S/MD1801/RD5R) Firmware loader";
 			this.FormBorderStyle = FormBorderStyle.FixedSingle;
 			this.MaximizeBox = false;
 			this.ResumeLayout(false);
