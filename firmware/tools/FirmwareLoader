@@ -11,12 +11,12 @@ DM5RS=$(echo "${@:3:1})" | grep -o DM-5R)
 
 case "$OS" in
     "Linux")
-	mono "$1/GD77_FirmwareLoader-Linux.exe" $DM1801 $GD77S $DM5R $FIRMWARE
+	mono "$1/FirmwareLoader-Linux.exe" $DM1801 $GD77S $DM5R $FIRMWARE
 	ret=$?
 	;;
     "Darwin")
 	# doesn't even exist yet. Use Python script instead ?
-	#mono "$1/GD77_FirmwareLoader-Darwin.exe" ${@:2}
+	#mono "$1/FirmwareLoader-Darwin.exe" ${@:2}
 	ret=$?
 	;;
     *)
