@@ -729,8 +729,33 @@ static void checkAndUpdateSelectedChannelForGD77S(uint16_t chanNum, bool forceSp
 	}
 }
 
+static void buildSpeechSettingsFormGD77S(uint8_t *buf, uint8_t offset, uint8_t setting)
+{
+	const float powerLevels[] = { 0.050, 0.250, 0.500, 0.750, 1, 2, 3, 4, 5 };
+
+	switch (setting)
+	{
+		case 1: // POWER
+			buf[0U] += 1;
+			buf[offset + 1U] = SPEECH_SYNTHESIS_POWER;
+			if (nonVolatileSettings.txPowerLevel < MAX_POWER_SETTING_NUM)
+			{
+				buf[0U] += speechSynthesisBuildNumerical(&buf[offset + 2U], 32 - (offset + 2), powerLevels[nonVolatileSettings.txPowerLevel], 3, false);
+			}
+			else // 5W+
+			{
+				buf[0U] += speechSynthesisBuildFromNumberInString(&buf[offset + 2U], 32 - (offset + 2) - 2, "5+", true);
+			}
+			break;
+	}
+}
+
 static void handleEventForGD77S(uiEvent_t *ev)
 {
+	static uint8_t inSettings = 0;
+	uint8_t buf[32];
+
+
 	if (ev->events & ROTARY_EVENT)
 	{
 		if (!trxIsTransmitting && (ev->rotary > 0))
@@ -746,36 +771,80 @@ static void handleEventForGD77S(uiEvent_t *ev)
 	{
 		if (ev->buttons & BUTTON_ORANGE)
 		{
-			uint8_t buf[16];
+			buf[0U] = 0;
 
-			buf[0u] = 1;
-			buf[1U] = SPEECH_SYNTHESIS_BATTERY;
-			buf[0U] += speechSynthesisBuildNumerical(&buf[2], sizeof(buf) - 2, getBatteryPercentage(), 1, false);
+			if (ev->buttons & BUTTON_ORANGE_LONG)
+			{
+				inSettings = (inSettings + 1) % 2;
 
-			speechSynthesisSpeak(buf);
+				if (inSettings == 1)
+				{
+					buf[0u] = 4;
+					buf[1U] = SPEECH_SYNTHESIS_SET;
+					buf[2U] = SPEECH_SYNTHESIS_ON;
+					buf[3U] = SPEECH_SYNTHESIS_SEQUENCE_SEPARATOR;
+					buf[4U] = SPEECH_SYNTHESIS_SEQUENCE_SEPARATOR;
+					buildSpeechSettingsFormGD77S(buf, 4U, inSettings);
+				}
+				else if (inSettings == 0)
+				{
+					buf[0u] = 2;
+					buf[1U] = SPEECH_SYNTHESIS_SET;
+					buf[2U] = SPEECH_SYNTHESIS_OFF;
+				}
+			}
+			else
+			{
+				if (inSettings == 0)
+				{
+					buf[0u] = 1;
+					buf[1U] = SPEECH_SYNTHESIS_BATTERY;
+					buf[0U] += speechSynthesisBuildNumerical(&buf[2], sizeof(buf) - 2, getBatteryPercentage(), 1, false);
+				}
+			}
+
+			if (buf[0U] != 0)
+			{
+				speechSynthesisSpeak(buf);
+			}
 		}
 
 		if (ev->buttons & BUTTON_SK1)
 		{
-			float   v = 1.692;
-			uint8_t buf[16];
+			buf[0U] = 0;
 
-			buf[0U] = speechSynthesisBuildNumerical(&buf[1], sizeof(buf) - 1, v, 3, false);
-			speechSynthesisSpeak(buf);
+			if (inSettings == 1) // Power
+			{
+				if (nonVolatileSettings.txPowerLevel < MAX_POWER_SETTING_NUM)
+				{
+					nonVolatileSettings.txPowerLevel++;
+					buildSpeechSettingsFormGD77S(buf, 0U, inSettings);
+				}
+			}
 
+			if (buf[0U] != 0)
+			{
+				speechSynthesisSpeak(buf);
+			}
 		}
 		else if (ev->buttons & BUTTON_SK2)
 		{
-			float   v = 0.250f;
-			uint8_t buf[16];
+			buf[0U] = 0;
 
-			buf[0U] = 1;
-			buf[1U] = SPEECH_SYNTHESIS_POWER;
-			buf[0U] += speechSynthesisBuildNumerical(&buf[2], sizeof(buf) - 2, v, 3, false);
+			if (inSettings == 1) // Power
+			{
+				if (nonVolatileSettings.txPowerLevel > 0)
+				{
+					nonVolatileSettings.txPowerLevel--;
+					buildSpeechSettingsFormGD77S(buf, 0U, inSettings);
+				}
+			}
 
-			speechSynthesisSpeak(buf);
+			if (buf[0U] != 0)
+			{
+				speechSynthesisSpeak(buf);
+			}
 		}
-
 	}
 }
 #endif // PLATFORM_GD77S

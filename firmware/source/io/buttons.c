@@ -17,10 +17,18 @@
  */
 
 #include <buttons.h>
+#include <pit.h>
+#include <settings.h>
+#include <usb_com.h>
+
 
 static uint32_t old_button_state;
-
 volatile bool PTTLocked = false;
+
+#if defined(PLATFORM_GD77S)
+static bool orangeButtonPressed;
+static bool orangeButtonReleased;
+#endif
 
 void fw_init_buttons(void)
 {
@@ -29,6 +37,9 @@ void fw_init_buttons(void)
     PORT_SetPinMux(Port_SK2, Pin_SK2, kPORT_MuxAsGpio);
 #if ! defined(PLATFORM_RD5R)
     PORT_SetPinMux(Port_Orange, Pin_Orange, kPORT_MuxAsGpio);
+#if defined(PLATFORM_GD77S)
+#endif
+
 #endif
 
     GPIO_PinInit(GPIO_PTT, Pin_PTT, &pin_config_input);
@@ -36,6 +47,12 @@ void fw_init_buttons(void)
     GPIO_PinInit(GPIO_SK2, Pin_SK2, &pin_config_input);
 #if ! defined(PLATFORM_RD5R)
     GPIO_PinInit(GPIO_Orange, Pin_Orange, &pin_config_input);
+
+#if defined(PLATFORM_GD77S)
+    orangeButtonPressed = false;
+    orangeButtonReleased = true;
+#endif
+
 #endif
 
     old_button_state = 0;
@@ -49,6 +66,19 @@ uint32_t fw_read_buttons(void)
 	if (GPIO_PinRead(GPIO_Orange, Pin_Orange)==0)
 	{
 		result |= BUTTON_ORANGE;
+
+#if defined(PLATFORM_GD77S)
+		if (orangeButtonReleased && (orangeButtonPressed == false))
+		{
+			taskENTER_CRITICAL();
+			timer_keypad = (nonVolatileSettings.keypadTimerLong * 1000);
+			taskEXIT_CRITICAL();
+
+			orangeButtonPressed = true;
+			orangeButtonReleased = false;
+		}
+#endif
+
 	}
 #endif
 
@@ -74,6 +104,44 @@ uint32_t fw_read_buttons(void)
 void fw_check_button_event(uint32_t *buttons, int *event)
 {
 	*buttons = fw_read_buttons();
+
+#if defined(PLATFORM_GD77S)
+	taskENTER_CRITICAL();
+	uint32_t tmp_timer_keypad = timer_keypad;
+	taskEXIT_CRITICAL();
+
+	if ((*buttons & BUTTON_ORANGE) && orangeButtonPressed && (orangeButtonReleased == false) && (tmp_timer_keypad == 0))
+	{
+		// Long press
+		orangeButtonReleased = true;
+		// Set LONG bit
+		*buttons |= (BUTTON_ORANGE | BUTTON_ORANGE_LONG);
+	}
+	else if (((*buttons & BUTTON_ORANGE) == 0) && orangeButtonPressed && (orangeButtonReleased == false) && (tmp_timer_keypad != 0))
+	{
+		// Short press/release cycle
+		orangeButtonPressed = false;
+		orangeButtonReleased = true;
+
+		taskENTER_CRITICAL();
+		timer_keypad = 0;
+		taskEXIT_CRITICAL();
+
+		// Set SHORT press
+		*buttons |= BUTTON_ORANGE;
+		*buttons &= ~BUTTON_ORANGE_LONG;
+	}
+	else if (((*buttons & BUTTON_ORANGE) == 0) && orangeButtonPressed && orangeButtonReleased)
+	{
+		// Button was still down after a long press, now handle release
+		orangeButtonPressed = false;
+	}
+	else
+	{
+		// Hide Orange state, as short will happen on press/release cycle
+		*buttons &= ~(BUTTON_ORANGE | BUTTON_ORANGE_LONG);
+	}
+#endif
 
 	if (old_button_state != *buttons)
 	{

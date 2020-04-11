@@ -65,12 +65,16 @@
 
 #endif
 
-#define BUTTON_NONE   0x00000000
-#define BUTTON_PTT    0x00000001
-#define BUTTON_SK1    0x00000002
-#define BUTTON_SK2    0x00000004
+#define BUTTON_NONE        0x00000000
+#define BUTTON_PTT         0x00000001
+#define BUTTON_SK1         0x00000002
+#define BUTTON_SK2         0x00000004
 #if !defined(PLATFORM_RD5R)
-#define BUTTON_ORANGE 0x00000008
+#define BUTTON_ORANGE      0x00000008
+
+#if defined(PLATFORM_GD77S)
+#define BUTTON_ORANGE_LONG 0x00000010
+#endif
 #endif
 
 #define EVENT_BUTTON_NONE   0
