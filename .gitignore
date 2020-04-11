@@ -12,3 +12,5 @@
 /ComTool/ComTool/bin
 /ComTool/ComTool/obj
 /tools/font_tools/font_converter/font_*
+/tools/bin2sgl/.vs
+/tools/bin2sgl/obj

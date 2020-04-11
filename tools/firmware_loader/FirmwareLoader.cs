@@ -64,7 +64,7 @@ namespace GD77_FirmwareLoader
 			OutputType_GD77,
 			OutputType_GD77S,
 			OutputType_DM1801,
-                        OutputType_DM5R,
+            OutputType_RD5R,
 			OutputType_UNKOWN
 		}
 
@@ -86,8 +86,8 @@ namespace GD77_FirmwareLoader
 					return "GD-77S";
 				case OutputType.OutputType_DM1801:
 					return "DM-1801";
-				case OutputType.OutputType_DM5R:
-					return "DM-5R";
+				case OutputType.OutputType_RD5R:
+					return "RD-5R";
 			}
 
 			return "Unknown";
@@ -121,9 +121,9 @@ namespace GD77_FirmwareLoader
 					Console.WriteLine(" - DM-1801 Support");
 					break;
 
-				case OutputType.OutputType_DM5R:
+				case OutputType.OutputType_RD5R:
 					encodeKey = new Byte[4] { (0x53), (0x36), (0x37), (0x62) };
-					Console.WriteLine(" - DM-5R Support");
+					Console.WriteLine(" - RD-5R Support");
 					break;
 
 
@@ -153,7 +153,7 @@ namespace GD77_FirmwareLoader
 				firmwareModelTag.Add(OutputType.OutputType_GD77, 0x1B);
 				firmwareModelTag.Add(OutputType.OutputType_GD77S, 0x70);
 				firmwareModelTag.Add(OutputType.OutputType_DM1801, 0x4F);
-				firmwareModelTag.Add(OutputType.OutputType_DM5R, 0x5C);         // valid value for DM5R firmware v2.1.7
+				firmwareModelTag.Add(OutputType.OutputType_RD5R, 0x5C);         // valid value for DM5R firmware v2.1.7
 
 				// Couls be a SGL file !
 				fileBuf = checkForSGLAndReturnEncryptedData(fileBuf, encodeKey, ref headerModel);
@@ -199,10 +199,10 @@ namespace GD77_FirmwareLoader
 				int respCode = sendFileData(fileBuf);
 				if (respCode == 0)
 				{
-					Console.WriteLine("\n *** Firmware update complete. Please reboot the {0} ***", getModelName());
+					Console.WriteLine("\n *** Firmware update complete. Please power cycle the {0} ***", getModelName());
 					if (_progessForm != null)
 					{
-						MessageBox.Show(String.Format("Firmware update complete.Please reboot the {0}.", getModelName()), "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+						MessageBox.Show(String.Format("Firmware update complete.Please power cycle the {0}.", getModelName()), "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
 					}
 				}
 				else
@@ -537,10 +537,10 @@ namespace GD77_FirmwareLoader
 					command5 = new byte[][] { new byte[] { 0x31, 0x38, 0x30, 0x31, 0xff, 0xff, 0xff, 0xff }, responseOK }; //1801..
 					break;
 
-				case OutputType.OutputType_DM5R:
+				case OutputType.OutputType_RD5R:
 					command2 = new byte[][] { new byte[] { 0x44, 0x56, 0x30, 0x32, 0x53, 0x36, 0x37, 0x62 }, new byte[] { 0x44, 0x56, 0x30, 0x32 } };
-					command4 = new byte[][] { new byte[] { 0x42, 0x46, 0x2D, 0x35, 0x52, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff }, responseOK }; //DM-5R
-					command5 = new byte[][] { new byte[] { 0x42, 0x46, 0x2D, 0x35, 0x52, 0xff, 0xff, 0xff }, responseOK }; //DM-5R..
+					command4 = new byte[][] { new byte[] { 0x42, 0x46, 0x2D, 0x35, 0x52, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff }, responseOK }; //RD-5R
+					command5 = new byte[][] { new byte[] { 0x42, 0x46, 0x2D, 0x35, 0x52, 0xff, 0xff, 0xff }, responseOK }; //RD-5R..
 					break;
 			}
 
@@ -621,6 +621,10 @@ namespace GD77_FirmwareLoader
 				case OutputType.OutputType_DM1801:
 					shift = 0x2C7C;
 					break;
+				case OutputType.OutputType_RD5R:
+					shift = 0x306E;
+					break;
+					
 			}
 
 			byte[] encryptionTable = new byte[32768];
