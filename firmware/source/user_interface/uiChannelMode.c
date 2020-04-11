@@ -27,9 +27,9 @@ static void loadChannelData(bool useChannelDataInMemory);
 static void scanning(void);
 
 #if defined(PLATFORM_GD77S)
-static void checkAndUpdateSelectedChannel(uint16_t chanNum);
+static void checkAndUpdateSelectedChannelForGD77S(uint16_t chanNum, bool forceSpeech);
 static void handleEventForGD77S(uiEvent_t *ev);
-static uint16_t getCurrentChannelInCurrentZone(void);
+static uint16_t getCurrentChannelInCurrentZoneForGD77S(void);
 #else
 static void startScan(void);
 static void handleUpKey(uiEvent_t *ev);
@@ -104,6 +104,11 @@ int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 			loadChannelData(false);
 		}
 
+#if defined(PLATFORM_GD77S)
+		// Ensure the correct channel is loaded
+		checkAndUpdateSelectedChannelForGD77S(get_rotary_switch_position(), true);
+#endif
+
 		menuChannelModeUpdateScreen(0);
 
 		if (scanActive==false)
@@ -124,9 +129,9 @@ int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 #if defined(PLATFORM_GD77S)
 			// Just ensure rotary's selected channel is matching the already loaded one
 			// as rotary selector could be turned while the GD is OFF, or in hotspot mode.
-			if (get_rotary_switch_position() != getCurrentChannelInCurrentZone())
+			if (get_rotary_switch_position() != getCurrentChannelInCurrentZoneForGD77S())
 			{
-				checkAndUpdateSelectedChannel(get_rotary_switch_position());
+				checkAndUpdateSelectedChannelForGD77S(get_rotary_switch_position(), false);
 			}
 #endif
 
@@ -644,12 +649,12 @@ void heartBeatActivityForGD77S(uiEvent_t *ev)
 	}
 }
 
-static uint16_t getCurrentChannelInCurrentZone(void)
+static uint16_t getCurrentChannelInCurrentZoneForGD77S(void)
 {
 	return (currentZone.NOT_IN_MEMORY_isAllChannelsZone ? nonVolatileSettings.currentChannelIndexInAllZone : nonVolatileSettings.currentChannelIndexInZone + 1);
 }
 
-static void checkAndUpdateSelectedChannel(uint16_t chanNum)
+static void checkAndUpdateSelectedChannelForGD77S(uint16_t chanNum, bool forceSpeech)
 {
 	bool updateDisplay = false;
 
@@ -694,7 +699,7 @@ static void checkAndUpdateSelectedChannel(uint16_t chanNum)
 	}
 
 	// Prevent TXing while an invalid channel is selected
-	if (getCurrentChannelInCurrentZone() != chanNum)
+	if (getCurrentChannelInCurrentZoneForGD77S() != chanNum)
 	{
 		PTTLocked = true;
 	}
@@ -706,19 +711,21 @@ static void checkAndUpdateSelectedChannel(uint16_t chanNum)
 		}
 	}
 
-	if (updateDisplay)
+	if (updateDisplay || forceSpeech)
 	{
 		uint8_t buf[16];
 
 		buf[0U] = 2U;
 		buf[1U] = SPEECH_SYNTHESIS_CHANNEL;
-		//buf[2U] = SPEECH_SYNTHESIS_SEQUENCE_SEPARATOR;
 		buf[2U] = chanNum;
 
 		speechSynthesisSpeak(buf);
 
-		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-		menuChannelModeUpdateScreen(0);
+		if (!forceSpeech)
+		{
+			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+			menuChannelModeUpdateScreen(0);
+		}
 	}
 }
 
@@ -729,7 +736,7 @@ static void handleEventForGD77S(uiEvent_t *ev)
 		if (!trxIsTransmitting && (ev->rotary > 0))
 		{
 			nonVolatileSettings.overrideTG = 0;
-			checkAndUpdateSelectedChannel(ev->rotary);
+			checkAndUpdateSelectedChannelForGD77S(ev->rotary, false);
 			clearActiveDMRID();
 			lastHeardClearLastID();
 		}
@@ -737,34 +744,7 @@ static void handleEventForGD77S(uiEvent_t *ev)
 
 	if (ev->events & BUTTON_EVENT)
 	{
-#if 1
-		// +
-		if (ev->buttons & BUTTON_SK1)
-		{
-			uint8_t buf[16];
 
-			buf[0U] = 1U;
-			buf[1U] = SPEECH_SYNTHESIS_PLEASE_CHARGE_THE_BATTERY;
-
-			speechSynthesisSpeak(buf);
-		}
-
-		// -
-		if (ev->buttons & BUTTON_SK2)
-		{
-			uint8_t buf[16];
-
-			buf[0U] = 6U;
-			buf[1U] = SPEECH_SYNTHESIS_BATTERY;
-			buf[2U] = SPEECH_SYNTHESIS_SEQUENCE_SEPARATOR;
-			buf[3U] = SPEECH_SYNTHESIS_ONE;
-			buf[4U] = SPEECH_SYNTHESIS_TWO;
-			buf[5U] = SPEECH_SYNTHESIS_THREE;
-			buf[6U] = SPEECH_SYNTHESIS_FOUR;
-
-			speechSynthesisSpeak(buf);
-		}
-#endif
 	}
 }
 #endif // PLATFORM_GD77S
