@@ -112,7 +112,7 @@ extern gpio_pin_config_t pin_config_output;
 #define GPIO_VHF_TX_amp_power GPIOE
 #define Pin_VHF_TX_amp_power  0
 
-#elif defined(PLATFORM_DM5R)
+#elif defined(PLATFORM_RD5R)
 
 // Torch
 #define Port_Torch  PORTD

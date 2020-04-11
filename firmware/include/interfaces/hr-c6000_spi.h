@@ -111,7 +111,7 @@ extern uint8_t SPI_masterSendBuffer_SPI1[SPI_DATA_LENGTH];
 #define GPIO_SPI_DO_C6000_U  GPIOD
 #define Pin_SPI_DO_C6000_U   3
 
-#elif defined(PLATFORM_DM5R)
+#elif defined(PLATFORM_RD5R)
 
 // SPI1 to C6000 (V_SPI)
 // OUT/ON  B10 - SPI /V_CS to C6000

@@ -298,7 +298,7 @@ void menuDisplayTitle(const char *title)
 
 void menuDisplayEntry(int loopOffset, int focusedItem,const char *entryText)
 {
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 const int MENU_START_Y = 28;
 const int HIGHLIGHT_START_Y = 27;
 #else

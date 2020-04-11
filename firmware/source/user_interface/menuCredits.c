@@ -23,7 +23,7 @@ static void handleEvent(uiEvent_t *ev);
 static void scrollDownOneLine(void);
 
 //#define CREDIT_TEXT_LENGTH 33
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 static const int NUM_LINES_PER_SCREEN = 4;
 #else
 static const int NUM_LINES_PER_SCREEN = 6;

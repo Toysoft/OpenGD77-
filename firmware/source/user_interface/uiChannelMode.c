@@ -62,7 +62,7 @@ static struct_codeplugChannel_t channelNextChannelData={.rxFreq=0};
 static bool nextChannelReady = false;
 static int nextChannelIndex = 0;
 
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 static const int  CH_NAME_Y_POS = 40;
 static const int  XBAR_Y_POS = 15;
 static const int  XBAR_H = 4;
@@ -142,7 +142,7 @@ int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 				{
 					displaySquelch = false;
 
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 					ucFillRect(0, 15, 128, 9, true);
 #else
 					ucClearRows(2, 4, false);
@@ -156,7 +156,7 @@ int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 
 					if (scanActive && (scanState == SCAN_PAUSED))
 					{
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 						ucFillRect(0, 16, 128, 8, true);
 #else
 						ucClearRows(0, 2, false);
@@ -398,7 +398,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 	if ((trxGetMode() == RADIO_MODE_DIGITAL) && (HRC6000GetReceivedTgOrPcId() == 0) &&
 			((menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA) || (menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA_UPDATE)))
 	{
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 		ucFillRect(0, 0, 128, 8, true);
 #else
 		ucClearRows(0,  2, false);
@@ -433,7 +433,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 				if (displaySquelch)
 				{
 					displaySquelch = false;
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 					ucFillRect(0, 15, 128, 9, true);
 #else
 					ucClearRows(2, 4, false);
@@ -523,7 +523,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 						}
 					}
 					nameBuf[bufferLen - 1] = 0;
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 					ucDrawRect(0, CONTACT_Y_POS + verticalPositionOffset, 128, 11, true);
 #else
 					ucDrawRect(0, CONTACT_Y_POS + verticalPositionOffset, 128, 16, true);
@@ -534,7 +534,7 @@ void menuChannelModeUpdateScreen(int txTimeSecs)
 					codeplugUtilConvertBufToString(contactData.name, nameBuf, 16);
 				}
 
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 				ucPrintCentered(CONTACT_Y_POS + verticalPositionOffset + 2, nameBuf, FONT_SIZE_3);
 #else
 				ucPrintCentered(CONTACT_Y_POS + verticalPositionOffset, nameBuf, FONT_SIZE_3);
@@ -886,7 +886,7 @@ static void handleEvent(uiEvent_t *ev)
 			return;
 		}
 
-#if !defined(PLATFORM_DM5R)
+#if !defined(PLATFORM_RD5R)
 		if ((ev->buttons & BUTTON_ORANGE) && ((ev->buttons & BUTTON_SK1) == 0))
 		{
 			if (ev->buttons & BUTTON_SK2)
@@ -990,7 +990,7 @@ static void handleEvent(uiEvent_t *ev)
 				return;
 			}
 		}
-#if defined(PLATFORM_DM1801) || defined(PLATFORM_DM5R)
+#if defined(PLATFORM_DM1801) || defined(PLATFORM_RD5R)
 		else if (KEYCHECK_SHORTUP(ev->keys, KEY_VFO_MR))
 		{
 			directChannelNumber = 0;
@@ -998,7 +998,7 @@ static void handleEvent(uiEvent_t *ev)
 			return;
 		}
 #endif
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 		else if (KEYCHECK_LONGDOWN(ev->keys, KEY_VFO_MR) && ((ev->buttons & BUTTON_SK1) == 0))
 		{
 			if (ev->buttons & BUTTON_SK2)

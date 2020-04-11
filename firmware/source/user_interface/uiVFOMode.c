@@ -59,7 +59,7 @@ static bool displayChannelSettings;
 static int prevDisplayQSODataState;
 static vfoScreenOperationMode_t screenOperationMode[2] = {VFO_SCREEN_OPERATION_NORMAL,VFO_SCREEN_OPERATION_NORMAL};// For VFO A and B
 
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 const int RX_FREQ_Y_POS = 31;
 const int TX_FREQ_Y_POS = 40;
 
@@ -278,7 +278,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 	if ((trxGetMode() == RADIO_MODE_DIGITAL) && (HRC6000GetReceivedTgOrPcId() == 0) &&
 			((menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA) || (menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA_UPDATE)))
 	{
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 		ucFillRect(0, 0, 128, 8, true);
 #else
 		ucClearRows(0,  2, false);
@@ -447,7 +447,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 
 				if (screenOperationMode[nonVolatileSettings.currentVFONumber] == VFO_SCREEN_OPERATION_NORMAL)
 				{
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 					const char *FREQ_DISP_STR = "%c%c%c.%c%c%c%c%c";
 #else
 					const char *FREQ_DISP_STR = "%c%c%c.%c%c%c%c%c MHz";
@@ -456,7 +456,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 					snprintf(buffer, bufferLen, FREQ_DISP_STR, freq_enter_digits[0], freq_enter_digits[1], freq_enter_digits[2],
 							freq_enter_digits[3], freq_enter_digits[4], freq_enter_digits[5], freq_enter_digits[6], freq_enter_digits[7]);
 
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 					ucPrintCentered((selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX) ? TX_FREQ_Y_POS : 24, buffer, FONT_SIZE_3);
 #else
 					ucPrintCentered((selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX) ? TX_FREQ_Y_POS : RX_FREQ_Y_POS, buffer, FONT_SIZE_3);
@@ -472,7 +472,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 				{
 					uint8_t hiX = 128 - ((7 * 8) + 2);
 					ucPrintAt(5, (DISPLAY_SIZE_Y / 2), "Low", FONT_SIZE_3);
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 					ucDrawFastVLine(0, 29, 24, true);
 #else
 					ucDrawFastVLine(0, 37, 24, true);
@@ -484,7 +484,7 @@ void menuVFOModeUpdateScreen(int txTimeSecs)
 
 					ucPrintAt(2, TX_FREQ_Y_POS, buffer, FONT_SIZE_3);
 
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 					ucPrintAt(73, 24, "High", FONT_SIZE_3);
 					ucDrawFastVLine(68, 29, 24, true);
 #else
@@ -740,7 +740,7 @@ static void handleEvent(uiEvent_t *ev)
 			return;
 		}
 
-#if !defined(PLATFORM_DM5R)
+#if !defined(PLATFORM_RD5R)
 		if (ev->buttons & BUTTON_ORANGE)
 		{
 			if (ev->buttons & BUTTON_SK2)
@@ -925,7 +925,7 @@ static void handleEvent(uiEvent_t *ev)
 #endif
 				return;
 			}
-#if defined(PLATFORM_DM1801) || defined(PLATFORM_DM5R)
+#if defined(PLATFORM_DM1801) || defined(PLATFORM_RD5R)
 			else if (KEYCHECK_SHORTUP(ev->keys, KEY_VFO_MR) )
 			{
 				if ((trxGetMode() == RADIO_MODE_DIGITAL) && (getAudioAmpStatus() & AUDIO_AMP_MODE_RF))
@@ -1235,7 +1235,7 @@ enum VFO_SCREEN_QUICK_MENU_ITEMS // The last item in the list is used so that we
 {
 #if defined(PLATFORM_GD77) || defined(PLATFORM_GD77S)
 	VFO_SCREEN_QUICK_MENU_VFO_A_B = 0, VFO_SCREEN_QUICK_MENU_TX_SWAP_RX,
-#elif defined(PLATFORM_DM1801) || defined(PLATFORM_DM5R)
+#elif defined(PLATFORM_DM1801) || defined(PLATFORM_RD5R)
 	VFO_SCREEN_QUICK_MENU_TX_SWAP_RX = 0,
 #endif
 	VFO_SCREEN_QUICK_MENU_BOTH_TO_RX, VFO_SCREEN_QUICK_MENU_BOTH_TO_TX,

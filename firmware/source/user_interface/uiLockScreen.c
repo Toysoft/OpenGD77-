@@ -93,7 +93,7 @@ static void redrawScreen(bool update, bool state)
 
 		ucPrintCentered(6, buf, FONT_SIZE_3);
 
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 
 		ucPrintCentered(14, currentLanguage->locked, FONT_SIZE_3);
 		ucPrintCentered(24, currentLanguage->press_blue_plus_star, FONT_SIZE_1);

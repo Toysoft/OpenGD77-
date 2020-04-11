@@ -73,7 +73,7 @@
 #define BOARD_FTM_BASEADDR FTM0
 #define BOARD_FTM_CHANNEL kFTM_Chnl_3
 
-#elif defined(PLATFORM_DM5R)
+#elif defined(PLATFORM_RD5R)
 
 #define Port_Display_Light	PORTC
 #define GPIO_Display_Light	GPIOC

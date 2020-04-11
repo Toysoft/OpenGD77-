@@ -190,7 +190,7 @@ static void menuLastHeardDisplayTA(uint8_t y, char *text, uint32_t time, uint32_
 		snprintf(buffer, 5, "%d", diffTimeInMins);
 		buffer[5] = 0;
 
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 		ucPrintAt((128 - (3 * 6)), y		, "min", FONT_SIZE_1);
 #else
 		ucPrintAt((128 - (3 * 6)), (y + 6)	, "min", FONT_SIZE_1);

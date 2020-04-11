@@ -67,7 +67,7 @@
 #define GPIO_I2S_TX_C6000    GPIOA
 #define Pin_I2S_TX_C6000     15
 
-#elif defined(PLATFORM_DM5R)
+#elif defined(PLATFORM_RD5R)
 
 // I2S to C6000 (I2S)
 // OUT/ON  A16 - I2S FS to C6000

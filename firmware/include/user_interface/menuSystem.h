@@ -32,7 +32,7 @@ typedef struct
 	uint32_t        time;
 } uiEvent_t;
 
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 #define MENU_ENTRY_HEIGHT 10
 #else
 #define MENU_ENTRY_HEIGHT 16

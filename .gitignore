@@ -1,9 +1,4 @@
 /firmware/.settings
-/firmware/Debug
-/firmware/Debug_GD-77
-/firmware/Debug_DM-1801
-/firmware/Debug_GD-77S
-/firmware/Debug_DM-5R
 /firmware/Release
 /firmware/*.launch
 /firmware/linkerdata/*.dat

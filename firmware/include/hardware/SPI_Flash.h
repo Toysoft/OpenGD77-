@@ -61,7 +61,7 @@
 #define GPIO_SPI_FLASH_DO_U GPIOE
 #define Pin_SPI_FLASH_DO_U 4
 
-#elif defined(PLATFORM_DM5R)
+#elif defined(PLATFORM_RD5R)
 
 #define Port_SPI_FLASH_CS_U  	PORTE
 #define GPIO_SPI_FLASH_CS_U  	GPIOE

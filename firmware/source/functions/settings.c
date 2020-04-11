@@ -58,7 +58,7 @@ bool settingsSaveSettings(bool includeVFOs)
 
 bool settingsPlatformSpecificSaveSettings(bool includeVFOs)
 {
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 	return settingsSaveSettings(includeVFOs);
 #else
 	return true;
@@ -141,7 +141,7 @@ void settingsRestoreDefaultSettings(void)
 	nonVolatileSettings.displayContrast =
 #if defined(PLATFORM_DM1801)
 			0x0e; // 14
-#elif defined (PLATFORM_DM5R)
+#elif defined (PLATFORM_RD5R)
 			0x06;
 	#else
 			0x12; // 18

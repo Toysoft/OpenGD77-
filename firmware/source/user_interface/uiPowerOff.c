@@ -48,7 +48,7 @@ static void handleEvent(uiEvent_t *ev)
 {
 	static uint32_t m = 0;
 
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 	if (battery_voltage > CUTOFF_VOLTAGE_LOWER_HYST)
 #else
 	if ((GPIO_PinRead(GPIO_Power_Switch, Pin_Power_Switch) == 0) && (battery_voltage > CUTOFF_VOLTAGE_LOWER_HYST))

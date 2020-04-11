@@ -607,7 +607,7 @@ static const float fractionalPowers[3][4] = {	{0.28,0.37,0.62,0.82},// VHF
 												{0.28,0.37,0.62,0.82},// 220Mhz
 												{0.05,0.25,0.51,0.75}};// UHF
 
-#elif defined(PLATFORM_DM5R)
+#elif defined(PLATFORM_RD5R)
 
 // Fixme: Using table form DM1801
 static const float fractionalPowers[3][4] = {	{0.28,0.37,0.62,0.82},// VHF

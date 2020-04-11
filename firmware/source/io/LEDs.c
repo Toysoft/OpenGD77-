@@ -30,7 +30,7 @@ void fw_init_LEDs(void)
     GPIO_PinWrite(GPIO_LEDgreen, Pin_LEDgreen, 0);
     GPIO_PinWrite(GPIO_LEDred, Pin_LEDred, 0);
 
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 	// Built-in torch
 	PORT_SetPinMux(Port_Torch, Pin_Torch, kPORT_MuxAsGpio);
 	GPIO_PinInit(GPIO_Torch, Pin_Torch, &pin_config_output);
@@ -38,7 +38,7 @@ void fw_init_LEDs(void)
 #endif
 }
 
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 // Baofeng DM-5R torch LED
 static bool torch_state = false;
 void toggle_torch(void)

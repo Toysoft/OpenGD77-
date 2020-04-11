@@ -31,7 +31,7 @@ settingsStruct_t originalNonVolatileSettings;
 
 const int QSO_TIMER_TIMEOUT = 2400;
 
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 const int TX_TIMER_Y_OFFSET = 12;
 const int CONTACT_Y_POS = 12;
 static const int BAR_Y_POS = 8;
@@ -869,7 +869,7 @@ static void displayChannelNameOrRxFrequency(char *buffer, size_t maxLen)
 		buffer[maxLen - 1] = 0;
 	}
 
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 	ucPrintCentered(41, buffer, FONT_SIZE_1);
 #else
 	ucPrintCentered(52, buffer, FONT_SIZE_1);
@@ -959,7 +959,7 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 		{
 			memcpy(buffer, text, 17);
 			buffer[16] = 0;
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 			ucPrintCentered(28, chomp(buffer), FONT_SIZE_3);
 #else
 			ucPrintCentered(32, chomp(buffer), FONT_SIZE_3);
@@ -974,7 +974,7 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 			memcpy(buffer, text, cpos);
 			buffer[cpos] = 0;
 
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 			ucPrintCentered(28, chomp(buffer), FONT_SIZE_3);
 #else
 			ucPrintCentered(32, chomp(buffer), FONT_SIZE_3);
@@ -985,7 +985,7 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 			pbuf = chomp(buffer);
 
 			if (strlen(pbuf))
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 				printSplitOrSpanText(32, pbuf);
 #else
 				printSplitOrSpanText(48, pbuf);
@@ -999,7 +999,7 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 			memcpy(buffer, text, 16);
 			buffer[16] = 0;
 
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 			ucPrintCentered(24, chomp(buffer), FONT_SIZE_3);
 #else
 			ucPrintCentered(32, chomp(buffer), FONT_SIZE_3);
@@ -1010,7 +1010,7 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 			pbuf = chomp(buffer);
 
 			if (strlen(pbuf))
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 				printSplitOrSpanText(32, pbuf);
 #else
 				printSplitOrSpanText(48, pbuf);
@@ -1024,7 +1024,7 @@ static void displayContactTextInfos(char *text, size_t maxLen, bool isFromTalker
 		memcpy(buffer, text, 17);
 		buffer[16] = 0;
 
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 		ucPrintCentered(24, chomp(buffer), FONT_SIZE_3);
 #else
 		ucPrintCentered(32, chomp(buffer), FONT_SIZE_3);
@@ -1060,7 +1060,7 @@ void menuUtilityRenderQSOData(void)
 
 			if (LinkHead->talkGroupOrPcId != (trxDMRID | (PC_CALL_FLAG << 24)))
 			{
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 				ucPrintCentered(41, LinkHead->talkgroup, FONT_SIZE_1);
 				ucPrintAt(1, 41, "=>", FONT_SIZE_1);
 #else
@@ -1076,7 +1076,7 @@ void menuUtilityRenderQSOData(void)
 					(dmrMonitorCapturedTS!=-1 && dmrMonitorCapturedTS != trxGetDMRTimeSlot()) ||
 					(trxGetDMRColourCode() != currentChannelData->rxColor))
 			{
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 				// draw the text in inverse video
 				ucFillRect(0, CONTACT_Y_POS + 1, 128, 10, false);
 				ucPrintCore(0, CONTACT_Y_POS + 2, LinkHead->talkgroup, FONT_SIZE_3, TEXT_ALIGN_CENTER, true);
@@ -1088,7 +1088,7 @@ void menuUtilityRenderQSOData(void)
 			}
 			else
 			{
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 				ucPrintCentered(CONTACT_Y_POS + 2, LinkHead->talkgroup, FONT_SIZE_3);
 #else
 				ucPrintCentered(CONTACT_Y_POS, LinkHead->talkgroup, FONT_SIZE_3);
@@ -1152,7 +1152,7 @@ void menuUtilityRenderQSOData(void)
 
 void menuUtilityRenderHeader(void)
 {
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 	const int Y_OFFSET = 0;
 #else
 	const int Y_OFFSET = 2;
@@ -1395,7 +1395,7 @@ void printToneAndSquelch(void)
 			snprintf(buf, 24, "%s%d.%dHz", buf, currentChannelData->txTone / 10 , currentChannelData->txTone % 10);
 		}
 
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 		ucPrintCentered(13, buf, FONT_SIZE_1);
 		snprintf(buf, 24, "SQL:%d%%", 5*(((currentChannelData->sql == 0) ? nonVolatileSettings.squelchDefaults[trxCurrentBand[TRX_RX_FREQ_BAND]] : currentChannelData->sql)-1));
 		ucPrintCentered(21 + 1, buf, FONT_SIZE_1);
@@ -1411,7 +1411,7 @@ void printToneAndSquelch(void)
 
 void printFrequency(bool isTX, bool hasFocus, uint8_t y, uint32_t frequency, bool displayVFOChannel, bool isScanMode)
 {
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 const int VFO_LETTER_Y_OFFSET = 0;// This is the different in height of the SIZE_1 and SIZE_3 fonts
 #else
 const int VFO_LETTER_Y_OFFSET = 8;// This is the different in height of the SIZE_1 and SIZE_3 fonts

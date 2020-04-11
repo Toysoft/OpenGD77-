@@ -41,7 +41,7 @@
 #define GPIO_LEDred		GPIOC
 #define Pin_LEDred		14
 
-#elif defined(PLATFORM_DM5R)
+#elif defined(PLATFORM_RD5R)
 
 #define Port_LEDgreen	PORTB
 #define GPIO_LEDgreen	GPIOB

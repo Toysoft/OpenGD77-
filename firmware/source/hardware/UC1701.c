@@ -47,7 +47,7 @@ static const uint8_t *screenBufEnd = screenBuf + sizeof(screenBuf);
 #endif
 int activeBufNum=0;
 
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 const int DISPLAY_SIZE_Y = 48;
 const int FONT_SIZE_3_HEIGHT = 8;
 #else
@@ -116,7 +116,7 @@ int ucPrintCore(int16_t x, int16_t y, const char *szMsg, ucFont_t fontSize, ucTe
 
     switch(fontSize)
     {
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
        	case FONT_SIZE_1:
     		currentFont = (uint8_t *) font_6x8;
     		break;
@@ -998,7 +998,7 @@ void ucDrawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16
 
 void ucDrawChoice(ucChoice_t choice, bool clearRegion)
 {
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 	const uint8_t TEXT_Y = 40;
 	const uint8_t FILLRECT_Y = 32;
 #else

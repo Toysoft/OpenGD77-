@@ -62,7 +62,7 @@ static const uint32_t keyMap[] = {
 		KEY_STAR, KEY_0, KEY_HASH, KEY_RED, KEY_LEFT
 };
 
-#elif defined(PLATFORM_DM5R)
+#elif defined(PLATFORM_RD5R)
 
 static const uint32_t keyMap[] = {
 		// MENU as KEY_GREEN

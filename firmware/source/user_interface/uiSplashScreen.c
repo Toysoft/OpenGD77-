@@ -67,7 +67,7 @@ static void updateScreen(void)
 	{
 		ucClearBuf();
 
-#if defined(PLATFORM_DM5R)
+#if defined(PLATFORM_RD5R)
 		ucPrintCentered(0, "OpenDM5R", FONT_SIZE_3);
 #elif defined(PLATFORM_GD77)
 		ucPrintCentered(8, "OpenGD77", FONT_SIZE_3);

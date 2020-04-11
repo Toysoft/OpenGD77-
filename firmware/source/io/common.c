@@ -38,7 +38,7 @@ void fw_init_common(void)
     CLOCK_EnableClock(kCLOCK_PortD);
     CLOCK_EnableClock(kCLOCK_PortE);
 
-#if !defined(PLATFORM_DM5R)
+#if !defined(PLATFORM_RD5R)
     // Power On/Off logic
     PORT_SetPinMux(Port_Keep_Power_On, Pin_Keep_Power_On, kPORT_MuxAsGpio);
     PORT_SetPinMux(Port_Power_Switch, Pin_Power_Switch, kPORT_MuxAsGpio);
