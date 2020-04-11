@@ -1270,20 +1270,10 @@ void menuUtilityRenderHeader(void)
 
 	ucPrintCentered(Y_OFFSET, (char *)POWER_LEVELS[nonVolatileSettings.txPowerLevel], FONT_SIZE_1);
 
-
-	int  batteryPerentage = (int)(((averageBatteryVoltage - CUTOFF_VOLTAGE_UPPER_HYST) * 100) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));
-	if (batteryPerentage>100)
-	{
-		batteryPerentage=100;
-	}
-	if (batteryPerentage<0)
-	{
-		batteryPerentage=0;
-	}
 	if (settingsUsbMode == USB_MODE_HOTSPOT || trxGetMode() == RADIO_MODE_ANALOG)
 	{
 		// In hotspot mode the CC is show as part of the rest of the display and in Analogue mode the CC is meaningless
-		snprintf(buffer, bufferLen, "%d%%", batteryPerentage);
+		snprintf(buffer, bufferLen, "%d%%", getBatteryPercentage());
 		buffer[bufferLen - 1] = 0;
 		ucPrintCore(0, Y_OFFSET, buffer, FONT_SIZE_1, TEXT_ALIGN_RIGHT, false);// Display battery percentage at the right
 	}
@@ -1299,7 +1289,7 @@ void menuUtilityRenderHeader(void)
 
 		ucPrintCore(COLOR_CODE_X_POSITION, Y_OFFSET, buffer, FONT_SIZE_1, TEXT_ALIGN_LEFT, nonVolatileSettings.dmrFilterLevel == DMR_FILTER_NONE);
 
-		snprintf(buffer, bufferLen, "%d%%", batteryPerentage);
+		snprintf(buffer, bufferLen, "%d%%", getBatteryPercentage());
 		buffer[bufferLen - 1] = 0;
 		ucPrintCore(0, Y_OFFSET, buffer, FONT_SIZE_1, TEXT_ALIGN_RIGHT, false);// Display battery percentage at the right
 	}
@@ -1458,4 +1448,21 @@ int read_freq_enter_digits(int startDigit, int endDigit)
 		}
 	}
 	return result;
+}
+
+int getBatteryPercentage(void)
+{
+	int  batteryPerentage = (int)(((averageBatteryVoltage - CUTOFF_VOLTAGE_UPPER_HYST) * 100) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));
+
+	if (batteryPerentage > 100)
+	{
+		batteryPerentage = 100;
+	}
+
+	if (batteryPerentage < 0)
+	{
+		batteryPerentage = 0;
+	}
+
+	return batteryPerentage;
 }

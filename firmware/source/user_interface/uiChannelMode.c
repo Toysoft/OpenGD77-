@@ -747,21 +747,10 @@ static void handleEventForGD77S(uiEvent_t *ev)
 		if (ev->buttons & BUTTON_ORANGE)
 		{
 			uint8_t buf[16];
-			int  batteryPerentage = (int)(((averageBatteryVoltage - CUTOFF_VOLTAGE_UPPER_HYST) * 100) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));
-#warning time to write a function, this code is everywhere :-D
-			if (batteryPerentage > 100)
-			{
-				batteryPerentage = 100;
-			}
-
-			if (batteryPerentage < 0)
-			{
-				batteryPerentage = 0;
-			}
 
 			buf[0u] = 1;
 			buf[1U] = SPEECH_SYNTHESIS_BATTERY;
-			buf[0U] += speechSynthesisBuildNumerical(&buf[2], sizeof(buf) - 2, batteryPerentage, 1, false);
+			buf[0U] += speechSynthesisBuildNumerical(&buf[2], sizeof(buf) - 2, getBatteryPercentage(), 1, false);
 
 			speechSynthesisSpeak(buf);
 		}
