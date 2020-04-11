@@ -21,7 +21,7 @@
 static void updateScreen(void);
 static void handleEvent(uiEvent_t *ev);
 
-int menuSplashScreen(uiEvent_t *ev, bool isFirstRun)
+int uiSplashScreen(uiEvent_t *ev, bool isFirstRun)
 {
 	uint8_t melodyBuf[512];
 	if (isFirstRun)

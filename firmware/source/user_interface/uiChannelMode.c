@@ -34,7 +34,7 @@ static uint16_t getCurrentChannelInCurrentZone(void);
 #else
 static void startScan(void);
 static void handleUpKey(uiEvent_t *ev);
-static void menuChannelUpdateTrxID(void );
+static void uiChannelUpdateTrxID(void );
 #endif // PLATFORM_GD77S
 
 static void updateQuickMenuScreen(void);
@@ -73,13 +73,13 @@ static const int  XBAR_H = 9;
 #endif
 
 
-int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
+int uiChannelMode(uiEvent_t *ev, bool isFirstRun)
 {
 	static uint32_t m = 0, sqm = 0;
 
 	if (isFirstRun)
 	{
-		nonVolatileSettings.initialMenuNumber = MENU_CHANNEL_MODE;// This menu.
+		nonVolatileSettings.initialMenuNumber = UI_CHANNEL_MODE;// This menu.
 		displayChannelSettings = false;
 		reverseRepeater = false;
 		nextChannelReady = false;
@@ -105,7 +105,7 @@ int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 			loadChannelData(false);
 		}
 
-		menuChannelModeUpdateScreen(0);
+		uiChannelModeUpdateScreen(0);
 
 		if (scanActive==false)
 		{
@@ -134,7 +134,7 @@ int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 			// is there an incoming DMR signal
 			if (menuDisplayQSODataState != QSO_DISPLAY_IDLE)
 			{
-				menuChannelModeUpdateScreen(0);
+				uiChannelModeUpdateScreen(0);
 			}
 			else
 			{
@@ -293,7 +293,7 @@ static void setNextChannel(void)
 
 	loadChannelData(false);
 	menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-	menuChannelModeUpdateScreen(0);
+	uiChannelModeUpdateScreen(0);
 
 	nextChannelReady = false;
 	scanTimer = 500;
@@ -382,7 +382,7 @@ static void loadChannelData(bool useChannelDataInMemory)
 	}
 }
 
-void menuChannelModeUpdateScreen(int txTimeSecs)
+void uiChannelModeUpdateScreen(int txTimeSecs)
 {
 	int channelNumber;
 	static const int nameBufferLen = 23;
@@ -710,7 +710,7 @@ static void checkAndUpdateSelectedChannel(uint16_t chanNum)
 	if (updateDisplay)
 	{
 		menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-		menuChannelModeUpdateScreen(0);
+		uiChannelModeUpdateScreen(0);
 	}
 }
 
@@ -771,10 +771,10 @@ static void handleEvent(uiEvent_t *ev)
 		// or SK2 on its own (allows Backlight to be triggered)
 		if (((ev->keys.key == KEY_UP) && (ev->buttons & BUTTON_SK2) == 0) == false)
 		{
-			menuChannelModeStopScanning();
+			uiChannelModeStopScanning();
 			fw_reset_keyboard();
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-			menuChannelModeUpdateScreen(0);
+			uiChannelModeUpdateScreen(0);
 			return;
 		}
 	}
@@ -824,7 +824,7 @@ static void handleEvent(uiEvent_t *ev)
 			currentChannelData->rxColor = trxGetDMRColourCode();// Set the CC to the current CC, which may have been determined by the CC finding algorithm in C6000.c
 
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-			menuChannelModeUpdateScreen(0);
+			uiChannelModeUpdateScreen(0);
 			return;
 		}
 
@@ -833,7 +833,7 @@ static void handleEvent(uiEvent_t *ev)
 			trxSetFrequency(channelScreenChannelData.txFreq, channelScreenChannelData.rxFreq, DMR_MODE_ACTIVE);// Swap Tx and Rx freqs but force DMR Active
 			reverseRepeater = true;
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-			menuChannelModeUpdateScreen(0);
+			uiChannelModeUpdateScreen(0);
 			return;
 		}
 		else if ((reverseRepeater == true) && ((ev->buttons & BUTTON_SK2) == 0))
@@ -845,7 +845,7 @@ static void handleEvent(uiEvent_t *ev)
 			if (displayChannelSettings)
 			{
 				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-				menuChannelModeUpdateScreen(0);
+				uiChannelModeUpdateScreen(0);
 			}
 
 			return;
@@ -856,7 +856,7 @@ static void handleEvent(uiEvent_t *ev)
 			int prevQSODisp = prevDisplayQSODataState;
 			displayChannelSettings = true;
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-			menuChannelModeUpdateScreen(0);
+			uiChannelModeUpdateScreen(0);
 			prevDisplayQSODataState = prevQSODisp;
 			return;
 
@@ -883,7 +883,7 @@ static void handleEvent(uiEvent_t *ev)
 				reverseRepeater = false;
 			}
 
-			menuChannelModeUpdateScreen(0);
+			uiChannelModeUpdateScreen(0);
 			return;
 		}
 
@@ -894,12 +894,12 @@ static void handleEvent(uiEvent_t *ev)
 			{
 				settingsPrivateCallMuteMode = !settingsPrivateCallMuteMode;// Toggle PC mute only mode
 				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-				menuChannelModeUpdateScreen(0);
+				uiChannelModeUpdateScreen(0);
 			}
 			else
 			{
 				// Quick Menu
-				menuSystemPushNewMenu(MENU_CHANNEL_QUICK_MENU);
+				menuSystemPushNewMenu(UI_CHANNEL_QUICK_MENU);
 			}
 
 			return;
@@ -940,7 +940,7 @@ static void handleEvent(uiEvent_t *ev)
 				}
 				directChannelNumber = 0;
 				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-				menuChannelModeUpdateScreen(0);
+				uiChannelModeUpdateScreen(0);
 			}
 			else if (ev->buttons & BUTTON_SK2 )
 			{
@@ -972,21 +972,21 @@ static void handleEvent(uiEvent_t *ev)
 				nonVolatileSettings.overrideTG = menuUtilityTgBeforePcMode;
 				menuClearPrivateCall();
 
-				menuChannelUpdateTrxID();
+				uiChannelUpdateTrxID();
 				menuDisplayQSODataState= QSO_DISPLAY_DEFAULT_SCREEN;// Force redraw
-				menuChannelModeUpdateScreen(0);
+				uiChannelModeUpdateScreen(0);
 				return;// The event has been handled
 			}
 			if(directChannelNumber > 0)
 			{
 				directChannelNumber = 0;
 				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-				menuChannelModeUpdateScreen(0);
+				uiChannelModeUpdateScreen(0);
 			}
 			else
 			{
 #if defined(PLATFORM_GD77)
-				menuSystemSetCurrentMenu(MENU_VFO_MODE);
+				menuSystemSetCurrentMenu(UI_VFO_MODE);
 #endif
 				return;
 			}
@@ -995,7 +995,7 @@ static void handleEvent(uiEvent_t *ev)
 		else if (KEYCHECK_SHORTUP(ev->keys, KEY_VFO_MR))
 		{
 			directChannelNumber = 0;
-			menuSystemSetCurrentMenu(MENU_VFO_MODE);
+			menuSystemSetCurrentMenu(UI_VFO_MODE);
 			return;
 		}
 #endif
@@ -1006,11 +1006,11 @@ static void handleEvent(uiEvent_t *ev)
 			{
 				settingsPrivateCallMuteMode = !settingsPrivateCallMuteMode;// Toggle PC mute only mode
 				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-				menuVFOModeUpdateScreen(0);
+				uiChannelModeUpdateScreen(0);
 			}
 			else
 			{
-				menuSystemPushNewMenu(MENU_VFO_QUICK_MENU);
+				menuSystemPushNewMenu(UI_VFO_QUICK_MENU);
 			}
 
 			return;
@@ -1026,7 +1026,7 @@ static void handleEvent(uiEvent_t *ev)
 					nonVolatileSettings.txPowerLevel++;
 					trxSetPowerFromLevel(nonVolatileSettings.txPowerLevel);
 					menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-					menuChannelModeUpdateScreen(0);
+					uiChannelModeUpdateScreen(0);
 				}
 			}
 		}
@@ -1040,7 +1040,7 @@ static void handleEvent(uiEvent_t *ev)
 					nonVolatileSettings.txPowerLevel++;
 					trxSetPowerFromLevel(nonVolatileSettings.txPowerLevel);
 					menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-					menuChannelModeUpdateScreen(0);
+					uiChannelModeUpdateScreen(0);
 				}
 			}
 			else
@@ -1058,9 +1058,9 @@ static void handleEvent(uiEvent_t *ev)
 					}
 					nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
 					menuClearPrivateCall();
-					menuChannelUpdateTrxID();
+					uiChannelUpdateTrxID();
 					menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-					menuChannelModeUpdateScreen(0);
+					uiChannelModeUpdateScreen(0);
 				}
 				else
 				{
@@ -1078,7 +1078,7 @@ static void handleEvent(uiEvent_t *ev)
 
 					menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 					displaySquelch=true;
-					menuChannelModeUpdateScreen(0);
+					uiChannelModeUpdateScreen(0);
 				}
 			}
 
@@ -1092,7 +1092,7 @@ static void handleEvent(uiEvent_t *ev)
 					nonVolatileSettings.txPowerLevel--;
 					trxSetPowerFromLevel(nonVolatileSettings.txPowerLevel);
 					menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-					menuChannelModeUpdateScreen(0);
+					uiChannelModeUpdateScreen(0);
 				}
 			}
 			else
@@ -1111,9 +1111,9 @@ static void handleEvent(uiEvent_t *ev)
 					}
 					nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
 					menuClearPrivateCall();
-					menuChannelUpdateTrxID();
+					uiChannelUpdateTrxID();
 					menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-					menuChannelModeUpdateScreen(0);
+					uiChannelModeUpdateScreen(0);
 				}
 				else
 				{
@@ -1131,7 +1131,7 @@ static void handleEvent(uiEvent_t *ev)
 
 					menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 					displaySquelch=true;
-					menuChannelModeUpdateScreen(0);
+					uiChannelModeUpdateScreen(0);
 				}
 
 			}
@@ -1160,7 +1160,7 @@ static void handleEvent(uiEvent_t *ev)
 					}
 				}
 				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-				menuChannelModeUpdateScreen(0);
+				uiChannelModeUpdateScreen(0);
 			}
 			else
 			{
@@ -1176,7 +1176,7 @@ static void handleEvent(uiEvent_t *ev)
 					clearActiveDMRID();
 					lastHeardClearLastID();
 					menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-					menuChannelModeUpdateScreen(0);
+					uiChannelModeUpdateScreen(0);
 				}
 				else
 				{
@@ -1203,7 +1203,7 @@ static void handleEvent(uiEvent_t *ev)
 				clearActiveDMRID();
 				lastHeardClearLastID();
 				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-				menuChannelModeUpdateScreen(0);
+				uiChannelModeUpdateScreen(0);
 			}
 		}
 		else if (KEYCHECK_PRESS(ev->keys, KEY_DOWN))
@@ -1223,7 +1223,7 @@ static void handleEvent(uiEvent_t *ev)
 				nonVolatileSettings.tsManualOverride &= 0xF0; // remove TS override from channel
 				nonVolatileSettings.currentChannelIndexInZone = 0;// Since we are switching zones the channel index should be reset
 				channelScreenChannelData.rxFreq=0x00; // Flag to the Channel screeen that the channel data is now invalid and needs to be reloaded
-				menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
+				menuSystemPopAllAndDisplaySpecificRootMenu(UI_CHANNEL_MODE);
 			}
 			else
 			{
@@ -1250,7 +1250,7 @@ static void handleEvent(uiEvent_t *ev)
 			}
 			loadChannelData(false);
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-			menuChannelModeUpdateScreen(0);
+			uiChannelModeUpdateScreen(0);
 			SETTINGS_PLATFORM_SPECIFIC_SAVE_SETTINGS(false);
 		}
 		else if (KEYCHECK_LONGDOWN(ev->keys, KEY_UP))
@@ -1288,7 +1288,7 @@ static void handleEvent(uiEvent_t *ev)
 				}
 
 				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-				menuChannelModeUpdateScreen(0);
+				uiChannelModeUpdateScreen(0);
 			}
 		}
 	}
@@ -1310,7 +1310,7 @@ static void handleUpKey(uiEvent_t *ev)
 		nonVolatileSettings.tsManualOverride &= 0xF0; // remove TS override from channel
 		nonVolatileSettings.currentChannelIndexInZone = 0;// Since we are switching zones the channel index should be reset
 		channelScreenChannelData.rxFreq=0x00; // Flag to the Channel screen that the channel data is now invalid and needs to be reloaded
-		menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
+		menuSystemPopAllAndDisplaySpecificRootMenu(UI_CHANNEL_MODE);
 	}
 	else
 	{
@@ -1341,7 +1341,7 @@ static void handleUpKey(uiEvent_t *ev)
 
 	loadChannelData(false);
 	menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-	menuChannelModeUpdateScreen(0);
+	uiChannelModeUpdateScreen(0);
 }
 #endif // ! PLATFORM_GD77S
 
@@ -1401,7 +1401,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 {
 	if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{
-		menuChannelModeStopScanning();
+		uiChannelModeStopScanning();
 		menuSystemPopPreviousMenu();
 		return;
 	}
@@ -1411,12 +1411,12 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 		{
 			case CH_SCREEN_QUICK_MENU_COPY2VFO:
 				memcpy(&settingsVFOChannel[nonVolatileSettings.currentVFONumber].rxFreq,&channelScreenChannelData.rxFreq,sizeof(struct_codeplugChannel_t) - 16);// Don't copy the name of channel, which are in the first 16 bytes
-				menuSystemPopAllAndDisplaySpecificRootMenu(MENU_VFO_MODE);
+				menuSystemPopAllAndDisplaySpecificRootMenu(UI_VFO_MODE);
 				break;
 			case CH_SCREEN_QUICK_MENU_COPY_FROM_VFO:
 				memcpy(&channelScreenChannelData.rxFreq,&settingsVFOChannel[nonVolatileSettings.currentVFONumber].rxFreq,sizeof(struct_codeplugChannel_t)- 16);// Don't copy the name of the vfo, which are in the first 16 bytes
 				codeplugChannelSaveDataForIndex(settingsCurrentChannelNumber,&channelScreenChannelData);
-				menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
+				menuSystemPopAllAndDisplaySpecificRootMenu(UI_CHANNEL_MODE);
 				break;
 			case CH_SCREEN_QUICK_MENU_FILTER:
 				if (trxGetMode() == RADIO_MODE_DIGITAL)
@@ -1429,7 +1429,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 				{
 					nonVolatileSettings.analogFilterLevel = tmpQuickMenuAnalogFilterLevel;
 				}
-				menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
+				menuSystemPopAllAndDisplaySpecificRootMenu(UI_CHANNEL_MODE);
 				break;
 		}
 		return;
@@ -1489,11 +1489,11 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 	updateQuickMenuScreen();
 }
 
-int menuChannelModeQuickMenu(uiEvent_t *ev, bool isFirstRun)
+int uiChannelModeQuickMenu(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		menuChannelModeStopScanning();
+		uiChannelModeStopScanning();
 		tmpQuickMenuDmrFilterLevel = nonVolatileSettings.dmrFilterLevel;
 		tmpQuickMenuAnalogFilterLevel = nonVolatileSettings.analogFilterLevel;
 		updateQuickMenuScreen();
@@ -1521,7 +1521,7 @@ static void startScan(void)
 	scanActive = true;
 	scanTimer = SCAN_SHORT_PAUSE_TIME;
 	scanState = SCAN_SCANNING;
-	menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
+	menuSystemPopAllAndDisplaySpecificRootMenu(UI_CHANNEL_MODE);
 
 	//get current channel index
 	if (currentZone.NOT_IN_MEMORY_isAllChannelsZone)
@@ -1536,7 +1536,7 @@ static void startScan(void)
 
 }
 
-static void menuChannelUpdateTrxID(void )
+static void uiChannelUpdateTrxID(void )
 {
 	if (nonVolatileSettings.overrideTG != 0)
 	{
@@ -1648,12 +1648,12 @@ static void scanning(void)
 	}
 }
 
-void menuChannelModeStopScanning(void)
+void uiChannelModeStopScanning(void)
 {
 	scanActive = false;
 }
 
-void menuChannelColdStart(void)
+void uiChannelModeColdStart(void)
 {
 	channelScreenChannelData.rxFreq = 0;	// Force to re-read codeplug data (needed due to "All Channels" translation)
 }

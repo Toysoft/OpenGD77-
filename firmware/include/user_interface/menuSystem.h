@@ -69,13 +69,13 @@ void menuDisplayTitle(const char *title);
 void menuDisplayEntry(int loopOffset, int focusedItem,const char *entryText);
 int menuGetMenuOffset(int maxMenuEntries, int loopOffset);
 
-void menuChannelModeUpdateScreen(int txTimeSecs);
-void menuChannelColdStart();
-void menuVFOModeUpdateScreen(int txTimeSecs);
-void menuVFOModeStopScanning(void);
-bool menuVFOModeIsScanning(void);
-void menuChannelModeStopScanning(void);
-void menuCPSUpdate(int command,int x, int y, ucFont_t fontSize, ucTextAlign_t alignment, bool isInverted,char *szMsg);
+void uiChannelModeUpdateScreen(int txTimeSecs);
+void uiChannelModeColdStart();
+void uiVFOModeUpdateScreen(int txTimeSecs);
+void uiVFOModeStopScanning(void);
+bool uiVFOModeIsScanning(void);
+void uiChannelModeStopScanning(void);
+void uiCPSUpdate(int command,int x, int y, ucFont_t fontSize, ucTextAlign_t alignment, bool isInverted,char *szMsg);
 
 void menuInitMenuSystem(void);
 void menuSystemLanguageHasChanged(void);
@@ -121,17 +121,17 @@ void heartBeatActivityForGD77S(uiEvent_t *ev);
  *
  * ---------------------- IMPORTANT ----------------------------
  */
-enum MENU_SCREENS { MENU_SPLASH_SCREEN=0,
-					MENU_POWER_OFF,
-					MENU_VFO_MODE,
-					MENU_CHANNEL_MODE,
+enum MENU_SCREENS { UI_SPLASH_SCREEN=0,
+					UI_POWER_OFF,
+					UI_VFO_MODE,
+					UI_CHANNEL_MODE,
 					MENU_MAIN_MENU,
 					MENU_CONTACTS_MENU,
 					MENU_ZONE_LIST,
 					MENU_BATTERY,
 					MENU_FIRMWARE_INFO,
 					MENU_NUMERICAL_ENTRY,
-					MENU_TX_SCREEN,
+					UI_TX_SCREEN,
 					MENU_RSSI_SCREEN,
 					MENU_LAST_HEARD,
 					MENU_OPTIONS,
@@ -139,18 +139,18 @@ enum MENU_SCREENS { MENU_SPLASH_SCREEN=0,
 					MENU_SOUND,
 					MENU_CREDITS,
 					MENU_CHANNEL_DETAILS,
-					MENU_HOTSPOT_MODE,
-					MENU_CPS,
-					MENU_CHANNEL_QUICK_MENU,
-					MENU_VFO_QUICK_MENU,
-					MENU_LOCK_SCREEN,
+					UI_HOTSPOT_MODE,
+					UI_CPS,
+					UI_CHANNEL_QUICK_MENU,
+					UI_VFO_QUICK_MENU,
+					UI_LOCK_SCREEN,
 					MENU_CONTACT_LIST,
 					MENU_CONTACT_QUICKLIST,
 					MENU_CONTACT_LIST_SUBMENU,
 					MENU_CONTACT_DETAILS,
 					MENU_CONTACT_NEW,
 					MENU_LANGUAGE,
-					MENU_PRIVATE_CALL,
+					UI_PRIVATE_CALL,
 					NUM_MENU_ENTRIES
 };
 
@@ -177,15 +177,17 @@ extern const menuItemNew_t menuDataContact[];
 extern const menuItemNew_t menuDataContactContact [];
 extern const menuItemNew_t * menusData[];
 
-int menuVFOMode(uiEvent_t *event, bool isFirstRun);
-int menuVFOModeQuickMenu(uiEvent_t *event, bool isFirstRun);
-int menuChannelMode(uiEvent_t *event, bool isFirstRun);
-int menuChannelModeQuickMenu(uiEvent_t *event, bool isFirstRun);
+int uiVFOMode(uiEvent_t *event, bool isFirstRun);
+int uiVFOModeQuickMenu(uiEvent_t *event, bool isFirstRun);
+int uiChannelMode(uiEvent_t *event, bool isFirstRun);
+int uiChannelModeQuickMenu(uiEvent_t *event, bool isFirstRun);
+int uiCPS(uiEvent_t *event, bool isFirstRun);
+int uiSplashScreen(uiEvent_t *event, bool isFirstRun);
+int uiPowerOff(uiEvent_t *event, bool isFirstRun);
 int menuZoneList(uiEvent_t *event, bool isFirstRun);
 int menuDisplayMenuList(uiEvent_t *event, bool isFirstRun);
 int menuBattery(uiEvent_t *event, bool isFirstRun);
-int menuSplashScreen(uiEvent_t *event, bool isFirstRun);
-int menuPowerOff(uiEvent_t *event, bool isFirstRun);
+
 int menuFirmwareInfoScreen(uiEvent_t *event, bool isFirstRun);
 int menuNumericalEntry(uiEvent_t *event, bool isFirstRun);
 int menuTxScreen(uiEvent_t *event, bool isFirstRun);
@@ -197,7 +199,6 @@ int menuSoundOptions(uiEvent_t *event, bool isFirstRun);
 int menuCredits(uiEvent_t *event, bool isFirstRun);
 int menuChannelDetails(uiEvent_t *event, bool isFirstRun);
 int menuHotspotMode(uiEvent_t *event, bool isFirstRun);
-int menuCPS(uiEvent_t *event, bool isFirstRun);
 int menuLockScreen(uiEvent_t *event, bool isFirstRun);
 int menuContactList(uiEvent_t *event, bool isFirstRun);
 int menuContactListSubMenu(uiEvent_t *event, bool isFirstRun);

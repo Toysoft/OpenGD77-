@@ -72,10 +72,10 @@ const menuItemNew_t * menusData[] = { 	NULL,// splash
 										NULL,// Private Call
 								};
 
-const menuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
-												menuPowerOff,
-												menuVFOMode,
-												menuChannelMode,
+const menuFunctionPointer_t menuFunctions[] = { uiSplashScreen,
+												uiPowerOff,
+												uiVFOMode,
+												uiChannelMode,
 												menuDisplayMenuList,
 												menuDisplayMenuList,
 												menuZoneList,
@@ -91,9 +91,9 @@ const menuFunctionPointer_t menuFunctions[] = { menuSplashScreen,
 												menuCredits,
 												menuChannelDetails,
 												menuHotspotMode,
-												menuCPS,
-												menuChannelModeQuickMenu,
-												menuVFOModeQuickMenu,
+												uiCPS,
+												uiChannelModeQuickMenu,
+												uiVFOModeQuickMenu,
                                                 menuLockScreen,
 												menuContactList,
 												menuContactList,
@@ -216,7 +216,7 @@ void menuInitMenuSystem(void)
 	uiEvent_t ev = { .buttons = 0, .keys = NO_KEYCODE, .rotary = 0, .function = 0, .events = NO_EVENT, .hasEvent = false, .time = fw_millis() };
 
 	menuDisplayLightTimer = -1;
-	menuControlData.stack[menuControlData.stackPosition]  = MENU_SPLASH_SCREEN;// set the very first screen as the splash screen
+	menuControlData.stack[menuControlData.stackPosition]  = UI_SPLASH_SCREEN;// set the very first screen as the splash screen
 	gMenusCurrentItemIndex = 0;
 	menuFunctions[menuControlData.stack[menuControlData.stackPosition]](&ev,true);// Init and display this screen
 }
@@ -224,39 +224,8 @@ void menuInitMenuSystem(void)
 void menuSystemLanguageHasChanged(void)
 {
 	// Force full update of menuChannelMode() on next call (if isFirstRun arg. is true)
-	menuChannelColdStart();
+	uiChannelModeColdStart();
 }
-
-
-/*
-const char menuStringTable[32][17] = { "",//0
-                                         "Menu",//1
-                                         "Contacts",//2
-                                         "Message",//3
-                                         "Call Logs",//4
-                                         "Set",//5
-                                         "Zone",//6
-                                         "New Contact",//7
-                                         "Manual Dial",//8
-                                         "InBox",//9
-                                         "New Message",//10
-                                         "Manual Dial",//11
-                                         "OutBox",//12
-                                         "Draft",//13
-                                         "Quick test",//14
-										 "Battery",//15
-										 "Firmware info",//16
-										 "RSSI",//17
-										 "Last heard",//18
-										 "Options",//19
-										 "Display options",//20
-										 "Credits",//21
-										 "Channel details",//22
-										 "Hotspot mode",//23
-										 "Contact List",//24
-										 "Contact Details",//25
-};
-*/
 
 const menuItemNew_t menuDataMainMenu[] = {
 	{ 12, 12 }, // Special entry: number of menus entries, both member must be set to the same number

@@ -178,14 +178,14 @@ int menuTxScreen(uiEvent_t *ev, bool isFirstRun)
 static void updateScreen(void)
 {
 	menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-	if (menuControlData.stack[0] == MENU_VFO_MODE)
+	if (menuControlData.stack[0] == UI_VFO_MODE)
 	{
-		menuVFOModeUpdateScreen(timeInSeconds);
+		uiVFOModeUpdateScreen(timeInSeconds);
 		displayLightOverrideTimeout(-1);
 	}
 	else
 	{
-		menuChannelModeUpdateScreen(timeInSeconds);
+		uiChannelModeUpdateScreen(timeInSeconds);
 		displayLightOverrideTimeout(-1);
 	}
 }

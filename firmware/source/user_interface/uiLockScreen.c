@@ -183,7 +183,7 @@ static void handleEvent(uiEvent_t *ev)
 		PTTLocked = false;
 		lockDisplayed = false;
 		menuSystemPopAllAndDisplayRootMenu();
-		menuSystemPushNewMenu(MENU_LOCK_SCREEN);
+		menuSystemPushNewMenu(UI_LOCK_SCREEN);
 	}
 
 	displayLightTrigger();
@@ -193,6 +193,6 @@ void menuLockScreenPop(void)
 {
 	lockDisplayed = false;
 
-	if (menuSystemGetCurrentMenuNumber() == MENU_LOCK_SCREEN)
+	if (menuSystemGetCurrentMenuNumber() == UI_LOCK_SCREEN)
 		menuSystemPopPreviousMenu();
 }
