@@ -34,7 +34,7 @@ static bool firstRunGD77S = true;
 #else
 static void startScan(void);
 static void handleUpKey(uiEvent_t *ev);
-static void menuChannelUpdateTrxID(void);
+static void uiChannelUpdateTrxID(void);
 #endif // PLATFORM_GD77S
 
 static void updateQuickMenuScreen(void);
@@ -728,7 +728,7 @@ static void checkAndUpdateSelectedChannelForGD77S(uint16_t chanNum, bool forceSp
 		if (!forceSpeech)
 		{
 			menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-			menuChannelModeUpdateScreen(0);
+			uiChannelModeUpdateScreen(0);
 		}
 	}
 }
@@ -920,7 +920,7 @@ static void handleEventForGD77S(uiEvent_t *ev)
 					channelScreenChannelData.rxFreq = 0x00; // Flag to the Channel screen that the channel data is now invalid and needs to be reloaded
 
 					buildSpeechSettingsFormGD77S(buf, 0U, inSettings);
-					menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
+					menuSystemPopAllAndDisplaySpecificRootMenu(UI_CHANNEL_MODE);
 					break;
 			}
 
@@ -961,7 +961,7 @@ static void handleEventForGD77S(uiEvent_t *ev)
 						channelScreenChannelData.rxFreq = 0x00; // Flag to the Channel screeen that the channel data is now invalid and needs to be reloaded
 
 						buildSpeechSettingsFormGD77S(buf, 0U, inSettings);
-						menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
+						menuSystemPopAllAndDisplaySpecificRootMenu(UI_CHANNEL_MODE);
 						break;
 				}
 
@@ -1010,7 +1010,7 @@ static void handleEventForGD77S(uiEvent_t *ev)
 					currentChannelData->rxColor = trxGetDMRColourCode();// Set the CC to the current CC, which may have been determined by the CC finding algorithm in C6000.c
 
 					menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
-					menuChannelModeUpdateScreen(0);
+					uiChannelModeUpdateScreen(0);
 					return;
 				}
 			}
@@ -1826,7 +1826,7 @@ static void startScan(void)
 
 }
 
-static void uiChannelUpdateTrxID(void )
+static void uiChannelUpdateTrxID(void)
 {
 	if (nonVolatileSettings.overrideTG != 0)
 	{
