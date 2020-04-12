@@ -199,7 +199,11 @@ int uiVFOMode(uiEvent_t *ev, bool isFirstRun)
 				if (displaySquelch && ((ev->time - sqm) > 1000))
 				{
 					displaySquelch = false;
+#if defined(PLATFORM_RD5R)
+					ucFillRect(0, 16, 128, 12, true);
+#else
 					ucClearRows(2, 4, false);
+#endif
 					ucRenderRows(2,4);
 				}
 
