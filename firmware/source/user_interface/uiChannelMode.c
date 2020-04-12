@@ -736,16 +736,23 @@ static void buildSpeechSettingsFormGD77S(uint8_t *buf, uint8_t offset, uint8_t s
 	switch (setting)
 	{
 		case 1: // POWER
-			buf[0U] += 1;
+			buf[0U] += 2U;
 			buf[offset + 1U] = SPEECH_SYNTHESIS_POWER;
+			buf[offset + 2U] = SPEECH_SYNTHESIS_LEVEL;
 			if (nonVolatileSettings.txPowerLevel < MAX_POWER_SETTING_NUM)
 			{
-				buf[0U] += speechSynthesisBuildNumerical(&buf[offset + 2U], 32 - (offset + 2), powerLevels[nonVolatileSettings.txPowerLevel], 3, false);
+				buf[0U] += speechSynthesisBuildNumerical(&buf[offset + 3U], 32U - (offset + 3U), powerLevels[nonVolatileSettings.txPowerLevel], 3, false);
 			}
 			else // 5W+
 			{
-				buf[0U] += speechSynthesisBuildFromNumberInString(&buf[offset + 2U], 32 - (offset + 2) - 2, "5+", true);
+				buf[0U] += speechSynthesisBuildFromNumberInString(&buf[offset + 3U], 32U - (offset + 3U), "5+", true);
 			}
+			break;
+
+		case 2: // Zone
+			buf[0U] += 1U;
+			buf[offset + 1U] = SPEECH_SYNTHESIS_STORE;
+			buf[0U] += speechSynthesisBuildNumerical(&buf[offset + 2U], 32U - (offset + 2U), nonVolatileSettings.currentZone, 3, false);
 			break;
 	}
 }
@@ -753,7 +760,7 @@ static void buildSpeechSettingsFormGD77S(uint8_t *buf, uint8_t offset, uint8_t s
 static void handleEventForGD77S(uiEvent_t *ev)
 {
 	static uint8_t inSettings = 0;
-	uint8_t buf[32];
+	uint8_t        buf[32];
 
 
 	if (ev->events & ROTARY_EVENT)
@@ -771,39 +778,46 @@ static void handleEventForGD77S(uiEvent_t *ev)
 	{
 		if (ev->buttons & BUTTON_ORANGE)
 		{
-			buf[0U] = 0;
+			buf[0U] = 0U;
 
 			if (ev->buttons & BUTTON_ORANGE_LONG)
 			{
-				inSettings = (inSettings + 1) % 2;
+				inSettings = (inSettings + 1) % 3;
 
-				if (inSettings == 1)
+				switch (inSettings)
 				{
-					buf[0u] = 4;
-					buf[1U] = SPEECH_SYNTHESIS_SET;
-					buf[2U] = SPEECH_SYNTHESIS_ON;
-					buf[3U] = SPEECH_SYNTHESIS_SEQUENCE_SEPARATOR;
-					buf[4U] = SPEECH_SYNTHESIS_SEQUENCE_SEPARATOR;
-					buildSpeechSettingsFormGD77S(buf, 4U, inSettings);
-				}
-				else if (inSettings == 0)
-				{
-					buf[0u] = 2;
-					buf[1U] = SPEECH_SYNTHESIS_SET;
-					buf[2U] = SPEECH_SYNTHESIS_OFF;
+					case 0: // Leaving settings
+						buf[0u] = 2U;
+						buf[1U] = SPEECH_SYNTHESIS_SET;
+						buf[2U] = SPEECH_SYNTHESIS_OFF;
+						break;
+
+					case 1: // Entering setting + Power
+						buf[0u] = 4U;
+						buf[1U] = SPEECH_SYNTHESIS_SET;
+						buf[2U] = SPEECH_SYNTHESIS_ON;
+						buf[3U] = SPEECH_SYNTHESIS_SEQUENCE_SEPARATOR;
+						buf[4U] = SPEECH_SYNTHESIS_SEQUENCE_SEPARATOR;
+						buildSpeechSettingsFormGD77S(buf, 4U, inSettings);
+						break;
+
+					case 2: // Zone
+						buf[0u] = 0U;
+						buildSpeechSettingsFormGD77S(buf, 0U, inSettings);
+						break;
 				}
 			}
 			else
 			{
 				if (inSettings == 0)
 				{
-					buf[0u] = 1;
+					buf[0u] = 1U;
 					buf[1U] = SPEECH_SYNTHESIS_BATTERY;
-					buf[0U] += speechSynthesisBuildNumerical(&buf[2], sizeof(buf) - 2, getBatteryPercentage(), 1, false);
+					buf[0U] += speechSynthesisBuildNumerical(&buf[2U], sizeof(buf) - 2U, getBatteryPercentage(), 1, false);
 				}
 			}
 
-			if (buf[0U] != 0)
+			if (buf[0U] != 0U)
 			{
 				speechSynthesisSpeak(buf);
 			}
@@ -811,36 +825,76 @@ static void handleEventForGD77S(uiEvent_t *ev)
 
 		if (ev->buttons & BUTTON_SK1)
 		{
-			buf[0U] = 0;
+			buf[0U] = 0U;
 
-			if (inSettings == 1) // Power
+			switch (inSettings)
 			{
-				if (nonVolatileSettings.txPowerLevel < MAX_POWER_SETTING_NUM)
-				{
-					nonVolatileSettings.txPowerLevel++;
+				case 1: // Power
+					if (nonVolatileSettings.txPowerLevel < MAX_POWER_SETTING_NUM)
+					{
+						nonVolatileSettings.txPowerLevel++;
+						buildSpeechSettingsFormGD77S(buf, 0U, inSettings);
+					}
+					break;
+
+				case 2: // Zones
+					nonVolatileSettings.currentZone++;
+
+					if (nonVolatileSettings.currentZone >= codeplugZonesGetCount())
+					{
+						nonVolatileSettings.currentZone = 0;
+					}
+
+					nonVolatileSettings.overrideTG = 0; // remove any TG override
+					nonVolatileSettings.tsManualOverride &= 0xF0; // remove TS override from channel
+					nonVolatileSettings.currentChannelIndexInZone = 0;// Since we are switching zones the channel index should be reset
+					channelScreenChannelData.rxFreq = 0x00; // Flag to the Channel screen that the channel data is now invalid and needs to be reloaded
+
 					buildSpeechSettingsFormGD77S(buf, 0U, inSettings);
-				}
+					menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
+					break;
 			}
 
-			if (buf[0U] != 0)
+			if (buf[0U] != 0U)
 			{
 				speechSynthesisSpeak(buf);
 			}
 		}
 		else if (ev->buttons & BUTTON_SK2)
 		{
-			buf[0U] = 0;
+			buf[0U] = 0U;
 
-			if (inSettings == 1) // Power
+			switch (inSettings)
 			{
-				if (nonVolatileSettings.txPowerLevel > 0)
-				{
-					nonVolatileSettings.txPowerLevel--;
+				case 1: // Power
+					if (nonVolatileSettings.txPowerLevel > 0)
+					{
+						nonVolatileSettings.txPowerLevel--;
+						buildSpeechSettingsFormGD77S(buf, 0U, inSettings);
+					}
+					break;
+
+				case 2: // Zones
+					if (nonVolatileSettings.currentZone == 0)
+					{
+						nonVolatileSettings.currentZone = codeplugZonesGetCount() - 1;
+					}
+					else
+					{
+						nonVolatileSettings.currentZone--;
+					}
+
+					nonVolatileSettings.overrideTG = 0; // remove any TG override
+					nonVolatileSettings.tsManualOverride &= 0xF0; // remove TS override from channel
+					nonVolatileSettings.currentChannelIndexInZone = 0; // Since we are switching zones the channel index should be reset
+					channelScreenChannelData.rxFreq = 0x00; // Flag to the Channel screeen that the channel data is now invalid and needs to be reloaded
+
 					buildSpeechSettingsFormGD77S(buf, 0U, inSettings);
-				}
+					menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
+				break;
 			}
 
-			if (buf[0U] != 0)
+			if (buf[0U] != 0U)
 			{
 				speechSynthesisSpeak(buf);
 			}
