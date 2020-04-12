@@ -249,7 +249,7 @@ void fw_main_task(void *data)
 			{
 				int currentMenu = menuSystemGetCurrentMenuNumber();
 
-				if ((currentMenu == MENU_CHANNEL_MODE) || (currentMenu == MENU_VFO_MODE))
+				if ((currentMenu == UI_CHANNEL_MODE) || (currentMenu == UI_VFO_MODE))
 				{
 #if defined(PLATFORM_RD5R)
 					ucFillRect(0, 0, 128, 8, true);
@@ -269,9 +269,9 @@ void fw_main_task(void *data)
 				{
 					if (key_event == EVENT_KEY_CHANGE)
 					{
-						if ((PTTToggledDown == false) && (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN))
+						if ((PTTToggledDown == false) && (menuSystemGetCurrentMenuNumber() != UI_LOCK_SCREEN))
 						{
-							menuSystemPushNewMenu(MENU_LOCK_SCREEN);
+							menuSystemPushNewMenu(UI_LOCK_SCREEN);
 						}
 
 						key_event = EVENT_KEY_NONE;
@@ -289,9 +289,9 @@ void fw_main_task(void *data)
 					if (button_event == EVENT_BUTTON_CHANGE && ((buttons & BUTTON_ORANGE) || (buttons & BUTTON_SK2)))
 #endif
 					{
-						if ((PTTToggledDown == false) && (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN))
+						if ((PTTToggledDown == false) && (menuSystemGetCurrentMenuNumber() != UI_LOCK_SCREEN))
 						{
-							menuSystemPushNewMenu(MENU_LOCK_SCREEN);
+							menuSystemPushNewMenu(UI_LOCK_SCREEN);
 						}
 
 						button_event = EVENT_BUTTON_NONE;
@@ -308,9 +308,9 @@ void fw_main_task(void *data)
 					{
 						set_melody(melody_ERROR_beep);
 
-						if (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN)
+						if (menuSystemGetCurrentMenuNumber() != UI_LOCK_SCREEN)
 						{
-							menuSystemPushNewMenu(MENU_LOCK_SCREEN);
+							menuSystemPushNewMenu(UI_LOCK_SCREEN);
 						}
 
 						button_event = EVENT_BUTTON_NONE;
@@ -319,9 +319,9 @@ void fw_main_task(void *data)
 					}
 					else if ((buttons & BUTTON_SK2) && KEYCHECK_DOWN(keys, KEY_STAR))
 					{
-						if (menuSystemGetCurrentMenuNumber() != MENU_LOCK_SCREEN)
+						if (menuSystemGetCurrentMenuNumber() != UI_LOCK_SCREEN)
 						{
-							menuSystemPushNewMenu(MENU_LOCK_SCREEN);
+							menuSystemPushNewMenu(UI_LOCK_SCREEN);
 						}
 					}
 				}
@@ -333,17 +333,17 @@ void fw_main_task(void *data)
 				// Do not send any beep while scanning, otherwise enabling the AMP will be handled as a valid signal detection.
 				if (keys.event & KEY_MOD_PRESS)
 				{
-					if ((PTTToggledDown == false) && (((menuSystemGetCurrentMenuNumber() == MENU_VFO_MODE) && menuVFOModeIsScanning()) == false))
+					if ((PTTToggledDown == false) && (((menuSystemGetCurrentMenuNumber() == UI_VFO_MODE) && uiVFOModeIsScanning()) == false))
 						set_melody(melody_key_beep);
 				}
 				else if ((keys.event & (KEY_MOD_LONG | KEY_MOD_DOWN)) == (KEY_MOD_LONG | KEY_MOD_DOWN))
 				{
-					if ((PTTToggledDown == false) && (((menuSystemGetCurrentMenuNumber() == MENU_VFO_MODE) && menuVFOModeIsScanning()) == false))
+					if ((PTTToggledDown == false) && (((menuSystemGetCurrentMenuNumber() == UI_VFO_MODE) && uiVFOModeIsScanning()) == false))
 						set_melody(melody_key_long_beep);
 				}
 
 				if (KEYCHECK_LONGDOWN(keys, KEY_RED) &&
-						(((menuSystemGetCurrentMenuNumber() == MENU_VFO_MODE) && menuVFOModeIsScanning()) == false))
+						(((menuSystemGetCurrentMenuNumber() == UI_VFO_MODE) && uiVFOModeIsScanning()) == false))
 				{
 					contactListContactIndex = 0;
 					menuSystemPopAllAndDisplayRootMenu();
@@ -440,33 +440,33 @@ void fw_main_task(void *data)
 					 */
 					if (	trxGetMode() != RADIO_MODE_NONE &&
 							settingsUsbMode != USB_MODE_HOTSPOT &&
-							currentMenu != MENU_POWER_OFF &&
-							currentMenu != MENU_SPLASH_SCREEN &&
-							currentMenu != MENU_TX_SCREEN )
+							currentMenu != UI_POWER_OFF &&
+							currentMenu != UI_SPLASH_SCREEN &&
+							currentMenu != UI_TX_SCREEN )
 					{
 						bool wasScanning = false;
 						if (scanActive)
 						{
-							if (currentMenu == MENU_VFO_MODE)
+							if (currentMenu == UI_VFO_MODE)
 							{
-								menuVFOModeStopScanning();
+								uiVFOModeStopScanning();
 							}
 							else
 							{
-								menuChannelModeStopScanning();
+								uiChannelModeStopScanning();
 							}
 							wasScanning = true;
 						}
 						else
 						{
-							if (currentMenu == MENU_LOCK_SCREEN)
+							if (currentMenu == UI_LOCK_SCREEN)
 							{
 								menuLockScreenPop();
 							}
 						}
 						if (!wasScanning)
 						{
-							menuSystemPushNewMenu(MENU_TX_SCREEN);
+							menuSystemPushNewMenu(UI_TX_SCREEN);
 						}
 					}
 				}
@@ -507,7 +507,7 @@ void fw_main_task(void *data)
     					{
     						if ((HRC6000GetReceivedSrcId() & 0xFFFFFF) >= 1000000)
     						{
-    							menuSystemPushNewMenu(MENU_PRIVATE_CALL);
+    							menuSystemPushNewMenu(UI_PRIVATE_CALL);
     						}
     					}
     				}
@@ -591,11 +591,11 @@ void fw_main_task(void *data)
 
 #if defined(PLATFORM_RD5R)
         	if ((battery_voltage < CUTOFF_VOLTAGE_LOWER_HYST)
-        			&& (menuSystemGetCurrentMenuNumber() != MENU_POWER_OFF))
+        			&& (menuSystemGetCurrentMenuNumber() != UI_POWER_OFF))
 #else
         	if (((GPIO_PinRead(GPIO_Power_Switch, Pin_Power_Switch) != 0)
         			|| (battery_voltage < CUTOFF_VOLTAGE_LOWER_HYST))
-        			&& (menuSystemGetCurrentMenuNumber() != MENU_POWER_OFF))
+        			&& (menuSystemGetCurrentMenuNumber() != UI_POWER_OFF))
 #endif
         	{
         		if (battery_voltage < CUTOFF_VOLTAGE_LOWER_HYST)
@@ -612,7 +612,7 @@ void fw_main_task(void *data)
         		}
         		else
         		{
-        			menuSystemPushNewMenu(MENU_POWER_OFF);
+        			menuSystemPushNewMenu(UI_POWER_OFF);
         		}
         		GPIO_PinWrite(GPIO_audio_amp_enable, Pin_audio_amp_enable, 0);
         		set_melody(NULL);

@@ -138,9 +138,9 @@ void settingsRestoreDefaultSettings(void)
 #endif
 	nonVolatileSettings.initialMenuNumber =
 #if defined(PLATFORM_GD77S)
-			MENU_CHANNEL_MODE;
+			UI_CHANNEL_MODE;
 #else
-			MENU_VFO_MODE;
+			UI_VFO_MODE;
 #endif
 	nonVolatileSettings.displayBacklightPercentage=100U;// 100% brightness
 	nonVolatileSettings.displayBacklightPercentageOff=0U;// 0% brightness

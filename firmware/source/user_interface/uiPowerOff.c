@@ -22,7 +22,7 @@ static void updateScreen(void);
 static void handleEvent(uiEvent_t *ev);
 
 
-int menuPowerOff(uiEvent_t *ev, bool isFirstRun)
+int uiPowerOff(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{

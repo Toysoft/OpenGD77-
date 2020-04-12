@@ -28,7 +28,7 @@ static int radioMode;
 static int radioBandWidth;
 
 
-int menuCPS(uiEvent_t *ev, bool isFirstRun)
+int uiCPS(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
@@ -51,7 +51,7 @@ int menuCPS(uiEvent_t *ev, bool isFirstRun)
 	return 0;
 }
 
-void menuCPSUpdate(int command,int x, int y, ucFont_t fontSize, ucTextAlign_t alignment, bool isInverted,char *szMsg)
+void uiCPSUpdate(int command,int x, int y, ucFont_t fontSize, ucTextAlign_t alignment, bool isInverted,char *szMsg)
 {
 	switch(command)
 	{

@@ -23,7 +23,7 @@
 #include <settings.h>
 #include <SeggerRTT/RTT/SEGGER_RTT.h>
 #include <trx.h>
-#include <user_interface/menuHotspot.h>
+#include <hotspot/uiHotspot.h>
 #include <user_interface/uiUtilities.h>
 
 

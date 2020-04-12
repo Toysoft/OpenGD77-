@@ -15,8 +15,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
+#include <hotspot/uiHotspot.h>
 #include <settings.h>
-#include <user_interface/menuHotspot.h>
 #include <user_interface/uiUtilities.h>
 #include <user_interface/menuSystem.h>
 #include <stdarg.h>
@@ -46,7 +46,7 @@ void tick_com_request(void)
 					if ((nonVolatileSettings.hotspotType != HOTSPOT_TYPE_OFF) && (com_requestbuffer[0] == 0xE0U /* MMDVM_FRAME_START */))
 					{
 						settingsUsbMode = USB_MODE_HOTSPOT;
-						menuSystemPushNewMenu(MENU_HOTSPOT_MODE);
+						menuSystemPushNewMenu(UI_HOTSPOT_MODE);
 						return;
 					}
 					taskENTER_CRITICAL();
@@ -209,23 +209,23 @@ static void handleCPSRequest(void)
 		{
 			case 0:
 				// Show CPS screen
-				menuSystemPushNewMenu(MENU_CPS);
+				menuSystemPushNewMenu(UI_CPS);
 				break;
 			case 1:
 				// Clear CPS screen
-				menuCPSUpdate(0,0,0,FONT_SIZE_1,TEXT_ALIGN_LEFT,0,NULL);
+				uiCPSUpdate(0,0,0,FONT_SIZE_1,TEXT_ALIGN_LEFT,0,NULL);
 				break;
 			case 2:
 				// Write a line of text to CPS screen
-				menuCPSUpdate(1,com_requestbuffer[2],com_requestbuffer[3],(ucFont_t)com_requestbuffer[4],(ucTextAlign_t)com_requestbuffer[5],com_requestbuffer[6],(char *)&com_requestbuffer[7]);
+				uiCPSUpdate(1,com_requestbuffer[2],com_requestbuffer[3],(ucFont_t)com_requestbuffer[4],(ucTextAlign_t)com_requestbuffer[5],com_requestbuffer[6],(char *)&com_requestbuffer[7]);
 				break;
 			case 3:
 				// Render CPS screen
-				menuCPSUpdate(2,0,0,FONT_SIZE_1,TEXT_ALIGN_LEFT,0,NULL);
+				uiCPSUpdate(2,0,0,FONT_SIZE_1,TEXT_ALIGN_LEFT,0,NULL);
 				break;
 			case 4:
 				// Turn on the display backlight
-				menuCPSUpdate(3,0,0,FONT_SIZE_1,TEXT_ALIGN_LEFT,0,NULL);
+				uiCPSUpdate(3,0,0,FONT_SIZE_1,TEXT_ALIGN_LEFT,0,NULL);
 				break;
 			case 5:
 				// Close
@@ -234,7 +234,7 @@ static void handleCPSRequest(void)
 					dmrIDCacheInit();
 					flashingDMRIDs = false;
 				}
-				menuCPSUpdate(6,0,0,FONT_SIZE_1,TEXT_ALIGN_LEFT,0,NULL);
+				uiCPSUpdate(6,0,0,FONT_SIZE_1,TEXT_ALIGN_LEFT,0,NULL);
 				break;
 			case 6:
 				{
@@ -256,11 +256,11 @@ static void handleCPSRequest(void)
 							break;
 						case 3:
 							// flash green LED
-							menuCPSUpdate(4,0,0,FONT_SIZE_1,TEXT_ALIGN_LEFT,0,NULL);
+							uiCPSUpdate(4,0,0,FONT_SIZE_1,TEXT_ALIGN_LEFT,0,NULL);
 							break;
 						case 4:
 							// flash red LED
-							menuCPSUpdate(5,0,0,FONT_SIZE_1,TEXT_ALIGN_LEFT,0,NULL);
+							uiCPSUpdate(5,0,0,FONT_SIZE_1,TEXT_ALIGN_LEFT,0,NULL);
 							break;
 						default:
 							break;

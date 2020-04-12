@@ -839,7 +839,7 @@ void trxUpdateTsForCurrentChannelWithSpecifiedContact(struct_codeplugContact_t *
 
 	// nonVolatileSettings.tsManualOverride stores separate TS overrides for VFO and Channel mode
 	// Lower nibble is the Channel screen override and upper nibble if the VFO
-	if (nonVolatileSettings.initialMenuNumber == MENU_CHANNEL_MODE)
+	if (nonVolatileSettings.initialMenuNumber == UI_CHANNEL_MODE)
 	{
 		if ((nonVolatileSettings.tsManualOverride & 0x0F) != 0)
 		{

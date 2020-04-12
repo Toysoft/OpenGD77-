@@ -857,7 +857,7 @@ bool contactIDLookup(uint32_t id, int calltype, char *buffer)
 
 static void displayChannelNameOrRxFrequency(char *buffer, size_t maxLen)
 {
-	if (menuSystemGetCurrentMenuNumber() == MENU_CHANNEL_MODE)
+	if (menuSystemGetCurrentMenuNumber() == UI_CHANNEL_MODE)
 	{
 		codeplugUtilConvertBufToString(currentChannelData->name,buffer,16);
 	}
@@ -1174,7 +1174,7 @@ void menuUtilityRenderHeader(void)
 		}
 	}
 
-	if (scanActive &&  menuVFOModeIsScanning())
+	if (scanActive &&  uiVFOModeIsScanning())
 	{
 		int blinkPeriod = 1000;
 		if (scanBlinkPhase)
