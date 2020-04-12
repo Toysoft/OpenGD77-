@@ -30,6 +30,7 @@ static void scanning(void);
 static void checkAndUpdateSelectedChannelForGD77S(uint16_t chanNum, bool forceSpeech);
 static void handleEventForGD77S(uiEvent_t *ev);
 static uint16_t getCurrentChannelInCurrentZoneForGD77S(void);
+static bool firstRunGD77S = true;
 #else
 static void startScan(void);
 static void handleUpKey(uiEvent_t *ev);
@@ -105,8 +106,12 @@ int menuChannelMode(uiEvent_t *ev, bool isFirstRun)
 		}
 
 #if defined(PLATFORM_GD77S)
-		// Ensure the correct channel is loaded
-		checkAndUpdateSelectedChannelForGD77S(get_rotary_switch_position(), true);
+		// Ensure the correct channel is loaded, on the very first run
+		if (firstRunGD77S)
+		{
+			firstRunGD77S = false;
+			checkAndUpdateSelectedChannelForGD77S(get_rotary_switch_position(), true);
+		}
 #endif
 
 		menuChannelModeUpdateScreen(0);
@@ -735,24 +740,85 @@ static void buildSpeechSettingsFormGD77S(uint8_t *buf, uint8_t offset, uint8_t s
 
 	switch (setting)
 	{
+		case 0: // Channel details
+			{
+				bool duplex = (currentChannelData->rxFreq != currentChannelData->txFreq);
+				uint8_t len;
+				int val_before_dp, val_after_dp;
+				bool is125;
+				char buffer[16];
+
+				buf[0U] += 1U;
+				buf[++offset] = SPEECH_SYNTHESIS_FREQUENCY;
+
+				if (duplex)
+				{
+					val_before_dp = currentChannelData->rxFreq / 100000;
+					val_after_dp = (currentChannelData->rxFreq - val_before_dp * 100000) / 100;
+					is125 = (currentChannelData->rxFreq % 2500);
+					sprintf(buffer, "%03d.%03d", val_before_dp, val_after_dp);
+
+					buf[0U] += 2; // for RX and TX
+					buf[++offset] = SPEECH_SYNTHESIS_RECEIVE;
+					len = speechSynthesisBuildFromNumberInString(&buf[offset + 1U], SPEECH_SYNTHESIS_BUFFER_SIZE - (offset + 1U), buffer, false);
+					buf[0U] += len;
+					offset += len;
+
+					if (is125)
+					{
+						len = speechSynthesisBuildFromNumberInString(&buf[offset + 1U], SPEECH_SYNTHESIS_BUFFER_SIZE - (offset + 1U), "5", true);
+						offset += len;
+						buf[0U] += len;
+					}
+
+					buf[++offset] = SPEECH_SYNTHESIS_TRANSMIT;
+				}
+
+				val_before_dp = currentChannelData->txFreq / 100000;
+				val_after_dp = (currentChannelData->txFreq - val_before_dp * 100000) / 100;
+				is125 = (currentChannelData->txFreq % 2500);
+				sprintf(buffer, "%03d.%03d", val_before_dp, val_after_dp);
+
+				len = speechSynthesisBuildFromNumberInString(&buf[offset + 1U], SPEECH_SYNTHESIS_BUFFER_SIZE - (offset + 1U), buffer, false);
+				buf[0U] += len;
+				offset += len;
+
+				if (is125)
+				{
+					len = speechSynthesisBuildFromNumberInString(&buf[offset + 1U], SPEECH_SYNTHESIS_BUFFER_SIZE - (offset + 1U), "5", true);
+					offset += len;
+					buf[0U] += len;
+				}
+
+				if (trxGetMode() == RADIO_MODE_DIGITAL)
+				{
+					buf[0U]++;
+					buf[++offset] = SPEECH_SYNTHESIS_ID_CODE;
+					len = speechSynthesisBuildNumerical(&buf[offset + 1U], SPEECH_SYNTHESIS_BUFFER_SIZE - (offset - 1U), (trxTalkGroupOrPcId & 0x00FFFFFF), 1, true);
+					buf[0U] += len;
+					offset += len;
+				}
+			}
+			break;
+
 		case 1: // POWER
 			buf[0U] += 2U;
 			buf[offset + 1U] = SPEECH_SYNTHESIS_POWER;
 			buf[offset + 2U] = SPEECH_SYNTHESIS_LEVEL;
 			if (nonVolatileSettings.txPowerLevel < MAX_POWER_SETTING_NUM)
 			{
-				buf[0U] += speechSynthesisBuildNumerical(&buf[offset + 3U], 32U - (offset + 3U), powerLevels[nonVolatileSettings.txPowerLevel], 3, false);
+				buf[0U] += speechSynthesisBuildNumerical(&buf[offset + 3U], SPEECH_SYNTHESIS_BUFFER_SIZE - (offset + 3U), powerLevels[nonVolatileSettings.txPowerLevel], 3, false);
 			}
 			else // 5W+
 			{
-				buf[0U] += speechSynthesisBuildFromNumberInString(&buf[offset + 3U], 32U - (offset + 3U), "5+", true);
+				buf[0U] += speechSynthesisBuildFromNumberInString(&buf[offset + 3U], SPEECH_SYNTHESIS_BUFFER_SIZE - (offset + 3U), "5+", true);
 			}
 			break;
 
 		case 2: // Zone
 			buf[0U] += 1U;
 			buf[offset + 1U] = SPEECH_SYNTHESIS_STORE;
-			buf[0U] += speechSynthesisBuildNumerical(&buf[offset + 2U], 32U - (offset + 2U), nonVolatileSettings.currentZone, 3, false);
+			buf[0U] += speechSynthesisBuildNumerical(&buf[offset + 2U], SPEECH_SYNTHESIS_BUFFER_SIZE - (offset + 2U), nonVolatileSettings.currentZone, 3, false);
 			break;
 	}
 }
@@ -760,7 +826,7 @@ static void buildSpeechSettingsFormGD77S(uint8_t *buf, uint8_t offset, uint8_t s
 static void handleEventForGD77S(uiEvent_t *ev)
 {
 	static uint8_t inSettings = 0;
-	uint8_t        buf[32];
+	uint8_t        buf[SPEECH_SYNTHESIS_BUFFER_SIZE];
 
 
 	if (ev->events & ROTARY_EVENT)
@@ -813,7 +879,7 @@ static void handleEventForGD77S(uiEvent_t *ev)
 				{
 					buf[0u] = 1U;
 					buf[1U] = SPEECH_SYNTHESIS_BATTERY;
-					buf[0U] += speechSynthesisBuildNumerical(&buf[2U], sizeof(buf) - 2U, getBatteryPercentage(), 1, false);
+					buf[0U] += speechSynthesisBuildNumerical(&buf[2U], SPEECH_SYNTHESIS_BUFFER_SIZE - 2U, getBatteryPercentage(), 1, false);
 				}
 			}
 
@@ -829,6 +895,10 @@ static void handleEventForGD77S(uiEvent_t *ev)
 
 			switch (inSettings)
 			{
+				case 0: // Not in settings, spell channel details.
+					buildSpeechSettingsFormGD77S(buf, 0U, inSettings);
+					break;
+
 				case 1: // Power
 					if (nonVolatileSettings.txPowerLevel < MAX_POWER_SETTING_NUM)
 					{
@@ -862,41 +932,88 @@ static void handleEventForGD77S(uiEvent_t *ev)
 		}
 		else if (ev->buttons & BUTTON_SK2)
 		{
-			buf[0U] = 0U;
-
-			switch (inSettings)
+			if (inSettings != 0)
 			{
-				case 1: // Power
-					if (nonVolatileSettings.txPowerLevel > 0)
-					{
-						nonVolatileSettings.txPowerLevel--;
+				buf[0U] = 0U;
+
+				switch (inSettings)
+				{
+					case 1: // Power
+						if (nonVolatileSettings.txPowerLevel > 0)
+						{
+							nonVolatileSettings.txPowerLevel--;
+							buildSpeechSettingsFormGD77S(buf, 0U, inSettings);
+						}
+						break;
+
+					case 2: // Zones
+						if (nonVolatileSettings.currentZone == 0)
+						{
+							nonVolatileSettings.currentZone = codeplugZonesGetCount() - 1;
+						}
+						else
+						{
+							nonVolatileSettings.currentZone--;
+						}
+
+						nonVolatileSettings.overrideTG = 0; // remove any TG override
+						nonVolatileSettings.tsManualOverride &= 0xF0; // remove TS override from channel
+						nonVolatileSettings.currentChannelIndexInZone = 0; // Since we are switching zones the channel index should be reset
+						channelScreenChannelData.rxFreq = 0x00; // Flag to the Channel screeen that the channel data is now invalid and needs to be reloaded
+
 						buildSpeechSettingsFormGD77S(buf, 0U, inSettings);
-					}
-					break;
+						menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
+						break;
+				}
 
-				case 2: // Zones
-					if (nonVolatileSettings.currentZone == 0)
-					{
-						nonVolatileSettings.currentZone = codeplugZonesGetCount() - 1;
-					}
-					else
-					{
-						nonVolatileSettings.currentZone--;
-					}
-
-					nonVolatileSettings.overrideTG = 0; // remove any TG override
-					nonVolatileSettings.tsManualOverride &= 0xF0; // remove TS override from channel
-					nonVolatileSettings.currentChannelIndexInZone = 0; // Since we are switching zones the channel index should be reset
-					channelScreenChannelData.rxFreq = 0x00; // Flag to the Channel screeen that the channel data is now invalid and needs to be reloaded
-
-					buildSpeechSettingsFormGD77S(buf, 0U, inSettings);
-					menuSystemPopAllAndDisplaySpecificRootMenu(MENU_CHANNEL_MODE);
-				break;
+				if (buf[0U] != 0U)
+				{
+					speechSynthesisSpeak(buf);
+				}
 			}
-
-			if (buf[0U] != 0U)
+			else
 			{
-				speechSynthesisSpeak(buf);
+				uint32_t tg = (LinkHead->talkGroupOrPcId & 0xFFFFFF);
+
+				// If Blue button is pressed during reception it sets the Tx TG to the incoming TG
+				if (isDisplayingQSOData && (ev->buttons & BUTTON_SK2) && (trxGetMode() == RADIO_MODE_DIGITAL) &&
+						((trxTalkGroupOrPcId != tg) ||
+								((dmrMonitorCapturedTS != -1) && (dmrMonitorCapturedTS != trxGetDMRTimeSlot())) ||
+								(trxGetDMRColourCode() != currentChannelData->rxColor)))
+				{
+					buf[0U] = 2;
+					buf[1U] = SPEECH_SYNTHESIS_CHANNEL;
+					buf[2U] = SPEECH_SYNTHESIS_SET;
+					speechSynthesisSpeak(buf);
+
+					lastHeardClearLastID();
+
+					// Set TS to overriden TS
+					if ((dmrMonitorCapturedTS != -1) && (dmrMonitorCapturedTS != trxGetDMRTimeSlot()))
+					{
+						trxSetDMRTimeSlot(dmrMonitorCapturedTS);
+						nonVolatileSettings.tsManualOverride &= 0xF0;// Clear lower nibble value
+						nonVolatileSettings.tsManualOverride |= (dmrMonitorCapturedTS+1);// Store manual TS override
+					}
+					if (trxTalkGroupOrPcId != tg)
+					{
+						if ((tg>>24) & PC_CALL_FLAG)
+						{
+							menuAcceptPrivateCall(tg & 0xffffff);
+						}
+						else
+						{
+							trxTalkGroupOrPcId = tg;
+							nonVolatileSettings.overrideTG = trxTalkGroupOrPcId;
+						}
+					}
+
+					currentChannelData->rxColor = trxGetDMRColourCode();// Set the CC to the current CC, which may have been determined by the CC finding algorithm in C6000.c
+
+					menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+					menuChannelModeUpdateScreen(0);
+					return;
+				}
 			}
 		}
 	}

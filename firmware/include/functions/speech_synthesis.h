@@ -24,6 +24,7 @@
 #include <common.h>
 #include <EPL003.h>
 
+#define SPEECH_SYNTHESIS_BUFFER_SIZE 32U
 
 void speechSynthesisInit(void);
 bool speechSynthesisIsSpeaking(void);

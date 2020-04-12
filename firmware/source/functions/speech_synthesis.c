@@ -136,7 +136,7 @@ __attribute__((section(".data.$RAM4"))) static const struct
 
 typedef struct
 {
-	uint8_t  Buffer[16];
+	uint8_t  Buffer[SPEECH_SYNTHESIS_BUFFER_SIZE];
 	uint8_t  Pos;
 	uint8_t  Length;
 	uint32_t EndsAt;
@@ -298,11 +298,42 @@ uint8_t speechSynthesisBuildFromNumberInString(uint8_t *dest, uint8_t destSize, 
 			len--;
 		}
 
+		// Got a float number
+		char *point;
+		if ((point = strchr(p, '.')))
+		{
+			char buffer[17];
+
+			snprintf(buffer, 15, "%s", p);
+			buffer[16] = 0;
+			point = buffer + ((point - p));
+			*point++ = 0;
+
+			// First part
+			pBuf += speechSynthesisBuildFromNumberInString(pBuf, destSize, buffer, false);
+
+			// Insert the point
+			*pBuf++ = SPEECH_SYNTHESIS_POINT;
+
+			// Second part
+			pBuf += speechSynthesisBuildFromNumberInString(pBuf, (destSize - (pBuf - dest)), point, false);
+
+			return (pBuf - dest);
+		}
+
 		if (len > 3)
 		{
 			// Not that clean, but hey ! ;-)
 			*(p + 3) = 0;
 			len = 3;
+		}
+
+		if ((*p == '0') && (*(p + 1) == '0') && (*(p + 2) == '0'))
+		{
+			*pBuf++ = SPEECH_SYNTHESIS_ZERO;
+			*pBuf++ = SPEECH_SYNTHESIS_ZERO;
+			*pBuf++ = SPEECH_SYNTHESIS_ZERO;
+			return (pBuf - dest);
 		}
 
 		switch (len)
