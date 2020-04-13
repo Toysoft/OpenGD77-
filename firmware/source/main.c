@@ -41,6 +41,11 @@ void fw_main_task(void *data);
 const char *FIRMWARE_VERSION_STRING = "VK3KYY";//"V0.3.5";
 TaskHandle_t fwMainTaskHandle;
 
+#if defined(PLATFORM_GD77S)
+static uint32_t lowbatteryTimerForGD77S = 0;
+static const int LOW_BATTERY_INTERVAL_GD77S = ((1000 * 60) * 5); // 5 minutes;
+#endif
+
 void fw_init(void)
 {
 	xTaskCreate(fw_main_task,                        /* pointer to the task */
@@ -176,6 +181,10 @@ void fw_main_task(void *data)
 
     // Init HR-C6000 interrupts
     init_HR_C6000_interrupts();
+
+    // Speech Synthesis (GD77S Only)
+    speechSynthesisInit();
+
 
     // Small startup delay after initialization to stabilize system
   //  vTaskDelay(portTICK_PERIOD_MS * 500);
@@ -585,6 +594,20 @@ void fw_main_task(void *data)
         	}
 #endif
 
+#if defined(PLATFORM_GD77S)
+        	if ((battery_voltage < (CUTOFF_VOLTAGE_LOWER_HYST + 6))
+        			&& ((lowbatteryTimerForGD77S == 0) || ((fw_millis() - lowbatteryTimerForGD77S) > LOW_BATTERY_INTERVAL_GD77S)))
+        	{
+        		uint8_t buf[2];
+
+        		lowbatteryTimerForGD77S = fw_millis();
+
+        		buf[0U] = 1;
+        		buf[1U] = SPEECH_SYNTHESIS_PLEASE_CHARGE_THE_BATTERY;
+        		speechSynthesisSpeak(buf);
+        	}
+#endif
+
 #if defined(PLATFORM_RD5R)
         	if ((battery_voltage < CUTOFF_VOLTAGE_LOWER_HYST)
         			&& (menuSystemGetCurrentMenuNumber() != UI_POWER_OFF))
@@ -623,6 +646,7 @@ void fw_main_task(void *data)
     			}
     		}
     		tick_melody();
+    		speechSynthesisTick();
     	}
 		vTaskDelay(0);
     }

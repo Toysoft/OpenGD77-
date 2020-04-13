@@ -1,7 +1,7 @@
 /*
  * Copyright (C)2020	Kai Ludwig, DG4KLU
  *               and	Roger Clark, VK3KYY / G4KYF
- *               and    Daniel Caujolle-Bert, F1RMB
+ *               and	Daniel Caujolle-Bert, F1RMB
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
