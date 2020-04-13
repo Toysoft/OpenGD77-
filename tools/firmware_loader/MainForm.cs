@@ -64,6 +64,8 @@ namespace GD77_FirmwareLoader
 				{
 					FirmwareLoader.outputType = (FirmwareLoader.OutputType)rb.Tag;
 				}
+				btnDownload.Enabled = true;
+				btnOpenFile.Enabled = true;
 			}
 		}
 
@@ -200,9 +202,9 @@ namespace GD77_FirmwareLoader
 		{
 			this.btnDetect.Enabled = false;
 
-			FirmwareLoader.outputType = FirmwareLoader.probeModel();
+			FirmwareLoader.outputType = FirmwareLoader.OutputType.OutputType_UNKOWN;// FirmwareLoader.probeModel();
 
-			if ((FirmwareLoader.outputType < FirmwareLoader.OutputType.OutputType_GD77) || (FirmwareLoader.outputType > FirmwareLoader.OutputType.OutputType_DM1801))
+			if ((FirmwareLoader.outputType < FirmwareLoader.OutputType.OutputType_GD77) || (FirmwareLoader.outputType > FirmwareLoader.OutputType.OutputType_RD5R))
 			{
 				MessageBox.Show("Error: Unable to detect your radio.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				FirmwareLoader.outputType = FirmwareLoader.OutputType.OutputType_GD77;

@@ -29,8 +29,10 @@ namespace GD77_FirmwareLoader
 			*/
 			if (args.Length == 0)
 			{
-				FirmwareLoader.outputType = FirmwareLoader.probeModel();
+//				FirmwareLoader.outputType = FirmwareLoader.OutputType.OutputType_UNKOWN; //FirmwareLoader.probeModel();
+				FirmwareLoader.outputType = FirmwareLoader.OutputType.OutputType_UNKOWN;// FirmwareLoader.OutputType.OutputType_GD77;// Probe is not currently working, so default to the GD-77
 
+				/*				
 				if ((FirmwareLoader.outputType < FirmwareLoader.OutputType.OutputType_GD77) || (FirmwareLoader.outputType > FirmwareLoader.OutputType.OutputType_RD5R))
 				{
 					Console.WriteLine("Unable to detect HT model, using GD-77 as fallback.");
@@ -40,6 +42,7 @@ namespace GD77_FirmwareLoader
 				{
 					Console.WriteLine(String.Format("Detected mode: {0}", FirmwareLoader.getModelName()));
 				}
+				*/
 
 				Application.EnableVisualStyles();
 				Application.SetCompatibleTextRenderingDefault(false);
@@ -89,7 +92,7 @@ namespace GD77_FirmwareLoader
 				}
 				else
 				{
-					FirmwareLoader.outputType = FirmwareLoader.probeModel();
+					FirmwareLoader.outputType = FirmwareLoader.OutputType.OutputType_UNKOWN; //FirmwareLoader.probeModel();
 					Console.WriteLine(String.Format(" - Detected model: {0}", FirmwareLoader.getModelName()));
 				}
 

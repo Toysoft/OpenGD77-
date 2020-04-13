@@ -456,10 +456,11 @@ namespace GD77_FirmwareLoader
 				   new StringAndOutputType { Model = Encoding.ASCII.GetBytes("DV01"), Type = OutputType.OutputType_GD77   },
 				   new StringAndOutputType { Model = Encoding.ASCII.GetBytes("DV02"), Type = OutputType.OutputType_GD77S  },
 				   new StringAndOutputType { Model = Encoding.ASCII.GetBytes("DV03"), Type = OutputType.OutputType_DM1801 },
-				//   new StringAndOutputType { Model = Encoding.ASCII.GetBytes("DV02"), Type = OutputType.OutputType_DM5R }     // Also have "DV02"
+				   new StringAndOutputType { Model = Encoding.ASCII.GetBytes("DV02"), Type = OutputType.OutputType_RD5R } 
 				   };
 			int commandNumber = 0;
 			byte[] resp;
+
 
 #if (LINUX_BUILD)
 			_specifiedDevice = UsbLibDotNetHIDDevice.FindDevice(VENDOR_ID, PRODUCT_ID);

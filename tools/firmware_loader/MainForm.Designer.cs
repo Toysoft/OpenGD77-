@@ -78,7 +78,10 @@ namespace GD77_FirmwareLoader
 			this.rbModels[3].AutoSize = true;
 			this.rbModels[3].CheckedChanged += new System.EventHandler(this.rbModel_CheckedChanged);
 
-			this.rbModels[(int)FirmwareLoader.outputType].Checked = true;
+			if (FirmwareLoader.outputType != FirmwareLoader.OutputType.OutputType_UNKOWN)
+			{
+				this.rbModels[(int)FirmwareLoader.outputType].Checked = true;
+			}
 
 			this.grpboxModel.Controls.Add(this.rbModels[0]);
 			this.grpboxModel.Controls.Add(this.rbModels[1]);
@@ -99,37 +102,41 @@ namespace GD77_FirmwareLoader
 			this.progressBar.Value = 0;
 
 			// 
+			// btnDownload
+			// 
+			this.btnDownload.Location = new System.Drawing.Point(240, 8);//42
+			this.btnDownload.Name = "btnDownload";
+			this.btnDownload.Size = new System.Drawing.Size(130, 24);
+			this.btnDownload.TabIndex = 1;
+			this.btnDownload.Text = "Download && Update";
+			this.btnDownload.UseVisualStyleBackColor = true;
+			this.btnDownload.Enabled = false;
+			this.btnDownload.Click += new System.EventHandler(this.btnDownload_Click);
+
+			// 
+			// btnOpenFile
+			// 
+			this.btnOpenFile.Location = new System.Drawing.Point(240, 42);//67
+			this.btnOpenFile.Name = "btnOpenFile";
+			this.btnOpenFile.Size = new System.Drawing.Size(130, 24);
+			this.btnOpenFile.TabIndex = 2;
+			this.btnOpenFile.Text = "Select a File && Update";
+			this.btnOpenFile.UseVisualStyleBackColor = true;
+			this.btnOpenFile.Enabled = false;
+			this.btnOpenFile.Click += new System.EventHandler(this.btnOpenFile_Click);
+
+			// 
 			// btnDetect
 			// 
-			this.btnDetect.Location = new System.Drawing.Point(240, 8);
+			this.btnDetect.Location = new System.Drawing.Point(240, 67);//8
 			this.btnDetect.Name = "btnDownload";
 			this.btnDetect.Size = new System.Drawing.Size(130, 24);
 			this.btnDetect.TabIndex = 1;
 			this.btnDetect.Text = "Detect Radio Type";
 			this.btnDetect.UseVisualStyleBackColor = true;
 			this.btnDetect.Click += new System.EventHandler(this.btnDetect_Click);
+			this.btnDetect.Visible = false;
 
-			// 
-			// btnDownload
-			// 
-			this.btnDownload.Location = new System.Drawing.Point(240, 42);
-			this.btnDownload.Name = "btnDownload";
-			this.btnDownload.Size = new System.Drawing.Size(130, 24);
-			this.btnDownload.TabIndex = 1;
-			this.btnDownload.Text = "Download && Update";
-			this.btnDownload.UseVisualStyleBackColor = true;
-			this.btnDownload.Click += new System.EventHandler(this.btnDownload_Click);
-
-			// 
-			// btnOpenFile
-			// 
-			this.btnOpenFile.Location = new System.Drawing.Point(240, 67);
-			this.btnOpenFile.Name = "btnOpenFile";
-			this.btnOpenFile.Size = new System.Drawing.Size(130, 24);
-			this.btnOpenFile.TabIndex = 2;
-			this.btnOpenFile.Text = "Select a File && Update";
-			this.btnOpenFile.UseVisualStyleBackColor = true;
-			this.btnOpenFile.Click += new System.EventHandler(this.btnOpenFile_Click);
 
 			// 
 			// MainForm
