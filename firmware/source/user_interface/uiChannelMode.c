@@ -757,18 +757,16 @@ static void buildSpeechSettingsFormGD77S(uint8_t *buf, uint8_t offset, uint8_t s
 					is125 = (currentChannelData->rxFreq % 2500);
 					sprintf(buffer, "%03d.%03d", val_before_dp, val_after_dp);
 
-					buf[0U] += 2; // for RX and TX
-					buf[++offset] = SPEECH_SYNTHESIS_RECEIVE;
-					len = speechSynthesisBuildFromNumberInString(&buf[offset + 1U], SPEECH_SYNTHESIS_BUFFER_SIZE - (offset + 1U), buffer, false);
-					buf[0U] += len;
-					offset += len;
-
 					if (is125)
 					{
-						len = speechSynthesisBuildFromNumberInString(&buf[offset + 1U], SPEECH_SYNTHESIS_BUFFER_SIZE - (offset + 1U), "5", true);
-						offset += len;
-						buf[0U] += len;
+						strcat(buffer, "5");
 					}
+
+					buf[0U] += 2; // for RX and TX
+					buf[++offset] = SPEECH_SYNTHESIS_RECEIVE;
+					len = speechSynthesisBuildFromNumberInString(&buf[offset + 1U], SPEECH_SYNTHESIS_BUFFER_SIZE - (offset + 1U), buffer, true);
+					buf[0U] += len;
+					offset += len;
 
 					buf[++offset] = SPEECH_SYNTHESIS_TRANSMIT;
 				}
@@ -778,16 +776,14 @@ static void buildSpeechSettingsFormGD77S(uint8_t *buf, uint8_t offset, uint8_t s
 				is125 = (currentChannelData->txFreq % 2500);
 				sprintf(buffer, "%03d.%03d", val_before_dp, val_after_dp);
 
-				len = speechSynthesisBuildFromNumberInString(&buf[offset + 1U], SPEECH_SYNTHESIS_BUFFER_SIZE - (offset + 1U), buffer, false);
-				buf[0U] += len;
-				offset += len;
-
 				if (is125)
 				{
-					len = speechSynthesisBuildFromNumberInString(&buf[offset + 1U], SPEECH_SYNTHESIS_BUFFER_SIZE - (offset + 1U), "5", true);
-					offset += len;
-					buf[0U] += len;
+					strcat(buffer, "5");
 				}
+
+				len = speechSynthesisBuildFromNumberInString(&buf[offset + 1U], SPEECH_SYNTHESIS_BUFFER_SIZE - (offset + 1U), buffer, true);
+				buf[0U] += len;
+				offset += len;
 
 				if (trxGetMode() == RADIO_MODE_DIGITAL)
 				{
