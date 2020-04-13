@@ -310,13 +310,13 @@ uint8_t speechSynthesisBuildFromNumberInString(uint8_t *dest, uint8_t destSize, 
 			*point++ = 0;
 
 			// First part
-			pBuf += speechSynthesisBuildFromNumberInString(pBuf, destSize, buffer, false);
+			pBuf += speechSynthesisBuildFromNumberInString(pBuf, destSize, buffer, true);
 
 			// Insert the point
 			*pBuf++ = SPEECH_SYNTHESIS_POINT;
 
 			// Second part
-			pBuf += speechSynthesisBuildFromNumberInString(pBuf, (destSize - (pBuf - dest)), point, false);
+			pBuf += speechSynthesisBuildFromNumberInString(pBuf, (destSize - (pBuf - dest)), point, true);
 
 			return (pBuf - dest);
 		}
