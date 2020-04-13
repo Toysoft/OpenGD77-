@@ -342,7 +342,7 @@ uint8_t speechSynthesisBuildFromNumberInString(uint8_t *dest, uint8_t destSize, 
 			{
 				*pBuf++ = (*p - 48) + SPEECH_SYNTHESIS_ZERO;
 
-				if ((*p != '0') && *(p + 1) == '0')
+				if (*p != '0')
 				{
 					*pBuf++ = SPEECH_SYNTHESIS_HUNDRED;
 				}
