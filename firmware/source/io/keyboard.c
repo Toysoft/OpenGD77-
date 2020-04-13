@@ -284,10 +284,10 @@ void fw_check_key_event(keyboardCode_t *keys, int *event)
 		keys->event = KEY_MOD_DOWN | KEY_MOD_PRESS;
 		*event = EVENT_KEY_CHANGE;
 
-			taskENTER_CRITICAL();
-			timer_keypad=keypadTimerLong;
+		taskENTER_CRITICAL();
+		timer_keypad=keypadTimerLong;
 		timer_keypad_timeout = 10000;
-			taskEXIT_CRITICAL();
+		taskEXIT_CRITICAL();
 		keyState = KEY_WAITLONG;
 
 		if (keypadAlphaEnable == true)

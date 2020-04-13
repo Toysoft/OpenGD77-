@@ -552,17 +552,7 @@ static void updateScreen(uint8_t rxCommandState)
 	ucPrintAt(4, 4, "DMR", FONT_SIZE_1);
 	ucPrintCentered(0, "Hotspot", FONT_SIZE_3);
 
-	int  batteryPerentage = (int)(((averageBatteryVoltage - CUTOFF_VOLTAGE_UPPER_HYST) * 100) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));
-	if (batteryPerentage > 100)
-	{
-		batteryPerentage = 100;
-	}
-	if (batteryPerentage < 0)
-	{
-		batteryPerentage = 0;
-	}
-
-	snprintf(buffer, bufferLen, "%d%%", batteryPerentage);
+	snprintf(buffer, bufferLen, "%d%%", getBatteryPercentage());
 	buffer[bufferLen - 1] = 0;
 
 	ucPrintAt(128 - (strlen(buffer) * 6) - 4, 4, buffer, FONT_SIZE_1);

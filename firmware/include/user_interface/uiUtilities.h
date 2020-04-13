@@ -123,5 +123,7 @@ void printFrequency(bool isTX, bool hasFocus, uint8_t y, uint32_t frequency, boo
 void printToneAndSquelch(void);
 void reset_freq_enter_digits(void);
 int read_freq_enter_digits(int startDigit, int endDigit);
+int getBatteryPercentage(void);
+
 
 #endif
