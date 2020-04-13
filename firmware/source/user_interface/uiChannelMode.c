@@ -1027,6 +1027,7 @@ static void handleEvent(uiEvent_t *ev)
 					trxSetPowerFromLevel(nonVolatileSettings.txPowerLevel);
 					menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 					uiChannelModeUpdateScreen(0);
+					SETTINGS_PLATFORM_SPECIFIC_SAVE_SETTINGS(false);
 				}
 			}
 		}
@@ -1041,6 +1042,7 @@ static void handleEvent(uiEvent_t *ev)
 					trxSetPowerFromLevel(nonVolatileSettings.txPowerLevel);
 					menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 					uiChannelModeUpdateScreen(0);
+					SETTINGS_PLATFORM_SPECIFIC_SAVE_SETTINGS(false);
 				}
 			}
 			else
@@ -1093,6 +1095,7 @@ static void handleEvent(uiEvent_t *ev)
 					trxSetPowerFromLevel(nonVolatileSettings.txPowerLevel);
 					menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 					uiChannelModeUpdateScreen(0);
+					SETTINGS_PLATFORM_SPECIFIC_SAVE_SETTINGS(false);
 				}
 			}
 			else
