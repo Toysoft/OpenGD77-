@@ -894,6 +894,7 @@ Set to skip the channel when scanning within the All Channels list.
 #### RX Grp
 Selects which RX group is assigned to teh current channel (DMR only).
 
+#### Accepting and saving the changes to the channel
 Pressing the **Green** menu key confirms the changes.
 
 Pressing **Function + Green** saves the settings to the codeplug, or in the case of the VFO the changes are saved to the non-volatile settings. 
