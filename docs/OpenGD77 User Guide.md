@@ -1,7 +1,7 @@
 ![](media/OpenGD77-logo.png)
 
 # OpenGD77 / OpenDM1801 / OpenRD5R User Guide
-OpenGD77 / OpenDM1801 is a work-in-progress, so is this User Guide. Last major update was on 12th April 2020. For documentation ToDo (including incremental changes), please refer to https://github.com/jangelor/OpenGD77/wiki/Documentation-ToDo . For latest discussions, please refer to the development and community forum at https://opengd77.com .
+OpenGD77 / OpenDM1801 / OpenRD5R is a work-in-progress, so is this User Guide. Last major update was on 12th April 2020. For documentation ToDo (including incremental changes), please refer to https://github.com/jangelor/OpenGD77/wiki/Documentation-ToDo . For latest discussions, please refer to the development and community forum at https://opengd77.com .
 <!-- MDTOC maxdepth:6 firsth1:1 numbering:0 flatten:0 bullets:1 updateOnSave:1 -->
 
 - [OpenGD77 User Guide](#opengd77-user-guide)   
