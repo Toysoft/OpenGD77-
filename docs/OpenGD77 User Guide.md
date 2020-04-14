@@ -1,6 +1,6 @@
 ![](media/OpenGD77-logo.png)
 
-# OpenGD77 / OpenDM1801 User Guide
+# OpenGD77 / OpenDM1801 / OpenRD5R User Guide
 OpenGD77 / OpenDM1801 is a work-in-progress, so is this User Guide. Last major update was on 12th April 2020. For documentation ToDo (including incremental changes), please refer to https://github.com/jangelor/OpenGD77/wiki/Documentation-ToDo . For latest discussions, please refer to the development and community forum at https://opengd77.com .
 <!-- MDTOC maxdepth:6 firsth1:1 numbering:0 flatten:0 bullets:1 updateOnSave:1 -->
 
@@ -194,6 +194,17 @@ Or using the FirmwareLoader.exe in the firmware release
 Installation of the firmware is undertaken at the owners own risk, but the official firmware can usually be reloaded onto the radio if the user has problems with the firmware.
 
 *Note:* The official Radioddity CPS PC software is not compatible with the firmware, and the “Community CPS” or the "OpenGD77 CPS" should be used instead. This can be downloaded from the link show in section 1.1 of this guide. This CPS must also be used for the Baofeng DM-1801
+
+## Radioddity GD-77, Baofeng DM-1801 / DM-860 and Baofeng RD-5R / DM-5R variations
+
+Not all the supported radios have the same number of buttons, hence there are some differences when operating radios other than the Radioddity GD-77
+
+* The Baofeng DM-1801 / DM-380 has a dedicated **MR/VFO** button, which is used to change between Channel and VFO mode, in place of pressing the **Red** menu key
+* The Baofeng DM-1801 / DM-380 has a dedicated **A/B** button, which is used to change between VFO A and B, in place of pressing the quick menu via the **Orange** button on the top of the radio
+* The Baofeng RD-5R / DM-5R does not have left or right arrow buttons, so the **A/** button is used to replace the left arrow and the "Band" button is used to replace the right arrow
+* The Baofeng RD-5R / DM-5R does not the **Orange** button, and its functionality has been similated by using a Long press on the orange coloured **MR/VFO** button
+* The Baofeng RD-5R / DM-5R has 2 buttons on the side, but their position is different from the GD-77 and DM-1801. The button above the PTT is used as the "Black" button on the side of the GD-77, also know as button SK1. The button below the PTT is used as the **Blue** button, also know as SK2.
+
 
 ## Main screens (VFO and Channel screens)
 
