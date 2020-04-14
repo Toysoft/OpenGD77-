@@ -67,7 +67,7 @@ class SGLFormatOutput(enum.Enum):
 # Globals
 responseOK = [0x41]
 outputModes = ["GD-77", "GD-77S", "DM-1801", "DM-5R", "Unknown"]
-outputFormat = SGLFormatOutput.UNKNOWN
+outputFormat = SGLFormatOutput.GD_77
 downloadedFW = ""
 
 ########################################################################

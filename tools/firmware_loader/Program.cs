@@ -92,7 +92,7 @@ namespace GD77_FirmwareLoader
 				}
 				else
 				{
-					FirmwareLoader.outputType = FirmwareLoader.OutputType.OutputType_UNKOWN; //FirmwareLoader.probeModel();
+					FirmwareLoader.outputType = FirmwareLoader.OutputType.OutputType_GD77; //FirmwareLoader.probeModel();
 					Console.WriteLine(String.Format(" - Detected model: {0}", FirmwareLoader.getModelName()));
 				}
 
