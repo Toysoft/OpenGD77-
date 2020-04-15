@@ -27,6 +27,8 @@ extern const int QSO_TIMER_TIMEOUT;
 extern const int TX_TIMER_Y_OFFSET;
 extern const int CONTACT_Y_POS;
 extern const int FREQUENCY_X_POS;
+extern struct_codeplugRxGroup_t currentRxGroupData;
+extern struct_codeplugContact_t currentContactData;
 
 enum UI_CALL_STATE { NOT_IN_CALL=0, PRIVATE_CALL_ACCEPT, PRIVATE_CALL, PRIVATE_CALL_DECLINED };
 

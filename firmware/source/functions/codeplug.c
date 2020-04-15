@@ -452,19 +452,23 @@ bool codeplugChannelSaveDataForIndex(int index, struct_codeplugChannel_t *channe
 
 void codeplugRxGroupGetDataForIndex(int index, struct_codeplugRxGroup_t *rxGroupBuf)
 {
+	struct_codeplugContact_t contactData;
 	int i=0;
+	const int dataSizeInCodeplug = 16 * sizeof(char) + 32 * sizeof(uint16_t);// Calculate the size of the rx group in the codeplug
 	index--; //Index numbers start from 1 not zero
-// Not our struct contains an extra property to hold the number of TGs in the group
-	SPI_Flash_read(CODEPLUG_ADDR_RX_GROUP + index*(sizeof(struct_codeplugRxGroup_t) - sizeof(int)),(uint8_t *)rxGroupBuf,sizeof(struct_codeplugRxGroup_t) - sizeof(int));
+	// Not our struct contains an extra property to hold the number of TGs in the group
+	SPI_Flash_read(CODEPLUG_ADDR_RX_GROUP + index*(dataSizeInCodeplug),(uint8_t *)rxGroupBuf,dataSizeInCodeplug);
 	for(i=0;i<32;i++)
 	{
+		codeplugContactGetDataForIndex(rxGroupBuf->contacts[i],&contactData);
+		rxGroupBuf->NOT_IN_CODEPLUG_contactsTG[i] = contactData.tgNumber;
 		// Empty groups seem to be filled with zeros
 		if (rxGroupBuf->contacts[i] == 0)
 		{
 			break;
 		}
 	}
-	rxGroupBuf->NOT_IN_MEMORY_numTGsInGroup = i;
+	rxGroupBuf->NOT_IN_CODEPLUG_numTGsInGroup = i;
 }
 
 

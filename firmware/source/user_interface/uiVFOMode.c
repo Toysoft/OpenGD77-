@@ -31,9 +31,6 @@ typedef enum vfoScreenOperationMode {VFO_SCREEN_OPERATION_NORMAL , VFO_SCREEN_OP
 
 static int selectedFreq = VFO_SELECTED_FREQUENCY_INPUT_RX;
 
-static struct_codeplugRxGroup_t rxGroupData;
-static struct_codeplugContact_t contactData;
-
 // internal prototypes
 static void handleEvent(uiEvent_t *ev);
 static void handleQuickMenuEvent(uiEvent_t *ev);
@@ -102,7 +99,7 @@ int uiVFOMode(uiEvent_t *ev, bool isFirstRun)
 		//Need to load the Rx group if specified even if TG is currently overridden as we may need it later when the left or right button is pressed
 		if (currentChannelData->rxGroupList != 0)
 		{
-			codeplugRxGroupGetDataForIndex(currentChannelData->rxGroupList,&rxGroupData);
+			codeplugRxGroupGetDataForIndex(currentChannelData->rxGroupList,&currentRxGroupData);
 		}
 
 		if (currentChannelData->chMode == RADIO_MODE_ANALOG)
@@ -138,7 +135,7 @@ int uiVFOMode(uiEvent_t *ev, bool isFirstRun)
 					loadContact();
 
 					// Check whether the contact data seems valid
-					if (contactData.name[0] == 0 || contactData.tgNumber ==0 || contactData.tgNumber > 9999999)
+					if (currentContactData.name[0] == 0 || currentContactData.tgNumber ==0 || currentContactData.tgNumber > 9999999)
 					{
 						nonVolatileSettings.overrideTG = 9;// If the VFO does not have an Rx Group list assigned to it. We can't get a TG from the codeplug. So use TG 9.
 						trxTalkGroupOrPcId = nonVolatileSettings.overrideTG;
@@ -146,8 +143,8 @@ int uiVFOMode(uiEvent_t *ev, bool isFirstRun)
 					}
 					else
 					{
-						trxTalkGroupOrPcId = contactData.tgNumber;
-						trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
+						trxTalkGroupOrPcId = currentContactData.tgNumber;
+						trxUpdateTsForCurrentChannelWithSpecifiedContact(&currentContactData);
 					}
 				}
 				else
@@ -347,7 +344,7 @@ void uiVFOModeUpdateScreen(int txTimeSecs)
 				}
 				else
 				{
-					codeplugUtilConvertBufToString(contactData.name, buffer, 16);
+					codeplugUtilConvertBufToString(currentContactData.name, buffer, 16);
 				}
 
 				buffer[bufferLen - 1] = 0;
@@ -599,7 +596,7 @@ static void update_frequency(int frequency)
 static void checkAndFixIndexInRxGroup(void)
 {
 	if (nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber]
-			> (rxGroupData.NOT_IN_MEMORY_numTGsInGroup - 1))
+			> (currentRxGroupData.NOT_IN_CODEPLUG_numTGsInGroup - 1))
 	{
 		nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber] = 0;
 	}
@@ -608,13 +605,13 @@ static void checkAndFixIndexInRxGroup(void)
 static void loadContact(void)
 {
 	// Check if this channel has an Rx Group
-	if (rxGroupData.name[0]!=0 && nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber] < rxGroupData.NOT_IN_MEMORY_numTGsInGroup)
+	if (currentRxGroupData.name[0]!=0 && nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber] < currentRxGroupData.NOT_IN_CODEPLUG_numTGsInGroup)
 	{
-		codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber]],&contactData);
+		codeplugContactGetDataForIndex(currentRxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber]],&currentContactData);
 	}
 	else
 	{
-		codeplugContactGetDataForIndex(currentChannelData->contact,&contactData);
+		codeplugContactGetDataForIndex(currentChannelData->contact,&currentContactData);
 	}
 }
 
@@ -811,7 +808,7 @@ static void handleEvent(uiEvent_t *ev)
 						trxSetModeAndBandwidth(currentChannelData->chMode, false);
 						checkAndFixIndexInRxGroup();
 						// Check if the contact data for the VFO has previous been loaded
-						if (contactData.name[0] == 0x00)
+						if (currentContactData.name[0] == 0x00)
 						{
 							loadContact();
 						}
@@ -851,16 +848,16 @@ static void handleEvent(uiEvent_t *ev)
 				{
 					nonVolatileSettings.tsManualOverride &= 0x0F; // remove TS override for VFO
 					// Check if this channel has an Rx Group
-					if (rxGroupData.name[0]!=0 && nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber] < rxGroupData.NOT_IN_MEMORY_numTGsInGroup)
+					if (currentRxGroupData.name[0]!=0 && nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber] < currentRxGroupData.NOT_IN_CODEPLUG_numTGsInGroup)
 					{
-						codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber]],&contactData);
+						codeplugContactGetDataForIndex(currentRxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber]],&currentContactData);
 					}
 					else
 					{
-						codeplugContactGetDataForIndex(currentChannelData->contact,&contactData);
+						codeplugContactGetDataForIndex(currentChannelData->contact,&currentContactData);
 					}
 
-					trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
+					trxUpdateTsForCurrentChannelWithSpecifiedContact(&currentContactData);
 
 					clearActiveDMRID();
 					lastHeardClearLastID();
@@ -1041,7 +1038,7 @@ static void handleEvent(uiEvent_t *ev)
 							if (nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber] < 0)
 							{
 								nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber] =
-										rxGroupData.NOT_IN_MEMORY_numTGsInGroup - 1;
+										currentRxGroupData.NOT_IN_CODEPLUG_numTGsInGroup - 1;
 							}
 						}
 						nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
@@ -1569,18 +1566,18 @@ static void uiVFOUpdateTrxID(void )
 		nonVolatileSettings.tsManualOverride &= 0x0F; // remove TS override for VFO
 
 		// Check if this channel has an Rx Group
-		if (rxGroupData.name[0]!=0 && nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber] < rxGroupData.NOT_IN_MEMORY_numTGsInGroup)
+		if (currentRxGroupData.name[0]!=0 && nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber] < currentRxGroupData.NOT_IN_CODEPLUG_numTGsInGroup)
 		{
-			codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber]],&contactData);
+			codeplugContactGetDataForIndex(currentRxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_VFO_A_MODE + nonVolatileSettings.currentVFONumber]],&currentContactData);
 		}
 		else
 		{
-			codeplugContactGetDataForIndex(currentChannelData->contact,&contactData);
+			codeplugContactGetDataForIndex(currentChannelData->contact,&currentContactData);
 		}
 
-		trxTalkGroupOrPcId = contactData.tgNumber;
+		trxTalkGroupOrPcId = currentContactData.tgNumber;
 
-		trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
+		trxUpdateTsForCurrentChannelWithSpecifiedContact(&currentContactData);
 	}
 	lastHeardClearLastID();
 	menuClearPrivateCall();
