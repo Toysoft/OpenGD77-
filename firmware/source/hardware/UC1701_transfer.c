@@ -31,7 +31,6 @@
  * This file implements software SPI which is messed up if compiler optimisation is enabled.
  */
 
-
 void UC1701_setCommandMode();
 void UC1701_setDataMode();
 void UC1701_transfer(register uint8_t data1);
@@ -52,7 +51,7 @@ void ucRenderRows(int16_t startRow, int16_t endRow)
 {
 #if ! defined(PLATFORM_GD77S)
 	uint8_t *rowPos = (screenBuf + startRow*128);
-	taskENTER_CRITICAL();
+
 	for(int16_t row=startRow;row<endRow;row++)
 	{
 		UC1701_setCommandMode();
@@ -71,9 +70,9 @@ void ucRenderRows(int16_t startRow, int16_t endRow)
 			data1= *rowPos;
 			for (register int i=0; i<8; i++)
 			{
-				//__asm volatile( "nop" );
+
 				GPIO_Display_SCK->PCOR = 1U << Pin_Display_SCK;
-				//__asm volatile( "nop" );
+
 				if ((data1&0x80) == 0U)
 				{
 					GPIO_Display_SDA->PCOR = 1U << Pin_Display_SDA;// Hopefully the compiler will optimise this to a value rather than using a shift
@@ -82,7 +81,7 @@ void ucRenderRows(int16_t startRow, int16_t endRow)
 				{
 					GPIO_Display_SDA->PSOR = 1U << Pin_Display_SDA;// Hopefully the compiler will optimise this to a value rather than using a shift
 				}
-				//__asm volatile( "nop" );
+
 				GPIO_Display_SCK->PSOR = 1U << Pin_Display_SCK;// Hopefully the compiler will optimise this to a value rather than using a shift
 
 				data1=data1<<1;
@@ -90,7 +89,6 @@ void ucRenderRows(int16_t startRow, int16_t endRow)
 			rowPos++;
 		}
 	}
-	taskEXIT_CRITICAL();
 #endif // ! PLATFORM_GD77S
 }
 
