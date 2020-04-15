@@ -401,7 +401,8 @@ void transmitTalkerAlias(void)
 	{
 		uint8_t TA_LCBuf[12]={0,0,0,0,0,0,0,0,0,0,0,0};
 		int taPosition=2;
-		int taOffset = 0,taLength = 0;
+		int taOffset, taLength;
+
 		switch(TAPhase/2)
 		{
 		case 0:
@@ -422,13 +423,16 @@ void transmitTalkerAlias(void)
 			taOffset	= 20;
 			taLength	= 7;
 			break;
+		default:
+			taOffset	= 0;
+			taLength	= 0;
+			break;
 		}
 
 		TA_LCBuf[0]= (TAPhase/2) + 0x04;
 		memcpy(&TA_LCBuf[taPosition],&talkAliasText[taOffset],taLength);
 
 		write_SPI_page_reg_bytearray_SPI0(0x02, 0x00, (uint8_t*)TA_LCBuf, taPosition+taLength);// put LC into hardware
-
 	}
 	TAPhase++;
 	if (TAPhase>8)
