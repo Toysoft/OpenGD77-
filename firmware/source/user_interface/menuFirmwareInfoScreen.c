@@ -72,6 +72,8 @@ static void updateScreen(void)
 
 static void handleEvent(uiEvent_t *ev)
 {
+	displayLightTrigger();
+
 	if (KEYCHECK_PRESS(ev->keys,KEY_RED))
 	{
 		menuSystemPopPreviousMenu();

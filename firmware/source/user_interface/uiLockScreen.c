@@ -177,6 +177,8 @@ static void updateScreen(bool updateOnly)
 
 static void handleEvent(uiEvent_t *ev)
 {
+	displayLightTrigger();
+
 	if (KEYCHECK_DOWN(ev->keys, KEY_STAR) && (ev->buttons & BUTTON_SK2))
 	{
 		keypadLocked = false;
@@ -185,8 +187,6 @@ static void handleEvent(uiEvent_t *ev)
 		menuSystemPopAllAndDisplayRootMenu();
 		menuSystemPushNewMenu(UI_LOCK_SCREEN);
 	}
-
-	displayLightTrigger();
 }
 
 void menuLockScreenPop(void)

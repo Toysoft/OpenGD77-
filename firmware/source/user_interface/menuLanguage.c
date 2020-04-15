@@ -58,13 +58,17 @@ static void updateScreen(void)
 
 static void handleEvent(uiEvent_t *ev)
 {
+	displayLightTrigger();
+
 	if (KEYCHECK_PRESS(ev->keys,KEY_DOWN) && gMenusEndIndex!=0)
 	{
 		MENU_INC(gMenusCurrentItemIndex, NUM_LANGUAGES);
+		updateScreen();
 	}
 	else if (KEYCHECK_PRESS(ev->keys,KEY_UP))
 	{
 		MENU_DEC(gMenusCurrentItemIndex, NUM_LANGUAGES);
+		updateScreen();
 	}
 	else if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 	{
@@ -80,5 +84,4 @@ static void handleEvent(uiEvent_t *ev)
 		menuSystemPopPreviousMenu();
 		return;
 	}
-	updateScreen();
 }

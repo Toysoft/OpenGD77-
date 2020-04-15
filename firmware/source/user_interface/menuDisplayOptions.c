@@ -138,6 +138,8 @@ static void updateScreen(void)
 
 static void handleEvent(uiEvent_t *ev)
 {
+	displayLightTrigger();
+
 	if (ev->events & FUNCTION_EVENT)
 	{
 		if (ev->function == DEC_BRIGHTNESS)

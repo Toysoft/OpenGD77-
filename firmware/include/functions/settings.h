@@ -25,7 +25,7 @@
 #include "trx.h"
 
 #if defined(PLATFORM_RD5R)
-#define SETTINGS_PLATFORM_SPECIFIC_SAVE_SETTINGS(includeVFOs) settingsSaveSettings(includeVFOs)
+#define SETTINGS_PLATFORM_SPECIFIC_SAVE_SETTINGS(includeVFOs) do { settingsSaveSettings(includeVFOs); } while(0)
 #else
 #define SETTINGS_PLATFORM_SPECIFIC_SAVE_SETTINGS(includeVFOs)
 #endif
