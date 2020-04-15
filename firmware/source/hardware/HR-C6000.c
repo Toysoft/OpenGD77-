@@ -367,6 +367,18 @@ bool checkTalkGroupFilter(void)
 		case DMR_FILTER_CC_TS_DC:
 			return codeplugContactsContainsPC(receivedSrcId);
 			break;
+		case DMR_FILTER_CC_TS_RXG:
+			{
+				for(int i=0; i< currentRxGroupData.NOT_IN_CODEPLUG_numTGsInGroup;i++)
+				{
+					if (currentRxGroupData.NOT_IN_CODEPLUG_contactsTG[i]==receivedTgOrPcId)
+					{
+						return true;
+					}
+				}
+				return false;
+			}
+			break;
 		default:
 			return true;
 	}

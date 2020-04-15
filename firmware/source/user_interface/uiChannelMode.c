@@ -43,8 +43,6 @@ static void searchNextChannel(void);
 static void setNextChannel(void);
 
 static struct_codeplugZone_t currentZone;
-static struct_codeplugRxGroup_t rxGroupData;
-static struct_codeplugContact_t contactData;
 static char currentZoneName[17];
 static int directChannelNumber=0;
 
@@ -356,24 +354,24 @@ static void loadChannelData(bool useChannelDataInMemory)
 		nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE] = channelScreenChannelData.contact - 1;
 #endif
 
-		codeplugRxGroupGetDataForIndex(channelScreenChannelData.rxGroupList, &rxGroupData);
+		codeplugRxGroupGetDataForIndex(channelScreenChannelData.rxGroupList, &currentRxGroupData);
 		// Check if this channel has an Rx Group
-		if (rxGroupData.name[0]!=0 && nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE] < rxGroupData.NOT_IN_MEMORY_numTGsInGroup)
+		if (currentRxGroupData.name[0]!=0 && nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE] < currentRxGroupData.NOT_IN_CODEPLUG_numTGsInGroup)
 		{
-			codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE]],&contactData);
+			codeplugContactGetDataForIndex(currentRxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE]],&currentContactData);
 		}
 		else
 		{
-			codeplugContactGetDataForIndex(channelScreenChannelData.contact, &contactData);
+			codeplugContactGetDataForIndex(channelScreenChannelData.contact, &currentContactData);
 		}
 
-		trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
+		trxUpdateTsForCurrentChannelWithSpecifiedContact(&currentContactData);
 
 		if (nonVolatileSettings.overrideTG == 0)
 		{
-			trxTalkGroupOrPcId = contactData.tgNumber;
+			trxTalkGroupOrPcId = currentContactData.tgNumber;
 
-			if (contactData.callType == CONTACT_CALLTYPE_PC)
+			if (currentContactData.callType == CONTACT_CALLTYPE_PC)
 			{
 				trxTalkGroupOrPcId |= (PC_CALL_FLAG << 24);
 			}
@@ -540,7 +538,7 @@ void uiChannelModeUpdateScreen(int txTimeSecs)
 				}
 				else
 				{
-					codeplugUtilConvertBufToString(contactData.name, nameBuf, 16);
+					codeplugUtilConvertBufToString(currentContactData.name, nameBuf, 16);
 				}
 
 #if defined(PLATFORM_RD5R)
@@ -1339,7 +1337,7 @@ static void handleEvent(uiEvent_t *ev)
 					{
 						nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE]++;
 						if (nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE]
-								> (rxGroupData.NOT_IN_MEMORY_numTGsInGroup - 1))
+								> (currentRxGroupData.NOT_IN_CODEPLUG_numTGsInGroup - 1))
 						{
 							nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE] = 0;
 						}
@@ -1395,7 +1393,7 @@ static void handleEvent(uiEvent_t *ev)
 						if (nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE] < 0)
 						{
 							nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE] =
-									rxGroupData.NOT_IN_MEMORY_numTGsInGroup - 1;
+									currentRxGroupData.NOT_IN_CODEPLUG_numTGsInGroup - 1;
 						}
 					}
 					nonVolatileSettings.overrideTG = 0;// setting the override TG to 0 indicates the TG is not overridden
@@ -1478,16 +1476,16 @@ static void handleEvent(uiEvent_t *ev)
 			if (trxGetMode() == RADIO_MODE_DIGITAL)
 			{
 				nonVolatileSettings.tsManualOverride &= 0xF0; // remove TS override from channel
-				if (rxGroupData.name[0]!=0 && nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE] < rxGroupData.NOT_IN_MEMORY_numTGsInGroup)
+				if (currentRxGroupData.name[0]!=0 && nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE] < currentRxGroupData.NOT_IN_CODEPLUG_numTGsInGroup)
 				{
-					codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE]],&contactData);
+					codeplugContactGetDataForIndex(currentRxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE]],&currentContactData);
 				}
 				else
 				{
-					codeplugContactGetDataForIndex(channelScreenChannelData.contact,&contactData);
+					codeplugContactGetDataForIndex(channelScreenChannelData.contact,&currentContactData);
 				}
 
-				trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
+				trxUpdateTsForCurrentChannelWithSpecifiedContact(&currentContactData);
 
 				clearActiveDMRID();
 				lastHeardClearLastID();
@@ -1835,17 +1833,17 @@ static void uiChannelUpdateTrxID(void)
 	{
 		nonVolatileSettings.tsManualOverride &= 0xF0; // remove TS override for channel
 
-		if (rxGroupData.name[0]!=0 && nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE] < rxGroupData.NOT_IN_MEMORY_numTGsInGroup)
+		if (currentRxGroupData.name[0]!=0 && nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE] < currentRxGroupData.NOT_IN_CODEPLUG_numTGsInGroup)
 		{
-			codeplugContactGetDataForIndex(rxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE]],&contactData);
+			codeplugContactGetDataForIndex(currentRxGroupData.contacts[nonVolatileSettings.currentIndexInTRxGroupList[SETTINGS_CHANNEL_MODE]],&currentContactData);
 		}
 		else
 		{
-			codeplugContactGetDataForIndex(channelScreenChannelData.contact,&contactData);
+			codeplugContactGetDataForIndex(channelScreenChannelData.contact,&currentContactData);
 		}
 
-		trxUpdateTsForCurrentChannelWithSpecifiedContact(&contactData);
-		trxTalkGroupOrPcId = contactData.tgNumber;
+		trxUpdateTsForCurrentChannelWithSpecifiedContact(&currentContactData);
+		trxTalkGroupOrPcId = currentContactData.tgNumber;
 	}
 	lastHeardClearLastID();
 	menuClearPrivateCall();
