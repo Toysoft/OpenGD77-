@@ -339,12 +339,16 @@ void fw_main_task(void *data)
 				if (keys.event & KEY_MOD_PRESS)
 				{
 					if ((PTTToggledDown == false) && (((menuSystemGetCurrentMenuNumber() == UI_VFO_MODE) && uiVFOModeIsScanning()) == false))
+					{
 						set_melody(melody_key_beep);
+					}
 				}
 				else if ((keys.event & (KEY_MOD_LONG | KEY_MOD_DOWN)) == (KEY_MOD_LONG | KEY_MOD_DOWN))
 				{
 					if ((PTTToggledDown == false) && (((menuSystemGetCurrentMenuNumber() == UI_VFO_MODE) && uiVFOModeIsScanning()) == false))
+					{
 						set_melody(melody_key_long_beep);
+					}
 				}
 
 				if (KEYCHECK_LONGDOWN(keys, KEY_RED) &&
@@ -427,7 +431,9 @@ void fw_main_task(void *data)
 			else
 			{
 				if (PTTToggledDown)
+				{
 					PTTToggledDown = false;
+				}
 			}
 #endif
 
