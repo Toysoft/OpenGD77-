@@ -154,6 +154,8 @@ static void handleEvent(uiEvent_t *ev)
 	size_t sLen;
 	uint32_t tmpID;
 
+	displayLightTrigger();
+
 	if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{
 		menuSystemPopPreviousMenu();

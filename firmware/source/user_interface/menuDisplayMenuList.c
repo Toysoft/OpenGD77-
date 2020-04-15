@@ -65,13 +65,17 @@ static void updateScreen(void)
 
 static void handleEvent(uiEvent_t *ev)
 {
+	displayLightTrigger();
+
 	if (KEYCHECK_PRESS(ev->keys,KEY_DOWN))
 	{
 		MENU_INC(gMenusCurrentItemIndex, gMenusEndIndex);
+		updateScreen();
 	}
 	else if (KEYCHECK_PRESS(ev->keys,KEY_UP))
 	{
 		MENU_DEC(gMenusCurrentItemIndex, gMenusEndIndex);
+		updateScreen();
 	}
 	else if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
 	{
@@ -100,6 +104,4 @@ static void handleEvent(uiEvent_t *ev)
 		menuSystemPushNewMenu(UI_LOCK_SCREEN);
 		return;
 	}
-
-	updateScreen();
 }

@@ -70,6 +70,8 @@ static void updateScreen(void)
 
 static void handleEvent(uiEvent_t *ev)
 {
+	displayLightTrigger();
+
 	if (ev->events & KEY_EVENT)
 	{
 		if (KEYCHECK_SHORTUP(ev->keys, KEY_RED))
@@ -86,8 +88,6 @@ static void handleEvent(uiEvent_t *ev)
 			return;
 		}
 	}
-
-	displayLightTrigger();
 }
 
 void menuClearPrivateCall(void )

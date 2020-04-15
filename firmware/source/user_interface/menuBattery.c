@@ -275,6 +275,8 @@ static void updateScreen(bool forceRedraw)
 
 static void handleEvent(uiEvent_t *ev)
 {
+	displayLightTrigger();
+
 	if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 	{
 		menuSystemPopPreviousMenu();
@@ -324,8 +326,6 @@ static void handleEvent(uiEvent_t *ev)
 			}
 		}
 	}
-
-	displayLightTrigger();
 }
 
 void menuBatteryInit(void)
