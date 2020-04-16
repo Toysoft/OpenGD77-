@@ -1,7 +1,7 @@
 ![](media/OpenGD77-logo.png)
 
 # OpenGD77 / OpenDM1801 / OpenRD5R User Guide
-OpenGD77 / OpenDM1801 / OpenRD5R is a work-in-progress, so is this User Guide. Last major update was on 12th April 2020. For documentation ToDo (including incremental changes), please refer to https://github.com/jangelor/OpenGD77/wiki/Documentation-ToDo . For latest discussions, please refer to the development and community forum at https://opengd77.com .
+OpenGD77 / OpenDM1801 / OpenRD5R is a work-in-progress, so is this User Guide. Last major update was on 16th April 2020. For documentation ToDo (including incremental changes), please refer to https://github.com/jangelor/OpenGD77/wiki/Documentation-ToDo . For latest discussions, please refer to the development and community forum at https://opengd77.com .
 <!-- MDTOC maxdepth:6 firsth1:1 numbering:0 flatten:0 bullets:1 updateOnSave:1 -->
 
 - [OpenGD77 User Guide](#opengd77-user-guide)   
@@ -28,7 +28,7 @@ OpenGD77 / OpenDM1801 / OpenRD5R is a work-in-progress, so is this User Guide. L
             - [Copy the RX frequency to the TX frequency](#copy-the-rx-frequency-to-the-tx-frequency)   
             - [Copy TX frequency to the RX frequency](#copy-tx-frequency-to-the-rx-frequency)   
             - [Filter (DMR mode only)](#filter-dmr-only)   
-            - [Tone Scan for CTCSS tone in FM, or CC Scan for DMR Colour Code in DMR mode](#tone-scan-for-ctcss-tone-in-fm-or-cc-scan-for-dmr-colour-code-in-dmr-mode)   
+            - [Tone Scan for CTCSS tone in FM](#tone-scan-for-ctcss-tone-in-fm)   
       - [DMR specific functionality (VFO and Channel screens)](#dmr-specific-functionality-vfo-and-channel-screens)   
          - [Timeslot selection](#timeslot-selection)   
          - [DMR ID callsign and name display](#dmr-id-callsign-and-name-display)   
@@ -65,12 +65,9 @@ OpenGD77 / OpenDM1801 / OpenRD5R is a work-in-progress, so is this User Guide. L
       - [Last Heard](#last-heard)   
       - [Firmware Info](#firmware-info)   
       - [Options](#options)   
-         - [DMR mic](#dmr-mic)   
-         - [Beep volume](#beep-volume)   
          - [Band Limits](#band-limits)   
          - [Calibration](#calibration)   
          - [Fact Reset](#fact-reset)   
-         - [Timeout beep](#timeout-beep)   
          - [Squelch UHF](#squelch-uhf)   
          - [Squelch 220](#squelch-220)   
          - [Squelch VHF](#squelch-vhf)   
@@ -86,6 +83,11 @@ OpenGD77 / OpenDM1801 / OpenRD5R is a work-in-progress, so is this User Guide. L
          - [Timeout](#timeout)   
          - [Order](#order)
          - [Contact](#contact)
+      - [Sound Options](#sound-options)
+	     - [DMR mic](#dmr-mic)   
+         - [Timeout beep](#timeout-beep) 
+         - [Beep volume](#beep-volume)  
+         - [DMR beep](#dmr-beep)   			 
       - [Channel Details](#channel-details)   
          - [Mode](#mode)   
          - [Color Code](#color-code)   
@@ -285,6 +287,7 @@ Press the **Up arrow** to skip over the current channel, and continue the scan
 
 Pressing any other button stops the scan.
 
+Whilst scanning the mode indicator **DMR** or **FM** will flash.
 
 #### Channel screen Quick Menu
 
@@ -303,9 +306,12 @@ Press the **Orange** button or **Green** key to confirm and save the updated cha
 
 Use the **Right** or **Left** arrows to select 
 * **None** (for no filtering, i.e. "promiscuous" mode).
-* **TS** (to filtering by the selected timeslot), 
-* **TS, TG** (to filter by the selected timeslot and also the selected Talkgroup) 
-* **TS, Ct** (to filter by the selected timeslot and also only for contacts in the Digital Contacts in the codeplug) 
+* **CC** (filter by Colour Code).
+* **CC**,**TS** (to filter by Colour Code and the selected timeslot), 
+* **CC**,**TS**,**TG** (to filter by Colour Code and the selected timeslot and also the selected Talkgroup) 
+* **CC**,**TS**,**Ct** (to filter by Colour Code and the selected timeslot and also only for contacts in the Digital Contacts in the codeplug) 
+* **CC**,**TS**,**RxG** (to filter by Colour Code and the selected timeslot and also only for the selected or manually entered Talkgroup, and the Talkgroups in the TG list / Rx Group list) 
+
 
 When timeslot filtering is disabled, the TS1 / TS2 indication at the top of the screen is displayed in inverse video.
 When Talkgroup filtering is enabled the DMR  mode indication at the top of the screen is displayed in inverse video.
@@ -315,8 +321,6 @@ When Talkgroup filtering is enabled the DMR  mode indication at the top of the s
 #### VFO Quick Menu
 
 Pressing the **Orange** button on the top of the radio in VFO mode displays the Quick menu for the VFO screen. Currently this has five options.
-
-Whilst scanning the mode indicator DMR or FM will flash.
 
 ##### VFO selection A or B
 
