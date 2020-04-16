@@ -32,6 +32,8 @@ static void updateScreen(void);
 static void handleEvent(uiEvent_t *ev);
 
 static const uint32_t CURSOR_UPDATE_TIMEOUT = 500;
+static const int NUM_PC_OR_TG_DIGITS = 8;
+static const int MAX_TG_OR_PC_VALUE = 16777215;
 
 static const char *menuName[4];
 enum DISPLAY_MENU_LIST { ENTRY_TG = 0, ENTRY_PC, ENTRY_SELECT_CONTACT, ENTRY_USER_DMR_ID, NUM_ENTRY_ITEMS};
@@ -61,7 +63,7 @@ int menuNumericalEntry(uiEvent_t *ev, bool isFirstRun)
 				handleEvent(ev);
 			else
 			{
-				if ((gMenusCurrentItemIndex != ENTRY_SELECT_CONTACT) && (strlen(digits) <= 7))
+				if ((gMenusCurrentItemIndex != ENTRY_SELECT_CONTACT) && (strlen(digits) <= NUM_PC_OR_TG_DIGITS))
 				{
 					updateCursor();
 				}
@@ -76,7 +78,7 @@ static void updateCursor(void)
 	size_t sLen;
 
 	// Display blinking cursor only when digits could be entered.
-	if ((gMenusCurrentItemIndex != ENTRY_SELECT_CONTACT) && ((sLen = strlen(digits)) <= 7))
+	if ((gMenusCurrentItemIndex != ENTRY_SELECT_CONTACT) && ((sLen = strlen(digits)) <= NUM_PC_OR_TG_DIGITS))
 	{
 		static uint32_t lastBlink = 0;
 		static bool     blink = false;
@@ -130,18 +132,26 @@ static int getNextContact(int curidx, int dir, struct_codeplugContact_t *contact
 
 	do {
 		idx += dir;
-		if (idx >= 1024) {
-			if (curidx == 0) {
+		if (idx >= 1024)
+		{
+			if (curidx == 0)
+			{
 				idx = 0;
 				break;
 			}
 			idx = 1;
-		} else if (idx ==0) {
-			if (curidx == 0) {
-				idx = 0;
-				break;
+		}
+		else
+		{
+			if (idx ==0)
+			{
+				if (curidx == 0)
+				{
+					idx = 0;
+					break;
+				}
+				idx = 1024;
 			}
-			idx = 1024;
 		}
 		codeplugContactGetDataForIndex(idx, contact);
 	} while ((curidx != idx) && ((*contact).name[0] == 0xff));
@@ -161,141 +171,170 @@ static void handleEvent(uiEvent_t *ev)
 		menuSystemPopPreviousMenu();
 		return;
 	}
-	else if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
+	else
 	{
-		tmpID = atoi(digits);
-		if (tmpID > 0 && tmpID <= 9999999) {
-			if (gMenusCurrentItemIndex != ENTRY_USER_DMR_ID)
+		if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
+		{
+			tmpID = atoi(digits);
+			if (tmpID > 0 && tmpID <= MAX_TG_OR_PC_VALUE)
 			{
-				if (gMenusCurrentItemIndex == ENTRY_PC || (pcIdx != 0 && contact.callType == 0x01))
+				if (gMenusCurrentItemIndex != ENTRY_USER_DMR_ID)
 				{
-					setOverrideTGorPC(tmpID, true);
+					if (gMenusCurrentItemIndex == ENTRY_PC || (pcIdx != 0 && contact.callType == 0x01))
+					{
+						setOverrideTGorPC(tmpID, true);
+					}
+					else
+					{
+						setOverrideTGorPC(tmpID, false);
+					}
 				}
 				else
 				{
-					setOverrideTGorPC(tmpID, false);
+					trxDMRID = tmpID;
+					if (ev->buttons & BUTTON_SK2)
+					{
+						// make the change to DMR ID permanent if Function + Green is pressed
+						codeplugSetUserDMRID(trxDMRID);
+					}
 				}
+				menuSystemPopAllAndDisplayRootMenu();
 			}
 			else
 			{
-				trxDMRID = tmpID;
-				if (ev->buttons & BUTTON_SK2)
-				{
-					// make the change to DMR ID permanent if Function + Green is pressed
-					codeplugSetUserDMRID(trxDMRID);
-				}
+				set_melody(melody_ERROR_beep);
 			}
-		}
-		menuSystemPopAllAndDisplayRootMenu();
-	}
-	else if (KEYCHECK_SHORTUP(ev->keys,KEY_HASH))
-	{
-		pcIdx = 0;
 
-		if (((ev->buttons & BUTTON_SK2) != 0) && (gMenusCurrentItemIndex == ENTRY_SELECT_CONTACT))
-		{
-			snprintf(digits, 8, "%d", trxDMRID);
-			digits[8] = 0;
-			gMenusCurrentItemIndex = ENTRY_USER_DMR_ID;
 		}
 		else
 		{
-			gMenusCurrentItemIndex++;
-			if (gMenusCurrentItemIndex > ENTRY_SELECT_CONTACT)
+			if (KEYCHECK_SHORTUP(ev->keys,KEY_HASH))
 			{
-				gMenusCurrentItemIndex = ENTRY_TG;
-			}
-			else if (gMenusCurrentItemIndex == ENTRY_SELECT_CONTACT)
-			{
-				pcIdx = getNextContact(0, 1, &contact);
+				pcIdx = 0;
 
-				if (pcIdx != 0)
+				if (((ev->buttons & BUTTON_SK2) != 0) && (gMenusCurrentItemIndex == ENTRY_SELECT_CONTACT))
 				{
-					itoa(contact.tgNumber, digits, 10);
+					snprintf(digits, 8, "%d", trxDMRID);
+					digits[8] = 0;
+					gMenusCurrentItemIndex = ENTRY_USER_DMR_ID;
 				}
+				else
+				{
+					gMenusCurrentItemIndex++;
+					if (gMenusCurrentItemIndex > ENTRY_SELECT_CONTACT)
+					{
+						gMenusCurrentItemIndex = ENTRY_TG;
+					}
+					else
+					{
+						if (gMenusCurrentItemIndex == ENTRY_SELECT_CONTACT)
+						{
+							pcIdx = getNextContact(0, 1, &contact);
+
+							if (pcIdx != 0)
+							{
+								itoa(contact.tgNumber, digits, 10);
+							}
+						}
+					}
+				}
+				updateScreen();
 			}
 		}
-
-		updateScreen();
 	}
+
 	if (gMenusCurrentItemIndex == ENTRY_SELECT_CONTACT)
 	{
 		int idx = pcIdx;
 
-		if (KEYCHECK_PRESS(ev->keys,KEY_DOWN)) {
+		if (KEYCHECK_PRESS(ev->keys,KEY_DOWN))
+		{
 			idx = getNextContact(pcIdx, 1, &contact);
-		} else if (KEYCHECK_PRESS(ev->keys,KEY_UP)) {
-			idx = getNextContact(pcIdx, -1, &contact);
 		}
-		if (pcIdx != idx ) {
+		else
+		{
+			if (KEYCHECK_PRESS(ev->keys,KEY_UP))
+			{
+				idx = getNextContact(pcIdx, -1, &contact);
+			}
+		}
+		if (pcIdx != idx )
+		{
 			pcIdx = idx;
 			itoa(contact.tgNumber, digits, 10);
 			updateScreen();
 		}
 	}
-	else if ((sLen = strlen(digits)) <= 7)
+	else
 	{
-		bool refreshScreen = false;
-
-		// Inc / Dec entered value.
-		if (KEYCHECK_PRESS(ev->keys,KEY_UP) || KEYCHECK_PRESS(ev->keys,KEY_DOWN))
+		if ((sLen = strlen(digits)) <= NUM_PC_OR_TG_DIGITS)
 		{
-			if (strlen(digits))
+			bool refreshScreen = false;
+
+			// Inc / Dec entered value.
+			if (KEYCHECK_PRESS(ev->keys,KEY_UP) || KEYCHECK_PRESS(ev->keys,KEY_DOWN))
 			{
-				unsigned long int ccs7 = strtoul(digits, NULL, 10);
-
-				if (KEYCHECK_PRESS(ev->keys,KEY_UP))
+				if (strlen(digits))
 				{
-					if (ccs7 < 9999999)
-						ccs7++;
+					unsigned long int ccs7 = strtoul(digits, NULL, 10);
 
-					refreshScreen = true;
+					if (KEYCHECK_PRESS(ev->keys,KEY_UP))
+					{
+						if (ccs7 < MAX_TG_OR_PC_VALUE)
+						{
+							ccs7++;
+						}
+						refreshScreen = true;
+					}
+					else
+					{
+						if (ccs7 > 1)
+						{
+							ccs7--;
+						}
+						refreshScreen = true;
+					}
+
+					if (refreshScreen)
+					{
+						sprintf(digits, "%lu", ccs7);
+					}
+				}
+			} // Delete a digit
+			else
+			{
+				if (KEYCHECK_PRESS(ev->keys,KEY_LEFT))
+				{
+					if ((sLen = strlen(digits)) > 0)
+					{
+						digits[sLen - 1] = 0;
+						refreshScreen = true;
+					}
 				}
 				else
 				{
-					if (ccs7 > 1)
-						ccs7--;
+					// Add a digit
+					if (sLen < NUM_PC_OR_TG_DIGITS)
+					{
+						int keyval = menuGetKeypadKeyValue(ev, true);
 
-					refreshScreen = true;
-				}
-
-				if (refreshScreen)
-				{
-					sprintf(digits, "%lu", ccs7);
+						if (keyval != 99)
+						{
+							char c[2] = {0, 0};
+							c[0] = keyval+'0';
+							strcat(digits, c);
+							refreshScreen = true;
+						}
+					}
 				}
 			}
-		} // Delete a digit
-		else if (KEYCHECK_PRESS(ev->keys,KEY_LEFT))
-		{
-			if ((sLen = strlen(digits)) > 0)
+
+			if (refreshScreen)
 			{
-				digits[sLen - 1] = 0;
-				refreshScreen = true;
+				updateScreen();
 			}
-		}
-		else
-		{
-			// Add a digit
-			if (sLen < 7)
-			{
-				int keyval = menuGetKeypadKeyValue(ev, true);
 
-				if (keyval != 99)
-				{
-					char c[2] = {0, 0};
-					c[0] = keyval+'0';
-					strcat(digits, c);
-					refreshScreen = true;
-				}
-			}
+			updateCursor();
 		}
-
-		if (refreshScreen)
-		{
-			updateScreen();
-		}
-
-		updateCursor();
 	}
-
 }
