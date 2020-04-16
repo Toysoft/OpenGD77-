@@ -27,7 +27,7 @@
 #if defined(PLATFORM_RD5R)
 #define SETTINGS_PLATFORM_SPECIFIC_SAVE_SETTINGS(includeVFOs) do { settingsSaveSettings(includeVFOs); } while(0)
 #else
-#define SETTINGS_PLATFORM_SPECIFIC_SAVE_SETTINGS(includeVFOs)
+#define SETTINGS_PLATFORM_SPECIFIC_SAVE_SETTINGS(includeVFOs) do {} while(0)
 #endif
 
 enum USB_MODE { USB_MODE_CPS, USB_MODE_HOTSPOT, USB_MODE_DEBUG};

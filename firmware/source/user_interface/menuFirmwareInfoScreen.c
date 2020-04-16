@@ -49,7 +49,7 @@ static void updateScreen(void)
 #elif defined(PLATFORM_DM1801)
 	ucPrintCentered(5, "OpenDM1801", FONT_SIZE_3);
 #elif defined(PLATFORM_RD5R)
-	ucPrintCentered(2, "OpenDM5R", FONT_SIZE_3);
+	ucPrintCentered(2, "OpenRD5R", FONT_SIZE_3);
 #endif
 
 #if defined(PLATFORM_RD5R)

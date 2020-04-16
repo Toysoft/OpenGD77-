@@ -92,8 +92,15 @@ namespace GD77_FirmwareLoader
 				}
 				else
 				{
-					FirmwareLoader.outputType = FirmwareLoader.OutputType.OutputType_GD77; //FirmwareLoader.probeModel();
-					Console.WriteLine(String.Format(" - Detected model: {0}", FirmwareLoader.getModelName()));
+					String[] modelsString = {
+						FirmwareLoader.getModelString(FirmwareLoader.OutputType.OutputType_GD77),
+						FirmwareLoader.getModelString(FirmwareLoader.OutputType.OutputType_GD77S),
+						FirmwareLoader.getModelString(FirmwareLoader.OutputType.OutputType_DM1801),
+						FirmwareLoader.getModelString(FirmwareLoader.OutputType.OutputType_RD5R)
+						};
+					String allModels = String.Join(", ", modelsString); 
+					Console.WriteLine(String.Format("Please specify one radio model from: {0}.", allModels));
+					Environment.Exit(-1);
 				}
 
 				if (args.Length == 0)

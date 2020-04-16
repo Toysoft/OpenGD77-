@@ -64,7 +64,7 @@ namespace GD77_FirmwareLoader
 			OutputType_GD77,
 			OutputType_GD77S,
 			OutputType_DM1801,
-            OutputType_RD5R,
+			OutputType_RD5R,
 			OutputType_UNKOWN
 		}
 
@@ -351,8 +351,10 @@ namespace GD77_FirmwareLoader
 #if EXTENDED_DEBUG
 #else
 			Console.Write(" - Programming data ");
+#if (LINUX_BUILD)
 			int cursorLPos = Console.CursorLeft;
 			int cursorTPos = Console.CursorTop;
+#endif
 #endif
 
 			while (address < fileLength)

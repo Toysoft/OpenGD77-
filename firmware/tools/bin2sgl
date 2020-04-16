@@ -12,8 +12,8 @@ for e in "$@"; do
 	"GD-77S")
 	    MODEL="-m GD-77S"
 	    ;;
-	"DM-5R")
-	    MODEL="-m DM-5R"
+	"RD-5R")
+	    MODEL="-m RD-5R"
 	    ;;
 	*)
 	    FILENAME="-f $e"

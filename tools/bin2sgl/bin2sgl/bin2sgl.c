@@ -3174,7 +3174,7 @@ typedef enum
      OUTPUT_MODE_GD77,
      OUTPUT_MODE_GD77S,
      OUTPUT_MODE_DM1801,
-     OUTPUT_MODE_DM5R
+     OUTPUT_MODE_RD5R
 } OutputMode_t;
 
 static OutputMode_t sglOutput = OUTPUT_MODE_GD77;
@@ -3249,7 +3249,7 @@ static int ConvertBinFile(const char *inFile)
 	  shift = 0x2C7C;
 	  flength = 0x78001; // The header, from firmware version 2.1.9 expects the file to be 0x78001 long
 	  break;
-     case OUTPUT_MODE_DM5R:
+     case OUTPUT_MODE_RD5R:
 	  len = (sizeof(Header217_0x306e) / sizeof(Header219_0x2c7c[0]));
 	  if ((wlen = write(outFD, &Header217_0x306e[0], len)) != len)
 	  {
@@ -3320,7 +3320,7 @@ static void usage(void)
      printf("\n");
      printf("Usage: bin2sgl -f <input file> [-m mode]\n");
      printf("\n");
-     printf("Modes are: GD-77, DM-1801, DM-5R, default mode is GD-77\n");
+     printf("Modes are: GD-77, DM-1801, RD-5R, default mode is GD-77\n");
      printf("\n");
 }
 
@@ -3376,10 +3376,10 @@ int main(int argc, char **argv)
 			      sglOutput = OUTPUT_MODE_DM1801;
 			      fprintf(stdout, "Output for: DM-1801\n");
 			 }
-			 else if (strcasecmp(optarg, "DM-5R") == 0)
+			 else if (strcasecmp(optarg, "RD-5R") == 0)
 			 {
-			      sglOutput = OUTPUT_MODE_DM5R;
-			      fprintf(stdout, "Output for: DM-5R\n");
+			      sglOutput = OUTPUT_MODE_RD5R;
+			      fprintf(stdout, "Output for: RD-5R\n");
 			 }
 			 else
 			 {
