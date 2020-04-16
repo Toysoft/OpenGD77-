@@ -43,7 +43,7 @@ namespace bin2sgl
 			OutputType_GD77,
 			OutputType_GD77S,
 			OutputType_DM1801,
-			OutputType_DM5R
+			OutputType_RD5R
 		}
 
 		private static OutputType outputType = OutputType.OutputType_GD77;
@@ -75,10 +75,10 @@ namespace bin2sgl
 					Console.WriteLine("DM-1801");
 					break;
 
-				case OutputType.OutputType_DM5R:
+				case OutputType.OutputType_RD5R:
 					shift = 0x306E;
 					flength = 0x78001; // The header, from firmware version 2.1.7 expects the file to be 0x78001 long
-					Console.WriteLine("DM-5R");
+					Console.WriteLine("RD-5R");
 					break;
 			}
 
@@ -119,7 +119,7 @@ namespace bin2sgl
 						}
 						break;
 
-					case OutputType.OutputType_DM5R:
+					case OutputType.OutputType_RD5R:
 						for (int i = 0; i < DataArrays.Header217_0x306e.Length; i++)
 						{
 							stream_fw_out.WriteByte(DataArrays.Header217_0x306e[i]);
@@ -171,7 +171,7 @@ namespace bin2sgl
 		{
 			int idxDM1801 = Array.IndexOf(args, "DM-1801");
 			int idxGD77S = Array.IndexOf(args, "GD-77S");
-			int idxDM5R = Array.IndexOf(args, "DM-5R");
+			int idxRD5R = Array.IndexOf(args, "RD-5R");
 
 			outputType = OutputType.OutputType_GD77; // Default platform target
 
@@ -185,10 +185,10 @@ namespace bin2sgl
 				outputType = OutputType.OutputType_DM1801;
 				args = RemoveArgAt(args, idxDM1801);
 			}
-			else if (idxDM5R >= 0)
+			else if (idxRD5R >= 0)
 			{
-				outputType = OutputType.OutputType_DM5R;
-				args = RemoveArgAt(args, idxDM5R);
+				outputType = OutputType.OutputType_RD5R;
+				args = RemoveArgAt(args, idxRD5R);
 			}
 
 			if (args.Length > 0)
@@ -197,7 +197,7 @@ namespace bin2sgl
             }
             else
             {
-                Console.WriteLine("Usage: bin2sgl [DM-1801 | GD-77S | DM-5R] filename");
+                Console.WriteLine("Usage: bin2sgl [DM-1801 | GD-77S | RD-5R] filename");
             }
         }
     }
