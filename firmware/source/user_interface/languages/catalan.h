@@ -111,6 +111,7 @@ const stringsTable_t catalanLanguage=
 .band_limits			= "Límit bandes",
 .beep_volume			= "Volum tons",
 .dmr_mic_gain			= "Mic DMR",
+.fm_mic_gain				= "FM mic", // MaxLen: 16 (with ':' + 0..31)
 .key_long				= "Prem llarg",
 .key_repeat				= "Prem rpt",
 .dmr_filter_timeout		= "Filtre temps",

@@ -111,6 +111,7 @@ const stringsTable_t frenchLanguage =
 .band_limits			= "Lim. Bandes",
 .beep_volume			= "Vol. bip",
 .dmr_mic_gain			= "DMR mic",
+.fm_mic_gain				= "FM mic", // MaxLen: 16 (with ':' + 0..31)
 .key_long				= "Appui long",
 .key_repeat				= "Répét°",
 .dmr_filter_timeout		= "Tps filtre",

@@ -24,8 +24,8 @@
 static void updateScreen(void);
 static void handleEvent(uiEvent_t *ev);
 
-enum SOUND_MENU_LIST { OPTIONS_MENU_TIMEOUT_BEEP = 0, OPTIONS_MENU_BEEP_VOLUME, OPTIONS_MENU_DMR_BEEP, OPTIONS_MIC_GAIN_DMR,
-						NUM_SOUND_MENU_ITEMS};
+enum SOUND_MENU_LIST { OPTIONS_MENU_TIMEOUT_BEEP = 0, OPTIONS_MENU_BEEP_VOLUME, OPTIONS_MENU_DMR_BEEP,
+						OPTIONS_MIC_GAIN_DMR, OPTIONS_MIC_GAIN_FM, NUM_SOUND_MENU_ITEMS};
 
 
 int menuSoundOptions(uiEvent_t *ev, bool isFirstRun)
@@ -72,7 +72,7 @@ static void updateScreen(void)
 					snprintf(buf, bufferLen, "%s:%s", currentLanguage->timeout_beep, currentLanguage->off);
 				}
 				break;
-			case OPTIONS_MENU_BEEP_VOLUME:// Beep volume reduction
+			case OPTIONS_MENU_BEEP_VOLUME: // Beep volume reduction
 				snprintf(buf, bufferLen, "%s:%ddB", currentLanguage->beep_volume, (2 - nonVolatileSettings.beepVolumeDivider) * 3);
 				soundBeepVolumeDivider = nonVolatileSettings.beepVolumeDivider;
 				break;
@@ -82,8 +82,11 @@ static void updateScreen(void)
 					snprintf(buf, bufferLen, "%s:%s", currentLanguage->dmr_beep, beepTX[nonVolatileSettings.beepOptions]);
 				}
 				break;
-			case OPTIONS_MIC_GAIN_DMR:// DMR Mic gain
+			case OPTIONS_MIC_GAIN_DMR: // DMR Mic gain
 				snprintf(buf, bufferLen, "%s:%ddB", currentLanguage->dmr_mic_gain, (nonVolatileSettings.micGainDMR - 11) * 3);
+				break;
+			case OPTIONS_MIC_GAIN_FM: // FM Mic gain
+				snprintf(buf, bufferLen, "%s:%d", currentLanguage->fm_mic_gain, (nonVolatileSettings.micGainFM - 16));
 				break;
 		}
 
@@ -131,11 +134,18 @@ static void handleEvent(uiEvent_t *ev)
 						nonVolatileSettings.beepOptions++;
 					}
 					break;
-				case OPTIONS_MIC_GAIN_DMR:// DMR Mic gain
+				case OPTIONS_MIC_GAIN_DMR: // DMR Mic gain
 					if (nonVolatileSettings.micGainDMR < 15)
 					{
 						nonVolatileSettings.micGainDMR++;
 						setMicGainDMR(nonVolatileSettings.micGainDMR);
+					}
+					break;
+				case OPTIONS_MIC_GAIN_FM: // FM Mic gain
+					if (nonVolatileSettings.micGainFM < 31)
+					{
+						nonVolatileSettings.micGainFM++;
+						setMicGainFM(nonVolatileSettings.micGainFM);
 					}
 					break;
 			}
@@ -162,11 +172,18 @@ static void handleEvent(uiEvent_t *ev)
 						nonVolatileSettings.beepOptions--;
 					}
 					break;
-				case OPTIONS_MIC_GAIN_DMR:// DMR Mic gain
+				case OPTIONS_MIC_GAIN_DMR: // DMR Mic gain
 					if (nonVolatileSettings.micGainDMR > 0)
 					{
 						nonVolatileSettings.micGainDMR--;
 						setMicGainDMR(nonVolatileSettings.micGainDMR);
+					}
+					break;
+				case OPTIONS_MIC_GAIN_FM: // FM Mic gain
+					if (nonVolatileSettings.micGainFM > 1) // Limit to min 1, as 0: no audio
+					{
+						nonVolatileSettings.micGainFM--;
+						setMicGainDMR(nonVolatileSettings.micGainFM);
 					}
 					break;
 			}
@@ -185,6 +202,7 @@ static void handleEvent(uiEvent_t *ev)
 			memcpy(&nonVolatileSettings, &originalNonVolatileSettings, sizeof(settingsStruct_t));
 			soundBeepVolumeDivider = nonVolatileSettings.beepVolumeDivider;
 			setMicGainDMR(nonVolatileSettings.micGainDMR);
+			setMicGainFM(nonVolatileSettings.micGainFM);
 			menuSystemPopPreviousMenu();
 			return;
 		}

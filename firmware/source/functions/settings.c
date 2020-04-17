@@ -27,7 +27,7 @@
 
 static const int STORAGE_BASE_ADDRESS 		= 0x6000;
 
-static const int STORAGE_MAGIC_NUMBER 		= 0x4746;
+static const int STORAGE_MAGIC_NUMBER 		= 0x4747;
 
 // Bit patterns for DMR Beep
 const uint8_t BEEP_TX_NONE  = 0x00;
@@ -161,7 +161,8 @@ void settingsRestoreDefaultSettings(void)
 #else
 			1; // no reduction in volume
 #endif
-	nonVolatileSettings.micGainDMR = 11;// Normal value used by the official firmware
+	nonVolatileSettings.micGainDMR = 11; // Normal value used by the official firmware
+	nonVolatileSettings.micGainFM = 17; // Default (from all of my cals, datasheet default: 16)
 	nonVolatileSettings.tsManualOverride = 0; // No manual TS override using the Star key
 	nonVolatileSettings.keypadTimerLong = 5;
 	nonVolatileSettings.keypadTimerRepeat = 3;

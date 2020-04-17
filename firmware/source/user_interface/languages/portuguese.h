@@ -111,6 +111,7 @@ const stringsTable_t portuguesLanguage =
 .band_limits			= "Limites banda",
 .beep_volume			= "Volume beep",
 .dmr_mic_gain			= "Micro DMR",
+.fm_mic_gain				= "Micro FM", // MaxLen: 16 (with ':' + 0..31)
 .key_long				= "Key long",
 .key_repeat				= "Key rpt",
 .dmr_filter_timeout		= "Filtro DMR",

@@ -66,6 +66,8 @@ extern volatile bool trxIsTransmittingTone;
 extern calibrationPowerValues_t trxPowerSettings;
 extern int trxCurrentBand[2];
 
+void I2C_AT1846_set_register_with_mask(uint8_t reg, uint16_t mask, uint16_t value, uint8_t shift);
+
 bool trxCarrierDetected(void);
 void trxCheckDigitalSquelch(void);
 void trxCheckAnalogSquelch(void);
