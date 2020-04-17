@@ -102,6 +102,7 @@ typedef struct stringsTable
    const char *band_limits;
    const char *beep_volume;
    const char *dmr_mic_gain;
+   const char *fm_mic_gain;
    const char *key_long;
    const char *key_repeat;
    const char *dmr_filter_timeout;

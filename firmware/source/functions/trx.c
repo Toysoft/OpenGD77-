@@ -571,6 +571,7 @@ void trxActivateTx(void)
 	{
 		set_clear_I2C_reg_2byte_with_mask(0x30, 0xFF, 0x1F, 0x00, 0x40); // analog TX
 		trxSelectVoiceChannel(AT1846_VOICE_CHANNEL_MIC);// For 1750 tone burst
+		setMicGainFM(nonVolatileSettings.micGainFM);
 	}
 	else
 	{

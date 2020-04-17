@@ -111,6 +111,7 @@ const stringsTable_t finnishLanguage =
 .band_limits		= "Bändi Rajoitu", 	// MaxLen: 16 (with ':' + .on or .off)
 .beep_volume		= "NäpÄäniVoim", 	// MaxLen: 16 (with ':' + -24..6 + 'dB')
 .dmr_mic_gain		= "DMR MicGain", 	// MaxLen: 16 (with ':' + -33..12 + 'dB')
+.fm_mic_gain		= "FM mic", 		// MaxLen: 16 (with ':' + 0..31)
 .key_long		= "Näp pitkä",	 	// MaxLen: 11 (with ':' + x.xs fitted)
 .key_repeat		= "Näp toisto", 	// MaxLen: 11 (with ':' + x.xs fitted)
 .dmr_filter_timeout	= "Suodin aika", 	// MaxLen: 16 (with ':' + 1..90 + 's')
