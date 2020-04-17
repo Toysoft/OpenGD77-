@@ -111,6 +111,7 @@ const stringsTable_t czechLanguage =
 .band_limits			= "OmezitPásmo", // MaxLen: 16 (with ':' + .on or .off)
 .beep_volume			= "ZvukKláves", // MaxLen: 16 (with ':' + -24..6 + 'dB')
 .dmr_mic_gain			= "DMR mic", // MaxLen: 16 (with ':' + -33..12 + 'dB')
+.fm_mic_gain				= "FM mic", // MaxLen: 16 (with ':' + 0..31)
 .key_long				= "Držet", // MaxLen: 11 (with ':' + x.xs fitted)
 .key_repeat				= "Znovu", // MaxLen: 11 (with ':' + x.xs fitted)
 .dmr_filter_timeout		= "asDMRFiltru", // MaxLen: 16 (with ':' + 1..90 + 's')

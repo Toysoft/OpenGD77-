@@ -17,6 +17,7 @@
  */
 
 #include <AT1846S.h>
+#include <settings.h>
 #include <trx.h>
 
 static const uint8_t AT1846InitSettings[][AT1846_BYTES_PER_COMMAND] = {
@@ -220,4 +221,9 @@ void I2C_AT1846_SetMode(void)
 	{
 		I2C_AT1846S_send_Settings(AT1846DMRSettings, sizeof(AT1846DMRSettings)/AT1846_BYTES_PER_COMMAND);
 	}
+}
+
+void setMicGainFM(uint8_t gain)
+{
+	I2C_AT1846_set_register_with_mask(0x0A, 0xF83F, gain, 6);
 }

@@ -111,6 +111,7 @@ const stringsTable_t italianLanguage =
 .band_limits			= "Limiti Banda", // MaxLen: 16 (with ':' + .on or .off)
 .beep_volume			= "Volume Bip", // MaxLen: 16 (with ':' + -24..6 + 'dB')
 .dmr_mic_gain			= "DMR mic", // MaxLen: 16 (with ':' + -33..12 + 'dB')
+.fm_mic_gain				= "FM mic", // MaxLen: 16 (with ':' + 0..31)
 .key_long				= "Key long", // MaxLen: 11 (with ':' + x.xs fitted)
 .key_repeat				= "Key rpt", // MaxLen: 11 (with ':' + x.xs fitted)
 .dmr_filter_timeout		= "Tempo Filtro", // MaxLen: 16 (with ':' + 1..90 + 's')

@@ -37,5 +37,7 @@ void I2C_AT1846S_init(void);
 void I2C_AT1846_Postinit(void);
 void I2C_AT1846_SetBandwidth(void);
 void I2C_AT1846_SetMode(void);
+void setMicGainFM(uint8_t gain);
+
 
 #endif /* _FW_AT1846S_H_ */

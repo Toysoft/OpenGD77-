@@ -111,6 +111,7 @@ const stringsTable_t germanLanguage =
 .band_limits			= "Band Limit", // MaxLen: 16 (with ':' + .on or .off)
 .beep_volume			= "Beep Lauts", // MaxLen: 16 (with ':' + -24..6 + 'dB')
 .dmr_mic_gain			= "DMR Mikro", // MaxLen: 16 (with ':' + -33..12 + 'dB')
+.fm_mic_gain				= "FM Mikro", // MaxLen: 16 (with ':' + 0..31)
 .key_long				= "Key lang", // MaxLen: 11 (with ':' + x.xs fitted)
 .key_repeat				= "Key wied", // MaxLen: 11 (with ':' + x.xs fitted)
 .dmr_filter_timeout		= "DMR Filter", // MaxLen: 16 (with ':' + 1..90 + 's')
