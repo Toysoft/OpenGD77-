@@ -225,5 +225,15 @@ void I2C_AT1846_SetMode(void)
 
 void setMicGainFM(uint8_t gain)
 {
+	uint8_t voice_gain_tx = trxGetCalibrationVoiceGainTx();
+
+	// Apply extra gain 17 (the calibration default value, not the datasheet one)
+	if (gain > 17)
+	{
+		//voice_gain_tx += (((gain - 16) * 3) >> 1); // Get some Larsen starting at gain:11
+		voice_gain_tx += (gain - 16); // Seems to be enough
+	}
+
 	I2C_AT1846_set_register_with_mask(0x0A, 0xF83F, gain, 6);
+	I2C_AT1846_set_register_with_mask(0x41, 0xFF80, voice_gain_tx, 0);
 }
