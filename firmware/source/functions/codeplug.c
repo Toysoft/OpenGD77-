@@ -868,6 +868,10 @@ void codeplugGetVFO_ChannelData(struct_codeplugChannel_t *vfoBuf,int VFONumber)
 	vfoBuf->chMode = (vfoBuf->chMode==0)?RADIO_MODE_ANALOG:RADIO_MODE_DIGITAL;
 	vfoBuf->txFreq = bcd2int(vfoBuf->txFreq);
 	vfoBuf->rxFreq = bcd2int(vfoBuf->rxFreq);
+	if (codeplugChannelToneIsCTCSS(vfoBuf->rxTone))
+		vfoBuf->rxTone = bcd2int(vfoBuf->rxTone);
+	if (codeplugChannelToneIsCTCSS(vfoBuf->txTone))
+		vfoBuf->txTone = bcd2int(vfoBuf->txTone);
 }
 
 void codeplugSetVFO_ChannelData(struct_codeplugChannel_t *vfoBuf,int VFONumber)
@@ -877,6 +881,10 @@ void codeplugSetVFO_ChannelData(struct_codeplugChannel_t *vfoBuf,int VFONumber)
 	tmpChannel.chMode = (vfoBuf->chMode==RADIO_MODE_ANALOG)?0:1;
 	tmpChannel.txFreq = int2bcd(vfoBuf->txFreq);
 	tmpChannel.rxFreq = int2bcd(vfoBuf->rxFreq);
+	if (codeplugChannelToneIsCTCSS(vfoBuf->rxTone))
+		tmpChannel.rxTone = int2bcd(vfoBuf->rxTone);
+	if (codeplugChannelToneIsCTCSS(vfoBuf->txTone))
+		tmpChannel.txTone = int2bcd(vfoBuf->txTone);
 	EEPROM_Write(CODEPLUG_ADDR_VFO_A_CHANNEL+(sizeof(struct_codeplugChannel_t)*VFONumber),(uint8_t *)&tmpChannel,sizeof(struct_codeplugChannel_t));
 }
 
