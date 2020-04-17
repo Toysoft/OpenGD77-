@@ -1294,7 +1294,7 @@ static void handleEvent(uiEvent_t *ev)
 			}
 			else
 			{
-				menuSystemPushNewMenu(UI_VFO_QUICK_MENU);
+				menuSystemPushNewMenu(UI_CHANNEL_QUICK_MENU);
 			}
 
 			return;

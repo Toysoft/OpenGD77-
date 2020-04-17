@@ -940,6 +940,23 @@ static void handleEvent(uiEvent_t *ev)
 				return;
 			}
 #endif
+#if defined(PLATFORM_RD5R)
+		else if (KEYCHECK_LONGDOWN(ev->keys, KEY_VFO_MR) && ((ev->buttons & BUTTON_SK1) == 0))
+		{
+			if (ev->buttons & BUTTON_SK2)
+			{
+				settingsPrivateCallMuteMode = !settingsPrivateCallMuteMode;// Toggle PC mute only mode
+				menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
+				uiChannelModeUpdateScreen(0);
+			}
+			else
+			{
+				menuSystemPushNewMenu(UI_VFO_QUICK_MENU);
+			}
+
+			return;
+		}
+#endif
 #if defined(PLATFORM_DM1801)
 			else if (KEYCHECK_SHORTUP(ev->keys, KEY_A_B))
 			{
