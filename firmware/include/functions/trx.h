@@ -97,6 +97,7 @@ bool trxCheckFrequencyInAmateurBand(int tmp_frequency);
 int trxGetBandFromFrequency(int frequency);
 int trxGetNextOrPrevBandFromFrequency(int frequency, bool nextBand);
 void trxReadRSSIAndNoise(void);
+uint8_t trxGetCalibrationVoiceGainTx(void);
 void trxSelectVoiceChannel(uint8_t channel);
 void trxSetTone1(int toneFreq);
 void trxSetTone2(int toneFreq);

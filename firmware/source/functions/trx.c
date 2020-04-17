@@ -95,6 +95,7 @@ volatile uint8_t trxRxNoise;
 
 static uint8_t trxSaveVoiceGainTx = 0xff;
 static uint16_t trxSaveDeviation = 0xff;
+static uint8_t voice_gain_tx = 0x31; // default voice_gain_tx fro calibration, needs to be declared here in case calibration:OFF
 
 int trxDMRMode = DMR_MODE_ACTIVE;// Active is for simplex
 static volatile bool txPAEnabled=false;
@@ -734,7 +735,6 @@ void trxUpdateAT1846SCalibration(void)
 	trxCalcBandAndFrequencyOffset(&band_offset, &freq_offset);
 
 	uint8_t val_pga_gain;
-	uint8_t voice_gain_tx;
 	uint8_t gain_tx;
 	uint8_t padrv_ibit;
 
@@ -953,6 +953,11 @@ void trxUpdateDeviation(int channel)
 		break;
 	}
 	taskEXIT_CRITICAL();
+}
+
+uint8_t trxGetCalibrationVoiceGainTx(void)
+{
+	return voice_gain_tx;
 }
 
 void trxSelectVoiceChannel(uint8_t channel) {

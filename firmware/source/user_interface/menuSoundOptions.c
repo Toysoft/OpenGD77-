@@ -183,7 +183,7 @@ static void handleEvent(uiEvent_t *ev)
 					if (nonVolatileSettings.micGainFM > 1) // Limit to min 1, as 0: no audio
 					{
 						nonVolatileSettings.micGainFM--;
-						setMicGainDMR(nonVolatileSettings.micGainFM);
+						setMicGainFM(nonVolatileSettings.micGainFM);
 					}
 					break;
 			}
