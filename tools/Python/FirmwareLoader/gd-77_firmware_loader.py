@@ -119,7 +119,7 @@ def downloadFirmware():
     if (outputFormat == SGLFormatOutput.GD_77):
         pattern = r'/rogerclarkmelbourne/OpenGD77/releases/download/R([0-9\.]+)/OpenGD77\.sgl'
     elif (outputFormat == SGLFormatOutput.GD_77S):
-        pattern = '/rogerclarkmelbourne/OpenGD77/releases/download/R([0-9\.]+)/OpenGD77S_HS\.sgl'
+        pattern = '/rogerclarkmelbourne/OpenGD77/releases/download/R([0-9\.]+)/OpenGD77S\.sgl'
     elif (outputFormat == SGLFormatOutput.DM_1801):
         pattern = '/rogerclarkmelbourne/OpenGD77/releases/download/R([0-9\.]+)/OpenDM1801\.sgl'
     elif (outputFormat == SGLFormatOutput.DM_5R):
