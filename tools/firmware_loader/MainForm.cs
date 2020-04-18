@@ -98,7 +98,7 @@ namespace GD77_FirmwareLoader
 					pattern = @"/rogerclarkmelbourne/OpenGD77/releases/download/R([0-9\.]+)/OpenGD77\.sgl";
 					break;
 				case FirmwareLoader.OutputType.OutputType_GD77S:
-					pattern = @"/rogerclarkmelbourne/OpenGD77/releases/download/R([0-9\.]+)/OpenGD77S_HS\.sgl";
+					pattern = @"/rogerclarkmelbourne/OpenGD77/releases/download/R([0-9\.]+)/OpenGD77S\.sgl";
 					break;
 				case FirmwareLoader.OutputType.OutputType_DM1801:
 					pattern = @"/rogerclarkmelbourne/OpenGD77/releases/download/R([0-9\.]+)/OpenDM1801\.sgl";
