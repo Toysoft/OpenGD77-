@@ -162,6 +162,11 @@ namespace GD77_FirmwareLoader
 					return;
 				}
 			}
+			else
+			{
+				MessageBox.Show(String.Format("Error: unable to find a firmware for your {0} transceiver.", FirmwareLoader.getModelName()), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				enableUI(true);
+			}
 		}
 
 		private void downloadFileCompletedCallback(object sender, AsyncCompletedEventArgs ev)
