@@ -4,116 +4,116 @@
 OpenGD77 / OpenDM1801 / OpenRD5R is a work-in-progress, so is this User Guide. Last major update was on 16th April 2020. For documentation ToDo (including incremental changes), please refer to https://github.com/jangelor/OpenGD77/wiki/Documentation-ToDo . For latest discussions, please refer to the development and community forum at https://opengd77.com .
 <!-- MDTOC maxdepth:6 firsth1:1 numbering:0 flatten:0 bullets:1 updateOnSave:1 -->
 
-- [OpenGD77 User Guide](#opengd77-user-guide)   
-   - [Introduction](#introduction)   
-      - [Credits](#credits)   
-      - [Download links and other resources](#download-links-and-other-resources)   
-   - [Installation](#installation)   
-   - [Main screens (VFO and Channel screens)](#main-screens-vfo-and-channel-screens)   
-      - [Changing between VFO and Channel](#changing-between-vfo-and-channel)   
-      - [Changing Timeslot in DMR mode](#changing-timeslot-in-dmr-mode)   
-      - [Controlling Tx power](#controlling-tx-power)   
-      - [Signal strength bar graph](#signal-strength-bar-graph)   
-      - [Channel screen specific functionality](#channel-screen-specific-functionality)   
-         - [Changing channels within the current zone](#changing-channels-within-the-current-zone)   
-         - [Changing zones](#changing-zones)   
-         - [Channel screen Quick Menu](#channel-screen-quick-menu)   
-            - [Scan](#scan)   
-            - [Copying a channel to VFO](#copying-a-channel-to-vfo)   
-            - [Read the VFO into the current channel](#read-the-vfo-into-the-current-channel)   
-            - [Filter (DMR only)](#filter-dmr-only)   
-         - [VFO Quick Menu](#vfo-quick-menu)   
-            - [VFO selection A or B](#vfo-selection-a-or-b)   
-            - [Exchange the TX and RX frequencies](#exchange-the-tx-and-rx-frequencies)   
-            - [Copy the RX frequency to the TX frequency](#copy-the-rx-frequency-to-the-tx-frequency)   
-            - [Copy TX frequency to the RX frequency](#copy-tx-frequency-to-the-rx-frequency)   
-            - [Filter (DMR mode only)](#filter-dmr-only)   
-            - [Tone Scan for CTCSS tone in FM](#tone-scan-for-ctcss-tone-in-fm)   
-      - [DMR specific functionality (VFO and Channel screens)](#dmr-specific-functionality-vfo-and-channel-screens)   
-         - [Timeslot selection](#timeslot-selection)   
-         - [DMR ID callsign and name display](#dmr-id-callsign-and-name-display)   
-         - [Talker Alias display](#talker-alias-display)   
-         - [Talkgroup selection from the Rx Group list](#talkgroup-selection-from-the-rx-group-list)   
-         - [Assignment of Timeslot to Digital Contact TalkGroup](#assignment-of-timeslot-to-digital-contact-talkgroup)   
-         - [TalkGroup displayed in inverse video](#talkgroup-displayed-in-inverse-video)   
-         - [Manual TalkGroup number entry](#manual-talkgroup-number-entry)   
-         - [Private Call number entry](#private-call-number-entry)   
-         - [Digital Contact selection](#digital-contact-selection)   
-         - [Station DMR ID number entry](#station-dmr-id-number-entry)   
-      - [FM specific functionality (VFO and Channel screens)](#fm-specific-functionality-vfo-and-channel-screens)   
-         - [FM and FM Narrow](#fm-and-fm-narrow)   
-         - [CTCSS tone](#ctcss-tone)   
-         - [Squelch](#squelch)   
-         - [1750Hz Tone for repeater operation](#1750hz-tone-for-repeater-operation)   
-         - [DTMF tone transmission](#dtmf-tone-transmission)   
-      - [VFO specific functionality](#vfo-specific-functionality)   
-         - [Frequency change up/down step](#frequency-change-updown-step)   
-         - [Numerical frequency entry](#numerical-frequency-entry)   
-         - [To adjust the TX frequency, independent of the RX frequency](#to-adjust-the-tx-frequency-independent-of-the-rx-frequency)   
-   - [Transmitting](#transmitting)   
-      - [Timeout warning beep](#timeout-warning-beep)   
-      - [TOT](#tot)   
-   - [Other screens](#other-screens)   
-      - [Lock screen](#lock-screen)   
-      - [Text entry](#text-entry)   
-   - [The control keys and buttons](#the-control-keys-and-buttons)   
-   - [The Menu System](#the-menu-system)   
-   - [Main Menu](#main-menu)   
-      - [Zone](#zone)   
-      - [RSSI](#rssi)   
-      - [Battery](#battery)   
-      - [Last Heard](#last-heard)   
-      - [Firmware Info](#firmware-info)   
-      - [Options](#options)   
-         - [Band Limits](#band-limits)   
-         - [Calibration](#calibration)   
-         - [Fact Reset](#fact-reset)   
-         - [Squelch UHF](#squelch-uhf)   
-         - [Squelch 220](#squelch-220)   
-         - [Squelch VHF](#squelch-vhf)   
-         - [Scan mode](#scan-mode)   
-         - [Scan delay](#scan-delay)   
-         - [Filter time](#filter-time)   
-         - [Key rpt](#key-rpt)   
-         - [Key long](#key-long)   
-      - [Display Options](#display-options)   
-         - [Colour mode](#colour-mode)   
-         - [Brightness](#brightness)   
-         - [Contrast](#contrast)   
-         - [Timeout](#timeout)   
+- [OpenGD77 User Guide](#opengd77-user-guide)
+   - [Introduction](#introduction)
+      - [Credits](#credits)
+      - [Download links and other resources](#download-links-and-other-resources)
+   - [Installation](#installation)
+   - [Main screens (VFO and Channel screens)](#main-screens-vfo-and-channel-screens)
+      - [Changing between VFO and Channel](#changing-between-vfo-and-channel)
+      - [Changing Timeslot in DMR mode](#changing-timeslot-in-dmr-mode)
+      - [Controlling Tx power](#controlling-tx-power)
+      - [Signal strength bar graph](#signal-strength-bar-graph)
+      - [Channel screen specific functionality](#channel-screen-specific-functionality)
+         - [Changing channels within the current zone](#changing-channels-within-the-current-zone)
+         - [Changing zones](#changing-zones)
+         - [Channel screen Quick Menu](#channel-screen-quick-menu)
+            - [Scan](#scan)
+            - [Copying a channel to VFO](#copying-a-channel-to-vfo)
+            - [Read the VFO into the current channel](#read-the-vfo-into-the-current-channel)
+            - [Filter (DMR only)](#filter-dmr-only)
+         - [VFO Quick Menu](#vfo-quick-menu)
+            - [VFO selection A or B](#vfo-selection-a-or-b)
+            - [Exchange the TX and RX frequencies](#exchange-the-tx-and-rx-frequencies)
+            - [Copy the RX frequency to the TX frequency](#copy-the-rx-frequency-to-the-tx-frequency)
+            - [Copy TX frequency to the RX frequency](#copy-tx-frequency-to-the-rx-frequency)
+            - [Filter (DMR mode only)](#filter-dmr-only)
+            - [Tone Scan for CTCSS tone in FM](#tone-scan-for-ctcss-tone-in-fm)
+      - [DMR specific functionality (VFO and Channel screens)](#dmr-specific-functionality-vfo-and-channel-screens)
+         - [Timeslot selection](#timeslot-selection)
+         - [DMR ID callsign and name display](#dmr-id-callsign-and-name-display)
+         - [Talker Alias display](#talker-alias-display)
+         - [Talkgroup selection from the Rx Group list](#talkgroup-selection-from-the-rx-group-list)
+         - [Assignment of Timeslot to Digital Contact TalkGroup](#assignment-of-timeslot-to-digital-contact-talkgroup)
+         - [TalkGroup displayed in inverse video](#talkgroup-displayed-in-inverse-video)
+         - [Manual TalkGroup number entry](#manual-talkgroup-number-entry)
+         - [Private Call number entry](#private-call-number-entry)
+         - [Digital Contact selection](#digital-contact-selection)
+         - [Station DMR ID number entry](#station-dmr-id-number-entry)
+      - [FM specific functionality (VFO and Channel screens)](#fm-specific-functionality-vfo-and-channel-screens)
+         - [FM and FM Narrow](#fm-and-fm-narrow)
+         - [CTCSS tone](#ctcss-tone)
+         - [Squelch](#squelch)
+         - [1750Hz Tone for repeater operation](#1750hz-tone-for-repeater-operation)
+         - [DTMF tone transmission](#dtmf-tone-transmission)
+      - [VFO specific functionality](#vfo-specific-functionality)
+         - [Frequency change up/down step](#frequency-change-updown-step)
+         - [Numerical frequency entry](#numerical-frequency-entry)
+         - [To adjust the TX frequency, independent of the RX frequency](#to-adjust-the-tx-frequency-independent-of-the-rx-frequency)
+   - [Transmitting](#transmitting)
+      - [Timeout warning beep](#timeout-warning-beep)
+      - [TOT](#tot)
+   - [Other screens](#other-screens)
+      - [Lock screen](#lock-screen)
+      - [Text entry](#text-entry)
+   - [The control keys and buttons](#the-control-keys-and-buttons)
+   - [The Menu System](#the-menu-system)
+   - [Main Menu](#main-menu)
+      - [Zone](#zone)
+      - [RSSI](#rssi)
+      - [Battery](#battery)
+      - [Last Heard](#last-heard)
+      - [Firmware Info](#firmware-info)
+      - [Options](#options)
+         - [Band Limits](#band-limits)
+         - [Calibration](#calibration)
+         - [Fact Reset](#fact-reset)
+         - [Squelch UHF](#squelch-uhf)
+         - [Squelch 220](#squelch-220)
+         - [Squelch VHF](#squelch-vhf)
+         - [Scan mode](#scan-mode)
+         - [Scan delay](#scan-delay)
+         - [Filter time](#filter-time)
+         - [Key rpt](#key-rpt)
+         - [Key long](#key-long)
+      - [Display Options](#display-options)
+         - [Colour mode](#colour-mode)
+         - [Brightness](#brightness)
+         - [Contrast](#contrast)
+         - [Timeout](#timeout)
          - [Order](#order)
          - [Contact](#contact)
       - [Sound Options](#sound-options)
-	     - [DMR mic](#dmr-mic)   
-         - [Timeout beep](#timeout-beep) 
-         - [Beep volume](#beep-volume)  
-         - [DMR beep](#dmr-beep)   			 
-      - [Channel Details](#channel-details)   
-         - [Mode](#mode)   
-         - [Color Code](#color-code)   
-         - [Timeslot](#timeslot)   
-         - [TX CTCSS](#tx-ctcss)   
-         - [RX CTCSS](#rx-ctcss)   
-         - [RX](#rx)   
-         - [TX](#tx)   
-         - [Bandwidth](#bandwidth)   
-         - [Step](#step)   
-         - [TOT](#tot)   
-         - [Zone Skip](#zone-skip)   
-         - [All Skip](#all-skip)   
-         - [RX Grp](#rx-grp)   
-      - [Credits Screen](#credits-screen)   
-   - [Making and receiving DMR Private Calls](#making-and-receiving-dmr-private-calls)   
-      - [To make a Private Call](#to-make-a-private-call)   
-      - [To Receive a Private Call](#to-receive-a-private-call)   
-   - [Hotspot mode](#hotspot-mode)   
-   - [Programming Channels and Talkgroups for use with the firmware](#programming-channels-and-talkgroups-for-use-with-opengd77)   
-      - [Overview](#overview)   
-         - [New Driver Installation](#new-driver-installation)   
-         - [OpenGD77 Menu](#opengd77-menu)   
-         - [Backup Before You Do Anything Else](#backup-before-you-do-anything-else)   
-         - [Reading and Writing Your Codeplug](#reading-and-writing-your-codeplug)   
-         - [Writing DMR IDs -- the User Database](#writing-dmr-ids-the-user-database)   
+	     - [DMR mic](#dmr-mic)
+         - [Timeout beep](#timeout-beep)
+         - [Beep volume](#beep-volume)
+         - [DMR beep](#dmr-beep)
+      - [Channel Details](#channel-details)
+         - [Mode](#mode)
+         - [Color Code](#color-code)
+         - [Timeslot](#timeslot)
+         - [TX CTCSS](#tx-ctcss)
+         - [RX CTCSS](#rx-ctcss)
+         - [RX](#rx)
+         - [TX](#tx)
+         - [Bandwidth](#bandwidth)
+         - [Step](#step)
+         - [TOT](#tot)
+         - [Zone Skip](#zone-skip)
+         - [All Skip](#all-skip)
+         - [RX Grp](#rx-grp)
+      - [Credits Screen](#credits-screen)
+   - [Making and receiving DMR Private Calls](#making-and-receiving-dmr-private-calls)
+      - [To make a Private Call](#to-make-a-private-call)
+      - [To Receive a Private Call](#to-receive-a-private-call)
+   - [Hotspot mode](#hotspot-mode)
+   - [Programming Channels and Talkgroups for use with the firmware](#programming-channels-and-talkgroups-for-use-with-opengd77)
+      - [Overview](#overview)
+         - [New Driver Installation](#new-driver-installation)
+         - [OpenGD77 Menu](#opengd77-menu)
+         - [Backup Before You Do Anything Else](#backup-before-you-do-anything-else)
+         - [Reading and Writing Your Codeplug](#reading-and-writing-your-codeplug)
+         - [Writing DMR IDs -- the User Database](#writing-dmr-ids-the-user-database)
 
 <!-- /MDTOC -->
 
@@ -131,26 +131,26 @@ Due to the rapid pace of development some of photos of screens are now out of da
 
 The photos will be updated when the firmware in a particular area stabilises
 
-The intention of the project is to create a fully featured non-commercial firmware that entirely replaces the Radioddity GD-77, and Baofeng DM-1801 factory firmware. 
+The intention of the project is to create a fully featured non-commercial firmware that entirely replaces the Radioddity GD-77, and Baofeng DM-1801 factory firmware.
 This firmware is specifically designed for **Amateur Radio** use, and has features not available in the official firmware.
 
 **Note:**
 **The firmware is still under development and there are some key areas of functionality which have yet to be written.**
 
-1. DMR Tier 2 Tx and Rx voice transmissions works. 
+1. DMR Tier 2 Tx and Rx voice transmissions works.
 
    Text messaging and other similar features are currently not supported, but are on the To Do list.
 
 1. FM RX and TX transmission works.
 
    This includes repeater operation using CTCSS on both TX and RX.
-   
+
 
    For a full list of current bugs, and proposed enhancements see
    <https://github.com/rogerclarkmelbourne/opengd77/issues>
 
 
-Also, as far as possible the firmware is open source. 
+Also, as far as possible the firmware is open source.
 This allows anyone to modify the firmware to suit their own individual needs, and also for peer review and improvement of the firmware source code.
 
 ### Credits
@@ -279,6 +279,22 @@ Pressing **Function + Up arrow** or **Function + Down arrow** changes to the nex
 
 ![](media/changing-zones.png)
 
+
+### Displaying the channel Frequency
+
+Press and hold the **Black button** to display the Rx and Tx frequency in both DMR and FM modem
+
+### Displaying FM specific channel infromation
+
+Press and hold the **Black button** to display FM specific information. CTCSS and squelch setting
+
+### Listening on a repeater input
+
+Pressing the **Black button** and **Blue button** enables the radio to receive on the input to a repeater.
+This works on both DMR and FM repeaters.
+This also shows the channel information as described above.
+
+
 ### Scanning
 Press and hold (Long press) the **Up arrow** to start scanning the channels in the zone
 Press the **Left arrow** to reverse the direction of scan.
@@ -304,14 +320,13 @@ Press the **Orange** button or **Green** key to confirm and save the updated cha
 
 ##### Filter (DMR only)
 
-Use the **Right** or **Left** arrows to select 
+Use the **Right** or **Left** arrows to select
 * **None** (for no filtering, i.e. "promiscuous" mode).
 * **CC** (filter by Colour Code).
-* **CC**,**TS** (to filter by Colour Code and the selected timeslot), 
-* **CC**,**TS**,**TG** (to filter by Colour Code and the selected timeslot and also the selected Talkgroup) 
-* **CC**,**TS**,**Ct** (to filter by Colour Code and the selected timeslot and also only for contacts in the Digital Contacts in the codeplug) 
-* **CC**,**TS**,**RxG** (to filter by Colour Code and the selected timeslot and also only for the selected or manually entered Talkgroup, and the Talkgroups in the TG list / Rx Group list) 
-
+* **CC**,**TS** (to filter by Colour Code and the selected timeslot),
+* **CC**,**TS**,**TG** (to filter by Colour Code and the selected timeslot and also the selected Talkgroup)
+* **CC**,**TS**,**Ct** (to filter by Colour Code and the selected timeslot and also only for contacts in the Digital Contacts in the codeplug)
+* **CC**,**TS**,**RxG** (to filter by Colour Code and the selected timeslot and also only for the selected or manually entered Talkgroup, and the Talkgroups in the TG list / Rx Group list)
 
 When timeslot filtering is disabled, the TS1 / TS2 indication at the top of the screen is displayed in inverse video.
 When Talkgroup filtering is enabled the DMR  mode indication at the top of the screen is displayed in inverse video.
@@ -325,6 +340,7 @@ Pressing the **Orange** button on the top of the radio in VFO mode displays the 
 ##### VFO selection A or B
 
 Pressing the **Orange** button twice while in VFO mode quickly toggles between VFO A and VFO B.
+On the Baofeng DM-1801 / DM-860, this function is contolled using the **A/B** button.
 
 ##### Exchange the TX and RX frequencies
 
@@ -340,30 +356,16 @@ Copies the TX frequency to the RX frequency. Press **Green** key or **Orange** b
 
 ##### Filter (DMR mode only)
 
-Use the **Right** or **Left** arrows to select 
-* **None** (for no filtering, i.e. "promiscuous" mode).
-* **TS** (to filtering by the selected timeslot), 
-* **TS, TG** (to filter by the selected timeslot and also the selected Talkgroup) 
-* **TS, Ct** (to filter by the selected timeslot and also only for contacts in the Digital Contacts in the codeplug) 
-
-When timeslot filtering is disabled, the TS1 / TS2 indication at the top of the screen is displayed in inverse video.
-When Talkgroup filtering is enabled the DMR  mode indication at the top of the screen is displayed in inverse video.
+This function is identical to the Filter described forChannel mode operation (above)
 
 ##### Tone Scan for CTCSS tone in FM
 
-In analog mode, this scans for any CTCSS tone.
+This scans for any CTCSS tone, and sets the VFO to these paramaters.
 
 Press the **Orange** button or **Green** key to confirm the copy or **Red** key to cancel.
 
 ![](media/vfo-quick-menu.png)
 
-*Note.*
-
-Listening to the input of a repeater will only work in DMR mode if both the TX frequency and the RX frequency are the same. This is because most DMR radios do not give an option to select Tier2 Active or Tier 2 Passive mode, and instead assume that if the TX and RX frequencies are the same the radio needs to be in Active mode, where the radio is the DMR master. Meanwhile, if the TX and RX frequencies are not the same the radio assumes it needs to operate in Tier 2 Passive mode, wherein the repeater signal controls the DMR timeslot synchronization.
-
-However to listen on the input of a repeater, the signal that is received does not contain the synchronisation information hence the radio needs to be put into DMR Active mode in order to receive the signal.
-
-I am not sure whether the official firmware is able to receive on the input of a repeater if a channel was setup with the TX and RX frequencies swapped, but because of the way the firmware actually monitors both TimeSlots simultaneously, but only decodes the TG/ID and audio for the selected TS.
 
 ### DMR specific functionality (VFO and Channel screens)
 
@@ -567,7 +569,7 @@ To start the scan, use Long press on the **Up** arrow, until the radio beeps.
 
 When not actively scanning, pressing the **Up** or **Down** arrows performs the normal function in the VFO of increasing or decreasing the frequency.
 
-Press the **Left arrow** key to reverse the scan direction. 
+Press the **Left arrow** key to reverse the scan direction.
 Press the **Up arrow** to skip over the current frequency and continue the scan.
 Press the **Right arrow** arrow to mark the current frequency as a 'nuisance' frequency, which will be omitted by the scan.
 
@@ -831,7 +833,7 @@ This setting controls the beeps which are played at the start or end, or both st
 The beep at the start of transmissions is used to confirm connection to a repeater, becuase it is only played when the radio enters the main transmission phase to a repeater, and not when its 'waking' the repeater
 These beeps are only played through the radio's speaker, they are not transmitted via the DMR audio signal
 
-Options are "Start", "Stop", "None" or "Both" 
+Options are "Start", "Stop", "None" or "Both"
 
 
 #### Contact
@@ -901,7 +903,7 @@ Selects which RX group is assigned to teh current channel (DMR only).
 #### Accepting and saving the changes to the channel
 Pressing the **Green** menu key confirms the changes.
 
-Pressing **Function + Green** saves the settings to the codeplug, or in the case of the VFO the changes are saved to the non-volatile settings. 
+Pressing **Function + Green** saves the settings to the codeplug, or in the case of the VFO the changes are saved to the non-volatile settings.
 Pressing the **Red** menu key closes the menu without making any changes to the channel.
 
 ### Credits Screen
