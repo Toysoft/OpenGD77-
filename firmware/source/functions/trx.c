@@ -36,10 +36,10 @@ static bool digitalSignalReceived = false;
 
 int trxCurrentBand[2] = {RADIO_BAND_VHF,RADIO_BAND_VHF};// Rx and Tx band.
 
+#if USE_DATASHEET_RANGES
 const frequencyBand_t RADIO_FREQUENCY_BANDS[RADIO_BANDS_TOTAL_NUM] =  {
 													{
 														.minFreq=13400000,
-
 														.maxFreq=17400000
 													},// VHF
 													{
@@ -51,6 +51,22 @@ const frequencyBand_t RADIO_FREQUENCY_BANDS[RADIO_BANDS_TOTAL_NUM] =  {
 														.maxFreq=52000000
 													}// UHF
 };
+#else
+const frequencyBand_t RADIO_FREQUENCY_BANDS[RADIO_BANDS_TOTAL_NUM] =  {
+													{
+														.minFreq=12700000,
+														.maxFreq=17800000
+													},// VHF
+													{
+														.minFreq=19000000,
+														.maxFreq=28200000
+													},// 220Mhz
+													{
+														.minFreq=38000000,
+														.maxFreq=56400000
+													}// UHF
+};
+#endif
 
 static const int TRX_SQUELCH_MAX = 70;
 const int TRX_CTCSS_TONE_NONE = 65535;
@@ -206,6 +222,7 @@ int trxGetBandFromFrequency(int frequency)
 			return i;
 		}
 	}
+
 	return -1;
 }
 
