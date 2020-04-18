@@ -445,15 +445,15 @@ void trxSetFrequency(int fRx,int fTx, int dmrMode)
 
 		if (!txPAEnabled)
 		{
-			if (trxCurrentBand[TRX_RX_FREQ_BAND] == RADIO_BAND_UHF)
-			{
-				GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 0);
-				GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 1);
-			}
-			else
+			if (trxCurrentBand[TRX_RX_FREQ_BAND] == RADIO_BAND_VHF)
 			{
 				GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 1);
 				GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 0);
+			}
+			else
+			{
+				GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 0);
+				GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 1);
 			}
 		}
 		else
@@ -528,15 +528,15 @@ void trxActivateRx(void)
 
 	txPAEnabled=false;
 
-    if (trxCurrentBand[TRX_RX_FREQ_BAND] == RADIO_BAND_UHF)
-	{
-		GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 0);// VHF pre-amp off
-		GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 1);// UHF pre-amp on
-	}
-    else
+    if (trxCurrentBand[TRX_RX_FREQ_BAND] == RADIO_BAND_VHF)
 	{
 		GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 1);// VHF pre-amp on
 		GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 0);// UHF pre-amp off
+	}
+    else
+	{
+		GPIO_PinWrite(GPIO_VHF_RX_amp_power, Pin_VHF_RX_amp_power, 0);// VHF pre-amp off
+		GPIO_PinWrite(GPIO_UHF_RX_amp_power, Pin_UHF_RX_amp_power, 1);// UHF pre-amp on
 	}
 
 	if (currentBandWidthIs25kHz)
@@ -580,15 +580,15 @@ void trxActivateTx(void)
 	}
 
 	// TX PA on
-	if (trxCurrentBand[TRX_TX_FREQ_BAND] == RADIO_BAND_UHF)
-	{
-		GPIO_PinWrite(GPIO_VHF_TX_amp_power, Pin_VHF_TX_amp_power, 0);// I can't see why this would be needed. Its probably just for safety.
-		GPIO_PinWrite(GPIO_UHF_TX_amp_power, Pin_UHF_TX_amp_power, 1);
-	}
-	else
+	if (trxCurrentBand[TRX_TX_FREQ_BAND] == RADIO_BAND_VHF)
 	{
 		GPIO_PinWrite(GPIO_UHF_TX_amp_power, Pin_UHF_TX_amp_power, 0);// I can't see why this would be needed. Its probably just for safety.
 		GPIO_PinWrite(GPIO_VHF_TX_amp_power, Pin_VHF_TX_amp_power, 1);
+	}
+	else
+	{
+		GPIO_PinWrite(GPIO_VHF_TX_amp_power, Pin_VHF_TX_amp_power, 0);// I can't see why this would be needed. Its probably just for safety.
+		GPIO_PinWrite(GPIO_UHF_TX_amp_power, Pin_UHF_TX_amp_power, 1);
 	}
     DAC_SetBufferValue(DAC0, 0U, txPower);	// PA drive to appropriate level
 }
