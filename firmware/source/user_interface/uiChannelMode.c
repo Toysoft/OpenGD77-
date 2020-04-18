@@ -31,6 +31,7 @@ static void checkAndUpdateSelectedChannelForGD77S(uint16_t chanNum, bool forceSp
 static void handleEventForGD77S(uiEvent_t *ev);
 static uint16_t getCurrentChannelInCurrentZoneForGD77S(void);
 static bool firstRunGD77S = true;
+static uint8_t inGD77SSettings;
 #else
 static void startScan(void);
 static void handleUpKey(uiEvent_t *ev);
@@ -104,6 +105,8 @@ int uiChannelMode(uiEvent_t *ev, bool isFirstRun)
 		}
 
 #if defined(PLATFORM_GD77S)
+		inGD77SSettings = 0; // Get out of the settings when selecting another channel.
+
 		// Ensure the correct channel is loaded, on the very first run
 		if (firstRunGD77S)
 		{
@@ -818,14 +821,13 @@ static void buildSpeechSettingsFormGD77S(uint8_t *buf, uint8_t offset, uint8_t s
 
 static void handleEventForGD77S(uiEvent_t *ev)
 {
-	static uint8_t inSettings = 0;
-	uint8_t        buf[SPEECH_SYNTHESIS_BUFFER_SIZE];
-
+	uint8_t buf[SPEECH_SYNTHESIS_BUFFER_SIZE];
 
 	if (ev->events & ROTARY_EVENT)
 	{
 		if (!trxIsTransmitting && (ev->rotary > 0))
 		{
+			inGD77SSettings = 0; // Get out of the settings when selecting another channel.
 			nonVolatileSettings.overrideTG = 0;
 			checkAndUpdateSelectedChannelForGD77S(ev->rotary, false);
 			clearActiveDMRID();
@@ -841,9 +843,9 @@ static void handleEventForGD77S(uiEvent_t *ev)
 
 			if (ev->buttons & BUTTON_ORANGE_LONG)
 			{
-				inSettings = (inSettings + 1) % 3;
+				inGD77SSettings = (inGD77SSettings + 1) % 3;
 
-				switch (inSettings)
+				switch (inGD77SSettings)
 				{
 					case 0: // Leaving settings
 						buf[0u] = 2U;
@@ -857,18 +859,18 @@ static void handleEventForGD77S(uiEvent_t *ev)
 						buf[2U] = SPEECH_SYNTHESIS_ON;
 						buf[3U] = SPEECH_SYNTHESIS_SEQUENCE_SEPARATOR;
 						buf[4U] = SPEECH_SYNTHESIS_SEQUENCE_SEPARATOR;
-						buildSpeechSettingsFormGD77S(buf, 4U, inSettings);
+						buildSpeechSettingsFormGD77S(buf, 4U, inGD77SSettings);
 						break;
 
 					case 2: // Zone
 						buf[0u] = 0U;
-						buildSpeechSettingsFormGD77S(buf, 0U, inSettings);
+						buildSpeechSettingsFormGD77S(buf, 0U, inGD77SSettings);
 						break;
 				}
 			}
 			else
 			{
-				if (inSettings == 0)
+				if (inGD77SSettings == 0)
 				{
 					buf[0u] = 1U;
 					buf[1U] = SPEECH_SYNTHESIS_BATTERY;
@@ -886,17 +888,17 @@ static void handleEventForGD77S(uiEvent_t *ev)
 		{
 			buf[0U] = 0U;
 
-			switch (inSettings)
+			switch (inGD77SSettings)
 			{
 				case 0: // Not in settings, spell channel details.
-					buildSpeechSettingsFormGD77S(buf, 0U, inSettings);
+					buildSpeechSettingsFormGD77S(buf, 0U, inGD77SSettings);
 					break;
 
 				case 1: // Power
 					if (nonVolatileSettings.txPowerLevel < MAX_POWER_SETTING_NUM)
 					{
 						nonVolatileSettings.txPowerLevel++;
-						buildSpeechSettingsFormGD77S(buf, 0U, inSettings);
+						buildSpeechSettingsFormGD77S(buf, 0U, inGD77SSettings);
 					}
 					break;
 
@@ -913,7 +915,7 @@ static void handleEventForGD77S(uiEvent_t *ev)
 					nonVolatileSettings.currentChannelIndexInZone = 0;// Since we are switching zones the channel index should be reset
 					channelScreenChannelData.rxFreq = 0x00; // Flag to the Channel screen that the channel data is now invalid and needs to be reloaded
 
-					buildSpeechSettingsFormGD77S(buf, 0U, inSettings);
+					buildSpeechSettingsFormGD77S(buf, 0U, inGD77SSettings);
 					menuSystemPopAllAndDisplaySpecificRootMenu(UI_CHANNEL_MODE);
 					break;
 			}
@@ -925,17 +927,17 @@ static void handleEventForGD77S(uiEvent_t *ev)
 		}
 		else if (ev->buttons & BUTTON_SK2)
 		{
-			if (inSettings != 0)
+			if (inGD77SSettings != 0)
 			{
 				buf[0U] = 0U;
 
-				switch (inSettings)
+				switch (inGD77SSettings)
 				{
 					case 1: // Power
 						if (nonVolatileSettings.txPowerLevel > 0)
 						{
 							nonVolatileSettings.txPowerLevel--;
-							buildSpeechSettingsFormGD77S(buf, 0U, inSettings);
+							buildSpeechSettingsFormGD77S(buf, 0U, inGD77SSettings);
 						}
 						break;
 
@@ -954,7 +956,7 @@ static void handleEventForGD77S(uiEvent_t *ev)
 						nonVolatileSettings.currentChannelIndexInZone = 0; // Since we are switching zones the channel index should be reset
 						channelScreenChannelData.rxFreq = 0x00; // Flag to the Channel screeen that the channel data is now invalid and needs to be reloaded
 
-						buildSpeechSettingsFormGD77S(buf, 0U, inSettings);
+						buildSpeechSettingsFormGD77S(buf, 0U, inGD77SSettings);
 						menuSystemPopAllAndDisplaySpecificRootMenu(UI_CHANNEL_MODE);
 						break;
 				}
