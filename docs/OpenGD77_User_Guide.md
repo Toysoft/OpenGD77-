@@ -1,7 +1,7 @@
 ![](media/OpenGD77-logo.png)
 
 # OpenGD77 / OpenDM1801 / OpenRD5R User Guide
-OpenGD77 / OpenDM1801 / OpenRD5R is a work-in-progress, so is this User Guide. Last major update was on 16th April 2020. For documentation ToDo (including incremental changes), please refer to https://github.com/jangelor/OpenGD77/wiki/Documentation-ToDo . For latest discussions, please refer to the development and community forum at https://opengd77.com .
+OpenGD77 / OpenGD77S / OpenDM1801 / OpenRD5R is a work-in-progress, so is this User Guide. Last update was on 20th April 2020. For documentation ToDo (including incremental changes), please refer to https://github.com/jangelor/OpenGD77/wiki/Documentation-ToDo . For latest discussions, please refer to the development and community forum at https://opengd77.com .
 <!-- MDTOC maxdepth:6 firsth1:1 numbering:0 flatten:0 bullets:1 updateOnSave:1 -->
 
 - [OpenGD77 User Guide](#opengd77-user-guide)
@@ -65,17 +65,21 @@ OpenGD77 / OpenDM1801 / OpenRD5R is a work-in-progress, so is this User Guide. L
       - [Last Heard](#last-heard)
       - [Firmware Info](#firmware-info)
       - [Options](#options)
-         - [Band Limits](#band-limits)
-         - [Calibration](#calibration)
          - [Fact Reset](#fact-reset)
+         - [Calibration](#calibration)
+         - [Band Limits](#band-limits)
+         - [Key long](#key-long)
+         - [Key rpt](#key-rpt)
+         - [Filter time](#filter-time)
+         - [Scan delay](#scan-delay)
+         - [Scan mode](#scan-mode)
          - [Squelch UHF](#squelch-uhf)
          - [Squelch 220](#squelch-220)
          - [Squelch VHF](#squelch-vhf)
-         - [Scan mode](#scan-mode)
-         - [Scan delay](#scan-delay)
-         - [Filter time](#filter-time)
-         - [Key rpt](#key-rpt)
-         - [Key long](#key-long)
+         - [PTT latch](#ptt-latch)
+         - [Hotspot](#hotspot-mode)
+         - [TA Tx](#ta-tx)
+         - [Allow PC](#allow-pc)
       - [Display Options](#display-options)
          - [Colour mode](#colour-mode)
          - [Brightness](#brightness)
@@ -725,7 +729,6 @@ https://github.com/rogerclarkmelbourne/OpenGD77/commit/a0ebbc7
 
 ### Options
 
-The **Options** screen is the new name for the **Utilities** menu.
 
 ![](media/menu-options.png)
 
@@ -733,10 +736,11 @@ This menu controls various settings specific to the firmware
 
 ![](media/options-screen.png)
 
+#### Fact Reset
 
-#### Band Limits
+Resets the radio to default settings, and reads the CPS VFO A values from the codeplug into the VFO screen. Power cycle the radio to apply.
 
-Turns ON/Off the transmit band limit function that prevent transmission outside of the Amateur Radio bands. (Default ON).
+**The radio can also be set to the default settings by holding the Blue (Function) key while turning on the radio.**
 
 #### Calibration
 
@@ -746,11 +750,29 @@ Some radios seem to have invalid calibration data, possibly because the official
 
 If the radio does not seem to transmit or receive correctly, or if it does not work correctly (e.g., high BER) with certain hotspots, try disabling the calibration and rebooting the radio, as the nominal calibration parameters used by the firmware normally work almost as well as correct calibration data.
 
-#### Fact Reset
+#### Band Limits
 
-Resets the radio to default settings, and reads the CPS VFO A values from the codeplug into the VFO screen. Power cycle the radio to apply.
+Turns ON/Off the transmit band limit function that prevent transmission outside of the Amateur Radio bands. (Default ON).
 
-**The radio can also be set to the default settings by holding the Blue (Function) key while turning on the radio.**
+#### Key long
+
+This setting controls the time (in seconds) after which a key is considered to be a long/repetitive press.
+
+#### Key rpt
+
+This setting controls the speed of key repetitions when a key is held.
+
+#### Filter time
+
+This feature works when TimeSlot filtering is turned off (**Filter: Off** in the Quick Menu). It sets the duration the radio listens in to one particular TimeSlot before resuming listening to the other TimeSlot for traffic. This prevents the radio from switching to the other TimeSlot in the event that there is a long pause or transmission gap in the current TimeSlot being heard. When TimeSlot filtering is turned on (**Filter: TS** in Quick Menu), this does not have any effect.
+
+#### Scan delay
+
+During scan mode, this controls the duration wherein the radio tunes in to a channel before resuming scan. This works when **Pause** is selected as the scan mode.
+
+#### Scan mode
+
+This setting controls how the receiver stops when there is a signal during scan mode. **Hold** continuously tunes in to a channel when a signal is received. **Pause** tunes in to that signal for a specified duration (Scan Delay) and then resumes scan.
 
 #### Squelch UHF
 
@@ -764,42 +786,65 @@ This setting controls the squelch level for 220MHz when using an analog channel 
 
 This setting controls the squelch level for 2 meter VHF when using an analog channel or during analog mode in VFO. Default is 45%.
 
-#### Scan mode
+#### PTT Latch
 
-This setting controls how the receiver stops when there is a signal during scan mode. **Hold** continuously tunes in to a channel when a signal is received. **Pause** tunes in to that signal for a specified duration (Scan Delay) and then resumes scan.
+When PTT latch is enabled, the PTT switch toggles the radio to transmit or receive. In this mode the PTT does not need to be pressed continuously during an over.
 
-#### Scan delay
+Note. The PTT latch function, only works if a timeout has been defined for the channel, or VFO, to prevent constant accidental transmission.
 
-During scan mode, this controls the duration wherein the radio tunes in to a channel before resuming scan. This works when **Pause** is selected as the scan mode.
+#### Hotspot
 
-#### Filter time
+This option controls whether the firmware will enter hotspot mode when connected to MMDVMHost, including PiStar, or to BlueDV.
 
-This feature works when TimeSlot filtering is turned off (**Filter: Off** in the Quick Menu). It sets the duration the radio listens in to one particular TimeSlot before resuming listening to the other TimeSlot for traffic. This prevents the radio from switching to the other TimeSlot in the event that there is a long pause or transmission gap in the current TimeSlot being heard. When TimeSlot filtering is turned on (**Filter: TS** in Quick Menu), this does not have any effect.
+Options are
+**Off**
+**MMDVMHost**  for use with PiStar or any other system using MMDVMHost
+**BlueDV** for use with BlueDV
 
-#### Key rpt
+On the GD-77S. To enable hotspot mode, Press and hold the **black button** (SK1) when turning on the radio to enable **MMDVMHost** mode or **black button** and **blue button** to enable BlueDV mode.
 
-This setting controls the speed of key repetitions when a key is held.
+#### TA Tx
 
-#### Key long
+Enables Talker Alias data transmission.
+The the text of "Line1" and "Line2" from the "Boot Item" screen is used for this transmission, with no space between the Line1 and Line2 data.
 
-This setting controls the time (in seconds) after which a key is considered to be a long/repetitive press.
+Note.
+Use of this feature will cause problems on Motorola based repeaters and networks, and should only be used for simplex and possibly on Brandmeister and other networks which correctly support Talker Alias
+
+#### Allow PC
+
+Allows Private Calls to be received
 
 ### Display Options
 
 ![](media/display-options.png)
 
+#### Brightness
+The firmware allows the display backlight brightness to be controlled from 100% to 0%, in 10% steps between 10% and 100% and below 10% the brightness is controlled in 1% steps. The default backlight brightness (default 100%). Use the **Right** and **Left** arrow keys to adjust the brightness.
+
+#### Min Bright
+
+Controls the display backlight brightness in its "Off" state.
+The default value is "0%", so that when the display is in its "Off" state there will be no backlight.
+
+#### Contrast
+The firmware allows the display contrast. Lower values result dark text, higher values result in darker text but the background also starts to become dark at higher settings.
+
+#### Display mode
+
+Controls the display backlight operation
+
+**Auto** Display backlight will turn on automatically when triggered by various events e.g. Rx of signal, pressing a key or button.
+**Manual** Display backlight is toggled on and off by pressing the **Black** button (SK1)
+**None** Display backlight will not illuminate under any condition
+
+#### Timeout
+Sets the time before the display backlight is extinguished (default 5 seconds). Setting this value to zero prevents the backlight from turning off at all.
+
 #### Colour mode
 This option allows for Normal or inverse colour display. Normal is white background with black pixels; Inverse is black background with white pixels.
 *Note.* This does not completely replicated the GD-77 “Black” display hardware version, because that radio uses a different LCD panel which physically has a back background, whereas the normal GD-77 have a LCD panel with white background
 
-#### Brightness
-The firmware allows the display backlight brightness to be controlled from 100% to 0%, in 10% steps between 10% and 100% and below 10% the brightness is controlled in 1% steps. The default backlight brightness (default 100%). Use the **Right** and **Left** arrow keys to adjust the brightness.
-
-#### Contrast
-The firmware allows the display contrast to be controlled. The values are the number sent to the LCD panel controller, with a usable range from 12 to 30. Higher values result in more contrast, but also increase the darkness of the background. The Official firmware uses a value of 12, however this is did not appear to be the optimum value, so the firmware uses 18 as the default.
-
-#### Timeout
-Sets the time before the display backlight is extinguished (default 5 seconds). Setting this value to zero prevents the backlight from turning off at all.
 
 #### Order
 Controls where the DMR Contact display data is sourced from
@@ -808,33 +853,6 @@ Db = DMR ID database
 TA = Talker Alias
 
 The default is Cc/Db/TA, which means the receiced DMR ID is first checked in the Digital Contacts, and if not found the internal DMR ID database is searched, and if not found and the DMR transmission includes Talker Alias, then Talker Alias will be used.
-
-
-### Sound Options
-
-#### DMR mic
-
-This controls the audio gain of the DMR microphone input system, relative to the default value.
-
-This only adjusts the gain on DMR, and does not affect the FM mic gain.
-Settings are in 3dB steps, with 0dB being the normal default setting, which is the same as the official firmware.
-
-#### Beep volume
-
-This controls the volume of the beep and other tones, and can be set from 100% to 10% in these increments: (-24dB, -21dB, -18dB, -15dB, -12dB, -9dB, -6dB, -3dB, 0dB, 3dB, 6dB).
-
-#### Timeout beep
-
-This setting controls whether the radio emits timeout warning beeps during transmission when the timeout is about to expire and transmission will be terminated.
-
-###  DMR Beep
-
-This setting controls the beeps which are played at the start or end, or both start and end of DRM transmissions
-The beep at the start of transmissions is used to confirm connection to a repeater, becuase it is only played when the radio enters the main transmission phase to a repeater, and not when its 'waking' the repeater
-These beeps are only played through the radio's speaker, they are not transmitted via the DMR audio signal
-
-Options are "Start", "Stop", "None" or "Both"
-
 
 #### Contact
 Controls the position on the screen where the DMR Callsign and Name etc, is displayed on the screen
@@ -851,6 +869,36 @@ If the caller information e.g. from TA is longer than 16 characters and won't fi
 The default is 1 Line.
 
 
+### Sound Options
+
+#### Timeout beep
+
+This setting controls whether the radio emits timeout warning beeps during transmission when the timeout is about to expire and transmission will be terminated.
+
+#### Beep volume
+
+This controls the volume of the beep and other tones, and can be set from 100% to 10% in these increments: (-24dB, -21dB, -18dB, -15dB, -12dB, -9dB, -6dB, -3dB, 0dB, 3dB, 6dB).
+
+####  DMR Beep
+
+This setting controls the beeps which are played at the start or end, or both start and end of DRM transmissions
+The beep at the start of transmissions is used to confirm connection to a repeater, becuase it is only played when the radio enters the main transmission phase to a repeater, and not when its 'waking' the repeater
+These beeps are only played through the radio's speaker, they are not transmitted via the DMR audio signal
+
+Options are "Start", "Stop", "None" or "Both"
+
+#### DMR mic
+
+This controls the audio gain of the DMR microphone input system, relative to the default value.
+
+This only adjusts the gain on DMR, and does not affect the FM mic gain.
+Settings are in 3dB steps, with 0dB being the normal default setting, which is the same as the official firmware.
+
+#### FM mic
+
+This controls the audio gain of the FM microphone input system, relative to the default value. Positive values result in more gain than default, Negative values result in less gain than default.
+The units of this control in the baseband IC (AT1846S) are not known.
+
 
 ### Channel Details
 
@@ -864,11 +912,17 @@ Sets the color code when the VFO/Channel is set to DMR
 #### Timeslot
 Selects DMR Timeslot 1 or 2 when the VFO/Channel is set to DMR.
 
+#### Tx/RX Grp
+Selects which Tx/Rx group is assigned to teh current channel (DMR only).
+
 #### TX CTCSS
 Sets the transmit CTCSS tone when the VFO/Channel is set to FM
 
 #### RX CTCSS
 Sets the receive CTCSS tone when the VFO/Channel is set to FM
+
+#### Bandwidth
+Sets the Rx and Tx bandwidth in FM mode to either 25Khz or 12.5Khz
 
 #### RX
 
@@ -882,9 +936,6 @@ Tx frequency
 
 Enter the frequency via the keypad
 
-#### Bandwidth
-Sets the Rx and Tx bandwidth in FM mode to either 25Khz or 12.5Khz
-
 #### Step
 Selects the VFO/Channel frequency step size.
 
@@ -896,9 +947,6 @@ Set to skip the channel when scanning within the zone.
 
 #### All Skip
 Set to skip the channel when scanning within the All Channels list.
-
-#### RX Grp
-Selects which RX group is assigned to teh current channel (DMR only).
 
 #### Accepting and saving the changes to the channel
 Pressing the **Green** menu key confirms the changes.
