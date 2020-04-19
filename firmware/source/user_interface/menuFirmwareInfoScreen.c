@@ -30,7 +30,9 @@ int menuFirmwareInfoScreen(uiEvent_t *ev, bool isFirstRun)
 	else
 	{
 		if (ev->hasEvent)
+		{
 			handleEvent(ev);
+		}
 	}
 	return 0;
 }
@@ -39,8 +41,9 @@ static void updateScreen(void)
 {
 	char buf[17];
 
-	snprintf(buf, 16, "[ %s ]", GITVERSION);
-	buf[11] = 0; // git hash id 7 char long;
+	snprintf(buf, 16, "[ %s", GITVERSION);
+	buf[9] = 0; // git hash id 7 char long;
+	strcat(buf, " ]");
 
 	ucClearBuf();
 
