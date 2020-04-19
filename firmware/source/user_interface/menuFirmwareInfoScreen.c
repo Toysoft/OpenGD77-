@@ -30,7 +30,9 @@ int menuFirmwareInfoScreen(uiEvent_t *ev, bool isFirstRun)
 	else
 	{
 		if (ev->hasEvent)
+		{
 			handleEvent(ev);
+		}
 	}
 	return 0;
 }
