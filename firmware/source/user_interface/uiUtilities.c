@@ -1353,7 +1353,8 @@ void drawDMRMicLevelBarGraph(void)
 	ucFillRect(0, BAR_Y_POS, (int16_t)((barGraphLength > (DISPLAY_SIZE_X - 1)) ? (DISPLAY_SIZE_X - 1) : barGraphLength), 3, false);
 }
 
-void setOverrideTGorPC(int tgOrPc, bool privateCall) {
+void setOverrideTGorPC(int tgOrPc, bool privateCall)
+{
 	int tmpTGorPC = nonVolatileSettings.overrideTG;
 
 	menuUtilityTgBeforePcMode = 0;
