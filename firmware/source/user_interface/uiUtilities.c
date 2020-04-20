@@ -1331,21 +1331,30 @@ void drawRSSIBarGraph(void)
 	trxRxSignal=0;
 }
 
-void drawDMRMicLevelBarGraph(void)
+void drawFMMicLevelBarGraph(void)
 {
-	float barGraphLength = sqrt(micAudioSamplesTotal)*1.5;
+	trxReadVoxAndMicStrength();
 
-	ucFillRect(0, BAR_Y_POS,128,3,true);
+	uint8_t micdB = (trxTxMic >> 1); // trxTxMic is in 0.5dB unit, displaying 50dB .. 100dB
+	uint16_t w = 0;
 
-	if (barGraphLength > 127)
-	{
-		barGraphLength = 127;
-	}
+	// display from 50dB to 100dB, span over 128pix
+	w = (uint16_t)(((float)DISPLAY_SIZE_X / 50.0) * ((float)micdB - 50.0));
 
-	ucFillRect(0, BAR_Y_POS,(int)barGraphLength,3,false);
+	ucFillRect(0, BAR_Y_POS, DISPLAY_SIZE_X, 3, true);
+	ucFillRect(0, BAR_Y_POS, (int16_t)((w > (DISPLAY_SIZE_X - 1)) ? (DISPLAY_SIZE_X - 1) : w), 3, false);
 }
 
-void setOverrideTGorPC(int tgOrPc, bool privateCall) {
+void drawDMRMicLevelBarGraph(void)
+{
+	uint16_t barGraphLength = (uint16_t)(sqrt(micAudioSamplesTotal) * 1.5);
+
+	ucFillRect(0, BAR_Y_POS, DISPLAY_SIZE_X, 3, true);
+	ucFillRect(0, BAR_Y_POS, (int16_t)((barGraphLength > (DISPLAY_SIZE_X - 1)) ? (DISPLAY_SIZE_X - 1) : barGraphLength), 3, false);
+}
+
+void setOverrideTGorPC(int tgOrPc, bool privateCall)
+{
 	int tmpTGorPC = nonVolatileSettings.overrideTG;
 
 	menuUtilityTgBeforePcMode = 0;
