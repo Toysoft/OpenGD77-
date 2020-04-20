@@ -166,14 +166,14 @@ static void updateScreen(bool forceRedraw)
 
 				ucPrintAt(20, 22, buffer, FONT_SIZE_4);
 
-				uint32_t h = (uint32_t)(((averageBatteryVoltage - CUTOFF_VOLTAGE_UPPER_HYST) * DISPLAY_SIZE_Y - 28) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));
-				if (h > DISPLAY_SIZE_Y - 28)
+				uint32_t h = (uint32_t)(((averageBatteryVoltage - CUTOFF_VOLTAGE_UPPER_HYST) * (DISPLAY_SIZE_Y - 28)) / (BATTERY_MAX_VOLTAGE - CUTOFF_VOLTAGE_UPPER_HYST));
+				if (h > (DISPLAY_SIZE_Y - 28))
 				{
-					h = DISPLAY_SIZE_Y - 28;
+					h = (DISPLAY_SIZE_Y - 28);
 				}
 
 				// Draw Level
-				ucFillRoundRect(100, 23 + DISPLAY_SIZE_Y - 28 - h , 20, h, 2, (averageBatteryVoltage < BATTERY_CRITICAL_VOLTAGE) ? blink : true);
+				ucFillRoundRect(100, 23 + (DISPLAY_SIZE_Y - 28) - h , 20, h, 2, (averageBatteryVoltage < BATTERY_CRITICAL_VOLTAGE) ? blink : true);
 			}
 
 			// Low blinking arrow
