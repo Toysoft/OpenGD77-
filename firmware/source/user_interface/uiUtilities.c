@@ -1331,6 +1331,20 @@ void drawRSSIBarGraph(void)
 	trxRxSignal=0;
 }
 
+void drawFMMicLevelBarGraph(void)
+{
+	trxReadVoxAndMicStrength();
+
+	uint8_t micdB = (trxTxMic >> 1); // trxTxMic is in 0.5dB unit, displaying 50dB .. 100dB
+	uint16_t w = 0;
+
+	// display from 50dB to 100dB, span over 128pix
+	w = (uint16_t)((128.0 / 50.0) * (float)(micdB - 50.0));
+
+	ucFillRect(0, BAR_Y_POS, 128, 3, true);
+	ucFillRect(0, BAR_Y_POS, (int16_t)((w > 127) ? 127 : w), 3, false);
+}
+
 void drawDMRMicLevelBarGraph(void)
 {
 	float barGraphLength = sqrt(micAudioSamplesTotal)*1.5;

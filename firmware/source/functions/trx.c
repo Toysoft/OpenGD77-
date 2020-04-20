@@ -108,6 +108,8 @@ static uint8_t tx_fh_h;
 
 volatile uint8_t trxRxSignal;
 volatile uint8_t trxRxNoise;
+volatile uint8_t trxTxVox;
+volatile uint8_t trxTxMic;
 
 static uint8_t trxSaveVoiceGainTx = 0xff;
 static uint16_t trxSaveDeviation = 0xff;
@@ -233,10 +235,17 @@ bool trxCheckFrequencyInAmateurBand(int tmp_frequency)
 			((tmp_frequency >= BAND_222_MIN) && (tmp_frequency <= BAND_222_MAX));
 }
 
+void trxReadVoxAndMicStrength(void)
+{
+	taskENTER_CRITICAL();
+	read_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x1a, (uint8_t *)&trxTxVox, (uint8_t *)&trxTxMic);
+	taskEXIT_CRITICAL();
+	}
+
 void trxReadRSSIAndNoise(void)
 {
 	taskENTER_CRITICAL();
-	read_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x1b,(uint8_t *)&trxRxSignal,(uint8_t *)&trxRxNoise);
+	read_I2C_reg_2byte(I2C_MASTER_SLAVE_ADDR_7BIT, 0x1b, (uint8_t *)&trxRxSignal, (uint8_t *)&trxRxNoise);
 	taskEXIT_CRITICAL();
 }
 

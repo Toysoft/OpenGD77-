@@ -135,21 +135,32 @@ int menuTxScreen(uiEvent_t *ev, bool isFirstRun)
 			}
 			else
 			{
-				if (trxGetMode() == RADIO_MODE_DIGITAL)
+				int mode = trxGetMode();
+
+				if (mode == RADIO_MODE_DIGITAL)
 				{
 					if ((nonVolatileSettings.beepOptions & BEEP_TX_START) &&
 							(slot_state == DMR_STATE_TX_START_1) && (melody_play == NULL))
 					{
 						set_melody(melody_dmr_tx_start_beep);
 					}
+				}
 
-					if ((ev->time - micm) > 100)
+				if ((ev->time - micm) > 100)
+				{
+					if (mode == RADIO_MODE_DIGITAL)
 					{
 						drawDMRMicLevelBarGraph();
-						ucRenderRows(1,2);
-						micm = ev->time;
 					}
+					else
+					{
+						drawFMMicLevelBarGraph();
+					}
+
+					ucRenderRows(1,2);
+					micm = ev->time;
 				}
+
 			}
 		}
 

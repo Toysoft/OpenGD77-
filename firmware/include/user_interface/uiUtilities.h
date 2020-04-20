@@ -119,6 +119,7 @@ void lastheardInitList(void);
 bool lastHeardListUpdate(uint8_t *dmrDataBuffer, bool forceOnHotspot);
 void lastHeardClearLastID(void);
 void drawRSSIBarGraph(void);
+void drawFMMicLevelBarGraph(void);
 void drawDMRMicLevelBarGraph(void);
 void setOverrideTGorPC(int tgOrPc, bool privateCall);
 void printFrequency(bool isTX, bool hasFocus, uint8_t y, uint32_t frequency, bool displayVFOChannel,bool isScanMode);
