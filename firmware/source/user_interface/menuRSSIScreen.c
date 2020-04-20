@@ -82,9 +82,9 @@ static void updateScreen(void)
 			barGraphLength=0;
 		}
 
-		if (barGraphLength>123)
+		if (barGraphLength > ((DISPLAY_SIZE_X - 1) - 4))
 		{
-			barGraphLength=123;
+			barGraphLength = ((DISPLAY_SIZE_X - 1) - 4);
 		}
 
 		ucFillRect(4, DISPLAY_SIZE_Y-18,barGraphLength,8,false);

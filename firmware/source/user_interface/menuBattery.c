@@ -147,21 +147,21 @@ static void updateScreen(bool forceRedraw)
 				if (forceRedraw)
 				{
 					// Clear whole drawing region
-					ucFillRect(0, 14, 128, DISPLAY_SIZE_Y - 14, true);
+					ucFillRect(0, 14, DISPLAY_SIZE_X, DISPLAY_SIZE_Y - 14, true);
 					// Draw...
 					// Inner body frame
-					ucDrawRoundRect(97, 20, 26, DISPLAY_SIZE_Y-22, 3, true);
+					ucDrawRoundRect(97, 20, 26, DISPLAY_SIZE_Y - 22, 3, true);
 					// Outer body frame
 					ucDrawRoundRect(96, 19, 28, DISPLAY_SIZE_Y - 20, 3, true);
 					// Positive pole frame
-					ucFillRoundRect(96+9, 15, 10, 6, 2, true);
+					ucFillRoundRect(96 + 9, 15, 10, 6, 2, true);
 				}
 				else
 				{
 					// Clear voltage area
 					ucFillRect(20, 22, (4 * 16), 32, true);
 					// Clear level area
-					ucFillRoundRect(100, 23, 20, DISPLAY_SIZE_Y - 28, 2, false);
+					ucFillRoundRect(100, 23, 20, (DISPLAY_SIZE_Y - 28), 2, false);
 				}
 
 				ucPrintAt(20, 22, buffer, FONT_SIZE_4);
@@ -177,7 +177,7 @@ static void updateScreen(bool forceRedraw)
 			}
 
 			// Low blinking arrow
-			ucFillTriangle(63, DISPLAY_SIZE_Y -1 , 59, (DISPLAY_SIZE_Y -5), 67, (DISPLAY_SIZE_Y -5), blink);
+			ucFillTriangle(63, (DISPLAY_SIZE_Y - 1), 59, (DISPLAY_SIZE_Y - 5), 67, (DISPLAY_SIZE_Y - 5), blink);
 		}
 		break;
 
@@ -218,7 +218,7 @@ static void updateScreen(bool forceRedraw)
 				if (forceRedraw)
 				{
 					// Clear whole drawing region
-					ucFillRect(0, 14, 128, DISPLAY_SIZE_Y - 14, true);
+					ucFillRect(0, 14, DISPLAY_SIZE_X, DISPLAY_SIZE_Y - 14, true);
 
 					// 2 axis chart
 					ucDrawFastVLine(chartX - 3, chartY - 2, chartHeight + 2 + 3, true);

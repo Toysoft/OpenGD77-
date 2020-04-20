@@ -50,7 +50,7 @@ void UC1701_setDataMode()
 void ucRenderRows(int16_t startRow, int16_t endRow)
 {
 #if ! defined(PLATFORM_GD77S)
-	uint8_t *rowPos = (screenBuf + startRow*128);
+	uint8_t *rowPos = (screenBuf + startRow * DISPLAY_SIZE_X);
 
 	for(int16_t row=startRow;row<endRow;row++)
 	{
@@ -65,7 +65,7 @@ void ucRenderRows(int16_t startRow, int16_t endRow)
 
 		UC1701_setDataMode();
 		uint8_t data1;
-		for(int16_t line=0;line<128;line++)
+		for(int16_t line = 0; line < DISPLAY_SIZE_X; line++)
 		{
 			data1= *rowPos;
 			for (register int i=0; i<8; i++)

@@ -555,7 +555,7 @@ static void updateScreen(uint8_t rxCommandState)
 	snprintf(buffer, bufferLen, "%d%%", getBatteryPercentage());
 	buffer[bufferLen - 1] = 0;
 
-	ucPrintAt(128 - (strlen(buffer) * 6) - 4, 4, buffer, FONT_SIZE_1);
+	ucPrintAt(DISPLAY_SIZE_X - (strlen(buffer) * 6) - 4, 4, buffer, FONT_SIZE_1);
 
 	if (trxIsTransmitting)
 	{

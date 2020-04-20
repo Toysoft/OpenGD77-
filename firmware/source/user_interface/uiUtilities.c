@@ -1081,7 +1081,7 @@ void menuUtilityRenderQSOData(void)
 			{
 #if defined(PLATFORM_RD5R)
 				// draw the text in inverse video
-				ucFillRect(0, CONTACT_Y_POS + 1, 128, 10, false);
+				ucFillRect(0, CONTACT_Y_POS + 1, DISPLAY_SIZE_X, 10, false);
 				ucPrintCore(0, CONTACT_Y_POS + 2, LinkHead->talkgroup, FONT_SIZE_3, TEXT_ALIGN_CENTER, true);
 #else
 				// draw the text in inverse video
@@ -1303,7 +1303,7 @@ void drawRSSIBarGraph(void)
 {
 	int dBm,barGraphLength;
 
-	ucFillRect(0, BAR_Y_POS,128,4,true);
+	ucFillRect(0, BAR_Y_POS, DISPLAY_SIZE_X, 4, true);
 
 	if (trxCurrentBand[TRX_RX_FREQ_BAND] == RADIO_BAND_UHF)
 	{
@@ -1436,7 +1436,7 @@ const int VFO_LETTER_Y_OFFSET = 8;// This is the different in height of the SIZE
 	snprintf(buffer, bufferLen, "%d.%05d", val_before_dp, val_after_dp);
 	buffer[bufferLen - 1] = 0;
 	ucPrintAt(FREQUENCY_X_POS, y, buffer, FONT_SIZE_3);
-	ucPrintAt(128 - (3 * 8), y, "MHz", FONT_SIZE_3);
+	ucPrintAt(DISPLAY_SIZE_X - (3 * 8), y, "MHz", FONT_SIZE_3);
 }
 
 void reset_freq_enter_digits(void)

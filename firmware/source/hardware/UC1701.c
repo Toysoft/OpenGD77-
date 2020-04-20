@@ -160,9 +160,9 @@ int ucPrintCore(int16_t x, int16_t y, const char *szMsg, ucFont_t fontSize, ucTe
     charHeightPixels  	= currentFont[5];  // page count per char
     bytesPerChar 		= currentFont[7];  // bytes per char
 
-    if ((charWidthPixels*sLen) + x > 128)
+    if ((charWidthPixels*sLen) + x > DISPLAY_SIZE_X)
 	{
-    	sLen = (128-x)/charWidthPixels;
+    	sLen = (DISPLAY_SIZE_X - x) / charWidthPixels;
 	}
 
 	if (sLen < 0)
@@ -176,10 +176,10 @@ int ucPrintCore(int16_t x, int16_t y, const char *szMsg, ucFont_t fontSize, ucTe
 			// left aligned, do nothing.
 			break;
 		case TEXT_ALIGN_CENTER:
-			x = (128 - (charWidthPixels * sLen))/2;
+			x = (DISPLAY_SIZE_X - (charWidthPixels * sLen)) >> 1;
 			break;
 		case TEXT_ALIGN_RIGHT:
-			x = 128 - (charWidthPixels * sLen);
+			x = DISPLAY_SIZE_X - (charWidthPixels * sLen);
 			break;
 	}
 
@@ -198,7 +198,7 @@ int ucPrintCore(int16_t x, int16_t y, const char *szMsg, ucFont_t fontSize, ucTe
 		for(int16_t row=0;row < charHeightPixels / 8 ;row++)
 		{
 			readPos = (currentCharData + row*charWidthPixels);
-			writePos = (screenBuf + x + (i*charWidthPixels) + ((y>>3) + row)*128) ;
+			writePos = (screenBuf + x + (i*charWidthPixels) + ((y>>3) + row) * DISPLAY_SIZE_X) ;
 
 			if ((y&0x07)==0)
 			{
@@ -246,7 +246,7 @@ int ucPrintCore(int16_t x, int16_t y, const char *szMsg, ucFont_t fontSize, ucTe
 				}
 
 				readPos = (currentCharData + row*charWidthPixels);
-				writePos = (screenBuf + x + (i*charWidthPixels) + ((y>>3) + row + 1)*128) ;
+				writePos = (screenBuf + x + (i*charWidthPixels) + ((y>>3) + row + 1) * DISPLAY_SIZE_X) ;
 
 				for(int16_t p=0;p<charWidthPixels;p++)
 				{
@@ -290,7 +290,7 @@ void ucClearRows(int16_t startRow, int16_t endRow, bool isInverted)
 
 	// memset would be faster than ucFillRect
 	//ucFillRect(0, (startRow * 8), 128, (8 * (endRow - startRow)), true);
-    memset(screenBuf + (128 * startRow), (isInverted ? 0xFF : 0x00), (128 * (endRow - startRow)));
+    memset(screenBuf + (DISPLAY_SIZE_X * startRow), (isInverted ? 0xFF : 0x00), (DISPLAY_SIZE_X * (endRow - startRow)));
 }
 
 void ucPrintCentered(uint8_t y,const char *text, ucFont_t fontSize)
@@ -324,7 +324,7 @@ void ucDrawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, bool color)
 	dx = x1 - x0;
 	dy = abs(y1 - y0);
 
-	int16_t err = dx / 2;
+	int16_t err = dx >> 1;
 	int16_t ystep;
 
 	if (y0 < y1)
@@ -701,7 +701,7 @@ void ucDrawEllipse(int16_t x0, int16_t y0, int16_t x1, int16_t y1, bool color)
 
   if (x0 > x1) { x0 = x1; x1 += a; } /* if called with swapped points */
   if (y0 > y1) y0 = y1; /* .. exchange them */
-  y0 += (b + 1) / 2; /* starting pixel */
+  y0 += (b + 1) >> 1; /* starting pixel */
   y1 = y0 - b1;
   a *= 8 * a;
   b1 = 8 * b * b;
@@ -1024,7 +1024,7 @@ void ucDrawChoice(ucChoice_t choice, bool clearRegion)
 
 	if (clearRegion)
 	{
-		ucFillRect(0, FILLRECT_Y, 128, 16, true);
+		ucFillRect(0, FILLRECT_Y, DISPLAY_SIZE_X, 16, true);
 	}
 
 	if (choice >= CHOICES_NUM) {
