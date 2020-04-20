@@ -1339,7 +1339,7 @@ void drawFMMicLevelBarGraph(void)
 	uint16_t w = 0;
 
 	// display from 50dB to 100dB, span over 128pix
-	w = (uint16_t)((128.0 / 50.0) * (float)(micdB - 50.0));
+	w = (uint16_t)((128.0 / 50.0) * ((float)micdB - 50.0));
 
 	ucFillRect(0, BAR_Y_POS, 128, 3, true);
 	ucFillRect(0, BAR_Y_POS, (int16_t)((w > 127) ? 127 : w), 3, false);
