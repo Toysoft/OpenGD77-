@@ -54,14 +54,17 @@ const frequencyBand_t RADIO_FREQUENCY_BANDS[RADIO_BANDS_TOTAL_NUM] =  {
 #else
 const frequencyBand_t RADIO_FREQUENCY_BANDS[RADIO_BANDS_TOTAL_NUM] =  {
 													{
+														.calTableMinFreq = 13400000,
 														.minFreq=12700000,
 														.maxFreq=17800000
 													},// VHF
 													{
+														.calTableMinFreq = 13400000,
 														.minFreq=19000000,
 														.maxFreq=28200000
 													},// 220Mhz
 													{
+														.calTableMinFreq = 40000000,
 														.minFreq=38000000,
 														.maxFreq=56400000
 													}// UHF

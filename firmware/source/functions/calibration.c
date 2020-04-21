@@ -228,7 +228,7 @@ bool calibrationGetPowerForFrequency(int freq, calibrationPowerValues_t *powerSe
 
 	if (trxCurrentBand[TRX_TX_FREQ_BAND] == RADIO_BAND_UHF)
 	{
-		address =  (freq - RADIO_FREQUENCY_BANDS[RADIO_BAND_UHF].minFreq) / 500000;
+		address =  (freq - RADIO_FREQUENCY_BANDS[RADIO_BAND_UHF].calTableMinFreq) / 500000;
 
 		if (address < 0)
 		{
@@ -246,7 +246,7 @@ bool calibrationGetPowerForFrequency(int freq, calibrationPowerValues_t *powerSe
 	}
 	else
 	{
-		address = (freq - RADIO_FREQUENCY_BANDS[RADIO_BAND_VHF].minFreq) / 500000;
+		address = (freq - RADIO_FREQUENCY_BANDS[RADIO_BAND_VHF].calTableMinFreq) / 500000;
 
 		if (address < 0)
 		{

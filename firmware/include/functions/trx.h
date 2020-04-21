@@ -26,6 +26,7 @@
 
 typedef struct frequencyBand
 {
+	int calTableMinFreq;
 	int minFreq;
 	int maxFreq;
 } frequencyBand_t;
