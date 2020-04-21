@@ -261,7 +261,7 @@ const menuItemNew_t menuDataContactContact [] = {
 
 void menuDisplayTitle(const char *title)
 {
-	ucDrawFastHLine(0, 13, 128, true);
+	ucDrawFastHLine(0, 13, DISPLAY_SIZE_X, true);
 	ucPrintCore(0, 3, title, FONT_SIZE_2, TEXT_ALIGN_CENTER, false);
 }
 
@@ -281,7 +281,7 @@ const int MENU_SPACING_Y = FONT_SIZE_3_HEIGHT;
 
 	if (focused)
 	{
-		ucFillRoundRect(0, HIGHLIGHT_START_Y +  (loopOffset * MENU_SPACING_Y), 128, MENU_SPACING_Y, 2, true);
+		ucFillRoundRect(0, HIGHLIGHT_START_Y +  (loopOffset * MENU_SPACING_Y), DISPLAY_SIZE_X, MENU_SPACING_Y, 2, true);
 	}
 
 	ucPrintCore(0,  MENU_START_Y +  (loopOffset * MENU_SPACING_Y), entryText, FONT_SIZE_3, TEXT_ALIGN_LEFT, focused);

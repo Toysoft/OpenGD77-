@@ -191,11 +191,11 @@ static void menuLastHeardDisplayTA(uint8_t y, char *text, uint32_t time, uint32_
 		buffer[5] = 0;
 
 #if defined(PLATFORM_RD5R)
-		ucPrintAt((128 - (3 * 6)), y		, "min", FONT_SIZE_1);
+		ucPrintAt((DISPLAY_SIZE_X - (3 * 6)), y, "min", FONT_SIZE_1);
 #else
-		ucPrintAt((128 - (3 * 6)), (y + 6)	, "min", FONT_SIZE_1);
+		ucPrintAt((DISPLAY_SIZE_X - (3 * 6)), (y + 6), "min", FONT_SIZE_1);
 #endif
-		ucPrintAt((128 - (strlen(buffer) * 8) - (3 * 6) - 1), y, buffer, FONT_SIZE_3);
+		ucPrintAt((DISPLAY_SIZE_X - (strlen(buffer) * 8) - (3 * 6) - 1), y, buffer, FONT_SIZE_3);
 	}
 	else // search for callsign + first name
 	{

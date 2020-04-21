@@ -197,7 +197,7 @@ int uiVFOMode(uiEvent_t *ev, bool isFirstRun)
 				{
 					displaySquelch = false;
 #if defined(PLATFORM_RD5R)
-					ucFillRect(0, 16, 128, 12, true);
+					ucFillRect(0, 16, DISPLAY_SIZE_X, 12, true);
 #else
 					ucClearRows(2, 4, false);
 #endif
@@ -281,7 +281,7 @@ void uiVFOModeUpdateScreen(int txTimeSecs)
 			((menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA) || (menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA_UPDATE)))
 	{
 #if defined(PLATFORM_RD5R)
-		ucFillRect(0, 0, 128, 8, true);
+		ucFillRect(0, 0, DISPLAY_SIZE_X, 8, true);
 #else
 		ucClearRows(0,  2, false);
 #endif
@@ -335,11 +335,11 @@ void uiVFOModeUpdateScreen(int txTimeSecs)
 
 					if (trxIsTransmitting)
 					{
-						ucDrawRect(0, CONTACT_TX_FRAME_Y_POS, 128, MENU_ENTRY_HEIGHT, true);
+						ucDrawRect(0, CONTACT_TX_FRAME_Y_POS, DISPLAY_SIZE_X, MENU_ENTRY_HEIGHT, true);
 					}
 					else
 					{
-						ucDrawRect(0, CONTACT_Y_POS, 128, MENU_ENTRY_HEIGHT, true);
+						ucDrawRect(0, CONTACT_Y_POS, DISPLAY_SIZE_X, MENU_ENTRY_HEIGHT, true);
 					}
 				}
 				else
@@ -431,7 +431,7 @@ void uiVFOModeUpdateScreen(int txTimeSecs)
 
 					snprintf(buffer, bufferLen, "%d.%03d", nonVolatileSettings.vfoScanHigh[nonVolatileSettings.currentVFONumber] / 100000, (nonVolatileSettings.vfoScanHigh[nonVolatileSettings.currentVFONumber] - (nonVolatileSettings.vfoScanHigh[nonVolatileSettings.currentVFONumber] / 100000) * 100000)/100);
 					buffer[bufferLen - 1] = 0;
-					ucPrintAt(128 - ((7 * 8) + 2), TX_FREQ_Y_POS, buffer, FONT_SIZE_3);
+					ucPrintAt(DISPLAY_SIZE_X - ((7 * 8) + 2), TX_FREQ_Y_POS, buffer, FONT_SIZE_3);
 					// Scanning direction arrow
 					static const int scanDirArrow[2][6] = {
 							{ 59, 55, 67, 51, 67, 59 }, // Down
@@ -466,13 +466,13 @@ void uiVFOModeUpdateScreen(int txTimeSecs)
 					// Cursor
 					if (freq_enter_idx < 8)
 					{
-						xCursor = ((128 - (strlen(buffer) * 8)) >> 1) + ((freq_enter_idx + ((freq_enter_idx > 2) ? 1 : 0)) * 8);
+						xCursor = ((DISPLAY_SIZE_X - (strlen(buffer) * 8)) >> 1) + ((freq_enter_idx + ((freq_enter_idx > 2) ? 1 : 0)) * 8);
 						yCursor = ((selectedFreq == VFO_SELECTED_FREQUENCY_INPUT_TX) ? TX_FREQ_Y_POS : RX_FREQ_Y_POS) + 14;
 					}
 				}
 				else
 				{
-					uint8_t hiX = 128 - ((7 * 8) + 2);
+					uint8_t hiX = DISPLAY_SIZE_X - ((7 * 8) + 2);
 					ucPrintAt(5, (DISPLAY_SIZE_Y / 2), "Low", FONT_SIZE_3);
 #if defined(PLATFORM_RD5R)
 					ucDrawFastVLine(0, 29, 24, true);

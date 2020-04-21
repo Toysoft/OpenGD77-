@@ -153,7 +153,7 @@ int uiChannelMode(uiEvent_t *ev, bool isFirstRun)
 					displaySquelch = false;
 
 #if defined(PLATFORM_RD5R)
-					ucFillRect(0, 15, 128, 9, true);
+					ucFillRect(0, 15, DISPLAY_SIZE_X, 9, true);
 #else
 					ucClearRows(2, 4, false);
 #endif
@@ -167,7 +167,7 @@ int uiChannelMode(uiEvent_t *ev, bool isFirstRun)
 					if (scanActive && (scanState == SCAN_PAUSED))
 					{
 #if defined(PLATFORM_RD5R)
-						ucFillRect(0, 16, 128, 8, true);
+						ucFillRect(0, 16, DISPLAY_SIZE_X, 8, true);
 #else
 						ucClearRows(0, 2, false);
 #endif
@@ -409,7 +409,7 @@ void uiChannelModeUpdateScreen(int txTimeSecs)
 			((menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA) || (menuDisplayQSODataState == QSO_DISPLAY_CALLER_DATA_UPDATE)))
 	{
 #if defined(PLATFORM_RD5R)
-		ucFillRect(0, 0, 128, 8, true);
+		ucFillRect(0, 0, DISPLAY_SIZE_X, 8, true);
 #else
 		ucClearRows(0,  2, false);
 #endif
@@ -444,7 +444,7 @@ void uiChannelModeUpdateScreen(int txTimeSecs)
 				{
 					displaySquelch = false;
 #if defined(PLATFORM_RD5R)
-					ucFillRect(0, 15, 128, 9, true);
+					ucFillRect(0, 15, DISPLAY_SIZE_X, 9, true);
 #else
 					ucClearRows(2, 4, false);
 #endif
@@ -534,9 +534,9 @@ void uiChannelModeUpdateScreen(int txTimeSecs)
 					}
 					nameBuf[bufferLen - 1] = 0;
 #if defined(PLATFORM_RD5R)
-					ucDrawRect(0, CONTACT_Y_POS + verticalPositionOffset, 128, 11, true);
+					ucDrawRect(0, CONTACT_Y_POS + verticalPositionOffset, DISPLAY_SIZE_X, 11, true);
 #else
-					ucDrawRect(0, CONTACT_Y_POS + verticalPositionOffset, 128, 16, true);
+					ucDrawRect(0, CONTACT_Y_POS + verticalPositionOffset, DISPLAY_SIZE_X, 16, true);
 #endif
 				}
 				else

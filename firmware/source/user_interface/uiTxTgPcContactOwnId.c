@@ -88,7 +88,7 @@ static void updateCursor(void)
 		{
 			sLen *= 8;
 
-			ucPrintCore((((128 - sLen) >> 1) + sLen), (DISPLAY_SIZE_Y / 2), "_", FONT_SIZE_3, 0, blink);
+			ucPrintCore((((DISPLAY_SIZE_X - sLen) >> 1) + sLen), (DISPLAY_SIZE_Y / 2), "_", FONT_SIZE_3, 0, blink);
 
 			blink = !blink;
 			lastBlink = m;
@@ -106,10 +106,10 @@ static void updateScreen(void)
 
 	ucClearBuf();
 
-	ucDrawRoundRectWithDropShadow(2, y - 1, (128 - 6), ((DISPLAY_SIZE_Y / 8) - 1) * 3, 3, true);
+	ucDrawRoundRectWithDropShadow(2, y - 1, (DISPLAY_SIZE_X - 6), ((DISPLAY_SIZE_Y / 8) - 1) * 3, 3, true);
 
 	// Not really centered, off by 2 pixels
-	ucPrintAt(((128 - sLen) >> 1) - 2, y, (char *)menuName[gMenusCurrentItemIndex], FONT_SIZE_3);
+	ucPrintAt(((DISPLAY_SIZE_X - sLen) >> 1) - 2, y, (char *)menuName[gMenusCurrentItemIndex], FONT_SIZE_3);
 
 	if (pcIdx == 0)
 	{
