@@ -134,13 +134,34 @@ const uint8_t AT1846FMSettings[][AT1846_BYTES_PER_COMMAND] = {
 		};
 
 const uint8_t AT1846DMRSettings[][AT1846_BYTES_PER_COMMAND] = {
+		{0x7F, 0x00, 0x01}, // Goto page 1 registers
+		{0x06, 0x00, 0x14}, // AGC Table (recommended value for 12.5kHz bandwidth operation)
+		{0x07, 0x02, 0x0C}, // AGC Table (recommended value for 12.5kHz bandwidth operation)
+		{0x08, 0x02, 0x14}, // AGC Table (recommended value for 12.5kHz bandwidth operation)
+		{0x09, 0x03, 0x0C}, // AGC Table (recommended value for 12.5kHz bandwidth operation)
+		{0x0A, 0x03, 0x14}, // AGC Table (recommended value for 12.5kHz bandwidth operation)
+		{0x0B, 0x03, 0x24}, // AGC Table (recommended value for 12.5kHz bandwidth operation)
+		{0x0C, 0x03, 0x44}, // AGC Table (recommended value for 12.5kHz bandwidth operation)
+		{0x0D, 0x13, 0x44}, // AGC Table (recommended value for 12.5kHz bandwidth operation)
+		{0x0E, 0x1B, 0x44}, // AGC Table (recommended value for 12.5kHz bandwidth operation)
+		{0x0F, 0x3F, 0x44}, // AGC Table (recommended value for 12.5kHz bandwidth operation)
+		{0x12, 0xE0, 0xEB}, // AGC Table (recommended value for 12.5kHz bandwidth operation)
+		{0x7F, 0x00, 0x00}, // Go back to page 0 registers
+		{0x15, 0x11, 0x00}, // IF tuning bits (12:9)
+		{0x32, 0x44, 0x95}, // agc target power
 		{0x33, 0x45, 0xF5}, // agc number (recommended value)
+		{0x3F, 0x28, 0xD0}, // Rssi3_th (SQ setting)
+		{0x3C, 0x0F, 0x1E}, // Pk_det_th (SQ setting)
+		{0x3A, 0x00, 0xC2}, // modu_det_sel (SQ setting). Tx No mic input, as the DMR signal directly modulates the master reference oscillator
 		{0x41, 0x47, 0x31}, // Digital voice gain, (bits 6:0) however default value is supposed to be 0x4006 hence some bits are being set outside the documented range
 		{0x42, 0x10, 0x36}, // RDA1846 lists this as Vox Shut threshold
 		{0x43, 0x00, 0xBB}, // FM deviation
-		{0x58, 0xBC, 0xFD}, // Disable all filters in DMR mode
 		{0x44, 0x06, 0xCC}, // set internal volume to 80%
-		{0x3A, 0x40, 0xC2}  // modu_det_sel (SQ setting)
+		{0x48, 0x1D, 0xB6}, // noise1_th (SQ setting)
+		{0x58, 0xBC, 0xFD}, // Disable all filters in DMR mode
+		{0x62, 0x14, 0x25}, // modu_det_th (SQ setting)
+		{0x65, 0x24, 0x94}, // setting th_sif for SQ rssi detect
+		{0x66, 0xEB, 0x2E}, // rssi_comp  and afc range
 		};
 
 void I2C_AT1846S_send_Settings(const uint8_t settings[][3],int numSettings)
