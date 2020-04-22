@@ -204,10 +204,17 @@ void displayLightTrigger(void)
 // use -1 to force LED on all the time
 void displayLightOverrideTimeout(int timeout)
 {
+	int prevTimer = menuDisplayLightTimer;
+
+	menuDisplayLightTimer = timeout;
+
 	if (nonVolatileSettings.backlightMode == BACKLIGHT_MODE_AUTO)
 	{
-		menuDisplayLightTimer = timeout;
-		fw_displayEnableBacklight(true);
+		// Backlight is OFF, or timeout override (-1) as just been turned set
+		if ((fw_displayIsBacklightLit() == false) || ((timeout == -1) && (prevTimer != -1)))
+		{
+			fw_displayEnableBacklight(true);
+		}
 	}
 }
 
