@@ -33,6 +33,7 @@ int menuRSSIScreen(uiEvent_t *ev, bool isFirstRun)
 	if (isFirstRun)
 	{
 		calibrationGetRSSIMeterParams(&rssiCalibration);
+		displayLightTrigger();
 	}
 	else
 	{

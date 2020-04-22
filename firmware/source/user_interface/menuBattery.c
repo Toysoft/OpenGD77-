@@ -104,6 +104,7 @@ int menuBattery(uiEvent_t *ev, bool isFirstRun)
 		menuDisplayTitle(currentLanguage->battery);
 		ucRenderRows(0, 2);
 
+		displayLightTrigger();
 		updateScreen(true);
 	}
 	else

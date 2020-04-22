@@ -52,6 +52,7 @@ int menuDisplayOptions(uiEvent_t *ev, bool isFirstRun)
 	{
 		// Store original settings, used on cancel event.
 		memcpy(&originalNonVolatileSettings, &nonVolatileSettings, sizeof(settingsStruct_t));
+
 		updateScreen();
 	}
 	else

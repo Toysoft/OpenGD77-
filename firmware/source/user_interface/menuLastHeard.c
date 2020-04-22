@@ -35,6 +35,7 @@ int menuLastHeard(uiEvent_t *ev, bool isFirstRun)
 		gMenusStartIndex = LinkHead->id;// reuse this global to store the ID of the first item in the list
 		gMenusEndIndex = 0;
 		displayLHDetails = false;
+		displayLightTrigger();
 		menuLastHeardUpdateScreen(true, displayLHDetails);
 		m = ev->time;
 	}

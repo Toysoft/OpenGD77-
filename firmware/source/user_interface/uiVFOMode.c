@@ -171,6 +171,7 @@ int uiVFOMode(uiEvent_t *ev, bool isFirstRun)
 
 		lastHeardClearLastID();
 		reset_freq_enter_digits();
+		displayLightTrigger();
 		uiVFOModeUpdateScreen(0);
 		SETTINGS_PLATFORM_SPECIFIC_SAVE_SETTINGS(true);
 	}

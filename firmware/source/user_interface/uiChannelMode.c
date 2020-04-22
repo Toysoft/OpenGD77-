@@ -114,6 +114,8 @@ int uiChannelMode(uiEvent_t *ev, bool isFirstRun)
 			checkAndUpdateSelectedChannelForGD77S(get_rotary_switch_position(), true);
 		}
 #endif
+		displayLightTrigger();
+
 		uiChannelModeUpdateScreen(0);
 
 		if (scanActive==false)
