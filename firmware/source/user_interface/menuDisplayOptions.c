@@ -393,8 +393,7 @@ static void updateBacklightMode(uint8_t mode)
 	{
 		case BACKLIGHT_MODE_MANUAL:
 		case BACKLIGHT_MODE_NONE:
-			if (fw_displayIsBacklightLit())
-				fw_displayEnableBacklight(false);
+			fw_displayEnableBacklight(false); // Could be MANUAL previously, but in OFF state, so turn it OFF blindly.
 			break;
 		case BACKLIGHT_MODE_AUTO:
 			displayLightTrigger();
