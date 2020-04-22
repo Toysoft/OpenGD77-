@@ -185,6 +185,8 @@ static void handleEvent(uiEvent_t *ev)
 	}
 	if (ev->events & KEY_EVENT)
 	{
+		bool displayIsLit = fw_displayIsBacklightLit();
+
 		if (KEYCHECK_PRESS(ev->keys,KEY_DOWN) && gMenusEndIndex!=0)
 		{
 			MENU_INC(gMenusCurrentItemIndex, NUM_DISPLAY_MENU_ITEMS);
@@ -232,6 +234,11 @@ static void handleEvent(uiEvent_t *ev)
 						if (nonVolatileSettings.displayBacklightPercentageOff > nonVolatileSettings.displayBacklightPercentage)
 						{
 							nonVolatileSettings.displayBacklightPercentageOff = nonVolatileSettings.displayBacklightPercentage;
+						}
+
+						if ((nonVolatileSettings.backlightMode == BACKLIGHT_MODE_MANUAL) && (!displayIsLit))
+						{
+							fw_displaySetBacklightIntensityPercentage(nonVolatileSettings.displayBacklightPercentageOff);
 						}
 					}
 					break;
@@ -310,6 +317,11 @@ static void handleEvent(uiEvent_t *ev)
 					if (nonVolatileSettings.displayBacklightPercentageOff < 0)
 					{
 						nonVolatileSettings.displayBacklightPercentageOff = 0;
+					}
+
+					if ((nonVolatileSettings.backlightMode == BACKLIGHT_MODE_MANUAL) && (!displayIsLit))
+					{
+						fw_displaySetBacklightIntensityPercentage(nonVolatileSettings.displayBacklightPercentageOff);
 					}
 					break;
 				case DISPLAY_MENU_CONTRAST:
