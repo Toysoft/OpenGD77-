@@ -31,7 +31,6 @@ static const uint8_t AT1846InitSettings[][AT1846_BYTES_PER_COMMAND] = {
 		{0x33, 0x45, 0xF5}, // agc number (recommended value)
 		{0x34, 0x2B, 0x89}, // Rx digital gain (recommend value)
 		{0x3F, 0x32, 0x63}, // This register is not in the list and defaults to 0x23C6
-		{0x40, 0x00, 0x31}, // THIS IS THE MAGIC REGISTER WHICH ALLOWS LOW FREQ AUDIO BY SETTING THE LS BIT
 		{0x41, 0x47, 0x0F}, // Digital voice gain, (bits 6:0) however default value is supposed to be 0x4006 hence some bits are being set outside the documented range
 		{0x42, 0x10, 0x36}, // RDA1846 lists this as Vox Shut threshold
 		{0x43, 0x00, 0xBB}, // FM deviation
@@ -130,7 +129,8 @@ const uint8_t AT1846FMSettings[][AT1846_BYTES_PER_COMMAND] = {
 		{0x43, 0x00, 0xA9}, // FM deviation
 		{0x58, 0xBC, 0x05}, // Enable some filters for FM e.g. de-emphasis / pre-emphasis / High and Low Pass Filters
 		{0x44, 0x06, 0xFF}, // set internal volume to 100% . Details from Colin G4EML
-		{0x3A, 0x40, 0xCB}  // modu_det_sel (SQ setting)
+		{0x3A, 0x40, 0xCB}, // modu_det_sel (SQ setting)
+		{0x40, 0x00, 0x30}  // UNDOCUMENTED. THIS IS THE MAGIC REGISTER WHICH ALLOWS LOW FREQ AUDIO BY SETTING THE LS BIT. So it should be cleared to receive FM
 		};
 
 const uint8_t AT1846DMRSettings[][AT1846_BYTES_PER_COMMAND] = {
@@ -148,6 +148,7 @@ const uint8_t AT1846DMRSettings[][AT1846_BYTES_PER_COMMAND] = {
 		{0x12, 0xE0, 0xEB}, // AGC Table (recommended value for 12.5kHz bandwidth operation)
 		{0x7F, 0x00, 0x00}, // Go back to page 0 registers
 		{0x15, 0x11, 0x00}, // IF tuning bits (12:9)
+		{0x40, 0x00, 0x31}, // UNDOCUMENTED. THIS IS THE MAGIC REGISTER WHICH ALLOWS LOW FREQ AUDIO BY SETTING THE LS BIT
 		{0x32, 0x44, 0x95}, // agc target power
 		{0x33, 0x45, 0xF5}, // agc number (recommended value)
 		{0x3F, 0x28, 0xD0}, // Rssi3_th (SQ setting)
