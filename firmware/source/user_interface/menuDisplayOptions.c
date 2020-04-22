@@ -370,6 +370,8 @@ static void handleEvent(uiEvent_t *ev)
 		}
 		else if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 		{
+			bool displayIsLit = fw_displayIsBacklightLit();
+
 			if (nonVolatileSettings.displayContrast != originalNonVolatileSettings.displayContrast)
 			{
 				nonVolatileSettings.displayContrast = originalNonVolatileSettings.displayContrast;
@@ -389,6 +391,11 @@ static void handleEvent(uiEvent_t *ev)
 			if (nonVolatileSettings.backlightMode != originalNonVolatileSettings.backlightMode)
 			{
 				updateBacklightMode(originalNonVolatileSettings.backlightMode);
+			}
+
+			if ((nonVolatileSettings.backlightMode == BACKLIGHT_MODE_MANUAL) && (!displayIsLit))
+			{
+				fw_displaySetBacklightIntensityPercentage(nonVolatileSettings.displayBacklightPercentageOff);
 			}
 
 			menuSystemPopPreviousMenu();
