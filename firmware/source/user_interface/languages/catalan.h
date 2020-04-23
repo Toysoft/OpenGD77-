@@ -151,7 +151,9 @@ const stringsTable_t catalanLanguage=
 .priority_order			= "Prio.", // MaxLen 16 (with ':' + 'Cc/DB/TA')
 .dmr_beep				= "DMR Beep", // MaxLen 16 (with ':' + .star/.stop/.both/.none)
 .start					= "Inici", // MaxLen 16 (with ':' + .dmr_beep)
-.both					= "Tots" // MaxLen 16 (with ':' + .dmr_beep)
+.both					= "Tots", // MaxLen 16 (with ':' + .dmr_beep)
+.vox_threshold                          = "VOX Thres.", // MaxLen 16 (with ':' + .off or 1..30)
+.vox_tail                               = "VOX Tail" // MaxLen 16 (with ':' + .n_a or '0.0s')
 };
 /********************************************************************
  *

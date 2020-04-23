@@ -93,11 +93,11 @@ static void updateScreen(void)
 			case OPTIONS_VOX_THRESHOLD:
 				if (nonVolatileSettings.voxThreshold != 0)
 				{
-					snprintf(buf, bufferLen, "%s:%d", "VOX Thres.", nonVolatileSettings.voxThreshold);
+					snprintf(buf, bufferLen, "%s:%d", currentLanguage->vox_threshold, nonVolatileSettings.voxThreshold);
 				}
 				else
 				{
-					snprintf(buf, bufferLen, "%s:%s", "VOX Thres.", currentLanguage->off);
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->vox_threshold, currentLanguage->off);
 				}
 				break;
 			case OPTIONS_VOX_TAIL:
@@ -107,11 +107,11 @@ static void updateScreen(void)
 					uint8_t secs = (uint8_t)tail;
 					uint8_t fracSec = (tail - secs) * 10;
 
-					snprintf(buf, bufferLen, "%s:%d.%ds", "VOX Tail", secs, fracSec);
+					snprintf(buf, bufferLen, "%s:%d.%ds", currentLanguage->vox_tail, secs, fracSec);
 				}
 				else
 				{
-					snprintf(buf, bufferLen, "%s:%s", "VOX Tail", currentLanguage->n_a);
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->vox_tail, currentLanguage->n_a);
 				}
 				break;
 		}
