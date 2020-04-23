@@ -71,6 +71,7 @@ int menuContactList(uiEvent_t *ev, bool isFirstRun)
 			menuContactListDisplayState = menuContactListOverrideState;
 			menuContactListOverrideState = 0;
 		}
+
 		updateScreen();
 	}
 	else

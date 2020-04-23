@@ -35,6 +35,7 @@ int menuPrivateCall(uiEvent_t *ev, bool isFirstRun)
 		uiPrivateCallState = PRIVATE_CALL_ACCEPT;
 		menuUtilityReceivedPcId = LinkHead->id;
 
+		displayLightTrigger();
 		updateScreen();
 	}
 	else

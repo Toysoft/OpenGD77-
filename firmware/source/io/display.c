@@ -31,7 +31,7 @@
 #endif
 #endif // ! PLATFORM_GD77S
 
-void fw_init_display(bool isInverseColour)
+void displayInit(bool isInverseColour)
 {
 #if ! defined(PLATFORM_GD77S)
 	PORT_SetPinMux(Port_Display_CS, Pin_Display_CS, kPORT_MuxAsGpio);
@@ -45,14 +45,9 @@ void fw_init_display(bool isInverseColour)
 #if defined(PLATFORM_RD5R)
     PORT_SetPinMux(Port_Display_Light, Pin_Display_Light, kPORT_MuxAlt7);/* Configured as PWM FTM0_CH2 */
 #else
-   PORT_SetPinMux(Port_Display_Light, Pin_Display_Light, kPORT_MuxAlt4);/* Configured as PWM FTM0_CH3 */
+    PORT_SetPinMux(Port_Display_Light, Pin_Display_Light, kPORT_MuxAlt4);/* Configured as PWM FTM0_CH3 */
 #endif
 
-#else
-	PORT_SetPinMux(Port_Display_Light, Pin_Display_Light, kPORT_MuxAsGpio);
-#endif
-
-#ifdef DISPLAY_LED_PWM
 	ftm_config_t ftmInfo;
 	ftm_chnl_pwm_signal_param_t ftmParam;
 
@@ -64,10 +59,14 @@ void fw_init_display(bool isInverseColour)
 	FTM_Init(BOARD_FTM_BASEADDR, &ftmInfo);/* Initialize FTM module */
 	FTM_SetupPwm(BOARD_FTM_BASEADDR, &ftmParam, 1U, kFTM_CenterAlignedPwm, 10000U, CLOCK_GetFreq(kCLOCK_BusClk));   /* Configure ftm params with frequency 10kHZ */
 	FTM_StartTimer(BOARD_FTM_BASEADDR, kFTM_SystemClock);
-#else
+
+#else // ! DISPLAY_LED_PWM
+
+	PORT_SetPinMux(Port_Display_Light, Pin_Display_Light, kPORT_MuxAsGpio);
 	GPIO_PinInit(GPIO_Display_Light, Pin_Display_Light, &pin_config_output);
 	GPIO_PinWrite(GPIO_Display_Light, Pin_Display_Light, 0);
-#endif
+
+#endif // DISPLAY_LED_PWM
 
 	GPIO_PinInit(GPIO_Display_CS, Pin_Display_CS, &pin_config_output);
 	GPIO_PinInit(GPIO_Display_RST, Pin_Display_RST, &pin_config_output);
@@ -92,13 +91,13 @@ void fw_init_display(bool isInverseColour)
 #endif // ! PLATFORM_GD77S
 }
 
-void fw_displayEnableBacklight(bool onof)
+void displayEnableBacklight(bool enable)
 {
 #if ! defined(PLATFORM_GD77S)
-	if (onof == true)
+	if (enable)
 	{
 #ifdef DISPLAY_LED_PWM
-		fw_displaySetBacklightIntensityPercentage(nonVolatileSettings.displayBacklightPercentage);
+		displaySetBacklightIntensityPercentage(nonVolatileSettings.displayBacklightPercentage);
 #else
 		GPIO_PinWrite(GPIO_Display_Light, Pin_Display_Light, 1);
 #endif
@@ -107,7 +106,7 @@ void fw_displayEnableBacklight(bool onof)
 	{
 #ifdef DISPLAY_LED_PWM
 
-		fw_displaySetBacklightIntensityPercentage(((nonVolatileSettings.backlightMode == BACKLIGHT_MODE_NONE) ? 0 : nonVolatileSettings.displayBacklightPercentageOff));
+		displaySetBacklightIntensityPercentage(((nonVolatileSettings.backlightMode == BACKLIGHT_MODE_NONE) ? 0 : nonVolatileSettings.displayBacklightPercentageOff));
 #else
 		GPIO_PinWrite(GPIO_Display_Light, Pin_Display_Light, 0);
 #endif
@@ -115,7 +114,7 @@ void fw_displayEnableBacklight(bool onof)
 #endif // ! PLATFORM_GD77S
 }
 
-bool fw_displayIsBacklightLit(void)
+bool displayIsBacklightLit(void)
 {
 #if defined(PLATFORM_GD77S)
 	return false;
@@ -141,14 +140,20 @@ bool fw_displayIsBacklightLit(void)
 #endif // PLATFORM_GD77S
 }
 
+void displaySetBacklightIntensityPercentage(uint8_t intensityPercentage)
+{
 #if ! defined(PLATFORM_GD77S)
 #ifdef DISPLAY_LED_PWM
-void fw_displaySetBacklightIntensityPercentage(uint8_t intensityPercentage)
-{
-    FTM_UpdateChnlEdgeLevelSelect(BOARD_FTM_BASEADDR, BOARD_FTM_CHANNEL, kFTM_NoPwmSignal); // Disable channel output before updating the dutycycle
-    FTM_UpdatePwmDutycycle(BOARD_FTM_BASEADDR, BOARD_FTM_CHANNEL, kFTM_CenterAlignedPwm, intensityPercentage); // Update PWM duty cycle
-    FTM_SetSoftwareTrigger(BOARD_FTM_BASEADDR, true); // Software trigger to update registers
-    FTM_UpdateChnlEdgeLevelSelect(BOARD_FTM_BASEADDR, BOARD_FTM_CHANNEL, kFTM_HighTrue);    // Start channel output with updated dutycycle
-}
+	static uint8_t prevPercentage = 255;
+
+	if (prevPercentage != intensityPercentage)
+	{
+		prevPercentage = intensityPercentage;
+		FTM_UpdateChnlEdgeLevelSelect(BOARD_FTM_BASEADDR, BOARD_FTM_CHANNEL, kFTM_NoPwmSignal); // Disable channel output before updating the dutycycle
+		FTM_UpdatePwmDutycycle(BOARD_FTM_BASEADDR, BOARD_FTM_CHANNEL, kFTM_CenterAlignedPwm, intensityPercentage); // Update PWM duty cycle
+		FTM_SetSoftwareTrigger(BOARD_FTM_BASEADDR, true); // Software trigger to update registers
+		FTM_UpdateChnlEdgeLevelSelect(BOARD_FTM_BASEADDR, BOARD_FTM_CHANNEL, kFTM_HighTrue);    // Start channel output with updated dutycycle
+	}
 #endif
 #endif // ! PLATFORM_GD77S
+}

@@ -190,24 +190,32 @@ void menuSystemCallCurrentMenuTick(uiEvent_t *ev)
 
 void displayLightTrigger(void)
 {
-	if ((nonVolatileSettings.backlightMode == BACKLIGHT_MODE_AUTO) ||
-			((nonVolatileSettings.backlightMode == BACKLIGHT_MODE_MANUAL) && fw_displayIsBacklightLit()))
+	if ((menuSystemGetCurrentMenuNumber() != UI_TX_SCREEN) &&
+			((nonVolatileSettings.backlightMode == BACKLIGHT_MODE_AUTO)
+					|| ((nonVolatileSettings.backlightMode == BACKLIGHT_MODE_MANUAL) && displayIsBacklightLit())))
 	{
 		if (nonVolatileSettings.backlightMode == BACKLIGHT_MODE_AUTO)
 		{
 			menuDisplayLightTimer = nonVolatileSettings.backLightTimeout * 1000;
 		}
-		fw_displayEnableBacklight(true);
+		displayEnableBacklight(true);
 	}
 }
 
 // use -1 to force LED on all the time
 void displayLightOverrideTimeout(int timeout)
 {
+	int prevTimer = menuDisplayLightTimer;
+
+	menuDisplayLightTimer = timeout;
+
 	if (nonVolatileSettings.backlightMode == BACKLIGHT_MODE_AUTO)
 	{
-		menuDisplayLightTimer = timeout;
-		fw_displayEnableBacklight(true);
+		// Backlight is OFF, or timeout override (-1) as just been set
+		if ((displayIsBacklightLit() == false) || ((timeout == -1) && (prevTimer != -1)))
+		{
+			displayEnableBacklight(true);
+		}
 	}
 }
 

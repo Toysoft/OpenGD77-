@@ -37,6 +37,7 @@ int menuCredits(uiEvent_t *ev, bool isFirstRun)
 	if (isFirstRun)
 	{
 		gMenusCurrentItemIndex=5000;
+
 		updateScreen();
 	}
 	else

@@ -133,7 +133,7 @@ void settingsRestoreDefaultSettings(void)
 			0x0e; // 14
 #elif defined (PLATFORM_RD5R)
 			0x06;
-	#else
+#else
 			0x12; // 18
 #endif
 	nonVolatileSettings.initialMenuNumber =
