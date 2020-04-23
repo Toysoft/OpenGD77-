@@ -48,15 +48,10 @@ static voxData_t vox;
 
 void voxInit(void)
 {
-	vox.triggered = false;
+	voxReset();
 	vox.threshold = 0;
-	vox.sampled = 0;
-	vox.averaged = 0;
-	vox.nextTimeSampling = 0;
 	vox.tailUnits = 1;
-	vox.tailTime = 0;
 	vox.settleCount = VOX_SETTLE_TIME;
-	vox.shots = 0;
 }
 
 void voxSetParameters(uint8_t threshold, uint8_t tailHalfSecond)
@@ -90,9 +85,7 @@ void voxReset(void)
 	vox.nextTimeSampling = PITCounter + PIT_COUNTS_PER_MS; // now + 1ms
 	vox.tailTime = 0;
 	vox.settleCount = VOX_SETTLE_TIME >> 1;
-	//vox.settleCount = VOX_SETTLE_TIME;
 	vox.shots = 0;
-
 }
 
 void voxTick(void)
