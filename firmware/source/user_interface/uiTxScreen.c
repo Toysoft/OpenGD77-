@@ -117,6 +117,7 @@ int menuTxScreen(uiEvent_t *ev, bool isFirstRun)
 				if ((currentChannelData->tot != 0) && (timeInSeconds == 0))
 				{
 					set_melody(melody_tx_timeout_beep);
+
 					ucClearBuf();
 					ucPrintCentered(20, currentLanguage->timeout, FONT_SIZE_4);
 					ucRender();

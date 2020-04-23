@@ -185,6 +185,8 @@ void fw_main_task(void *data)
     // Speech Synthesis (GD77S Only)
     speechSynthesisInit();
 
+    // VOX init
+    voxInit();
 
     // Small startup delay after initialization to stabilize system
   //  vTaskDelay(portTICK_PERIOD_MS * 500);
@@ -217,6 +219,10 @@ void fw_main_task(void *data)
     lastheardInitList();
     codeplugInitContactsCache();
     dmrIDCacheInit();
+
+    // Should be initialized before the splash screen, as we don't want melodies when VOX is enabled
+    voxSetParameters(nonVolatileSettings.voxThreshold, nonVolatileSettings.voxTailUnits);
+
     menuInitMenuSystem();
 
 #if defined(PLATFORM_GD77S)
@@ -246,6 +252,44 @@ void fw_main_task(void *data)
 			fw_check_key_event(&keys, &key_event); // Read keyboard state and event
 
 			check_rotary_switch_event(&rotary, &rotary_event); // Rotary switch state and event (GD-77S only)
+
+			// VOX Checking
+			if (voxIsEnabled())
+			{
+				// if a key/button event happen, reset the VOX.
+				if ((key_event == EVENT_KEY_CHANGE) || (button_event == EVENT_BUTTON_CHANGE) || (keys.key != 0) || (buttons != BUTTON_NONE))
+				{
+					voxReset();
+				}
+				else
+				{
+					if (!trxIsTransmitting && voxIsTriggered() && ((buttons & BUTTON_PTT) == 0))
+					{
+						button_event = EVENT_BUTTON_CHANGE;
+						buttons |= BUTTON_PTT;
+					}
+					else if (trxIsTransmitting && ((voxIsTriggered() == false) || (keys.event & KEY_MOD_PRESS)))
+					{
+						button_event = EVENT_BUTTON_CHANGE;
+						buttons &= ~BUTTON_PTT;
+					}
+					else if (trxIsTransmitting && voxIsTriggered())
+					{
+						// Any key/button event reset the vox
+						if ((button_event != EVENT_BUTTON_NONE) || (keys.event != EVENT_KEY_NONE))
+						{
+							voxReset();
+							button_event = EVENT_BUTTON_CHANGE;
+							buttons &= ~BUTTON_PTT;
+						}
+						else
+						{
+							buttons |= BUTTON_PTT;
+						}
+					}
+				}
+			}
+
 
 			// EVENT_*_CHANGED can be cleared later, so check this now as hasEvent has to be set anyway.
 			keyOrButtonChanged = ((key_event != NO_EVENT) || (button_event != NO_EVENT) || (rotary_event != NO_EVENT));
@@ -653,6 +697,7 @@ void fw_main_task(void *data)
     		}
     		tick_melody();
     		speechSynthesisTick();
+    		voxTick();
     	}
 		vTaskDelay(0);
     }
