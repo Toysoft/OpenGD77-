@@ -141,7 +141,7 @@ void fw_main_task(void *data)
 
     settingsLoadSettings();
 
-	fw_init_display(nonVolatileSettings.displayInverseVideo);
+	displayInit(nonVolatileSettings.displayInverseVideo);
 
     // Init SPI
     init_SPI();
@@ -490,7 +490,7 @@ void fw_main_task(void *data)
     			// Toggle backlight
         		if ((nonVolatileSettings.backlightMode == BACKLIGHT_MODE_MANUAL) && (buttons & BUTTON_SK1))
         		{
-        			fw_displayEnableBacklight(! fw_displayIsBacklightLit());
+        			displayEnableBacklight(! displayIsBacklightLit());
         		}
         	}
 
@@ -648,7 +648,7 @@ void fw_main_task(void *data)
     			menuDisplayLightTimer--;
     			if (menuDisplayLightTimer==0)
     			{
-    				fw_displayEnableBacklight(false);
+    				displayEnableBacklight(false);
     			}
     		}
     		tick_melody();

@@ -192,13 +192,13 @@ void displayLightTrigger(void)
 {
 	if ((menuSystemGetCurrentMenuNumber() != UI_TX_SCREEN) &&
 			((nonVolatileSettings.backlightMode == BACKLIGHT_MODE_AUTO)
-					|| ((nonVolatileSettings.backlightMode == BACKLIGHT_MODE_MANUAL) && fw_displayIsBacklightLit())))
+					|| ((nonVolatileSettings.backlightMode == BACKLIGHT_MODE_MANUAL) && displayIsBacklightLit())))
 	{
 		if (nonVolatileSettings.backlightMode == BACKLIGHT_MODE_AUTO)
 		{
 			menuDisplayLightTimer = nonVolatileSettings.backLightTimeout * 1000;
 		}
-		fw_displayEnableBacklight(true);
+		displayEnableBacklight(true);
 	}
 }
 
@@ -212,9 +212,9 @@ void displayLightOverrideTimeout(int timeout)
 	if (nonVolatileSettings.backlightMode == BACKLIGHT_MODE_AUTO)
 	{
 		// Backlight is OFF, or timeout override (-1) as just been turned set
-		if ((fw_displayIsBacklightLit() == false) || ((timeout == -1) && (prevTimer != -1)))
+		if ((displayIsBacklightLit() == false) || ((timeout == -1) && (prevTimer != -1)))
 		{
-			fw_displayEnableBacklight(true);
+			displayEnableBacklight(true);
 		}
 	}
 }

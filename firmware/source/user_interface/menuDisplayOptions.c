@@ -185,7 +185,7 @@ static void handleEvent(uiEvent_t *ev)
 	}
 	if (ev->events & KEY_EVENT)
 	{
-		bool displayIsLit = fw_displayIsBacklightLit();
+		bool displayIsLit = displayIsBacklightLit();
 
 		if (KEYCHECK_PRESS(ev->keys,KEY_DOWN) && gMenusEndIndex!=0)
 		{
@@ -238,7 +238,7 @@ static void handleEvent(uiEvent_t *ev)
 
 						if ((nonVolatileSettings.backlightMode == BACKLIGHT_MODE_MANUAL) && (!displayIsLit))
 						{
-							fw_displaySetBacklightIntensityPercentage(nonVolatileSettings.displayBacklightPercentageOff);
+							displaySetBacklightIntensityPercentage(nonVolatileSettings.displayBacklightPercentageOff);
 						}
 					}
 					break;
@@ -264,7 +264,7 @@ static void handleEvent(uiEvent_t *ev)
 					break;
 				case DISPLAY_MENU_COLOUR_INVERT:
 					nonVolatileSettings.displayInverseVideo = !nonVolatileSettings.displayInverseVideo;
-					fw_init_display(nonVolatileSettings.displayInverseVideo);// Need to perform a full reset on the display to change back to non-inverted
+					displayInit(nonVolatileSettings.displayInverseVideo);// Need to perform a full reset on the display to change back to non-inverted
 					break;
 				case DISPLAY_MENU_CONTACT_DISPLAY_ORDER:
 					if (nonVolatileSettings.contactDisplayPriority < CONTACT_DISPLAY_PRIO_TA_DB_CC)
@@ -321,7 +321,7 @@ static void handleEvent(uiEvent_t *ev)
 
 					if ((nonVolatileSettings.backlightMode == BACKLIGHT_MODE_MANUAL) && (!displayIsLit))
 					{
-						fw_displaySetBacklightIntensityPercentage(nonVolatileSettings.displayBacklightPercentageOff);
+						displaySetBacklightIntensityPercentage(nonVolatileSettings.displayBacklightPercentageOff);
 					}
 					break;
 				case DISPLAY_MENU_CONTRAST:
@@ -345,7 +345,7 @@ static void handleEvent(uiEvent_t *ev)
 					break;
 				case DISPLAY_MENU_COLOUR_INVERT:
 					nonVolatileSettings.displayInverseVideo = !nonVolatileSettings.displayInverseVideo;
-					fw_init_display(nonVolatileSettings.displayInverseVideo);// Need to perform a full reset on the display to change back to non-inverted
+					displayInit(nonVolatileSettings.displayInverseVideo);// Need to perform a full reset on the display to change back to non-inverted
 					break;
 				case DISPLAY_MENU_CONTACT_DISPLAY_ORDER:
 					if (nonVolatileSettings.contactDisplayPriority > CONTACT_DISPLAY_PRIO_CC_DB_TA)
@@ -370,7 +370,7 @@ static void handleEvent(uiEvent_t *ev)
 		}
 		else if (KEYCHECK_SHORTUP(ev->keys,KEY_RED))
 		{
-			bool displayIsLit = fw_displayIsBacklightLit();
+			bool displayIsLit = displayIsBacklightLit();
 
 			if (nonVolatileSettings.displayContrast != originalNonVolatileSettings.displayContrast)
 			{
@@ -381,7 +381,7 @@ static void handleEvent(uiEvent_t *ev)
 			if (nonVolatileSettings.displayInverseVideo != originalNonVolatileSettings.displayInverseVideo)
 			{
 				nonVolatileSettings.displayInverseVideo = originalNonVolatileSettings.displayInverseVideo;
-				fw_init_display(nonVolatileSettings.displayInverseVideo);// Need to perform a full reset on the display to change back to non-inverted
+				displayInit(nonVolatileSettings.displayInverseVideo);// Need to perform a full reset on the display to change back to non-inverted
 			}
 
 			nonVolatileSettings.displayBacklightPercentage = originalNonVolatileSettings.displayBacklightPercentage;
@@ -395,7 +395,7 @@ static void handleEvent(uiEvent_t *ev)
 
 			if ((nonVolatileSettings.backlightMode == BACKLIGHT_MODE_MANUAL) && (!displayIsLit))
 			{
-				fw_displaySetBacklightIntensityPercentage(nonVolatileSettings.displayBacklightPercentageOff);
+				displaySetBacklightIntensityPercentage(nonVolatileSettings.displayBacklightPercentageOff);
 			}
 
 			menuSystemPopPreviousMenu();
@@ -413,7 +413,7 @@ static void updateBacklightMode(uint8_t mode)
 	{
 		case BACKLIGHT_MODE_MANUAL:
 		case BACKLIGHT_MODE_NONE:
-			fw_displayEnableBacklight(false); // Could be MANUAL previously, but in OFF state, so turn it OFF blindly.
+			displayEnableBacklight(false); // Could be MANUAL previously, but in OFF state, so turn it OFF blindly.
 			break;
 		case BACKLIGHT_MODE_AUTO:
 			displayLightTrigger();

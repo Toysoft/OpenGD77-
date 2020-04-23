@@ -100,12 +100,9 @@
 #endif
 
 
-void fw_init_display(bool isInverseColour);
-
-void fw_displayEnableBacklight(bool onof);
-bool fw_displayIsBacklightLit(void);
-
-void fw_displaySetBacklightIntensityPercentage(uint8_t intensityPercentage);
-
+void displayInit(bool isInverseColour);
+void displayEnableBacklight(bool enable);
+bool displayIsBacklightLit(void);
+void displaySetBacklightIntensityPercentage(uint8_t intensityPercentage);
 
 #endif /* _FW_DISPLAY_H_ */
