@@ -17,7 +17,9 @@
  */
 
 #include <i2c.h>
+#if defined(USE_SEGGER_RTT)
 #include <SeggerRTT/RTT/SEGGER_RTT.h>
+#endif
 
 uint8_t i2c_master_buff[I2C_DATA_LENGTH];
 volatile int isI2cInUse = 0;
@@ -130,7 +132,9 @@ int write_I2C_reg_2byte(uint8_t addr, uint8_t reg, uint8_t val1, uint8_t val2)
 
     if (isI2cInUse)
     {
+#if defined(USE_SEGGER_RTT)
     	SEGGER_RTT_printf(0, "Clash in write_I2C_reg_2byte (3) with %d\n",isI2cInUse);
+#endif
     	return 0;
     }
     isI2cInUse = 3;
@@ -168,7 +172,9 @@ int read_I2C_reg_2byte(uint8_t addr, uint8_t reg, uint8_t* val1, uint8_t* val2)
 
     if (isI2cInUse)
     {
+#if defined(USE_SEGGER_RTT)
     	SEGGER_RTT_printf(0, "Clash in read_I2C_reg_2byte (4) with %d\n",isI2cInUse);
+#endif
     	return 0;
     }
     isI2cInUse = 4;

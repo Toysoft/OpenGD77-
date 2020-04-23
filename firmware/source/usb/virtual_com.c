@@ -8,7 +8,9 @@
 #include "fsl_device_registers.h"
 #include "clock_config.h"
 #include "board.h"
+#if defined(USE_SEGGER_RTT)
 #include <SeggerRTT/RTT/SEGGER_RTT.h>
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>

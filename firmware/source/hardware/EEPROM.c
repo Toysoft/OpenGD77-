@@ -17,7 +17,9 @@
  */
 
 #include <EEPROM.h>
+#if defined(USE_SEGGER_RTT)
 #include <SeggerRTT/RTT/SEGGER_RTT.h>
+#endif
 
 const uint8_t EEPROM_ADDRESS 	= 0x50;
 const uint8_t EEPROM_PAGE_SIZE 	= 128;
@@ -73,7 +75,9 @@ static bool _EEPROM_Write(int address,uint8_t *buf, int size)
 	taskENTER_CRITICAL();
     if (isI2cInUse)
     {
+#if defined(USE_SEGGER_RTT)
     	SEGGER_RTT_printf(0, "Clash in EEPROM_Write (2) with %d\n",isI2cInUse);
+#endif
     	taskEXIT_CRITICAL();
     	return false;
     }
@@ -155,7 +159,9 @@ bool EEPROM_Read(int address,uint8_t *buf, int size)
 	taskENTER_CRITICAL();
     if (isI2cInUse)
     {
+#if defined(USE_SEGGER_RTT)
     	SEGGER_RTT_printf(0, "Clash in EEPROM_Read (2) with %d\n",isI2cInUse);
+#endif
     	taskEXIT_CRITICAL();
     	return false;
     }
