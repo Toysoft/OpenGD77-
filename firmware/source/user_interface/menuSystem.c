@@ -211,7 +211,7 @@ void displayLightOverrideTimeout(int timeout)
 
 	if (nonVolatileSettings.backlightMode == BACKLIGHT_MODE_AUTO)
 	{
-		// Backlight is OFF, or timeout override (-1) as just been turned set
+		// Backlight is OFF, or timeout override (-1) as just been set
 		if ((displayIsBacklightLit() == false) || ((timeout == -1) && (prevTimer != -1)))
 		{
 			displayEnableBacklight(true);
