@@ -715,8 +715,10 @@ void trxCalcBandAndFrequencyOffset(uint32_t *band_offset, uint32_t *freq_offset)
 
 void trxUpdateC6000Calibration(void)
 {
-	uint32_t band_offset=0x00000000;
-	uint32_t freq_offset=0x00000000;
+	uint8_t highByte;
+	uint8_t lowByte;
+	uint32_t band_offset;
+	uint32_t freq_offset;
 
 	if (nonVolatileSettings.useCalibration==false)
 	{
@@ -727,23 +729,23 @@ void trxUpdateC6000Calibration(void)
 
 	write_SPI_page_reg_byte_SPI0(0x04, 0x00, 0x3F); // Reset HR-C6000 state
 
-	uint8_t val_shift;
-	read_val_DACDATA_shift(band_offset,&val_shift);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x37, val_shift); // DACDATA shift (LIN_VOL)
+	read_val_DACDATA_shift(band_offset,&lowByte);
+	write_SPI_page_reg_byte_SPI0(0x04, 0x37, lowByte); // DACDATA shift (LIN_VOL)
 
-	uint8_t val_0x04;
-	read_val_Q_MOD2_offset(band_offset,&val_0x04);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x04, val_0x04); // MOD2 offset
+	read_val_Q_MOD2_offset(band_offset,&lowByte);
+	write_SPI_page_reg_byte_SPI0(0x04, 0x04, lowByte); // MOD2 offset
 
-	uint8_t val_0x46;
-	read_val_phase_reduce(band_offset+freq_offset,&val_0x46);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x46, val_0x46); // phase reduce
+	read_val_phase_reduce(band_offset+freq_offset,&lowByte);
+	write_SPI_page_reg_byte_SPI0(0x04, 0x46, lowByte); // phase reduce
 
-	uint8_t val_0x47;
-	uint8_t val_0x48;
-	read_val_twopoint_mod(band_offset,&val_0x47, &val_0x48);
-	write_SPI_page_reg_byte_SPI0(0x04, 0x48, val_0x48 & 0x03); // bit 0 to 1 = upper 2 bits of 10-bit twopoint mod
-	write_SPI_page_reg_byte_SPI0(0x04, 0x47, val_0x47); // bit 0 to 7 = lower 8 bits of 10-bit twopoint mod
+	read_val_twopoint_mod(band_offset,&lowByte, &highByte);
+	uint16_t refOscOffset = (highByte<<8)+lowByte;
+	if (refOscOffset>1023)
+	{
+		refOscOffset=1023;
+	}
+	write_SPI_page_reg_byte_SPI0(0x04, 0x48, (refOscOffset>>8) & 0x03); // bit 0 to 1 = upper 2 bits of 10-bit twopoint mod
+	write_SPI_page_reg_byte_SPI0(0x04, 0x47, (refOscOffset & 0xFF)); // bit 0 to 7 = lower 8 bits of 10-bit twopoint mod
 }
 
 void I2C_AT1846_set_register_with_mask(uint8_t reg, uint16_t mask, uint16_t value, uint8_t shift)
