@@ -20,6 +20,7 @@
 
 static volatile uint32_t adc_channel;
 volatile uint32_t adc0_dp1;
+volatile uint32_t adc0_dp3;
 
 
 const int CUTOFF_VOLTAGE_UPPER_HYST = 64;
@@ -43,6 +44,7 @@ void adc_init(void)
 	taskENTER_CRITICAL();
 	adc_channel = 1;
 	adc0_dp1 = 0;
+	adc0_dp3 = 0;
 
 	taskEXIT_CRITICAL();
 
@@ -58,33 +60,20 @@ void adc_init(void)
 
 void ADC0_IRQHandler(void)
 {
-	adc0_dp1 = ADC16_GetChannelConversionValue(ADC0, 0);
-/*
- *
- *
- * Note. We don't need to waste MCU cycles by constantly running the ACD reading all the channels
-
+	uint32_t result = ADC16_GetChannelConversionValue(ADC0, 0);
 
     switch (adc_channel)
     {
-    case 0: adc0_dp0 = result;
-    		break;
-    case 1: adc0_dp1 = result;
-    		break;
-    case 2: adc0_dp2 = result;
-    		break;
-    case 3: adc0_dp3 = result;
-    		break;
+    case 1:
+    	adc0_dp1 = result;
+    	adc_channel = 3;// get channel 3 next
+    	break;
+    case 3:
+    	adc0_dp3 = result;
+    	adc_channel = 1;// get channel 1 next
+    	break;
     }
 
-    adc_channel++;
-    if (adc_channel>3)
-    {
-    	adc_channel=0;
-    }
-
-    trigger_adc();
-*/
     /* Add for ARM errata 838869, affects Cortex-M4, Cortex-M4F Store immediate overlapping
     exception return operation might vector to incorrect interrupt */
     __DSB();
@@ -95,4 +84,9 @@ int get_battery_voltage(void)
 {
 	int tmp_voltage = adc0_dp1/41.6f+0.5f;
 	return tmp_voltage;
+}
+
+int getVOX(void)
+{
+	return adc0_dp3;
 }

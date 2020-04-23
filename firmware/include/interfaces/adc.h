@@ -34,5 +34,6 @@ void trigger_adc(void);
 void adc_init(void);
 void ADC0_IRQHandler(void);
 int get_battery_voltage(void);
+int getVOX(void);
 
 #endif /* _FW_ADC_H_ */
