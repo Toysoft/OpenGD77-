@@ -123,6 +123,7 @@ int menuTxScreen(uiEvent_t *ev, bool isFirstRun)
 					ucRender();
 					PTTToggledDown = false;
 					mto = ev->time;
+					voxReset();
 				}
 				else
 				{
