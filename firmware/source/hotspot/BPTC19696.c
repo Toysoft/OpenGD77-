@@ -47,7 +47,9 @@ void debugBitPatterns(bool *data)
 	{
 		buf[i] = data[i] ? '1' : '0';
 	}
+#if defined(USE_SEGGER_RTT)
     SEGGER_RTT_printf(0, "pattern %s\r\n",buf);
+#endif
 }
 #endif
 

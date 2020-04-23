@@ -30,7 +30,7 @@
 #endif
 
 #ifdef NDEBUG
-#error A firmware compiled in Releae mode will not work, yet
+#error A firmware compiled in Release mode will not work, yet
 #error Change target build to Debug then Clean the build and recompile
 #endif
 

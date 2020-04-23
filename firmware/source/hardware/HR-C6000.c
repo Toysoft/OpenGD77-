@@ -21,7 +21,9 @@
 #include <hotspot/dmrDefines.h>
 #include <HR-C6000.h>
 #include <settings.h>
+#if defined(USE_SEGGER_RTT)
 #include <SeggerRTT/RTT/SEGGER_RTT.h>
+#endif
 #include <trx.h>
 #include <hotspot/uiHotspot.h>
 #include <user_interface/uiUtilities.h>

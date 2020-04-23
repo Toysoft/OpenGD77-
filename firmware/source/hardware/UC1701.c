@@ -91,7 +91,9 @@ static inline bool checkWritePos(uint8_t * writePos)
 {
 	if (writePos < screenBuf || writePos > screenBufEnd)
 	{
+#if defined(USE_SEGGER_RTT)
 		SEGGER_RTT_printf(0,"Display buffer error\n");
+#endif
 		return false;
 	}
 	return true;
