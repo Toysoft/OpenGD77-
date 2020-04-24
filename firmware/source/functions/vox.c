@@ -67,9 +67,7 @@ void voxSetParameters(uint8_t threshold, uint8_t tailHalfSecond)
 
 bool voxIsEnabled(void)
 {
-	return ((currentChannelData->flag4 & 0x40) &&
-			((nonVolatileSettings.hotspotType == HOTSPOT_TYPE_OFF) ||
-					((nonVolatileSettings.hotspotType != HOTSPOT_TYPE_OFF) && (settingsUsbMode != USB_MODE_HOTSPOT))));
+	return ((currentChannelData->flag4 & 0x40) && (settingsUsbMode != USB_MODE_HOTSPOT));
 }
 
 bool voxIsTriggered(void)
@@ -135,7 +133,7 @@ void voxTick(void)
 		}
 	}
 
-	if (vox.triggered && ((nonVolatileSettings.hotspotType != HOTSPOT_TYPE_OFF) && (settingsUsbMode == USB_MODE_HOTSPOT)))
+	if (vox.triggered && (settingsUsbMode == USB_MODE_HOTSPOT))
 	{
 		voxReset();
 	}
