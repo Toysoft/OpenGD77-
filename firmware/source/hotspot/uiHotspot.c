@@ -125,7 +125,7 @@ M: 2020-01-07 09:52:15.246 DMR Slot 2, received network end of voice transmissio
 
 #define MMDVM_HEADER_LENGTH 4U
 
-#define HOTSPOT_VERSION_STRING "OpenGD77_HS v0.1.4"
+#define HOTSPOT_VERSION_STRING "OpenGD77_HS v0.1.3"
 #define concat(a, b) a " GitID #" b ""
 static const char HARDWARE[] = concat(HOTSPOT_VERSION_STRING, GITVERSION);
 
@@ -338,9 +338,6 @@ int menuHotspotMode(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		// Disable VOX
-		voxSetParameters(0, nonVolatileSettings.voxTailUnits);
-
 		// DMR filter level isn't saved yet (cycling power OFF/ON quickly can corrupt
 		// this value otherwise, as menuHotspotMode(true) could be called twice.
 		if (savedDMRFilterLevel == 0xFF)
@@ -755,9 +752,6 @@ static void hotspotExit(void)
 	trxDMRID = codeplugGetUserDMRID();
 	settingsUsbMode = USB_MODE_CPS;
 	mmdvmHostIsConnected = false;
-
-	// Re-enable VOX
-	voxSetParameters(nonVolatileSettings.voxThreshold, nonVolatileSettings.voxTailUnits);
 
 	menuHotspotRestoreSettings();
 	menuSystemPopAllAndDisplayRootMenu();
