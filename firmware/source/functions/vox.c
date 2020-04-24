@@ -90,9 +90,7 @@ void voxReset(void)
 
 void voxTick(void)
 {
-	if ((currentChannelData->flag4 & 0x40) &&
-			((nonVolatileSettings.hotspotType == HOTSPOT_TYPE_OFF) ||
-					((nonVolatileSettings.hotspotType != HOTSPOT_TYPE_OFF) && (settingsUsbMode != USB_MODE_HOTSPOT))))
+	if (voxIsEnabled())
 	{
 		if (PITCounter >= vox.nextTimeSampling)
 		{
