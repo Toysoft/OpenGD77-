@@ -88,7 +88,7 @@ void voxReset(void)
 
 void voxTick(void)
 {
-	if (currentChannelData->flag4 & 0x40)
+	if (voxIsEnabled())
 	{
 		if (PITCounter >= vox.nextTimeSampling)
 		{
