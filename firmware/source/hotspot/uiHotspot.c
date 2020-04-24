@@ -338,9 +338,6 @@ int menuHotspotMode(uiEvent_t *ev, bool isFirstRun)
 {
 	if (isFirstRun)
 	{
-		// Disable VOX
-		voxSetParameters(0, nonVolatileSettings.voxTailUnits);
-
 		// DMR filter level isn't saved yet (cycling power OFF/ON quickly can corrupt
 		// this value otherwise, as menuHotspotMode(true) could be called twice.
 		if (savedDMRFilterLevel == 0xFF)
@@ -755,9 +752,6 @@ static void hotspotExit(void)
 	trxDMRID = codeplugGetUserDMRID();
 	settingsUsbMode = USB_MODE_CPS;
 	mmdvmHostIsConnected = false;
-
-	// Re-enable VOX
-	voxSetParameters(nonVolatileSettings.voxThreshold, nonVolatileSettings.voxTailUnits);
 
 	menuHotspotRestoreSettings();
 	menuSystemPopAllAndDisplayRootMenu();
