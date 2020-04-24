@@ -88,6 +88,9 @@ typedef struct settingsStruct
 	uint8_t			contactDisplayPriority;
 	uint8_t			splitContact;
 	uint8_t			beepOptions;
+	uint8_t			voxThreshold; // 0: disabled
+	uint8_t			voxTailUnits; // 500ms units
+
 
 } settingsStruct_t;
 

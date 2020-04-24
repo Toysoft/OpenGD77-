@@ -25,7 +25,9 @@ static void updateScreen(void);
 static void handleEvent(uiEvent_t *ev);
 
 enum SOUND_MENU_LIST { OPTIONS_MENU_TIMEOUT_BEEP = 0, OPTIONS_MENU_BEEP_VOLUME, OPTIONS_MENU_DMR_BEEP,
-						OPTIONS_MIC_GAIN_DMR, OPTIONS_MIC_GAIN_FM, NUM_SOUND_MENU_ITEMS};
+						OPTIONS_MIC_GAIN_DMR, OPTIONS_MIC_GAIN_FM,
+						OPTIONS_VOX_THRESHOLD, OPTIONS_VOX_TAIL,
+						NUM_SOUND_MENU_ITEMS};
 
 
 int menuSoundOptions(uiEvent_t *ev, bool isFirstRun)
@@ -88,6 +90,30 @@ static void updateScreen(void)
 			case OPTIONS_MIC_GAIN_FM: // FM Mic gain
 				snprintf(buf, bufferLen, "%s:%d", currentLanguage->fm_mic_gain, (nonVolatileSettings.micGainFM - 16));
 				break;
+			case OPTIONS_VOX_THRESHOLD:
+				if (nonVolatileSettings.voxThreshold != 0)
+				{
+					snprintf(buf, bufferLen, "%s:%d", currentLanguage->vox_threshold, nonVolatileSettings.voxThreshold);
+				}
+				else
+				{
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->vox_threshold, currentLanguage->off);
+				}
+				break;
+			case OPTIONS_VOX_TAIL:
+				if (nonVolatileSettings.voxThreshold != 0)
+				{
+					float tail = (nonVolatileSettings.voxTailUnits * 0.5);
+					uint8_t secs = (uint8_t)tail;
+					uint8_t fracSec = (tail - secs) * 10;
+
+					snprintf(buf, bufferLen, "%s:%d.%ds", currentLanguage->vox_tail, secs, fracSec);
+				}
+				else
+				{
+					snprintf(buf, bufferLen, "%s:%s", currentLanguage->vox_tail, currentLanguage->n_a);
+				}
+				break;
 		}
 
 		buf[bufferLen - 1] = 0;
@@ -148,6 +174,20 @@ static void handleEvent(uiEvent_t *ev)
 						setMicGainFM(nonVolatileSettings.micGainFM);
 					}
 					break;
+				case OPTIONS_VOX_THRESHOLD:
+					if (nonVolatileSettings.voxThreshold < 30)
+					{
+						nonVolatileSettings.voxThreshold++;
+						voxSetParameters(nonVolatileSettings.voxThreshold, nonVolatileSettings.voxTailUnits);
+					}
+					break;
+				case OPTIONS_VOX_TAIL:
+					if (nonVolatileSettings.voxTailUnits < 10) // 5 seconds max
+					{
+						nonVolatileSettings.voxTailUnits++;
+						voxSetParameters(nonVolatileSettings.voxThreshold, nonVolatileSettings.voxTailUnits);
+					}
+					break;
 			}
 		}
 		else if (KEYCHECK_PRESS(ev->keys,KEY_LEFT))
@@ -186,6 +226,20 @@ static void handleEvent(uiEvent_t *ev)
 						setMicGainFM(nonVolatileSettings.micGainFM);
 					}
 					break;
+				case OPTIONS_VOX_THRESHOLD:
+					if (nonVolatileSettings.voxThreshold > 0)
+					{
+						nonVolatileSettings.voxThreshold--;
+						voxSetParameters(nonVolatileSettings.voxThreshold, nonVolatileSettings.voxTailUnits);
+					}
+					break;
+				case OPTIONS_VOX_TAIL:
+					if (nonVolatileSettings.voxTailUnits > 1) // .5 minimum
+					{
+						nonVolatileSettings.voxTailUnits--;
+						voxSetParameters(nonVolatileSettings.voxThreshold, nonVolatileSettings.voxTailUnits);
+					}
+					break;
 			}
 		}
 		else if (KEYCHECK_SHORTUP(ev->keys,KEY_GREEN))
@@ -203,6 +257,7 @@ static void handleEvent(uiEvent_t *ev)
 			soundBeepVolumeDivider = nonVolatileSettings.beepVolumeDivider;
 			setMicGainDMR(nonVolatileSettings.micGainDMR);
 			setMicGainFM(nonVolatileSettings.micGainFM);
+			voxSetParameters(nonVolatileSettings.voxThreshold, nonVolatileSettings.voxTailUnits);
 			menuSystemPopPreviousMenu();
 			return;
 		}

@@ -151,7 +151,9 @@ const stringsTable_t frenchLanguage =
 .priority_order				= "Ordre", // MaxLen 16 (with ':' + 'Cc/DB/TA')
 .dmr_beep				= "Bip TX", // MaxLen 16 (with ':' + .star/.stop/.both/.none)
 .start					= "Début", // MaxLen 16 (with ':' + .dmr_beep)
-.both					= "Les Deux" // MaxLen 16 (with ':' + .dmr_beep)
+.both					= "Les Deux", // MaxLen 16 (with ':' + .dmr_beep)
+.vox_threshold                          = "Seuil VOX", // MaxLen 16 (with ':' + .off or 1..30)
+.vox_tail                               = "Queue VOX" // MaxLen 16 (with ':' + .n_a or '0.0s')
 };
 /********************************************************************
  *

@@ -27,7 +27,7 @@
 
 static const int STORAGE_BASE_ADDRESS 		= 0x6000;
 
-static const int STORAGE_MAGIC_NUMBER 		= 0x4747;
+static const int STORAGE_MAGIC_NUMBER 		= 0x4748;
 
 // Bit patterns for DMR Beep
 const uint8_t BEEP_TX_NONE  = 0x00;
@@ -204,6 +204,9 @@ void settingsRestoreDefaultSettings(void)
 			BEEP_TX_STOP |
 #endif
 			BEEP_TX_START;
+	// VOX related
+	nonVolatileSettings.voxThreshold = 0; // 0: VOX disabled
+	nonVolatileSettings.voxTailUnits = 4; // 2 seconds tail
 
 	currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];// Set the current channel data to point to the VFO data since the default screen will be the VFO
 
