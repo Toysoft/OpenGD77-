@@ -1204,7 +1204,7 @@ void menuUtilityRenderHeader(void)
 			{
 				strcat(buffer,"N");
 			}
-			ucPrintCore(0, Y_OFFSET, buffer, FONT_SIZE_1, TEXT_ALIGN_LEFT, scanBlinkPhase);
+			ucPrintCore(0, Y_OFFSET, buffer, ((nonVolatileSettings.hotspotType != HOTSPOT_TYPE_OFF) ? FONT_SIZE_1_BOLD : FONT_SIZE_1), TEXT_ALIGN_LEFT, scanBlinkPhase);
 
 			if (codeplugChannelToneIsCTCSS(currentChannelData->txTone) || codeplugChannelToneIsCTCSS(currentChannelData->rxTone))
 			{
