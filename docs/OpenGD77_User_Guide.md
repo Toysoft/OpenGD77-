@@ -171,10 +171,10 @@ This allows anyone to modify the firmware to suit their own individual needs, an
 
 The project was conceived by Kai DG4KLU, who developed the initial framework and all the FM and DMR TX and RX (Tier 1) functionality. Kai ceased actively participating in the project in June 2019.
 
-At the time of writing Roger VK3KYY is now the lead developer, with assistance from Daniel F1RBM.
+At the time of writing Roger VK3KYY is now the lead developer, with assistance from Daniel F1RMB.
 
 The Tier 2 functionality, User Interface, Display driver, Codeplug API, EEPROM memory API, Flash memory API, Hotspot mode and many other features were developed by Roger VK3KYY
-Other code sections were written or bug fixed by Daniel F1RBM, Alex DL4LEX, Colin G4EML and others.
+Other code sections were written or bug fixed by Daniel F1RMB, Alex DL4LEX, Colin G4EML and others.
 
 This user guide was written by Roger VK3KYY based on work by Alister G0NEF. Additional edits by Angelo 4I1RAC and Bud W0RMT, and graphics by Thierry F1CXG (buttons) and Rafa EA3BIL (menu map).
 
@@ -822,10 +822,10 @@ This option controls whether the firmware will enter hotspot mode when connected
 
 Options are
 **Off**
-**MMDVMHost**  for use with PiStar or any other system using MMDVMHost
+**MMDVM**  for use with PiStar or any other system using MMDVMHost
 **BlueDV** for use with BlueDV
 
-On the GD-77S. To enable hotspot mode, Press and hold the **black button** (SK1) when turning on the radio to enable **MMDVMHost** mode or **black button** and **blue button** to enable BlueDV mode.
+On the GD-77S. To enable hotspot mode, Press and hold the **black button** (SK1) when turning on the radio to enable **MMDVM** mode or **black button** and **PTT** to enable **BlueDV** mode.
 
 #### TA Tx
 
