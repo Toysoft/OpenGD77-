@@ -151,7 +151,9 @@ const stringsTable_t portuguesLanguage =
 .priority_order				= "Order", // MaxLen 16 (with ':' + 'Cc/DB/TA')
 .dmr_beep				= "DMR beep", // MaxLen 16 (with ':' + .star/.stop/.both/.none)
 .start					= "Start", // MaxLen 16 (with ':' + .dmr_beep)
-.both					= "Both" // MaxLen 16 (with ':' + .dmr_beep)
+.both					= "Both", // MaxLen 16 (with ':' + .dmr_beep)
+.vox_threshold                          = "VOX Thres.", // MaxLen 16 (with ':' + .off or 1..30)
+.vox_tail                               = "VOX Tail" // MaxLen 16 (with ':' + .n_a or '0.0s')
 };
 /********************************************************************
  *

@@ -151,7 +151,9 @@ const stringsTable_t czechLanguage =
 .priority_order				= "íst ID", // MaxLen 16 (with ':' + 'Cc/DB/TA')
 .dmr_beep				= "pípDMR", // MaxLen 16 (with ':' + .star/.stop/.both/.none)
 .start					= "start", // MaxLen 16 (with ':' + .dmr_beep)
-.both					= "StartStop" // MaxLen 16 (with ':' + .dmr_beep)
+.both					= "StartStop", // MaxLen 16 (with ':' + .dmr_beep)
+.vox_threshold                          = "VOX Thres.", // MaxLen 16 (with ':' + .off or 1..30)
+.vox_tail                               = "VOX Tail" // MaxLen 16 (with ':' + .n_a or '0.0s')
 };
 /********************************************************************
  *

@@ -563,6 +563,7 @@ static void update_frequency(int frequency)
 		{
 			currentChannelData->txFreq = frequency;
 			trxSetFrequency(currentChannelData->rxFreq,currentChannelData->txFreq,DMR_MODE_AUTO);
+
 			set_melody(melody_ACK_beep);
 		}
 	}
@@ -1113,11 +1114,12 @@ static void handleEvent(uiEvent_t *ev)
 					{
 						set_melody(melody_ERROR_beep);
 					}
+
 					menuDisplayQSODataState = QSO_DISPLAY_DEFAULT_SCREEN;
 				}
 				else
 				{
-					if (freq_enter_idx!=0)
+					if (freq_enter_idx != 0)
 					{
 						set_melody(melody_ERROR_beep);
 					}
@@ -1430,6 +1432,7 @@ static void handleQuickMenuEvent(uiEvent_t *ev)
 					menuSystemPopAllAndDisplaySpecificRootMenu(UI_CHANNEL_MODE);
 
 					set_melody(melody_ACK_beep);
+
 					return;
 				}
 				else

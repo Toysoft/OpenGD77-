@@ -39,6 +39,7 @@
 #include "rotary_switch.h"
 #include "speech_synthesis.h"
 #include "display.h"
+#include "vox.h"
 
 #include "UC1701.h"
 
