@@ -21,6 +21,7 @@
 #include <vox.h>
 #include <interfaces/adc.h>
 #include <functions/sound.h>
+#include <functions/settings.h>
 
 
 #define PIT_COUNTS_PER_MS  10U
@@ -57,19 +58,16 @@ void voxInit(void)
 void voxSetParameters(uint8_t threshold, uint8_t tailHalfSecond)
 {
 	vox.triggered = false;
-	vox.threshold = ((threshold > 0) ? threshold + 1 : threshold); // threshold 1 is too low, add 1 to value.
+	vox.threshold = threshold;
 
-	if (vox.threshold > 0)
-	{
-		voxReset();
-		vox.tailUnits = tailHalfSecond;
-		vox.settleCount = VOX_SETTLE_TIME;
-	}
+	voxReset();
+	vox.tailUnits = tailHalfSecond;
+	vox.settleCount = VOX_SETTLE_TIME;
 }
 
 bool voxIsEnabled(void)
 {
-	return (vox.threshold > 0);
+	return (currentChannelData->flag4 & 0x40);//return (vox.threshold > 0);
 }
 
 bool voxIsTriggered(void)
@@ -90,7 +88,7 @@ void voxReset(void)
 
 void voxTick(void)
 {
-	if (vox.threshold > 0)
+	if (currentChannelData->flag4 & 0x40)
 	{
 		if (PITCounter >= vox.nextTimeSampling)
 		{

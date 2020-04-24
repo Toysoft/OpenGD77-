@@ -42,6 +42,7 @@ enum CHANNEL_DETAILS_DISPLAY_LIST { CH_DETAILS_NAME = 0,
 									CH_DETAILS_RXCTCSS, CH_DETAILS_TXCTCSS , CH_DETAILS_BANDWIDTH,
 									CH_DETAILS_FREQ_STEP, CH_DETAILS_TOT,
 									CH_DETAILS_ZONE_SKIP,CH_DETAILS_ALL_SKIP,
+									CH_DETAILS_VOX,
 									NUM_CH_DETAILS_ITEMS};// The last item in the list is used so that we automatically get a total number of items in the list
 
 int menuChannelDetails(uiEvent_t *ev, bool isFirstRun)
@@ -248,6 +249,9 @@ static void updateScreen(void)
 					codeplugUtilConvertBufToString(rxGroupBuf.name, rxNameBuf, 16);
 					snprintf(buf, bufferLen, "%s:%s", currentLanguage->rx_group, rxNameBuf);
 					break;
+				case CH_DETAILS_VOX:
+					snprintf(buf, bufferLen, "VOX:%s",((tmpChannel.flag4 & 0x40) == 0x40) ? currentLanguage->on : currentLanguage->off);
+					break;
 			}
 
 			buf[bufferLen - 1] = 0;
@@ -437,6 +441,9 @@ static void handleEvent(uiEvent_t *ev)
 					tmpVal++;
 				}
 				break;
+			case CH_DETAILS_VOX:
+				tmpChannel.flag4 |= 0x40;
+				break;
 		}
 		updateScreen();
 	}
@@ -531,6 +538,9 @@ static void handleEvent(uiEvent_t *ev)
 						}
 						tmpVal--;
 					}
+				break;
+			case CH_DETAILS_VOX:
+				tmpChannel.flag4 &= ~0x40;
 				break;
 
 		}

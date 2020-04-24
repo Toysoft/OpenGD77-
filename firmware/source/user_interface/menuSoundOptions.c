@@ -91,14 +91,7 @@ static void updateScreen(void)
 				snprintf(buf, bufferLen, "%s:%d", currentLanguage->fm_mic_gain, (nonVolatileSettings.micGainFM - 16));
 				break;
 			case OPTIONS_VOX_THRESHOLD:
-				if (nonVolatileSettings.voxThreshold != 0)
-				{
 					snprintf(buf, bufferLen, "%s:%d", currentLanguage->vox_threshold, nonVolatileSettings.voxThreshold);
-				}
-				else
-				{
-					snprintf(buf, bufferLen, "%s:%s", currentLanguage->vox_threshold, currentLanguage->off);
-				}
 				break;
 			case OPTIONS_VOX_TAIL:
 				if (nonVolatileSettings.voxThreshold != 0)
@@ -227,7 +220,8 @@ static void handleEvent(uiEvent_t *ev)
 					}
 					break;
 				case OPTIONS_VOX_THRESHOLD:
-					if (nonVolatileSettings.voxThreshold > 0)
+					// threshold of 1 is too low. So only allow the value to go down to 2.
+					if (nonVolatileSettings.voxThreshold > 2)
 					{
 						nonVolatileSettings.voxThreshold--;
 						voxSetParameters(nonVolatileSettings.voxThreshold, nonVolatileSettings.voxTailUnits);

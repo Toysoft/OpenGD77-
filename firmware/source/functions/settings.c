@@ -205,7 +205,7 @@ void settingsRestoreDefaultSettings(void)
 #endif
 			BEEP_TX_START;
 	// VOX related
-	nonVolatileSettings.voxThreshold = 0; // 0: VOX disabled
+	nonVolatileSettings.voxThreshold = 20;
 	nonVolatileSettings.voxTailUnits = 4; // 2 seconds tail
 
 	currentChannelData = &settingsVFOChannel[nonVolatileSettings.currentVFONumber];// Set the current channel data to point to the VFO data since the default screen will be the VFO
