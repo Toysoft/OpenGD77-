@@ -132,4 +132,10 @@ void voxTick(void)
 			vox.shots = 0;
 		}
 	}
+
+	if (vox.triggered && (settingsUsbMode == USB_MODE_HOTSPOT))
+	{
+		voxReset();
+	}
+
 }
